@@ -3,14 +3,17 @@
 **Semantic Memory** is an open-source library and service specializing in the
 efficient indexing of datasets through custom continuous data pipelines.
 
+![image](https://github.com/microsoft/semantic-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
+
 Utilizing advanced embeddings and LLMs, the system enables natural language
 querying for obtaining answers from the indexed data, complete with citations
 and links to the original sources.
 
+![image](https://github.com/microsoft/semantic-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
+
 Designed for seamless integration with
 [Semantic Kernel](https://github.com/microsoft/semantic-kernel),
 Semantic Memory enhances data-driven features in applications built using SK.
-
 
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
