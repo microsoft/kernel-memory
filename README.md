@@ -27,8 +27,8 @@ Importing files into your Semantic Memory can be as simple as this:
 ```csharp
 var memory = new SemanticMemoryClient(AppBuilder.Build().Services);
 
-await memory.ImportFileAsync("file1.txt", "user-id-1", "memory-collection");
-await memory.ImportFileAsync("file2.txt", "user-id-1", "memory-collection");
+await memory.ImportFileAsync("file1.docx", "user-id-1", "memory-collection");
+await memory.ImportFileAsync("file2.pdf", "user-id-1", "memory-collection");
 ```
 
 The code leverages the default data ingestion pipeline:
