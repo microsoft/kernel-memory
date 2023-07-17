@@ -6,7 +6,7 @@ using System;
  * Work in progress - Not ready
  */
 
-// Example1_ImportWithMemoryClient.RunAsync().Wait();
+Example1_ImportWithMemoryClient.RunAsync().Wait();
 
 /* === 2 ===
  * Define a pipeline, 100% C# handlers, and run it in this process.

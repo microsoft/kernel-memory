@@ -7,14 +7,20 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <IsPackable>false</IsPackable>
-        <AssemblyName />
-        <RootNamespace />
-        <NoWarn>CA1050</NoWarn>
+        <AssemblyName>Microsoft.SemanticKernel.Services.SemanticMemory.PipelineService</AssemblyName>
+        <RootNamespace>Microsoft.SemanticKernel.Services.SemanticMemory.PipelineService</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\lib-dotnet\Core\Core.csproj" />
-        <ProjectReference Include="..\..\lib-dotnet\Storage\Storage.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\lib-dotnet\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

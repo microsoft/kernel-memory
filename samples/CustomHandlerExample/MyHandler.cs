@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Services.Storage.Pipeline;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 
 public class MyHandler : IHostedService, IPipelineStepHandler
 {
@@ -28,7 +28,7 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        return this._orchestrator.AttachHandlerAsync(this, cancellationToken);
+        return this._orchestrator.AddHandlerAsync(this, cancellationToken);
     }
 
     /// <inheritdoc />

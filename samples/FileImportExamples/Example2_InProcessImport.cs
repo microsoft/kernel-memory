@@ -4,10 +4,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.Services.Configuration;
-using Microsoft.SemanticKernel.Services.SemanticMemory.Handlers;
-using Microsoft.SemanticKernel.Services.Storage.ContentStorage;
-using Microsoft.SemanticKernel.Services.Storage.Pipeline;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using TextExtractionHandler = Microsoft.SemanticKernel.SemanticMemory.Core.Handlers.TextExtractionHandler;
 
 public static class Example2_InProcessImport
 {
@@ -25,7 +25,7 @@ public static class Example2_InProcessImport
         // Text extraction handler
         Console.WriteLine("* Defining pipeline handlers...");
         var textExtraction = new TextExtractionHandler("extract", orchestrator);
-        await orchestrator.AttachHandlerAsync(textExtraction);
+        await orchestrator.AddHandlerAsync(textExtraction);
 
         // orchestrator.AttachHandlerAsync(...);
         // orchestrator.AttachHandlerAsync(...);
