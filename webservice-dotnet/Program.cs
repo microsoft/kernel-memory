@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Services.Configuration;
-using Microsoft.SemanticKernel.Services.Diagnostics;
+using Microsoft.SemanticKernel.SemanticMemory.Core;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.Services.SemanticMemory.WebService;
-using Microsoft.SemanticKernel.Services.Storage.Pipeline;
 
 // ********************************************************
 // ************** SETUP ***********************************

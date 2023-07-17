@@ -17,9 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\handlers-dotnet\Handlers.csproj" />
-        <ProjectReference Include="..\..\lib-dotnet\Configuration\Configuration.csproj" />
-        <ProjectReference Include="..\..\lib-dotnet\Storage\Storage.csproj" />
+        <ProjectReference Include="..\..\lib-dotnet\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

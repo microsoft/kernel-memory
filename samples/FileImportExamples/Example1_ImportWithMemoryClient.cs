@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Services.Configuration;
-using Microsoft.SemanticKernel.Services.Storage.Pipeline;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 
 public class Example1_ImportWithMemoryClient
 {
@@ -12,7 +12,6 @@ public class Example1_ImportWithMemoryClient
 
         await memory.ImportFileAsync("file1.txt", "user1", "collection01");
         await memory.ImportFileAsync("file2.txt", "user1", "collection01");
-        await memory.ImportFileAsync("file3.doc", "user1", "collection01");
-        await memory.ImportFileAsync("file4.pdf", "user1", "collection01");
+        await memory.ImportFilesAsync(new[] { "file3.docx", "file4.pdf" }, "user1", "collection01");
     }
 }
