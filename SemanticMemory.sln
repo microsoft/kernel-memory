@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineService", "handlers-dotnet\PipelineService.csproj", "{9A23325F-FCF5-4BF7-9413-D325A779AE42}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineService", "pipelineservice-dotnet\PipelineService.csproj", "{9A23325F-FCF5-4BF7-9413-D325A779AE42}"
 EndProject
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}"
@@ -44,6 +44,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextExtractionFromDocsExamp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomHandlerExample", "samples\CustomHandlerExample\CustomHandlerExample.csproj", "{15CEB46F-AE80-4D0F-85E7-1F666078874D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.NetStandard20", "lib-dotnet\Core.NetStandard20\Core.NetStandard20.csproj", "{F28F6EF3-D608-482D-97EC-2AE073208259}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,7 @@ Global
 		{E383AB2F-CFCD-4EAF-A612-85E7FC85667F} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 		{BF98AFF3-8997-400B-A1DB-E7146A118DB6} = {6335B02C-9964-4B39-9795-C5F5F0392515}
 		{15CEB46F-AE80-4D0F-85E7-1F666078874D} = {6335B02C-9964-4B39-9795-C5F5F0392515}
+		{F28F6EF3-D608-482D-97EC-2AE073208259} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DB5CA047-1184-4878-B1FC-0C17C9FAE7AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -90,5 +93,9 @@ Global
 		{15CEB46F-AE80-4D0F-85E7-1F666078874D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15CEB46F-AE80-4D0F-85E7-1F666078874D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15CEB46F-AE80-4D0F-85E7-1F666078874D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F28F6EF3-D608-482D-97EC-2AE073208259}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F28F6EF3-D608-482D-97EC-2AE073208259}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F28F6EF3-D608-482D-97EC-2AE073208259}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F28F6EF3-D608-482D-97EC-2AE073208259}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

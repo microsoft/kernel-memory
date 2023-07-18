@@ -20,15 +20,16 @@ Semantic Memory enhances data-driven features in applications built using SK.
 
 # Examples
 
-## Default memory import
+## Importing memory, locally, without deployments
 
 Importing files into your Semantic Memory can be as simple as this:
 
 ```csharp
-var memory = new SemanticMemoryClient(AppBuilder.Build().Services);
+var memory = new SemanticMemoryClient();
 
-await memory.ImportFileAsync("file1.docx", "user-id-1", "memory-collection");
-await memory.ImportFileAsync("file2.pdf", "user-id-1", "memory-collection");
+await memory.ImportFileAsync("file1.docx", new ImportFileOptions("user-id-1", "memory-collection"));
+
+await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" }, new ImportFileOptions("user-id-1", "memory-collection"));
 ```
 
 The code leverages the default data ingestion pipeline:
@@ -38,7 +39,7 @@ The code leverages the default data ingestion pipeline:
 3. Extract embedding
 4. Save embedding into a vector index
 
-## Asynchronous memory import using Semantic Memory service
+## Import memory using Semantic Memory Web Service
 
 Depending on the configuration, the code above can run locally, inside your
 process, or remotely through a service.
@@ -64,20 +65,18 @@ leveraging the asynchronous queues automatically available.
 If you deploy the **default web service available in the repo**, you only
 need to change the configuration, and use the same code above.
 
-See `appsetting.json`:
-```json
-{
-  // [...]
-  "Orchestration": {
-    "Type": "Distributed",
-    "Endpoint": "http://127.0.0.1"
-  }
-  // [...]
-}
+To import files using Semantic Memory web service, simply use `SemanticMemoryWebClient`:
+
+```csharp
+var memory = new SemanticMemoryWebClient("http://127.0.0.1:9001"); // <== Web Client
+
+await memory.ImportFileAsync("file1.docx", new ImportFileOptions("user-id-1", "memory-collection"));
+
+await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" }, new ImportFileOptions("user-id-1", "memory-collection"));
 ```
 
 
-## Custom memory import pipeline
+## Custom import pipelines
 
 On the other hand, if you need a custom data pipeline, you can also
 customize the steps, which will be handled by your custom business logic:
@@ -93,15 +92,15 @@ var orchestrator = new InProcessPipelineOrchestrator(storage);
 var step1 = new MyHandler1("step1", orchestrator);
 var step2 = new MyHandler2("step2", orchestrator);
 var step3 = new MyHandler3("step3", orchestrator);
-await orchestrator.AttachHandlerAsync(step1);
-await orchestrator.AttachHandlerAsync(step2);
-await orchestrator.AttachHandlerAsync(step3);
+await orchestrator.AddHandlerAsync(step1);
+await orchestrator.AddHandlerAsync(step2);
+await orchestrator.AddHandlerAsync(step3);
 
 // Instantiate a custom pipeline
 var pipeline = orchestrator
     .PrepareNewFileUploadPipeline("mytest", "user-id-1", new[] { "memory-collection" })
-    .AddUploadFile("file1", "file1.txt", "file1.txt")
-    .AddUploadFile("file2", "file2.txt", "file2.txt")
+    .AddUploadFile("file1", "file1.docx", "file1.docx")
+    .AddUploadFile("file2", "file2.pdf", "file2.pdf")
     .Then("step1")
     .Then("step2")
     .Then("step3")

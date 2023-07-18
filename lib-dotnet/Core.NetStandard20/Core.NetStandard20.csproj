@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <LangVersion>10</LangVersion>
+        <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.Core20</AssemblyName>
+        <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.Core20</RootNamespace>
+    </PropertyGroup>
+
+</Project>

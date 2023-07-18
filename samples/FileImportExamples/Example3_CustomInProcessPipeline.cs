@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
-using TextExtractionHandler = Microsoft.SemanticKernel.SemanticMemory.Core.Handlers.TextExtractionHandler;
 
-public static class Example2_InProcessImport
+public static class Example3_CustomInProcessPipeline
 {
     public static async Task RunAsync()
     {

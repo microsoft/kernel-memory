@@ -6,6 +6,7 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <LangVersion>10</LangVersion>
         <AssemblyName>Microsoft.SemanticKernel.Services.DataFormats.Office</AssemblyName>
         <RootNamespace>Microsoft.SemanticKernel.Services.DataFormats.Office</RootNamespace>
     </PropertyGroup>

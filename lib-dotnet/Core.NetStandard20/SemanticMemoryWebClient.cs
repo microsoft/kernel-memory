@@ -1,0 +1,81 @@
+// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+namespace Microsoft.SemanticKernel.SemanticMemory.Core20;
+
+public class SemanticMemoryWebClient : ISemanticMemoryClient
+{
+    private readonly HttpClient _client;
+
+    public SemanticMemoryWebClient(string endpoint) : this(endpoint, new HttpClient())
+    {
+    }
+
+    public SemanticMemoryWebClient(string endpoint, HttpClient client)
+    {
+        this._client = client;
+        this._client.BaseAddress = new Uri(endpoint);
+    }
+
+    public Task ImportFileAsync(string file, ImportFileOptions options)
+    {
+        return this.ImportFilesInternalAsync(new[] { file }, options);
+    }
+
+    public Task ImportFilesAsync(string[] files, ImportFileOptions options)
+    {
+        return this.ImportFilesInternalAsync(files, options);
+    }
+
+    private async Task ImportFilesInternalAsync(string[] files, ImportFileOptions options)
+    {
+        options.Sanitize();
+        options.Validate();
+
+        // Populate form with values and files from disk
+        using var formData = new MultipartFormDataContent();
+
+        formData.Add(new StringContent(options.RequestId), "requestId");
+        formData.Add(new StringContent(options.UserId), "user");
+        foreach (var vaultId1 in options.VaultIds)
+        {
+            formData.Add(new StringContent(vaultId1), "vaults");
+        }
+
+        var streams = new List<MemoryStream>();
+        for (int index = 0; index < files.Length; index++)
+        {
+            string? file = files[index];
+            streams.Add(UploadFile(formData, $"file{index + 1}", file));
+        }
+
+        // Send HTTP request
+        try
+        {
+            HttpResponseMessage? response = await this._client.PostAsync("/upload", formData);
+            response.EnsureSuccessStatusCode();
+        }
+        finally
+        {
+            foreach (var s in streams)
+            {
+                s.Dispose();
+            }
+        }
+    }
+
+    // Read file from disk and add it to the form
+    private static MemoryStream UploadFile(MultipartFormDataContent form, string name, string filename)
+    {
+        byte[] bytes = File.ReadAllBytes(filename);
+        MemoryStream stream = new();
+        stream.Write(bytes, 0, bytes.Length);
+        form.Add(new StreamContent(stream), name, filename);
+        return stream;
+    }
+}

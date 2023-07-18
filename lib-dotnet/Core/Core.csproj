@@ -6,6 +6,7 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <LangVersion>10</LangVersion>
         <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.Core</RootNamespace>
     </PropertyGroup>
@@ -22,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Core.NetStandard20\Core.NetStandard20.csproj" />
       <ProjectReference Include="..\DataFormats.Office\DataFormats.Office.csproj" />
       <ProjectReference Include="..\DataFormats.Pdf\DataFormats.Pdf.csproj" />
     </ItemGroup>

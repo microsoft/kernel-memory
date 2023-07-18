@@ -69,6 +69,9 @@ public static class DependencyInjection
             default:
                 throw new NotImplementedException($"Orchestration type '{config.Orchestration}' not available");
         }
+
+        // Allow to instantiate this class directly
+        services.AddSingleton<InProcessPipelineOrchestrator>();
     }
 
     public static void UseAzureBlobStorage(this IServiceCollection services, SKMemoryConfig config)
