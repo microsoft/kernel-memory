@@ -27,9 +27,11 @@ Importing files into your Semantic Memory can be as simple as this:
 ```csharp
 var memory = new SemanticMemoryClient();
 
-await memory.ImportFileAsync("file1.docx", new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFileAsync("file1.docx",
+    new ImportFileOptions("user-id-1", "memory-collection"));
 
-await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" }, new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" },
+    new ImportFileOptions("user-id-1", "memory-collection"));
 ```
 
 The code leverages the default data ingestion pipeline:
@@ -70,9 +72,11 @@ To import files using Semantic Memory web service, simply use `SemanticMemoryWeb
 ```csharp
 var memory = new SemanticMemoryWebClient("http://127.0.0.1:9001"); // <== Web Client
 
-await memory.ImportFileAsync("file1.docx", new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFileAsync("file1.docx",
+    new ImportFileOptions("user-id-1", "memory-collection"));
 
-await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" }, new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" },
+    new ImportFileOptions("user-id-1", "memory-collection"));
 ```
 
 
