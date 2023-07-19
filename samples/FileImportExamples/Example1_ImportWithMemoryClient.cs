@@ -10,8 +10,7 @@ public class Example1_ImportWithMemoryClient
     {
         var memory = new SemanticMemoryClient();
 
-        await memory.ImportFileAsync("file1.txt", new ImportFileOptions("user1", "collection01"));
-        await memory.ImportFileAsync("file2.txt", new ImportFileOptions("user1", "collection01"));
-        await memory.ImportFilesAsync(new[] { "file3.docx", "file4.pdf" }, new ImportFileOptions("user1", "collection01"));
+        await memory.ImportFileAsync("file1.txt", new ImportFileOptions("example1-user", "collection01"));
+        await memory.ImportFilesAsync(new[] { "file2.txt", "file3.docx", "file4.pdf" }, new ImportFileOptions("example1-user", "collection01"));
     }
 }

@@ -22,10 +22,14 @@ public static class Example3_CustomInProcessPipeline
         // Data pipelines orchestrator
         var orchestrator = new InProcessPipelineOrchestrator(storage!);
 
-        // Text extraction handler
+        // Add pipeline handlers
         Console.WriteLine("* Defining pipeline handlers...");
+
         var textExtraction = new TextExtractionHandler("extract", orchestrator);
         await orchestrator.AddHandlerAsync(textExtraction);
+
+        var textPartitioning = new TextPartitioningHandler("partition", orchestrator);
+        await orchestrator.AddHandlerAsync(textPartitioning);
 
         // orchestrator.AttachHandlerAsync(...);
         // orchestrator.AttachHandlerAsync(...);
@@ -39,7 +43,7 @@ public static class Example3_CustomInProcessPipeline
             .AddUploadFile("file3", "file3.docx", "file3.docx")
             .AddUploadFile("file4", "file4.pdf", "file4.pdf")
             .Then("extract")
-            // .Then("partition")
+            .Then("partition")
             // .Then("index")
             .Build();
 

@@ -30,7 +30,8 @@ public class TextExtractionHandler : IPipelineStepHandler
     public string StepName { get; }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
+    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+        DataPipeline pipeline, CancellationToken cancellationToken)
     {
         foreach (DataPipeline.FileDetails file in pipeline.Files)
         {
@@ -38,6 +39,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             var destFile = $"{file.Name}.extract.txt";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
             string text = string.Empty;
+            string extractType = MimeTypes.PlainText;
 
             switch (file.Type)
             {
@@ -45,21 +47,40 @@ public class TextExtractionHandler : IPipelineStepHandler
                     text = fileContent.ToString();
                     break;
 
+                case MimeTypes.MarkDown:
+                    text = fileContent.ToString();
+                    extractType = MimeTypes.MarkDown;
+                    break;
+
                 case MimeTypes.MsWord:
-                    text = new MsWordDecoder().DocToText(fileContent);
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = new MsWordDecoder().DocToText(fileContent);
+                    }
+
                     break;
 
                 case MimeTypes.Pdf:
-                    text = new PdfDecoder().DocToText(fileContent);
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = new PdfDecoder().DocToText(fileContent);
+                    }
+
                     break;
 
                 default:
                     throw new NotSupportedException($"File type not supported: {file.Type}");
             }
 
-            await this._orchestrator.WriteFileAsync(pipeline, destFile, BinaryData.FromString(text), cancellationToken).ConfigureAwait(false);
+            await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
-            file.GeneratedFiles.Add(destFile);
+            file.GeneratedFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+            {
+                Name = destFile,
+                Size = text.Length,
+                Type = extractType,
+                IsPartition = false
+            });
         }
 
         return (true, pipeline);

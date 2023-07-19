@@ -78,9 +78,22 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
     }
 
     ///<inheritdoc />
+    public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    {
+        BinaryData content = await this.ReadFileAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
+        return content.ToString();
+    }
+
+    ///<inheritdoc />
     public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
         return this.ContentStorage.ReadFileAsync(pipeline.Id, fileName, cancellationToken);
+    }
+
+    ///<inheritdoc />
+    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
+    {
+        return this.WriteFileAsync(pipeline, fileName, BinaryData.FromString(fileContent), cancellationToken);
     }
 
     ///<inheritdoc />
@@ -95,7 +108,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
 
     protected async Task UploadFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        if (pipeline.UploadComplete) { return; }
+        if (pipeline.UploadComplete)
+        {
+            this.Log.LogDebug("Upload complete");
+            return;
+        }
 
         await this.ContentStorage.CreateDirectoryAsync(pipeline.Id, cancellationToken).ConfigureAwait(false);
         await this.UploadFormFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
@@ -142,6 +159,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
 
     private async Task UploadFormFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
+        this.Log.LogDebug("Uploading {0} files, pipeline {1}", pipeline.FilesToUpload.Count, pipeline.Id);
+
         await this.ContentStorage.CreateDirectoryAsync(pipeline.Id, cancellationToken).ConfigureAwait(false);
 
         var containerName = pipeline.Id;

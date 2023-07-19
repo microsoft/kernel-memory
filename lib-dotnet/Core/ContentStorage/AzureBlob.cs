@@ -135,11 +135,20 @@ public class AzureBlob : IContentStorage
             await blobClient.UploadAsync(BinaryData.FromString(fileContent), options, cancellationToken).ConfigureAwait(false);
             size = fileContent.Length;
         }
+        else if (content is Stream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            await blobClient.UploadAsync(stream, options, cancellationToken).ConfigureAwait(false);
+            size = stream.Length;
+        }
         else
         {
-            var stream = content as Stream;
-            await blobClient.UploadAsync(stream, options, cancellationToken).ConfigureAwait(false);
-            size = stream!.Length;
+            throw new ContentStorageException($"Unexpected object type {content.GetType().FullName}");
+        }
+
+        if (size == 0)
+        {
+            this._log.LogWarning("The file {0}/{1} is empty", directoryName, fileName);
         }
 
         await this.ReleaseBlobAsync(blobLeaseClient, lease, cancellationToken).ConfigureAwait(false);

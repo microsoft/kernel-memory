@@ -46,10 +46,8 @@ public class SemanticMemoryClient : ISemanticMemoryClient
             pipeline.AddUploadFile($"file{index + 1}", file, file);
         }
 
-        pipeline.Then("extract")
-            // .Then("partition")
-            // .Then("index")
-            .Build();
+        // TODO: .Then("index")
+        pipeline.Then("extract").Then("partition").Build();
 
         // Execute pipeline
         await orchestrator.RunPipelineAsync(pipeline).ConfigureAwait(false);
@@ -67,6 +65,9 @@ public class SemanticMemoryClient : ISemanticMemoryClient
 
         TextExtractionHandler textExtraction = new("extract", orchestrator);
         await orchestrator.AddHandlerAsync(textExtraction).ConfigureAwait(false);
+
+        TextPartitioningHandler textPartitioning = new("partition", orchestrator);
+        await orchestrator.AddHandlerAsync(textPartitioning).ConfigureAwait(false);
 
         return orchestrator;
     }

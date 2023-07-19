@@ -7,9 +7,10 @@ using Microsoft.SemanticKernel.Services.SemanticMemory.PipelineService;
 
 var builder = HostedHandlersBuilder.CreateApplicationBuilder();
 builder.Services.UseDefaultHandler<TextExtractionHandler>("extract");
+builder.Services.UseDefaultHandler<TextPartitioningHandler>("partition");
 
 builder.AddHandler<TextExtraction>("extract");
-// builder.AddHandler<TextPartitioningHandler>("partition"); // work in progress
+builder.AddHandler<TextPartitioning>("partition");
 // builder.AddHandler<IndexingHandler>("index"); // work in progress
 
 var app = builder.Build();

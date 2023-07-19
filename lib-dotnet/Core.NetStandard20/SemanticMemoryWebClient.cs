@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -47,35 +46,27 @@ public class SemanticMemoryWebClient : ISemanticMemoryClient
             formData.Add(new StringContent(vaultId1), "vaults");
         }
 
-        var streams = new List<MemoryStream>();
         for (int index = 0; index < files.Length; index++)
         {
-            string? file = files[index];
-            streams.Add(UploadFile(formData, $"file{index + 1}", file));
+            string filename = files[index];
+            byte[] bytes = File.ReadAllBytes(filename);
+            formData.Add(new ByteArrayContent(bytes, 0, bytes.Length), $"file{index + 1}", filename);
         }
 
         // Send HTTP request
         try
         {
-            HttpResponseMessage? response = await this._client.PostAsync("/upload", formData);
+            HttpResponseMessage? response = await this._client.PostAsync("/upload", formData).ConfigureAwait(false);
+            formData.Dispose();
             response.EnsureSuccessStatusCode();
         }
-        finally
+        catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
         {
-            foreach (var s in streams)
-            {
-                s.Dispose();
-            }
+            throw new SemanticMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
         }
-    }
-
-    // Read file from disk and add it to the form
-    private static MemoryStream UploadFile(MultipartFormDataContent form, string name, string filename)
-    {
-        byte[] bytes = File.ReadAllBytes(filename);
-        MemoryStream stream = new();
-        stream.Write(bytes, 0, bytes.Length);
-        form.Add(new StreamContent(stream), name, filename);
-        return stream;
+        catch (Exception e)
+        {
+            throw new SemanticMemoryWebException(e.Message, e);
+        }
     }
 }

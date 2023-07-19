@@ -14,7 +14,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\lib-dotnet\Core\Core.csproj" />
-        <ProjectReference Include="..\..\lib-dotnet\Storage\Storage.csproj" />
     </ItemGroup>
 
     <ItemGroup>

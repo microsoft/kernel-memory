@@ -142,6 +142,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         if (success)
         {
             pipeline = updatedPipeline;
+
             this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.Id);
             pipeline.MoveToNextStep();
             await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
@@ -162,15 +163,24 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // * source of truth: in the queue (see the message enqueued)
         // * async copy: in the container together with files - this can be out of sync and is synchronized on dequeue
 
-        // string nextStepName = pipeline.MoveToNextStep();
-        string nextStepName = pipeline.RemainingSteps.First();
-        this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.Id, nextStepName);
+        if (pipeline.RemainingSteps.Count == 0)
+        {
+            this.Log.LogInformation("Pipeline '{0}' complete", pipeline.Id);
 
-        using IQueue queue = this._queueClientFactory.Build();
-        await queue.ConnectToQueueAsync(nextStepName, QueueOptions.PublishOnly, cancellationToken).ConfigureAwait(false);
-        await queue.EnqueueAsync(ToJson(pipeline), cancellationToken).ConfigureAwait(false);
+            // Try to save the pipeline status
+            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
+        }
+        else
+        {
+            string nextStepName = pipeline.RemainingSteps.First();
+            this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.Id, nextStepName);
 
-        // Try to save the pipeline status
-        await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: true).ConfigureAwait(false);
+            using IQueue queue = this._queueClientFactory.Build();
+            await queue.ConnectToQueueAsync(nextStepName, QueueOptions.PublishOnly, cancellationToken).ConfigureAwait(false);
+            await queue.EnqueueAsync(ToJson(pipeline), cancellationToken).ConfigureAwait(false);
+
+            // Try to save the pipeline status
+            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: true).ConfigureAwait(false);
+        }
     }
 }

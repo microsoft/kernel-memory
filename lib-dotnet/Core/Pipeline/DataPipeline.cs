@@ -18,27 +18,66 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 /// </summary>
 public class DataPipeline
 {
-    public class FileDetails
+    public class GeneratedFileDetails
     {
+        /// <summary>
+        /// File name
+        /// </summary>
         [JsonPropertyOrder(1)]
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>
+        /// File size
+        /// </summary>
         [JsonPropertyOrder(2)]
         [JsonPropertyName("size")]
         public long Size { get; set; } = 0;
 
+        /// <summary>
+        /// File (MIME) type
+        /// </summary>
         [JsonPropertyOrder(3)]
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Whether this is a partition/chunk/piece of the original content
+        /// </summary>
         [JsonPropertyOrder(4)]
-        [JsonPropertyName("fulltext_file")]
-        public string FullTextFile { get; set; } = string.Empty;
+        [JsonPropertyName("is_partition")]
+        public bool IsPartition { get; set; } = false;
+    }
 
-        [JsonPropertyOrder(5)]
+    public class FileDetails
+    {
+        /// <summary>
+        /// File name
+        /// </summary>
+        [JsonPropertyOrder(1)]
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        /// <summary>
+        /// File size
+        /// </summary>
+        [JsonPropertyOrder(2)]
+        [JsonPropertyName("size")]
+        public long Size { get; set; } = 0;
+
+        /// <summary>
+        /// File (MIME) type
+        /// </summary>
+        [JsonPropertyOrder(3)]
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        /// <summary>
+        /// List of files generated of the main file 
+        /// </summary>
+        [JsonPropertyOrder(4)]
         [JsonPropertyName("generated_files")]
-        public HashSet<string> GeneratedFiles { get; set; } = new();
+        public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = new();
     }
 
     /// <summary>

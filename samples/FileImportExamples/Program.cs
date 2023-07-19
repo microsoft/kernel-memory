@@ -2,6 +2,11 @@
 
 using System;
 
+// var examplesToRun = 1;
+// var examplesToRun = 1..3;
+// var examplesToRun = new[] { 2, 3 };
+var examplesToRun = 1..3;
+
 /* === 1 ===
  * Use SemanticMemoryClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -10,7 +15,10 @@ using System;
  * Note: no web service required to run this.
  */
 
-Example1_ImportWithMemoryClient.RunAsync().Wait();
+if (examplesToRun.Contains(1))
+{
+    Example1_ImportWithMemoryClient.RunAsync().Wait();
+}
 
 /* === 2 ===
  * Use SemanticMemoryWebClient to run the default import pipeline
@@ -23,11 +31,12 @@ Example1_ImportWithMemoryClient.RunAsync().Wait();
  *       without extracting memories.
  */
 
-Console.WriteLine("============================");
-Console.WriteLine("Make sure the semantic memory web service is running and handlers are running");
-Console.WriteLine("Press Enter to continue...");
-Console.ReadLine();
-Example2_ImportWithMemoryWebClient.RunAsync("http://127.0.0.1:9001/").Wait();
+if (examplesToRun.Contains(2))
+{
+    Console.WriteLine("============================");
+    Console.WriteLine("Make sure the semantic memory web service is running and handlers are running");
+    Example2_ImportWithMemoryWebClient.RunAsync("http://127.0.0.1:9001/").Wait();
+}
 
 // /* === 3 ===
 //  * Define a custom pipeline, 100% C# handlers, and run it in this process.
@@ -36,8 +45,11 @@ Example2_ImportWithMemoryWebClient.RunAsync("http://127.0.0.1:9001/").Wait();
 //  * 'InProcessPipelineOrchestrator' explicitly.
 //  */
 
-Console.WriteLine("============================");
-Console.WriteLine("Press Enter to continue...");
-Console.ReadLine();
-Example3_CustomInProcessPipeline.RunAsync().Wait();
-Console.WriteLine("============================");
+if (examplesToRun.Contains(3))
+{
+    Console.WriteLine("============================");
+    Console.WriteLine("Press Enter to continue...");
+    Console.ReadLine();
+    Example3_CustomInProcessPipeline.RunAsync().Wait();
+    Console.WriteLine("============================");
+}

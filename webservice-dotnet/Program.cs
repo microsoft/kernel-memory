@@ -75,7 +75,7 @@ app.MapPost("/upload", async Task<IResult> (
         .PrepareNewFileUploadPipeline(containerId, input.UserId, input.VaultIds, input.Files)
         .Then("extract")
         .Then("partition")
-        .Then("index")
+        // .Then("index")
         .Build();
 
     try
