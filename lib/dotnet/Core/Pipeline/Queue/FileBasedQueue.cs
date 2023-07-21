@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,7 +124,7 @@ public sealed class FileBasedQueue : IQueue
     public async Task EnqueueAsync(string message, CancellationToken cancellationToken = default)
     {
         // Use a sortable file name. Don't use UTC for local development.
-        var messageId = DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.fffffff")
+        var messageId = DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.fffffff", CultureInfo.InvariantCulture)
                         + "." + Guid.NewGuid().ToString("N");
         var file = Path.Join(this._queuePath, $"{messageId}{FileExt}");
         await File.WriteAllTextAsync(file, message, cancellationToken).ConfigureAwait(false);
@@ -150,11 +151,13 @@ public sealed class FileBasedQueue : IQueue
     /// <inherit />
     public void Dispose()
     {
+        this._populateTimer?.Dispose();
+        this._dispatchTimer?.Dispose();
     }
 
     private void RemoveFileFromQueue(string argsFilename)
     {
-        if (!File.Exists(argsFilename) || !argsFilename.EndsWith(FileExt))
+        if (!File.Exists(argsFilename) || !argsFilename.EndsWith(FileExt, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }

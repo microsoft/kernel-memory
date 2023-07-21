@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
 
 namespace Microsoft.SemanticKernel.SemanticMemory.Core;
 
+#pragma warning disable CA1724 // The name conflicts with MSExtensions
 public static class DependencyInjection
 {
     public static void ConfigureLogger(this ILoggingBuilder builder)
@@ -177,3 +178,4 @@ public static class DependencyInjection
         services.AddTransient<THandler>(serviceProvider => ActivatorUtilities.CreateInstance<THandler>(serviceProvider, stepName));
     }
 }
+#pragma warning restore CA1724

@@ -13,14 +13,14 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
 
 namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 
-public abstract class BaseOrchestrator : IPipelineOrchestrator
+public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
     protected const string StatusFile = "__pipeline_status.json";
 
-    protected readonly IContentStorage ContentStorage;
-    protected readonly ILogger<BaseOrchestrator> Log;
-    protected readonly CancellationTokenSource CancellationTokenSource;
-    protected readonly IMimeTypeDetection MimeTypeDetection;
+    protected IContentStorage ContentStorage { get; private set; }
+    protected ILogger<BaseOrchestrator> Log { get; private set; }
+    protected CancellationTokenSource CancellationTokenSource { get; private set; }
+    protected IMimeTypeDetection MimeTypeDetection { get; private set; }
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,
@@ -106,6 +106,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
             cancellationToken);
     }
 
+    ///<inheritdoc />
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
     protected async Task UploadFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         if (pipeline.UploadComplete)
@@ -167,7 +174,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
 
         foreach (IFormFile file in pipeline.FilesToUpload)
         {
-            if (string.Compare(file.FileName, StatusFile, StringComparison.InvariantCultureIgnoreCase) == 0)
+            if (string.Equals(file.FileName, StatusFile, StringComparison.OrdinalIgnoreCase))
             {
                 this.Log.LogError("Invalid file name, upload not supported: {0}", file.FileName);
                 continue;
@@ -187,5 +194,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator
         }
 
         await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this.CancellationTokenSource.Dispose();
+        }
     }
 }

@@ -228,7 +228,7 @@ public class DataPipeline
             }
 
             // This scenario is not allowed, to ensure execution consistency
-            if (string.Compare(step, previous, StringComparison.InvariantCultureIgnoreCase) == 0)
+            if (string.Equals(step, previous, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("The pipeline contains two consecutive steps with the same name", nameof(this.Steps));
             }

@@ -66,6 +66,7 @@ public sealed class AzureQueue : IQueue
     // Lock helpers
     private readonly object _lock = new();
     private bool _busy = false;
+    private readonly CancellationTokenSource _cancellation;
 
     public AzureQueue(
         string connectionString,
@@ -95,6 +96,7 @@ public sealed class AzureQueue : IQueue
     {
         this._clientBuilder = clientBuilder;
         this._log = logger ?? NullLogger<AzureQueue>.Instance;
+        this._cancellation = new CancellationTokenSource();
     }
 
     /// <inherit />
@@ -114,8 +116,10 @@ public sealed class AzureQueue : IQueue
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
         }
 
+#pragma warning disable CA1308 // Use uppercase
         // Note: 3..63 chars, only lowercase letters, numbers and hyphens. No hyphens at start/end and no consecutive hyphens.
         this._queueName = queueName.ToLowerInvariant();
+#pragma warning restore CA2254
         this._log.LogDebug("Queue name: {0}", this._queueName);
 
         this._queue = this._clientBuilder(this._queueName);
@@ -198,6 +202,9 @@ public sealed class AzureQueue : IQueue
     /// <inherit />
     public void Dispose()
     {
+        this._cancellation.Cancel();
+        this._cancellation?.Dispose();
+        this._dispatchTimer?.Dispose();
     }
 
     /// <summary>
@@ -280,19 +287,25 @@ public sealed class AzureQueue : IQueue
             this._log.LogTrace("Dispatching {0} messages", messages.Length);
             foreach (QueueMessage message in messages)
             {
-                _ = Task.Factory.StartNew(async _ =>
-                {
-                    try
+                _ = Task.Factory.StartNew(
+                    function: async _ =>
                     {
-                        await this.Received(this, new MessageEventArgs { Message = message }).ConfigureAwait(false);
-                    }
+                        try
+                        {
+                            await this.Received(this, new MessageEventArgs { Message = message }).ConfigureAwait(false);
+                        }
 #pragma warning disable CA1031 // Must catch all to log and keep the process alive
-                    catch (Exception e)
-                    {
-                        this._log.LogError(e, "Message '{0}' processing failed with exception", message.MessageId);
-                    }
+                        catch (Exception e)
+                        {
+                            this._log.LogError(e, "Message '{0}' processing failed with exception", message.MessageId);
+                        }
 #pragma warning restore CA1031
-                }, null);
+                    },
+                    state: null,
+                    cancellationToken: this._cancellation.Token,
+                    creationOptions: TaskCreationOptions.RunContinuationsAsynchronously,
+                    scheduler: TaskScheduler.FromCurrentSynchronizationContext()
+                );
             }
 
             this._busy = false;

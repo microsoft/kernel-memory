@@ -21,15 +21,13 @@ public class MimeTypesDetection : IMimeTypeDetection
 {
     public string GetFileType(string filename)
     {
-        var test = filename.ToLowerInvariant();
+        if (filename.EndsWith(".TXT", StringComparison.InvariantCultureIgnoreCase)) { return MimeTypes.PlainText; }
 
-        if (test.EndsWith(".txt")) { return MimeTypes.PlainText; }
+        if (filename.EndsWith(".MD", StringComparison.InvariantCultureIgnoreCase)) { return MimeTypes.MarkDown; }
 
-        if (test.EndsWith(".md")) { return MimeTypes.MarkDown; }
+        if (filename.EndsWith(".DOC", StringComparison.InvariantCultureIgnoreCase) || filename.EndsWith(".DOCX", StringComparison.InvariantCultureIgnoreCase)) { return MimeTypes.MsWord; }
 
-        if (test.EndsWith(".doc") || test.EndsWith(".docx")) { return MimeTypes.MsWord; }
-
-        if (test.EndsWith(".pdf")) { return MimeTypes.Pdf; }
+        if (filename.EndsWith(".PDF", StringComparison.InvariantCultureIgnoreCase)) { return MimeTypes.Pdf; }
 
         throw new NotSupportedException($"File type not supported: {filename}");
     }
