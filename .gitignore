@@ -423,6 +423,7 @@ bin/
 _dev/
 .dev/
 *.devis.*
+*.devis
 .vs/
 *.user
 **/.vscode/chrome
