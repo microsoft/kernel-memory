@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.SemanticMemory.Core20;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core;
+namespace Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryPipelineClient;
 
-public class SemanticMemoryClient : ISemanticMemoryClient
+public class MemoryPipelineClient : ISemanticMemoryClient
 {
     private readonly Lazy<Task<InProcessPipelineOrchestrator>> _inProcessOrchestrator = new(BuildInProcessOrchestratorAsync);
 

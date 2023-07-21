@@ -58,6 +58,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryPipelineClient", "clients\dotnet\MemoryPipelineClient\MemoryPipelineClient.csproj", "{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryWebClient", "clients\dotnet\MemoryWebClient\MemoryWebClient.csproj", "{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +81,8 @@ Global
 		{F3E26445-0850-4FA0-8C23-947CD260D617} = {6335B02C-9964-4B39-9795-C5F5F0392515}
 		{5B0FAB7B-F674-4322-9D40-8902C7D4CF15} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D} = {5B0FAB7B-F674-4322-9D40-8902C7D4CF15}
+		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
+		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3700B51B-B34A-4AC9-9895-FF422B346E6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -115,5 +121,13 @@ Global
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

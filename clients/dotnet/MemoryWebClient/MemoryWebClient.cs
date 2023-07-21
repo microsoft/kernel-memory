@@ -5,18 +5,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.SemanticMemory.Core20;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core20;
+namespace Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryWebClient;
 
-public class SemanticMemoryWebClient : ISemanticMemoryClient
+public class MemoryWebClient : ISemanticMemoryClient
 {
     private readonly HttpClient _client;
 
-    public SemanticMemoryWebClient(string endpoint) : this(endpoint, new HttpClient())
+    public MemoryWebClient(string endpoint) : this(endpoint, new HttpClient())
     {
     }
 
-    public SemanticMemoryWebClient(string endpoint, HttpClient client)
+    public MemoryWebClient(string endpoint, HttpClient client)
     {
         this._client = client;
         this._client.BaseAddress = new Uri(endpoint);
