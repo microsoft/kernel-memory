@@ -25,7 +25,7 @@ Semantic Memory enhances data-driven features in applications built using SK.
 Importing files into your Semantic Memory can be as simple as this:
 
 ```csharp
-var memory = new SemanticMemoryClient();
+var memory = new MemoryPipelineClient();
 
 await memory.ImportFileAsync("file1.docx",
     new ImportFileOptions("user-id-1", "memory-collection"));
@@ -70,7 +70,7 @@ need to change the configuration, and use the same code above.
 To import files using Semantic Memory web service, simply use `SemanticMemoryWebClient`:
 
 ```csharp
-var memory = new SemanticMemoryWebClient("http://127.0.0.1:9001"); // <== Web Client
+var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 
 await memory.ImportFileAsync("file1.docx",
     new ImportFileOptions("user-id-1", "memory-collection"));
