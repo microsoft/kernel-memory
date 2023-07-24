@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
 public class ContentStorageException : MemoryException
 {
     /// <inheritdoc />
-    public ContentStorageException() : base() { }
+    public ContentStorageException() { }
 
     /// <inheritdoc />
     public ContentStorageException(string message) : base(message) { }

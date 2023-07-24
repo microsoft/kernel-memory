@@ -23,12 +23,10 @@ public sealed class AzureQueue : IQueue
         public QueueMessage? Message { get; set; }
     }
 
-    private event AsyncMessageHandler<MessageEventArgs>? Received;
-
     /// <summary>
     /// Event triggered when a message is received
     /// </summary>
-    // private event EventHandler<MessageEventArgs> Received;
+    private event AsyncMessageHandler<MessageEventArgs>? Received;
 
     // How often to check if there are new messages
     private const int PollDelayMsecs = 100;
@@ -66,7 +64,7 @@ public sealed class AzureQueue : IQueue
     // Lock helpers
     private readonly object _lock = new();
     private bool _busy = false;
-    private readonly CancellationTokenSource _cancellation;
+    private readonly CancellationTokenSource _cancellation = new();
 
     public AzureQueue(
         string connectionString,
@@ -96,7 +94,6 @@ public sealed class AzureQueue : IQueue
     {
         this._clientBuilder = clientBuilder;
         this._log = logger ?? NullLogger<AzureQueue>.Instance;
-        this._cancellation = new CancellationTokenSource();
     }
 
     /// <inherit />
@@ -203,7 +200,7 @@ public sealed class AzureQueue : IQueue
     public void Dispose()
     {
         this._cancellation.Cancel();
-        this._cancellation?.Dispose();
+        this._cancellation.Dispose();
         this._dispatchTimer?.Dispose();
     }
 

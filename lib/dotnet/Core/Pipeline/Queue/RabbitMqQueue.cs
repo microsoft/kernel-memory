@@ -152,9 +152,10 @@ public sealed class RabbitMqQueue : IQueue
 
     public void Dispose()
     {
-        this._channel?.Close();
-        this._connection?.Close();
-        this._channel?.Dispose();
-        this._connection?.Dispose();
+        this._channel.Close();
+        this._connection.Close();
+
+        this._channel.Dispose();
+        this._connection.Dispose();
     }
 }

@@ -78,7 +78,8 @@ app.MapPost("/upload", async Task<IResult> (
         .PrepareNewFileUploadPipeline(containerId, input.UserId, input.VaultIds, input.Files)
         .Then("extract")
         .Then("partition")
-        // .Then("index")
+        .Then("gen_embeddings")
+        // .Then("save_embeddings")
         .Build();
 
     try

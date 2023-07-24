@@ -24,7 +24,18 @@ public static class DependencyInjection
 
     public static SKMemoryConfig UseConfiguration(this IServiceCollection services, ConfigurationManager mgr)
     {
+        // Populate the global config from the "SKMemory" key
         SKMemoryConfig config = mgr.GetSection("SKMemory").Get<SKMemoryConfig>()!;
+
+        // Copy the RAW handlers configuration from "SKMemory.Handlers". Binding is done later by each handler.
+        // TODO: find a solution to move the binding logic here, simplifying the configuration classes.
+        IConfigurationSection handlersConfigSection = mgr.GetSection("SKMemory").GetSection("Handlers");
+        config.Handlers = new();
+        foreach (IConfigurationSection bar in handlersConfigSection.GetChildren())
+        {
+            config.Handlers[bar.Key] = handlersConfigSection.GetSection(bar.Key);
+        }
+
         services.AddSingleton(config);
         return config;
     }
@@ -41,7 +52,7 @@ public static class DependencyInjection
                 break;
 
             case FileSystem:
-                services.AddTransient<IContentStorage>(serviceProvider => new FileSystem(config.ContentStorage.FileSystem.Directory));
+                services.AddTransient<IContentStorage>(_ => new FileSystem(config.ContentStorage.FileSystem.Directory));
                 break;
 
             default:

@@ -26,19 +26,23 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        this._log.LogInformation("Starting {0}...", this.GetType().FullName);
         return this._orchestrator.AddHandlerAsync(this, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        this._log.LogInformation("Stopping {0}...", this.GetType().FullName);
         return this._orchestrator.StopAllPipelinesAsync();
     }
 
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        // ... your custom handler business logic ...
+        /* ... your custom ...
+         * ... handler ...
+         * ... business logic ... */
 
         // Remove this - here only to avoid build errors
         await Task.Delay(0, cancellationToken);

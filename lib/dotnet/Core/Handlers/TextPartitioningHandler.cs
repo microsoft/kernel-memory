@@ -34,9 +34,6 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        List<string> paragraphs = new();
-        List<string> lines = new();
-
         foreach (DataPipeline.FileDetails originalFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -47,10 +44,13 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 var file = generatedFile.Value;
 
                 // Use a different partitioning strategy depending on the file type
+                List<string> paragraphs;
+                List<string> lines;
                 switch (file.Type)
                 {
                     case MimeTypes.PlainText:
                     {
+                        this._log.LogDebug("Partitioning text file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
                         lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: TokensPerLine);
                         paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: TokensPerParagraph, overlapTokens: OverlappingTokens);
@@ -59,6 +59,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
 
                     case MimeTypes.MarkDown:
                     {
+                        this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
                         lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: TokensPerLine);
                         paragraphs = TextChunker.SplitMarkdownParagraphs(lines, maxTokensPerParagraph: TokensPerParagraph, overlapTokens: OverlappingTokens);
@@ -66,12 +67,14 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     }
 
                     default:
+                        this._log.LogWarning("File {0} cannot be partitioned, type not supported", file.Name);
                         // Don't partition other files
                         continue;
                 }
 
                 if (paragraphs.Count == 0) { continue; }
 
+                this._log.LogDebug("Saving {0} file partitions", paragraphs.Count);
                 for (int index = 0; index < paragraphs.Count; index++)
                 {
                     string text = paragraphs[index];

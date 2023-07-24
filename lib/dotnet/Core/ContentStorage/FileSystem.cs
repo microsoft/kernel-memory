@@ -36,6 +36,7 @@ public class FileSystem : IContentStorage
 
         if (!Directory.Exists(path))
         {
+            this._log.LogDebug("Creating directory {0}", path);
             Directory.CreateDirectory(path);
         }
 
@@ -47,6 +48,7 @@ public class FileSystem : IContentStorage
     {
         await this.CreateDirectoryAsync(directoryName, cancellationToken).ConfigureAwait(false);
         var path = Path.Join(this._directory, directoryName, fileName);
+        this._log.LogDebug("Writing file {0}", path);
         await File.WriteAllTextAsync(path, fileContent, cancellationToken).ConfigureAwait(false);
     }
 
@@ -55,8 +57,13 @@ public class FileSystem : IContentStorage
     {
         await this.CreateDirectoryAsync(directoryName, cancellationToken).ConfigureAwait(false);
         var path = Path.Join(this._directory, directoryName, fileName);
+
+        this._log.LogDebug("Creating file {0}", path);
         FileStream outputStream = File.Create(path);
+
         contentStream.Seek(0, SeekOrigin.Begin);
+
+        this._log.LogDebug("Writing to file {0}", path);
         await contentStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
         var size = outputStream.Length;
         outputStream.Close();
@@ -69,6 +76,7 @@ public class FileSystem : IContentStorage
         var path = Path.Join(this._directory, directoryName, fileName);
         if (!File.Exists(path))
         {
+            this._log.LogError("File not found {0}", path);
             throw new ContentStorageException("File not found");
         }
 
@@ -85,6 +93,7 @@ public class FileSystem : IContentStorage
 
         if (!Directory.Exists(path))
         {
+            this._log.LogDebug("Creating directory {0}", path);
             Directory.CreateDirectory(path);
         }
     }

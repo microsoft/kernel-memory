@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
 public class OrchestrationException : MemoryException
 {
     /// <inheritdoc />
-    public OrchestrationException() : base() { }
+    public OrchestrationException() { }
 
     /// <inheritdoc />
     public OrchestrationException(string message) : base(message) { }

@@ -42,7 +42,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         // Include all files
         for (int index = 0; index < files.Length; index++)
         {
-            string? file = files[index];
+            string file = files[index];
             pipeline.AddUploadFile($"file{index + 1}", file, file);
         }
 
