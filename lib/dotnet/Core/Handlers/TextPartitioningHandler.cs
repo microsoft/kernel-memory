@@ -52,6 +52,14 @@ public class TextPartitioningHandler : IPipelineStepHandler
             {
                 var file = generatedFile.Value;
 
+                // Check if the file has already been partitioned
+                string firstPartitionFileName = GetPartitionFileName(originalFile.Name, 0);
+                if (originalFile.GeneratedFiles.ContainsKey(firstPartitionFileName))
+                {
+                    this._log.LogDebug("File {0} has already been partitioned", originalFile.Name);
+                    continue;
+                }
+
                 // Use a different partitioning strategy depending on the file type
                 List<string> paragraphs;
                 List<string> lines;
@@ -87,7 +95,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 for (int index = 0; index < paragraphs.Count; index++)
                 {
                     string text = paragraphs[index];
-                    var destFile = $"{originalFile.Name}.partition.{index}.txt";
+                    var destFile = GetPartitionFileName(originalFile.Name, index);
                     await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
                     newFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
@@ -108,5 +116,10 @@ public class TextPartitioningHandler : IPipelineStepHandler
         }
 
         return (true, pipeline);
+    }
+
+    private static string GetPartitionFileName(string srcFilename, int index)
+    {
+        return $"{srcFilename}.partition.{index}.txt";
     }
 }

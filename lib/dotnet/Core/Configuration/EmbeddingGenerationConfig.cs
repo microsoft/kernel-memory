@@ -40,7 +40,6 @@ public class EmbeddingGenerationConfig
     /// </summary>
     public class AzureOpenAI
     {
-        public GeneratorTypes Type { get; } = GeneratorTypes.AzureOpenAI;
         public string APIKey { get; set; } = string.Empty;
         public string Endpoint { get; set; } = string.Empty;
         public string Deployment { get; set; } = string.Empty;
@@ -51,7 +50,6 @@ public class EmbeddingGenerationConfig
     /// </summary>
     public class OpenAI
     {
-        public GeneratorTypes Type { get; } = GeneratorTypes.OpenAI;
         public string APIKey { get; set; } = string.Empty;
         public string OrgId { get; set; } = string.Empty;
         public string Model { get; set; } = string.Empty;
