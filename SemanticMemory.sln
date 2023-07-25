@@ -15,6 +15,9 @@ EndProject
 
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{B0F7938A-1D0F-44C9-AF2D-A89946E94972}"
+	ProjectSection(SolutionItems) = preProject
+		clients\README.md = clients\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{7761EC04-9E17-44EE-A6D8-9FB97F14AF61}"
 	ProjectSection(SolutionItems) = preProject
@@ -23,6 +26,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{7761EC04-9
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6335B02C-9964-4B39-9795-C5F5F0392515}"
+	ProjectSection(SolutionItems) = preProject
+		clients\samples\README.md = clients\samples\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileImportExamples", "clients\samples\FileImportExamples\FileImportExamples.csproj", "{DF03D46C-D50D-4709-89C5-BB596A94096D}"
 EndProject
