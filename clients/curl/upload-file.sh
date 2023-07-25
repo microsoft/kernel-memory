@@ -13,7 +13,7 @@ Help for Bash script
 
 Usage:
 
-    ./upload-one-file.sh -f <file path> -u <id> -c <list> -i <id> -s <url>
+    ./upload-file.sh -f <file path> -u <id> -c <list> -i <id> -s <url>
 
     -f file path           Path to the document to upload.
     -u userId              User ID.
@@ -25,7 +25,7 @@ Usage:
 
 Example:
 
-    ./upload-one-file.sh -f myFile.pdf -u me -c "notes meetings" -i "bash test" -s http://127.0.0.1:9001/upload
+    ./upload-file.sh -f myFile.pdf -u me -c "notes meetings" -i "bash test" -s http://127.0.0.1:9001/upload
 
 
 For more information visit https://github.com/microsoft/semantic-memory
@@ -123,7 +123,7 @@ for x in $COLLECTIONS; do
 done
 
 # Send HTTP request using curl
-set -x
+#set -x
 curl -v \
   -F 'file1=@"'"${FILENAME}"'"' \
   -F 'user="'"${USER_ID}"'"' \

@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core;
+namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 #pragma warning disable CA1724 // The name conflicts with MSExtensions
 public static class DependencyInjection
@@ -184,7 +184,13 @@ public static class DependencyInjection
         }
     }
 
-    public static void UseDefaultHandler<THandler>(this IServiceCollection services, string stepName) where THandler : class
+    /// <summary>
+    /// Register the handler as a DI service, passing the step name to ctor
+    /// </summary>
+    /// <param name="services">DI service collection</param>
+    /// <param name="stepName">Pipeline step name</param>
+    /// <typeparam name="THandler">Handler class</typeparam>
+    public static void UseHandler<THandler>(this IServiceCollection services, string stepName) where THandler : class
     {
         services.AddTransient<THandler>(serviceProvider => ActivatorUtilities.CreateInstance<THandler>(serviceProvider, stepName));
     }

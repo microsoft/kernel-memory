@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core;
+namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 public static class HostedHandlersBuilder
 {
@@ -34,16 +34,16 @@ public static class HostedHandlersBuilder
         return builder;
     }
 
-    public static void AddHandler<THostedService>(this HostApplicationBuilder builder, string stepName) where THostedService : class, IHostedService, IPipelineStepHandler
+    /// <summary>
+    /// Register the handler as a hosted service, passing the step name to the handler ctor
+    /// </summary>
+    /// <param name="builder">Application builder</param>
+    /// <param name="stepName">Pipeline step name</param>
+    /// <typeparam name="THandler">Handler class</typeparam>
+    public static void UseHandlerAsHostedService<THandler>(this HostApplicationBuilder builder, string stepName) where THandler : class, IPipelineStepHandler
     {
-        // Register the handler as a hosted service, assigned to a specific pipeline step
-        builder.Services.AddHostedService<THostedService>(serviceProvider => ActivatorUtilities.CreateInstance<THostedService>(serviceProvider, stepName));
-    }
-
-    public static IHost Build<THostedService>(string stepName, string[]? args = null) where THostedService : class, IHostedService, IPipelineStepHandler
-    {
-        var builder = CreateApplicationBuilder(args);
-        AddHandler<THostedService>(builder, stepName);
-        return builder.Build();
+        builder.Services.UseHandler<THandler>(stepName);
+        builder.Services.AddHostedService<HandlerAsAHostedService<THandler>>(serviceProvider
+            => ActivatorUtilities.CreateInstance<HandlerAsAHostedService<THandler>>(serviceProvider, stepName));
     }
 }

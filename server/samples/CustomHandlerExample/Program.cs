@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.SemanticMemory.Core;
+using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 var builder = HostedHandlersBuilder.CreateApplicationBuilder();
-builder.AddHandler<MyHandler>("mypipelinestep");
+builder.UseHandlerAsHostedService<MyHandler>("mypipelinestep");
 //builder.AddHandler<MyHandler2>();
 //builder.AddHandler<MyHandler3>();
 var app = builder.Build();

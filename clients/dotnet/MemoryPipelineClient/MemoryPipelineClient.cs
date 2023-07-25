@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.SemanticMemory.Core20;
@@ -47,7 +47,10 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         }
 
         // TODO: .Then("index")
-        pipeline.Then("extract").Then("partition").Build();
+        pipeline
+            .Then("extract")
+            .Then("partition")
+            .Build();
 
         // Execute pipeline
         await orchestrator.RunPipelineAsync(pipeline).ConfigureAwait(false);

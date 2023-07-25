@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.Text;
 
@@ -19,6 +20,12 @@ public class TextPartitioningHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<TextPartitioningHandler> _log;
 
+    /// <summary>
+    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// </summary>
+    /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
+    /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="log">Application logger</param>
     public TextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
@@ -27,6 +34,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? NullLogger<TextPartitioningHandler>.Instance;
+
+        this._log.LogInformation("Handler ready: {0}", stepName);
     }
 
     public string StepName { get; }

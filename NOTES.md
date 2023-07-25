@@ -69,7 +69,7 @@ as a web service.
 * `lib-python`: reusable libraries for python webservices and handlers.
 * `tools`: command line tools, e.g. scripts to start RabbitMQ locally.
 * `samples`: samples showing how to upload files, how to use encoder/retrieval, etc.
-  * `upload-one-file.sh`: Bash command line tool to upload one document to the
+  * `upload-file.sh`: Bash command line tool to upload one document to the
     memory web service.
   * `FileImportExamples`: C# examples showing how to upload multiple files to the
     memory web service, using different approaches: 

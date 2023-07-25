@@ -18,7 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{B0F7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{7761EC04-9E17-44EE-A6D8-9FB97F14AF61}"
 	ProjectSection(SolutionItems) = preProject
-		clients\curl\upload-one-file.sh = clients\curl\upload-one-file.sh
+		clients\curl\README.md = clients\curl\README.md
+		clients\curl\upload-file.sh = clients\curl\upload-file.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6335B02C-9964-4B39-9795-C5F5F0392515}"

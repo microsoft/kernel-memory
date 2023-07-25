@@ -3,8 +3,9 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 public static class AppBuilder
 {

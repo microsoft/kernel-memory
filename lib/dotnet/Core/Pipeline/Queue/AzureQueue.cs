@@ -38,7 +38,7 @@ public sealed class AzureQueue : IQueue
     private const int FetchLockSeconds = 300;
 
     // How many times to dequeue a messages and process before moving it to a poison queue
-    private const int MaxRetryBeforePoisonQueue = 10;
+    private const int MaxRetryBeforePoisonQueue = 20;
 
     // Suffix used for the poison queues
     private const string PoisonQueueSuffix = "-poison";
@@ -99,6 +99,7 @@ public sealed class AzureQueue : IQueue
     /// <inherit />
     public async Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
+        queueName = CleanQueueName(queueName);
         this._log.LogTrace("Connecting to queue name: {0}", queueName);
 
         if (string.IsNullOrEmpty(queueName))
@@ -113,10 +114,8 @@ public sealed class AzureQueue : IQueue
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
         }
 
-#pragma warning disable CA1308 // Use uppercase
         // Note: 3..63 chars, only lowercase letters, numbers and hyphens. No hyphens at start/end and no consecutive hyphens.
-        this._queueName = queueName.ToLowerInvariant();
-#pragma warning restore CA2254
+        this._queueName = queueName;
         this._log.LogDebug("Queue name: {0}", this._queueName);
 
         this._queue = this._clientBuilder(this._queueName);
@@ -289,6 +288,7 @@ public sealed class AzureQueue : IQueue
                     {
                         try
                         {
+                            this._log.LogTrace("Message content: {0}", message.MessageText);
                             await this.Received(this, new MessageEventArgs { Message = message }).ConfigureAwait(false);
                         }
 #pragma warning disable CA1031 // Must catch all to log and keep the process alive
@@ -301,7 +301,7 @@ public sealed class AzureQueue : IQueue
                     state: null,
                     cancellationToken: this._cancellation.Token,
                     creationOptions: TaskCreationOptions.RunContinuationsAsynchronously,
-                    scheduler: TaskScheduler.FromCurrentSynchronizationContext()
+                    scheduler: TaskScheduler.Current
                 );
             }
 
@@ -342,5 +342,10 @@ public sealed class AzureQueue : IQueue
     private static string ToJson(object data, bool indented = false)
     {
         return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = indented });
+    }
+
+    private static string CleanQueueName(string? name)
+    {
+        return name?.ToLowerInvariant().Replace('_', '-').Replace(' ', '-').Replace('.', '-') ?? string.Empty;
     }
 }

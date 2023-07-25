@@ -47,8 +47,6 @@ if (examplesToRun.Contains(2))
 if (examplesToRun.Contains(3))
 {
     Console.WriteLine("============================");
-    Console.WriteLine("Press Enter to continue...");
-    Console.ReadLine();
     Example3_CustomInProcessPipeline.RunAsync().Wait();
     Console.WriteLine("============================");
 }

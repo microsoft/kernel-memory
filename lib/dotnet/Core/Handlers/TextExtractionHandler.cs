@@ -5,17 +5,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.Services.DataFormats.Office;
 using Microsoft.SemanticKernel.Services.DataFormats.Pdf;
 
 namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 
+/// <summary>
+/// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
+/// </summary>
 public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<TextExtractionHandler> _log;
 
+    /// <summary>
+    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// </summary>
+    /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
+    /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
@@ -24,6 +34,8 @@ public class TextExtractionHandler : IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? NullLogger<TextExtractionHandler>.Instance;
+
+        this._log.LogInformation("Handler ready: {0}", stepName);
     }
 
     /// <inheritdoc />
