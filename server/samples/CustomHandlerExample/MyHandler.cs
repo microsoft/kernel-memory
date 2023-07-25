@@ -45,7 +45,7 @@ public class MyHandler : IHostedService, IPipelineStepHandler
          * ... business logic ... */
 
         // Remove this - here only to avoid build errors
-        await Task.Delay(0, cancellationToken);
+        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
         return (true, pipeline);
     }

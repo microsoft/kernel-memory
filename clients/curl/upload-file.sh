@@ -18,7 +18,7 @@ Usage:
     -f file path           Path to the document to upload.
     -u userId              User ID.
     -c "coll1 coll2 .."    List of collection IDs separated by a space.
-    -i uploadId            Unique identifies for the upload.
+    -i uploadId            Unique identifier for the upload.
     -s web service URL     Semantic Memory web service URL.
     -h                     Print this help content.
 

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Threading;
@@ -24,13 +24,13 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
-    /// <param name="configuration">Application settings</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="configuration">Application settings</param>
     /// <param name="log">Application logger</param>
     public GenerateEmbeddingsHandler(
         string stepName,
-        SKMemoryConfig configuration,
         IPipelineOrchestrator orchestrator,
+        SKMemoryConfig configuration,
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;

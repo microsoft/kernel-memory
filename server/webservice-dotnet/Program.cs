@@ -79,6 +79,7 @@ app.MapPost("/upload", async Task<IResult> (
         .Then("extract")
         .Then("partition")
         .Then("gen_embeddings")
+        .Then("save_embeddings")
         .Build();
 
     try

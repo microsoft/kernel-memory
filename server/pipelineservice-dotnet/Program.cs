@@ -9,6 +9,7 @@ var builder = HostedHandlersBuilder.CreateApplicationBuilder();
 builder.UseHandlerAsHostedService<TextExtractionHandler>("extract");
 builder.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
 builder.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+builder.UseHandlerAsHostedService<SaveEmbeddingsToAzureCognitiveSearchHandler>("save_embeddings");
 
 var app = builder.Build();
 

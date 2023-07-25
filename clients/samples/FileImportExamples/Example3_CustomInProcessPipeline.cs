@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
@@ -29,6 +30,14 @@ public static class Example3_CustomInProcessPipeline
         var textPartitioning = new TextPartitioningHandler("partition", orchestrator);
         await orchestrator.AddHandlerAsync(textPartitioning);
 
+        var textEmbedding = new GenerateEmbeddingsHandler(
+            "gen_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        await orchestrator.AddHandlerAsync(textEmbedding);
+
+        var saveEmbedding = new SaveEmbeddingsToAzureCognitiveSearchHandler(
+            "save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        await orchestrator.AddHandlerAsync(saveEmbedding);
+
         // orchestrator.AttachHandlerAsync(...);
         // orchestrator.AttachHandlerAsync(...);
 
@@ -42,7 +51,8 @@ public static class Example3_CustomInProcessPipeline
             .AddUploadFile("file4", "file4.pdf", "file4.pdf")
             .Then("extract")
             .Then("partition")
-            // .Then("index")
+            .Then("gen_embeddings")
+            .Then("save_embeddings")
             .Build();
 
         // Execute pipeline

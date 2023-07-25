@@ -4,6 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <AssemblyName>Microsoft.SemanticKernel.Services.SemanticMemory.WebService</AssemblyName>
         <RootNamespace>Microsoft.SemanticKernel.Services.SemanticMemory.WebService</RootNamespace>
+        <NoWarn>CA2007</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
