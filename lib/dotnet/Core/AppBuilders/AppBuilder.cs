@@ -9,9 +9,9 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 public static class AppBuilder
 {
-    public static IHost Build(string[]? args = null)
+    public static IHost Build(Action<HostApplicationBuilder>? builderSetup = null, string[]? args = null)
     {
-        var builder = Host.CreateApplicationBuilder(args);
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT")
         {
@@ -28,6 +28,8 @@ public static class AppBuilder
         builder.Logging.ConfigureLogger();
         builder.Services.UseContentStorage(config);
         builder.Services.UseOrchestrator(config);
+
+        builderSetup?.Invoke(builder);
 
         return builder.Build();
     }

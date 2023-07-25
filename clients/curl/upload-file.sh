@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This script is an example showing how to upload a file to
-# Semantic Memory web service from the command line, using curl
+# This script uploads a file to Semantic Memory web service
+# from the command line, using curl
 
 set -e
 trap 'exitScript' ERR

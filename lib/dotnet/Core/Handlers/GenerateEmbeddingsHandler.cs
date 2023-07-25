@@ -45,7 +45,11 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         // Setup the active embedding generators config, strongly typed
         this._embeddingGenerators = configuration.GetHandlerConfig<EmbeddingGenerationConfig>(stepName, "EmbeddingGeneration").GetActiveGeneratorsTypedConfig(log);
 
-        this._log.LogInformation("Handler ready: {0}", stepName);
+        this._log.LogInformation("Handler ready: {0}. {1} embedding generators.", stepName, this._embeddingGenerators.Count);
+        if (this._embeddingGenerators.Count < 1)
+        {
+            this._log.LogWarning("No embedding generators configured");
+        }
     }
 
     /// <inheritdoc />
@@ -55,6 +59,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken)
     {
+        this._log.LogTrace("Generating embeddings, pipeline {0}", pipeline.Id);
+
         foreach (var originalFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -67,6 +73,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                 // Calc embeddings only for partitions
                 if (!file.IsPartition)
                 {
+                    this._log.LogTrace("Skipping file {0} (not a partition)", file.Name);
                     continue;
                 }
 
@@ -74,6 +81,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                 {
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
+                        this._log.LogTrace("Processing file {0}", file.Name);
                         foreach (KeyValuePair<string, object> cfg in this._embeddingGenerators)
                         {
                             Embedding<float> vector = new();
@@ -83,6 +91,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             {
                                 case EmbeddingGenerationConfig.AzureOpenAI x:
                                 {
+                                    this._log.LogTrace("Generating embeddings using Azure OpenAI, file: {0}", file.Name);
+
                                     // Check if embeddings have already been generated
                                     embeddingFileName = GetEmbeddingFileName(file.Name, "AzureOpenAI", x.Deployment);
                                     if (originalFile.GeneratedFiles.ContainsKey(embeddingFileName))
@@ -111,6 +121,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
                                 case EmbeddingGenerationConfig.OpenAI x:
                                 {
+                                    this._log.LogTrace("Generating embeddings using OpenAI, file: {0}", file.Name);
+
                                     // Check if embeddings have already been generated
                                     embeddingFileName = GetEmbeddingFileName(file.Name, "OpenAI", x.Model);
                                     if (originalFile.GeneratedFiles.ContainsKey(embeddingFileName))
@@ -136,6 +148,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 }
 
                                 default:
+                                    this._log.LogError("Embedding generator {0} not supported", cfg.Value.GetType().FullName);
                                     throw new OrchestrationException($"Embeddings generator {cfg.Value.GetType().FullName} not supported");
                             }
 

@@ -33,6 +33,12 @@ public class MemoryWebClient : ISemanticMemoryClient
         return this.ImportFilesInternalAsync(files, options);
     }
 
+    public async Task<string> AskAsync(string question)
+    {
+        await Task.Delay(0).ConfigureAwait(false);
+        return "...work in progress...";
+    }
+
     private async Task ImportFilesInternalAsync(string[] files, ImportFileOptions options)
     {
         options.Sanitize();

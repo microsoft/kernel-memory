@@ -19,23 +19,21 @@ public static class Example3_CustomInProcessPipeline
         var storage = app.Services.GetService<IContentStorage>();
 
         // Data pipelines orchestrator
-        var orchestrator = new InProcessPipelineOrchestrator(storage!);
+        InProcessPipelineOrchestrator orchestrator = new(storage!);
 
         // Add pipeline handlers
         Console.WriteLine("* Defining pipeline handlers...");
 
-        var textExtraction = new TextExtractionHandler("extract", orchestrator);
+        TextExtractionHandler textExtraction = new("extract", orchestrator);
         await orchestrator.AddHandlerAsync(textExtraction);
 
-        var textPartitioning = new TextPartitioningHandler("partition", orchestrator);
+        TextPartitioningHandler textPartitioning = new("partition", orchestrator);
         await orchestrator.AddHandlerAsync(textPartitioning);
 
-        var textEmbedding = new GenerateEmbeddingsHandler(
-            "gen_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(textEmbedding);
 
-        var saveEmbedding = new SaveEmbeddingsToAzureCognitiveSearchHandler(
-            "save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        SaveEmbeddingsToAzureCognitiveSearchHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(saveEmbedding);
 
         // orchestrator.AttachHandlerAsync(...);
