@@ -88,8 +88,8 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         await orchestrator.AddHandlerAsync(textEmbedding).ConfigureAwait(false);
 
         // Embedding storage handler
-        SaveEmbeddingsToAzureCognitiveSearchHandler saveEmbedding = new("save_embeddings",
-            orchestrator, GetConfig(services), GetLogger<SaveEmbeddingsToAzureCognitiveSearchHandler>(services));
+        SaveEmbeddingsHandler saveEmbedding = new("save_embeddings",
+            orchestrator, GetConfig(services), GetLogger<SaveEmbeddingsHandler>(services));
         await orchestrator.AddHandlerAsync(saveEmbedding).ConfigureAwait(false);
 
         return orchestrator;
@@ -100,8 +100,10 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         var orchestrator = services.GetService<InProcessPipelineOrchestrator>();
         if (orchestrator == null)
         {
+#pragma warning disable CA2208
             throw new ArgumentNullException(nameof(orchestrator),
                 $"Unable to instantiate {typeof(InProcessPipelineOrchestrator)} with AppBuilder");
+#pragma warning restore CA2208
         }
 
         return orchestrator;

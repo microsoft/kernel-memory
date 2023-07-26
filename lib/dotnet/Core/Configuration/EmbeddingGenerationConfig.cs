@@ -25,7 +25,7 @@ public class EmbeddingGenerationConfig
     public Dictionary<string, Dictionary<string, string>> GeneratorsConfig { get; set; } = new();
 
     /// <summary>
-    /// Known embedding generator types.
+    /// Supported embedding generator types.
     /// TODO: add SentenceTransformers
     /// </summary>
     public enum GeneratorTypes
@@ -40,9 +40,9 @@ public class EmbeddingGenerationConfig
     /// </summary>
     public class AzureOpenAI
     {
-        public string APIKey { get; set; } = string.Empty;
         public string Endpoint { get; set; } = string.Empty;
         public string Deployment { get; set; } = string.Empty;
+        public string APIKey { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -50,9 +50,9 @@ public class EmbeddingGenerationConfig
     /// </summary>
     public class OpenAI
     {
+        public string Model { get; set; } = string.Empty;
         public string APIKey { get; set; } = string.Empty;
         public string OrgId { get; set; } = string.Empty;
-        public string Model { get; set; } = string.Empty;
     }
 
     /// <summary>

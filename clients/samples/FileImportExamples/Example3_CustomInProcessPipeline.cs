@@ -33,7 +33,7 @@ public static class Example3_CustomInProcessPipeline
         GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(textEmbedding);
 
-        SaveEmbeddingsToAzureCognitiveSearchHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(saveEmbedding);
 
         // orchestrator.AttachHandlerAsync(...);
