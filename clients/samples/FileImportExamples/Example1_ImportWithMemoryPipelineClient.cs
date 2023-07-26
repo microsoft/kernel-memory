@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.SemanticMemory.Core20;
 using Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryPipelineClient;
 
-public static class Example1_ImportWithMemoryClient
+public static class Example1_ImportWithMemoryPipelineClient
 {
     public static async Task RunAsync()
     {

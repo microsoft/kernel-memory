@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly Dictionary<string, object> _embeddingGenerators;
+    private readonly List<object> _embeddingGenerators;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
 
     /// <summary>
@@ -41,11 +41,15 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? NullLogger<GenerateEmbeddingsHandler>.Instance;
+        this._embeddingGenerators = new List<object>();
 
-        // Setup the active embedding generators config, strongly typed
-        this._embeddingGenerators = configuration.GetHandlerConfig<EmbeddingGenerationConfig>(stepName, "EmbeddingGeneration").GetActiveGeneratorsTypedConfig(log);
+        var handlerConfig = configuration.GetHandlerConfig<EmbeddingGenerationConfig>(stepName);
+        for (int index = 0; index < handlerConfig.EmbeddingGenerators.Count; index++)
+        {
+            this._embeddingGenerators.Add(handlerConfig.GetEmbeddingGeneratorConfig(index));
+        }
 
-        this._log.LogInformation("Handler ready: {0}. {1} embedding generators.", stepName, this._embeddingGenerators.Count);
+        this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
         if (this._embeddingGenerators.Count < 1)
         {
             this._log.LogWarning("No embedding generators configured");
@@ -82,14 +86,14 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogTrace("Processing file {0}", file.Name);
-                        foreach (KeyValuePair<string, object> cfg in this._embeddingGenerators)
+                        foreach (object cfg in this._embeddingGenerators)
                         {
                             Embedding<float> vector = new();
                             string embeddingFileName;
 
-                            switch (cfg.Value)
+                            switch (cfg)
                             {
-                                case EmbeddingGenerationConfig.AzureOpenAI x:
+                                case AzureOpenAIConfig x:
                                 {
                                     this._log.LogTrace("Generating embeddings using Azure OpenAI, file: {0}", file.Name);
 
@@ -119,7 +123,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                     break;
                                 }
 
-                                case EmbeddingGenerationConfig.OpenAI x:
+                                case OpenAIConfig x:
                                 {
                                     this._log.LogTrace("Generating embeddings using OpenAI, file: {0}", file.Name);
 
@@ -148,8 +152,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 }
 
                                 default:
-                                    this._log.LogError("Embedding generator {0} not supported", cfg.Value.GetType().FullName);
-                                    throw new OrchestrationException($"Embeddings generator {cfg.Value.GetType().FullName} not supported");
+                                    this._log.LogError("Embedding generator {0} not supported", cfg.GetType().FullName);
+                                    throw new OrchestrationException($"Embeddings generator {cfg.GetType().FullName} not supported");
                             }
 
                             this._log.LogDebug("Saving embedding file {0}", embeddingFileName);

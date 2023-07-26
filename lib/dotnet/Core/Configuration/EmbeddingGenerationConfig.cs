@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 
@@ -12,17 +11,11 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 /// </summary>
 public class EmbeddingGenerationConfig
 {
-    /// <summary>
-    /// List of active generators, out of the full list.
-    /// <see cref="GeneratorsConfig"/>  might contain settings for several generators, but normally only one is in use.
-    /// </summary>
-    public List<string> ActiveGenerators { get; set; } = new();
-
-    /// <summary>
-    /// Available embedding generators, with settings.
-    /// Settings here are stored as string values, and parsed to actual types by <see cref="GetActiveGeneratorsTypedConfig"/>
-    /// </summary>
-    public Dictionary<string, Dictionary<string, string>> GeneratorsConfig { get; set; } = new();
+    public class TypedItem
+    {
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public GeneratorTypes Type { get; set; }
+    }
 
     /// <summary>
     /// Supported embedding generator types.
@@ -36,97 +29,49 @@ public class EmbeddingGenerationConfig
     }
 
     /// <summary>
-    /// Azure OpenAI embedding generator settings.
+    /// List of vector storage configurations to use. Normally just one
+    /// but it's also possible to store embeddings on multiple services at the same time.
     /// </summary>
-    public class AzureOpenAI
-    {
-        public string Endpoint { get; set; } = string.Empty;
-        public string Deployment { get; set; } = string.Empty;
-        public string APIKey { get; set; } = string.Empty;
-    }
+    public List<Dictionary<string, object>> EmbeddingGenerators { get; set; } = new();
 
     /// <summary>
-    /// OpenAI embedding generator settings.
+    /// Deserialize and cast a configuration item to the proper configuration type
     /// </summary>
-    public class OpenAI
+    /// <param name="position">Position in the <see cref="EmbeddingGenerators"/> property</param>
+    /// <returns>Configuration object</returns>
+    public object GetEmbeddingGeneratorConfig(int position)
     {
-        public string Model { get; set; } = string.Empty;
-        public string APIKey { get; set; } = string.Empty;
-        public string OrgId { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// Cast settings from <see cref="GeneratorsConfig"/> to actual typed values.
-    /// </summary>
-    /// <param name="log">Optional logger</param>
-    /// <returns>Strongly typed view of active generators</returns>
-    public Dictionary<string, object> GetActiveGeneratorsTypedConfig(ILogger? log = null)
-    {
-        log ??= NullLogger<EmbeddingGenerationConfig>.Instance;
-
-        Dictionary<string, object> result = new();
-        foreach (string name in this.ActiveGenerators)
+        if (this.EmbeddingGenerators.Count < position + 1)
         {
-            result[name] = this.GetGeneratorConfig(name);
-            switch (result[name])
-            {
-                case AzureOpenAI x:
-                    log.LogDebug("Using Azure OpenAI embeddings, deployment: {0}", x.Deployment);
-                    break;
+            throw new ConfigurationException($"List doesn't contain an element at position {position}");
+        }
 
-                case OpenAI x:
-                    log.LogDebug("Using OpenAI embeddings, model: {0}", x.Model);
-                    break;
-            }
+        var json = JsonSerializer.Serialize(this.EmbeddingGenerators[position]);
+        var typedItem = JsonSerializer.Deserialize<TypedItem>(json);
+        object? result;
+
+        switch (typedItem?.Type)
+        {
+            case null:
+                throw new ConfigurationException("Embedding generator type is NULL");
+
+            default:
+                throw new ConfigurationException($"Embedding generator type not supported: {typedItem.Type:G}");
+
+            case GeneratorTypes.AzureOpenAI:
+                result = JsonSerializer.Deserialize<AzureOpenAIConfig>(json);
+                break;
+
+            case GeneratorTypes.OpenAI:
+                result = JsonSerializer.Deserialize<OpenAIConfig>(json);
+                break;
+        }
+
+        if (result == null)
+        {
+            throw new ConfigurationException($"Unable to deserialize {typedItem.Type} configuration at position {position}");
         }
 
         return result;
-    }
-
-    private object GetGeneratorConfig(string name)
-    {
-        string type = this.GeneratorsConfig[name]["Type"];
-
-        if (string.Equals(type, GeneratorTypes.AzureOpenAI.ToString("G"), StringComparison.OrdinalIgnoreCase))
-        {
-            return new AzureOpenAI
-            {
-                APIKey = this.GetGeneratorSetting(name, "APIKey"),
-                Endpoint = this.GetGeneratorSetting(name, "Endpoint"),
-                Deployment = this.GetGeneratorSetting(name, "Deployment"),
-            };
-        }
-
-        if (string.Equals(type, GeneratorTypes.OpenAI.ToString("G"), StringComparison.OrdinalIgnoreCase))
-        {
-            return new OpenAI
-            {
-                APIKey = this.GetGeneratorSetting(name, "APIKey"),
-                OrgId = this.GetGeneratorSetting(name, "OrgId", true),
-                Model = this.GetGeneratorSetting(name, "Model"),
-            };
-        }
-
-        throw new ConfigurationException($"Embedding generator type '{this.GeneratorsConfig[name]["Type"]}' not supported");
-    }
-
-    private string GetGeneratorSetting(string generator, string key, bool optional = false)
-    {
-        if (!this.GeneratorsConfig.ContainsKey(generator))
-        {
-            throw new ConfigurationException($"Embedding generator '{generator}' configuration not found");
-        }
-
-        if (!this.GeneratorsConfig[generator].ContainsKey(key))
-        {
-            if (optional)
-            {
-                return string.Empty;
-            }
-
-            throw new ConfigurationException($"Configuration '{generator}' is missing the '{key}' value");
-        }
-
-        return this.GeneratorsConfig[generator][key];
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<object> _storages;
+    private readonly List<object> _vectorDbs;
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
     /// <summary>
@@ -33,17 +33,17 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._storages = new List<object>();
         this._log = log ?? NullLogger<SaveEmbeddingsHandler>.Instance;
+        this._vectorDbs = new List<object>();
 
-        VectorStorageConfig storageConfig = configuration.GetHandlerConfig<VectorStorageConfig>(stepName, "VectorStorage");
-        for (int index = 0; index < storageConfig.List.Count; index++)
+        var handlerConfig = configuration.GetHandlerConfig<VectorStorageConfig>(stepName);
+        for (int index = 0; index < handlerConfig.VectorDbs.Count; index++)
         {
-            this._storages.Add(storageConfig.GetListItem(index));
+            this._vectorDbs.Add(handlerConfig.GetVectorDbConfig(index));
         }
 
-        this._log.LogInformation("Handler ready: {0}. {1} vector storages.", stepName, this._storages.Count);
-        if (this._storages.Count < 1)
+        this._log.LogInformation("Handler {0} ready, {1} vector storages", stepName, this._vectorDbs.Count);
+        if (this._vectorDbs.Count < 1)
         {
             this._log.LogWarning("No vector storage configured");
         }
@@ -56,7 +56,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
         // Loop through all the vector storages
-        foreach (object storageConfig in this._storages)
+        foreach (object storageConfig in this._vectorDbs)
         {
             switch (storageConfig)
             {

@@ -16,7 +16,7 @@ var examplesToRun = 1..3;
 
 if (examplesToRun.Contains(1))
 {
-    Example1_ImportWithMemoryClient.RunAsync().Wait();
+    Example1_ImportWithMemoryPipelineClient.RunAsync().Wait();
 }
 
 /* === 2 ===

@@ -29,27 +29,27 @@ public class VectorStorageConfig
     /// List of vector storage configurations to use. Normally just one
     /// but it's also possible to store embeddings on multiple services at the same time.
     /// </summary>
-    public List<Dictionary<string, object>> List { get; set; } = new();
+    public List<Dictionary<string, object>> VectorDbs { get; set; } = new();
 
     /// <summary>
-    /// Deserialize and cast a list item to the proper configuration type
+    /// Deserialize and cast a configuration item to the proper configuration type
     /// </summary>
-    /// <param name="position">Position in the <see cref="List"/> property</param>
+    /// <param name="position">Position in the <see cref="VectorDbs"/> property</param>
     /// <returns>Configuration object</returns>
-    public object GetListItem(int position)
+    public object GetVectorDbConfig(int position)
     {
-        if (this.List.Count < position + 1)
+        if (this.VectorDbs.Count < position + 1)
         {
             throw new ConfigurationException($"List doesn't contain an element at position {position}");
         }
 
-        var json = JsonSerializer.Serialize(this.List[position]);
+        var json = JsonSerializer.Serialize(this.VectorDbs[position]);
         var typedItem = JsonSerializer.Deserialize<TypedItem>(json);
         object? result;
         switch (typedItem?.Type)
         {
             case null:
-                throw new ConfigurationException($"Vector storage type is NULL");
+                throw new ConfigurationException("Vector storage type is NULL");
 
             default:
                 throw new ConfigurationException($"Vector storage type not supported: {typedItem.Type:G}");

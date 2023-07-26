@@ -35,7 +35,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
         this._orchestrator = orchestrator;
         this._log = log ?? NullLogger<TextPartitioningHandler>.Instance;
 
-        this._log.LogInformation("Handler ready: {0}", stepName);
+        this._log.LogInformation("Handler '{0}' ready", stepName);
     }
 
     public string StepName { get; }

@@ -31,16 +31,16 @@ public class SKMemoryConfig
     /// Get pipeline handler configuration.
     /// </summary>
     /// <param name="handlerName">Handler name</param>
-    /// <param name="sectionName">Configuration section name</param>
     /// <typeparam name="T">Type of handler configuration</typeparam>
     /// <returns>Configuration data, mapped by .NET configuration binder</returns>
-    public T GetHandlerConfig<T>(string handlerName, string sectionName) where T : class, new()
+    public T GetHandlerConfig<T>(string handlerName) where T : class, new()
     {
         if (!this.Handlers.TryGetValue(handlerName, out IConfigurationSection? section))
         {
             return new T();
         }
 
-        return section.GetSection(sectionName).Get<T>() ?? new T();
+        // return section.GetSection(sectionName).Get<T>() ?? new T();
+        return section.Get<T>() ?? new T();
     }
 }
