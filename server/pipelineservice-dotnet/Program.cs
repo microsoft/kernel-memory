@@ -6,10 +6,10 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 
 var builder = HostedHandlersBuilder.CreateApplicationBuilder();
 
-builder.UseHandlerAsHostedService<TextExtractionHandler>("extract");
-builder.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
-builder.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-builder.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+builder.Services.UseHandlerAsHostedService<TextExtractionHandler>("extract");
+builder.Services.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
+builder.Services.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+builder.Services.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
 
 var app = builder.Build();
 

@@ -57,26 +57,22 @@ as a web service.
 
 # Folder structure
 
-* `handlers-dotnet`: set of reusable .NET handlers for typical data pipelines.
-  You can use these in production, or use them as a starting point for your
-  custom business logic.
-* `handlers-python`: set of reusable Python handlers for typical data pipelines.
-  You can use these in production, or use them as a starting point for your
-  custom business logic.
-* `webservice-dotnet`: C# web service to upload documents and search memories.
-* `webservice-python`: Python web service to upload documents and search memories.
-* `lib-dotnet`: reusable libraries for C# webservices and handlers.
-* `lib-python`: reusable libraries for python webservices and handlers.
-* `tools`: command line tools, e.g. scripts to start RabbitMQ locally.
-* `samples`: samples showing how to upload files, how to use encoder/retrieval, etc.
-  * `upload-file.sh`: Bash command line tool to upload one document to the
-    memory web service.
-  * `FileImportExamples`: C# examples showing how to upload multiple files to the
-    memory web service, using different approaches: 
-    * **in process**, synchronously, without asynchronous distributed queues
-    * **multipart form** upload to web service
-    * **Semantic Memory client** (work in progress)
-  * `CustomHandlerSample`: C# example of a console app running a custom pipeline handler.
-  * `TextExtractionFromDocsExamples`: simple C# console app to test text
-    extraction from PDF and MSWord files.
-
+* `clients`: three different memory clients, to be used depending on your
+  deployment:
+  1. `curl`: command line tool to upload memories to the Semantic Memory web service.
+  2. `MemoryWebClient`: .NET client to upload memories to the Semantic Memory web service.
+  3. `MemoryPipelineClient`: .NET client to upload memory running all the import
+     logic locally, without the need to run services.
+  * `samples` folder: a few examples showing how to use the clients above.
+* `server`: services you can deploy locally or in the cloud, to upload memories,
+  process files asynchronously, answer questions. You can deploy the services in
+  two ways:
+  1. Monolithic service: deploy `CombinedServices` for .NET. A python version will
+     be available soon.
+  2. Separate service: deploy and scale `PipelineService` and `WebService` .NET
+     projects individually. Python version will be available soon.
+  * `samples` folder: a few examples about how to customize the memory ingestion
+    pipeline with custom handlers.
+  * `tools`: command line tools, e.g. scripts to start RabbitMQ locally as an
+    alternative to Azure Queues.
+* `lib`: code shared by clients and servers, .NET and Python.

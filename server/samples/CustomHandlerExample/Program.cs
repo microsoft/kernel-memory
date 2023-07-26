@@ -4,9 +4,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 
 var builder = HostedHandlersBuilder.CreateApplicationBuilder();
-builder.UseHandlerAsHostedService<MyHandler>("mypipelinestep");
-//builder.AddHandler<MyHandler2>();
-//builder.AddHandler<MyHandler3>();
+builder.Services.UseHandlerAsHostedService<MyHandler>("mypipelinestep");
+// builder.Services.UseHandlerAsHostedService<MyHandler2>("mypipelinestep-2");
+// builder.Services.UseHandlerAsHostedService<MyHandler3>("mypipelinestep-3");
 var app = builder.Build();
 
 // Quicker way, if you have just one handler

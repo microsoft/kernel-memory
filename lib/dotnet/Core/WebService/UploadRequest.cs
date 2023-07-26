@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.SemanticKernel.Services.SemanticMemory.WebService;
+namespace Microsoft.SemanticKernel.SemanticMemory.Core.WebService;
 
 public class UploadRequest
 {
@@ -38,7 +38,7 @@ public class UploadRequest
         }
 
         // Read form
-        IFormCollection form = await httpRequest.ReadFormAsync();
+        IFormCollection form = await httpRequest.ReadFormAsync().ConfigureAwait(false);
 
         // There must be at least one file
         if (form.Files.Count == 0)

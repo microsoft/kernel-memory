@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.SemanticMemory.Core.WebService;
 
@@ -24,6 +25,12 @@ SKMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration)
 builder.Logging.ConfigureLogger();
 builder.Services.UseContentStorage(config);
 builder.Services.UseOrchestrator(config);
+
+// Pipeline handlers
+builder.Services.UseHandlerAsHostedService<TextExtractionHandler>("extract");
+builder.Services.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
+builder.Services.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+builder.Services.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
 
 if (config.OpenApiEnabled)
 {
