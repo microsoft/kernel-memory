@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
+namespace Microsoft.SemanticMemory.Core.AppBuilders;
 
 /// <summary>
 /// Wrapper of handler classes, allowing to run handlers as services hosted by IHost

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class QdrantConfig
 {

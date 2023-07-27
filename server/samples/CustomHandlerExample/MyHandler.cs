@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
 public class MyHandler : IHostedService, IPipelineStepHandler
 {

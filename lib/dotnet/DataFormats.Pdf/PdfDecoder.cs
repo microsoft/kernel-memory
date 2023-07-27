@@ -6,7 +6,7 @@ using System.Text;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
-namespace Microsoft.SemanticKernel.Services.DataFormats.Pdf;
+namespace Microsoft.SemanticMemory.DataFormats.Pdf;
 
 public class PdfDecoder
 {

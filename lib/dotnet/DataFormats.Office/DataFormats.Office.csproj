@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.Services.DataFormats.Office</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.Services.DataFormats.Office</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.DataFormats.Office</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.DataFormats.Office</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public interface IPipelineOrchestrator
 {

@@ -4,10 +4,10 @@ using System;
 using Azure;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
 public class AzureCognitiveSearchMemory
 {

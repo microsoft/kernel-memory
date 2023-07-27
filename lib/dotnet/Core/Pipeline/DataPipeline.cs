@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 /// <summary>
 /// DataPipeline representation.

@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+namespace Microsoft.SemanticMemory.Core.ContentStorage;
 
 public class FileSystem : IContentStorage
 {

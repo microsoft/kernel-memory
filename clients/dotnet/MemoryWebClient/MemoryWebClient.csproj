@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryWebClient</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryWebClient</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.WebClient</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.WebClient</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

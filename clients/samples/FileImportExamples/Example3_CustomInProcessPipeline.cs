@@ -2,11 +2,11 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Handlers;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
 public static class Example3_CustomInProcessPipeline
 {

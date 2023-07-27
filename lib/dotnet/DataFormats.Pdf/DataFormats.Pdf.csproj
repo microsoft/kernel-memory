@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.Services.DataFormats.Pdf</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.Services.DataFormats.Pdf</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.DataFormats.Pdf</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.DataFormats.Pdf</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

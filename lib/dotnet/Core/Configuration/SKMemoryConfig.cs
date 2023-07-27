@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class SKMemoryConfig
 {

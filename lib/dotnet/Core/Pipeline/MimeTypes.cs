@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public static class MimeTypes
 {

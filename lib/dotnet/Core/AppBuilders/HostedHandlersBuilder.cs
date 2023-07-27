@@ -4,10 +4,10 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
+namespace Microsoft.SemanticMemory.Core.AppBuilders;
 
 public static class HostedHandlersBuilder
 {

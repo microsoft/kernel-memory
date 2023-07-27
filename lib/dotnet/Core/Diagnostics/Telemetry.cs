@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+namespace Microsoft.SemanticMemory.Core.Diagnostics;
 
 public static class Telemetry
 {
@@ -23,27 +23,6 @@ public static class Telemetry
     /// Azure customers setting AZURE_TELEMETRY_DISABLED=1 expect telemetry to be disabled.
     /// </summary>
     public static bool IsTelemetryEnabled => GetBoolEnvVar(TelemetryDisabledEnvVar) ?? true;
-
-    /// <summary>
-    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
-    /// Values: https://learn.microsoft.com/en-us/dotnet/api/azure.core.diagnosticsoptions.istelemetryenabled?view=azure-dotnet
-    /// </summary>
-    private static bool? EnvVarToBool(string? value)
-    {
-        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return null;
-    }
 
     /// <summary>
     /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs

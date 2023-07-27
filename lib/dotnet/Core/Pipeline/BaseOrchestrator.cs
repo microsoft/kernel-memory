@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.ContentStorage;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.ContentStorage;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class ContentStorageConfig
 {

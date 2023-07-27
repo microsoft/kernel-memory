@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
 public sealed class RabbitMqQueue : IQueue
 {

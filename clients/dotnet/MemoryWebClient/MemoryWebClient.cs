@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Core20;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryWebClient;
+namespace Microsoft.SemanticMemory.WebClient;
 
 public class MemoryWebClient : ISemanticMemoryClient
 {

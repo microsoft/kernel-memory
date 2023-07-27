@@ -7,10 +7,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public class DistributedPipelineOrchestrator : BaseOrchestrator
 {

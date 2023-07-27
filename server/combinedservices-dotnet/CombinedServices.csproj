@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.Services.SemanticMemory.CombinedWebServicea</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.Services.SemanticMemory.CombinedServicea</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.Services.CombinedServices</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.Services.CombinedServices</RootNamespace>
         <NoWarn>CA2007</NoWarn>
     </PropertyGroup>
 

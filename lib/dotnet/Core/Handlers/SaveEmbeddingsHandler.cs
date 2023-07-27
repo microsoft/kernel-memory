@@ -5,12 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Core.Handlers;
 
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {

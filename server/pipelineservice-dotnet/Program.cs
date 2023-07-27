@@ -3,9 +3,9 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Handlers;
+using Microsoft.SemanticMemory.InteractiveSetup;
 
 if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {

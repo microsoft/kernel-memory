@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core20;
+namespace Microsoft.SemanticMemory.Core20;
 
 public class SemanticMemoryWebException : Exception
 {

@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
+namespace Microsoft.SemanticMemory.Core.Diagnostics;
 
 public class PipelineCompletedException : MemoryException
 {

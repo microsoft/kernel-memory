@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticKernel.SemanticMemory.Core.WebService;
-using Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.WebService;
+using Microsoft.SemanticMemory.InteractiveSetup;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************

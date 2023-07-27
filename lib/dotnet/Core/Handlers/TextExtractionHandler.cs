@@ -5,12 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticKernel.Services.DataFormats.Office;
-using Microsoft.SemanticKernel.Services.DataFormats.Pdf;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.DataFormats.Office;
+using Microsoft.SemanticMemory.DataFormats.Pdf;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Core.Handlers;
 
 /// <summary>
 /// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.

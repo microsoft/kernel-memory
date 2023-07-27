@@ -6,7 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup;
+namespace Microsoft.SemanticMemory.InteractiveSetup;
 
 public static class Setup
 {

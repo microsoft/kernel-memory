@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
 public class QueueClientFactory
 {

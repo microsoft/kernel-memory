@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
 /// <summary>
 /// Basic implementation of a file based queue for local testing.

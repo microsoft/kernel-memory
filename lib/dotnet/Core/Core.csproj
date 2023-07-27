@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.Core</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.Core</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308</NoWarn>
     </PropertyGroup>
 

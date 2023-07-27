@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticMemory.Core.Configuration;
 
 /// <summary>
 /// Configuration settings for the embedding generators

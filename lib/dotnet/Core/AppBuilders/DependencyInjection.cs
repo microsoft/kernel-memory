@@ -4,12 +4,12 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
+namespace Microsoft.SemanticMemory.Core.AppBuilders;
 
 #pragma warning disable CA1724 // The name conflicts with MSExtensions
 public static class DependencyInjection

@@ -43,11 +43,11 @@ The code leverages the default data ingestion pipeline:
 
 ## Import memory using Semantic Memory Web Service
 
-Depending on the configuration, the code above can run locally, inside your
-process, or remotely through a service.
+Depending on the configuration, the code above can run all the memory encoding
+**locally inside your process, or remotely through an asynchronous service.**
 
 If you're importing small files, and need only C# or Python, and can block
-the process during the import, local execution can be fine.
+the process during the import, local-in-process execution can be fine.
 
 However, if you are in one of these scenarios:
 
@@ -62,12 +62,12 @@ However, if you are in one of these scenarios:
 
 then you can deploy Semantic Memory as a service, plugging in the
 default handlers or your custom Python/TypeScript/Java/etc. handlers,
-leveraging the asynchronous queues automatically available.
+and leveraging the asynchronous non-blocking memory encoding process.
+[Here](server/combinedservices-dotnet/README.md) you can find a complete set
+of instruction about
+[how to run the Semantic Memory service](server/combinedservices-dotnet/README.md).
 
-[Here](server/combinedservices-dotnet/README.md) you can find a complete set of instruction
-about [how to run the Semantic Memory service](server/combinedservices-dotnet/README.md).
-
-To quickly get up and running, use the following commands.
+If you want to give the service a quick test, use the following commands.
 
 ```bash
 cd server/combinedservices-dotnet
@@ -80,9 +80,11 @@ dotnet run setup
 ASPNETCORE_ENVIRONMENT=Development dotnet run
 ```
 
-To import files using Semantic Memory **web service**, simply use `SemanticMemoryWebClient`:
+To import files using Semantic Memory **web service**, use `SemanticMemoryWebClient`:
 
 ```csharp
+#reference clients/MemoryWebClient.csproj
+
 var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 
 await memory.ImportFileAsync("file1.docx",

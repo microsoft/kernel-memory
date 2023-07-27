@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
 public class FileBasedQueueConfig
 {

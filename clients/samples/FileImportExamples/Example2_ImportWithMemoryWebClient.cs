@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.SemanticMemory.Core20;
-using Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryWebClient;
+using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.WebClient;
 
 public static class Example2_ImportWithMemoryWebClient
 {

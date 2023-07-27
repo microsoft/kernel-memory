@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.SemanticMemory.Core20;
-using Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryPipelineClient;
+using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.PipelineClient;
 
 public static class Example1_ImportWithMemoryPipelineClient
 {

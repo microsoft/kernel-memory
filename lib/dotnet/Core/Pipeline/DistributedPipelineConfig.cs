@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline.Queue;
+using Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public class DistributedPipelineConfig
 {

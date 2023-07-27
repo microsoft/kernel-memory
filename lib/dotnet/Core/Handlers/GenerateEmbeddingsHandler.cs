@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Pipeline;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Core.Handlers;
 
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.

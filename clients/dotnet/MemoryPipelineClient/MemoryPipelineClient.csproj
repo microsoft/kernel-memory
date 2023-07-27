@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryPipelineClient</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.SemanticMemoryPipelineClient</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.PipelineClient</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.PipelineClient</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

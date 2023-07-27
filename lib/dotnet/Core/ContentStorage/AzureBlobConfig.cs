@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.ContentStorage;
+namespace Microsoft.SemanticMemory.Core.ContentStorage;
 
 public class AzureBlobConfig
 {

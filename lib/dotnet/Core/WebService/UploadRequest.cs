@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core.WebService;
+namespace Microsoft.SemanticMemory.Core.WebService;
 
 public class UploadRequest
 {

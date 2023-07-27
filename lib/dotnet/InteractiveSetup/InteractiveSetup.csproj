@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup</AssemblyName>
-        <RootNamespace>Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
         <NoWarn>CA1031</NoWarn>
     </PropertyGroup>
 

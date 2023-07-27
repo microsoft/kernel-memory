@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 // ReSharper disable CommentTypo
 
-namespace Microsoft.SemanticKernel.SemanticMemory.Core20;
+namespace Microsoft.SemanticMemory.Core20;
 
 public interface ISemanticMemoryClient
 {
