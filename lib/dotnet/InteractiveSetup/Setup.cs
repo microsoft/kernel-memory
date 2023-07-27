@@ -229,6 +229,11 @@ public static class Setup
                 string? deployment = string.Empty, endpoint = string.Empty, apiKey = string.Empty;
                 foreach (JToken x in (JArray)(data[MemKey]![HandlersKey]!["gen_embeddings"]!["EmbeddingGenerators"] ?? new JArray()))
                 {
+                    if (x.Type == JTokenType.Comment)
+                    {
+                        continue;
+                    }
+
                     if (x[TypeKey]?.ToString() == AzureOpenAIType)
                     {
                         endpoint = x[EndpointKey]?.ToString();
@@ -256,6 +261,11 @@ public static class Setup
                 string? model = string.Empty, apiKey = string.Empty;
                 foreach (JToken x in (JArray)(data[MemKey]![HandlersKey]!["gen_embeddings"]!["EmbeddingGenerators"] ?? new JArray()))
                 {
+                    if (x.Type == JTokenType.Comment)
+                    {
+                        continue;
+                    }
+
                     if (x[TypeKey]?.ToString() == OpenAIType)
                     {
                         model = x[ModelNameKey]?.ToString();
@@ -305,6 +315,11 @@ public static class Setup
                 string? endpoint = string.Empty, apiKey = string.Empty;
                 foreach (JToken x in (JArray)(data[MemKey]![HandlersKey]!["save_embeddings"]!["VectorDbs"] ?? new JArray()))
                 {
+                    if (x.Type == JTokenType.Comment)
+                    {
+                        continue;
+                    }
+
                     if (x[TypeKey]?.ToString() == "AzureCognitiveSearch")
                     {
                         endpoint = x[EndpointKey]?.ToString();
