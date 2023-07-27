@@ -81,6 +81,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{56AB71BB-3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombinedServices", "server\combinedservices-dotnet\CombinedServices.csproj", "{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "lib\dotnet\InteractiveSetup\InteractiveSetup.csproj", "{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,7 @@ Global
 		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
 		{56AB71BB-335A-41BF-92A1-105359D9DC38} = {6335B02C-9964-4B39-9795-C5F5F0392515}
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
+		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3700B51B-B34A-4AC9-9895-FF422B346E6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -154,5 +157,9 @@ Global
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

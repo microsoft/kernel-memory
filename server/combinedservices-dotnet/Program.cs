@@ -13,9 +13,20 @@ using Microsoft.SemanticKernel.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticKernel.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticKernel.SemanticMemory.Core.WebService;
+using Microsoft.SemanticKernel.SemanticMemory.InteractiveSetup;
 
 // ********************************************************
-// ************** SETUP ***********************************
+// ************** APP SETTINGS ****************************
+// ********************************************************
+
+if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+{
+    Setup.InteractiveSetup();
+    Environment.Exit(0);
+}
+
+// ********************************************************
+// ************** APP BUILD *******************************
 // ********************************************************
 
 var builder = WebApplication.CreateBuilder(args);

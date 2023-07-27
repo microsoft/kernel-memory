@@ -46,17 +46,4 @@ public static class HostedHandlersBuilder
         services.AddHostedService<HandlerAsAHostedService<THandler>>(serviceProvider
             => ActivatorUtilities.CreateInstance<HandlerAsAHostedService<THandler>>(serviceProvider, stepName));
     }
-
-    // /// <summary>
-    // /// Register the handler as a hosted service, passing the step name to the handler ctor
-    // /// </summary>
-    // /// <param name="builder">Application builder</param>
-    // /// <param name="stepName">Pipeline step name</param>
-    // /// <typeparam name="THandler">Handler class</typeparam>
-    // public static void UseHandlerAsHostedService<THandler>(this HostApplicationBuilder builder, string stepName) where THandler : class, IPipelineStepHandler
-    // {
-    //     builder.Services.UseHandler<THandler>(stepName);
-    //     builder.Services.AddHostedService<HandlerAsAHostedService<THandler>>(serviceProvider
-    //         => ActivatorUtilities.CreateInstance<HandlerAsAHostedService<THandler>>(serviceProvider, stepName));
-    // }
 }

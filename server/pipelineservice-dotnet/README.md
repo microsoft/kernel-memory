@@ -1,17 +1,9 @@
-This folder contains **Semantic Memory combined services**, used to manage memory
-settings, ingest data and query for answers.
-
-The combined services is equivalent to
-[WebService](../webservice-dotnet/) + [PipelineService](../pipelineservice-dotnet/),
-allowing for simpler deployments:
-
-* **[WebService](../webservice-dotnet/)**: endpoints to upload files, configure
-  the service, query for answers.
-* **[PipelineService](../pipelineservice-dotnet/)**: asynchronous pipelines to
-  ingest files/data into memory.
+﻿This folder contains **Semantic Pipeline Service**, responsible for asynchronously
+processing data, extracting text and embeddings, and populating the vector DB using
+default and/or custom handlers.
 
 If you prefer deploying and scaling the webservice and the pipeline handlers
-separately, we recommend deploying those two services, ignoring this project.
+together, see the [CombinedServices](../combinedservices-dotnet/) project.
 
 # ⚙️ Configuration
 
@@ -50,11 +42,11 @@ The service depends on three main components:
   Chroma and more.
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
-  case it requires persistent queues like Azure Queues or RabbitMQ.
+  case it requires persistent queues like Azure Queues or RabbitMQ. 
 
 **The pipeline service is designed to run in the background and in the cloud,
-without direct interaction. We recommended using the combined services with
-asynchronous queues and cloud storage, for better resiliency and data consistency.**
+without direct interaction. We recommended using it with asynchronous queues
+and cloud storage, for better resiliency and data consistency.**
 
 To use RabbitMQ locally, install docker and launch RabbitMQ with:
 

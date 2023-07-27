@@ -60,14 +60,27 @@ However, if you are in one of these scenarios:
 * I need memory import to **run independently, supporting failures and retry
   logic**
 
-then you can deploy Semantic Memory as a web service, plugging in the
+then you can deploy Semantic Memory as a service, plugging in the
 default handlers or your custom Python/TypeScript/Java/etc. handlers,
 leveraging the asynchronous queues automatically available.
 
-If you deploy the **default web service available in the repo**, you only
-need to change the configuration, and use the same code above.
+[Here](server/combinedservices-dotnet/README.md) you can find a complete set of instruction
+about [how to run the Semantic Memory service](server/combinedservices-dotnet/README.md).
 
-To import files using Semantic Memory web service, simply use `SemanticMemoryWebClient`:
+To quickly get up and running, use the following commands.
+
+```bash
+cd server/combinedservices-dotnet
+
+# First time configuration, creates appsettings.Development.json
+# You can skip this step if you have already configured the service. 
+dotnet run setup
+ 
+# Run the service with settings from appsettings.Development.json
+ASPNETCORE_ENVIRONMENT=Development dotnet run
+```
+
+To import files using Semantic Memory **web service**, simply use `SemanticMemoryWebClient`:
 
 ```csharp
 var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
@@ -78,7 +91,6 @@ await memory.ImportFileAsync("file1.docx",
 await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" },
     new ImportFileOptions("user-id-1", "memory-collection"));
 ```
-
 
 ## Custom import pipelines
 

@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\lib\dotnet\Core\Core.csproj" />
+        <ProjectReference Include="..\..\lib\dotnet\InteractiveSetup\InteractiveSetup.csproj" />
     </ItemGroup>
 
     <ItemGroup>
