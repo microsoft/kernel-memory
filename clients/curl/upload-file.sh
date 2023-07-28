@@ -18,7 +18,7 @@ Usage:
     -f file path           Path to the document to upload.
     -u userId              User ID.
     -c "coll1 coll2 .."    List of collection IDs separated by a space.
-    -i uploadId            Unique identifier for the upload.
+    -i document ID         Unique identifier for the document uploaded.
     -s web service URL     Semantic Memory web service URL.
     -h                     Print this help content.
 
@@ -50,7 +50,7 @@ readParameters() {
       ;;
     -i)
       shift
-      REQUEST_ID=$1
+      DOCUMENT_ID=$1
       ;;
     -s)
       shift
@@ -91,8 +91,8 @@ validatePrameters() {
     echo "Please specify the list of collection IDs"
     exit 3
   fi
-  if [ -z "$REQUEST_ID" ]; then
-    echo "Please specify a unique upload request ID"
+  if [ -z "$DOCUMENT_ID" ]; then
+    echo "Please specify a unique document ID"
     exit 4
   fi
   if [ -z "$SERVICE_URL" ]; then
@@ -103,7 +103,7 @@ validatePrameters() {
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset FILENAME USER_ID COLLECTIONS REQUEST_ID SERVICE_URL
+  unset FILENAME USER_ID COLLECTIONS DOCUMENT_ID SERVICE_URL
   unset -f help readParameters validatePrameters cleanupEnv exitScript
 }
 
@@ -127,6 +127,6 @@ done
 curl -v \
   -F 'file1=@"'"${FILENAME}"'"' \
   -F 'user="'"${USER_ID}"'"' \
-  -F 'requestId="'"${REQUEST_ID}"'"' \
+  -F 'documentId="'"${DOCUMENT_ID}"'"' \
   $COLLECTIONS_FIELD \
   $SERVICE_URL

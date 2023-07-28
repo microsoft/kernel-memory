@@ -12,7 +12,7 @@ namespace Microsoft.SemanticMemory.Core.WebService;
 
 public class UploadRequest
 {
-    public string RequestId { get; set; } = string.Empty;
+    public string DocumentId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
     public IEnumerable<string> CollectionIds { get; set; } = new List<string>();
     public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
@@ -27,7 +27,7 @@ public class UploadRequest
     {
         const string UserField = "user";
         const string CollectionsField = "collections";
-        const string RequestIdField = "requestId";
+        const string DocumentIdField = "documentId";
 
         var result = new UploadRequest();
 
@@ -59,13 +59,13 @@ public class UploadRequest
             return (result, false, $"Invalid or missing collection ID, '{CollectionsField}' list is empty or contains empty values");
         }
 
-        if (form.TryGetValue(RequestIdField, out StringValues requestIds) && requestIds.Count > 1)
+        if (form.TryGetValue(DocumentIdField, out StringValues documentIds) && documentIds.Count > 1)
         {
-            return (result, false, $"Invalid request ID, '{RequestIdField}' must be a single value, not a list");
+            return (result, false, $"Invalid document ID, '{DocumentIdField}' must be a single value, not a list");
         }
 
-        // Request Id is optional, e.g. the client wants to retry the same upload, otherwise we generate a random/unique one
-        result.RequestId = requestIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
+        // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
+        result.DocumentId = documentIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
 
         result.UserId = userIds[0]!;
         result.CollectionIds = collectionIds;

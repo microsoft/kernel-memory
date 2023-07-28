@@ -10,7 +10,7 @@ public class ImportFileOptions
 {
     public string UserId { get; set; } = string.Empty;
     public List<string> CollectionIds { get; set; } = new();
-    public string RequestId { get; set; } = string.Empty;
+    public string DocumentId { get; set; } = string.Empty;
 
     public ImportFileOptions()
     {
@@ -21,26 +21,26 @@ public class ImportFileOptions
     {
     }
 
-    public ImportFileOptions(string userId, string collectionId, string requestId)
+    public ImportFileOptions(string userId, string collectionId, string documentId)
     {
         this.UserId = userId;
         this.CollectionIds.Add(collectionId);
-        this.RequestId = requestId;
+        this.DocumentId = documentId;
     }
 
-    public ImportFileOptions(string userId, List<string> collectionIds, string requestId)
+    public ImportFileOptions(string userId, List<string> collectionIds, string documentId)
     {
         this.UserId = userId;
         this.CollectionIds = collectionIds;
-        this.RequestId = requestId;
+        this.DocumentId = documentId;
     }
 
     public void Sanitize()
     {
-        if (string.IsNullOrEmpty(this.RequestId))
+        if (string.IsNullOrEmpty(this.DocumentId))
         {
             // note: the ID doesn't include the full date, to avoid "personal" details
-            this.RequestId = Guid.NewGuid().ToString("D") + "-" + DateTimeOffset.UtcNow.ToString("ss.fffffff", CultureInfo.InvariantCulture);
+            this.DocumentId = Guid.NewGuid().ToString("D") + "-" + DateTimeOffset.UtcNow.ToString("ss.fffffff", CultureInfo.InvariantCulture);
         }
     }
 

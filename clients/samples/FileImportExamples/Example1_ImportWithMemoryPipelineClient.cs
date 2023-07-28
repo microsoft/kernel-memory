@@ -13,13 +13,13 @@ public static class Example1_ImportWithMemoryPipelineClient
         var memory = new MemoryPipelineClient(config);
 
         await memory.ImportFileAsync("file1.txt",
-            new ImportFileOptions(userId: "user1", collectionId: "collection01", requestId: "upload1"));
+            new ImportFileOptions(userId: "user1", collectionId: "collection01", documentId: "upload1"));
 
         await memory.ImportFilesAsync(new[] { "file2.txt", "file3.docx", "file4.pdf" },
-            new ImportFileOptions(userId: "user2", collectionId: "collection01", requestId: "upload2"));
+            new ImportFileOptions(userId: "user2", collectionId: "collection01", documentId: "upload2"));
 
         await memory.ImportFileAsync("5.docx",
-            new ImportFileOptions(userId: "user3", collectionId: "collection01", requestId: "upload1"));
+            new ImportFileOptions(userId: "user3", collectionId: "collection01", documentId: "upload1"));
 
         var owner = "user3";
 

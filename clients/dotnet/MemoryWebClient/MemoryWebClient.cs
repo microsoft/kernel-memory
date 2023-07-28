@@ -47,11 +47,11 @@ public class MemoryWebClient : ISemanticMemoryClient
         // Populate form with values and files from disk
         using var formData = new MultipartFormDataContent();
 
-        using var requestIdContent = new StringContent(options.RequestId);
+        using var documentIdContent = new StringContent(options.DocumentId);
         using (var userContent = new StringContent(options.UserId))
         {
             List<IDisposable> disposables = new();
-            formData.Add(requestIdContent, "requestId");
+            formData.Add(documentIdContent, "documentId");
             formData.Add(userContent, "user");
             foreach (var collectionId in options.CollectionIds)
             {

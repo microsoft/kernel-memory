@@ -80,8 +80,8 @@ app.MapPost("/upload", async Task<IResult> (
         return Results.BadRequest(errMsg);
     }
 
-    log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", input.Files.Count(), input.RequestId);
-    var containerId = $"usr.{input.UserId}.op.{input.RequestId}";
+    log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", input.Files.Count(), input.DocumentId);
+    var containerId = $"usr.{input.UserId}.op.{input.DocumentId}";
 
     // Define all the steps in the pipeline
     var pipeline = orchestrator

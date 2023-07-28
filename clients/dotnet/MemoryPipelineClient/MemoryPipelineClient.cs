@@ -59,7 +59,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         InProcessPipelineOrchestrator orchestrator = await this.Orchestrator.ConfigureAwait(false);
 
         var pipeline = orchestrator
-            .PrepareNewFileUploadPipeline(options.RequestId, options.UserId, options.CollectionIds);
+            .PrepareNewFileUploadPipeline(options.DocumentId, options.UserId, options.CollectionIds);
 
         // Include all files
         for (int index = 0; index < files.Length; index++)
