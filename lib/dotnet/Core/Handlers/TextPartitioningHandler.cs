@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Pipeline;
@@ -15,8 +16,8 @@ namespace Microsoft.SemanticMemory.Core.Handlers;
 public class TextPartitioningHandler : IPipelineStepHandler
 {
     private const int OverlappingTokens = 30;
-    private const int TokensPerLine = 1000;
-    private const int TokensPerParagraph = 2000;
+    private const int TokensPerLine = 500;
+    private const int TokensPerParagraph = 1000;
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<TextPartitioningHandler> _log;
@@ -94,6 +95,10 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 for (int index = 0; index < paragraphs.Count; index++)
                 {
                     string text = paragraphs[index];
+
+                    int gpt3TokenCount = GPT3Tokenizer.Encode(text).Count;
+                    this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
+
                     var destFile = uploadedFile.GetPartitionFileName(index);
                     await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 

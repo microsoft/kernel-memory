@@ -21,8 +21,7 @@ using Microsoft.SemanticMemory.InteractiveSetup;
 
 if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {
-    Setup.InteractiveSetup();
-    Environment.Exit(0);
+    Main.InteractiveSetup();
 }
 
 // ********************************************************
@@ -31,7 +30,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 
 var builder = WebApplication.CreateBuilder(args);
 
-SKMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
+SemanticMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
 
 builder.Logging.ConfigureLogger();
 builder.Services.UseContentStorage(config);

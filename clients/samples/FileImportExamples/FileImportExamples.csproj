@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\lib\dotnet\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\lib\dotnet\InteractiveSetup\InteractiveSetup.csproj" />
         <ProjectReference Include="..\..\dotnet\MemoryPipelineClient\MemoryPipelineClient.csproj" />
         <ProjectReference Include="..\..\dotnet\MemoryWebClient\MemoryWebClient.csproj" />
     </ItemGroup>

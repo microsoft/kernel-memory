@@ -24,7 +24,7 @@ public class AzureBlob : IContentStorage
 
     public AzureBlob(
         string connectionString,
-        string containerName = "skmemory",
+        string containerName = "smemory",
         ILogger<AzureBlob>? logger = null)
         : this(new BlobServiceClient(connectionString), containerName, logger)
     {
@@ -33,7 +33,7 @@ public class AzureBlob : IContentStorage
     public AzureBlob(
         string accountName,
         string endpointSuffix = "core.windows.net",
-        string containerName = "skmemory",
+        string containerName = "smemory",
         ILogger<AzureBlob>? logger = null)
         : this(new BlobServiceClient(
             new Uri($"https://{accountName}.blob.{endpointSuffix}"),
@@ -45,7 +45,7 @@ public class AzureBlob : IContentStorage
         string accountName,
         string accountKey,
         string endpointSuffix = "core.windows.net",
-        string containerName = "skmemory",
+        string containerName = "smemory",
         ILogger<AzureBlob>? logger = null)
         : this(new BlobServiceClient(
             new Uri($"https://{accountName}.blob.{endpointSuffix}"),
@@ -53,7 +53,7 @@ public class AzureBlob : IContentStorage
     {
     }
 
-    public AzureBlob(BlobServiceClient client, string containerName = "skmemory", ILogger<AzureBlob>? logger = null)
+    public AzureBlob(BlobServiceClient client, string containerName = "smemory", ILogger<AzureBlob>? logger = null)
     {
         if (string.IsNullOrEmpty(containerName))
         {

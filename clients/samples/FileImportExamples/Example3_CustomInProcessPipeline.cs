@@ -30,10 +30,10 @@ public static class Example3_CustomInProcessPipeline
         TextPartitioningHandler textPartitioning = new("partition", orchestrator);
         await orchestrator.AddHandlerAsync(textPartitioning);
 
-        GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<SemanticMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(textEmbedding);
 
-        SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SKMemoryConfig>()!);
+        SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SemanticMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(saveEmbedding);
 
         // orchestrator.AttachHandlerAsync(...);

@@ -2,10 +2,12 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Configuration;
 
-public class SKMemoryConfig
+public class SemanticMemoryConfig
 {
     /// <summary>
     /// Content storage settings, e.g. Azure Blob or File System details
@@ -42,5 +44,16 @@ public class SKMemoryConfig
 
         // return section.GetSection(sectionName).Get<T>() ?? new T();
         return section.Get<T>() ?? new T();
+    }
+
+    public static SemanticMemoryConfig LoadFromAppSettings()
+    {
+        var config = AppBuilder.Build().Services.GetService<SemanticMemoryConfig>();
+        if (config == null)
+        {
+            throw new ConfigurationException("Configuration settings are empty");
+        }
+
+        return config;
     }
 }

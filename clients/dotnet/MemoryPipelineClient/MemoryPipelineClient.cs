@@ -15,11 +15,21 @@ namespace Microsoft.SemanticMemory.PipelineClient;
 
 public class MemoryPipelineClient : ISemanticMemoryClient
 {
+    private readonly SemanticMemoryConfig _config;
     private readonly Lazy<Task<InProcessPipelineOrchestrator>> _inProcessOrchestrator = new(BuildInProcessOrchestratorAsync);
 
     private Task<InProcessPipelineOrchestrator> Orchestrator
     {
         get { return this._inProcessOrchestrator.Value; }
+    }
+
+    public MemoryPipelineClient() : this(SemanticMemoryConfig.LoadFromAppSettings())
+    {
+    }
+
+    public MemoryPipelineClient(SemanticMemoryConfig config)
+    {
+        this._config = config;
     }
 
     public Task ImportFileAsync(string file, ImportFileOptions options)
@@ -32,9 +42,12 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         return this.ImportFilesInternalAsync(files, options);
     }
 
-    public async Task<string> AskAsync(string question)
+    public async Task<string> AskAsync(string question, string owner)
     {
+        // Work in progress
+
         await Task.Delay(0).ConfigureAwait(false);
+
         return "...work in progress...";
     }
 
@@ -46,7 +59,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         InProcessPipelineOrchestrator orchestrator = await this.Orchestrator.ConfigureAwait(false);
 
         var pipeline = orchestrator
-            .PrepareNewFileUploadPipeline(options.RequestId, options.UserId, options.VaultIds);
+            .PrepareNewFileUploadPipeline(options.RequestId, options.UserId, options.CollectionIds);
 
         // Include all files
         for (int index = 0; index < files.Length; index++)
@@ -109,9 +122,9 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         return orchestrator;
     }
 
-    private static SKMemoryConfig GetConfig(IServiceProvider services)
+    private static SemanticMemoryConfig GetConfig(IServiceProvider services)
     {
-        var config = services.GetService<SKMemoryConfig>();
+        var config = services.GetService<SemanticMemoryConfig>();
         if (config == null)
         {
             throw new OrchestrationException("Unable to load configuration, object is NULL");

@@ -22,24 +22,44 @@ Semantic Memory enhances data-driven features in applications built using SK.
 
 ## Importing memory, locally, without deployments
 
-Importing files into your Semantic Memory can be as simple as this:
+Importing documents into your Semantic Memory can be as simple as this:
 
 ```csharp
 var memory = new MemoryPipelineClient();
 
-await memory.ImportFileAsync("file1.docx",
-    new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFileAsync("meeting-transcript.docx", new ImportFileOptions("user-1"));
 
-await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" },
-    new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFilesAsync(new[] { "business-plan.docx", "manual.pdf" }, new ImportFileOptions("user-2"));
 ```
 
-The code leverages the default data ingestion pipeline:
+Asking questions
+
+```csharp
+string answer1 = await memory.AskAsync("How many people attended the meeting?", "user-1");
+
+string answer2 = await memory.AskAsync("what's the project timeline?", "user-2");
+```
+
+The code leverages the default documents ingestion pipeline:
 
 1. Extract text
 2. Partition the text in small chunks
 3. Extract embedding
 4. Save embedding into a vector index
+
+Data is also organized by users, protecting information and allowing to organize private information.
+
+Users can also organize memories in **collections**:
+
+```csharp
+var memory = new MemoryPipelineClient();
+
+await memory.ImportFilesAsync("business-plan.docx", new ImportFileOptions("user-2", "business"));
+
+await memory.ImportFilesAsync("February's demo.pdf", new ImportFileOptions("user-2", "demos"));
+
+await memory.ImportFilesAsync("July's demo.pdf", new ImportFileOptions("user-2", "demos"));
+```
 
 ## Import memory using Semantic Memory Web Service
 

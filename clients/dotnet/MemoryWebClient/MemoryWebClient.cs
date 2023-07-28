@@ -53,7 +53,7 @@ public class MemoryWebClient : ISemanticMemoryClient
             List<IDisposable> disposables = new();
             formData.Add(requestIdContent, "requestId");
             formData.Add(userContent, "user");
-            foreach (var vaultId1 in options.VaultIds)
+            foreach (var vaultId1 in options.CollectionIds)
             {
                 var content = new StringContent(vaultId1);
                 disposables.Add(content);

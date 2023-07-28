@@ -6,6 +6,11 @@
 
 var examplesToRun = 1..3;
 
+//
+// Uncomment this line to create appsettings.Development.json
+// Microsoft.SemanticMemory.InteractiveSetup.Main.InteractiveSetup(cfgWebService: false);
+//
+
 /* === 1 ===
  * Use SemanticMemoryClient to run the default import pipeline
  * in the same process, without distributed queues.

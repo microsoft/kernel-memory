@@ -37,7 +37,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public GenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        SKMemoryConfig configuration,
+        SemanticMemoryConfig configuration,
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;

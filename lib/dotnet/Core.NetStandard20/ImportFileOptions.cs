@@ -9,29 +9,29 @@ namespace Microsoft.SemanticMemory.Core20;
 public class ImportFileOptions
 {
     public string UserId { get; set; } = string.Empty;
-    public List<string> VaultIds { get; set; } = new();
+    public List<string> CollectionIds { get; set; } = new();
     public string RequestId { get; set; } = string.Empty;
 
     public ImportFileOptions()
     {
     }
 
-    public ImportFileOptions(string userId, string vaultId)
-        : this(userId, vaultId, string.Empty)
+    public ImportFileOptions(string userId, string collectionId)
+        : this(userId, collectionId, string.Empty)
     {
     }
 
-    public ImportFileOptions(string userId, string vaultId, string requestId)
+    public ImportFileOptions(string userId, string collectionId, string requestId)
     {
         this.UserId = userId;
-        this.VaultIds.Add(vaultId);
+        this.CollectionIds.Add(collectionId);
         this.RequestId = requestId;
     }
 
-    public ImportFileOptions(string userId, List<string> vaultIds, string requestId)
+    public ImportFileOptions(string userId, List<string> collectionIds, string requestId)
     {
         this.UserId = userId;
-        this.VaultIds = vaultIds;
+        this.CollectionIds = collectionIds;
         this.RequestId = requestId;
     }
 
@@ -51,9 +51,9 @@ public class ImportFileOptions
             throw new ArgumentNullException(nameof(this.UserId), "User ID is empty");
         }
 
-        if (this.VaultIds.Count < 1)
+        if (this.CollectionIds.Count < 1)
         {
-            throw new ArgumentNullException(nameof(this.VaultIds), "The list of vaults is empty");
+            throw new ArgumentNullException(nameof(this.CollectionIds), "The list of vaults is empty");
         }
     }
 }

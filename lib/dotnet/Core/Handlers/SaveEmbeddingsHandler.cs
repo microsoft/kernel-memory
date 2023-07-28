@@ -33,7 +33,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     public SaveEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        SKMemoryConfig configuration,
+        SemanticMemoryConfig configuration,
         ILogger<SaveEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
@@ -124,7 +124,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         CancellationToken cancellationToken)
     {
         var client = new AzureCognitiveSearchMemory(config.Endpoint, config.APIKey);
-        string indexName = $"skmemory-{record.Owner}-{vectorProvider}-{vectorGenerator}";
+        string indexName = $"smemory-{record.Owner}-{vectorProvider}-{vectorGenerator}";
 
         await client.CreateCollectionAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(record.Vector.Count), cancellationToken).ConfigureAwait(false);
         await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);

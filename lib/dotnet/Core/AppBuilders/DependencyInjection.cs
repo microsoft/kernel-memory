@@ -22,14 +22,14 @@ public static class DependencyInjection
         builder.AddConsole();
     }
 
-    public static SKMemoryConfig UseConfiguration(this IServiceCollection services, ConfigurationManager mgr)
+    public static SemanticMemoryConfig UseConfiguration(this IServiceCollection services, ConfigurationManager mgr)
     {
-        // Populate the global config from the "SKMemory" key
-        SKMemoryConfig config = mgr.GetSection("SKMemory").Get<SKMemoryConfig>()!;
+        // Populate the global config from the "SemanticMemory" key
+        SemanticMemoryConfig config = mgr.GetSection("SemanticMemory").Get<SemanticMemoryConfig>()!;
 
-        // Copy the RAW handlers configuration from "SKMemory.Handlers". Binding is done later by each handler.
+        // Copy the RAW handlers configuration from "SemanticMemory.Handlers". Binding is done later by each handler.
         // TODO: find a solution to move the binding logic here, simplifying the configuration classes.
-        IConfigurationSection handlersConfigSection = mgr.GetSection("SKMemory").GetSection("Handlers");
+        IConfigurationSection handlersConfigSection = mgr.GetSection("SemanticMemory").GetSection("Handlers");
         config.Handlers = new();
         foreach (IConfigurationSection bar in handlersConfigSection.GetChildren())
         {
@@ -40,7 +40,7 @@ public static class DependencyInjection
         return config;
     }
 
-    public static void UseContentStorage(this IServiceCollection services, SKMemoryConfig config)
+    public static void UseContentStorage(this IServiceCollection services, SemanticMemoryConfig config)
     {
         const string AzureBlobs = "AZUREBLOBS";
         const string FileSystem = "FILESYSTEM";
@@ -60,7 +60,7 @@ public static class DependencyInjection
         }
     }
 
-    public static void UseOrchestrator(this IServiceCollection services, SKMemoryConfig config)
+    public static void UseOrchestrator(this IServiceCollection services, SemanticMemoryConfig config)
     {
         const string InProcess = "INPROCESS";
         const string Distributed = "DISTRIBUTED";
@@ -86,7 +86,7 @@ public static class DependencyInjection
         services.AddSingleton<InProcessPipelineOrchestrator>();
     }
 
-    public static void UseAzureBlobStorage(this IServiceCollection services, SKMemoryConfig config)
+    public static void UseAzureBlobStorage(this IServiceCollection services, SemanticMemoryConfig config)
     {
         const string AzureIdentity = "AZUREIDENTITY";
         const string ConnectionString = "CONNECTIONSTRING";
@@ -115,7 +115,7 @@ public static class DependencyInjection
         }
     }
 
-    public static void UseDistributedPipeline(this IServiceCollection services, SKMemoryConfig config)
+    public static void UseDistributedPipeline(this IServiceCollection services, SemanticMemoryConfig config)
     {
         const string AzureQueue = "AZUREQUEUE";
         const string RabbitMQ = "RABBITMQ";

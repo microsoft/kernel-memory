@@ -9,8 +9,7 @@ using Microsoft.SemanticMemory.InteractiveSetup;
 
 if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {
-    Setup.InteractiveSetup(cfgWebService: false);
-    Environment.Exit(0);
+    Main.InteractiveSetup(cfgWebService: false, cfgSearch: false);
 }
 
 var builder = HostedHandlersBuilder.CreateApplicationBuilder();

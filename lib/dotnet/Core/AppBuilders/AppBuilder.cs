@@ -23,7 +23,7 @@ public static class AppBuilder
             builder.Configuration.AddJsonFile("appsettings.Production.json", optional: true);
         }
 
-        SKMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
+        SemanticMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
 
         builder.Logging.ConfigureLogger();
         builder.Services.UseContentStorage(config);
