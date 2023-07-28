@@ -13,6 +13,7 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
@@ -74,7 +75,10 @@ public class AzureCognitiveSearchMemory
         return record.Id;
     }
 
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
+        string collectionName,
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var client = this.GetSearchClient(collectionName);
 
@@ -87,6 +91,48 @@ public class AzureCognitiveSearchMemory
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             yield return record.Id;
+        }
+    }
+
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+        string collectionName,
+        Embedding<float> embedding,
+        int limit,
+        double minRelevanceScore = 0,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var client = this.GetSearchClient(collectionName);
+
+        SearchQueryVector vectorQuery = new()
+        {
+            KNearestNeighborsCount = limit,
+            Fields = AzureCognitiveSearchMemoryRecord.VectorField,
+            Value = embedding.Vector.ToList()
+        };
+
+        SearchOptions options = new() { Vector = vectorQuery };
+        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        try
+        {
+            searchResult = await client
+                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            // Index not found, no data to return
+        }
+
+        if (searchResult == null) { yield break; }
+
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        {
+            if (doc == null || doc.Score < minRelevanceScore) { continue; }
+
+            MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
+
+            yield return (memoryRecord, doc.Score ?? 0);
         }
     }
 
@@ -222,7 +268,6 @@ public class AzureCognitiveSearchMemory
                     throw new AzureCognitiveSearchMemoryException($"Unsupported field type {field.Type:G}");
 
                 case VectorDbField.FieldType.Vector:
-
                     vectorField = new SearchField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsKey = false,
@@ -236,12 +281,14 @@ public class AzureCognitiveSearchMemory
 
                     break;
                 case VectorDbField.FieldType.Text:
-                    indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.String)
+                    // TODO: bug in Azure Cognitive Search? Vector search requires at least one searchable text field
+                    indexSchema.Fields.Add(new SearchField(field.Name, SearchFieldDataType.String)
                     {
                         IsKey = field.IsKey,
                         IsFilterable = field.IsKey || field.IsFilterable,
                         IsFacetable = false,
                         IsSortable = false,
+                        IsSearchable = field.IsKey, // workaround for Azure Cognitive Search requiring one searchable text field
                     });
                     break;
 

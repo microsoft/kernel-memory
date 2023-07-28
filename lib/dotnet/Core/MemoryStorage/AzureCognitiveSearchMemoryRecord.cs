@@ -15,7 +15,7 @@ namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 internal sealed class AzureCognitiveSearchMemoryRecord
 {
     private const string IdField = "id";
-    private const string VectorField = "embedding";
+    internal const string VectorField = "embedding";
     private const string OwnerField = "owner";
     private const string SourceIdField = "source_id";
     private const string TagsField = "tags";
@@ -66,16 +66,20 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         };
     }
 
-    public MemoryRecord ToMemoryRecord()
+    public MemoryRecord ToMemoryRecord(bool withEmbedding = true)
     {
         MemoryRecord result = new()
         {
             Id = DecodeId(this.Id),
-            Vector = new Embedding<float>(this.Vector),
             Owner = this.Owner,
             SourceId = this.SourceId,
             Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Metadata, s_jsonOptions) ?? new Dictionary<string, object>()
         };
+
+        if (withEmbedding)
+        {
+            result.Vector = new Embedding<float>(this.Vector);
+        }
 
         NameValueCollection tags = new();
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split('=', 2)))
