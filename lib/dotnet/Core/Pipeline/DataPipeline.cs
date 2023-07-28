@@ -100,7 +100,7 @@ public class DataPipeline
         public string Type { get; set; } = string.Empty;
 
         /// <summary>
-        /// List of files generated of the main file 
+        /// List of files generated of the main file
         /// </summary>
         [JsonPropertyOrder(4)]
         [JsonPropertyName("generated_files")]
@@ -151,8 +151,8 @@ public class DataPipeline
     public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyOrder(6)]
-    [JsonPropertyName("vaults")]
-    public List<string> VaultIds { get; set; } = new();
+    [JsonPropertyName("collections")]
+    public List<string> CollectionIds { get; set; } = new();
 
     [JsonPropertyOrder(7)]
     [JsonPropertyName("creation")]

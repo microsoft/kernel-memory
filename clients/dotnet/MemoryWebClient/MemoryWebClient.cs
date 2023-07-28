@@ -53,11 +53,11 @@ public class MemoryWebClient : ISemanticMemoryClient
             List<IDisposable> disposables = new();
             formData.Add(requestIdContent, "requestId");
             formData.Add(userContent, "user");
-            foreach (var vaultId1 in options.CollectionIds)
+            foreach (var collectionId in options.CollectionIds)
             {
-                var content = new StringContent(vaultId1);
+                var content = new StringContent(collectionId);
                 disposables.Add(content);
-                formData.Add(content, "vaults");
+                formData.Add(content, "collections");
             }
 
             for (int index = 0; index < files.Length; index++)

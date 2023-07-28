@@ -93,7 +93,7 @@ If you want to give the service a quick test, use the following commands.
 cd server/combinedservices-dotnet
 
 # First time configuration, creates appsettings.Development.json
-# You can skip this step if you have already configured the service. 
+# You can skip this step if you have already configured the service.
 dotnet run setup
  
 # Run the service with settings from appsettings.Development.json

@@ -60,7 +60,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        // For each embedding file => For each Vector DB => Store vector (vaults ==> tags) 
+        // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
         foreach (var embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
             foreach (object storageConfig in this._vectorDbs)
@@ -85,9 +85,9 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 record.Tags.Add("file", embeddingFile.Value.ParentId);
                 record.Tags.Add("file_type", pipeline.GetFile(embeddingFile.Value.ParentId).Type);
                 record.Tags.Add("file_partition", embeddingFile.Value.Id);
-                foreach (var vault in pipeline.VaultIds)
+                foreach (var collectionId in pipeline.CollectionIds)
                 {
-                    record.Tags.Add("collection", vault);
+                    record.Tags.Add("collection", collectionId);
                 }
 
                 record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);

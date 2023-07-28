@@ -3,7 +3,7 @@
 Before running the code, you will need some configuration step.
 
 1. Copy `appsettings.json` to `appsettings.Development.json`
-   (you could edit the original file, just be careful not sending the edited 
+   (you could edit the original file, just be careful not sending the edited
    file to git/pull requests because it will contain personal settings and
    potential secret credentials.)
 2. Edit `appsettings.Development.json` and choose one embedding generator,
@@ -82,7 +82,7 @@ multiple files, with a fluent syntax:
 
 ```csharp
 var pipeline = orchestrator
-    .PrepareNewFileUploadPipeline("inProcessTest", "userId", new[] { "vault1" })
+    .PrepareNewFileUploadPipeline("inProcessTest", "userId", new[] { "collection1" })
     .AddUploadFile("file1", "file1.txt", "file1.txt")
     .AddUploadFile("file2", "file2.txt", "file2.txt")
     .AddUploadFile("file3", "file3.docx", "file3.docx")

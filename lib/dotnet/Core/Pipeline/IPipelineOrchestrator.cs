@@ -29,19 +29,19 @@ public interface IPipelineOrchestrator
     /// </summary>
     /// <param name="id">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
-    /// <param name="vaultIds">List of vaults where o store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
+    /// <param name="collectionIds">List of collections where to store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> vaultIds, IEnumerable<IFormFile> filesToUpload);
+    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds, IEnumerable<IFormFile> filesToUpload);
 
     /// <summary>
     /// Create a new pipeline value object, with an empty list of files
     /// </summary>
     /// <param name="id">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
-    /// <param name="vaultIds">List of vaults where o store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
+    /// <param name="collectionIds">List of collections where to store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> vaultIds);
+    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds);
 
     /// <summary>
     /// Start a new data pipeline execution

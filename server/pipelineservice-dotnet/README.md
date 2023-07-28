@@ -42,7 +42,7 @@ The service depends on three main components:
   Chroma and more.
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
-  case it requires persistent queues like Azure Queues or RabbitMQ. 
+  case it requires persistent queues like Azure Queues or RabbitMQ.
 
 **The pipeline service is designed to run in the background and in the cloud,
 without direct interaction. We recommended using it with asynchronous queues

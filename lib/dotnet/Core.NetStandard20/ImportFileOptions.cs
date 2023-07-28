@@ -53,7 +53,7 @@ public class ImportFileOptions
 
         if (this.CollectionIds.Count < 1)
         {
-            throw new ArgumentNullException(nameof(this.CollectionIds), "The list of vaults is empty");
+            throw new ArgumentNullException(nameof(this.CollectionIds), "The list of collections is empty");
         }
     }
 }

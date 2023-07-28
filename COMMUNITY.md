@@ -9,7 +9,7 @@ see from the Semantic Memory. We do our best to respond to each submission.
 
 ## Public Semantic Kernel Community Office Hours
 
-We regularly have Community Office Hours that are open to the **public** to join. 
+We regularly have Community Office Hours that are open to the **public** to join.
 
 Add Semantic Kernel events to your calendar: download the
 [calendar.ics](https://aka.ms/sk-community-calendar) file.
@@ -22,8 +22,8 @@ If you are unable to make it live, all meetings will be recorded and posted onli
 ## Join the conversation on Discord
 
 We have a growing and active channel on Discord where you can get help, engage
-in lively discussion, and share what you've built with Semantic Memory and 
+in lively discussion, and share what you've built with Semantic Memory and
 Semantic Kernel!
 
 Join our Discord:
-[https://aka.ms/SKDiscord](https://aka.ms/SKDiscord) 
+[https://aka.ms/SKDiscord](https://aka.ms/SKDiscord)

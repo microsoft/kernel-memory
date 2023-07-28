@@ -42,7 +42,7 @@ public static class Example3_CustomInProcessPipeline
         // Create sample pipeline with 4 files
         Console.WriteLine("* Defining pipeline with 4 files...");
         var pipeline = orchestrator
-            .PrepareNewFileUploadPipeline("inProcessTest", "userId", new[] { "vault1" })
+            .PrepareNewFileUploadPipeline("inProcessTest", "userId", new[] { "collection1" })
             .AddUploadFile("file1", "file1.txt", "file1.txt")
             .AddUploadFile("file2", "file2.txt", "file2.txt")
             .AddUploadFile("file3", "file3.docx", "file3.docx")

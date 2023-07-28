@@ -92,7 +92,7 @@ app.MapPost("/upload", async Task<IResult> (
 
     // Define all the steps in the pipeline
     var pipeline = orchestrator
-        .PrepareNewFileUploadPipeline(containerId, input.UserId, input.VaultIds, input.Files)
+        .PrepareNewFileUploadPipeline(containerId, input.UserId, input.CollectionIds, input.Files)
         .Then("extract")
         .Then("partition")
         .Then("gen_embeddings")

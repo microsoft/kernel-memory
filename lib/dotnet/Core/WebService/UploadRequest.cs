@@ -14,7 +14,7 @@ public class UploadRequest
 {
     public string RequestId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
-    public IEnumerable<string> VaultIds { get; set; } = new List<string>();
+    public IEnumerable<string> CollectionIds { get; set; } = new List<string>();
     public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
 
     /* Resources:
@@ -26,7 +26,7 @@ public class UploadRequest
     public static async Task<(UploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
     {
         const string UserField = "user";
-        const string VaultsField = "vaults";
+        const string CollectionsField = "collections";
         const string RequestIdField = "requestId";
 
         var result = new UploadRequest();
@@ -52,11 +52,11 @@ public class UploadRequest
             return (result, false, $"Invalid or missing user ID, '{UserField}' value empty or not found, or multiple values provided");
         }
 
-        // At least one vault must be specified.Note: the pipeline might decide to ignore the specified vaults, 
-        // i.e. custom pipelines can override/ignore this value, depending on the implementation chosen. 
-        if (!form.TryGetValue(VaultsField, out StringValues vaultIds) || vaultIds.Count == 0 || vaultIds.Any(string.IsNullOrEmpty))
+        // At least one collection must be specified. Note: the pipeline might decide to ignore the specified collections,
+        // i.e. custom pipelines can override/ignore this value, depending on the implementation chosen.
+        if (!form.TryGetValue(CollectionsField, out StringValues collectionIds) || collectionIds.Count == 0 || collectionIds.Any(string.IsNullOrEmpty))
         {
-            return (result, false, $"Invalid or missing vault ID, '{VaultsField}' list is empty or contains empty values");
+            return (result, false, $"Invalid or missing collection ID, '{CollectionsField}' list is empty or contains empty values");
         }
 
         if (form.TryGetValue(RequestIdField, out StringValues requestIds) && requestIds.Count > 1)
@@ -68,7 +68,7 @@ public class UploadRequest
         result.RequestId = requestIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
 
         result.UserId = userIds[0]!;
-        result.VaultIds = vaultIds;
+        result.CollectionIds = collectionIds;
         result.Files = form.Files;
 
         return (result, true, string.Empty);

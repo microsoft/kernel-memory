@@ -29,7 +29,7 @@ message with our PGP key; please download it from the
 You should receive a response within 24 hours. If for some reason you do not,
 please follow up via email to ensure we received your original message.
 Additional information can be found at
-[microsoft.com/msrc](https://aka.ms/opensource/security/msrc). 
+[microsoft.com/msrc](https://aka.ms/opensource/security/msrc).
 
 Please include the requested information listed below (as much as you can
 provide) to help us better understand the nature and scope of the possible issue:

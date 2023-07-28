@@ -43,23 +43,23 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> vaultIds)
+    public DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds)
     {
-        return this.PrepareNewFileUploadPipeline(id, userId, vaultIds, new List<IFormFile>());
+        return this.PrepareNewFileUploadPipeline(id, userId, collectionIds, new List<IFormFile>());
     }
 
     ///<inheritdoc />
     public DataPipeline PrepareNewFileUploadPipeline(
         string id,
         string userId,
-        IEnumerable<string> vaultIds,
+        IEnumerable<string> collectionIds,
         IEnumerable<IFormFile> filesToUpload)
     {
         var pipeline = new DataPipeline
         {
             Id = id,
             UserId = userId,
-            VaultIds = vaultIds.ToList(),
+            CollectionIds = collectionIds.ToList(),
             Creation = DateTimeOffset.UtcNow,
             LastUpdate = DateTimeOffset.UtcNow,
             FilesToUpload = filesToUpload.ToList(),

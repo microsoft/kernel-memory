@@ -116,10 +116,10 @@ exitScript() {
 readParameters "$@"
 validatePrameters
 
-# Handle list of vault IDs
+# Handle list of collection IDs
 COLLECTIONS_FIELD=""
 for x in $COLLECTIONS; do
-  COLLECTIONS_FIELD="${COLLECTIONS_FIELD} -F vaults=\"${x}\""
+  COLLECTIONS_FIELD="${COLLECTIONS_FIELD} -F collections=\"${x}\""
 done
 
 # Send HTTP request using curl
