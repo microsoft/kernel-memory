@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -11,6 +12,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -65,79 +67,90 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     {
         this._log.LogTrace("Generating embeddings, pipeline {0}", pipeline.Id);
 
-        foreach (var originalFile in pipeline.Files)
+        foreach (var uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in originalFile.GeneratedFiles)
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
-                var file = generatedFile.Value;
+                var partitionFile = generatedFile.Value;
 
                 // Calc embeddings only for partitions
-                if (!file.IsPartition)
+                if (!partitionFile.IsPartition)
                 {
-                    this._log.LogTrace("Skipping file {0} (not a partition)", file.Name);
+                    this._log.LogTrace("Skipping file {0} (not a partition)", partitionFile.Name);
                     continue;
                 }
 
-                switch (file.Type)
+                switch (partitionFile.Type)
                 {
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
-                        this._log.LogTrace("Processing file {0}", file.Name);
+                        this._log.LogTrace("Processing file {0}", partitionFile.Name);
                         foreach (object cfg in this._embeddingGenerators)
                         {
-                            Embedding<float> vector = new();
+                            EmbeddingFileContent embeddingData = new()
+                            {
+                                SourceFileName = partitionFile.Name
+                            };
+
                             string embeddingFileName;
 
                             switch (cfg)
                             {
                                 case AzureOpenAIConfig x:
                                 {
-                                    this._log.LogTrace("Generating embeddings using Azure OpenAI, file: {0}", file.Name);
+                                    embeddingData.GeneratorProvider = "AzureOpenAI";
+                                    // TODO: fetch the model name
+                                    embeddingData.GeneratorName = x.Deployment;
+
+                                    this._log.LogTrace("Generating embeddings using Azure OpenAI, file: {0}", partitionFile.Name);
 
                                     // Check if embeddings have already been generated
-                                    embeddingFileName = GetEmbeddingFileName(file.Name, "AzureOpenAI", x.Deployment);
-                                    if (originalFile.GeneratedFiles.ContainsKey(embeddingFileName))
+                                    embeddingFileName = GetEmbeddingFileName(partitionFile.Name, "AzureOpenAI", x.Deployment);
+                                    if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
                                     {
-                                        this._log.LogDebug("Embeddings for {0} have already been generated", file.Name);
+                                        this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
                                         continue;
                                     }
 
                                     // TODO: handle Azure.RequestFailedException - BlobNotFound
-                                    string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                                    string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
                                     var generator = new AzureTextEmbeddingGeneration(
                                         modelId: x.Deployment, endpoint: x.Endpoint, apiKey: x.APIKey, logger: this._log);
 
                                     IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(
-                                        new List<string> { content }, cancellationToken).ConfigureAwait(false);
+                                        new List<string> { partitionContent }, cancellationToken).ConfigureAwait(false);
 
                                     if (embedding.Count == 0)
                                     {
                                         throw new OrchestrationException("Embeddings not generated");
                                     }
 
-                                    vector = embedding.First();
+                                    embeddingData.Vector = embedding.First();
                                     break;
                                 }
 
                                 case OpenAIConfig x:
                                 {
-                                    this._log.LogTrace("Generating embeddings using OpenAI, file: {0}", file.Name);
+                                    embeddingData.GeneratorProvider = "OpenAI";
+                                    embeddingData.GeneratorName = x.Model;
+
+                                    this._log.LogTrace("Generating embeddings using OpenAI, file: {0}", partitionFile.Name);
 
                                     // Check if embeddings have already been generated
-                                    embeddingFileName = GetEmbeddingFileName(file.Name, "OpenAI", x.Model);
-                                    if (originalFile.GeneratedFiles.ContainsKey(embeddingFileName))
+                                    embeddingFileName = GetEmbeddingFileName(partitionFile.Name, "OpenAI", x.Model);
+                                    if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
                                     {
-                                        this._log.LogDebug("Embeddings for {0} have already been generated", file.Name);
+                                        this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
                                         continue;
                                     }
 
                                     var generator = new OpenAITextEmbeddingGeneration(
                                         modelId: x.Model, apiKey: x.APIKey, organization: x.OrgId);
-                                    string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                                    string content = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
                                     IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(
                                         new List<string> { content }, cancellationToken).ConfigureAwait(false);
@@ -147,7 +160,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                         throw new OrchestrationException("Embeddings not generated");
                                     }
 
-                                    vector = embedding.First();
+                                    embeddingData.Vector = embedding.First();
                                     break;
                                 }
 
@@ -156,12 +169,17 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                     throw new OrchestrationException($"Embeddings generator {cfg.GetType().FullName} not supported");
                             }
 
+                            embeddingData.VectorSize = embeddingData.Vector.Count;
+                            embeddingData.TimeStamp = DateTimeOffset.UtcNow;
+
                             this._log.LogDebug("Saving embedding file {0}", embeddingFileName);
-                            var text = JsonSerializer.Serialize(vector);
+                            string text = JsonSerializer.Serialize(embeddingData);
                             await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, cancellationToken).ConfigureAwait(false);
 
                             newFiles.Add(embeddingFileName, new DataPipeline.GeneratedFileDetails
                             {
+                                Id = Guid.NewGuid().ToString("N"),
+                                ParentId = uploadedFile.Id,
                                 Name = embeddingFileName,
                                 Size = text.Length,
                                 Type = MimeTypes.TextEmbeddingVector,
@@ -172,7 +190,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                         break;
 
                     default:
-                        this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", file.Name);
+                        this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
                         continue;
                 }
             }
@@ -180,7 +198,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
             // Add new files to pipeline status
             foreach (var file in newFiles)
             {
-                originalFile.GeneratedFiles.Add(file.Key, file.Value);
+                uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
             }
         }
 

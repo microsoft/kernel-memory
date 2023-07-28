@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Diagnostics;
 
-public class PipelineCompletedException : MemoryException
+public class PipelineCompletedException : SemanticMemoryException
 {
     /// <summary>
     /// Initializes a new instance.

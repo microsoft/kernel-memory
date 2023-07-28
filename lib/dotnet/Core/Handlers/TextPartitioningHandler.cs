@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,20 +44,18 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        foreach (DataPipeline.FileDetails originalFile in pipeline.Files)
+        foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in originalFile.GeneratedFiles)
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
                 var file = generatedFile.Value;
 
-                // Check if the file has already been partitioned
-                string firstPartitionFileName = GetPartitionFileName(originalFile.Name, 0);
-                if (originalFile.GeneratedFiles.ContainsKey(firstPartitionFileName))
+                if (uploadedFile.IsAlreadyPartitioned())
                 {
-                    this._log.LogDebug("File {0} has already been partitioned", originalFile.Name);
+                    this._log.LogDebug("File {0} has already been partitioned", uploadedFile.Name);
                     continue;
                 }
 
@@ -95,11 +94,13 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 for (int index = 0; index < paragraphs.Count; index++)
                 {
                     string text = paragraphs[index];
-                    var destFile = GetPartitionFileName(originalFile.Name, index);
+                    var destFile = uploadedFile.GetPartitionFileName(index);
                     await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
                     newFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                     {
+                        Id = Guid.NewGuid().ToString("N"),
+                        ParentId = uploadedFile.Id,
                         Name = destFile,
                         Size = text.Length,
                         Type = MimeTypes.PlainText,
@@ -111,15 +112,10 @@ public class TextPartitioningHandler : IPipelineStepHandler
             // Add new files to pipeline status
             foreach (var file in newFiles)
             {
-                originalFile.GeneratedFiles.Add(file.Key, file.Value);
+                uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
             }
         }
 
         return (true, pipeline);
-    }
-
-    private static string GetPartitionFileName(string srcFilename, int index)
-    {
-        return $"{srcFilename}.partition.{index}.txt";
     }
 }

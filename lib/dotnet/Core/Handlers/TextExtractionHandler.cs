@@ -45,29 +45,29 @@ public class TextExtractionHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        foreach (DataPipeline.FileDetails file in pipeline.Files)
+        foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
-            var sourceFile = file.Name;
-            var destFile = $"{file.Name}.extract.txt";
+            var sourceFile = uploadedFile.Name;
+            var destFile = $"{uploadedFile.Name}.extract.txt";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
             string text = string.Empty;
             string extractType = MimeTypes.PlainText;
 
-            switch (file.Type)
+            switch (uploadedFile.Type)
             {
                 case MimeTypes.PlainText:
-                    this._log.LogDebug("Extracting text from plain text file {0}", file.Name);
+                    this._log.LogDebug("Extracting text from plain text file {0}", uploadedFile.Name);
                     text = fileContent.ToString();
                     break;
 
                 case MimeTypes.MarkDown:
-                    this._log.LogDebug("Extracting text from MarkDown file {0}", file.Name);
+                    this._log.LogDebug("Extracting text from MarkDown file {0}", uploadedFile.Name);
                     text = fileContent.ToString();
                     extractType = MimeTypes.MarkDown;
                     break;
 
                 case MimeTypes.MsWord:
-                    this._log.LogDebug("Extracting text from MS Word file {0}", file.Name);
+                    this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
                     if (fileContent.ToArray().Length > 0)
                     {
                         text = new MsWordDecoder().DocToText(fileContent);
@@ -76,7 +76,7 @@ public class TextExtractionHandler : IPipelineStepHandler
                     break;
 
                 case MimeTypes.Pdf:
-                    this._log.LogDebug("Extracting text from PDF file {0}", file.Name);
+                    this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
                     if (fileContent.ToArray().Length > 0)
                     {
                         text = new PdfDecoder().DocToText(fileContent);
@@ -85,14 +85,16 @@ public class TextExtractionHandler : IPipelineStepHandler
                     break;
 
                 default:
-                    throw new NotSupportedException($"File type not supported: {file.Type}");
+                    throw new NotSupportedException($"File type not supported: {uploadedFile.Type}");
             }
 
             this._log.LogDebug("Saving extracted text file {0}", destFile);
             await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
-            file.GeneratedFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+            uploadedFile.GeneratedFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
             {
+                Id = Guid.NewGuid().ToString("N"),
+                ParentId = uploadedFile.Id,
                 Name = destFile,
                 Size = text.Length,
                 Type = extractType,

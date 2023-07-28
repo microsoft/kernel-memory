@@ -1,12 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -55,31 +60,55 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        // Loop through all the vector storages
-        foreach (object storageConfig in this._vectorDbs)
+        // For each embedding file => For each Vector DB => Store vector (vaults ==> tags) 
+        foreach (var embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
-            switch (storageConfig)
+            foreach (object storageConfig in this._vectorDbs)
             {
-                case AzureCognitiveSearchConfig cfg:
+                string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
+                EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
+                if (embeddingData == null)
                 {
-                    var result = await this.StoreInAzureCognitiveSearchAsync(cfg, pipeline, cancellationToken).ConfigureAwait(false);
-                    if (!result.success)
-                    {
-                        return result;
-                    }
-
-                    break;
+                    throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.Value.Name}");
                 }
 
-                case QdrantConfig cfg:
+                var record = new MemoryRecord
                 {
-                    var result = await this.StoreInQdrantAsync(cfg, pipeline, cancellationToken).ConfigureAwait(false);
-                    if (!result.success)
-                    {
-                        return result;
-                    }
+                    Id = $"u={pipeline.UserId}//p={pipeline.Id}//v={embeddingFile.Value.Id}",
+                    SourceId = $"u={pipeline.UserId}//p={pipeline.Id}//v={embeddingFile.Value.ParentId}",
+                    Vector = embeddingData.Vector,
+                    Owner = pipeline.UserId,
+                };
 
-                    break;
+                record.Tags.Add("user", pipeline.UserId);
+                record.Tags.Add("upload_id", pipeline.Id);
+                record.Tags.Add("file", embeddingFile.Value.ParentId);
+                record.Tags.Add("file_type", pipeline.GetFile(embeddingFile.Value.ParentId).Type);
+                record.Tags.Add("file_partition", embeddingFile.Value.Id);
+                foreach (var vault in pipeline.VaultIds)
+                {
+                    record.Tags.Add("collection", vault);
+                }
+
+                record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
+                record.Metadata.Add("vector_provider", embeddingData.GeneratorProvider);
+                record.Metadata.Add("vector_generator", embeddingData.GeneratorName);
+                record.Metadata.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
+
+                // Store text partition for RAG
+                // TODO: make this optional to reduce space usage, using blob files instead
+                string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
+                record.Metadata.Add("text", partitionContent);
+
+                switch (storageConfig)
+                {
+                    case AzureCognitiveSearchConfig cfg:
+                        await this.StoreInAzureCognitiveSearchAsync(cfg, record, embeddingData.GeneratorProvider, embeddingData.GeneratorName, cancellationToken).ConfigureAwait(false);
+                        break;
+
+                    case QdrantConfig cfg:
+                        await this.StoreInQdrantAsync(cfg, record, embeddingData.GeneratorProvider, embeddingData.GeneratorName, cancellationToken).ConfigureAwait(false);
+                        break;
                 }
             }
         }
@@ -87,30 +116,28 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         return (true, pipeline);
     }
 
-    public async Task<(bool success, DataPipeline updatedPipeline)> StoreInAzureCognitiveSearchAsync(
-        AzureCognitiveSearchConfig config, DataPipeline pipeline, CancellationToken cancellationToken)
+    public async Task StoreInAzureCognitiveSearchAsync(
+        AzureCognitiveSearchConfig config,
+        MemoryRecord record,
+        string vectorProvider,
+        string vectorGenerator,
+        CancellationToken cancellationToken)
     {
-        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
-        // TODO
-        // * loop vaults
-        // * loop embedding files
-        // * link to blob
-        // * multiple embedding types
-
         var client = new AzureCognitiveSearchMemory(config.Endpoint, config.APIKey);
-        string indexNamePrefix = $"skmemory-{pipeline.UserId}";
-        foreach (string vaultId in pipeline.VaultIds)
-        {
-        }
+        string indexName = $"skmemory-{record.Owner}-{vectorProvider}-{vectorGenerator}";
 
-        return (true, pipeline);
+        await client.CreateCollectionAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(record.Vector.Count), cancellationToken).ConfigureAwait(false);
+        await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<(bool success, DataPipeline updatedPipeline)> StoreInQdrantAsync(
-        QdrantConfig config, DataPipeline pipeline, CancellationToken cancellationToken)
+    public async Task StoreInQdrantAsync(
+        QdrantConfig config,
+        MemoryRecord record,
+        string vectorProvider,
+        string vectorGenerator,
+        CancellationToken cancellationToken)
     {
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);
-
-        return (true, pipeline);
+        throw new OrchestrationException("Qdrant not supported yet");
     }
 }

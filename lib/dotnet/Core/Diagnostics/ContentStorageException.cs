@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Diagnostics;
 
-public class ContentStorageException : MemoryException
+public class ContentStorageException : SemanticMemoryException
 {
     /// <inheritdoc />
     public ContentStorageException() { }

@@ -184,6 +184,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             var size = await this.ContentStorage.WriteStreamAsync(containerName, file.FileName, file.OpenReadStream(), cancellationToken).ConfigureAwait(false);
             pipeline.Files.Add(new DataPipeline.FileDetails
             {
+                Id = Guid.NewGuid().ToString("N"),
                 Name = file.FileName,
                 Size = size,
                 Type = this.MimeTypeDetection.GetFileType(file.FileName),

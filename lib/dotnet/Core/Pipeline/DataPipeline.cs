@@ -21,6 +21,18 @@ public class DataPipeline
     public class GeneratedFileDetails
     {
         /// <summary>
+        /// Unique Id
+        /// </summary>
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Unique Id
+        /// </summary>
+        [JsonPropertyName("parent_id")]
+        public string ParentId { get; set; } = string.Empty;
+
+        /// <summary>
         /// File name
         /// </summary>
         [JsonPropertyOrder(1)]
@@ -47,10 +59,25 @@ public class DataPipeline
         [JsonPropertyOrder(4)]
         [JsonPropertyName("is_partition")]
         public bool IsPartition { get; set; } = false;
+
+        /// <summary>
+        /// Check if this is an embedding file (checking the file extension)
+        /// </summary>
+        /// <returns>True if the file contains an embedding</returns>
+        public bool IsEmbeddingFile()
+        {
+            return this.Type == MimeTypes.TextEmbeddingVector;
+        }
     }
 
     public class FileDetails
     {
+        /// <summary>
+        /// Unique Id
+        /// </summary>
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
         /// <summary>
         /// File name
         /// </summary>
@@ -78,6 +105,17 @@ public class DataPipeline
         [JsonPropertyOrder(4)]
         [JsonPropertyName("generated_files")]
         public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = new();
+
+        public bool IsAlreadyPartitioned()
+        {
+            string firstPartitionFileName = this.GetPartitionFileName(0);
+            return (this.GeneratedFiles.ContainsKey(firstPartitionFileName));
+        }
+
+        public string GetPartitionFileName(int partitionNumber)
+        {
+            return $"{this.Name}.partition.{partitionNumber}.txt";
+        }
     }
 
     /// <summary>
@@ -235,5 +273,15 @@ public class DataPipeline
 
             previous = step;
         }
+    }
+
+    public FileDetails GetFile(string id)
+    {
+        foreach (FileDetails file in this.Files)
+        {
+            if (file.Id == id) { return file; }
+        }
+
+        throw new OrchestrationException($"File '{id}' not found in the upload");
     }
 }

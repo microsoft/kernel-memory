@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Diagnostics;
 
-public class OrchestrationException : MemoryException
+public class OrchestrationException : SemanticMemoryException
 {
     /// <inheritdoc />
     public OrchestrationException() { }
