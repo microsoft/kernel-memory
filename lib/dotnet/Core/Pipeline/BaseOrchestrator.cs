@@ -87,7 +87,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        return this.ContentStorage.ReadFileAsync(pipeline.Id, fileName, cancellationToken);
+        var path = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
+        return this.ContentStorage.ReadFileAsync(path, fileName, cancellationToken);
     }
 
     ///<inheritdoc />
@@ -99,8 +100,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
     {
+        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
         return this.ContentStorage.WriteStreamAsync(
-            pipeline.Id,
+            dirPath,
             fileName,
             fileContent.ToStream(),
             cancellationToken);
@@ -121,7 +123,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             return;
         }
 
-        await this.ContentStorage.CreateDirectoryAsync(pipeline.Id, cancellationToken).ConfigureAwait(false);
         await this.UploadFormFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
     }
 
@@ -136,8 +137,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this.Log.LogInformation("Saving pipeline status to {0}/{1}", pipeline.Id, StatusFile);
         try
         {
+            var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
             await this.ContentStorage.WriteTextFileAsync(
-                    pipeline.Id,
+                    dirPath,
                     StatusFile,
                     ToJson(pipeline, true),
                     cancellationToken)
@@ -168,9 +170,10 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log.LogDebug("Uploading {0} files, pipeline {1}", pipeline.FilesToUpload.Count, pipeline.Id);
 
-        await this.ContentStorage.CreateDirectoryAsync(pipeline.Id, cancellationToken).ConfigureAwait(false);
+        await this.ContentStorage.CreateDirectoryAsync(pipeline.UserId, cancellationToken).ConfigureAwait(false);
 
-        var containerName = pipeline.Id;
+        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
+        await this.ContentStorage.CreateDirectoryAsync(dirPath, cancellationToken).ConfigureAwait(false);
 
         foreach (IFormFile file in pipeline.FilesToUpload)
         {
@@ -181,7 +184,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             }
 
             this.Log.LogInformation("Uploading file: {0}", file.FileName);
-            var size = await this.ContentStorage.WriteStreamAsync(containerName, file.FileName, file.OpenReadStream(), cancellationToken).ConfigureAwait(false);
+            var size = await this.ContentStorage.WriteStreamAsync(dirPath, file.FileName, file.OpenReadStream(), cancellationToken).ConfigureAwait(false);
             pipeline.Files.Add(new DataPipeline.FileDetails
             {
                 Id = Guid.NewGuid().ToString("N"),

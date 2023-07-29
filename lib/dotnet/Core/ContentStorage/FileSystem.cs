@@ -30,6 +30,12 @@ public class FileSystem : IContentStorage
     }
 
     /// <inherit />
+    public string JoinPaths(string path1, string path2)
+    {
+        return Path.Join(path1, path2);
+    }
+
+    /// <inherit />
     public Task CreateDirectoryAsync(string directoryName, CancellationToken cancellationToken = default)
     {
         var path = Path.Join(this._directory, directoryName);

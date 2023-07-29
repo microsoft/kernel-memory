@@ -10,6 +10,14 @@ namespace Microsoft.SemanticMemory.Core.ContentStorage;
 public interface IContentStorage
 {
     /// <summary>
+    /// Join two path/directory names using the platform specific char
+    /// </summary>
+    /// <param name="path1">Left side of the path</param>
+    /// <param name="path2">Right side of the path (appended to path1)</param>
+    /// <returns>Path1 concatenated with Path2 into a single path</returns>
+    string JoinPaths(string path1, string path2);
+
+    /// <summary>
     /// Create a new container, if it doesn't exist already
     /// </summary>
     /// <param name="directoryName">Name of the directory</param>

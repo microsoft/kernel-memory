@@ -72,6 +72,12 @@ public class AzureBlob : IContentStorage
     }
 
     /// <inherit />
+    public string JoinPaths(string path1, string path2)
+    {
+        return $"{path1}/{path2}";
+    }
+
+    /// <inherit />
     public async Task CreateDirectoryAsync(string directoryName, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Creating container '{0}' ...", this._containerName);

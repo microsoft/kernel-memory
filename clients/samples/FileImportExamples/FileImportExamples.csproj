@@ -76,6 +76,10 @@
         <Content Include="file4.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="file5.pdf" />
+        <Content Include="file5.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
