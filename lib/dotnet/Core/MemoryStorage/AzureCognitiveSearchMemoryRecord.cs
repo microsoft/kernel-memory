@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
@@ -81,7 +81,7 @@ internal sealed class AzureCognitiveSearchMemoryRecord
             result.Vector = new Embedding<float>(this.Vector);
         }
 
-        NameValueCollection tags = new();
+        TagCollection tags = new();
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split('=', 2)))
         {
             tags.Add(keyValue[0], keyValue.Length == 1 ? null : keyValue[1]);
@@ -101,24 +101,9 @@ internal sealed class AzureCognitiveSearchMemoryRecord
             Metadata = JsonSerializer.Serialize(record.Metadata, s_jsonOptions)
         };
 
-        foreach (string? key in record.Tags.Keys)
+        foreach (var tag in record.Tags.Pairs)
         {
-            if (key == null) { continue; }
-
-            if (key.Contains('=', StringComparison.Ordinal)) { throw new AzureCognitiveSearchMemoryException("A tag name cannot contain the '=' symbol"); }
-
-            string[]? values = record.Tags.GetValues(key);
-            if (values == null)
-            {
-                result.Tags.Add($"{key}");
-            }
-            else
-            {
-                foreach (var value in values)
-                {
-                    result.Tags.Add($"{key}={value}");
-                }
-            }
+            result.Tags.Add($"{tag.Key}={tag.Value}");
         }
 
         return result;

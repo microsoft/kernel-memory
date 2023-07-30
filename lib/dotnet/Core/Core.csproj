@@ -8,6 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Core.NetStandard20\Core.NetStandard20.csproj" />
         <ProjectReference Include="..\DataFormats.Office\DataFormats.Office.csproj" />
         <ProjectReference Include="..\DataFormats.Pdf\DataFormats.Pdf.csproj" />

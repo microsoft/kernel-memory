@@ -14,6 +14,7 @@ using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Handlers;
 
@@ -61,7 +62,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
         // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
-        foreach (var embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
+        foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
             foreach (object storageConfig in this._vectorDbs)
             {
@@ -80,15 +81,13 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                     Owner = pipeline.UserId,
                 };
 
-                record.Tags.Add("user", pipeline.UserId);
-                record.Tags.Add("upload_id", pipeline.Id);
-                record.Tags.Add("file", embeddingFile.Value.ParentId);
-                record.Tags.Add("file_type", pipeline.GetFile(embeddingFile.Value.ParentId).Type);
-                record.Tags.Add("file_partition", embeddingFile.Value.Id);
-                foreach (var collectionId in pipeline.CollectionIds)
-                {
-                    record.Tags.Add("collection", collectionId);
-                }
+                record.Tags.Add(Constants.ReservedUserIdTag, pipeline.UserId);
+                record.Tags.Add(Constants.ReservedDocIdTag, pipeline.Id);
+                record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
+                record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
+                record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
+
+                pipeline.Tags.CopyTo(record.Tags);
 
                 record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
                 record.Metadata.Add("vector_provider", embeddingData.GeneratorProvider);

@@ -16,6 +16,7 @@ using Microsoft.SemanticMemory.Core.Diagnostics;
 
 namespace Microsoft.SemanticMemory.Core.ContentStorage;
 
+// TODO: a container can contain up to 50000 blocks
 public class AzureBlob : IContentStorage
 {
     private readonly BlobContainerClient _containerClient;

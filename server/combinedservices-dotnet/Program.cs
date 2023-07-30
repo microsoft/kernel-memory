@@ -66,61 +66,11 @@ DateTimeOffset start = DateTimeOffset.UtcNow;
 // Simple ping endpoint
 app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                  "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - start.ToUnixTimeSeconds()) + " secs"));
-
 // File upload endpoint
 app.MapPost("/upload", async Task<IResult> (
     HttpRequest request,
     IPipelineOrchestrator orchestrator,
-    ILogger<Program> log) =>
-{
-    log.LogTrace("New upload request");
-
-    // Note: .NET doesn't yet support binding multipart forms including data and files
-    (UploadRequest input, bool isValid, string errMsg) = await UploadRequest.BindHttpRequestAsync(request);
-
-    if (!isValid)
-    {
-#pragma warning disable CA2254 // The log msg template should be a constant
-        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-        log.LogError(errMsg);
-#pragma warning restore CA2254
-        return Results.BadRequest(errMsg);
-    }
-
-    log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", input.Files.Count(), input.DocumentId);
-    var containerId = $"usr.{input.UserId}.op.{input.DocumentId}";
-
-    // Define all the steps in the pipeline
-    var pipeline = orchestrator
-        .PrepareNewFileUploadPipeline(containerId, input.UserId, input.CollectionIds, input.Files)
-        .Then("extract")
-        .Then("partition")
-        .Then("gen_embeddings")
-        .Then("save_embeddings")
-        .Build();
-
-    try
-    {
-        await orchestrator.RunPipelineAsync(pipeline);
-    }
-#pragma warning disable CA1031 // Must catch all to log and keep the process alive
-    catch (Exception e)
-    {
-        app.Logger.LogError(e, "Pipeline start failed");
-        return Results.Problem(
-            title: "Upload failed",
-            detail: e.Message,
-            statusCode: 503);
-    }
-#pragma warning restore CA1031
-
-    return Results.Accepted($"/upload-status?id={pipeline.Id}", new
-    {
-        Id = pipeline.Id,
-        Message = "Upload completed, pipeline started",
-        Count = input.Files.Count()
-    });
-});
+    ILogger<Program> log) => await Endpoints.UploadAsync(app, request, orchestrator, log));
 
 app.Logger.LogInformation(
     "Starting web service, Log Level: {0}, .NET Env: {1}, Orchestration: {2}",

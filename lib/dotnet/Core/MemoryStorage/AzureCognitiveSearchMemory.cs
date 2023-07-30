@@ -13,6 +13,8 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
@@ -21,7 +23,12 @@ namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
 public class AzureCognitiveSearchMemory
 {
-    public AzureCognitiveSearchMemory(string endpoint, string apiKey)
+    private readonly ILogger<AzureCognitiveSearchMemory> _log;
+
+    public AzureCognitiveSearchMemory(
+        string endpoint,
+        string apiKey,
+        ILogger<AzureCognitiveSearchMemory>? log = null)
     {
         if (string.IsNullOrEmpty(endpoint))
         {
@@ -32,6 +39,8 @@ public class AzureCognitiveSearchMemory
         {
             throw new ConfigurationException("Azure Cognitive Search API key is empty");
         }
+
+        this._log = log ?? NullLogger<AzureCognitiveSearchMemory>.Instance;
 
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
@@ -54,7 +63,15 @@ public class AzureCognitiveSearchMemory
         }
 
         var indexSchema = PrepareIndexSchema(collectionName, schema);
-        await this._adminClient.CreateIndexAsync(indexSchema, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await this._adminClient.CreateIndexAsync(indexSchema, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 409)
+        {
+            this._log.LogWarning(e, "Index already exists, nothing to do");
+        }
     }
 
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)

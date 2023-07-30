@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -27,21 +28,21 @@ public interface IPipelineOrchestrator
     /// <summary>
     /// Create a new pipeline value object for files upload
     /// </summary>
-    /// <param name="id">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
+    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
-    /// <param name="collectionIds">List of collections where to store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
+    /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds, IEnumerable<IFormFile> filesToUpload);
+    DataPipeline PrepareNewFileUploadPipeline(string documentId, string userId, TagCollection tags, IEnumerable<IFormFile> filesToUpload);
 
     /// <summary>
     /// Create a new pipeline value object, with an empty list of files
     /// </summary>
-    /// <param name="id">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
+    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
-    /// <param name="collectionIds">List of collections where to store the semantic memory extracted from the files. E.g. "chat ID", "personal", etc.</param>
+    /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds);
+    DataPipeline PrepareNewFileUploadPipeline(string documentId, string userId, TagCollection tags);
 
     /// <summary>
     /// Start a new data pipeline execution

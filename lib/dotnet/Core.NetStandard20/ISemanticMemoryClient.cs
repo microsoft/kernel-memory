@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
-
-// ReSharper disable CommentTypo
 
 namespace Microsoft.SemanticMemory.Core20;
 
 public interface ISemanticMemoryClient
 {
-    public Task ImportFileAsync(string file, ImportFileOptions options);
-    public Task ImportFilesAsync(string[] files, ImportFileOptions options);
+    public Task<string> ImportFileAsync(Document file);
+    public Task<IList<string>> ImportFilesAsync(Document[] files);
+    public Task<string> ImportFileAsync(string fileName);
+    public Task<string> ImportFileAsync(string fileName, DocumentDetails details);
+    public Task<string> AskAsync(string question, string userId);
 }

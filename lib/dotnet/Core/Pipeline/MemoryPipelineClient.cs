@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -8,21 +10,12 @@ using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core20;
 
-namespace Microsoft.SemanticMemory.PipelineClient;
+namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public class MemoryPipelineClient : ISemanticMemoryClient
 {
-    private readonly SemanticMemoryConfig _config;
-    private readonly Lazy<Task<InProcessPipelineOrchestrator>> _inProcessOrchestrator = new(BuildInProcessOrchestratorAsync);
-
-    private Task<InProcessPipelineOrchestrator> Orchestrator
-    {
-        get { return this._inProcessOrchestrator.Value; }
-    }
-
     public MemoryPipelineClient() : this(SemanticMemoryConfig.LoadFromAppSettings())
     {
     }
@@ -32,17 +25,34 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         this._config = config;
     }
 
-    public Task ImportFileAsync(string file, ImportFileOptions options)
+    /// <inheritdoc />
+    public async Task<string> ImportFileAsync(Document file)
     {
-        return this.ImportFilesInternalAsync(new[] { file }, options);
+        var ids = await this.ImportFilesAsync(new[] { file }).ConfigureAwait(false);
+        return ids.First();
     }
 
-    public Task ImportFilesAsync(string[] files, ImportFileOptions options)
+    /// <inheritdoc />
+    public Task<IList<string>> ImportFilesAsync(Document[] files)
     {
-        return this.ImportFilesInternalAsync(files, options);
+        return this.ImportFilesInternalAsync(files);
     }
 
-    public async Task<string> AskAsync(string question, string owner)
+    /// <inheritdoc />
+    public Task<string> ImportFileAsync(string fileName)
+    {
+        return this.ImportFileAsync(new Document(fileName));
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ImportFileAsync(string fileName, DocumentDetails details)
+    {
+        var ids = await this.ImportFilesAsync(new[] { new Document(fileName) { Details = details } }).ConfigureAwait(false);
+        return ids.First();
+    }
+
+    /// <inheritdoc />
+    public async Task<string> AskAsync(string question, string userId)
     {
         // Work in progress
 
@@ -51,32 +61,45 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         return "...work in progress...";
     }
 
-    private async Task ImportFilesInternalAsync(string[] files, ImportFileOptions options)
-    {
-        options.Sanitize();
-        options.Validate();
+    #region private
 
+    private readonly SemanticMemoryConfig _config;
+    private readonly Lazy<Task<InProcessPipelineOrchestrator>> _inProcessOrchestrator = new(BuildInProcessOrchestratorAsync);
+
+    private Task<InProcessPipelineOrchestrator> Orchestrator
+    {
+        get { return this._inProcessOrchestrator.Value; }
+    }
+
+    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files)
+    {
+        List<string> ids = new();
         InProcessPipelineOrchestrator orchestrator = await this.Orchestrator.ConfigureAwait(false);
 
-        var pipeline = orchestrator
-            .PrepareNewFileUploadPipeline(options.DocumentId, options.UserId, options.CollectionIds);
-
-        // Include all files
-        for (int index = 0; index < files.Length; index++)
+        foreach (Document file in files)
         {
-            string file = files[index];
-            pipeline.AddUploadFile($"file{index + 1}", file, file);
+            var pipeline = orchestrator
+                .PrepareNewFileUploadPipeline(
+                    documentId: file.Details.DocumentId,
+                    userId: file.Details.UserId, file.Details.Tags);
+
+            pipeline.AddUploadFile(
+                name: "file1",
+                filename: file.FileName,
+                sourceFile: file.FileName);
+
+            pipeline
+                .Then("extract")
+                .Then("partition")
+                .Then("gen_embeddings")
+                .Then("save_embeddings")
+                .Build();
+
+            await orchestrator.RunPipelineAsync(pipeline).ConfigureAwait(false);
+            ids.Add(file.Details.DocumentId);
         }
 
-        pipeline
-            .Then("extract")
-            .Then("partition")
-            .Then("gen_embeddings")
-            .Then("save_embeddings")
-            .Build();
-
-        // Execute pipeline
-        await orchestrator.RunPipelineAsync(pipeline).ConfigureAwait(false);
+        return ids;
     }
 
     private static async Task<InProcessPipelineOrchestrator> BuildInProcessOrchestratorAsync()
@@ -137,4 +160,6 @@ public class MemoryPipelineClient : ISemanticMemoryClient
     {
         return services.GetService<ILogger<T>>();
     }
+
+    #endregion
 }

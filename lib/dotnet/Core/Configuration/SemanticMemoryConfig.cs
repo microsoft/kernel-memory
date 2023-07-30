@@ -42,7 +42,6 @@ public class SemanticMemoryConfig
             return new T();
         }
 
-        // return section.GetSection(sectionName).Get<T>() ?? new T();
         return section.Get<T>() ?? new T();
     }
 

@@ -14,20 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataFormats.Pdf", "lib\dotn
 EndProject
 
 
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{B0F7938A-1D0F-44C9-AF2D-A89946E94972}"
-	ProjectSection(SolutionItems) = preProject
-		clients\README.md = clients\README.md
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{7761EC04-9E17-44EE-A6D8-9FB97F14AF61}"
 	ProjectSection(SolutionItems) = preProject
 		clients\curl\README.md = clients\curl\README.md
 		clients\curl\upload-file.sh = clients\curl\upload-file.sh
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{6335B02C-9964-4B39-9795-C5F5F0392515}"
-	ProjectSection(SolutionItems) = preProject
-		clients\samples\README.md = clients\samples\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileImportExamples", "clients\samples\FileImportExamples\FileImportExamples.csproj", "{DF03D46C-D50D-4709-89C5-BB596A94096D}"
@@ -38,14 +28,7 @@ EndProject
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{6CADEE0D-3600-4AA6-A49C-24AA96456ECC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{5B0FAB7B-F674-4322-9D40-8902C7D4CF15}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomHandlerExample", "server\samples\CustomHandlerExample\CustomHandlerExample.csproj", "{C7E85644-7558-470D-AA38-1E9AD9F9169D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{E097BACD-C329-4FF6-A4AC-260F7BA143FF}"
-	ProjectSection(SolutionItems) = preProject
-		server\tools\run-rabbitmq.sh = server\tools\run-rabbitmq.sh
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineService", "server\pipelineservice-dotnet\PipelineService.csproj", "{3700B51B-B34A-4AC9-9895-FF422B346E6E}"
 EndProject
@@ -68,10 +51,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryPipelineClient", "clients\dotnet\MemoryPipelineClient\MemoryPipelineClient.csproj", "{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryWebClient", "clients\dotnet\MemoryWebClient\MemoryWebClient.csproj", "{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{56AB71BB-335A-41BF-92A1-105359D9DC38}"
 	ProjectSection(SolutionItems) = preProject
 		clients\samples\curl\example.sh = clients\samples\curl\example.sh
@@ -83,6 +62,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CombinedServices", "server\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "lib\dotnet\InteractiveSetup\InteractiveSetup.csproj", "{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
+	ProjectSection(SolutionItems) = preProject
+		clients\samples\README.md = clients\samples\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
+	ProjectSection(SolutionItems) = preProject
+		clients\README.md = clients\README.md
+		server\tools\run-rabbitmq.sh = server\tools\run-rabbitmq.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,22 +81,17 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3700B51B-B34A-4AC9-9895-FF422B346E6E} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
 		{409046D9-64C4-49A9-9E93-6F5475ECC6D4} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
-		{E097BACD-C329-4FF6-A4AC-260F7BA143FF} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
-		{6335B02C-9964-4B39-9795-C5F5F0392515} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
-		{7761EC04-9E17-44EE-A6D8-9FB97F14AF61} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
 		{066053BB-FFC2-43FF-A912-61C6ABCC7B4E} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 		{08A995C6-C5E7-461A-A14C-467141C37157} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 		{74E4482A-590B-4243-AC08-1F81BBF0A0AF} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
 		{53D3C75F-3C40-4D55-8C3F-062607217204} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
-		{DF03D46C-D50D-4709-89C5-BB596A94096D} = {6335B02C-9964-4B39-9795-C5F5F0392515}
-		{F3E26445-0850-4FA0-8C23-947CD260D617} = {6335B02C-9964-4B39-9795-C5F5F0392515}
-		{5B0FAB7B-F674-4322-9D40-8902C7D4CF15} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
-		{C7E85644-7558-470D-AA38-1E9AD9F9169D} = {5B0FAB7B-F674-4322-9D40-8902C7D4CF15}
-		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
-		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4} = {B0F7938A-1D0F-44C9-AF2D-A89946E94972}
-		{56AB71BB-335A-41BF-92A1-105359D9DC38} = {6335B02C-9964-4B39-9795-C5F5F0392515}
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE} = {6CADEE0D-3600-4AA6-A49C-24AA96456ECC}
 		{25A5E2C3-A16E-4888-9B4B-07BD23C7E1B0} = {8E36E21B-00CC-4B85-98FB-6CB2CA5F978C}
+		{56AB71BB-335A-41BF-92A1-105359D9DC38} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{DF03D46C-D50D-4709-89C5-BB596A94096D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{F3E26445-0850-4FA0-8C23-947CD260D617} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{7761EC04-9E17-44EE-A6D8-9FB97F14AF61} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
+		{C7E85644-7558-470D-AA38-1E9AD9F9169D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3700B51B-B34A-4AC9-9895-FF422B346E6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -145,14 +130,6 @@ Global
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7E85644-7558-470D-AA38-1E9AD9F9169D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7325C2AE-E7B2-4866-96BF-8E0385DA06C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA4B40FF-7C98-46BE-8B34-C87D609F66E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9292FE05-6206-4046-8C7F-E1DCA25DEAAE}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 
@@ -14,7 +15,7 @@ public class UploadRequest
 {
     public string DocumentId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
-    public IEnumerable<string> CollectionIds { get; set; } = new List<string>();
+    public TagCollection Tags { get; set; } = new();
     public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
 
     /* Resources:
@@ -25,9 +26,8 @@ public class UploadRequest
      */
     public static async Task<(UploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
     {
-        const string UserField = "user";
-        const string CollectionsField = "collections";
-        const string DocumentIdField = "documentId";
+        string userIdField = Constants.WebServiceUserIdField;
+        string documentIdField = Constants.WebServiceDocumentIdField;
 
         var result = new UploadRequest();
 
@@ -47,29 +47,31 @@ public class UploadRequest
         }
 
         // TODO: extract user ID from auth headers
-        if (!form.TryGetValue(UserField, out StringValues userIds) || userIds.Count != 1 || string.IsNullOrEmpty(userIds[0]))
+        if (!form.TryGetValue(userIdField, out StringValues userIds) || userIds.Count != 1 || string.IsNullOrEmpty(userIds[0]))
         {
-            return (result, false, $"Invalid or missing user ID, '{UserField}' value empty or not found, or multiple values provided");
+            return (result, false, $"Invalid or missing user ID, '{userIdField}' value empty or not found, or multiple values provided");
         }
 
-        // At least one collection must be specified. Note: the pipeline might decide to ignore the specified collections,
-        // i.e. custom pipelines can override/ignore this value, depending on the implementation chosen.
-        if (!form.TryGetValue(CollectionsField, out StringValues collectionIds) || collectionIds.Count == 0 || collectionIds.Any(string.IsNullOrEmpty))
+        if (form.TryGetValue(documentIdField, out StringValues documentIds) && documentIds.Count > 1)
         {
-            return (result, false, $"Invalid or missing collection ID, '{CollectionsField}' list is empty or contains empty values");
-        }
-
-        if (form.TryGetValue(DocumentIdField, out StringValues documentIds) && documentIds.Count > 1)
-        {
-            return (result, false, $"Invalid document ID, '{DocumentIdField}' must be a single value, not a list");
+            return (result, false, $"Invalid document ID, '{documentIdField}' must be a single value, not a list");
         }
 
         // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
         result.DocumentId = documentIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
-
         result.UserId = userIds[0]!;
-        result.CollectionIds = collectionIds;
         result.Files = form.Files;
+
+        // Store any extra field as a tag
+        foreach (string key in form.Keys)
+        {
+            if (key == documentIdField || key == userIdField || !form.TryGetValue(key, out StringValues values)) { continue; }
+
+            foreach (var x in values)
+            {
+                result.Tags.Add(key, x);
+            }
+        }
 
         return (result, true, string.Empty);
     }

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
@@ -42,7 +42,7 @@ public class MemoryRecord
     ///  * versioning, e.g. [ "LLM=AzureAda2", "Schema=1.0" ]
     ///  * etc.
     /// </summary>
-    public NameValueCollection Tags { get; set; } = new();
+    public TagCollection Tags { get; set; } = new();
 
     /// <summary>
     /// Optional Non-Searchable metadata processed client side.

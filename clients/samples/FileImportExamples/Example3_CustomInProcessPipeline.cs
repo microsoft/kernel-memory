@@ -7,6 +7,7 @@ using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core20;
 
 public static class Example3_CustomInProcessPipeline
 {
@@ -36,13 +37,13 @@ public static class Example3_CustomInProcessPipeline
         SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SemanticMemoryConfig>()!);
         await orchestrator.AddHandlerAsync(saveEmbedding);
 
-        // orchestrator.AttachHandlerAsync(...);
-        // orchestrator.AttachHandlerAsync(...);
+        // orchestrator.AddHandlerAsync(...);
+        // orchestrator.AddHandlerAsync(...);
 
         // Create sample pipeline with 4 files
         Console.WriteLine("* Defining pipeline with 4 files...");
         var pipeline = orchestrator
-            .PrepareNewFileUploadPipeline("inProcessTest", "userId", new[] { "collection1" })
+            .PrepareNewFileUploadPipeline("inProcessTest", "userZ", new TagCollection { { "testName", "example3" } })
             .AddUploadFile("file1", "file1.txt", "file1.txt")
             .AddUploadFile("file2", "file2.txt", "file2.txt")
             .AddUploadFile("file3", "file3.docx", "file3.docx")

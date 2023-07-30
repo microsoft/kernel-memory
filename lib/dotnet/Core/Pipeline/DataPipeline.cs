@@ -6,8 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -151,8 +151,8 @@ public class DataPipeline
     public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyOrder(6)]
-    [JsonPropertyName("collections")]
-    public List<string> CollectionIds { get; set; } = new();
+    [JsonPropertyName("tags")]
+    public TagCollection Tags { get; set; } = new();
 
     [JsonPropertyOrder(7)]
     [JsonPropertyName("creation")]

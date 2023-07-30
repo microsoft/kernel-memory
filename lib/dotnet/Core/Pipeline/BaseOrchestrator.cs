@@ -10,13 +10,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
-    protected const string StatusFile = "__pipeline_status.json";
-
     protected IContentStorage ContentStorage { get; private set; }
     protected ILogger<BaseOrchestrator> Log { get; private set; }
     protected CancellationTokenSource CancellationTokenSource { get; private set; }
@@ -43,23 +42,26 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public DataPipeline PrepareNewFileUploadPipeline(string id, string userId, IEnumerable<string> collectionIds)
+    public DataPipeline PrepareNewFileUploadPipeline(
+        string documentId,
+        string userId,
+        TagCollection tags)
     {
-        return this.PrepareNewFileUploadPipeline(id, userId, collectionIds, new List<IFormFile>());
+        return this.PrepareNewFileUploadPipeline(documentId, userId, tags, new List<IFormFile>());
     }
 
     ///<inheritdoc />
     public DataPipeline PrepareNewFileUploadPipeline(
-        string id,
+        string documentId,
         string userId,
-        IEnumerable<string> collectionIds,
+        TagCollection tags,
         IEnumerable<IFormFile> filesToUpload)
     {
         var pipeline = new DataPipeline
         {
-            Id = id,
+            Id = documentId,
             UserId = userId,
-            CollectionIds = collectionIds.ToList(),
+            Tags = tags,
             Creation = DateTimeOffset.UtcNow,
             LastUpdate = DateTimeOffset.UtcNow,
             FilesToUpload = filesToUpload.ToList(),
@@ -134,13 +136,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     /// <param name="ignoreExceptions">Whether to throw exceptions or just log them</param>
     protected async Task UpdatePipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken, bool ignoreExceptions = false)
     {
-        this.Log.LogInformation("Saving pipeline status to {0}/{1}", pipeline.Id, StatusFile);
+        this.Log.LogDebug("Saving pipeline status to {0}/{1}", pipeline.Id, Constants.PipelineStatusFilename);
         try
         {
             var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
             await this.ContentStorage.WriteTextFileAsync(
                     dirPath,
-                    StatusFile,
+                    Constants.PipelineStatusFilename,
                     ToJson(pipeline, true),
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -177,13 +179,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         foreach (IFormFile file in pipeline.FilesToUpload)
         {
-            if (string.Equals(file.FileName, StatusFile, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(file.FileName, Constants.PipelineStatusFilename, StringComparison.OrdinalIgnoreCase))
             {
                 this.Log.LogError("Invalid file name, upload not supported: {0}", file.FileName);
                 continue;
             }
 
-            this.Log.LogInformation("Uploading file: {0}", file.FileName);
+            this.Log.LogDebug("Uploading file: {0}", file.FileName);
             var size = await this.ContentStorage.WriteStreamAsync(dirPath, file.FileName, file.OpenReadStream(), cancellationToken).ConfigureAwait(false);
             pipeline.Files.Add(new DataPipeline.FileDetails
             {
