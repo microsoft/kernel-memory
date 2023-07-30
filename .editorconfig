@@ -133,6 +133,7 @@ dotnet_diagnostic.CA1852.severity = warning # Sealed classes
 dotnet_diagnostic.CA1859.severity = warning # Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1860.severity = warning # Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance
 dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
+dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
 dotnet_diagnostic.CA2201.severity = warning # Exception type System.Exception is not sufficiently specific
 
 dotnet_diagnostic.IDE0001.severity = warning # Simplify name
@@ -156,6 +157,8 @@ dotnet_diagnostic.IDE0082.severity = warning # Convert typeof to nameof
 dotnet_diagnostic.IDE0090.severity = warning # Simplify new expression
 dotnet_diagnostic.IDE0130.severity = warning # Namespace does not match folder structure
 dotnet_diagnostic.IDE0161.severity = warning # Use file-scoped namespace
+
+dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
 
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
@@ -252,11 +255,11 @@ dotnet_naming_style.end_in_async.word_separator =
 # Symbols
 
 dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
 dotnet_naming_symbols.local_constant.applicable_kinds = local
-dotnet_naming_symbols.local_constant.applicable_accessibilities  = *
+dotnet_naming_symbols.local_constant.applicable_accessibilities = *
 dotnet_naming_symbols.local_constant.required_modifiers = const
 
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
@@ -314,7 +317,7 @@ csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 # Modifier preferences
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:suggestion
 # Expression-level preferences
 csharp_prefer_braces = true:error
 csharp_style_deconstructed_variable_declaration = true:suggestion

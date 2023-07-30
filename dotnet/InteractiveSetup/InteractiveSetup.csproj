@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
+        <NoWarn>CA1031</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="ReadLine" Version="2.0.1" />
+    </ItemGroup>
+
+</Project>

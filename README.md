@@ -27,17 +27,21 @@ Importing documents into your Semantic Memory can be as simple as this:
 ```csharp
 var memory = new MemoryPipelineClient();
 
-await memory.ImportFileAsync("meeting-transcript.docx", new ImportFileOptions("user-1"));
+await memory.ImportFileAsync("meeting-transcript.docx");
 
-await memory.ImportFilesAsync(new[] { "business-plan.docx", "manual.pdf" }, new ImportFileOptions("user-2"));
+await memory.ImportFileAsync("business-plan.docx",
+    new DocumentDetails("file1", "user0022")
+        .AddTag("collection", "business")
+        .AddTag("collection", "plans")
+        .AddTag("type", "doc"));
 ```
 
 Asking questions
 
 ```csharp
-string answer1 = await memory.AskAsync("How many people attended the meeting?", "user-1");
+string answer1 = await memory.AskAsync("How many people attended the meeting?");
 
-string answer2 = await memory.AskAsync("what's the project timeline?", "user-2");
+string answer2 = await memory.AskAsync("what's the project timeline?", "user0022");
 ```
 
 The code leverages the default documents ingestion pipeline:
@@ -47,27 +51,18 @@ The code leverages the default documents ingestion pipeline:
 3. Extract embedding
 4. Save embedding into a vector index
 
-Data is also organized by users, protecting information and allowing to organize private information.
-
-Users can also organize memories in **collections**:
-
-```csharp
-var memory = new MemoryPipelineClient();
-
-await memory.ImportFilesAsync("business-plan.docx", new ImportFileOptions("user-2", "business"));
-
-await memory.ImportFilesAsync("February's demo.pdf", new ImportFileOptions("user-2", "demos"));
-
-await memory.ImportFilesAsync("July's demo.pdf", new ImportFileOptions("user-2", "demos"));
-```
+Data is also organized by users, protecting information and allowing to
+organize private information. And memories can be labelled and organized
+using **Tags**.
 
 ## Import memory using Semantic Memory Web Service
 
-Depending on the configuration, the code above can run all the memory encoding
-**locally inside your process, or remotely through an asynchronous service.**
+Depending on your scenarios, you might want to run all the code **locally
+inside your process, or remotely through an asynchronous service.**
 
 If you're importing small files, and need only C# or Python, and can block
-the process during the import, local-in-process execution can be fine.
+the process during the import, local-in-process execution can be fine, using
+the **MemoryPipelineClient** seen above.
 
 However, if you are in one of these scenarios:
 
@@ -82,15 +77,16 @@ However, if you are in one of these scenarios:
 
 then you can deploy Semantic Memory as a service, plugging in the
 default handlers or your custom Python/TypeScript/Java/etc. handlers,
-and leveraging the asynchronous non-blocking memory encoding process.
-[Here](server/combinedservices-dotnet/README.md) you can find a complete set
-of instruction about
-[how to run the Semantic Memory service](server/combinedservices-dotnet/README.md).
+and leveraging the asynchronous non-blocking memory encoding process,
+sending documents and asking questions using the **MemoryWebClient**.
+
+[Here](dotnet/Service/README.md) you can find a complete set of instruction
+about [how to run the Semantic Memory service](dotnet/Service/README.md).
 
 If you want to give the service a quick test, use the following commands.
 
 ```bash
-cd server/combinedservices-dotnet
+cd dotnet/Service
 
 # First time configuration, creates appsettings.Development.json
 # You can skip this step if you have already configured the service.
@@ -100,21 +96,25 @@ dotnet run setup
 ASPNETCORE_ENVIRONMENT=Development dotnet run
 ```
 
-To import files using Semantic Memory **web service**, use `SemanticMemoryWebClient`:
+To import files using Semantic Memory **web service**, use `MemoryWebClient`:
 
 ```csharp
-#reference clients/MemoryWebClient.csproj
+#reference dotnet/ClientLib/ClientLib.csproj
 
 var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 
-await memory.ImportFileAsync("file1.docx",
-    new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFileAsync("meeting-transcript.docx");
 
-await memory.ImportFilesAsync(new[] { "file2.docx", "file3.pdf" },
-    new ImportFileOptions("user-id-1", "memory-collection"));
+await memory.ImportFileAsync("business-plan.docx",
+    new DocumentDetails("file1", "user0022")
+        .AddTag("collection", "business")
+        .AddTag("collection", "plans")
+        .AddTag("type", "doc"));
 ```
 
-## Custom import pipelines
+You can find a [full example here](samples/dotnet-WebClient/).
+
+## Custom memory ingestion pipelines
 
 On the other hand, if you need a custom data pipeline, you can also
 customize the steps, which will be handled by your custom business logic:
@@ -148,3 +148,13 @@ var pipeline = orchestrator
 await orchestrator.RunPipelineAsync(pipeline);
 ```
 
+# Examples and Tools
+
+1. [Using the web service](samples/dotnet-WebClient)
+2. [Importing files without the service (serverless ingestion)](samples/dotnet-Serverless)
+3. [How to upload files from command line with curl](samples/curl)
+4. [Writing a custom pipeline handler](samples/dotnet-CustomHandler)
+5. [Importing files with custom steps](samples/dotnet-ServerlessCustomPipeline)
+6. [Extracting text from documents](samples/dotnet-ExtractTextFromDocs)
+7. [Curl script to upload files](tools/upload-file.sh)
+8. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
