@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 

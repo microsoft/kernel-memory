@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.InteractiveSetup;
 
 // Run `dotnet run setup` to run this code and setup the example

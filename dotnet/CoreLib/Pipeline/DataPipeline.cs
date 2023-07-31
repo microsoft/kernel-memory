@@ -6,8 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 

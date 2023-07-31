@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticMemory.Core20</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory.Core20</RootNamespace>
+        <AssemblyName>Microsoft.SemanticMemory.Client</AssemblyName>
+        <RootNamespace>Microsoft.SemanticMemory.Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

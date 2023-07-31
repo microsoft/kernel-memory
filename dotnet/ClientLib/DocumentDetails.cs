@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.SemanticMemory.Core20;
+namespace Microsoft.SemanticMemory.Client;
 
 public class DocumentDetails
 {

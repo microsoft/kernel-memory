@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 

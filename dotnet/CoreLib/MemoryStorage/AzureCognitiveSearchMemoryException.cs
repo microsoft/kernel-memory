@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 

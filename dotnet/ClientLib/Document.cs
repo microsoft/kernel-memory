@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Core20;
+namespace Microsoft.SemanticMemory.Client;
 
 public class Document
 {

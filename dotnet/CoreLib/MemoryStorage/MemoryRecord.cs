@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Core20;
+using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 

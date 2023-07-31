@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticMemory.Core20;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 

@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Core20;
+namespace Microsoft.SemanticMemory.Client;
 
 /// <summary>
 /// Provides the base exception from which all Semantic Kernel exceptions derive.
