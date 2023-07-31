@@ -20,6 +20,13 @@ public static class AppSettings
             data[Main.MemKey] = new JObject();
         }
 
+        if (data[Main.MemKey]!["Service"] == null)
+        {
+            data[Main.MemKey]!["Service"] = new JObject();
+            data[Main.MemKey]!["Service"]!["RunWebService"] = false;
+            data[Main.MemKey]!["Service"]!["RunHandlers"] = false;
+        }
+
         if (data[Main.MemKey]![Main.StorageKey] == null)
         {
             data[Main.MemKey]![Main.StorageKey] = new JObject();

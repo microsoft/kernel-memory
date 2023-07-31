@@ -14,8 +14,8 @@ public static class Orchestration
             Title = "How should memory ingestion be orchestrated?",
             Options = new List<Answer>
             {
-                new("In process orchestration, all .NET handlers run synchronously", InProcessOrchestrationSetup),
                 new("Using asynchronous distributed queues (allows to mix handlers written in different languages)", DistributedOrchestrationSetup),
+                new("In process orchestration, all .NET handlers run synchronously", InProcessOrchestrationSetup),
                 new("-exit-", SetupUI.Exit),
             }
         });

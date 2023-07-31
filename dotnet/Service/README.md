@@ -19,7 +19,7 @@ dotnet run setup
 ```
 
 The app will create a configuration file `appsettings.Development.json`
-that you can customize. Look at the comments in `appsettings.json` for more
+that you can customize. Look at the comments in `appsettings.json` for
 details and more advanced options.
 
 Configuration settings can be saved in four places:
@@ -38,12 +38,22 @@ Configuration settings can be saved in four places:
 
 To run the Semantic Memory service:
 
-```csharp
-ASPNETCORE_ENVIRONMENT=Development dotnet run
-```
+> ### On WSL / Linux / MacOS:
+>
+> ```shell
+> cd dotnet/Service
+> ./run.sh
+> ```
 
-The `ASPNETCORE_ENVIRONMENT` env var is required for the code to use
-the settings stored in `appsettings.Development.json`.
+> ### On Windows:
+>
+> ```shell
+> cd dotnet/Service
+> run.cmd
+> ```
+
+The `run.sh`/`run.cmd` scripts internally use the `ASPNETCORE_ENVIRONMENT` env var,
+so the code will use the settings stored in `appsettings.Development.json`.
 
 # ⚙️ Dependencies
 

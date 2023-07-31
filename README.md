@@ -19,35 +19,37 @@ Semantic Memory enhances data-driven features in applications built using SK.
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
 
-# Importing memory in serverless mode
+# Semantic Memory in serverless mode
 
 Semantic Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
 However, you can use Semantic Memory also serverless, embedding the `MemoryPipelineClient`
-in your app. Importing documents into your Semantic Memory can be as simple as this:
+in your app.
 
-```csharp
-var memory = new MemoryPipelineClient();
+> ### Importing documents into your Semantic Memory can be as simple as this:
+>
+> ```csharp
+> var memory = new MemoryPipelineClient();
+>
+> // Import a file (default user)
+> await memory.ImportFileAsync("meeting-transcript.docx");
+>
+> // Import a file specifying a User and Tags
+> await memory.ImportFileAsync("business-plan.docx",
+>     new DocumentDetails("file1", "user@some.email")
+>         .AddTag("collection", "business")
+>         .AddTag("collection", "plans")
+>         .AddTag("type", "doc"));
+> ```
 
-# Import a file (default user)
-await memory.ImportFileAsync("meeting-transcript.docx");
-
-# Import a file specifying a User and Tags
-await memory.ImportFileAsync("business-plan.docx",
-    new DocumentDetails("file1", "user@some.email")
-        .AddTag("collection", "business")
-        .AddTag("collection", "plans")
-        .AddTag("type", "doc"));
-```
-
-Asking questions
-
-```csharp
-string answer1 = await memory.AskAsync("How many people attended the meeting?");
-
-string answer2 = await memory.AskAsync("what's the project timeline?", "user@some.email");
-```
+> ### Asking questions:
+>
+> ```csharp
+> string answer1 = await memory.AskAsync("How many people attended the meeting?");
+>
+> string answer2 = await memory.AskAsync("what's the project timeline?", "user@some.email");
+> ```
 
 The code leverages the default documents ingestion pipeline:
 
@@ -62,7 +64,7 @@ Documents are organized by users, safeguarding their private information.
 Furthermore, memories can be categorized and structured using **tags**, enabling
 efficient search and retrieval through faceted navigation.
 
-## Import memory using Semantic Memory Web Service
+## Using Semantic Memory Service
 
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
@@ -90,34 +92,40 @@ sending documents and asking questions using the **MemoryWebClient**.
 [Here](dotnet/Service/README.md) you can find a complete set of instruction
 about [how to run the Semantic Memory service](dotnet/Service/README.md).
 
-If you want to give the service a quick test, use the following commands.
+If you want to give the service a quick test, use the following command
+to **start the Semantic Memory Service**:
 
-```bash
-cd dotnet/Service
+> ### On WSL / Linux / MacOS:
+>
+> ```shell
+> cd dotnet/Service
+> ./setup.sh
+> ./run.sh
+> ```
 
-# First time configuration, creates appsettings.Development.json
-# You can skip this step if you have already configured the service.
-dotnet run setup
- 
-# Run the service with settings from appsettings.Development.json
-ASPNETCORE_ENVIRONMENT=Development dotnet run
-```
+> ### On Windows:
+>
+> ```shell
+> cd dotnet/Service
+> setup.cmd
+> run.cmd
+> ```
 
-To import files using Semantic Memory **web service**, use `MemoryWebClient`:
-
-```csharp
-#reference dotnet/ClientLib/ClientLib.csproj
-
-var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
-
-await memory.ImportFileAsync("meeting-transcript.docx");
-
-await memory.ImportFileAsync("business-plan.docx",
-    new DocumentDetails("file1", "user0022")
-        .AddTag("collection", "business")
-        .AddTag("collection", "plans")
-        .AddTag("type", "doc"));
-```
+> ### To import files using Semantic Memory **web service**, use `MemoryWebClient`:
+>
+> ```csharp
+> #reference dotnet/ClientLib/ClientLib.csproj
+>
+> var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
+>
+> await memory.ImportFileAsync("meeting-transcript.docx");
+>
+> await memory.ImportFileAsync("business-plan.docx",
+>     new DocumentDetails("file1", "user0022")
+>         .AddTag("collection", "business")
+>         .AddTag("collection", "plans")
+>         .AddTag("type", "doc"));
+> ```
 
 You can find a [full example here](samples/dotnet-WebClient/).
 
