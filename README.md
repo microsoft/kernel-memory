@@ -1,11 +1,12 @@
 # Semantic Memory
 
-**Semantic Memory** is an open-source library and service specializing in the
-efficient indexing of datasets through custom continuous data pipelines.
+**Semantic Memory** is an open-source library and [service](dotnet/Service)
+specialized in the efficient indexing of datasets through custom continuous data
+pipelines.
 
 ![image](https://github.com/microsoft/semantic-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
-Utilizing advanced embeddings and LLMs, the system enables natural language
+Utilizing advanced embeddings and LLMs, the system enables Natural Language
 querying for obtaining answers from the indexed data, complete with citations
 and links to the original sources.
 
@@ -18,19 +19,23 @@ Semantic Memory enhances data-driven features in applications built using SK.
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
 
-# Examples
+# Importing memory in serverless mode
 
-## Importing memory, locally, without deployments
+Semantic Memory works and scales at best when running as a service, allowing to
+ingest thousands of documents and information without blocking your app.
 
-Importing documents into your Semantic Memory can be as simple as this:
+However, you can use Semantic Memory also serverless, embedding the `MemoryPipelineClient`
+in your app. Importing documents into your Semantic Memory can be as simple as this:
 
 ```csharp
 var memory = new MemoryPipelineClient();
 
+# Import a file (default user)
 await memory.ImportFileAsync("meeting-transcript.docx");
 
+# Import a file specifying a User and Tags
 await memory.ImportFileAsync("business-plan.docx",
-    new DocumentDetails("file1", "user0022")
+    new DocumentDetails("file1", "user@some.email")
         .AddTag("collection", "business")
         .AddTag("collection", "plans")
         .AddTag("type", "doc"));
@@ -41,26 +46,28 @@ Asking questions
 ```csharp
 string answer1 = await memory.AskAsync("How many people attended the meeting?");
 
-string answer2 = await memory.AskAsync("what's the project timeline?", "user0022");
+string answer2 = await memory.AskAsync("what's the project timeline?", "user@some.email");
 ```
 
 The code leverages the default documents ingestion pipeline:
 
-1. Extract text
-2. Partition the text in small chunks
-3. Extract embedding
-4. Save embedding into a vector index
+1. Extract text: recognize the file format and extract the information
+2. Partition the text in small chunks, to optimize search
+3. Extract embedding using an LLM embedding generator
+4. Save embedding into a vector index such as
+   [Azure Cognitive Search](https://learn.microsoft.com/en-us/azure/search/vector-search-overview),
+   [Qdrant](https://qdrant.tech/) or other DBs.
 
-Data is also organized by users, protecting information and allowing to
-organize private information. And memories can be labelled and organized
-using **Tags**.
+Documents are organized by users, safeguarding their private information.
+Furthermore, memories can be categorized and structured using **tags**, enabling
+efficient search and retrieval through faceted navigation.
 
 ## Import memory using Semantic Memory Web Service
 
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
 
-If you're importing small files, and need only C# or Python, and can block
+If you're importing small files, and need only C# or only Python, and can block
 the process during the import, local-in-process execution can be fine, using
 the **MemoryPipelineClient** seen above.
 

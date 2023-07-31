@@ -67,12 +67,30 @@ public class UploadRequest
         {
             if (key == documentIdField || key == userIdField || !form.TryGetValue(key, out StringValues values)) { continue; }
 
-            foreach (var x in values)
+            ValidateTagName(key);
+            foreach (string? x in values)
             {
                 result.Tags.Add(key, x);
             }
         }
 
         return (result, true, string.Empty);
+    }
+
+    private static void ValidateTagName(string key)
+    {
+        if (key.Contains("="))
+        {
+            throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
+        }
+
+        if (key is Constants.ReservedUserIdTag
+            or Constants.ReservedDocIdTag
+            or Constants.ReservedFileIdTag
+            or Constants.ReservedFilePartitionTag
+            or Constants.ReservedFileTypeTag)
+        {
+            throw new SemanticMemoryException($"The tag name '{key}' is reserved for internal use.");
+        }
     }
 }

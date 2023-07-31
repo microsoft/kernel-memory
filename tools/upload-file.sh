@@ -13,19 +13,21 @@ Help for Bash script
 
 Usage:
 
-    ./upload-file.sh -f <file path> -u <id> -c <list> -i <id> -s <url>
+    ./upload-file.sh -s <url> -f <file path> -u <id> [-i <id>] [-t <tag1> -t <tag2> -t <tag3> (...)]
 
-    -f file path           Path to the document to upload.
-    -u userId              User ID.
-    -c "coll1 coll2 .."    List of collection IDs separated by a space.
-    -i document ID         Unique identifier for the document uploaded.
-    -s web service URL     Semantic Memory web service URL.
+    -s web service URL     (required) Semantic Memory web service URL.
+    -f file path           (required) Path to the document to upload.
+    -u userId              (required) User ID.
+
+    -i document ID         (optional) Unique identifier for the document uploaded.
+    -t "key=value"         (optional) Key-Value tag. Multiple tags and values per tag can be set.
+
     -h                     Print this help content.
 
 
 Example:
 
-    ./upload-file.sh -f myFile.pdf -u me -c "notes meetings" -i "bash test" -s http://127.0.0.1:9001/upload
+    ./upload-file.sh -f myFile.pdf -u me -t "type=notes" -t "type=test" -i "bash test" -s http://127.0.0.1:9001/upload
 
 
 For more information visit https://github.com/microsoft/semantic-memory
@@ -36,6 +38,10 @@ _EOF_
 readParameters() {
   while [ "$1" != "" ]; do
     case $1 in
+    -s)
+      shift
+      SERVICE_URL=$1
+      ;;
     -f)
       shift
       FILENAME=$1
@@ -44,17 +50,13 @@ readParameters() {
       shift
       USER_ID=$1
       ;;
-    -c)
-      shift
-      COLLECTIONS=$1
-      ;;
     -i)
       shift
       DOCUMENT_ID=$1
       ;;
-    -s)
+    -t)
       shift
-      SERVICE_URL=$1
+      TAGS="$TAGS $1"
       ;;
     *)
       help
@@ -83,27 +85,19 @@ validatePrameters() {
     help
     exit 1
   fi
-  if [ -z "$USER_ID" ]; then
-    echo "Please specify the user ID"
-    exit 2
-  fi
-  if [ -z "$COLLECTIONS" ]; then
-    echo "Please specify the list of collection IDs"
-    exit 3
-  fi
-  if [ -z "$DOCUMENT_ID" ]; then
-    echo "Please specify a unique document ID"
-    exit 4
-  fi
   if [ -z "$SERVICE_URL" ]; then
     echo "Please specify the web service URL"
-    exit 5
+    exit 2
+  fi
+  if [ -z "$USER_ID" ]; then
+    echo "Please specify the user ID"
+    exit 3
   fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset FILENAME USER_ID COLLECTIONS DOCUMENT_ID SERVICE_URL
+  unset FILENAME SERVICE_URL USER_ID TAGS DOCUMENT_ID
   unset -f help readParameters validatePrameters cleanupEnv exitScript
 }
 
@@ -116,17 +110,17 @@ exitScript() {
 readParameters "$@"
 validatePrameters
 
-# Handle list of collection IDs
-COLLECTIONS_FIELD=""
-for x in $COLLECTIONS; do
-  COLLECTIONS_FIELD="${COLLECTIONS_FIELD} -F collections=\"${x}\""
+# Handle list of tags
+TAGS_FIELD=""
+for x in $TAGS; do
+  TAGS_FIELD="${TAGS_FIELD} -F ${x}"
 done
 
 # Send HTTP request using curl
-#set -x
+set -x
 curl -v \
   -F 'file1=@"'"${FILENAME}"'"' \
-  -F 'user="'"${USER_ID}"'"' \
+  -F 'userId="'"${USER_ID}"'"' \
   -F 'documentId="'"${DOCUMENT_ID}"'"' \
-  $COLLECTIONS_FIELD \
+  $TAGS_FIELD \
   $SERVICE_URL
