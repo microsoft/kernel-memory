@@ -67,7 +67,7 @@ readParameters() {
   done
 }
 
-validatePrameters() {
+validateParameters() {
   if [ -z "$FILENAME" ]; then
     echo "Please specify a file to upload"
     exit 1
@@ -98,7 +98,7 @@ validatePrameters() {
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
   unset FILENAME SERVICE_URL USER_ID TAGS DOCUMENT_ID
-  unset -f help readParameters validatePrameters cleanupEnv exitScript
+  unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
 # Clean exit for sourced scripts
@@ -108,7 +108,7 @@ exitScript() {
 }
 
 readParameters "$@"
-validatePrameters
+validateParameters
 
 # Handle list of tags
 TAGS_FIELD=""
