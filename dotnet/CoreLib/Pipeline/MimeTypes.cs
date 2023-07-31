@@ -11,11 +11,13 @@ public static class MimeTypes
     public const string MsWord = "application/msword";
     public const string Pdf = "application/pdf";
     public const string TextEmbeddingVector = "float[]";
+    public const string Json = "application/json";
 }
 
 public static class FileExtensions
 {
     public const string PlainText = ".txt";
+    public const string Json = ".json";
     public const string MarkDown = ".md";
     public const string MsWord = ".doc";
     public const string MsWordX = ".docx";
@@ -40,6 +42,11 @@ public class MimeTypesDetection : IMimeTypeDetection
         if (filename.EndsWith(FileExtensions.MarkDown, StringComparison.InvariantCultureIgnoreCase))
         {
             return MimeTypes.MarkDown;
+        }
+
+        if (filename.EndsWith(FileExtensions.Json, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return MimeTypes.Json;
         }
 
         if (filename.EndsWith(FileExtensions.MsWord, StringComparison.InvariantCultureIgnoreCase)
