@@ -45,7 +45,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         this._log = log ?? NullLogger<GenerateEmbeddingsHandler>.Instance;
         this._embeddingGenerators = new List<object>();
 
-        var handlerConfig = configuration.GetHandlerConfig<EmbeddingGenerationConfig>(stepName);
+        var handlerConfig = configuration.GetHandlerConfig<EmbeddingGeneratorsConfig>(stepName);
         for (int index = 0; index < handlerConfig.EmbeddingGenerators.Count; index++)
         {
             this._embeddingGenerators.Add(handlerConfig.GetEmbeddingGeneratorConfig(index));
@@ -149,7 +149,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                     }
 
                                     var generator = new OpenAITextEmbeddingGeneration(
-                                        modelId: x.Model, apiKey: x.APIKey, organization: x.OrgId);
+                                        modelId: x.Model, apiKey: x.APIKey, organization: x.OrgId, logger: this._log);
                                     string content = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
                                     IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(

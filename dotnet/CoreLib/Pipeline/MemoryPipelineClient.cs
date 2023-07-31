@@ -6,23 +6,101 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Handlers;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public class MemoryPipelineClient : ISemanticMemoryClient
 {
-    public MemoryPipelineClient() : this(SemanticMemoryConfig.LoadFromAppSettings())
+    public MemoryPipelineClient()
+        : this(SemanticMemoryConfig.LoadFromAppSettings())
     {
     }
 
-    public MemoryPipelineClient(SemanticMemoryConfig config)
+    public MemoryPipelineClient(
+        SemanticMemoryConfig config,
+        ILogger<MemoryPipelineClient>? log = null)
     {
         this._config = config;
+        this._log = log ?? NullLogger<MemoryPipelineClient>.Instance;
+
+        switch (config.Search.GetEmbeddingGeneratorConfig())
+        {
+            case AzureOpenAIConfig cfg:
+                this._embeddingGenerator = new AzureTextEmbeddingGeneration(
+                    modelId: cfg.Deployment,
+                    endpoint: cfg.Endpoint,
+                    apiKey: cfg.APIKey,
+                    logger: this._log);
+                this._embeddingType = "AzureOpenAI";
+                this._embeddingModel = cfg.Deployment;
+                break;
+
+            case OpenAIConfig cfg:
+                this._embeddingGenerator = new OpenAITextEmbeddingGeneration(
+                    modelId: cfg.Model,
+                    apiKey: cfg.APIKey,
+                    organization: cfg.OrgId,
+                    logger: this._log);
+                this._embeddingType = "OpenAI";
+                this._embeddingModel = cfg.Model;
+                break;
+
+            default:
+                throw new OrchestrationException(
+                    $"Unknown/unsupported embedding generator '{config.Search.EmbeddingGenerator?.GetType().FullName}'");
+        }
+
+        switch (config.Search.GetVectorDbConfig())
+        {
+            case AzureCognitiveSearchConfig cfg:
+                this._vectorDb = new AzureCognitiveSearchMemory(
+                    endpoint: cfg.Endpoint,
+                    apiKey: cfg.APIKey,
+                    log: this._log);
+                break;
+
+            default:
+                throw new OrchestrationException(
+                    $"Unknown/unsupported vector DB '{config.Search.VectorDb?.GetType().FullName}'");
+        }
+
+        switch (config.Search.GetTextGeneratorConfig())
+        {
+            case AzureOpenAIConfig cfg:
+                this._kernel = Kernel.Builder
+                    .WithLogger(this._log)
+                    // .WithAzureTextCompletionService()
+                    .WithAzureChatCompletionService(
+                        deploymentName: cfg.Deployment,
+                        endpoint: cfg.Endpoint,
+                        apiKey: cfg.APIKey).Build();
+                break;
+
+            case OpenAIConfig cfg:
+                this._kernel = Kernel.Builder
+                    .WithLogger(this._log)
+                    .WithOpenAIChatCompletionService(
+                        modelId: cfg.Model,
+                        apiKey: cfg.APIKey,
+                        orgId: cfg.OrgId).Build();
+                break;
+
+            default:
+                throw new OrchestrationException(
+                    $"Unknown/unsupported embedding generator '{config.Search.EmbeddingGenerator?.GetType().FullName}'");
+        }
     }
 
     /// <inheritdoc />
@@ -54,17 +132,79 @@ public class MemoryPipelineClient : ISemanticMemoryClient
     /// <inheritdoc />
     public async Task<string> AskAsync(string question, string userId)
     {
-        // Work in progress
+        const float MinSimilarity = 0.5f;
+        const int MatchesCount = 100;
+        const int AnswerTokens = 300;
 
-        await Task.Delay(0).ConfigureAwait(false);
+        string indexName = $"smemory-{userId}-{this._embeddingType}-{this._embeddingModel}";
 
-        return "...work in progress...";
+        if (this._embeddingGenerator == null) { throw new SemanticMemoryException("Embedding generator not configured"); }
+
+        if (this._vectorDb == null) { throw new SemanticMemoryException("Search vector DB not configured"); }
+
+        if (this._kernel == null) { throw new SemanticMemoryException("Semantic Kernel not configured"); }
+
+        IList<Embedding<float>> embeddings = await this._embeddingGenerator
+            .GenerateEmbeddingsAsync(new List<string> { question }).ConfigureAwait(false);
+        Embedding<float> embedding;
+        if (embeddings.Count == 0)
+        {
+            throw new SemanticMemoryException("Failed to generate embedding for the given question");
+        }
+
+        embedding = embeddings.First();
+
+        var prompt = "Facts:\n" +
+                     "{{$facts}}" +
+                     "======\n" +
+                     "Given the facts above, provide a comprehensive/detailed answer.\n" +
+                     "You don't know where the knowledge comes from, just answer.\n" +
+                     "Question: {{$question}}.\n" +
+                     "Answer: ";
+
+        var skFunction = this._kernel.CreateSemanticFunction(prompt.Trim(), maxTokens: AnswerTokens, temperature: 0);
+
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetNearestMatchesAsync(
+            indexName, embedding, MatchesCount, MinSimilarity, false);
+
+        var facts = string.Empty;
+        var tokensAvailable = 8000
+                              - GPT3Tokenizer.Encode(prompt).Count
+                              - GPT3Tokenizer.Encode(question).Count
+                              - AnswerTokens;
+        await foreach ((MemoryRecord, double) memory in matches)
+        {
+            var partition = memory.Item1.Metadata["text"].ToString()?.Trim() ?? "";
+            var fact = $"======\n{partition}\n";
+            var size = GPT3Tokenizer.Encode(fact).Count;
+            if (size < tokensAvailable)
+            {
+                facts += fact;
+                tokensAvailable -= size;
+                continue;
+            }
+
+            break;
+        }
+
+        var context = this._kernel.CreateNewContext();
+        context["facts"] = facts.Trim();
+        context["question"] = question.Trim();
+        SKContext result = await skFunction.InvokeAsync(context).ConfigureAwait(false);
+
+        return result.Result;
     }
 
     #region private
 
     private readonly SemanticMemoryConfig _config;
     private readonly Lazy<Task<InProcessPipelineOrchestrator>> _inProcessOrchestrator = new(BuildInProcessOrchestratorAsync);
+    private readonly ILogger<MemoryPipelineClient> _log;
+    private readonly IKernel? _kernel;
+    private readonly ITextEmbeddingGeneration? _embeddingGenerator;
+    private readonly AzureCognitiveSearchMemory? _vectorDb;
+    private readonly string _embeddingType = string.Empty;
+    private readonly string _embeddingModel = string.Empty;
 
     private Task<InProcessPipelineOrchestrator> Orchestrator
     {

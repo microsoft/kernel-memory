@@ -22,7 +22,7 @@ public static class Service
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "Run the .NET pipeline handlers?",
+            Title = "Run the .NET pipeline handlers as a service?",
             Options = new List<Answer>
             {
                 new("Yes", EnableHandlers),

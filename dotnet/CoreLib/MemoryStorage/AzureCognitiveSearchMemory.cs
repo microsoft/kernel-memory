@@ -23,12 +23,12 @@ namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
 public class AzureCognitiveSearchMemory
 {
-    private readonly ILogger<AzureCognitiveSearchMemory> _log;
+    private readonly ILogger _log;
 
     public AzureCognitiveSearchMemory(
         string endpoint,
         string apiKey,
-        ILogger<AzureCognitiveSearchMemory>? log = null)
+        ILogger? log = null)
     {
         if (string.IsNullOrEmpty(endpoint))
         {

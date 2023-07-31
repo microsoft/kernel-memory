@@ -8,7 +8,7 @@ using Microsoft.SemanticMemory.InteractiveSetup;
 // Run `dotnet run setup` to run this code and setup the example
 if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {
-    Main.InteractiveSetup(cfgService: true);
+    Main.InteractiveSetup(cfgService: false);
 }
 
 /* Use MemoryPipelineClient to run the default import pipeline

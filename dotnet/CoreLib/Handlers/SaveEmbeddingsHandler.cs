@@ -42,7 +42,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         this._log = log ?? NullLogger<SaveEmbeddingsHandler>.Instance;
         this._vectorDbs = new List<object>();
 
-        var handlerConfig = configuration.GetHandlerConfig<VectorStorageConfig>(stepName);
+        var handlerConfig = configuration.GetHandlerConfig<VectorDbsConfig>(stepName);
         for (int index = 0; index < handlerConfig.VectorDbs.Count; index++)
         {
             this._vectorDbs.Add(handlerConfig.GetVectorDbConfig(index));

@@ -42,6 +42,7 @@ public static class DependencyInjection
 
     public static void UseContentStorage(this IServiceCollection services, SemanticMemoryConfig config)
     {
+        // TODO: migrate to dynamic config
         const string AzureBlobs = "AZUREBLOBS";
         const string FileSystem = "FILESYSTEM";
 

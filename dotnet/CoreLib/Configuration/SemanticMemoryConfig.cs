@@ -15,6 +15,11 @@ public class SemanticMemoryConfig
     public ServiceConfig Service { get; set; } = new ServiceConfig();
 
     /// <summary>
+    /// Search settings
+    /// </summary>
+    public SearchConfig Search { get; set; } = new();
+
+    /// <summary>
     /// Content storage settings, e.g. Azure Blob or File System details
     /// </summary>
     public ContentStorageConfig ContentStorage { get; set; } = new();
@@ -26,6 +31,7 @@ public class SemanticMemoryConfig
 
     /// <summary>
     /// Memory ingestion pipeline handlers settings, e.g. settings about chunking, insights, and embeddings.
+    /// TODO: use Dictionary[string, Dictionary[string, object]]
     /// </summary>
     public Dictionary<string, IConfigurationSection> Handlers { get; set; } = new();
 
@@ -33,11 +39,6 @@ public class SemanticMemoryConfig
     /// Web service settings, e.g. whether to expose OpenAPI swagger docs.
     /// </summary>
     public bool OpenApiEnabled { get; set; } = false;
-
-    /// <summary>
-    /// Search settings
-    /// </summary>
-    public SearchConfig Search { get; set; } = new();
 
     /// <summary>
     /// Get pipeline handler configuration.
