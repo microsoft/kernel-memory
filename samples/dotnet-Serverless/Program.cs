@@ -8,15 +8,15 @@ using Microsoft.SemanticMemory.InteractiveSetup;
 // Run `dotnet run setup` to run this code and setup the example
 if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {
-    Main.InteractiveSetup(cfgService: false);
+    Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
 }
 
 /* Use MemoryPipelineClient to run the default import pipeline
  * in the same process, without distributed queues.
- * 
+ *
  * The pipeline might use settings in appsettings.json, but uses
  * 'InProcessPipelineOrchestrator' explicitly.
- * 
+ *
  * Note: no web service required, each file is processed in this process. */
 
 var config = SemanticMemoryConfig.LoadFromAppSettings();

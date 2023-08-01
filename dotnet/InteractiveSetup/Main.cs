@@ -17,6 +17,7 @@ public static class Main
     public const string TypeKey = "Type";
     public const string EndpointKey = "Endpoint";
     public const string ApiKeyKey = "APIKey";
+    public const string VectorIndexPrefixKey = "VectorIndexPrefix";
     public const string ConnectionStringKey = "ConnectionString";
     public const string DeploymentNameKey = "Deployment";
     public const string ModelNameKey = "Model";
@@ -42,6 +43,7 @@ public static class Main
         try
         {
             if (cfgService) { Service.Setup(); }
+            else { Service.RemoveSettings(); }
 
             if (cfgService && cfgWebService) { WebService.Setup(); }
 
@@ -50,6 +52,7 @@ public static class Main
             if (cfgContentStorage) { ContentStorage.Setup(); }
 
             if (cfgOrchestration) { Orchestration.Setup(); }
+            else { Orchestration.RemoveSettings(); }
 
             if (cfgHandlers) { PipelineHandlers.Setup(); }
 
@@ -120,6 +123,26 @@ public static class Main
 
                 if (data[MemKey]![SearchKey]!["VectorDb"]![TypeKey]?.ToString() == AzureCognitiveSearchType
                     && NotEmpty(data[MemKey]![SearchKey]!["VectorDb"]![ApiKeyKey], out var value2))
+                {
+                    return value2;
+                }
+
+                break;
+            }
+            case "AzureCognitiveSearchIndexNamePrefix":
+            {
+                foreach (JToken x in (JArray)(data[MemKey]![HandlersKey]!["save_embeddings"]!["VectorDbs"] ?? new JArray()))
+                {
+                    if (x.Type == JTokenType.Comment) { continue; }
+
+                    if (IsEquals(x[TypeKey], AzureCognitiveSearchType) && NotEmpty(x["VectorIndexPrefix"], out var value))
+                    {
+                        return value;
+                    }
+                }
+
+                if (data[MemKey]![SearchKey]!["VectorDb"]![TypeKey]?.ToString() == AzureCognitiveSearchType
+                    && NotEmpty(data[MemKey]![SearchKey]!["VectorDb"]!["VectorIndexPrefix"], out var value2))
                 {
                     return value2;
                 }

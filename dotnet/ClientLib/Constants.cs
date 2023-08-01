@@ -18,7 +18,7 @@ public static class Constants
 
     // Tags reserved for internal logic
     public const string ReservedUserIdTag = "__user";
-    public const string ReservedDocIdTag = "__doc_id";
+    public const string ReservedPipelineIdTag = "__pipeline_id";
     public const string ReservedFileIdTag = "__file_id";
     public const string ReservedFilePartitionTag = "__file_part";
     public const string ReservedFileTypeTag = "__file_type";

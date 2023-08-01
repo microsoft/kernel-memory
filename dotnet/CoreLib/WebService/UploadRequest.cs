@@ -79,13 +79,13 @@ public class UploadRequest
 
     private static void ValidateTagName(string key)
     {
-        if (key.Contains("="))
+        if (key.Contains('=', StringComparison.Ordinal))
         {
             throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
         }
 
         if (key is Constants.ReservedUserIdTag
-            or Constants.ReservedDocIdTag
+            or Constants.ReservedPipelineIdTag
             or Constants.ReservedFileIdTag
             or Constants.ReservedFilePartitionTag
             or Constants.ReservedFileTypeTag)

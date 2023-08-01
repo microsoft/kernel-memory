@@ -32,6 +32,12 @@ public static class Service
         });
     }
 
+    public static void RemoveSettings()
+    {
+        DisableWebService();
+        DisableHandlers();
+    }
+
     private static void EnableWebService()
     {
         JObject data = AppSettings.Load();

@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.InteractiveSetup;
-
-// Run `dotnet run setup` to run this code and setup the example
-if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
-{
-    Main.InteractiveSetup(cfgService: true);
-}
 
 /* Use SemanticMemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".

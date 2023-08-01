@@ -10,7 +10,7 @@ using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 
-public static class Endpoints
+public static class UploadEndpoint
 {
     public static async Task<IResult> UploadAsync(
         WebApplication app,

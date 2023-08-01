@@ -21,13 +21,15 @@ using Microsoft.SemanticMemory.Core.Diagnostics;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
-public class AzureCognitiveSearchMemory
+public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 {
+    private readonly string _indexPrefix;
     private readonly ILogger _log;
 
     public AzureCognitiveSearchMemory(
         string endpoint,
         string apiKey,
+        string indexPrefix = "",
         ILogger? log = null)
     {
         if (string.IsNullOrEmpty(endpoint))
@@ -40,29 +42,23 @@ public class AzureCognitiveSearchMemory
             throw new ConfigurationException("Azure Cognitive Search API key is empty");
         }
 
+        this._indexPrefix = indexPrefix;
+
         this._log = log ?? NullLogger<AzureCognitiveSearchMemory>.Instance;
 
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
     }
 
-    public async Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task CreateIndexAsync(string indexName, VectorDbSchema schema, CancellationToken cancellationToken = default)
     {
-        string indexName = NormalizeIndexName(collectionName);
-
-        return await this.GetIndexesAsync(cancellationToken)
-            .AnyAsync(index => string.Equals(index, indexName, StringComparison.OrdinalIgnoreCase),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task CreateCollectionAsync(string collectionName, VectorDbSchema schema, CancellationToken cancellationToken = default)
-    {
-        if (await this.DoesCollectionExistAsync(collectionName, cancellationToken).ConfigureAwait(false))
+        if (await this.DoesIndexExistAsync(indexName, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
 
-        var indexSchema = PrepareIndexSchema(collectionName, schema);
+        var indexSchema = this.PrepareIndexSchema(indexName, schema);
 
         try
         {
@@ -74,14 +70,16 @@ public class AzureCognitiveSearchMemory
         }
     }
 
-    public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        return this._adminClient.DeleteIndexAsync(NormalizeIndexName(collectionName), cancellationToken);
+        return this._adminClient.DeleteIndexAsync(this.NormalizeIndexName(indexName), cancellationToken);
     }
 
-    public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var client = this.GetSearchClient(collectionName);
+        var client = this.GetSearchClient(indexName);
         AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
 
         await client.IndexDocumentsAsync(
@@ -92,34 +90,16 @@ public class AzureCognitiveSearchMemory
         return record.Id;
     }
 
-    public async IAsyncEnumerable<string> UpsertBatchAsync(
-        string collectionName,
-        IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var client = this.GetSearchClient(collectionName);
-
-        foreach (MemoryRecord record in records)
-        {
-            var localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
-            await client.IndexDocumentsAsync(
-                IndexDocumentsBatch.Upload(new[] { localRecord }),
-                new IndexDocumentsOptions { ThrowOnAnyError = true },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            yield return record.Id;
-        }
-    }
-
+    /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
-        string collectionName,
+        string indexName,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var client = this.GetSearchClient(collectionName);
+        var client = this.GetSearchClient(indexName);
 
         SearchQueryVector vectorQuery = new()
         {
@@ -153,6 +133,34 @@ public class AzureCognitiveSearchMemory
         }
     }
 
+    private async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
+    {
+        string normalizeIndexName = this.NormalizeIndexName(indexName);
+
+        return await this.GetIndexesAsync(cancellationToken)
+            .AnyAsync(index => string.Equals(index, normalizeIndexName, StringComparison.OrdinalIgnoreCase),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    private async IAsyncEnumerable<string> UpsertBatchAsync(
+        string indexName,
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var client = this.GetSearchClient(indexName);
+
+        foreach (MemoryRecord record in records)
+        {
+            var localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
+            await client.IndexDocumentsAsync(
+                IndexDocumentsBatch.Upload(new[] { localRecord }),
+                new IndexDocumentsOptions { ThrowOnAnyError = true },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            yield return record.Id;
+        }
+    }
+
     #region private
 
     /// <summary>
@@ -177,7 +185,7 @@ public class AzureCognitiveSearchMemory
     /// <returns>Search client ready to read/write</returns>
     private SearchClient GetSearchClient(string indexName)
     {
-        indexName = NormalizeIndexName(indexName);
+        indexName = this.NormalizeIndexName(indexName);
 
         // Search an available client from the local cache
         if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient? client))
@@ -234,25 +242,35 @@ public class AzureCognitiveSearchMemory
     /// </summary>
     /// <param name="indexName">Value to normalize</param>
     /// <returns>Normalized name</returns>
-    private static string NormalizeIndexName(string indexName)
+    private string NormalizeIndexName(string indexName)
     {
+        indexName = $"{this._indexPrefix}{indexName}";
+
         if (indexName.Length > 128)
         {
-            throw new AzureCognitiveSearchMemoryException("The collection name is too long, it cannot exceed 128 chars.");
+            throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
         indexName = indexName.ToLowerInvariant();
 #pragma warning restore CA1308
 
-        return s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+        indexName = s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+
+        // Name cannot start with a dash
+        if (indexName.StartsWith('-')) { indexName = $"z{indexName}"; }
+
+        // Name cannot end with a dash
+        if (indexName.EndsWith('-')) { indexName = $"{indexName}z"; }
+
+        return indexName;
     }
 
-    private static SearchIndex PrepareIndexSchema(string indexName, VectorDbSchema schema)
+    private SearchIndex PrepareIndexSchema(string indexName, VectorDbSchema schema)
     {
         ValidateSchema(schema);
 
-        indexName = NormalizeIndexName(indexName);
+        indexName = this.NormalizeIndexName(indexName);
 
         const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
 
@@ -298,14 +316,12 @@ public class AzureCognitiveSearchMemory
 
                     break;
                 case VectorDbField.FieldType.Text:
-                    // TODO: bug in Azure Cognitive Search? Vector search requires at least one searchable text field
-                    indexSchema.Fields.Add(new SearchField(field.Name, SearchFieldDataType.String)
+                    indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.String)
                     {
                         IsKey = field.IsKey,
-                        IsFilterable = field.IsKey || field.IsFilterable,
+                        IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
                         IsFacetable = false,
                         IsSortable = false,
-                        IsSearchable = field.IsKey, // workaround for Azure Cognitive Search requiring one searchable text field
                     });
                     break;
 
@@ -313,7 +329,7 @@ public class AzureCognitiveSearchMemory
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Int64)
                     {
                         IsKey = field.IsKey,
-                        IsFilterable = field.IsKey || field.IsFilterable,
+                        IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
                         IsFacetable = false,
                         IsSortable = false,
                     });
@@ -323,7 +339,7 @@ public class AzureCognitiveSearchMemory
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Double)
                     {
                         IsKey = field.IsKey,
-                        IsFilterable = field.IsKey || field.IsFilterable,
+                        IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
                         IsFacetable = false,
                         IsSortable = false,
                     });

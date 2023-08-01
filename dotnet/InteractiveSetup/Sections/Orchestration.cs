@@ -21,7 +21,12 @@ public static class Orchestration
         });
     }
 
-    private static void InProcessOrchestrationSetup()
+    public static void RemoveSettings()
+    {
+        InProcessOrchestrationSetup();
+    }
+
+    public static void InProcessOrchestrationSetup()
     {
         JObject data = AppSettings.Load();
 

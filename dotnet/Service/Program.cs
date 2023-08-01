@@ -77,7 +77,7 @@ if (config.Service.RunWebService)
     app.MapPost("/upload", async Task<IResult> (
         HttpRequest request,
         IPipelineOrchestrator orchestrator,
-        ILogger<Program> log) => await Endpoints.UploadAsync(app, request, orchestrator, log));
+        ILogger<Program> log) => await UploadEndpoint.UploadAsync(app, request, orchestrator, log));
 }
 
 // ********************************************************

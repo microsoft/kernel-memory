@@ -92,7 +92,8 @@ public static class PipelineHandlers
                     {
                         [Main.TypeKey] = Main.AzureCognitiveSearchType,
                         [Main.EndpointKey] = SetupUI.AskOpenQuestion("Azure Cognitive Search <endpoint>", Main.FindValueFor("AzureCognitiveSearchEndpoint")),
-                        [Main.ApiKeyKey] = SetupUI.AskPassword("Azure Cognitive Search <API Key>", Main.FindValueFor("AzureCognitiveSearchApiKey"))
+                        [Main.ApiKeyKey] = SetupUI.AskPassword("Azure Cognitive Search <API Key>", Main.FindValueFor("AzureCognitiveSearchApiKey")),
+                        [Main.VectorIndexPrefixKey] = SetupUI.AskOpenQuestion("Optional index name prefix, e.g. 'smemory'", Main.FindValueFor("AzureCognitiveSearchIndexNamePrefix")),
                     }
                 };
                 break;

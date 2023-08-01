@@ -31,8 +31,8 @@ public static class VectorDb
             case TypedConfig.Types.AzureCognitiveSearch:
                 return json.JsonDeserializeNotNull<AzureCognitiveSearchConfig>();
 
-            // case VectorStorageConfigTypedConfig.Types.Qdrant:
-            //     return json.DeserializeAs<QdrantConfig>();
+                // case VectorStorageConfigTypedConfig.Types.Qdrant:
+                //     return json.DeserializeAs<QdrantConfig>();
         }
     }
 }

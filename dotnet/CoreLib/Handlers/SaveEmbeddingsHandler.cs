@@ -75,14 +75,13 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
                 var record = new MemoryRecord
                 {
-                    Id = $"u={pipeline.UserId}//p={pipeline.Id}//v={embeddingFile.Value.Id}",
-                    SourceId = $"u={pipeline.UserId}//p={pipeline.Id}//v={embeddingFile.Value.ParentId}",
+                    Id = $"usr={pipeline.UserId}//ppl={pipeline.Id}//prt={embeddingFile.Value.Id}",
                     Vector = embeddingData.Vector,
                     Owner = pipeline.UserId,
                 };
 
-                record.Tags.Add(Constants.ReservedUserIdTag, pipeline.UserId);
-                record.Tags.Add(Constants.ReservedDocIdTag, pipeline.Id);
+                // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
+                record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.Id);
                 record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
                 record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
                 record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
@@ -102,11 +101,11 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 switch (storageConfig)
                 {
                     case AzureCognitiveSearchConfig cfg:
-                        await this.StoreInAzureCognitiveSearchAsync(cfg, record, embeddingData.GeneratorProvider, embeddingData.GeneratorName, cancellationToken).ConfigureAwait(false);
+                        await this.StoreInAzureCognitiveSearchAsync(cfg, record, cancellationToken).ConfigureAwait(false);
                         break;
 
                     case QdrantConfig cfg:
-                        await this.StoreInQdrantAsync(cfg, record, embeddingData.GeneratorProvider, embeddingData.GeneratorName, cancellationToken).ConfigureAwait(false);
+                        await this.StoreInQdrantAsync(cfg, record, cancellationToken).ConfigureAwait(false);
                         break;
                 }
             }
@@ -118,22 +117,26 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     public async Task StoreInAzureCognitiveSearchAsync(
         AzureCognitiveSearchConfig config,
         MemoryRecord record,
-        string vectorProvider,
-        string vectorGenerator,
         CancellationToken cancellationToken)
     {
-        var client = new AzureCognitiveSearchMemory(config.Endpoint, config.APIKey);
-        string indexName = $"smemory-{record.Owner}-{vectorProvider}-{vectorGenerator}";
+        ISemanticMemoryVectorDb client = new AzureCognitiveSearchMemory(
+            endpoint: config.Endpoint,
+            apiKey: config.APIKey,
+            indexPrefix: config.VectorIndexPrefix,
+            log: this._log);
 
-        await client.CreateCollectionAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(record.Vector.Count), cancellationToken).ConfigureAwait(false);
+        string indexName = record.Owner;
+
+        this._log.LogTrace("Creating index '{0}'", indexName);
+        await client.CreateIndexAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(record.Vector.Count), cancellationToken).ConfigureAwait(false);
+
+        this._log.LogTrace("Savind record {0} in index '{1}'", record.Id, indexName);
         await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task StoreInQdrantAsync(
         QdrantConfig config,
         MemoryRecord record,
-        string vectorProvider,
-        string vectorGenerator,
         CancellationToken cancellationToken)
     {
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);

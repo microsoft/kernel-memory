@@ -16,8 +16,6 @@ internal sealed class AzureCognitiveSearchMemoryRecord
 {
     private const string IdField = "id";
     internal const string VectorField = "embedding";
-    private const string OwnerField = "owner";
-    private const string SourceIdField = "source_id";
     private const string TagsField = "tags";
     private const string MetadataField = "metadata";
 
@@ -38,12 +36,6 @@ internal sealed class AzureCognitiveSearchMemoryRecord
     public float[] Vector { get; set; } = Array.Empty<float>();
 #pragma warning restore CA1819
 
-    [JsonPropertyName(OwnerField)]
-    public string Owner { get; set; } = string.Empty;
-
-    [JsonPropertyName(SourceIdField)]
-    public string SourceId { get; set; } = string.Empty;
-
     [JsonPropertyName(TagsField)]
     public List<string> Tags { get; set; } = new();
 
@@ -56,11 +48,9 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         {
             Fields = new List<VectorDbField>
             {
-                new() { Name = IdField, Type = VectorDbField.FieldType.Text, IsKey = true, IsFilterable = true },
+                new() { Name = IdField, Type = VectorDbField.FieldType.Text, IsKey = true },
                 new() { Name = VectorField, Type = VectorDbField.FieldType.Vector, VectorSize = vectorSize },
-                new() { Name = OwnerField, Type = VectorDbField.FieldType.Text, IsFilterable = true },
                 new() { Name = TagsField, Type = VectorDbField.FieldType.ListOfStrings, IsFilterable = true },
-                new() { Name = SourceIdField, Type = VectorDbField.FieldType.Text, IsFilterable = true },
                 new() { Name = MetadataField, Type = VectorDbField.FieldType.Text, IsFilterable = false },
             }
         };
@@ -71,8 +61,6 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         MemoryRecord result = new()
         {
             Id = DecodeId(this.Id),
-            Owner = this.Owner,
-            SourceId = this.SourceId,
             Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Metadata, s_jsonOptions) ?? new Dictionary<string, object>()
         };
 
@@ -84,7 +72,18 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         TagCollection tags = new();
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split('=', 2)))
         {
-            tags.Add(keyValue[0], keyValue.Length == 1 ? null : keyValue[1]);
+            string key = keyValue[0];
+            string? value = keyValue.Length == 1 ? null : keyValue[1];
+
+            // Note: record owner is stored inside Tags
+            if (key == Constants.ReservedUserIdTag)
+            {
+                result.Owner = value ?? string.Empty;
+            }
+            else
+            {
+                tags.Add(key, value);
+            }
         }
 
         return result;
@@ -96,10 +95,11 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         {
             Id = EncodeId(record.Id),
             Vector = record.Vector.Vector.ToArray(),
-            Owner = record.Owner,
-            SourceId = record.SourceId,
             Metadata = JsonSerializer.Serialize(record.Metadata, s_jsonOptions)
         };
+
+        // Note: record owner is stored inside Tags
+        result.Tags.Add($"{Constants.ReservedUserIdTag}={record.Owner}");
 
         foreach (var tag in record.Tags.Pairs)
         {

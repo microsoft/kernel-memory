@@ -43,8 +43,6 @@ public class MemoryPipelineClient : ISemanticMemoryClient
                     endpoint: cfg.Endpoint,
                     apiKey: cfg.APIKey,
                     logger: this._log);
-                this._embeddingType = "AzureOpenAI";
-                this._embeddingModel = cfg.Deployment;
                 break;
 
             case OpenAIConfig cfg:
@@ -53,8 +51,6 @@ public class MemoryPipelineClient : ISemanticMemoryClient
                     apiKey: cfg.APIKey,
                     organization: cfg.OrgId,
                     logger: this._log);
-                this._embeddingType = "OpenAI";
-                this._embeddingModel = cfg.Model;
                 break;
 
             default:
@@ -68,6 +64,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
                 this._vectorDb = new AzureCognitiveSearchMemory(
                     endpoint: cfg.Endpoint,
                     apiKey: cfg.APIKey,
+                    indexPrefix: cfg.VectorIndexPrefix,
                     log: this._log);
                 break;
 
@@ -136,7 +133,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
         const int MatchesCount = 100;
         const int AnswerTokens = 300;
 
-        string indexName = $"smemory-{userId}-{this._embeddingType}-{this._embeddingModel}";
+        string indexName = userId;
 
         if (this._embeddingGenerator == null) { throw new SemanticMemoryException("Embedding generator not configured"); }
 
@@ -202,9 +199,7 @@ public class MemoryPipelineClient : ISemanticMemoryClient
     private readonly ILogger<MemoryPipelineClient> _log;
     private readonly IKernel? _kernel;
     private readonly ITextEmbeddingGeneration? _embeddingGenerator;
-    private readonly AzureCognitiveSearchMemory? _vectorDb;
-    private readonly string _embeddingType = string.Empty;
-    private readonly string _embeddingModel = string.Empty;
+    private readonly ISemanticMemoryVectorDb? _vectorDb;
 
     private Task<InProcessPipelineOrchestrator> Orchestrator
     {
