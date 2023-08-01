@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -22,7 +23,17 @@ public static class EmbeddingGeneration
 
     public static object ToEmbeddingGenerationConfig(this Dictionary<string, object> data)
     {
-        var typedItem = data.ToTypedConfig<TypedConfig>(out string json);
+        TypedConfig typedItem;
+        string json;
+        try
+        {
+            typedItem = data.ToTypedConfig<TypedConfig>(out json);
+        }
+        catch (Exception e)
+        {
+            throw new ConfigurationException($"Unable to load embedding generation settings: {e.Message}", e);
+        }
+
         switch (typedItem.Type)
         {
             default:

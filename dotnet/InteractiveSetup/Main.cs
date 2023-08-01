@@ -47,7 +47,7 @@ public static class Main
 
             if (cfgService && cfgWebService) { WebService.Setup(); }
 
-            if (cfgService && cfgSearch) { Search.Setup(); }
+            if (cfgService || cfgSearch) { Search.Setup(); }
 
             if (cfgContentStorage) { ContentStorage.Setup(); }
 

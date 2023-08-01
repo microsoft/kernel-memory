@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
 namespace Microsoft.SemanticMemory.Core.ContentStorage;
@@ -18,7 +17,7 @@ public class FileSystem : IContentStorage
     // Application logger
     private readonly ILogger<FileSystem> _log;
 
-    public FileSystem(string directory) : this(directory, NullLogger<FileSystem>.Instance)
+    public FileSystem(string directory) : this(directory, DefaultLogger<FileSystem>.Instance)
     {
     }
 

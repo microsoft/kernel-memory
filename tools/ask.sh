@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script uploads a file to Semantic Memory web service
+# This script sends a query to Semantic Memory web service
 # from the command line, using curl
 
 set -e
@@ -13,21 +13,18 @@ Help for Bash script
 
 Usage:
 
-    ./upload-file.sh -s <url> -f <file path> -u <id> [-i <id>] [-t <tag1> -t <tag2> -t <tag3> (...)]
+    ./ask.sh -s <url> -u <id> -q "<question>"
 
     -s web service URL     (required) Semantic Memory web service URL.
-    -f file path           (required) Path to the document to upload.
     -u userId              (required) User ID.
-
-    -i document ID         (optional) Unique identifier for the document uploaded.
-    -t "key=value"         (optional) Key-Value tag. Multiple tags and values per tag can be set.
+    -q question            (required) Question, using quotes.
 
     -h                     Print this help content.
 
 
 Example:
 
-    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type=notes" -t "type=test" -i "bash test"
+    ./ask.sh -s http://127.0.0.1:9001 -u me -q "tell me about Semantic Kernel"
 
 
 For more information visit https://github.com/microsoft/semantic-memory
@@ -42,21 +39,13 @@ readParameters() {
       shift
       SERVICE_URL=$1
       ;;
-    -f)
-      shift
-      FILENAME=$1
-      ;;
     -u)
       shift
       USER_ID=$1
       ;;
-    -i)
+    -q)
       shift
-      DOCUMENT_ID=$1
-      ;;
-    -t)
-      shift
-      TAGS="$TAGS $1"
+      QUERY=$1
       ;;
     *)
       help
@@ -76,23 +65,15 @@ validatePrameters() {
     echo "Please specify the user ID"
     exit 2
   fi
-  if [ -z "$FILENAME" ]; then
-    echo "Please specify a file to upload"
-    exit 3
-  fi
-  if [ -d "$FILENAME" ]; then
-    echo "$FILENAME is a directory."
-    exit 3
-  fi
-  if [ ! -f "$FILENAME" ]; then
-    echo "$FILENAME does not exist."
-    exit 3
+  if [ -z "$QUERY" ]; then
+    echo "Please specify the user ID"
+    exit 2
   fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL USER_ID FILENAME DOCUMENT_ID TAGS
+  unset SERVICE_URL USER_ID QUERY
   unset -f help readParameters validatePrameters cleanupEnv exitScript
 }
 
@@ -105,17 +86,9 @@ exitScript() {
 readParameters "$@"
 validatePrameters
 
-# Handle list of tags
-TAGS_FIELD=""
-for x in $TAGS; do
-  TAGS_FIELD="${TAGS_FIELD} -F ${x}"
-done
-
 # Send HTTP request using curl
 set -x
-curl -v \
-  -F 'file1=@"'"${FILENAME}"'"' \
-  -F 'userId="'"${USER_ID}"'"' \
-  -F 'documentId="'"${DOCUMENT_ID}"'"' \
-  $TAGS_FIELD \
-  $SERVICE_URL/upload
+curl -v -H 'Content-Type: application/json' \
+  -d'{"query":"'"${QUERY}"'","userId":"'"${USER_ID}"'"}' \
+  $SERVICE_URL/ask
+

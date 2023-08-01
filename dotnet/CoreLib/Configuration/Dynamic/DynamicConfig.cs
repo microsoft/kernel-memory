@@ -16,7 +16,8 @@ public static class DynamicConfig
         // The list of properties cannot be empty
         if (data.Count == 0)
         {
-            throw new ConfigurationException("The configuration is empty");
+            throw new ConfigurationException(
+                "The configuration is empty, there should be at least a 'Type' key, and usually some configuration data");
         }
 
         // The list of properties must contain "Type" to detect the class to use

@@ -24,13 +24,13 @@ Semantic Memory enhances data-driven features in applications built using SK.
 Semantic Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Semantic Memory also serverless, embedding the `MemoryPipelineClient`
+However, you can use Semantic Memory also serverless, embedding the `MemoryServerlessClient`
 in your app.
 
 > ### Importing documents into your Semantic Memory can be as simple as this:
 >
 > ```csharp
-> var memory = new MemoryPipelineClient();
+> var memory = new MemoryServerlessClient();
 >
 > // Import a file (default user)
 > await memory.ImportFileAsync("meeting-transcript.docx");
@@ -71,7 +71,7 @@ inside your process, or remotely through an asynchronous service.**
 
 If you're importing small files, and need only C# or only Python, and can block
 the process during the import, local-in-process execution can be fine, using
-the **MemoryPipelineClient** seen above.
+the **MemoryServerlessClient** seen above.
 
 However, if you are in one of these scenarios:
 

@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticMemory.Core.AppBuilders;
@@ -42,7 +41,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? NullLogger<GenerateEmbeddingsHandler>.Instance;
+        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
         this._embeddingGenerators = new List<object>();
 
         var handlerConfig = configuration.GetHandlerConfig<EmbeddingGeneratorsConfig>(stepName);

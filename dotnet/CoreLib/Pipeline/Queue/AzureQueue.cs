@@ -11,7 +11,7 @@ using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Timer = System.Timers.Timer;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
@@ -93,7 +93,7 @@ public sealed class AzureQueue : IQueue
     public AzureQueue(Func<string, QueueClient> clientBuilder, ILogger<AzureQueue>? logger)
     {
         this._clientBuilder = clientBuilder;
-        this._log = logger ?? NullLogger<AzureQueue>.Instance;
+        this._log = logger ?? DefaultLogger<AzureQueue>.Instance;
     }
 
     /// <inherit />

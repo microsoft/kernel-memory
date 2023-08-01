@@ -1,13 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
+using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Pipeline.Queue;
+using Microsoft.SemanticMemory.Core.Search;
 
 namespace Microsoft.SemanticMemory.Core.AppBuilders;
 
@@ -40,12 +49,105 @@ public static class DependencyInjection
         return config;
     }
 
+    public static void UseSearchClient(this IServiceCollection services, SemanticMemoryConfig config)
+    {
+        services.UseContentStorage(config);
+        services.UseOrchestrator(config);
+
+        ISemanticMemoryVectorDb vectorDb;
+        ITextEmbeddingGeneration embeddingGenerator;
+        IKernel kernel;
+
+        // TODO: decouple this file from the various options
+        switch (config.Search.GetVectorDbConfig())
+        {
+            case AzureCognitiveSearchConfig cfg:
+                vectorDb = new AzureCognitiveSearchMemory(
+                    endpoint: cfg.Endpoint,
+                    apiKey: cfg.APIKey,
+                    indexPrefix: cfg.VectorIndexPrefix);
+                break;
+
+            default:
+                throw new SemanticMemoryException(
+                    $"Unknown/unsupported vector DB '{config.Search.VectorDb.GetType().FullName}'");
+        }
+
+        // TODO: decouple this file from the various options
+        switch (config.Search.GetEmbeddingGeneratorConfig())
+        {
+            case AzureOpenAIConfig cfg:
+                embeddingGenerator = new AzureTextEmbeddingGeneration(
+                    modelId: cfg.Deployment,
+                    endpoint: cfg.Endpoint,
+                    apiKey: cfg.APIKey,
+                    logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
+                break;
+
+            case OpenAIConfig cfg:
+                embeddingGenerator = new OpenAITextEmbeddingGeneration(
+                    modelId: cfg.Model,
+                    apiKey: cfg.APIKey,
+                    organization: cfg.OrgId,
+                    logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
+                break;
+
+            default:
+                throw new SemanticMemoryException(
+                    $"Unknown/unsupported embedding generator '{config.Search.EmbeddingGenerator.GetType().FullName}'");
+        }
+
+        // TODO: decouple this file from the various options
+        var kernelBuilder = Kernel.Builder.WithLogger(DefaultLogger<Kernel>.Instance);
+        switch (config.Search.GetTextGeneratorConfig())
+        {
+            case AzureOpenAIConfig cfg:
+                // Note: .WithAzureTextCompletionService() Not supported
+                kernel = kernelBuilder.WithAzureChatCompletionService(
+                    deploymentName: cfg.Deployment,
+                    endpoint: cfg.Endpoint,
+                    apiKey: cfg.APIKey).Build();
+                break;
+
+            case OpenAIConfig cfg:
+                var textModels = new List<string>
+                {
+                    "text-ada-001",
+                    "text-babbage-001",
+                    "text-curie-001",
+                    "text-davinci-001",
+                    "text-davinci-002",
+                    "text-davinci-003",
+                };
+
+                if (textModels.Contains(cfg.Model.ToLowerInvariant()))
+                {
+                    kernel = kernelBuilder.WithOpenAITextCompletionService(
+                        modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
+                }
+                else
+                {
+                    kernel = kernelBuilder.WithOpenAIChatCompletionService(
+                        modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
+                }
+
+                break;
+
+            default:
+                throw new SemanticMemoryException(
+                    $"Unknown/unsupported text generator '{config.Search.TextGenerator.GetType().FullName}'");
+        }
+
+        services.AddTransient<SearchClient>(_ => new SearchClient(vectorDb, embeddingGenerator, kernel));
+    }
+
     public static void UseContentStorage(this IServiceCollection services, SemanticMemoryConfig config)
     {
         // TODO: migrate to dynamic config
         const string AzureBlobs = "AZUREBLOBS";
         const string FileSystem = "FILESYSTEM";
 
+        // TODO: decouple this file from the various storage options
         switch (config.ContentStorage.Type.ToUpperInvariant())
         {
             case AzureBlobs:

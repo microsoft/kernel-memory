@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.InteractiveSetup;
 
@@ -11,7 +10,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
     Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
 }
 
-/* Use MemoryPipelineClient to run the default import pipeline
+/* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
  *
  * The pipeline might use settings in appsettings.json, but uses
@@ -19,9 +18,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  *
  * Note: no web service required, each file is processed in this process. */
 
-var config = SemanticMemoryConfig.LoadFromAppSettings();
-
-var memory = new MemoryPipelineClient(config);
+var memory = new MemoryServerlessClient();
 
 // Uploading one file - This will create
 // a new upload every time because no file ID is specified, and

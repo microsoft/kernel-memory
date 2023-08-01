@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Timer = System.Timers.Timer;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
@@ -61,21 +61,12 @@ public sealed class FileBasedQueue : IQueue
     /// <summary>
     /// Create new file based queue
     /// </summary>
-    /// <param name="directory"></param>
-    /// <exception cref="InvalidOperationException"></exception>
-    public FileBasedQueue(string directory) : this(directory, NullLogger<FileBasedQueue>.Instance)
-    {
-    }
-
-    /// <summary>
-    /// Create new file based queue
-    /// </summary>
     /// <param name="directory">Folder where to store messages</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="log">Application logger</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public FileBasedQueue(string directory, ILogger<FileBasedQueue> logger)
+    public FileBasedQueue(string directory, ILogger<FileBasedQueue>? log = null)
     {
-        this._log = logger;
+        this._log = log ?? DefaultLogger<FileBasedQueue>.Instance;
         if (!Directory.Exists(directory))
         {
             throw new InvalidOperationException($"The directory specified doesn't exist: {directory}");

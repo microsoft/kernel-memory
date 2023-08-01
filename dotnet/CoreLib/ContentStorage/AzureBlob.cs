@@ -11,7 +11,6 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
 namespace Microsoft.SemanticMemory.Core.ContentStorage;
@@ -69,7 +68,7 @@ public class AzureBlob : IContentStorage
             throw new ContentStorageException("Unable to instantiate Azure Blob container client");
         }
 
-        this._log = logger ?? NullLogger<AzureBlob>.Instance;
+        this._log = logger ?? DefaultLogger<AzureBlob>.Instance;
     }
 
     /// <inherit />

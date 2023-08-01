@@ -7,13 +7,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
+using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.Handlers;
@@ -39,7 +39,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? NullLogger<SaveEmbeddingsHandler>.Instance;
+        this._log = log ?? DefaultLogger<SaveEmbeddingsHandler>.Instance;
         this._vectorDbs = new List<object>();
 
         var handlerConfig = configuration.GetHandlerConfig<VectorDbsConfig>(stepName);

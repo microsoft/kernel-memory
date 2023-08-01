@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -26,22 +26,15 @@ public sealed class RabbitMqQueue : IQueue
     /// <param name="port">RabbitMQ TCP port</param>
     /// <param name="user">RabbitMQ auth username</param>
     /// <param name="password">RabbitMQ auth password</param>
-    public RabbitMqQueue(string host, int port, string user, string password)
-        : this(host, port, user, password, NullLogger<RabbitMqQueue>.Instance)
-    {
-    }
-
-    /// <summary>
-    /// Create a new RabbitMQ queue instance
-    /// </summary>
-    /// <param name="host">RabbitMQ hostname/IP address</param>
-    /// <param name="port">RabbitMQ TCP port</param>
-    /// <param name="user">RabbitMQ auth username</param>
-    /// <param name="password">RabbitMQ auth password</param>
     /// <param name="log">App logger</param>
-    public RabbitMqQueue(string host, int port, string user, string password, ILogger<RabbitMqQueue> log)
+    public RabbitMqQueue(
+        string host,
+        int port,
+        string user,
+        string password,
+        ILogger<RabbitMqQueue>? log = null)
     {
-        this._log = log;
+        this._log = log ?? DefaultLogger<RabbitMqQueue>.Instance;
 
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         var factory = new ConnectionFactory

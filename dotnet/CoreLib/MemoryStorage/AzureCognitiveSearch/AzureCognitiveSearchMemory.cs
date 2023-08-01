@@ -14,12 +14,11 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 {
@@ -43,8 +42,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         }
 
         this._indexPrefix = indexPrefix;
-
-        this._log = log ?? NullLogger<AzureCognitiveSearchMemory>.Instance;
+        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
 
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
@@ -66,7 +64,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         }
         catch (RequestFailedException e) when (e.Status == 409)
         {
-            this._log.LogWarning(e, "Index already exists, nothing to do");
+            this._log.LogWarning("Index already exists, nothing to do: {0}", e.Message);
         }
     }
 
@@ -118,6 +116,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
+            this._log.LogWarning("Not found: {0}", e.Message);
             // Index not found, no data to return
         }
 
@@ -185,13 +184,14 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <returns>Search client ready to read/write</returns>
     private SearchClient GetSearchClient(string indexName)
     {
-        indexName = this.NormalizeIndexName(indexName);
+        var normalIndexName = this.NormalizeIndexName(indexName);
+        this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", indexName, normalIndexName);
 
         // Search an available client from the local cache
-        if (!this._clientsByIndex.TryGetValue(indexName, out SearchClient? client))
+        if (!this._clientsByIndex.TryGetValue(normalIndexName, out SearchClient? client))
         {
-            client = this._adminClient.GetSearchClient(indexName);
-            this._clientsByIndex[indexName] = client;
+            client = this._adminClient.GetSearchClient(normalIndexName);
+            this._clientsByIndex[normalIndexName] = client;
         }
 
         return client;
@@ -316,13 +316,47 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
                     break;
                 case VectorDbField.FieldType.Text:
-                    indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.String)
+                    var useBugWorkAround = true;
+                    if (useBugWorkAround)
                     {
-                        IsKey = field.IsKey,
-                        IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
-                        IsFacetable = false,
-                        IsSortable = false,
-                    });
+                        /* August 2023:
+                           - bug: Indexes must have a searchable string field
+                           - temporary workaround: make the key field searchable
+
+                         Example of unexpected error:
+                            Date: Tue, 01 Aug 2023 23:15:59 GMT
+                            Status: 400 (Bad Request)
+                            ErrorCode: OperationNotAllowed
+
+                            Content:
+                            {"error":{"code":"OperationNotAllowed","message":"If a query contains the search option the
+                            target index must contain one or more searchable string fields.\r\nParameter name: search",
+                            "details":[{"code":"CannotSearchWithoutSearchableFields","message":"If a query contains the
+                            search option the target index must contain one or more searchable string fields."}]}}
+
+                            at Azure.Search.Documents.SearchClient.SearchInternal[T](SearchOptions options,
+                            String operationName, Boolean async, CancellationToken cancellationToken)
+                         */
+                        indexSchema.Fields.Add(new SearchField(field.Name, SearchFieldDataType.String)
+                        {
+                            IsKey = field.IsKey,
+                            IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
+                            IsFacetable = false,
+                            IsSortable = false,
+                            IsSearchable = true,
+                        });
+                    }
+                    else
+                    {
+                        indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.String)
+                        {
+                            IsKey = field.IsKey,
+                            IsFilterable = field.IsKey || field.IsFilterable, // Filterable keys are recommended for batch operations
+                            IsFacetable = false,
+                            IsSortable = false,
+                        });
+                    }
+
                     break;
 
                 case VectorDbField.FieldType.Integer:

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 public class MyHandler : IHostedService, IPipelineStepHandler
@@ -15,7 +15,7 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? NullLogger<MyHandler>.Instance;
+        this._log = log ?? DefaultLogger<MyHandler>.Instance;
     }
 
     /// <inheritdoc />

@@ -1,4 +1,4 @@
-## Example: serverless, no deployment, using \<MemoryPipelineClient>
+## Example: serverless, no deployment, using \<MemoryServerlessClient>
 
 This example shows how to import multiple files and ask questions, without
 deploying the Semantic Memory Service.
@@ -7,7 +7,7 @@ All the logic is executed locally using the default C# handlers. Depending
 on your settings, files can be stored locally or in Azure Blobs.
 
 ```csharp
-var memory = new MemoryPipelineClient(config);
+var memory = new MemoryServerlessClient(config);
 
 await memory.ImportFilesAsync(new[]
 {

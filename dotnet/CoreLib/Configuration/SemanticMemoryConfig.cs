@@ -1,14 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class SemanticMemoryConfig
 {
+    private static IHost? s_host;
+
     /// <summary>
     /// Semantic Memory Service settings.
     /// </summary>
@@ -58,12 +63,37 @@ public class SemanticMemoryConfig
 
     public static SemanticMemoryConfig LoadFromAppSettings()
     {
-        var config = AppBuilder.Build().Services.GetService<SemanticMemoryConfig>();
+        if (s_host == null)
+        {
+            WebApplicationBuilder builder = WebApplication.CreateBuilder();
+            builder.Services.UseConfiguration(builder.Configuration);
+            s_host = builder.Build();
+        }
+
+        var config = s_host.Services.GetService<SemanticMemoryConfig>();
         if (config == null)
         {
             throw new ConfigurationException("Configuration settings are empty");
         }
 
         return config;
+    }
+
+    public static ILoggerFactory GetLogFactory()
+    {
+        if (s_host == null)
+        {
+            WebApplicationBuilder builder = WebApplication.CreateBuilder();
+            builder.Services.UseConfiguration(builder.Configuration);
+            s_host = builder.Build();
+        }
+
+        var factory = s_host.Services.GetService<ILoggerFactory>();
+        if (factory == null)
+        {
+            throw new ConfigurationException("Unable to provide logger factory");
+        }
+
+        return factory;
     }
 }

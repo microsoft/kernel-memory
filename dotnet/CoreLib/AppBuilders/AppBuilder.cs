@@ -1,36 +1,33 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Core.Configuration;
 
 namespace Microsoft.SemanticMemory.Core.AppBuilders;
 
 public static class AppBuilder
 {
-    public static IHost Build(Action<HostApplicationBuilder>? builderSetup = null, string[]? args = null)
+    public static WebApplication Build(Action<IServiceCollection, SemanticMemoryConfig>? servicesConfiguration = null)
     {
-        HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+        // Note: WebApplicationBuilder automatically handles appsettings.*.json
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT")
-        {
-            builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true);
-        }
-
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "PRODUCTION")
-        {
-            builder.Configuration.AddJsonFile("appsettings.Production.json", optional: true);
-        }
-
+        // Config first
         SemanticMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
 
+        // Logger second
         builder.Logging.ConfigureLogger();
+
+        // Other dependencies, used everywhere
         builder.Services.UseContentStorage(config);
         builder.Services.UseOrchestrator(config);
 
-        builderSetup?.Invoke(builder);
+        // Optional settings from the caller
+        servicesConfiguration?.Invoke(builder.Services, config);
 
-        return builder.Build();
+        WebApplication app = builder.Build();
+        return app;
     }
 }

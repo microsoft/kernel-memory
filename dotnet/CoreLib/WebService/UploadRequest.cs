@@ -11,6 +11,7 @@ using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 
+// Note: use multiform part serialization
 public class UploadRequest
 {
     public string DocumentId { get; set; } = string.Empty;

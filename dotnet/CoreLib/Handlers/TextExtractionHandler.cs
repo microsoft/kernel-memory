@@ -4,10 +4,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.DataFormats.Office;
 using Microsoft.SemanticMemory.Core.DataFormats.Pdf;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.Handlers;
@@ -33,7 +33,7 @@ public class TextExtractionHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? NullLogger<TextExtractionHandler>.Instance;
+        this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
