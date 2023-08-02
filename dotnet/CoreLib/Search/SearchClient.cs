@@ -44,13 +44,20 @@ public class SearchClient
         if (this._kernel == null) { throw new SemanticMemoryException("Semantic Kernel not configured"); }
     }
 
-    public Task<string> SearchAsync(SearchRequest request)
+    public Task<MemoryAnswer> SearchAsync(SearchRequest request)
     {
         return this.SearchAsync(request.UserId, request.Query);
     }
 
-    public async Task<string> SearchAsync(string userId, string query)
+    public async Task<MemoryAnswer> SearchAsync(string userId, string query)
     {
+        var noAnswer = new MemoryAnswer { Text = "INFO NOT FOUND" };
+
+        var answer = new MemoryAnswer
+        {
+            Text = "INFO NOT FOUND"
+        };
+
         this._log.LogTrace("Generating embedding for the query");
         IList<Embedding<float>> embeddings = await this._embeddingGenerator
             .GenerateEmbeddingsAsync(new List<string> { query }).ConfigureAwait(false);
@@ -67,7 +74,7 @@ public class SearchClient
                      "======\n" +
                      "Given only the facts above, provide a comprehensive/detailed answer.\n" +
                      "You don't know where the knowledge comes from, just answer.\n" +
-                     "If you don't have sufficient information, replay with 'INFO NOT FOUND'.\n" +
+                     "If you don't have sufficient information, reply with 'INFO NOT FOUND'.\n" +
                      "Question: {{$question}}\n" +
                      "Answer: ";
 
@@ -86,14 +93,24 @@ public class SearchClient
         await foreach ((MemoryRecord, double) memory in matches)
         {
             factsAvailableCount++;
-            var partition = memory.Item1.Metadata["text"].ToString()?.Trim() ?? "";
-            var fact = $"======\n{partition}\n";
+            var partitionText = memory.Item1.Metadata["text"].ToString()?.Trim() ?? "";
+            var fact = $"==== [Relevance: {memory.Item2:P1}]:\n{partitionText}\n";
             var size = GPT3Tokenizer.Encode(fact).Count;
             if (size < tokensAvailable)
             {
                 factsUsedCount++;
+                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, memory.Item2);
                 facts += fact;
                 tokensAvailable -= size;
+
+                answer.RelevantSources.Add(new Dictionary<string, object>()
+                {
+                    { "File", memory.Item1.Metadata["file_name"] },
+                    { "LastUpdate", memory.Item1.Metadata["last_update"] },
+                    { "Relevance", memory.Item2 },
+                    { "PartitionSize", size },
+                });
+
                 continue;
             }
 
@@ -103,13 +120,13 @@ public class SearchClient
         if (factsAvailableCount == 0)
         {
             this._log.LogWarning("No memories available");
-            return "INFO NOT FOUND";
+            return noAnswer;
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)
         {
             this._log.LogError("Unable to inject memories in the prompt, not enough token available");
-            return "INFO NOT FOUND";
+            return noAnswer;
         }
 
         var context = this._kernel.CreateNewContext();
@@ -122,6 +139,8 @@ public class SearchClient
         var skFunction = this._kernel.CreateSemanticFunction(prompt.Trim(), maxTokens: AnswerTokens, temperature: 0);
         SKContext result = await skFunction.InvokeAsync(context).ConfigureAwait(false);
 
-        return result.Result;
+        answer.Text = result.Result;
+
+        return answer;
     }
 }

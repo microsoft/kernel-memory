@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
@@ -53,7 +54,8 @@ var app = AppBuilder.Build((services, config) =>
     }
 });
 
-var config = app.Services.GetService<SemanticMemoryConfig>();
+var config = app.Services.GetService<SemanticMemoryConfig>()
+             ?? throw new ConfigurationException("Configuration is null");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -98,7 +100,8 @@ if (config.Service.RunWebService)
         try
         {
             var id = await orchestrator.UploadFileAsync(input);
-            return Results.Accepted($"/upload-status?id={id}", new { Id = id, Message = "Upload completed, ingestion started" });
+            return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
+                new { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
         }
         catch (Exception e)
         {
@@ -113,7 +116,17 @@ if (config.Service.RunWebService)
         ILogger<Program> log) =>
     {
         log.LogTrace("New search request");
-        return Results.Ok(await searchClient.SearchAsync(request));
+        MemoryAnswer answer = await searchClient.SearchAsync(request);
+        return Results.Ok(answer);
+    });
+
+    // Document status endpoint
+    app.MapGet("/upload-status", async Task<IResult> () =>
+    {
+        // WORK IN PROGRESS
+        await Task.Delay(0);
+
+        return Results.Ok("");
     });
 }
 #pragma warning restore CA1031

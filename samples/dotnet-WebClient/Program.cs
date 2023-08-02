@@ -14,43 +14,82 @@ using Microsoft.SemanticMemory.Client;
 var endpoint = "http://127.0.0.1:9001/";
 MemoryWebClient memory = new(endpoint);
 
+// =======================
+// === UPLOAD ============
+// =======================
+
 // Uploading one file - This will create
 // a new upload every time because no file ID is specified, and
 // stored under the "default" user because no User ID is specified.
-await memory.ImportFileAsync("file1.txt");
+await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt");
 
-// Uploading one file specifying IDs
-await memory.ImportFileAsync("file1.txt",
-    new DocumentDetails(documentId: "f01", userId: "user1"));
+// Uploading one file specifying IDs, only if the file has not been (successfully) uploaded
+if (!await memory.ExistsAsync(userId: "user1", documentId: "f01"))
+{
+    await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt",
+        new DocumentDetails(userId: "user1", documentId: "f01"));
+}
 
 // Uploading multiple files
 await memory.ImportFilesAsync(new[]
 {
-    new Document("file2.txt", new DocumentDetails("f02", "user1")),
-    new Document("file3.docx", new DocumentDetails("f03", "user1")),
-    new Document("file4.pdf", new DocumentDetails("f04", "user1")),
+    new Document("file2-Wikipedia-Moon.txt", new DocumentDetails("user1", "f02")),
+    new Document("file3-lorem-ipsum.docx", new DocumentDetails("user1", "f03")),
+    new Document("file4-SK-Readme.pdf", new DocumentDetails("user1", "f04")),
 });
 
 // Categorizing files with tags
-await memory.ImportFileAsync("file5.pdf",
-    new DocumentDetails("f05", "user2")
-        .AddTag("collection", "samples")
-        .AddTag("collection", "webClient")
-        .AddTag("collection", ".NET")
-        .AddTag("type", "news"));
+if (!await memory.ExistsAsync(userId: "user2", documentId: "f05"))
+{
+    await memory.ImportFileAsync("file5-NASA-news.pdf",
+        new DocumentDetails("user2", "f05")
+            .AddTag("collection", "samples")
+            .AddTag("collection", "webClient")
+            .AddTag("collection", ".NET")
+            .AddTag("type", "news"));
+}
 
-// TODO: wait for pipelines to complete
+// while (
+//     !await memory.ExistsAsync(userId: "user1", documentId: "f01")
+//     || !await memory.ExistsAsync(userId: "user1", documentId: "f02")
+//     || !await memory.ExistsAsync(userId: "user1", documentId: "f03")
+//     || !await memory.ExistsAsync(userId: "user1", documentId: "f04")
+//     || !await memory.ExistsAsync(userId: "user2", documentId: "f05")
+// )
+// {
+//     Console.WriteLine("Waiting for memory ingestion to complete...");
+//     await Task.Delay(TimeSpan.FromSeconds(1));
+// }
 
+// =======================
+// === ASK ===============
+// =======================
+
+// =======================
 // Test with User 1 memory
 var question = "What's Semantic Kernel?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
-string answer = await memory.AskAsync(question, "user1");
-Console.WriteLine($"Answer: {answer}");
+var answer = await memory.AskAsync("user1", question);
+Console.WriteLine($"\nAnswer: {answer.Text}\n\n  Sources:\n");
 
+foreach (var x in answer.RelevantSources)
+{
+    Console.WriteLine($"  - {x["File"]}");
+}
+
+// =======================
 // Test with User 2 memory
 question = "Any news from NASA about Orion?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
-answer = await memory.AskAsync(question, "user2");
-Console.WriteLine($"Answer: {answer}");
+answer = await memory.AskAsync("user1", question);
+Console.WriteLine($"\nUser 1 Answer: {answer.Text}\n");
+
+answer = await memory.AskAsync("user2", question);
+Console.WriteLine($"\nUser 2 Answer: {answer.Text}\n\n  Sources:\n");
+
+foreach (var x in answer.RelevantSources)
+{
+    Console.WriteLine($"  - {x["File"]}");
+}

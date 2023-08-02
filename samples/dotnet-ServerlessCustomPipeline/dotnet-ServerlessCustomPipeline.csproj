@@ -50,24 +50,24 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="file1.txt" />
-        <Content Include="file1.txt">
+        <None Remove="file1-Wikipedia-Carbon.txt" />
+        <Content Include="file1-Wikipedia-Carbon.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file2.txt" />
-        <Content Include="file2.txt">
+        <None Remove="file2-Wikipedia-Moon.txt" />
+        <Content Include="file2-Wikipedia-Moon.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file3.docx" />
-        <Content Include="file3.docx">
+        <None Remove="file3-lorem-ipsum.docx" />
+        <Content Include="file3-lorem-ipsum.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file4.pdf" />
-        <Content Include="file4.pdf">
+        <None Remove="file4-SK-Readme.pdf" />
+        <Content Include="file4-SK-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file5.pdf" />
-        <Content Include="file5.pdf">
+        <None Remove="file5-NASA-news.pdf" />
+        <Content Include="file5-NASA-news.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

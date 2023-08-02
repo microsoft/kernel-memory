@@ -50,10 +50,11 @@ await orchestrator.AddHandlerAsync(saveEmbedding);
 Console.WriteLine("* Defining pipeline with 4 files...");
 var pipeline = orchestrator
     .PrepareNewFileUploadPipeline("inProcessTest", "userZ", new TagCollection { { "testName", "example3" } })
-    .AddUploadFile("file1", "file1.txt", "file1.txt")
-    .AddUploadFile("file2", "file2.txt", "file2.txt")
-    .AddUploadFile("file3", "file3.docx", "file3.docx")
-    .AddUploadFile("file4", "file4.pdf", "file4.pdf")
+    .AddUploadFile("file1", "file1-Wikipedia-Carbon.txt", "file1-Wikipedia-Carbon.txt")
+    .AddUploadFile("file2", "file2-Wikipedia-Moon.txt", "file2-Wikipedia-Moon.txt")
+    .AddUploadFile("file3", "file3-lorem-ipsum.docx", "file3-lorem-ipsum.docx")
+    .AddUploadFile("file4", "file4-SK-Readme.pdf", "file4-SK-Readme.pdf")
+    .AddUploadFile("file5", "file5-NASA-news.pdf", "file5-NASA-news.pdf")
     .Then("extract")
     .Then("partition")
     .Then("gen_embeddings")

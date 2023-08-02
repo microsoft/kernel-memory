@@ -37,7 +37,7 @@ in your app.
 >
 > // Import a file specifying a User and Tags
 > await memory.ImportFileAsync("business-plan.docx",
->     new DocumentDetails("file1", "user@some.email")
+>     new DocumentDetails("user@some.email", "file1")
 >         .AddTag("collection", "business")
 >         .AddTag("collection", "plans")
 >         .AddTag("type", "doc"));
@@ -48,7 +48,7 @@ in your app.
 > ```csharp
 > string answer1 = await memory.AskAsync("How many people attended the meeting?");
 >
-> string answer2 = await memory.AskAsync("what's the project timeline?", "user@some.email");
+> string answer2 = await memory.AskAsync("user@some.email", "what's the project timeline?");
 > ```
 
 The code leverages the default documents ingestion pipeline:
@@ -167,7 +167,7 @@ await orchestrator.RunPipelineAsync(pipeline);
 
 1. [Using the web service](samples/dotnet-WebClient)
 2. [Importing files without the service (serverless ingestion)](samples/dotnet-Serverless)
-3. [How to upload files from command line with curl](samples/curl)
+3. [Upload files and get answers from command line with curl](samples/curl)
 4. [Writing a custom pipeline handler](samples/dotnet-CustomHandler)
 5. [Importing files with custom steps](samples/dotnet-ServerlessCustomPipeline)
 6. [Extracting text from documents](samples/dotnet-ExtractTextFromDocs)

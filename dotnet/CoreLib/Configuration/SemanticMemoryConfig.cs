@@ -63,12 +63,7 @@ public class SemanticMemoryConfig
 
     public static SemanticMemoryConfig LoadFromAppSettings()
     {
-        if (s_host == null)
-        {
-            WebApplicationBuilder builder = WebApplication.CreateBuilder();
-            builder.Services.UseConfiguration(builder.Configuration);
-            s_host = builder.Build();
-        }
+        if (s_host == null) { s_host = PrepareHost(); }
 
         var config = s_host.Services.GetService<SemanticMemoryConfig>();
         if (config == null)
@@ -81,12 +76,7 @@ public class SemanticMemoryConfig
 
     public static ILoggerFactory GetLogFactory()
     {
-        if (s_host == null)
-        {
-            WebApplicationBuilder builder = WebApplication.CreateBuilder();
-            builder.Services.UseConfiguration(builder.Configuration);
-            s_host = builder.Build();
-        }
+        if (s_host == null) { s_host = PrepareHost(); }
 
         var factory = s_host.Services.GetService<ILoggerFactory>();
         if (factory == null)
@@ -95,5 +85,13 @@ public class SemanticMemoryConfig
         }
 
         return factory;
+    }
+
+    private static IHost PrepareHost()
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.Logging.ConfigureLogger();
+        builder.Services.UseConfiguration(builder.Configuration);
+        return builder.Build();
     }
 }
