@@ -15,8 +15,8 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Azure.Identity" Version="1.9.0" />
         <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
-        <PackageReference Include="Azure.Storage.Queues" Version="12.14.0" />
+        <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+        <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
         <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
@@ -25,7 +25,7 @@
         <PackageReference Include="PdfPig" Version="0.1.8" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-        <PackageReference Include="System.Memory.Data" Version="1.0.2" />
+        <PackageReference Include="System.Memory.Data" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -45,11 +45,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0">
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.3.0">
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
