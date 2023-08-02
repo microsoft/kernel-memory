@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core.Search;
 using Microsoft.SemanticMemory.Core.WebService;
 using Microsoft.SemanticMemory.InteractiveSetup;
 
@@ -29,34 +31,39 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 // ************** APP BUILD *******************************
 // ********************************************************
 
-var builder = WebApplication.CreateBuilder(args);
-
-SemanticMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
-
-builder.Logging.ConfigureLogger();
-builder.Services.UseContentStorage(config);
-builder.Services.UseOrchestrator(config);
-
-if (config.Service.RunHandlers)
+var app = AppBuilder.Build((services, config) =>
 {
-    // Register pipeline handlers as hosted services
-    builder.Services.UseHandlerAsHostedService<TextExtractionHandler>("extract");
-    builder.Services.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
-    builder.Services.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-    builder.Services.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
-}
+    if (config.Service.RunHandlers)
+    {
+        // Register pipeline handlers as hosted services
+        services.UseHandlerAsHostedService<TextExtractionHandler>("extract");
+        services.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
+        services.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+        services.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+    }
 
-if (config.Service.RunWebService && config.OpenApiEnabled)
-{
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-}
+    if (config.Service.RunWebService && config.OpenApiEnabled)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
+    }
 
-WebApplication app = builder.Build();
+    if (config.Service.RunWebService)
+    {
+        services.UseSearchClient(config);
+    }
+});
+
+var config = app.Services.GetService<SemanticMemoryConfig>()
+             ?? throw new ConfigurationException("Configuration is null");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
 // ********************************************************
+
+#pragma warning disable CA2254 // The log msg template should be a constant
+#pragma warning disable CA1031 // Catch all required to control all errors
+// ReSharper disable once TemplateIsNotCompileTimeConstantProblem
 
 if (config.Service.RunWebService)
 {
@@ -77,8 +84,53 @@ if (config.Service.RunWebService)
     app.MapPost("/upload", async Task<IResult> (
         HttpRequest request,
         IPipelineOrchestrator orchestrator,
-        ILogger<Program> log) => await Endpoints.UploadAsync(app, request, orchestrator, log));
+        ILogger<Program> log) =>
+    {
+        log.LogTrace("New upload request");
+
+        // Note: .NET doesn't yet support binding multipart forms including data and files
+        (UploadRequest input, bool isValid, string errMsg) = await UploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
+
+        if (!isValid)
+        {
+            log.LogError(errMsg);
+            return Results.BadRequest(errMsg);
+        }
+
+        try
+        {
+            var id = await orchestrator.UploadFileAsync(input);
+            return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
+                new { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
+        }
+        catch (Exception e)
+        {
+            return Results.Problem(title: "Upload failed", detail: e.Message, statusCode: 503);
+        }
+    });
+
+    // Ask endpoint
+    app.MapPost("/ask", async Task<IResult> (
+        SearchRequest request,
+        SearchClient searchClient,
+        ILogger<Program> log) =>
+    {
+        log.LogTrace("New search request");
+        MemoryAnswer answer = await searchClient.SearchAsync(request);
+        return Results.Ok(answer);
+    });
+
+    // Document status endpoint
+    app.MapGet("/upload-status", async Task<IResult> () =>
+    {
+        // WORK IN PROGRESS
+        await Task.Delay(0);
+
+        return Results.Ok("");
+    });
 }
+#pragma warning restore CA1031
+#pragma warning restore CA2254
 
 // ********************************************************
 // ************** START ***********************************

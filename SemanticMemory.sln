@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-rabbitmq.sh = tools\run-rabbitmq.sh
 		tools\upload-file.sh = tools\upload-file.sh
 		tools\README.md = tools\README.md
+		tools\ask.sh = tools\ask.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientLib", "dotnet\ClientLib\ClientLib.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -50,9 +51,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-ExtractTextFromDocs"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
 	ProjectSection(SolutionItems) = preProject
-		samples\curl\example.sh = samples\curl\example.sh
 		samples\curl\test.pdf = samples\curl\test.pdf
 		samples\curl\README.md = samples\curl\README.md
+		samples\curl\ask-example.sh = samples\curl\ask-example.sh
+		samples\curl\upload-example.sh = samples\curl\upload-example.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-Serverless", "samples\dotnet-Serverless\dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"

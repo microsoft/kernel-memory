@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -24,6 +25,13 @@ public interface IPipelineOrchestrator
     /// <param name="handler">Handler instance</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Upload a file and start the processing pipeline
+    /// </summary>
+    /// <param name="uploadDetails">Details about the file and how to import it</param>
+    /// <returns>Import Id</returns>
+    Task<string> UploadFileAsync(UploadRequest uploadDetails);
 
     /// <summary>
     /// Create a new pipeline value object for files upload

@@ -27,7 +27,7 @@ Usage:
 
 Example:
 
-    ./upload-file.sh -f myFile.pdf -u me -t "type=notes" -t "type=test" -i "bash test" -s http://127.0.0.1:9001/upload
+    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type=notes" -t "type=test" -i "bash test"
 
 
 For more information visit https://github.com/microsoft/semantic-memory
@@ -68,36 +68,31 @@ readParameters() {
 }
 
 validateParameters() {
-  if [ -z "$FILENAME" ]; then
-    echo "Please specify a file to upload"
-    exit 1
-  fi
-  if [ -d "$FILENAME" ]; then
-    echo "$FILENAME is a directory."
-    exit 1
-  fi
-  if [ ! -f "$FILENAME" ]; then
-    echo "$FILENAME does not exist."
-    exit 1
-  fi
-  if [ -z "$FILENAME" ]; then
-    echo "Please specify a file to upload"
-    help
-    exit 1
-  fi
   if [ -z "$SERVICE_URL" ]; then
     echo "Please specify the web service URL"
-    exit 2
+    exit 1
   fi
   if [ -z "$USER_ID" ]; then
     echo "Please specify the user ID"
+    exit 2
+  fi
+  if [ -z "$FILENAME" ]; then
+    echo "Please specify a file to upload"
+    exit 3
+  fi
+  if [ -d "$FILENAME" ]; then
+    echo "$FILENAME is a directory."
+    exit 3
+  fi
+  if [ ! -f "$FILENAME" ]; then
+    echo "$FILENAME does not exist."
     exit 3
   fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset FILENAME SERVICE_URL USER_ID TAGS DOCUMENT_ID
+  unset SERVICE_URL USER_ID FILENAME DOCUMENT_ID TAGS
   unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
@@ -123,4 +118,4 @@ curl -v \
   -F 'userId="'"${USER_ID}"'"' \
   -F 'documentId="'"${DOCUMENT_ID}"'"' \
   $TAGS_FIELD \
-  $SERVICE_URL
+  $SERVICE_URL/upload

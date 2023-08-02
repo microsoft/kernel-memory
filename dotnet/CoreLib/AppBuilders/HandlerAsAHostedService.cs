@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.AppBuilders;
@@ -30,7 +30,7 @@ public class HandlerAsAHostedService<T> : IHostedService where T : IPipelineStep
         this._orchestrator = orchestrator;
         this._handler = handler;
 
-        this._log = log ?? NullLogger<HandlerAsAHostedService<T>>.Instance;
+        this._log = log ?? DefaultLogger<HandlerAsAHostedService<T>>.Instance;
         this._log.LogInformation("Handler as service created: {0}", stepName);
     }
 

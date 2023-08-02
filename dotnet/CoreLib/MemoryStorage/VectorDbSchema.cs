@@ -57,29 +57,29 @@ public class VectorDbSchema
         switch (keys)
         {
             case 0:
-                throw new AzureCognitiveSearchMemoryException("The schema doesn't contain a key field");
+                throw new SemanticMemoryException("The schema doesn't contain a key field");
             case > 1:
-                throw new AzureCognitiveSearchMemoryException("The schema cannot contain more than one key");
+                throw new SemanticMemoryException("The schema cannot contain more than one key");
         }
 
         if (vectorSizeRequired && this.Fields.Any(x => x is { Type: VectorDbField.FieldType.Vector, VectorSize: 0 }))
         {
-            throw new AzureCognitiveSearchMemoryException("Vector fields must have a size greater than zero defined");
+            throw new SemanticMemoryException("Vector fields must have a size greater than zero defined");
         }
 
         if (this.Fields.Any(x => x is { Type: VectorDbField.FieldType.Bool, IsKey: true }))
         {
-            throw new AzureCognitiveSearchMemoryException("Boolean fields cannot be used as unique keys");
+            throw new SemanticMemoryException("Boolean fields cannot be used as unique keys");
         }
 
         if (this.Fields.Any(x => x is { Type: VectorDbField.FieldType.ListOfStrings, IsKey: true }))
         {
-            throw new AzureCognitiveSearchMemoryException("Collection fields cannot be used as unique keys");
+            throw new SemanticMemoryException("Collection fields cannot be used as unique keys");
         }
 
         if (this.Fields.Any(x => x is { Type: VectorDbField.FieldType.Vector, IsKey: true }))
         {
-            throw new AzureCognitiveSearchMemoryException("Vector fields cannot be used as unique keys");
+            throw new SemanticMemoryException("Vector fields cannot be used as unique keys");
         }
     }
 }

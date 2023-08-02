@@ -22,8 +22,8 @@ public class DocumentDetails
     public TagCollection Tags { get; set; } = new();
 
     public DocumentDetails(
-        string documentId = "",
         string userId = Constants.DefaultDocumentOwnerUserId,
+        string documentId = "",
         TagCollection? tags = null)
     {
         this.DocumentId = string.IsNullOrEmpty(documentId) ? RandomId() : documentId;

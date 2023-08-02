@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.Handlers;
@@ -35,7 +35,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? NullLogger<TextPartitioningHandler>.Instance;
+        this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }

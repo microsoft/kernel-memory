@@ -1,18 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class SemanticMemoryConfig
 {
+    private static IHost? s_host;
+
     /// <summary>
     /// Semantic Memory Service settings.
     /// </summary>
     public ServiceConfig Service { get; set; } = new ServiceConfig();
+
+    /// <summary>
+    /// Search settings
+    /// </summary>
+    public SearchConfig Search { get; set; } = new();
 
     /// <summary>
     /// Content storage settings, e.g. Azure Blob or File System details
@@ -26,6 +36,7 @@ public class SemanticMemoryConfig
 
     /// <summary>
     /// Memory ingestion pipeline handlers settings, e.g. settings about chunking, insights, and embeddings.
+    /// TODO: use Dictionary[string, Dictionary[string, object]]
     /// </summary>
     public Dictionary<string, IConfigurationSection> Handlers { get; set; } = new();
 
@@ -33,11 +44,6 @@ public class SemanticMemoryConfig
     /// Web service settings, e.g. whether to expose OpenAPI swagger docs.
     /// </summary>
     public bool OpenApiEnabled { get; set; } = false;
-
-    /// <summary>
-    /// Search settings
-    /// </summary>
-    public SearchConfig Search { get; set; } = new();
 
     /// <summary>
     /// Get pipeline handler configuration.
@@ -57,12 +63,35 @@ public class SemanticMemoryConfig
 
     public static SemanticMemoryConfig LoadFromAppSettings()
     {
-        var config = AppBuilder.Build().Services.GetService<SemanticMemoryConfig>();
+        if (s_host == null) { s_host = PrepareHost(); }
+
+        var config = s_host.Services.GetService<SemanticMemoryConfig>();
         if (config == null)
         {
             throw new ConfigurationException("Configuration settings are empty");
         }
 
         return config;
+    }
+
+    public static ILoggerFactory GetLogFactory()
+    {
+        if (s_host == null) { s_host = PrepareHost(); }
+
+        var factory = s_host.Services.GetService<ILoggerFactory>();
+        if (factory == null)
+        {
+            throw new ConfigurationException("Unable to provide logger factory");
+        }
+
+        return factory;
+    }
+
+    private static IHost PrepareHost()
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.Logging.ConfigureLogger();
+        builder.Services.UseConfiguration(builder.Configuration);
+        return builder.Build();
     }
 }

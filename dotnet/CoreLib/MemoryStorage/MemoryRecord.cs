@@ -24,12 +24,6 @@ public class MemoryRecord
     public string Owner { get; set; } = string.Empty;
 
     /// <summary>
-    /// Resource used to generate the embedding e.g. "pipeline ID + file name"
-    /// Required to update/remove memories.
-    /// </summary>
-    public string SourceId { get; set; } = string.Empty;
-
-    /// <summary>
     /// Optional Searchable Key=Value tags (string => string[] collection)
     ///
     /// Multiple values per keys are supported.

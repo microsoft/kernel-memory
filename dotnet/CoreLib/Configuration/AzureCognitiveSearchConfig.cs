@@ -6,4 +6,5 @@ public class AzureCognitiveSearchConfig
 {
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
+    public string VectorIndexPrefix { get; set; } = string.Empty;
 }

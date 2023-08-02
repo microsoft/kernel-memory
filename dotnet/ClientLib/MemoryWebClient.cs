@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticMemory.Client;
@@ -46,19 +48,32 @@ public class MemoryWebClient : ISemanticMemoryClient
         return this.ImportFileInternalAsync(new Document(fileName) { Details = details });
     }
 
-    public async Task<string> AskAsync(string question, string userId)
+    /// <inheritdoc />
+    public async Task<MemoryAnswer> AskAsync(string userId, string query)
     {
-        // Work in progress
+        var request = new { UserId = userId, Query = query, Tags = new TagCollection() };
+        using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        await Task.Delay(0).ConfigureAwait(false);
+        HttpResponseMessage? response = await this._client.PostAsync("/ask", content).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
 
-        return "...work in progress...";
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new MemoryAnswer();
     }
 
-    public async Task<string> AskAsync(string question)
+    /// <inheritdoc />
+    public async Task<bool> ExistsAsync(string userId, string documentId)
     {
-        await Task.Delay(0).ConfigureAwait(false);
-        return "...work in progress...";
+        HttpResponseMessage? response = await this._client.GetAsync($"/upload-status?user={userId}&id={documentId}").ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        // WORK IN PROGRESS
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        // WORK IN PROGRESS
+
+        return false;
     }
 
     #region private

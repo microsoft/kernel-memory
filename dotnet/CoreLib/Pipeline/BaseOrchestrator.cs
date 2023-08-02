@@ -8,9 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -28,7 +29,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.MimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this.ContentStorage = contentStorage;
-        this.Log = log ?? NullLogger<BaseOrchestrator>.Instance;
+        this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
         this.CancellationTokenSource = new CancellationTokenSource();
     }
 
@@ -40,6 +41,34 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     ///<inheritdoc />
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
+
+    ///<inheritdoc />
+    public async Task<string> UploadFileAsync(UploadRequest uploadDetails)
+    {
+        this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadDetails.Files.Count(), uploadDetails.DocumentId);
+
+        // TODO: allow custom pipeline steps from UploadRequest
+        // Define all the steps in the pipeline
+        var pipeline = this.PrepareNewFileUploadPipeline(
+                documentId: uploadDetails.DocumentId,
+                userId: uploadDetails.UserId, uploadDetails.Tags, uploadDetails.Files)
+            .Then("extract")
+            .Then("partition")
+            .Then("gen_embeddings")
+            .Then("save_embeddings")
+            .Build();
+
+        try
+        {
+            await this.RunPipelineAsync(pipeline).ConfigureAwait(false);
+            return pipeline.Id;
+        }
+        catch (Exception e)
+        {
+            this.Log.LogError(e, "Pipeline start failed");
+            throw;
+        }
+    }
 
     ///<inheritdoc />
     public DataPipeline PrepareNewFileUploadPipeline(

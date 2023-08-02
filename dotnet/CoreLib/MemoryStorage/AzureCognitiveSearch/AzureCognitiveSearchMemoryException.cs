@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemoryException : SemanticMemoryException
 {
