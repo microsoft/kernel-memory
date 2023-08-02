@@ -66,6 +66,12 @@ public class TextExtractionHandler : IPipelineStepHandler
                     extractType = MimeTypes.MarkDown;
                     break;
 
+                case MimeTypes.Json:
+                    this._log.LogDebug("Extracting text from JSON file {0}", uploadedFile.Name);
+                    text = fileContent.ToString();
+                    extractType = MimeTypes.Json;
+                    break;
+
                 case MimeTypes.MsWord:
                     this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
                     if (fileContent.ToArray().Length > 0)

@@ -67,7 +67,7 @@ readParameters() {
   done
 }
 
-validatePrameters() {
+validateParameters() {
   if [ -z "$SERVICE_URL" ]; then
     echo "Please specify the web service URL"
     exit 1
@@ -93,7 +93,7 @@ validatePrameters() {
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
   unset SERVICE_URL USER_ID FILENAME DOCUMENT_ID TAGS
-  unset -f help readParameters validatePrameters cleanupEnv exitScript
+  unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
 # Clean exit for sourced scripts
@@ -103,7 +103,7 @@ exitScript() {
 }
 
 readParameters "$@"
-validatePrameters
+validateParameters
 
 # Handle list of tags
 TAGS_FIELD=""
