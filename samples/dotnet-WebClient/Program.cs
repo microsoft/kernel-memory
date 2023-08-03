@@ -65,31 +65,29 @@ if (!await memory.ExistsAsync(userId: "user2", documentId: "f05"))
 // === ASK ===============
 // =======================
 
-// =======================
 // Test with User 1 memory
 var question = "What's Semantic Kernel?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync("user1", question);
-Console.WriteLine($"\nAnswer: {answer.Text}\n\n  Sources:\n");
+Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
 {
-    Console.WriteLine($"  - {x["File"]}");
+    Console.WriteLine($"  - {x.SourceName}  - {x.Link}");
 }
 
-// =======================
 // Test with User 2 memory
 question = "Any news from NASA about Orion?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 answer = await memory.AskAsync("user1", question);
-Console.WriteLine($"\nUser 1 Answer: {answer.Text}\n");
+Console.WriteLine($"\nUser 1 Answer: {answer.Result}\n");
 
 answer = await memory.AskAsync("user2", question);
-Console.WriteLine($"\nUser 2 Answer: {answer.Text}\n\n  Sources:\n");
+Console.WriteLine($"\nUser 2 Answer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
 {
-    Console.WriteLine($"  - {x["File"]}");
+    Console.WriteLine($"  - {x.SourceName}  - {x.Link}");
 }
