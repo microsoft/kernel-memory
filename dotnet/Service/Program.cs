@@ -55,7 +55,7 @@ var app = AppBuilder.Build((services, config) =>
     }
 });
 
-var config = app.Configuration.Get<SemanticMemoryConfig>()
+var config = app.Services.GetService<SemanticMemoryConfig>()
              ?? throw new ConfigurationException("Configuration is null");
 
 // ********************************************************
