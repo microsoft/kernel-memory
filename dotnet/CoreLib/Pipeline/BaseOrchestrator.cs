@@ -146,15 +146,44 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected async Task UploadFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    protected async Task UploadFilesAsync(DataPipeline currentPipeline, CancellationToken cancellationToken = default)
     {
-        if (pipeline.UploadComplete)
+        if (currentPipeline.UploadComplete)
         {
             this.Log.LogDebug("Upload complete");
             return;
         }
 
-        await this.UploadFormFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
+        // If the folder contains the status of a previous execution,
+        // capture it to run consolidation later, e.g. purging deprecated memory records.
+        // Note: although not required, the list of executions to purge is ordered from oldest to most recent
+        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline, cancellationToken).ConfigureAwait(false);
+        if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
+        {
+            var dedupe = new HashSet<string>();
+            foreach (var oldExecution in currentPipeline.PreviousExecutionsToPurge)
+            {
+                dedupe.Add(oldExecution.ExecutionId);
+            }
+
+            foreach (var oldExecution in previousPipeline.PreviousExecutionsToPurge)
+            {
+                if (dedupe.Contains(oldExecution.ExecutionId)) { continue; }
+
+                // Reset the list to avoid wasting space with nested trees
+                oldExecution.PreviousExecutionsToPurge = new List<DataPipeline>();
+
+                currentPipeline.PreviousExecutionsToPurge.Add(oldExecution);
+                dedupe.Add(oldExecution.ExecutionId);
+            }
+
+            // Reset the list to avoid wasting space with nested trees
+            previousPipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+
+            currentPipeline.PreviousExecutionsToPurge.Add(previousPipeline);
+        }
+
+        await this.UploadFormFilesAsync(currentPipeline, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -229,6 +258,21 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         }
 
         await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<DataPipeline?> ReadPipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken)
+    {
+        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
+        try
+        {
+            BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, cancellationToken)
+                .ConfigureAwait(false));
+            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString());
+        }
+        catch (ContentStorageFileNotFoundException)
+        {
+            return null;
+        }
     }
 
     protected virtual void Dispose(bool disposing)

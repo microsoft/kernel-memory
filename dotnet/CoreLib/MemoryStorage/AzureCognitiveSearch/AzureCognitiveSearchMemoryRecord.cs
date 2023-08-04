@@ -61,7 +61,8 @@ internal sealed class AzureCognitiveSearchMemoryRecord
         MemoryRecord result = new()
         {
             Id = DecodeId(this.Id),
-            Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Metadata, s_jsonOptions) ?? new Dictionary<string, object>()
+            Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Metadata, s_jsonOptions)
+                       ?? new Dictionary<string, object>()
         };
 
         if (withEmbedding)
@@ -69,7 +70,6 @@ internal sealed class AzureCognitiveSearchMemoryRecord
             result.Vector = new Embedding<float>(this.Vector);
         }
 
-        TagCollection tags = new();
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split('=', 2)))
         {
             string key = keyValue[0];
@@ -82,7 +82,7 @@ internal sealed class AzureCognitiveSearchMemoryRecord
             }
             else
             {
-                tags.Add(key, value);
+                result.Tags.Add(key, value);
             }
         }
 

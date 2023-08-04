@@ -10,10 +10,12 @@ extend-exclude = [
     "_typos.toml",
     "package-lock.json",
     "*.bicep",
+    "*.sql",
 ]
 
 [default.extend-words]
 ACI = "ACI" # Azure Container Instance
+IIF = "IIF" # SQL Function
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
