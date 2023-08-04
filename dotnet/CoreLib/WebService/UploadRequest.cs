@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 

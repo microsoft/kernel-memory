@@ -22,21 +22,21 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     public string StepName { get; }
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
         this._log.LogInformation("Starting {0}...", this.GetType().FullName);
         return this._orchestrator.AddHandlerAsync(this, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken = default)
     {
         this._log.LogInformation("Stopping {0}...", this.GetType().FullName);
         return this._orchestrator.StopAllPipelinesAsync();
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
+    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         /* ... your custom ...
          * ... handler ...

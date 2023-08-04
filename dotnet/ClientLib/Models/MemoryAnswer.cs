@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.Client;
+namespace Microsoft.SemanticMemory.Client.Models;
 
 public class MemoryAnswer
 {

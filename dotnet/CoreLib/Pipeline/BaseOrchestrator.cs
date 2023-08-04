@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.WebService;
@@ -43,15 +44,17 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public async Task<string> UploadFileAsync(UploadRequest uploadDetails)
+    public async Task<string> UploadFileAsync(UploadRequest uploadDetails, CancellationToken cancellationToken = default)
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadDetails.Files.Count(), uploadDetails.DocumentId);
 
         // TODO: allow custom pipeline steps from UploadRequest
         // Define all the steps in the pipeline
         var pipeline = this.PrepareNewFileUploadPipeline(
+                userId: uploadDetails.UserId,
                 documentId: uploadDetails.DocumentId,
-                userId: uploadDetails.UserId, uploadDetails.Tags, uploadDetails.Files)
+                uploadDetails.Tags,
+                uploadDetails.Files)
             .Then("extract")
             .Then("partition")
             .Then("gen_embeddings")
@@ -60,7 +63,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         try
         {
-            await this.RunPipelineAsync(pipeline).ConfigureAwait(false);
+            await this.RunPipelineAsync(pipeline, cancellationToken).ConfigureAwait(false);
             return pipeline.Id;
         }
         catch (Exception e)
@@ -72,24 +75,24 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     ///<inheritdoc />
     public DataPipeline PrepareNewFileUploadPipeline(
-        string documentId,
         string userId,
+        string documentId,
         TagCollection tags)
     {
-        return this.PrepareNewFileUploadPipeline(documentId, userId, tags, new List<IFormFile>());
+        return this.PrepareNewFileUploadPipeline(userId: userId, documentId: documentId, tags, new List<IFormFile>());
     }
 
     ///<inheritdoc />
     public DataPipeline PrepareNewFileUploadPipeline(
-        string documentId,
         string userId,
+        string documentId,
         TagCollection tags,
         IEnumerable<IFormFile> filesToUpload)
     {
         var pipeline = new DataPipeline
         {
-            Id = documentId,
             UserId = userId,
+            Id = documentId,
             Tags = tags,
             Creation = DateTimeOffset.UtcNow,
             LastUpdate = DateTimeOffset.UtcNow,
@@ -99,6 +102,22 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         pipeline.Validate();
 
         return pipeline;
+    }
+
+    ///<inheritdoc />
+    public async Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    {
+        var dirPath = this.ContentStorage.JoinPaths(userId, documentId);
+        try
+        {
+            BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, cancellationToken)
+                .ConfigureAwait(false));
+            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString());
+        }
+        catch (ContentStorageFileNotFoundException)
+        {
+            return null;
+        }
     }
 
     ///<inheritdoc />
@@ -157,7 +176,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // If the folder contains the status of a previous execution,
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
-        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline, cancellationToken).ConfigureAwait(false);
+        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.UserId, currentPipeline.Id, cancellationToken).ConfigureAwait(false);
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {
             var dedupe = new HashSet<string>();
@@ -258,21 +277,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         }
 
         await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<DataPipeline?> ReadPipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken)
-    {
-        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.Id);
-        try
-        {
-            BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, cancellationToken)
-                .ConfigureAwait(false));
-            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString());
-        }
-        catch (ContentStorageFileNotFoundException)
-        {
-            return null;
-        }
     }
 
     protected virtual void Dispose(bool disposing)

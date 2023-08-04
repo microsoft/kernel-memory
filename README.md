@@ -214,7 +214,7 @@ await orchestrator.AddHandlerAsync(step3);
 
 // Instantiate a custom pipeline
 var pipeline = orchestrator
-    .PrepareNewFileUploadPipeline("mytest", "user-id-1", new[] { "memory-collection" })
+    .PrepareNewFileUploadPipeline("user-id-1", "mytest", new[] { "memory-collection" })
     .AddUploadFile("file1", "file1.docx", "file1.docx")
     .AddUploadFile("file2", "file2.pdf", "file2.pdf")
     .Then("step1")

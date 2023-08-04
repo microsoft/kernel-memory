@@ -45,7 +45,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public string StepName { get; }
 
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
-        DataPipeline pipeline, CancellationToken cancellationToken)
+        DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
