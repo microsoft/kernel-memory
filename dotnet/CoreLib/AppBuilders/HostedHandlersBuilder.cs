@@ -16,12 +16,12 @@ public static class HostedHandlersBuilder
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "DEVELOPMENT")
         {
-            builder.Configuration.AddJsonFile("appsettings.development.json", optional: true);
+            builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true);
         }
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToUpperInvariant() == "PRODUCTION")
         {
-            builder.Configuration.AddJsonFile("appsettings.production.json", optional: true);
+            builder.Configuration.AddJsonFile("appsettings.Production.json", optional: true);
         }
 
         builder.Services.UseConfiguration(builder.Configuration);
