@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -151,7 +150,11 @@ public class SearchClient
                 citation.Link = linkToFile;
                 citation.SourceContentType = fileContentType;
                 citation.SourceName = fileName;
-                DateTimeOffset.TryParse(memory.Item1.Metadata["last_update"].ToString(), CultureInfo.InvariantCulture, out var lastUpdate);
+
+#pragma warning disable CA1806 // it's ok if parsing fails
+                DateTimeOffset.TryParse(memory.Item1.Metadata["last_update"].ToString(), out var lastUpdate);
+#pragma warning restore CA1806
+
                 citation.Partitions.Add(new MemoryAnswer.Citation.Partition
                 {
                     Text = partitionText,
