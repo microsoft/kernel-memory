@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>		
         <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308</NoWarn>

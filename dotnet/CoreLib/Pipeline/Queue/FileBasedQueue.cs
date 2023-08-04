@@ -99,11 +99,11 @@ public sealed class FileBasedQueue : IQueue
 
         if (options.DequeueEnabled)
         {
-            this._populateTimer = new Timer(TimeSpan.FromMilliseconds(250));
+            this._populateTimer = new Timer(250); // milliseconds
             this._populateTimer.Elapsed += this.PopulateQueue;
             this._populateTimer.Start();
 
-            this._dispatchTimer = new Timer(TimeSpan.FromMilliseconds(100));
+            this._dispatchTimer = new Timer(100); // milliseconds
             this._dispatchTimer.Elapsed += this.DispatchMessages;
             this._dispatchTimer.Start();
         }

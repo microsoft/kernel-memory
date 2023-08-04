@@ -129,7 +129,7 @@ public sealed class AzureQueue : IQueue
         if (options.DequeueEnabled)
         {
             this._log.LogTrace("Enabling dequeue on queue {0}, every {1} msecs", this._queueName, PollDelayMsecs);
-            this._dispatchTimer = new Timer(TimeSpan.FromMilliseconds(PollDelayMsecs));
+            this._dispatchTimer = new Timer(PollDelayMsecs); // milliseconds
             this._dispatchTimer.Elapsed += this.DispatchMessages;
             this._dispatchTimer.Start();
         }
