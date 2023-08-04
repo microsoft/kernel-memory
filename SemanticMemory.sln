@@ -1,13 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 
-
-
-
-
-
-
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4C35-4370-8539-5DDF45357A50}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -27,6 +20,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{0A43
 		samples\README.md = samples\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-Serverless", "samples\001-dotnet-Serverless\001-dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-WebClient", "samples\002-dotnet-WebClient\002-dotnet-WebClient.csproj", "{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "003-curl-calling-webservice", "003-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
+	ProjectSection(SolutionItems) = preProject
+		samples\curl\test.pdf = samples\003-curl-calling-webservice\test.pdf
+		samples\curl\README.md = samples\003-curl-calling-webservice\README.md
+		samples\curl\ask-example.sh = samples\003-curl-calling-webservice\ask-example.sh
+		samples\curl\upload-example.sh = samples\003-curl-calling-webservice\upload-example.sh
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "samples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "005-dotnet-ExtractTextFromDocs", "samples\005-dotnet-ExtractTextFromDocs\005-dotnet-ExtractTextFromDocs.csproj", "{375A8841-9C49-46B1-8F26-2F80C70D3A32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "006-dotnet-CustomHandler", "samples\006-dotnet-CustomHandler\006-dotnet-CustomHandler.csproj", "{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
 		tools\run-rabbitmq.sh = tools\run-rabbitmq.sh
@@ -43,23 +54,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "dotnet\Service\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "dotnet\InteractiveSetup\InteractiveSetup.csproj", "{2C252647-50A5-49B9-9E5F-A32C3DB22218}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-CustomHandler", "samples\dotnet-CustomHandler\dotnet-CustomHandler.csproj", "{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-WebClient", "samples\dotnet-WebClient\dotnet-WebClient.csproj", "{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-ExtractTextFromDocs", "samples\dotnet-ExtractTextFromDocs\dotnet-ExtractTextFromDocs.csproj", "{375A8841-9C49-46B1-8F26-2F80C70D3A32}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
-	ProjectSection(SolutionItems) = preProject
-		samples\curl\test.pdf = samples\curl\test.pdf
-		samples\curl\README.md = samples\curl\README.md
-		samples\curl\ask-example.sh = samples\curl\ask-example.sh
-		samples\curl\upload-example.sh = samples\curl\upload-example.sh
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-Serverless", "samples\dotnet-Serverless\dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-ServerlessCustomPipeline", "samples\dotnet-ServerlessCustomPipeline\dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-using-azure-cognitive-search", "samples\007-using-azure-cognitive-search\007-using-azure-cognitive-search.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +68,7 @@ Global
 		{CA1D9162-D4C5-490D-AAD5-7A9A23092C28} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{CF55CAED-81D1-4748-8172-AE678047B760} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{795302A5-9006-46A6-886F-7932F6A1D8C1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -111,5 +107,9 @@ Global
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
