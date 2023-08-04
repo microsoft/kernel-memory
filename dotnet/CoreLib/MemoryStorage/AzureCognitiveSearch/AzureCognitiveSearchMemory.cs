@@ -330,9 +330,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");
         }
 
-#pragma warning disable CA1308 // The service expects a lowercase string
         indexName = indexName.ToLowerInvariant();
-#pragma warning restore CA1308
 
         indexName = s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
 

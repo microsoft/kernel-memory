@@ -51,7 +51,7 @@ var app = AppBuilder.Build((services, config) =>
 
     if (config.Service.RunWebService)
     {
-        services.UseSearchClient(config);
+        services.UseSearchClient();
     }
 });
 

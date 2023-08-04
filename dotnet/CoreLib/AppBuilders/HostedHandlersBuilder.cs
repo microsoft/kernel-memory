@@ -4,7 +4,6 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.AppBuilders;
@@ -25,11 +24,11 @@ public static class HostedHandlersBuilder
             builder.Configuration.AddJsonFile("appsettings.Production.json", optional: true);
         }
 
-        SemanticMemoryConfig config = builder.Services.UseConfiguration(builder.Configuration);
+        builder.Services.UseConfiguration(builder.Configuration);
 
         builder.Logging.ConfigureLogger();
-        builder.Services.UseContentStorage(config);
-        builder.Services.UseOrchestrator(config);
+        builder.Services.UseContentStorage();
+        builder.Services.UseOrchestrator();
 
         return builder;
     }

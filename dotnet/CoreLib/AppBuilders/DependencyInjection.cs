@@ -34,11 +34,11 @@ public static class DependencyInjection
     public static SemanticMemoryConfig UseConfiguration(this IServiceCollection services, ConfigurationManager mgr)
     {
         // Populate the global config from the "SemanticMemory" key
-        SemanticMemoryConfig config = mgr.GetSection("SemanticMemory").Get<SemanticMemoryConfig>()!;
+        SemanticMemoryConfig config = mgr.GetSection(SemanticMemoryConfig.PropertyName).Get<SemanticMemoryConfig>()!;
 
         // Copy the RAW handlers configuration from "SemanticMemory.Handlers". Binding is done later by each handler.
         // TODO: find a solution to move the binding logic here, simplifying the configuration classes.
-        IConfigurationSection handlersConfigSection = mgr.GetSection("SemanticMemory").GetSection("Handlers");
+        IConfigurationSection handlersConfigSection = mgr.GetSection(SemanticMemoryConfig.PropertyName).GetSection("Handlers");
         config.Handlers = new();
         foreach (IConfigurationSection bar in handlersConfigSection.GetChildren())
         {
@@ -49,68 +49,79 @@ public static class DependencyInjection
         return config;
     }
 
-    public static void UseSearchClient(this IServiceCollection services, SemanticMemoryConfig config)
+    public static IServiceCollection UseSearchClient(this IServiceCollection services)
     {
-        services.UseContentStorage(config);
-        services.UseOrchestrator(config);
+        return
+            services
+                .UseContentStorage()
+                .UseOrchestrator()
+                .UseKernel();
+    }
 
-        ISemanticMemoryVectorDb vectorDb;
-        ITextEmbeddingGeneration embeddingGenerator;
-        IKernel kernel;
+    public static IServiceCollection UseKernel(this IServiceCollection services)
+    {
+        services.AddTransient<SearchClient>(
+            serviceProvider =>
+            {
+                ISemanticMemoryVectorDb vectorDb;
+                ITextEmbeddingGeneration embeddingGenerator;
+                IKernel kernel;
 
-        // TODO: decouple this file from the various options
-        switch (config.Search.GetVectorDbConfig())
-        {
-            case AzureCognitiveSearchConfig cfg:
-                vectorDb = new AzureCognitiveSearchMemory(
-                    endpoint: cfg.Endpoint,
-                    apiKey: cfg.APIKey,
-                    indexPrefix: cfg.VectorIndexPrefix);
-                break;
+                var config = serviceProvider.GetRequiredService<SemanticMemoryConfig>();
 
-            default:
-                throw new SemanticMemoryException(
-                    $"Unknown/unsupported vector DB '{config.Search.VectorDb.GetType().FullName}'");
-        }
+                // TODO: decouple this file from the various options
+                switch (config.Search.GetVectorDbConfig())
+                {
+                    case AzureCognitiveSearchConfig cfg:
+                        vectorDb = new AzureCognitiveSearchMemory(
+                            endpoint: cfg.Endpoint,
+                            apiKey: cfg.APIKey,
+                            indexPrefix: cfg.VectorIndexPrefix);
+                        break;
 
-        // TODO: decouple this file from the various options
-        switch (config.Search.GetEmbeddingGeneratorConfig())
-        {
-            case AzureOpenAIConfig cfg:
-                embeddingGenerator = new AzureTextEmbeddingGeneration(
-                    modelId: cfg.Deployment,
-                    endpoint: cfg.Endpoint,
-                    apiKey: cfg.APIKey,
-                    logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
-                break;
+                    default:
+                        throw new SemanticMemoryException(
+                            $"Unknown/unsupported vector DB '{config.Search.VectorDb.GetType().FullName}'");
+                }
 
-            case OpenAIConfig cfg:
-                embeddingGenerator = new OpenAITextEmbeddingGeneration(
-                    modelId: cfg.Model,
-                    apiKey: cfg.APIKey,
-                    organization: cfg.OrgId,
-                    logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
-                break;
+                // TODO: decouple this file from the various options
+                switch (config.Search.GetEmbeddingGeneratorConfig())
+                {
+                    case AzureOpenAIConfig cfg:
+                        embeddingGenerator = new AzureTextEmbeddingGeneration(
+                            modelId: cfg.Deployment,
+                            endpoint: cfg.Endpoint,
+                            apiKey: cfg.APIKey,
+                            logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
+                        break;
 
-            default:
-                throw new SemanticMemoryException(
-                    $"Unknown/unsupported embedding generator '{config.Search.EmbeddingGenerator.GetType().FullName}'");
-        }
+                    case OpenAIConfig cfg:
+                        embeddingGenerator = new OpenAITextEmbeddingGeneration(
+                            modelId: cfg.Model,
+                            apiKey: cfg.APIKey,
+                            organization: cfg.OrgId,
+                            logger: DefaultLogger<AzureTextEmbeddingGeneration>.Instance);
+                        break;
 
-        // TODO: decouple this file from the various options
-        var kernelBuilder = Kernel.Builder.WithLogger(DefaultLogger<Kernel>.Instance);
-        switch (config.Search.GetTextGeneratorConfig())
-        {
-            case AzureOpenAIConfig cfg:
-                // Note: .WithAzureTextCompletionService() Not supported
-                kernel = kernelBuilder.WithAzureChatCompletionService(
-                    deploymentName: cfg.Deployment,
-                    endpoint: cfg.Endpoint,
-                    apiKey: cfg.APIKey).Build();
-                break;
+                    default:
+                        throw new SemanticMemoryException(
+                            $"Unknown/unsupported embedding generator '{config.Search.EmbeddingGenerator.GetType().FullName}'");
+                }
 
-            case OpenAIConfig cfg:
-                var textModels = new List<string>
+                // TODO: decouple this file from the various options
+                var kernelBuilder = Kernel.Builder.WithLogger(DefaultLogger<Kernel>.Instance);
+                switch (config.Search.GetTextGeneratorConfig())
+                {
+                    case AzureOpenAIConfig cfg:
+                        // Note: .WithAzureTextCompletionService() Not supported
+                        kernel = kernelBuilder.WithAzureChatCompletionService(
+                            deploymentName: cfg.Deployment,
+                            endpoint: cfg.Endpoint,
+                            apiKey: cfg.APIKey).Build();
+                        break;
+
+                    case OpenAIConfig cfg:
+                        var textModels = new List<string>
                 {
                     "text-ada-001",
                     "text-babbage-001",
@@ -120,170 +131,176 @@ public static class DependencyInjection
                     "text-davinci-003",
                 };
 
-                if (textModels.Contains(cfg.Model.ToLowerInvariant()))
-                {
-                    kernel = kernelBuilder.WithOpenAITextCompletionService(
-                        modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
+                        if (textModels.Contains(cfg.Model.ToLowerInvariant()))
+                        {
+                            kernel = kernelBuilder.WithOpenAITextCompletionService(
+                                modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
+                        }
+                        else
+                        {
+                            kernel = kernelBuilder.WithOpenAIChatCompletionService(
+                                modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
+                        }
+
+                        break;
+
+                    default:
+                        throw new SemanticMemoryException(
+                            $"Unknown/unsupported text generator '{config.Search.TextGenerator.GetType().FullName}'");
                 }
-                else
-                {
-                    kernel = kernelBuilder.WithOpenAIChatCompletionService(
-                        modelId: cfg.Model, apiKey: cfg.APIKey, orgId: cfg.OrgId).Build();
-                }
 
-                break;
+                return new SearchClient(vectorDb, embeddingGenerator, kernel);
+            });
 
-            default:
-                throw new SemanticMemoryException(
-                    $"Unknown/unsupported text generator '{config.Search.TextGenerator.GetType().FullName}'");
-        }
-
-        services.AddTransient<SearchClient>(_ => new SearchClient(vectorDb, embeddingGenerator, kernel));
+        return services;
     }
 
-    public static void UseContentStorage(this IServiceCollection services, SemanticMemoryConfig config)
+    public static IServiceCollection UseContentStorage(this IServiceCollection services)
     {
         // TODO: migrate to dynamic config
         const string AzureBlobs = "AZUREBLOBS";
         const string FileSystem = "FILESYSTEM";
 
-        // TODO: decouple this file from the various storage options
-        switch (config.ContentStorage.Type.ToUpperInvariant())
-        {
-            case AzureBlobs:
-                services.UseAzureBlobStorage(config);
-                break;
+        services.AddSingleton(
+            serviceProvider =>
+            {
+                var config = serviceProvider.GetRequiredService<SemanticMemoryConfig>();
 
-            case FileSystem:
-                services.AddTransient<IContentStorage>(_ => new FileSystem(config.ContentStorage.FileSystem.Directory));
-                break;
+                // TODO: decouple this file from the various storage options
+                switch (config.ContentStorage.Type.ToUpperInvariant())
+                {
+                    case AzureBlobs:
+                        return serviceProvider.UseAzureBlobStorage();
 
-            default:
-                throw new NotImplementedException($"Content storage type '{config.ContentStorage.Type}' not available");
-        }
+                    case FileSystem:
+                        return new FileSystem(config.ContentStorage.FileSystem.Directory);
+
+                    default:
+                        throw new NotImplementedException($"Content storage type '{config.ContentStorage.Type}' not available");
+                }
+            });
+
+        return services;
     }
 
-    public static void UseOrchestrator(this IServiceCollection services, SemanticMemoryConfig config)
+    public static IServiceCollection UseOrchestrator(this IServiceCollection services)
     {
         const string InProcess = "INPROCESS";
         const string Distributed = "DISTRIBUTED";
 
         services.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
 
-        switch (config.Orchestration.Type.ToUpperInvariant())
-        {
-            case InProcess:
-                services.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
-                break;
-
-            case Distributed:
-                services.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
-                services.UseDistributedPipeline(config);
-                break;
-
-            default:
-                throw new NotImplementedException($"Orchestration type '{config.Orchestration}' not available");
-        }
-
         // Allow to instantiate this class directly
         services.AddSingleton<InProcessPipelineOrchestrator>();
+
+        services.AddSingleton<IPipelineOrchestrator>(
+            serviceProvider =>
+            {
+                var config = serviceProvider.GetRequiredService<SemanticMemoryConfig>();
+
+                switch (config.Orchestration.Type.ToUpperInvariant())
+                {
+                    case InProcess:
+                        return serviceProvider.GetRequiredService<InProcessPipelineOrchestrator>();
+
+                    case Distributed:
+                        return
+                            new DistributedPipelineOrchestrator(
+                                serviceProvider.GetRequiredService<IContentStorage>(),
+                                serviceProvider.GetRequiredService<IMimeTypeDetection>(),
+                                serviceProvider.GetQueueFactory(),
+                                serviceProvider.GetRequiredService<ILogger<DistributedPipelineOrchestrator>>());
+
+                    default:
+                        throw new NotImplementedException($"Orchestration type '{config.Orchestration}' not available");
+                }
+            });
+
+        return services;
     }
 
-    public static void UseAzureBlobStorage(this IServiceCollection services, SemanticMemoryConfig config)
+    private static IContentStorage UseAzureBlobStorage(this IServiceProvider serviceProvider)
     {
         const string AzureIdentity = "AZUREIDENTITY";
         const string ConnectionString = "CONNECTIONSTRING";
 
-        // Make configuration available
-        services.AddSingleton(config.ContentStorage.AzureBlobs);
+        var config = serviceProvider.GetRequiredService<SemanticMemoryConfig>();
 
         switch (config.ContentStorage.AzureBlobs.Auth.ToUpperInvariant())
         {
             case AzureIdentity:
-                services.AddSingleton<IContentStorage>(serviceProvider => new AzureBlob(
-                    config.ContentStorage.AzureBlobs.Account,
-                    config.ContentStorage.AzureBlobs.EndpointSuffix,
-                    serviceProvider.GetService<ILogger<AzureBlob>>()));
-                break;
+                return
+                    new AzureBlob(
+                        config.ContentStorage.AzureBlobs.Account,
+                        config.ContentStorage.AzureBlobs.EndpointSuffix,
+                        serviceProvider.GetService<ILogger<AzureBlob>>());
 
             case ConnectionString:
-                services.AddSingleton<IContentStorage>(serviceProvider => new AzureBlob(
-                    config.ContentStorage.AzureBlobs.ConnectionString,
-                    config.ContentStorage.AzureBlobs.Container,
-                    serviceProvider.GetService<ILogger<AzureBlob>>()));
-                break;
+                return
+                    new AzureBlob(
+                        config.ContentStorage.AzureBlobs.ConnectionString,
+                        config.ContentStorage.AzureBlobs.Container,
+                        serviceProvider.GetService<ILogger<AzureBlob>>());
 
             default:
                 throw new NotImplementedException($"Azure Blob auth type '{config.ContentStorage.AzureBlobs.Auth}' not available");
         }
     }
 
-    public static void UseDistributedPipeline(this IServiceCollection services, SemanticMemoryConfig config)
+    private static QueueClientFactory GetQueueFactory(this IServiceProvider serviceProvider)
     {
-        const string AzureQueue = "AZUREQUEUE";
-        const string RabbitMQ = "RABBITMQ";
-        const string FileBasedQueue = "FILEBASEDQUEUE";
+        var config = serviceProvider.GetRequiredService<SemanticMemoryConfig>();
 
-        // Factory for multiple queues
-        services.AddSingleton<QueueClientFactory>(
-            serviceProvider => new QueueClientFactory(() => serviceProvider.GetService<IQueue>()!));
+        return new QueueClientFactory(() => CreateQueue());
 
-        // Choose a Queue backend
-        switch (config.Orchestration.DistributedPipeline.Type.ToUpperInvariant())
+        IQueue CreateQueue()
         {
-            case AzureQueue:
-                const string AzureIdentity = "AZUREIDENTITY";
-                const string ConnectionString = "CONNECTIONSTRING";
+            const string AzureQueue = "AZUREQUEUE";
+            const string RabbitMQ = "RABBITMQ";
+            const string FileBasedQueue = "FILEBASEDQUEUE";
 
-                // Make configuration available
-                services.AddSingleton(config.Orchestration.DistributedPipeline.AzureQueue);
+            // Choose a Queue backend
+            switch (config.Orchestration.DistributedPipeline.Type.ToUpperInvariant())
+            {
+                case AzureQueue:
+                    const string AzureIdentity = "AZUREIDENTITY";
+                    const string ConnectionString = "CONNECTIONSTRING";
 
-                switch (config.Orchestration.DistributedPipeline.AzureQueue.Auth.ToUpperInvariant())
-                {
-                    case AzureIdentity:
-                        services.AddTransient<IQueue>(serviceProvider => new AzureQueue(
-                            config.Orchestration.DistributedPipeline.AzureQueue.Account,
-                            config.Orchestration.DistributedPipeline.AzureQueue.EndpointSuffix,
-                            serviceProvider.GetService<ILogger<AzureQueue>>()));
-                        break;
+                    switch (config.Orchestration.DistributedPipeline.AzureQueue.Auth.ToUpperInvariant())
+                    {
+                        case AzureIdentity:
+                            return new AzureQueue(
+                                config.Orchestration.DistributedPipeline.AzureQueue.Account,
+                                config.Orchestration.DistributedPipeline.AzureQueue.EndpointSuffix,
+                                serviceProvider.GetService<ILogger<AzureQueue>>());
 
-                    case ConnectionString:
-                        services.AddTransient<IQueue>(serviceProvider => new AzureQueue(
-                            config.Orchestration.DistributedPipeline.AzureQueue.ConnectionString,
-                            serviceProvider.GetService<ILogger<AzureQueue>>()));
-                        break;
+                        case ConnectionString:
+                            return new AzureQueue(
+                                config.Orchestration.DistributedPipeline.AzureQueue.ConnectionString,
+                                serviceProvider.GetService<ILogger<AzureQueue>>());
 
-                    default:
-                        throw new NotImplementedException($"Azure Queue auth type '{config.Orchestration.DistributedPipeline.AzureQueue.Auth}' not available");
-                }
+                        default:
+                            throw new NotImplementedException($"Azure Queue auth type '{config.Orchestration.DistributedPipeline.AzureQueue.Auth}' not available");
+                    }
 
-                break;
+                case RabbitMQ:
 
-            case RabbitMQ:
+                    return new RabbitMqQueue(
+                        config.Orchestration.DistributedPipeline.RabbitMq.Host,
+                        config.Orchestration.DistributedPipeline.RabbitMq.Port,
+                        config.Orchestration.DistributedPipeline.RabbitMq.Username,
+                        config.Orchestration.DistributedPipeline.RabbitMq.Password,
+                        serviceProvider.GetService<ILogger<RabbitMqQueue>>()!);
 
-                // Make configuration available
-                services.AddSingleton(config.Orchestration.DistributedPipeline.RabbitMq);
+                case FileBasedQueue:
 
-                services.AddTransient<IQueue>(serviceProvider => new RabbitMqQueue(
-                    config.Orchestration.DistributedPipeline.RabbitMq.Host,
-                    config.Orchestration.DistributedPipeline.RabbitMq.Port,
-                    config.Orchestration.DistributedPipeline.RabbitMq.Username,
-                    config.Orchestration.DistributedPipeline.RabbitMq.Password,
-                    serviceProvider.GetService<ILogger<RabbitMqQueue>>()!));
-                break;
+                    return new FileBasedQueue(
+                        config.Orchestration.DistributedPipeline.FileBasedQueue.Path,
+                        serviceProvider.GetService<ILogger<FileBasedQueue>>()!);
 
-            case FileBasedQueue:
-
-                // Make configuration available
-                services.AddSingleton(config.Orchestration.DistributedPipeline.FileBasedQueue);
-
-                services.AddTransient<IQueue>(serviceProvider => new FileBasedQueue(
-                    config.Orchestration.DistributedPipeline.FileBasedQueue.Path,
-                    serviceProvider.GetService<ILogger<FileBasedQueue>>()!));
-                break;
-
-            default:
-                throw new NotImplementedException($"Queue type '{config.Orchestration.DistributedPipeline.Type}' not available");
+                default:
+                    throw new NotImplementedException($"Queue type '{config.Orchestration.DistributedPipeline.Type}' not available");
+            }
         }
     }
 

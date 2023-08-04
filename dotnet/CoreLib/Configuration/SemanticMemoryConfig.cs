@@ -12,6 +12,8 @@ namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class SemanticMemoryConfig
 {
+    public const string PropertyName = "SemanticMemory";
+
     private static IHost? s_host;
 
     /// <summary>
