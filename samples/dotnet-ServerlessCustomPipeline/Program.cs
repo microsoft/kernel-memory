@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
@@ -49,7 +49,7 @@ await orchestrator.AddHandlerAsync(saveEmbedding);
 // Create sample pipeline with 4 files
 Console.WriteLine("* Defining pipeline with 4 files...");
 var pipeline = orchestrator
-    .PrepareNewFileUploadPipeline("inProcessTest", "userZ", new TagCollection { { "testName", "example3" } })
+    .PrepareNewFileUploadPipeline("userZ", "inProcessTest", new TagCollection { { "testName", "example3" } })
     .AddUploadFile("file1", "file1-Wikipedia-Carbon.txt", "file1-Wikipedia-Carbon.txt")
     .AddUploadFile("file2", "file2-Wikipedia-Moon.txt", "file2-Wikipedia-Moon.txt")
     .AddUploadFile("file3", "file3-lorem-ipsum.docx", "file3-lorem-ipsum.docx")

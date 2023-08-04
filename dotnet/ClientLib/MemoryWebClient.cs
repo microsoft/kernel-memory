@@ -3,10 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticMemory.Client.Models;
 
 namespace Microsoft.SemanticMemory.Client;
 
@@ -25,42 +28,42 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(Document file)
+    public Task<string> ImportFileAsync(Document file, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileInternalAsync(file);
+        return this.ImportFileInternalAsync(file, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<IList<string>> ImportFilesAsync(Document[] files)
+    public Task<IList<string>> ImportFilesAsync(Document[] files, CancellationToken cancellationToken = default)
     {
-        return this.ImportFilesInternalAsync(files);
+        return this.ImportFilesInternalAsync(files, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName)
+    public Task<string> ImportFileAsync(string fileName, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileAsync(new Document(fileName));
+        return this.ImportFileAsync(new Document(fileName), cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName, DocumentDetails details)
+    public Task<string> ImportFileAsync(string fileName, DocumentDetails details, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileInternalAsync(new Document(fileName) { Details = details });
+        return this.ImportFileInternalAsync(new Document(fileName) { Details = details }, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query)
+    public Task<MemoryAnswer> AskAsync(string query, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(new DocumentDetails().UserId, query);
+        return this.AskAsync(new DocumentDetails().UserId, query, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<MemoryAnswer> AskAsync(string userId, string query)
+    public async Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
         var request = new { UserId = userId, Query = query, Tags = new TagCollection() };
         using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        HttpResponseMessage? response = await this._client.PostAsync("/ask", content).ConfigureAwait(false);
+        HttpResponseMessage? response = await this._client.PostAsync("/ask", content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -68,34 +71,41 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<bool> ExistsAsync(string userId, string documentId)
+    public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = await this._client.GetAsync($"/upload-status?user={userId}&id={documentId}").ConfigureAwait(false);
+        HttpResponseMessage? response = await this._client.GetAsync($"/upload-status?user={userId}&id={documentId}", cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+
         response.EnsureSuccessStatusCode();
 
-        // WORK IN PROGRESS
-
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
 
-        // WORK IN PROGRESS
+        if (status == null)
+        {
+            throw new SemanticMemoryWebException("Unable to parse status response");
+        }
 
-        return false;
+        return status.Completed;
     }
 
     #region private
 
-    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files)
+    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files, CancellationToken cancellationToken)
     {
         List<string> docIds = new();
         foreach (Document file in files)
         {
-            docIds.Add(await this.ImportFileInternalAsync(file).ConfigureAwait(false));
+            docIds.Add(await this.ImportFileInternalAsync(file, cancellationToken).ConfigureAwait(false));
         }
 
         return docIds;
     }
 
-    private async Task<string> ImportFileInternalAsync(Document file)
+    private async Task<string> ImportFileInternalAsync(Document file, CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
         using var formData = new MultipartFormDataContent();
@@ -122,7 +132,7 @@ public class MemoryWebClient : ISemanticMemoryClient
             // Send HTTP request
             try
             {
-                HttpResponseMessage? response = await this._client.PostAsync("/upload", formData).ConfigureAwait(false);
+                HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
                 formData.Dispose();
                 response.EnsureSuccessStatusCode();
             }

@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Handlers;
@@ -41,49 +43,50 @@ public class MemoryServerlessClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportFileAsync(Document file)
+    public async Task<string> ImportFileAsync(Document file, CancellationToken cancellationToken = default)
     {
-        var ids = await this.ImportFilesAsync(new[] { file }).ConfigureAwait(false);
+        var ids = await this.ImportFilesAsync(new[] { file }, cancellationToken).ConfigureAwait(false);
         return ids.First();
     }
 
     /// <inheritdoc />
-    public Task<IList<string>> ImportFilesAsync(Document[] files)
+    public Task<IList<string>> ImportFilesAsync(Document[] files, CancellationToken cancellationToken = default)
     {
-        return this.ImportFilesInternalAsync(files);
+        return this.ImportFilesInternalAsync(files, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName)
+    public Task<string> ImportFileAsync(string fileName, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileAsync(new Document(fileName));
+        return this.ImportFileAsync(new Document(fileName), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportFileAsync(string fileName, DocumentDetails details)
+    public async Task<string> ImportFileAsync(string fileName, DocumentDetails details, CancellationToken cancellationToken = default)
     {
-        var ids = await this.ImportFilesAsync(new[] { new Document(fileName) { Details = details } }).ConfigureAwait(false);
+        var ids = await this.ImportFilesAsync(new[] { new Document(fileName) { Details = details } }, cancellationToken).ConfigureAwait(false);
         return ids.First();
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query)
+    public Task<MemoryAnswer> AskAsync(string query, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(new DocumentDetails().UserId, query);
+        return this.AskAsync(new DocumentDetails().UserId, query, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string userId, string query)
+    public Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
         return this._searchClient.SearchAsync(userId: userId, query: query);
     }
 
-    public async Task<bool> ExistsAsync(string userId, string documentId)
+    /// <inheritdoc />
+    public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
-        // WORK IN PROGRESS
-        await Task.Delay(0).ConfigureAwait(false);
+        var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
+        DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
 
-        return false;
+        return pipeline != null && pipeline.Complete;
     }
 
     #region private
@@ -106,7 +109,7 @@ public class MemoryServerlessClient : ISemanticMemoryClient
     }
 
 #pragma warning disable CA2208
-    private async Task<InProcessPipelineOrchestrator> GetOrchestratorAsync()
+    private async Task<InProcessPipelineOrchestrator> GetOrchestratorAsync(CancellationToken cancellationToken)
     {
         if (this._inProcessOrchestrator == null)
         {
@@ -119,19 +122,19 @@ public class MemoryServerlessClient : ISemanticMemoryClient
 
             // Text extraction handler
             TextExtractionHandler textExtraction = new("extract", orchestrator);
-            await orchestrator.AddHandlerAsync(textExtraction).ConfigureAwait(false);
+            await orchestrator.AddHandlerAsync(textExtraction, cancellationToken).ConfigureAwait(false);
 
             // Text partitioning handler
             TextPartitioningHandler textPartitioning = new("partition", orchestrator);
-            await orchestrator.AddHandlerAsync(textPartitioning).ConfigureAwait(false);
+            await orchestrator.AddHandlerAsync(textPartitioning, cancellationToken).ConfigureAwait(false);
 
             // Embedding generation handler
             GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, SemanticMemoryConfig.LoadFromAppSettings());
-            await orchestrator.AddHandlerAsync(textEmbedding).ConfigureAwait(false);
+            await orchestrator.AddHandlerAsync(textEmbedding, cancellationToken).ConfigureAwait(false);
 
             // Embedding storage handler
             SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, SemanticMemoryConfig.LoadFromAppSettings());
-            await orchestrator.AddHandlerAsync(saveEmbedding).ConfigureAwait(false);
+            await orchestrator.AddHandlerAsync(saveEmbedding, cancellationToken).ConfigureAwait(false);
 
             this._inProcessOrchestrator = orchestrator;
         }
@@ -140,17 +143,18 @@ public class MemoryServerlessClient : ISemanticMemoryClient
     }
 #pragma warning restore CA2208
 
-    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files)
+    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files, CancellationToken cancellationToken)
     {
         List<string> ids = new();
-        InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync().ConfigureAwait(false);
+        InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (Document file in files)
         {
             var pipeline = orchestrator
                 .PrepareNewFileUploadPipeline(
+                    userId: file.Details.UserId,
                     documentId: file.Details.DocumentId,
-                    userId: file.Details.UserId, file.Details.Tags);
+                    file.Details.Tags);
 
             pipeline.AddUploadFile(
                 name: "file1",
@@ -164,7 +168,7 @@ public class MemoryServerlessClient : ISemanticMemoryClient
                 .Then("save_embeddings")
                 .Build();
 
-            await orchestrator.RunPipelineAsync(pipeline).ConfigureAwait(false);
+            await orchestrator.RunPipelineAsync(pipeline, cancellationToken).ConfigureAwait(false);
             ids.Add(file.Details.DocumentId);
         }
 

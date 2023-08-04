@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SemanticMemory.Client;
+namespace Microsoft.SemanticMemory.Client.Models;
 
 // JSON serializable alternative to NameValueCollection
 public class TagCollection : IDictionary<string, List<string?>>

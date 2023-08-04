@@ -62,7 +62,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
-        DataPipeline pipeline, CancellationToken cancellationToken)
+        DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Generating embeddings, pipeline {0}", pipeline.Id);
 
