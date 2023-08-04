@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -109,7 +111,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Name = destFile,
                         Size = text.Length,
                         Type = MimeTypes.PlainText,
-                        IsPartition = true
+                        IsPartition = true,
+                        ContentSHA256 = CalculateSHA256(text),
                     });
                 }
             }
@@ -122,5 +125,11 @@ public class TextPartitioningHandler : IPipelineStepHandler
         }
 
         return (true, pipeline);
+    }
+
+    private static string CalculateSHA256(string value)
+    {
+        byte[] byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
 }

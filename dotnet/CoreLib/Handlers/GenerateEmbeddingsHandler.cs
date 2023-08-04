@@ -82,6 +82,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     continue;
                 }
 
+                // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
                 switch (partitionFile.Type)
                 {
                     case MimeTypes.PlainText:
@@ -108,6 +109,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
                                     // Check if embeddings have already been generated
                                     embeddingFileName = GetEmbeddingFileName(partitionFile.Name, "AzureOpenAI", x.Deployment);
+                                    // TODO: check if the file exists in storage
                                     if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
                                     {
                                         this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);

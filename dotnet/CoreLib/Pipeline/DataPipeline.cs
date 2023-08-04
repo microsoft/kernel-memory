@@ -18,19 +18,14 @@ namespace Microsoft.SemanticMemory.Core.Pipeline;
 /// </summary>
 public class DataPipeline
 {
-    public class GeneratedFileDetails
+    public abstract class FileDetailsBase
     {
         /// <summary>
         /// Unique Id
         /// </summary>
+        [JsonPropertyOrder(0)]
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Unique Id
-        /// </summary>
-        [JsonPropertyName("parent_id")]
-        public string ParentId { get; set; } = string.Empty;
 
         /// <summary>
         /// File name
@@ -52,13 +47,6 @@ public class DataPipeline
         [JsonPropertyOrder(3)]
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Whether this is a partition/chunk/piece of the original content
-        /// </summary>
-        [JsonPropertyOrder(4)]
-        [JsonPropertyName("is_partition")]
-        public bool IsPartition { get; set; } = false;
 
         /// <summary>
         /// Check if this is an embedding file (checking the file extension)
@@ -70,39 +58,36 @@ public class DataPipeline
         }
     }
 
-    public class FileDetails
+    public class GeneratedFileDetails : FileDetailsBase
     {
         /// <summary>
         /// Unique Id
         /// </summary>
-        [JsonPropertyName("id")]
-        public string Id { get; set; } = string.Empty;
+        [JsonPropertyOrder(14)]
+        [JsonPropertyName("parent_id")]
+        public string ParentId { get; set; } = string.Empty;
 
         /// <summary>
-        /// File name
+        /// Whether this is a partition/chunk/piece of the original content
         /// </summary>
-        [JsonPropertyOrder(1)]
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyOrder(15)]
+        [JsonPropertyName("is_partition")]
+        public bool IsPartition { get; set; } = false;
 
         /// <summary>
-        /// File size
+        /// Deduplication hash used for consolidation tasks
         /// </summary>
-        [JsonPropertyOrder(2)]
-        [JsonPropertyName("size")]
-        public long Size { get; set; } = 0;
+        [JsonPropertyOrder(16)]
+        [JsonPropertyName("content_sha256")]
+        public string ContentSHA256 { get; set; } = string.Empty;
+    }
 
-        /// <summary>
-        /// File (MIME) type
-        /// </summary>
-        [JsonPropertyOrder(3)]
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
-
+    public class FileDetails : FileDetailsBase
+    {
         /// <summary>
         /// List of files generated of the main file
         /// </summary>
-        [JsonPropertyOrder(4)]
+        [JsonPropertyOrder(24)]
         [JsonPropertyName("generated_files")]
         public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = new();
 
@@ -126,43 +111,52 @@ public class DataPipeline
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Full list of the steps in this pipeline.
+    /// Unique execution id. If the pipeline is executed again, this value will change.
+    /// A pipeline can be executed multiple time, e.g. to update a document, and each
+    /// execution has a different ID, which is used for consolidation tasks.
     /// </summary>
     [JsonPropertyOrder(2)]
+    [JsonPropertyName("execution_id")]
+    public string ExecutionId { get; set; } = Guid.NewGuid().ToString("N");
+
+    /// <summary>
+    /// Full list of the steps in this pipeline.
+    /// </summary>
+    [JsonPropertyOrder(3)]
     [JsonPropertyName("steps")]
     public List<string> Steps { get; set; } = new();
 
     /// <summary>
     /// List of the steps remaining.
     /// </summary>
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(4)]
     [JsonPropertyName("remaining_steps")]
     public List<string> RemainingSteps { get; set; } = new();
 
     /// <summary>
     /// List of steps already completed.
     /// </summary>
-    [JsonPropertyOrder(4)]
+    [JsonPropertyOrder(5)]
     [JsonPropertyName("completed_steps")]
     public List<string> CompletedSteps { get; set; } = new();
 
-    [JsonPropertyOrder(5)]
+    [JsonPropertyOrder(6)]
     [JsonPropertyName("user_id")]
     public string UserId { get; set; } = string.Empty;
 
-    [JsonPropertyOrder(6)]
+    [JsonPropertyOrder(7)]
     [JsonPropertyName("tags")]
     public TagCollection Tags { get; set; } = new();
 
-    [JsonPropertyOrder(7)]
-    [JsonPropertyName("creation")]
-    public DateTimeOffset Creation { get; set; }
-
     [JsonPropertyOrder(8)]
+    [JsonPropertyName("creation")]
+    public DateTimeOffset Creation { get; set; } = DateTimeOffset.MinValue;
+
+    [JsonPropertyOrder(9)]
     [JsonPropertyName("last_update")]
     public DateTimeOffset LastUpdate { get; set; }
 
-    [JsonPropertyOrder(9)]
+    [JsonPropertyOrder(10)]
     [JsonPropertyName("files")]
     public List<FileDetails> Files { get; set; } = new();
 
@@ -170,9 +164,20 @@ public class DataPipeline
     /// Unstructured dictionary available to support custom tasks and business logic.
     /// The orchestrator doesn't use this property, and it's up to custom handlers to manage it.
     /// </summary>
-    [JsonPropertyOrder(10)]
+    [JsonPropertyOrder(20)]
     [JsonPropertyName("custom_data")]
     public Dictionary<string, object> CustomData { get; set; } = new();
+
+    /// <summary>
+    /// When uploading over an existing upload, we temporarily capture
+    /// here the previous data, which could be a list in case of several
+    /// concurrent updates. The data is eventually used to consolidate memory,
+    /// e.g. deleting deprecated memory records. During the consolidation
+    /// process the list is progressively emptied.
+    /// </summary>
+    [JsonPropertyOrder(21)]
+    [JsonPropertyName("previous_executions_to_purge")]
+    public List<DataPipeline> PreviousExecutionsToPurge { get; set; } = new();
 
     [JsonIgnore]
     public bool Complete => this.RemainingSteps.Count == 0;

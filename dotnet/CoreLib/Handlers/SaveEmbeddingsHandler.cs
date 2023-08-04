@@ -61,6 +61,9 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
+        await this.DeletePreviousEmbeddingsAsync(pipeline, cancellationToken).ConfigureAwait(false);
+        pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+
         // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
         foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
@@ -75,7 +78,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
                 var record = new MemoryRecord
                 {
-                    Id = $"usr={pipeline.UserId}//ppl={pipeline.Id}//prt={embeddingFile.Value.Id}",
+                    Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Value.Id),
                     Vector = embeddingData.Vector,
                     Owner = pipeline.UserId,
                 };
@@ -98,6 +101,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
                 record.Metadata.Add("text", partitionContent);
 
+                // TODO: use DI
                 switch (storageConfig)
                 {
                     case AzureCognitiveSearchConfig cfg:
@@ -114,7 +118,60 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         return (true, pipeline);
     }
 
-    public async Task StoreInAzureCognitiveSearchAsync(
+    private async Task DeletePreviousEmbeddingsAsync(DataPipeline pipeline, CancellationToken cancellationToken)
+    {
+        if (pipeline.PreviousExecutionsToPurge.Count == 0) { return; }
+
+        var embeddingsToKeep = new HashSet<string>();
+
+        // Decide which embeddings not to delete, looking at the current pipeline
+        foreach (DataPipeline.GeneratedFileDetails embeddingFile in pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
+        {
+            string recordId = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Id);
+            embeddingsToKeep.Add(recordId);
+        }
+
+        // Purge old pipelines data, unless it's still relevant in the current pipeline
+        foreach (DataPipeline oldPipeline in pipeline.PreviousExecutionsToPurge)
+        {
+            foreach (DataPipeline.GeneratedFileDetails embeddingFile in oldPipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
+            {
+                string recordId = GetEmbeddingRecordId(pipeline.UserId, oldPipeline.Id, embeddingFile.Id);
+                if (embeddingsToKeep.Contains(recordId)) { continue; }
+
+                string indexName = pipeline.UserId;
+
+                foreach (object storageConfig in this._vectorDbs)
+                {
+                    // TODO: use DI
+                    switch (storageConfig)
+                    {
+                        case AzureCognitiveSearchConfig cfg:
+                            ISemanticMemoryVectorDb client = new AzureCognitiveSearchMemory(
+                                endpoint: cfg.Endpoint,
+                                apiKey: cfg.APIKey,
+                                indexPrefix: cfg.VectorIndexPrefix,
+                                log: this._log);
+
+                            this._log.LogTrace("Deleting old embedding {0}", recordId);
+                            await client.DeleteAsync(indexName, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);
+                            break;
+
+                        case QdrantConfig cfg:
+                            // TODO
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static string GetEmbeddingRecordId(string userId, string pipelineId, string filePartitionId)
+    {
+        return $"usr={userId}//ppl={pipelineId}//prt={filePartitionId}";
+    }
+
+    private async Task StoreInAzureCognitiveSearchAsync(
         AzureCognitiveSearchConfig config,
         MemoryRecord record,
         CancellationToken cancellationToken)
@@ -134,7 +191,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task StoreInQdrantAsync(
+    private async Task StoreInQdrantAsync(
         QdrantConfig config,
         MemoryRecord record,
         CancellationToken cancellationToken)
