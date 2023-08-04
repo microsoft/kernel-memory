@@ -4,6 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.SemanticMemory.Client</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.Client</RootNamespace>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>

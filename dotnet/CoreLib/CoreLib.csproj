@@ -6,6 +6,7 @@
         <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308</NoWarn>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
