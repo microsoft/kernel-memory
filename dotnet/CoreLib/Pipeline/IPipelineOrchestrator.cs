@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
@@ -30,27 +30,28 @@ public interface IPipelineOrchestrator
     /// Upload a file and start the processing pipeline
     /// </summary>
     /// <param name="uploadDetails">Details about the file and how to import it</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Import Id</returns>
-    Task<string> UploadFileAsync(UploadRequest uploadDetails);
+    Task<string> UploadFileAsync(UploadRequest uploadDetails, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new pipeline value object for files upload
     /// </summary>
-    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
+    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string documentId, string userId, TagCollection tags, IEnumerable<IFormFile> filesToUpload);
+    DataPipeline PrepareNewFileUploadPipeline(string userId, string documentId, TagCollection tags, IEnumerable<IFormFile> filesToUpload);
 
     /// <summary>
     /// Create a new pipeline value object, with an empty list of files
     /// </summary>
-    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
+    /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string documentId, string userId, TagCollection tags);
+    DataPipeline PrepareNewFileUploadPipeline(string userId, string documentId, TagCollection tags);
 
     /// <summary>
     /// Start a new data pipeline execution
@@ -58,6 +59,15 @@ public interface IPipelineOrchestrator
     /// <param name="pipeline">Pipeline to execute</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetch the pipeline status from storage
+    /// </summary>
+    /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
+    /// <param name="documentId">Id of the document and pipeline execution instance</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Pipeline status if available</returns>
+    Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stop all the pipelines in progress

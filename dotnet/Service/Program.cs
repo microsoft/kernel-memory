@@ -5,9 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
@@ -82,52 +83,83 @@ if (config.Service.RunWebService)
                                                    - start.ToUnixTimeSeconds()) + " secs"));
     // File upload endpoint
     app.MapPost("/upload", async Task<IResult> (
-        HttpRequest request,
-        IPipelineOrchestrator orchestrator,
-        ILogger<Program> log) =>
-    {
-        log.LogTrace("New upload request");
-
-        // Note: .NET doesn't yet support binding multipart forms including data and files
-        (UploadRequest input, bool isValid, string errMsg) = await UploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
-
-        if (!isValid)
+            HttpRequest request,
+            IPipelineOrchestrator orchestrator,
+            ILogger<Program> log) =>
         {
-            log.LogError(errMsg);
-            return Results.BadRequest(errMsg);
-        }
+            log.LogTrace("New upload request");
 
-        try
-        {
-            var id = await orchestrator.UploadFileAsync(input);
-            return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
-                new { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
-        }
-        catch (Exception e)
-        {
-            return Results.Problem(title: "Upload failed", detail: e.Message, statusCode: 503);
-        }
-    });
+            // Note: .NET doesn't yet support binding multipart forms including data and files
+            (UploadRequest input, bool isValid, string errMsg) = await UploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
+
+            if (!isValid)
+            {
+                log.LogError(errMsg);
+                return Results.BadRequest(errMsg);
+            }
+
+            try
+            {
+                var id = await orchestrator.UploadFileAsync(input);
+                return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
+                    new UploadAccepted { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
+            }
+            catch (Exception e)
+            {
+                return Results.Problem(title: "Upload failed", detail: e.Message, statusCode: 503);
+            }
+        })
+        .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
 
     // Ask endpoint
-    app.MapPost("/ask", async Task<IResult> (
-        SearchRequest request,
-        SearchClient searchClient,
-        ILogger<Program> log) =>
-    {
-        log.LogTrace("New search request");
-        MemoryAnswer answer = await searchClient.SearchAsync(request);
-        return Results.Ok(answer);
-    });
+    app.MapPost("/ask",
+            async Task<IResult> (SearchRequest request, SearchClient searchClient, ILogger<Program> log) =>
+            {
+                log.LogTrace("New search request");
+                MemoryAnswer answer = await searchClient.SearchAsync(request);
+                return Results.Ok(answer);
+            })
+        .Produces<MemoryAnswer>(StatusCodes.Status200OK);
 
     // Document status endpoint
-    app.MapGet("/upload-status", async Task<IResult> () =>
-    {
-        // WORK IN PROGRESS
-        await Task.Delay(0);
+    app.MapGet("/upload-status",
+            async Task<IResult> ([FromQuery(Name = "user")] string userId, [FromQuery(Name = "id")] string pipelineId, IPipelineOrchestrator orchestrator) =>
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Results.BadRequest("'user' query parameter is missing or has no value");
+                }
 
-        return Results.Ok("");
-    });
+                if (string.IsNullOrEmpty(pipelineId))
+                {
+                    return Results.BadRequest("'id' query parameter is missing or has no value");
+                }
+
+                DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, pipelineId);
+                if (pipeline == null)
+                {
+                    return Results.NotFound("Document pipeline not found");
+                }
+
+                var result = new DataPipelineStatus
+                {
+                    Completed = pipeline.Complete,
+                    Failed = false, // TODO
+                    Id = pipeline.Id,
+                    UserId = pipeline.UserId,
+                    Tags = pipeline.Tags,
+                    Creation = pipeline.Creation,
+                    LastUpdate = pipeline.LastUpdate,
+                    Steps = pipeline.Steps,
+                    RemainingSteps = pipeline.RemainingSteps,
+                    CompletedSteps = pipeline.CompletedSteps,
+                };
+
+                return Results.Ok(result);
+            })
+        .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
 }
 #pragma warning restore CA1031
 #pragma warning restore CA2254

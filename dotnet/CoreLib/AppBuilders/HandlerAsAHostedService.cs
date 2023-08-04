@@ -34,13 +34,13 @@ public class HandlerAsAHostedService<T> : IHostedService where T : IPipelineStep
         this._log.LogInformation("Handler as service created: {0}", stepName);
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
         this._log.LogInformation("Handler service started: {0}", this._stepName);
         return this._orchestrator.AddHandlerAsync(this._handler, cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken = default)
     {
         this._log.LogInformation("Stopping handler service: {0}", this._stepName);
         return this._orchestrator.StopAllPipelinesAsync();

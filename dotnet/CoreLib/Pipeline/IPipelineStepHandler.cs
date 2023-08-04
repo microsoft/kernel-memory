@@ -20,5 +20,5 @@ public interface IPipelineStepHandler
     /// <param name="pipeline">Pipeline status</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Whether the pipeline step has been processed successfully, and the new pipeline status to use moving forward</returns>
-    Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken);
+    Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 
 /* Use SemanticMemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".
@@ -23,8 +24,8 @@ MemoryWebClient memory = new(endpoint);
 // stored under the "default" user because no User ID is specified.
 await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt");
 
-// Uploading one file specifying IDs, only if the file has not been (successfully) uploaded
-if (!await memory.ExistsAsync(userId: "user1", documentId: "f01"))
+// Uploading only if the file has not been (successfully) uploaded already
+if (!await memory.IsReadyAsync(userId: "user1", documentId: "f01"))
 {
     await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt",
         new DocumentDetails(userId: "user1", documentId: "f01"));
@@ -39,7 +40,7 @@ await memory.ImportFilesAsync(new[]
 });
 
 // Categorizing files with tags
-if (!await memory.ExistsAsync(userId: "user2", documentId: "f05"))
+if (!await memory.IsReadyAsync(userId: "user2", documentId: "f05"))
 {
     await memory.ImportFileAsync("file5-NASA-news.pdf",
         new DocumentDetails("user2", "f05")
@@ -49,17 +50,17 @@ if (!await memory.ExistsAsync(userId: "user2", documentId: "f05"))
             .AddTag("type", "news"));
 }
 
-// while (
-//     !await memory.ExistsAsync(userId: "user1", documentId: "f01")
-//     || !await memory.ExistsAsync(userId: "user1", documentId: "f02")
-//     || !await memory.ExistsAsync(userId: "user1", documentId: "f03")
-//     || !await memory.ExistsAsync(userId: "user1", documentId: "f04")
-//     || !await memory.ExistsAsync(userId: "user2", documentId: "f05")
-// )
-// {
-//     Console.WriteLine("Waiting for memory ingestion to complete...");
-//     await Task.Delay(TimeSpan.FromSeconds(1));
-// }
+while (
+    !await memory.IsReadyAsync(userId: "user1", documentId: "f01")
+    || !await memory.IsReadyAsync(userId: "user1", documentId: "f02")
+    || !await memory.IsReadyAsync(userId: "user1", documentId: "f03")
+    || !await memory.IsReadyAsync(userId: "user1", documentId: "f04")
+    || !await memory.IsReadyAsync(userId: "user2", documentId: "f05")
+)
+{
+    Console.WriteLine("Waiting for memory ingestion to complete...");
+    await Task.Delay(TimeSpan.FromSeconds(2));
+}
 
 // =======================
 // === ASK ===============

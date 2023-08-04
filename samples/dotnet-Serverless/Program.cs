@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.InteractiveSetup;
 
@@ -29,8 +29,8 @@ var memory = new MemoryServerlessClient();
 // stored under the "default" user because no User ID is specified.
 await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt");
 
-// Uploading one file specifying IDs, only if the file has not been (successfully) uploaded
-if (!await memory.ExistsAsync(userId: "user1", documentId: "f01"))
+// Uploading only if the file has not been (successfully) uploaded already
+if (!await memory.IsReadyAsync(userId: "user1", documentId: "f01"))
 {
     await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt",
         new DocumentDetails(userId: "user1", documentId: "f01"));
@@ -45,7 +45,7 @@ await memory.ImportFilesAsync(new[]
 });
 
 // Categorizing files with tags
-if (!await memory.ExistsAsync(userId: "user2", documentId: "f05"))
+if (!await memory.IsReadyAsync(userId: "user2", documentId: "f05"))
 {
     await memory.ImportFileAsync("file5-NASA-news.pdf",
         new DocumentDetails("user2", "f05")

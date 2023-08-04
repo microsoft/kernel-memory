@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Client.Models;
 
 namespace Microsoft.SemanticMemory.Core.WebService;
 

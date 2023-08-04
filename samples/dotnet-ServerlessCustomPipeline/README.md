@@ -9,7 +9,7 @@ multiple files, with a fluent syntax:
 
 ```csharp
 var pipeline = orchestrator
-    .PrepareNewFileUploadPipeline("inProcessTest", "userZ", new TagCollection { { "testName", "example3" } })
+    .PrepareNewFileUploadPipeline("userZ", "inProcessTest", new TagCollection { { "testName", "example3" } })
     .AddUploadFile("file1", "file1.txt", "file1.txt")
     .AddUploadFile("file2", "file2.txt", "file2.txt")
     .AddUploadFile("file3", "file3.docx", "file3.docx")

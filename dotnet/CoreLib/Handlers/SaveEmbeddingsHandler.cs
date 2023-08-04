@@ -59,7 +59,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     public string StepName { get; }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken)
+    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         await this.DeletePreviousEmbeddingsAsync(pipeline, cancellationToken).ConfigureAwait(false);
         pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
