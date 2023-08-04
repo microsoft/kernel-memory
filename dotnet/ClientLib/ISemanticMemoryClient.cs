@@ -22,7 +22,7 @@ public interface ISemanticMemoryClient
     public Task<IList<string>> ImportFilesAsync(Document[] files);
 
     /// <summary>
-    /// Import a file from disk into memory.
+    /// Import a file from disk into the default user memory.
     /// </summary>
     /// <param name="fileName">Path and name of the file to import</param>
     /// <returns>Document ID</returns>
@@ -35,6 +35,14 @@ public interface ISemanticMemoryClient
     /// <param name="details">File details such as tags and user ID</param>
     /// <returns>Document ID</returns>
     public Task<string> ImportFileAsync(string fileName, DocumentDetails details);
+
+    /// <summary>
+    /// Search the default user memory for an answer to the given query.
+    /// TODO: add support for tags.
+    /// </summary>
+    /// <param name="query">Query/question to answer</param>
+    /// <returns>Answer to the query, if possible</returns>
+    public Task<MemoryAnswer> AskAsync(string query);
 
     /// <summary>
     /// Search a user memory for an answer to the given query.

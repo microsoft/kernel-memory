@@ -46,9 +46,9 @@ in your app.
 > ### Asking questions:
 >
 > ```csharp
-> string answer1 = await memory.AskAsync("How many people attended the meeting?");
+> var answer1 = await memory.AskAsync("How many people attended the meeting?");
 >
-> string answer2 = await memory.AskAsync("user@some.email", "what's the project timeline?");
+> var answer2 = await memory.AskAsync("user@some.email", "what's the project timeline?");
 > ```
 
 The code leverages the default documents ingestion pipeline:
@@ -63,6 +63,43 @@ The code leverages the default documents ingestion pipeline:
 Documents are organized by users, safeguarding their private information.
 Furthermore, memories can be categorized and structured using **tags**, enabling
 efficient search and retrieval through faceted navigation.
+
+# Data lineage, citations
+
+All memories and answers are fully correlated to the data provided. When
+producing an answer, Semantic Memory includes all the information needed
+to verify its accuracy:
+
+```csharp
+await memory.ImportFileAsync("NASA-news.pdf");
+
+var answer = await memory.AskAsync("Any news from NASA about Orion?");
+
+Console.WriteLine(answer.Result + "/n");
+
+foreach (var x in answer.RelevantSources)
+{
+    Console.WriteLine($"  * {x.SourceName} -- {x.Partitions.First().LastUpdate:D}");
+}
+```
+
+> Yes, there is news from NASA about the Orion spacecraft. NASA has invited the
+> media to see a new test version of the Orion spacecraft and the hardware that
+> will be used to recover the capsule and astronauts upon their return from
+> space during the Artemis II mission. The event is scheduled to take place at
+> Naval Base San Diego on Wednesday, August 2, at 11 a.m. PDT. Personnel from
+> NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with
+> the media. Teams are currently conducting tests in the Pacific Ocean to
+> demonstrate and evaluate the processes, procedures, and hardware for recovery
+> operations for crewed Artemis missions. These tests will help prepare the
+> team for Artemis II, which will be NASA's first crewed mission under the
+> Artemis program. The Artemis II crew, consisting of NASA astronauts Reid
+> Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency
+> astronaut Jeremy Hansen, will participate in recovery testing at sea next
+> year. For more information about the Artemis program, you can visit the NASA
+> website.
+>
+> - **NASA-news.pdf -- Tuesday, August 1, 2023**
 
 ## Using Semantic Memory Service
 
@@ -125,6 +162,32 @@ to **start the Semantic Memory Service**:
 >         .AddTag("collection", "business")
 >         .AddTag("collection", "plans")
 >         .AddTag("type", "doc"));
+> ```
+
+> ### Getting answers via the web service
+> ```
+> curl http://127.0.0.1:9001/ask -d'{"query":"Any news from NASA about Orion?"}' -H 'Content-Type: application/json'
+> ```
+> ```json
+> {
+>   "Query": "Any news from NASA about Orion?",
+>   "Text": "Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version of the Orion spacecraft and the hardware that will be used to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event is scheduled to take place at Naval Base San Diego on August 2nd at 11 a.m. PDT. Personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with the media. Teams are currently conducting tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. These tests will help prepare the team for Artemis II, which will be NASA's first crewed mission under the Artemis program. The Artemis II crew, consisting of NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency astronaut Jeremy Hansen, will participate in recovery testing at sea next year. For more information about the Artemis program, you can visit the NASA website.",
+>   "RelevantSources": [
+>     {
+>       "Link": "...",
+>       "SourceContentType": "application/pdf",
+>       "SourceName": "file5-NASA-news.pdf",
+>       "Partitions": [
+>         {
+>           "Text": "Skip to main content\nJul 28, 2023\nMEDIA ADVISORY M23-095\nNASA Invites Media to See Recovery Craft for\nArtemis Moon Mission\n(/sites/default/ﬁles/thumbnails/image/ksc-20230725-ph-fmx01_0003orig.jpg)\nAboard the USS John P. Murtha, NASA and Department of Defense personnel practice recovery operations for Artemis II in July. A\ncrew module test article is used to help verify the recovery team will be ready to recovery the Artemis II crew and the Orion spacecraft.\nCredits: NASA/Frank Michaux\nMedia are invited to see the new test version of NASA’s Orion spacecraft and the hardware teams will use\nto recover the capsule and astronauts upon their return from space during the Artemis II\n(http://www.nasa.gov/artemis-ii) mission. The event will take place at 11 a.m. PDT on Wednesday, Aug. 2,\nat Naval Base San Diego.\nPersonnel involved in recovery operations from NASA, the U.S. Navy, and the U.S. Air Force will be\navailable to speak with media.\nU.S. media interested in attending must RSVP by 4 p.m., Monday, July 31, to the Naval Base San Diego\nPublic Aﬀairs (mailto:nbsd.pao@us.navy.mil) or 619-556-7359.\nOrion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n1 of 3 7/28/23, 4:51 PMTeams are currently conducting the ﬁrst in a series of tests in the Paciﬁc Ocean to demonstrate and\nevaluate the processes, procedures, and hardware for recovery operations (https://www.nasa.gov\n/exploration/systems/ground/index.html) for crewed Artemis missions. The tests will help prepare the\nteam for Artemis II, NASA’s ﬁrst crewed mission under Artemis that will send four astronauts in Orion\naround the Moon to checkout systems ahead of future lunar missions.\nThe Artemis II crew – NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA\n(Canadian Space Agency) astronaut Jeremy Hansen – will participate in recovery testing at sea next year.\nFor more information about Artemis, visit:\nhttps://www.nasa.gov/artemis (https://www.nasa.gov/artemis)\n-end-\nRachel Kraft\nHeadquarters, Washington\n202-358-1100\nrachel.h.kraft@nasa.gov (mailto:rachel.h.kraft@nasa.gov)\nMadison Tuttle\nKennedy Space Center, Florida\n321-298-5868\nmadison.e.tuttle@nasa.gov (mailto:madison.e.tuttle@nasa.gov)\nLast Updated: Jul 28, 2023\nEditor: Claire O’Shea\nTags:  Artemis (/artemisprogram),Ground Systems (http://www.nasa.gov/exploration/systems/ground\n/index.html),Kennedy Space Center (/centers/kennedy/home/index.html),Moon to Mars (/topics/moon-to-\nmars/),Orion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n2 of 3 7/28/23, 4:51 PM",
+>           "Relevance": 0.8430657,
+>           "SizeInTokens": 863,
+>           "LastUpdate": "2023-08-01T08:15:02-07:00"
+>         }
+>       ]
+>     }
+>   ]
+> }
 > ```
 
 You can find a [full example here](samples/dotnet-WebClient/).

@@ -49,6 +49,12 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(string query)
+    {
+        return this.AskAsync(new DocumentDetails().UserId, query);
+    }
+
+    /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(string userId, string query)
     {
         var request = new { UserId = userId, Query = query, Tags = new TagCollection() };

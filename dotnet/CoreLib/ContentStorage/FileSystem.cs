@@ -82,7 +82,7 @@ public class FileSystem : IContentStorage
         if (!File.Exists(path))
         {
             this._log.LogError("File not found {0}", path);
-            throw new ContentStorageException("File not found");
+            throw new ContentStorageFileNotFoundException("File not found");
         }
 
         byte[] data = File.ReadAllBytes(path);

@@ -106,15 +106,24 @@ public class AzureBlob : IContentStorage
     {
         var blobName = $"{directoryName}/{fileName}";
         BlobClient blobClient = this.GetBlobClient(blobName);
-        Response<BlobDownloadResult>? content = await blobClient.DownloadContentAsync(cancellationToken).ConfigureAwait(false);
 
-        if (content == null || !content.HasValue)
+        try
         {
-            this._log.LogError("Unable to download file {0}", blobName);
-            throw new ContentStorageException("Unable to fetch blob content");
-        }
+            Response<BlobDownloadResult>? content = await blobClient.DownloadContentAsync(cancellationToken).ConfigureAwait(false);
 
-        return content.Value.Content;
+            if (content != null && content.HasValue)
+            {
+                return content.Value.Content;
+            }
+
+            this._log.LogError("Unable to download file {0}", blobName);
+            throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            this._log.LogInformation("File not found: {0}", blobName);
+            throw new ContentStorageFileNotFoundException("File not found", e);
+        }
     }
 
     private async Task<long> InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)

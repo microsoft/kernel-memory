@@ -68,7 +68,7 @@ Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
 {
-    Console.WriteLine($"  - {x.SourceName}  - {x.Link}");
+    Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }
 
 // Test with User 2 memory
@@ -83,5 +83,5 @@ Console.WriteLine($"\nUser 2 Answer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
 {
-    Console.WriteLine($"  - {x.SourceName}  - {x.Link}");
+    Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }

@@ -67,6 +67,12 @@ public class MemoryServerlessClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(string query)
+    {
+        return this.AskAsync(new DocumentDetails().UserId, query);
+    }
+
+    /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(string userId, string query)
     {
         return this._searchClient.SearchAsync(userId: userId, query: query);
