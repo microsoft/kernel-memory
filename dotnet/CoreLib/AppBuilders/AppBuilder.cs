@@ -21,8 +21,8 @@ public static class AppBuilder
         builder.Logging.ConfigureLogger();
 
         // Other dependencies, used everywhere
-        builder.Services.UseContentStorage(config);
-        builder.Services.UseOrchestrator(config);
+        builder.Services.UseContentStorage();
+        builder.Services.UseOrchestrator();
 
         // Optional settings from the caller
         servicesConfiguration?.Invoke(builder.Services, config);

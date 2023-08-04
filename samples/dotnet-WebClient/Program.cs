@@ -11,7 +11,7 @@ using Microsoft.SemanticMemory.Client;
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var endpoint = "http://127.0.0.1:9001/";
+var endpoint = "http://127.0.0.1:51024/";
 MemoryWebClient memory = new(endpoint);
 
 // =======================

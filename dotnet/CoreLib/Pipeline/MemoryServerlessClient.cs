@@ -34,7 +34,7 @@ public class MemoryServerlessClient : ISemanticMemoryClient
 
     public MemoryServerlessClient()
     {
-        this._serviceProvider = AppBuilder.Build((serv, cfg) => { serv.UseSearchClient(cfg); }).Services;
+        this._serviceProvider = AppBuilder.Build((serv, cfg) => { serv.UseSearchClient(); }).Services;
         this._searchClient = this._serviceProvider.GetService<SearchClient>()
                              ?? throw new ConfigurationException(
                                  "Unable to load search client, the object is null. Are all the dependencies configured?");
@@ -84,27 +84,13 @@ public class MemoryServerlessClient : ISemanticMemoryClient
 
     private readonly SearchClient _searchClient;
     private InProcessPipelineOrchestrator? _inProcessOrchestrator;
-    private IServiceProvider? _serviceProvider;
+    private IServiceProvider _serviceProvider;
 
-    private IServiceProvider GetServiceProvider()
-    {
-        if (this._serviceProvider == null)
-        {
-            this._serviceProvider = AppBuilder.Build((services, config) =>
-            {
-                services.UseSearchClient(config);
-            }).Services;
-        }
-
-        return this._serviceProvider;
-    }
-
-#pragma warning disable CA2208
     private async Task<InProcessPipelineOrchestrator> GetOrchestratorAsync()
     {
         if (this._inProcessOrchestrator == null)
         {
-            var orchestrator = this.GetServiceProvider().GetService<InProcessPipelineOrchestrator>();
+            var orchestrator = this._serviceProvider.GetService<InProcessPipelineOrchestrator>();
             if (orchestrator == null)
             {
                 throw new ArgumentNullException(nameof(orchestrator),
@@ -132,7 +118,6 @@ public class MemoryServerlessClient : ISemanticMemoryClient
 
         return this._inProcessOrchestrator;
     }
-#pragma warning restore CA2208
 
     private async Task<IList<string>> ImportFilesInternalAsync(Document[] files)
     {
@@ -164,25 +149,6 @@ public class MemoryServerlessClient : ISemanticMemoryClient
 
         return ids;
     }
-
-    // private static IServiceProvider LoadServiceProviderWithSearchClient()
-    // {
-    //     return AppBuilder.Build((services, config) =>
-    //     {
-    //         services.UseSearchClient(config);
-    //     }).Services;
-    // }
-
-    // private static SearchClient BuildSearchClient()
-    // {
-    //     var client = _serviceProvider.Value.GetService<SearchClient>();
-    //     if (client == null)
-    //     {
-    //         throw new SemanticMemoryException("Unable to load search client, object is NULL");
-    //     }
-    //
-    //     return client;
-    // }
 
     #endregion
 }
