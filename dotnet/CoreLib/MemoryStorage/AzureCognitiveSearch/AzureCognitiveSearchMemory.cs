@@ -133,6 +133,49 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
+        string indexName,
+        string fieldName,
+        bool fieldIsCollection,
+        string fieldValue,
+        int limit,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var client = this.GetSearchClient(indexName);
+
+        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
+        fieldValue = fieldValue.Replace("'", "''");
+        var options = new SearchOptions
+        {
+            Filter = fieldIsCollection
+                ? $"{fieldName}/any(s: s eq '{fieldValue}')"
+                : $"{fieldName} eq '{fieldValue}')",
+            Size = limit
+        };
+
+        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        try
+        {
+            searchResult = await client
+                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            this._log.LogWarning("Not found: {0}", e.Message);
+            // Index not found, no data to return
+        }
+
+        if (searchResult == null) { yield break; }
+
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        {
+            yield return doc.Document.ToMemoryRecord(withEmbeddings);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         string id = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record).Id;
@@ -150,49 +193,6 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             this._log.LogTrace("Index {0} record {1} not found, nothing to delete", indexName, id);
         }
     }
-
-    // /// <inheritdoc />
-    // private async IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
-    //     string indexName,
-    //     string fieldName,
-    //     bool fieldIsCollection,
-    //     string fieldValue,
-    //     int limit,
-    //     bool withEmbeddings = false,
-    //     [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    // {
-    //     var client = this.GetSearchClient(indexName);
-    //
-    //     fieldValue = fieldValue.Replace("'", "''");
-    //
-    //     // See: https://learn.microsoft.com/en-us/azure/search/search-query-understand-collection-filters
-    //     var options = new SearchOptions
-    //     {
-    //         Filter = SearchFilter.Create(fieldIsCollection
-    //             ? (FormattableString)$"{fieldName} eq '{fieldValue}'"
-    //             : (FormattableString)$"{fieldName}/any(s: s eq '{fieldValue}')")
-    //     };
-    //
-    //     Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
-    //     try
-    //     {
-    //         searchResult = await client
-    //             .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
-    //             .ConfigureAwait(false);
-    //     }
-    //     catch (RequestFailedException e) when (e.Status == 404)
-    //     {
-    //         this._log.LogWarning("Not found: {0}", e.Message);
-    //         // Index not found, no data to return
-    //     }
-    //
-    //     if (searchResult == null) { yield break; }
-    //
-    //     await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
-    //     {
-    //         yield return doc.Document.ToMemoryRecord(withEmbeddings);
-    //     }
-    // }
 
     #region private
 

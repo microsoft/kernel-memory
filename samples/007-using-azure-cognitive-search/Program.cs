@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 /* launchSettings.json
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
@@ -24,14 +22,18 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
+using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
+// ReSharper disable InconsistentNaming
 public class Program
 {
     // Azure Search Index name
     private const string IndexName = "test01";
 
     // A Memory ID example. This value is later serialized.
-    private const string ExternalRecordId = "usr=user2//ppl=f05//prt=7b9bad8968804121bb9b1264104608ac";
+    private const string ExternalRecordId1 = "usr=user2//ppl=f05//prt=7b9bad8968804121bb9b1264104608ac";
+    private const string ExternalRecordId2 = "usr=user2//ppl=f06//prt=7b9bad8968804121bb9b1264104608ac";
 
     // Size of the vectors
     private const int EmbeddingSize = 3;
@@ -49,20 +51,50 @@ public class Program
         // Create an index (if doesn't exist)
         await CreateIndexAsync(IndexName);
 
-        // Insert a record
-        var recordId = await InsertRecordAsync(IndexName,
-            ExternalRecordId,
-            new Dictionary<string, object> { { "text", "a b c" } },
-            new TagCollection(),
-            new Embedding<float>(new[] { 0f, 0.5f, 1 }));
+        // Insert two records
+        var recordId1 = await InsertRecordAsync(IndexName,
+            externalId: ExternalRecordId1,
+            metadata: new Dictionary<string, object> { { "filename", "dotnet.pdf" }, { "text", "this is a sentence" }, },
+            tags: new TagCollection
+            {
+                { "category", "samples" },
+                { "category", "dotnet" },
+                { "category", "search" },
+                { "year", "2023" },
+            },
+            embedding: new Embedding<float>(new[] { 0f, 0.5f, 1 }));
+
+        var recordId2 = await InsertRecordAsync(IndexName,
+            externalId: ExternalRecordId2,
+            metadata: new Dictionary<string, object> { { "filename", "python.pdf" }, { "text", "this is a sentence" }, },
+            tags: new TagCollection
+            {
+                { "category", "samples" },
+                { "category", "pyt'hon" },
+                { "category", "search" },
+                { "year", "2023" },
+            },
+            embedding: new Embedding<float>(new[] { 0f, 0.5f, 1 }));
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        // Search by tags
+        var records = await SearchByFieldValueAsync(IndexName,
+            fieldName: "tags",
+            fieldValue: "category=pyt'hon",
+            fieldIsCollection: true,
+            limit: 5);
+
+        Console.WriteLine("Count: " + records.Count);
+        foreach (MemoryRecord rec in records)
+        {
+            Console.WriteLine(" - " + rec.Id);
+            Console.WriteLine("   " + rec.Metadata.FirstOrDefault().Value);
+        }
 
         // Delete the record
-        await DeleteRecordAsync(IndexName,
-            recordId,
-            ExternalRecordId,
-            new Dictionary<string, object> { { "text", "a b c" } },
-            new TagCollection(),
-            new Embedding<float>(new[] { 0f, 0.5f, 1 }));
+        await DeleteRecordAsync(IndexName, recordId1);
+        await DeleteRecordAsync(IndexName, recordId2);
     }
 
     // ===============================================================================================
@@ -126,7 +158,12 @@ public class Program
 
         try
         {
-            await adminClient.CreateIndexAsync(indexSchema);
+            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema);
+
+            Console.WriteLine("Status: " + response.GetRawResponse().Status);
+            Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
+            Console.WriteLine("Content: " + response.GetRawResponse().Content);
+            Console.WriteLine("Name: " + response.Value.Name);
         }
         catch (RequestFailedException e) when (e.Message.Contains("already exists"))
         {
@@ -141,7 +178,7 @@ public class Program
         Console.WriteLine("\n== INSERT ==\n");
         var client = adminClient.GetSearchClient(indexName);
 
-        var record = new Microsoft.SemanticMemory.Core.MemoryStorage.MemoryRecord
+        var record = new MemoryRecord
         {
             Id = externalId,
             Vector = embedding,
@@ -150,7 +187,7 @@ public class Program
             Metadata = metadata
         };
 
-        Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch.AzureCognitiveSearchMemoryRecord localRecord = Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch.AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
+        AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
 
         Console.WriteLine($"CREATING {localRecord.Id}\n");
 
@@ -158,19 +195,65 @@ public class Program
             IndexDocumentsBatch.Upload(new[] { localRecord }),
             new IndexDocumentsOptions { ThrowOnAnyError = true });
 
-        Console.WriteLine("Status: " + response.Value.Results.FirstOrDefault()?.Status);
-        Console.WriteLine("Key: " + response.Value.Results.FirstOrDefault()?.Key);
-        Console.WriteLine("Succeeded: " + (response.Value.Results.FirstOrDefault()?.Succeeded ?? false ? "true" : "false"));
-        Console.WriteLine("ErrorMessage: " + response.Value.Results.FirstOrDefault()?.ErrorMessage);
         Console.WriteLine("Status: " + response.GetRawResponse().Status);
+        Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
         Console.WriteLine("Content: " + response.GetRawResponse().Content);
+
+        Console.WriteLine("[Results] Status: " + response.Value.Results.FirstOrDefault()?.Status);
+        Console.WriteLine("[Results] Key: " + response.Value.Results.FirstOrDefault()?.Key);
+        Console.WriteLine("[Results] Succeeded: " + (response.Value.Results.FirstOrDefault()?.Succeeded ?? false ? "true" : "false"));
+        Console.WriteLine("[Results] ErrorMessage: " + response.Value.Results.FirstOrDefault()?.ErrorMessage);
 
         return response.Value.Results.FirstOrDefault()?.Key ?? string.Empty;
     }
 
     // ===============================================================================================
-    private static async Task DeleteRecordAsync(string indexName,
-        string recordId, string externalId, Dictionary<string, object> metadata, TagCollection tags, Embedding<float> embedding)
+    private static async Task<IList<MemoryRecord>> SearchByFieldValueAsync(
+        string indexName,
+        string fieldName,
+        bool fieldIsCollection,
+        string fieldValue,
+        int limit)
+    {
+        Console.WriteLine("\n== FILTER SEARCH ==\n");
+        var client = adminClient.GetSearchClient(indexName);
+
+        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
+        fieldValue = fieldValue.Replace("'", "''");
+        var options = new SearchOptions
+        {
+            Filter = fieldIsCollection
+                ? $"{fieldName}/any(s: s eq '{fieldValue}')"
+                : $"{fieldName} eq '{fieldValue}')",
+            Size = limit
+        };
+
+        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        try
+        {
+            searchResult = await client
+                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options)
+                .ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            Console.WriteLine("Search returned 404: {0}", e.Message);
+        }
+
+        var results = new List<MemoryRecord>();
+
+        if (searchResult == null) { return results; }
+
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        {
+            results.Add(doc.Document.ToMemoryRecord());
+        }
+
+        return results;
+    }
+
+    // ===============================================================================================
+    private static async Task DeleteRecordAsync(string indexName, string recordId)
     {
         Console.WriteLine("\n== DELETE ==\n");
 
@@ -180,11 +263,13 @@ public class Program
 
         Response<IndexDocumentsResult>? response = await client.DeleteDocumentsAsync("id", new List<string> { recordId });
 
-        Console.WriteLine("Status: " + response.Value.Results.FirstOrDefault()?.Status);
-        Console.WriteLine("Key: " + response.Value.Results.FirstOrDefault()?.Key);
-        Console.WriteLine("Succeeded: " + (response.Value.Results.FirstOrDefault()?.Succeeded ?? false ? "true" : "false"));
-        Console.WriteLine("ErrorMessage: " + response.Value.Results.FirstOrDefault()?.ErrorMessage);
         Console.WriteLine("Status: " + response.GetRawResponse().Status);
+        Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
         Console.WriteLine("Content: " + response.GetRawResponse().Content);
+
+        Console.WriteLine("[Results] Status: " + response.Value.Results.FirstOrDefault()?.Status);
+        Console.WriteLine("[Results] Key: " + response.Value.Results.FirstOrDefault()?.Key);
+        Console.WriteLine("[Results] Succeeded: " + (response.Value.Results.FirstOrDefault()?.Succeeded ?? false ? "true" : "false"));
+        Console.WriteLine("[Results] ErrorMessage: " + response.Value.Results.FirstOrDefault()?.ErrorMessage);
     }
 }

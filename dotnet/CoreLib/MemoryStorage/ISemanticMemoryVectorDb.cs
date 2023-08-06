@@ -60,35 +60,34 @@ public interface ISemanticMemoryVectorDb
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get list of records having a field matching a given value.
+    /// E.g. searching vectors by tag, for deletions.
+    /// </summary>
+    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="fieldName">Field to search</param>
+    /// <param name="fieldIsCollection">Whether the field is a string or a collection of strings</param>
+    /// <param name="fieldValue">Value to match (if the field is a collection, the collection must contain the value)</param>
+    /// <param name="limit">Max number of records to return</param>
+    /// <param name="withEmbeddings">Whether to include vector in the result</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    /// <returns>List of records</returns>
+    IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
+        string indexName,
+        string fieldName,
+        bool fieldIsCollection,
+        string fieldValue,
+        int limit,
+        bool withEmbeddings = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete a record
     /// </summary>
     /// <param name="indexName">Index/Collection name</param>
     /// <param name="record">Record to delete. Most Vector DB requires only the record ID to be set.</param>
     /// <param name="cancellationToken">Task cancellation token</param>
-    /// <returns></returns>
     Task DeleteAsync(
         string indexName,
         MemoryRecord record,
         CancellationToken cancellationToken = default);
-
-    // /// <summary>
-    // /// Get list of records having a field matching a given value.
-    // /// E.g. searching vectors by tag, for deletions.
-    // /// </summary>
-    // /// <param name="indexName">Index/Collection name</param>
-    // /// <param name="fieldName">Field to search</param>
-    // /// <param name="fieldIsCollection">Whether the field is a string or a collection of strings</param>
-    // /// <param name="fieldValue">Value to match (if the field is a collection, the collection must contain the value)</param>
-    // /// <param name="limit">Max number of records to return</param>
-    // /// <param name="withEmbeddings">Whether to include vector in the result</param>
-    // /// <param name="cancellationToken">Task cancellation token</param>
-    // /// <returns>List of records</returns>
-    // IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
-    //     string indexName,
-    //     string fieldName,
-    //     bool fieldIsCollection,
-    //     string fieldValue,
-    //     int limit,
-    //     bool withEmbeddings = false,
-    //     CancellationToken cancellationToken = default);
 }
