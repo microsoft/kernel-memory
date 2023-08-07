@@ -15,4 +15,9 @@ public class ServiceConfig
     /// Use these booleans to deploy the web service and the handlers on same/different VMs
     /// </summary>
     public bool RunHandlers { get; set; } = true;
+
+    /// <summary>
+    /// Web service settings, e.g. whether to expose OpenAPI swagger docs.
+    /// </summary>
+    public bool OpenApiEnabled { get; set; } = false;
 }

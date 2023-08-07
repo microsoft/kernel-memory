@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Handlers;
@@ -20,7 +19,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  * 'InProcessPipelineOrchestrator' explicitly. */
 
 Console.WriteLine("=== In process file import example ===");
-IHost app = AppBuilder.Build();
+var app = Builder.CreateBuilder(out SemanticMemoryConfig config).Build();
 
 // Azure Blobs or FileSystem, depending on settings in appsettings.json
 var storage = app.Services.GetService<IContentStorage>();
@@ -37,10 +36,10 @@ await orchestrator.AddHandlerAsync(textExtraction);
 TextPartitioningHandler textPartitioning = new("partition", orchestrator);
 await orchestrator.AddHandlerAsync(textPartitioning);
 
-GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<SemanticMemoryConfig>()!);
+GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<IServiceProvider>()!);
 await orchestrator.AddHandlerAsync(textEmbedding);
 
-SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<SemanticMemoryConfig>()!);
+SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<IServiceProvider>()!);
 await orchestrator.AddHandlerAsync(saveEmbedding);
 
 // orchestrator.AddHandlerAsync(...);
@@ -66,3 +65,5 @@ Console.WriteLine("* Executing pipeline...");
 await orchestrator.RunPipelineAsync(pipeline);
 
 Console.WriteLine("* File import completed.");
+
+Console.WriteLine("Refactoring in progress");

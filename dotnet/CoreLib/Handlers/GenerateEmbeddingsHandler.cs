@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
@@ -23,31 +23,34 @@ namespace Microsoft.SemanticMemory.Core.Handlers;
 public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<object> _embeddingGenerators;
+    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
 
     /// <summary>
-    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// Handler responsible for generating embeddings and saving them to content storages.
+    /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="configuration">Application settings</param>
+    /// <param name="serviceProvider">.NET service provider</param>
     /// <param name="log">Application logger</param>
     public GenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        SemanticMemoryConfig configuration,
+        IServiceProvider serviceProvider,
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
-        this._embeddingGenerators = new List<object>();
+        this._log = log
+                    ?? serviceProvider.GetService<ILogger<GenerateEmbeddingsHandler>>()
+                    ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
 
-        var handlerConfig = configuration.GetHandlerConfig<EmbeddingGeneratorsConfig>(stepName);
-        for (int index = 0; index < handlerConfig.EmbeddingGenerators.Count; index++)
+        var embeddingGeneratorBuilders = serviceProvider.GetService<ConfiguredServices<ITextEmbeddingGeneration>>()
+                                         ?? throw new SemanticMemoryException("List of embedding generators not configured");
+        foreach (Func<IServiceProvider, ITextEmbeddingGeneration> x in embeddingGeneratorBuilders.GetList())
         {
-            this._embeddingGenerators.Add(handlerConfig.GetEmbeddingGeneratorConfig(index));
+            this._embeddingGenerators.Add(x.Invoke(serviceProvider));
         }
 
         this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
@@ -88,88 +91,42 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogTrace("Processing file {0}", partitionFile.Name);
-                        foreach (object cfg in this._embeddingGenerators)
+                        foreach (ITextEmbeddingGeneration generator in this._embeddingGenerators)
                         {
                             EmbeddingFileContent embeddingData = new()
                             {
                                 SourceFileName = partitionFile.Name
                             };
 
-                            string embeddingFileName;
+                            embeddingData.GeneratorProvider = generator.GetType().FullName ?? generator.GetType().Name;
 
-                            switch (cfg)
+                            // TODO: model name
+                            embeddingData.GeneratorName = "TODO";
+
+                            this._log.LogTrace("Generating embeddings using {0}, file: {1}", embeddingData.GeneratorProvider, partitionFile.Name);
+
+                            // Check if embeddings have already been generated
+                            string embeddingFileName = GetEmbeddingFileName(partitionFile.Name, embeddingData.GeneratorProvider, embeddingData.GeneratorName);
+
+                            // TODO: check if the file exists in storage
+                            if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
                             {
-                                case AzureOpenAIConfig x:
-                                {
-                                    embeddingData.GeneratorProvider = "AzureOpenAI";
-                                    // TODO: fetch the model name
-                                    embeddingData.GeneratorName = x.Deployment;
-
-                                    this._log.LogTrace("Generating embeddings using Azure OpenAI, file: {0}", partitionFile.Name);
-
-                                    // Check if embeddings have already been generated
-                                    embeddingFileName = GetEmbeddingFileName(partitionFile.Name, "AzureOpenAI", x.Deployment);
-                                    // TODO: check if the file exists in storage
-                                    if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
-                                    {
-                                        this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
-                                        continue;
-                                    }
-
-                                    // TODO: handle Azure.RequestFailedException - BlobNotFound
-                                    string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
-
-                                    var generator = new AzureTextEmbeddingGeneration(
-                                        modelId: x.Deployment, endpoint: x.Endpoint, apiKey: x.APIKey, logger: this._log);
-
-                                    IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(
-                                        new List<string> { partitionContent }, cancellationToken).ConfigureAwait(false);
-
-                                    if (embedding.Count == 0)
-                                    {
-                                        throw new OrchestrationException("Embeddings not generated");
-                                    }
-
-                                    embeddingData.Vector = embedding.First();
-                                    break;
-                                }
-
-                                case OpenAIConfig x:
-                                {
-                                    embeddingData.GeneratorProvider = "OpenAI";
-                                    embeddingData.GeneratorName = x.Model;
-
-                                    this._log.LogTrace("Generating embeddings using OpenAI, file: {0}", partitionFile.Name);
-
-                                    // Check if embeddings have already been generated
-                                    embeddingFileName = GetEmbeddingFileName(partitionFile.Name, "OpenAI", x.Model);
-                                    if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
-                                    {
-                                        this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
-                                        continue;
-                                    }
-
-                                    var generator = new OpenAITextEmbeddingGeneration(
-                                        modelId: x.Model, apiKey: x.APIKey, organization: x.OrgId, logger: this._log);
-                                    string content = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
-
-                                    IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(
-                                        new List<string> { content }, cancellationToken).ConfigureAwait(false);
-
-                                    if (embedding.Count == 0)
-                                    {
-                                        throw new OrchestrationException("Embeddings not generated");
-                                    }
-
-                                    embeddingData.Vector = embedding.First();
-                                    break;
-                                }
-
-                                default:
-                                    this._log.LogError("Embedding generator {0} not supported", cfg.GetType().FullName);
-                                    throw new OrchestrationException($"Embeddings generator {cfg.GetType().FullName} not supported");
+                                this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
+                                continue;
                             }
 
+                            // TODO: handle Azure.RequestFailedException - BlobNotFound
+                            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
+
+                            IList<Embedding<float>> embedding = await generator.GenerateEmbeddingsAsync(
+                                new List<string> { partitionContent }, cancellationToken).ConfigureAwait(false);
+
+                            if (embedding.Count == 0)
+                            {
+                                throw new OrchestrationException("Embeddings not generated");
+                            }
+
+                            embeddingData.Vector = embedding.First();
                             embeddingData.VectorSize = embeddingData.Vector.Count;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
 

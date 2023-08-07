@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
-        <NoWarn>CA1031</NoWarn>
+        <NoWarn>CA1031,CA1303,CA1724</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,6 +37,10 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
     </ItemGroup>
 
 </Project>

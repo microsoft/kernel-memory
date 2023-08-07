@@ -70,6 +70,17 @@ public interface IPipelineOrchestrator
     Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Check if a document ID exists in a user memory and is ready for usage.
+    /// The logic checks if the uploaded document has been fully processed.
+    /// When the document exists in storage but is not processed yet, the method returns False.
+    /// </summary>
+    /// <param name="userId">ID of the user's memory to search</param>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>True if the document has been successfully uploaded and imported</returns>
+    public Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Stop all the pipelines in progress
     /// </summary>
     Task StopAllPipelinesAsync();

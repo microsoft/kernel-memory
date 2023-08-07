@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+// using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -25,7 +25,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
     private readonly ILogger<TextPartitioningHandler> _log;
 
     /// <summary>
-    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// Handler responsible for partitioning text in small chunks.
+    /// Note: stepName and other params are injected with DI.
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>

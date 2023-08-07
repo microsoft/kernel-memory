@@ -13,12 +13,24 @@ public interface ISemanticMemoryVectorDb
     /// Create an index/collection
     /// </summary>
     /// <param name="indexName">Index/Collection name</param>
-    /// <param name="schema">Index/Collection schema</param>
+    /// <param name="vectorSize">Index/Collection vector size</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     Task CreateIndexAsync(
         string indexName,
-        VectorDbSchema schema,
+        int vectorSize,
         CancellationToken cancellationToken = default);
+
+    // TODO: revisit for custom schemas
+    // /// <summary>
+    // /// Create an index/collection
+    // /// </summary>
+    // /// <param name="indexName">Index/Collection name</param>
+    // /// <param name="schema">Index/Collection schema</param>
+    // /// <param name="cancellationToken">Task cancellation token</param>
+    // Task CreateIndexAsync(
+    //     string indexName,
+    //     VectorDbSchema schema,
+    //     CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete an index/collection

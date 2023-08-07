@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
@@ -23,13 +24,29 @@ namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 {
     private readonly string _indexPrefix;
-    private readonly ILogger _log;
+    private readonly ILogger<AzureCognitiveSearchMemory> _log;
+
+    public AzureCognitiveSearchMemory(
+        string endpoint,
+        TokenCredential credential,
+        string indexPrefix = "",
+        ILogger<AzureCognitiveSearchMemory>? log = null)
+    {
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            throw new ConfigurationException("Azure Cognitive Search Endpoint is empty");
+        }
+
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credential, GetClientOptions());
+        this._indexPrefix = indexPrefix;
+        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
+    }
 
     public AzureCognitiveSearchMemory(
         string endpoint,
         string apiKey,
         string indexPrefix = "",
-        ILogger? log = null)
+        ILogger<AzureCognitiveSearchMemory>? log = null)
     {
         if (string.IsNullOrEmpty(endpoint))
         {
@@ -41,31 +58,16 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             throw new ConfigurationException("Azure Cognitive Search API key is empty");
         }
 
-        this._indexPrefix = indexPrefix;
-        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
-
         AzureKeyCredential credentials = new(apiKey);
         this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
+        this._indexPrefix = indexPrefix;
+        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
     }
 
     /// <inheritdoc />
-    public async Task CreateIndexAsync(string indexName, VectorDbSchema schema, CancellationToken cancellationToken = default)
+    public Task CreateIndexAsync(string indexName, int vectorSize, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesIndexExistAsync(indexName, cancellationToken).ConfigureAwait(false))
-        {
-            return;
-        }
-
-        var indexSchema = this.PrepareIndexSchema(indexName, schema);
-
-        try
-        {
-            await this._adminClient.CreateIndexAsync(indexSchema, cancellationToken).ConfigureAwait(false);
-        }
-        catch (RequestFailedException e) when (e.Status == 409)
-        {
-            this._log.LogWarning("Index already exists, nothing to do: {0}", e.Message);
-        }
+        return this.CreateIndexAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -145,7 +147,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         var client = this.GetSearchClient(indexName);
 
         // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        fieldValue = fieldValue.Replace("'", "''");
+        fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
         var options = new SearchOptions
         {
             Filter = fieldIsCollection
@@ -212,6 +214,25 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     //         return null;
     //     }
     // }
+
+    private async Task CreateIndexAsync(string indexName, VectorDbSchema schema, CancellationToken cancellationToken = default)
+    {
+        if (await this.DoesIndexExistAsync(indexName, cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
+        var indexSchema = this.PrepareIndexSchema(indexName, schema);
+
+        try
+        {
+            await this._adminClient.CreateIndexAsync(indexSchema, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (e.Status == 409)
+        {
+            this._log.LogWarning("Index already exists, nothing to do: {0}", e.Message);
+        }
+    }
 
     private async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
     {

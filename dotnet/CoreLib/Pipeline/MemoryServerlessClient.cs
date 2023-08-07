@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.Search;
@@ -21,25 +20,24 @@ namespace Microsoft.SemanticMemory.Core.Pipeline;
 /// <see cref="InProcessPipelineOrchestrator"/>, hence the name "Serverless".
 /// The class accesses directly storage, vectors and AI.
 ///
-/// TODO: check if DI is needed
 /// TODO: pipeline structure is hardcoded, should allow custom handlers/steps
 /// </summary>
 public class MemoryServerlessClient : ISemanticMemoryClient
 {
+    private readonly IServiceProvider _serviceProvider;
+
     public MemoryServerlessClient(IServiceProvider serviceProvider)
     {
         this._serviceProvider = serviceProvider;
-        this._searchClient = this._serviceProvider.GetService<SearchClient>()
-                             ?? throw new ConfigurationException(
-                                 "Unable to load search client, the object is null. Are all the dependencies configured?");
-    }
 
-    public MemoryServerlessClient()
-    {
-        this._serviceProvider = AppBuilder.Build((serv, cfg) => { serv.UseSearchClient(); }).Services;
-        this._searchClient = this._serviceProvider.GetService<SearchClient>()
-                             ?? throw new ConfigurationException(
-                                 "Unable to load search client, the object is null. Are all the dependencies configured?");
+        this._configuration = serviceProvider.GetService<SemanticMemoryConfig>()
+                              ?? throw new SemanticMemoryException("Unable to load configuration. Are all the dependencies configured?");
+
+        this._searchClient = serviceProvider.GetService<SearchClient>()
+                             ?? throw new ConfigurationException("Unable to load search client. Are all the dependencies configured?");
+
+        this._orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>()
+                             ?? throw new ConfigurationException("Unable to load orchestrator. Are all the dependencies configured?");
     }
 
     /// <inheritdoc />
@@ -77,69 +75,48 @@ public class MemoryServerlessClient : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
-        return this._searchClient.SearchAsync(userId: userId, query: query);
+        return this._searchClient.SearchAsync(userId: userId, query: query, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
         var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
-
-        return pipeline != null && pipeline.Complete;
+        return await orchestrator.IsReadyAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
     }
 
     #region private
 
     private readonly SearchClient _searchClient;
-    private InProcessPipelineOrchestrator? _inProcessOrchestrator;
-    private IServiceProvider _serviceProvider;
+    private readonly InProcessPipelineOrchestrator _orchestrator;
+    private readonly SemanticMemoryConfig _configuration;
+    private bool _orchestratorReady = false;
 
-    private IServiceProvider GetServiceProvider()
-    {
-        if (this._serviceProvider == null)
-        {
-            this._serviceProvider = AppBuilder.Build((services, config) =>
-            {
-                services.UseSearchClient();
-            }).Services;
-        }
-
-        return this._serviceProvider;
-    }
-
-#pragma warning disable CA2208
+    // TODO: handle contentions
     private async Task<InProcessPipelineOrchestrator> GetOrchestratorAsync(CancellationToken cancellationToken)
     {
-        if (this._inProcessOrchestrator == null)
+        if (!this._orchestratorReady)
         {
-            var orchestrator = this._serviceProvider.GetService<InProcessPipelineOrchestrator>();
-            if (orchestrator == null)
-            {
-                throw new ArgumentNullException(nameof(orchestrator),
-                    $"Unable to instantiate {typeof(InProcessPipelineOrchestrator)} with AppBuilder");
-            }
-
             // Text extraction handler
-            TextExtractionHandler textExtraction = new("extract", orchestrator);
-            await orchestrator.AddHandlerAsync(textExtraction, cancellationToken).ConfigureAwait(false);
+            TextExtractionHandler textExtraction = new("extract", this._orchestrator);
+            await this._orchestrator.AddHandlerAsync(textExtraction, cancellationToken).ConfigureAwait(false);
 
             // Text partitioning handler
-            TextPartitioningHandler textPartitioning = new("partition", orchestrator);
-            await orchestrator.AddHandlerAsync(textPartitioning, cancellationToken).ConfigureAwait(false);
+            TextPartitioningHandler textPartitioning = new("partition", this._orchestrator);
+            await this._orchestrator.AddHandlerAsync(textPartitioning, cancellationToken).ConfigureAwait(false);
 
             // Embedding generation handler
-            GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, SemanticMemoryConfig.LoadFromAppSettings());
-            await orchestrator.AddHandlerAsync(textEmbedding, cancellationToken).ConfigureAwait(false);
+            GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", this._orchestrator, this._serviceProvider);
+            await this._orchestrator.AddHandlerAsync(textEmbedding, cancellationToken).ConfigureAwait(false);
 
             // Embedding storage handler
-            SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, SemanticMemoryConfig.LoadFromAppSettings());
-            await orchestrator.AddHandlerAsync(saveEmbedding, cancellationToken).ConfigureAwait(false);
+            SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", this._orchestrator, this._serviceProvider);
+            await this._orchestrator.AddHandlerAsync(saveEmbedding, cancellationToken).ConfigureAwait(false);
 
-            this._inProcessOrchestrator = orchestrator;
+            this._orchestratorReady = true;
         }
 
-        return this._inProcessOrchestrator;
+        return this._orchestrator;
     }
 
     private async Task<IList<string>> ImportFilesInternalAsync(Document[] files, CancellationToken cancellationToken)

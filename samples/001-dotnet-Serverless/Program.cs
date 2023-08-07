@@ -18,7 +18,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryServerlessClient();
+var memory = new MemoryServerlessClient(Builder.GetServiceProvider());
 
 // =======================
 // === UPLOAD ============

@@ -6,14 +6,13 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
 namespace Microsoft.SemanticMemory.Core.Handlers;
@@ -21,31 +20,34 @@ namespace Microsoft.SemanticMemory.Core.Handlers;
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<object> _vectorDbs;
+    private readonly List<ISemanticMemoryVectorDb> _vectorDbs = new();
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
     /// <summary>
-    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// Handler responsible for copying embeddings from storage to list of vector DBs
+    /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="configuration">Application settings</param>
+    /// <param name="serviceProvider">.NET service provider</param>
     /// <param name="log">Application logger</param>
     public SaveEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        SemanticMemoryConfig configuration,
+        IServiceProvider serviceProvider,
         ILogger<SaveEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? DefaultLogger<SaveEmbeddingsHandler>.Instance;
-        this._vectorDbs = new List<object>();
+        this._log = log
+                    ?? serviceProvider.GetService<ILogger<SaveEmbeddingsHandler>>()
+                    ?? DefaultLogger<SaveEmbeddingsHandler>.Instance;
 
-        var handlerConfig = configuration.GetHandlerConfig<VectorDbsConfig>(stepName);
-        for (int index = 0; index < handlerConfig.VectorDbs.Count; index++)
+        var vectorDbBuilders = serviceProvider.GetService<ConfiguredServices<ISemanticMemoryVectorDb>>()
+                               ?? throw new SemanticMemoryException("List of embedding generators not configured");
+        foreach (Func<IServiceProvider, ISemanticMemoryVectorDb> x in vectorDbBuilders.GetList())
         {
-            this._vectorDbs.Add(handlerConfig.GetVectorDbConfig(index));
+            this._vectorDbs.Add(x.Invoke(serviceProvider));
         }
 
         this._log.LogInformation("Handler {0} ready, {1} vector storages", stepName, this._vectorDbs.Count);
@@ -67,51 +69,47 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
         foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
-            foreach (object storageConfig in this._vectorDbs)
+            string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
+            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
+            if (embeddingData == null)
             {
-                string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
-                EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
-                if (embeddingData == null)
-                {
-                    throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.Value.Name}");
-                }
+                throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.Value.Name}");
+            }
 
-                var record = new MemoryRecord
-                {
-                    Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Value.Id),
-                    Vector = embeddingData.Vector,
-                    Owner = pipeline.UserId,
-                };
+            var record = new MemoryRecord
+            {
+                Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Value.Id),
+                Vector = embeddingData.Vector,
+                Owner = pipeline.UserId,
+            };
 
-                // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
-                record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.Id);
-                record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
-                record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
-                record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
+            // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
+            record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.Id);
+            record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
+            record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
+            record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
 
-                pipeline.Tags.CopyTo(record.Tags);
+            pipeline.Tags.CopyTo(record.Tags);
 
-                record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
-                record.Metadata.Add("vector_provider", embeddingData.GeneratorProvider);
-                record.Metadata.Add("vector_generator", embeddingData.GeneratorName);
-                record.Metadata.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
+            record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
+            record.Metadata.Add("vector_provider", embeddingData.GeneratorProvider);
+            record.Metadata.Add("vector_generator", embeddingData.GeneratorName);
+            record.Metadata.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
 
-                // Store text partition for RAG
-                // TODO: make this optional to reduce space usage, using blob files instead
-                string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
-                record.Metadata.Add("text", partitionContent);
+            // Store text partition for RAG
+            // TODO: make this optional to reduce space usage, using blob files instead
+            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
+            record.Metadata.Add("text", partitionContent);
 
-                // TODO: use DI
-                switch (storageConfig)
-                {
-                    case AzureCognitiveSearchConfig cfg:
-                        await this.StoreInAzureCognitiveSearchAsync(cfg, record, cancellationToken).ConfigureAwait(false);
-                        break;
+            string indexName = record.Owner;
 
-                    case QdrantConfig cfg:
-                        await this.StoreInQdrantAsync(cfg, record, cancellationToken).ConfigureAwait(false);
-                        break;
-                }
+            foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
+            {
+                this._log.LogTrace("Creating index '{0}'", indexName);
+                await client.CreateIndexAsync(indexName, record.Vector.Count, cancellationToken).ConfigureAwait(false);
+
+                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, indexName);
+                await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -141,26 +139,10 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
                 string indexName = pipeline.UserId;
 
-                foreach (object storageConfig in this._vectorDbs)
+                foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
                 {
-                    // TODO: use DI
-                    switch (storageConfig)
-                    {
-                        case AzureCognitiveSearchConfig cfg:
-                            ISemanticMemoryVectorDb client = new AzureCognitiveSearchMemory(
-                                endpoint: cfg.Endpoint,
-                                apiKey: cfg.APIKey,
-                                indexPrefix: cfg.VectorIndexPrefix,
-                                log: this._log);
-
-                            this._log.LogTrace("Deleting old embedding {0}", recordId);
-                            await client.DeleteAsync(indexName, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);
-                            break;
-
-                        case QdrantConfig cfg:
-                            // TODO
-                            break;
-                    }
+                    this._log.LogTrace("Deleting old embedding {0}", recordId);
+                    await client.DeleteAsync(indexName, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -169,34 +151,5 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     private static string GetEmbeddingRecordId(string userId, string pipelineId, string filePartitionId)
     {
         return $"usr={userId}//ppl={pipelineId}//prt={filePartitionId}";
-    }
-
-    private async Task StoreInAzureCognitiveSearchAsync(
-        AzureCognitiveSearchConfig config,
-        MemoryRecord record,
-        CancellationToken cancellationToken)
-    {
-        ISemanticMemoryVectorDb client = new AzureCognitiveSearchMemory(
-            endpoint: config.Endpoint,
-            apiKey: config.APIKey,
-            indexPrefix: config.VectorIndexPrefix,
-            log: this._log);
-
-        string indexName = record.Owner;
-
-        this._log.LogTrace("Creating index '{0}'", indexName);
-        await client.CreateIndexAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(record.Vector.Count), cancellationToken).ConfigureAwait(false);
-
-        this._log.LogTrace("Savind record {0} in index '{1}'", record.Id, indexName);
-        await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task StoreInQdrantAsync(
-        QdrantConfig config,
-        MemoryRecord record,
-        CancellationToken cancellationToken)
-    {
-        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
-        throw new OrchestrationException("Qdrant not supported yet");
     }
 }

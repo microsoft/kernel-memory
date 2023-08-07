@@ -4,7 +4,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.DataFormats.Office;
 using Microsoft.SemanticMemory.Core.DataFormats.Pdf;
 using Microsoft.SemanticMemory.Core.Diagnostics;
@@ -21,7 +20,8 @@ public class TextExtractionHandler : IPipelineStepHandler
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <summary>
-    /// Note: stepName and other params are injected with DI, <see cref="DependencyInjection.UseHandler{THandler}"/>
+    /// Handler responsible for extracting text from documents.
+    /// Note: stepName and other params are injected with DI.
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>

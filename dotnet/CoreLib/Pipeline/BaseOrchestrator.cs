@@ -121,6 +121,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    {
+        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        return pipeline != null && pipeline.Complete;
+    }
+
+    ///<inheritdoc />
     public Task StopAllPipelinesAsync()
     {
         this.CancellationTokenSource.Cancel();

@@ -1,20 +1,41 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Configuration;
 
 public class SemanticMemoryConfig
 {
-    public const string PropertyName = "SemanticMemory";
+    /// <summary>
+    /// Settings for the upload of documents and memory creation/update.
+    /// </summary>
+    public class DataIngestionConfig
+    {
+        public class DistributedOrchestrationConfig
+        {
+            public string QueueType { get; set; } = string.Empty;
+        }
 
-    private static IHost? s_host;
+        public string OrchestrationType { get; set; } = string.Empty;
+
+        public DistributedOrchestrationConfig DistributedOrchestration { get; set; } = new();
+
+        public List<string> EmbeddingGeneratorTypes { get; set; } = new();
+
+        public List<string> VectorDbTypes { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Settings for search and memory read API.
+    /// </summary>
+    public class RetrievalConfig
+    {
+        public string VectorDbType { get; set; } = string.Empty;
+
+        public string EmbeddingGeneratorType { get; set; } = string.Empty;
+
+        public string TextGeneratorType { get; set; } = string.Empty;
+    }
 
     /// <summary>
     /// Semantic Memory Service settings.
@@ -22,78 +43,22 @@ public class SemanticMemoryConfig
     public ServiceConfig Service { get; set; } = new ServiceConfig();
 
     /// <summary>
-    /// Search settings
+    /// Documents storage settings.
     /// </summary>
-    public SearchConfig Search { get; set; } = new();
+    public string ContentStorageType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Content storage settings, e.g. Azure Blob or File System details
+    /// Settings for the upload of documents and memory creation/update.
     /// </summary>
-    public ContentStorageConfig ContentStorage { get; set; } = new();
+    public DataIngestionConfig DataIngestion { get; set; } = new();
 
     /// <summary>
-    /// Memory ingestion pipeline settings, including queueing system
+    /// Settings for search and memory read API.
     /// </summary>
-    public OrchestrationConfig Orchestration { get; set; } = new();
+    public RetrievalConfig Retrieval { get; set; } = new();
 
     /// <summary>
-    /// Memory ingestion pipeline handlers settings, e.g. settings about chunking, insights, and embeddings.
-    /// TODO: use Dictionary[string, Dictionary[string, object]]
+    /// Dependencies settings, e.g. credentials, endpoints, etc.
     /// </summary>
-    public Dictionary<string, IConfigurationSection> Handlers { get; set; } = new();
-
-    /// <summary>
-    /// Web service settings, e.g. whether to expose OpenAPI swagger docs.
-    /// </summary>
-    public bool OpenApiEnabled { get; set; } = false;
-
-    /// <summary>
-    /// Get pipeline handler configuration.
-    /// </summary>
-    /// <param name="handlerName">Handler name</param>
-    /// <typeparam name="T">Type of handler configuration</typeparam>
-    /// <returns>Configuration data, mapped by .NET configuration binder</returns>
-    public T GetHandlerConfig<T>(string handlerName) where T : class, new()
-    {
-        if (!this.Handlers.TryGetValue(handlerName, out IConfigurationSection? section))
-        {
-            return new T();
-        }
-
-        return section.Get<T>() ?? new T();
-    }
-
-    public static SemanticMemoryConfig LoadFromAppSettings()
-    {
-        if (s_host == null) { s_host = PrepareHost(); }
-
-        var config = s_host.Services.GetService<SemanticMemoryConfig>();
-        if (config == null)
-        {
-            throw new ConfigurationException("Configuration settings are empty");
-        }
-
-        return config;
-    }
-
-    public static ILoggerFactory GetLogFactory()
-    {
-        if (s_host == null) { s_host = PrepareHost(); }
-
-        var factory = s_host.Services.GetService<ILoggerFactory>();
-        if (factory == null)
-        {
-            throw new ConfigurationException("Unable to provide logger factory");
-        }
-
-        return factory;
-    }
-
-    private static IHost PrepareHost()
-    {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder();
-        builder.Logging.ConfigureLogger();
-        builder.Services.UseConfiguration(builder.Configuration);
-        return builder.Build();
-    }
+    public Dictionary<string, Dictionary<string, object>> Services { get; set; } = new();
 }

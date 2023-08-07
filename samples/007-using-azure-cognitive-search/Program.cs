@@ -26,7 +26,7 @@ using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 // ReSharper disable InconsistentNaming
-public class Program
+public static class Program
 {
     // Azure Search Index name
     private const string IndexName = "test01";
@@ -158,7 +158,7 @@ public class Program
 
         try
         {
-            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema);
+            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema).ConfigureAwait(false);
 
             Console.WriteLine("Status: " + response.GetRawResponse().Status);
             Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
@@ -219,7 +219,7 @@ public class Program
         var client = adminClient.GetSearchClient(indexName);
 
         // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        fieldValue = fieldValue.Replace("'", "''");
+        fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
         var options = new SearchOptions
         {
             Filter = fieldIsCollection

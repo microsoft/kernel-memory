@@ -6,17 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticMemory.Core.Search;
 using Microsoft.SemanticMemory.Core.WebService;
 using Microsoft.SemanticMemory.InteractiveSetup;
+using Microsoft.SemanticMemory.Service;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -32,31 +30,10 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 // ************** APP BUILD *******************************
 // ********************************************************
 
-var app = AppBuilder.Build((services, config) =>
-{
-    if (config.Service.RunHandlers)
-    {
-        // Register pipeline handlers as hosted services
-        services.UseHandlerAsHostedService<TextExtractionHandler>("extract");
-        services.UseHandlerAsHostedService<TextPartitioningHandler>("partition");
-        services.UseHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-        services.UseHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
-    }
+// The AzureBuild is a simplified version, defaulting to Azure services
+// var app = AzureBuilder.CreateBuilder(out SemanticMemoryConfig config).Build();
 
-    if (config.Service.RunWebService && config.OpenApiEnabled)
-    {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-    }
-
-    if (config.Service.RunWebService)
-    {
-        services.UseSearchClient();
-    }
-});
-
-var config = app.Services.GetService<SemanticMemoryConfig>()
-             ?? throw new ConfigurationException("Configuration is null");
+var app = Builder.CreateBuilder(out SemanticMemoryConfig config).Build();
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -68,7 +45,7 @@ var config = app.Services.GetService<SemanticMemoryConfig>()
 
 if (config.Service.RunWebService)
 {
-    if (config.OpenApiEnabled)
+    if (config.Service.OpenApiEnabled)
     {
         // URL: http://localhost:9001/swagger/index.html
         app.UseSwagger();
@@ -84,7 +61,7 @@ if (config.Service.RunWebService)
     // File upload endpoint
     app.MapPost("/upload", async Task<IResult> (
             HttpRequest request,
-            IPipelineOrchestrator orchestrator,
+            ISemanticMemoryService service,
             ILogger<Program> log) =>
         {
             log.LogTrace("New upload request");
@@ -100,7 +77,7 @@ if (config.Service.RunWebService)
 
             try
             {
-                var id = await orchestrator.UploadFileAsync(input);
+                var id = await service.UploadFileAsync(input);
                 return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
                     new UploadAccepted { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
             }
@@ -113,17 +90,23 @@ if (config.Service.RunWebService)
 
     // Ask endpoint
     app.MapPost("/ask",
-            async Task<IResult> (SearchRequest request, SearchClient searchClient, ILogger<Program> log) =>
+            async Task<IResult> (
+                SearchRequest request,
+                ISemanticMemoryService service,
+                ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await searchClient.SearchAsync(request);
+                MemoryAnswer answer = await service.AskAsync(request);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
 
     // Document status endpoint
     app.MapGet("/upload-status",
-            async Task<IResult> ([FromQuery(Name = "user")] string userId, [FromQuery(Name = "id")] string pipelineId, IPipelineOrchestrator orchestrator) =>
+            async Task<IResult> (
+                [FromQuery(Name = "user")] string userId,
+                [FromQuery(Name = "id")] string pipelineId,
+                ISemanticMemoryService service) =>
             {
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -135,7 +118,7 @@ if (config.Service.RunWebService)
                     return Results.BadRequest("'id' query parameter is missing or has no value");
                 }
 
-                DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, pipelineId);
+                DataPipeline? pipeline = await service.ReadPipelineStatusAsync(userId, pipelineId);
                 if (pipeline == null)
                 {
                     return Results.NotFound("Document pipeline not found");
@@ -169,11 +152,10 @@ if (config.Service.RunWebService)
 // ********************************************************
 
 app.Logger.LogInformation(
-    "Starting Semantic Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}, Orchestration: {4}",
+    "Starting Semantic Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}",
     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
     app.Logger.GetLogLevelName(),
     config.Service.RunWebService,
-    config.Service.RunHandlers,
-    config.Orchestration.Type);
+    config.Service.RunHandlers);
 
 app.Run();

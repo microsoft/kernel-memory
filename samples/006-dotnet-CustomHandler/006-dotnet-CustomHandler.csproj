@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName />
         <RootNamespace />
-        <NoWarn>CA1050</NoWarn>
+        <NoWarn>CA1050,CA1303</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

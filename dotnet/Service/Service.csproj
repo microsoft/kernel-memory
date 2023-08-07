@@ -4,7 +4,7 @@
         <TargetFramework>net7.0</TargetFramework>
         <AssemblyName>Microsoft.SemanticMemory.Service</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.Service</RootNamespace>
-        <NoWarn>CA2007</NoWarn>
+        <NoWarn>CA2007,CA1724</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -14,11 +14,6 @@
     <ItemGroup>
         <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
         <ProjectReference Include="..\InteractiveSetup\InteractiveSetup.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>

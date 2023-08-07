@@ -1,0 +1,11 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Collections.Generic;
+
+namespace Microsoft.SemanticMemory.InteractiveSetup.UI;
+
+public sealed class QuestionWithOptions
+{
+    public string Title { get; set; } = string.Empty;
+    public List<Answer> Options { get; set; } = new();
+}

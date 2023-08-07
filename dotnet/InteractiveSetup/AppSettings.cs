@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,94 +12,66 @@ public static class AppSettings
 {
     private const string SettingsFile = "appsettings.Development.json";
 
-    public static JObject Load()
+    public static void Change(Action<SemanticMemoryConfig> configChanges)
     {
         CreateFileIfNotExists();
-        JObject data = ReadJsonFile();
 
-        if (data[Main.MemKey] == null)
+        SemanticMemoryConfig config = GetCurrentConfig();
+
+        configChanges.Invoke(config);
+
+        string json = File.ReadAllText(SettingsFile);
+        JObject? data = JsonConvert.DeserializeObject<JObject>(json);
+        if (data == null)
         {
-            data[Main.MemKey] = new JObject();
+            throw new SetupException("Unable to parse file");
         }
 
-        if (data[Main.MemKey]!["Service"] == null)
-        {
-            data[Main.MemKey]!["Service"] = new JObject();
-            data[Main.MemKey]!["Service"]!["RunWebService"] = false;
-            data[Main.MemKey]!["Service"]!["RunHandlers"] = false;
-        }
+        data["SemanticMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
 
-        if (data[Main.MemKey]![Main.StorageKey] == null)
-        {
-            data[Main.MemKey]![Main.StorageKey] = new JObject();
-        }
-
-        if (data[Main.MemKey]!["Search"] == null)
-        {
-            data[Main.MemKey]!["Search"] = new JObject();
-        }
-
-        if (data[Main.MemKey]!["Search"]!["VectorDb"] == null)
-        {
-            data[Main.MemKey]!["Search"]!["VectorDb"] = new JObject();
-        }
-
-        if (data[Main.MemKey]!["Search"]!["EmbeddingGenerator"] == null)
-        {
-            data[Main.MemKey]!["Search"]!["EmbeddingGenerator"] = new JObject();
-        }
-
-        if (data[Main.MemKey]!["Search"]!["TextGenerator"] == null)
-        {
-            data[Main.MemKey]!["Search"]!["TextGenerator"] = new JObject();
-        }
-
-        if (data[Main.MemKey]![Main.OrchestrationKey] == null)
-        {
-            data[Main.MemKey]![Main.OrchestrationKey] = new JObject();
-        }
-
-        if (data[Main.MemKey]![Main.HandlersKey] == null)
-        {
-            data[Main.MemKey]![Main.HandlersKey] = new JObject();
-        }
-
-        if (data[Main.MemKey]![Main.HandlersKey]!["gen_embeddings"] == null)
-        {
-            data[Main.MemKey]![Main.HandlersKey]!["gen_embeddings"] = new JObject();
-        }
-
-        if (data[Main.MemKey]![Main.HandlersKey]!["save_embeddings"] == null)
-        {
-            data[Main.MemKey]![Main.HandlersKey]!["save_embeddings"] = new JObject();
-        }
-
-        return data;
-    }
-
-    public static void Save(JObject data)
-    {
-        var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+        json = JsonConvert.SerializeObject(data, Formatting.Indented);
         File.WriteAllText(SettingsFile, json);
     }
 
-    private static JObject ReadJsonFile()
+    public static void GlobalChange(Action<JObject> configChanges)
     {
-        if (!File.Exists(SettingsFile))
+        CreateFileIfNotExists();
+
+        JObject config = GetGlobalConfig();
+
+        configChanges.Invoke(config);
+
+        var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+        File.WriteAllText(SettingsFile, json);
+    }
+
+    public static SemanticMemoryConfig GetCurrentConfig()
+    {
+        JObject data = GetGlobalConfig();
+        if (data["SemanticMemory"] == null)
         {
-            throw new SetupException($"{SettingsFile} not found");
+            Console.WriteLine("SemanticMemory property missing, using an empty configuration.");
+            return new SemanticMemoryConfig();
         }
 
+        SemanticMemoryConfig? config = JsonConvert
+            .DeserializeObject<SemanticMemoryConfig>(JsonConvert
+                .SerializeObject(data["SemanticMemory"]));
+        if (config == null)
+        {
+            throw new SetupException("Unable to parse file");
+        }
+
+        return config;
+    }
+
+    private static JObject GetGlobalConfig()
+    {
         string json = File.ReadAllText(SettingsFile);
-        if (string.IsNullOrEmpty(json))
-        {
-            return new JObject();
-        }
-
-        var data = JsonConvert.DeserializeObject<JObject>(json);
+        JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
-            throw new SetupException($"Unable to parse JSON file {SettingsFile}");
+            throw new SetupException("Unable to parse file");
         }
 
         return data;
@@ -105,10 +79,24 @@ public static class AppSettings
 
     private static void CreateFileIfNotExists()
     {
-        if (!File.Exists(SettingsFile))
+        if (File.Exists(SettingsFile)) { return; }
+
+        File.Create(SettingsFile).Dispose();
+        var data = new
         {
-            File.Create(SettingsFile).Dispose();
-            File.WriteAllText(SettingsFile, "{}");
-        }
+            SemanticMemory = new
+            {
+            },
+            Logging = new
+            {
+                LogLevel = new
+                {
+                    Default = "Information",
+                }
+            },
+            AllowedHosts = "*",
+        };
+
+        File.WriteAllText(SettingsFile, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
 }

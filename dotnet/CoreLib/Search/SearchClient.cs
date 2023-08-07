@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -60,12 +61,12 @@ public class SearchClient
         this._skFunction = this._kernel.CreateSemanticFunction(this._prompt.Trim(), maxTokens: AnswerTokens, temperature: 0);
     }
 
-    public Task<MemoryAnswer> SearchAsync(SearchRequest request)
+    public Task<MemoryAnswer> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(request.UserId, request.Query);
+        return this.SearchAsync(request.UserId, request.Query, cancellationToken);
     }
 
-    public async Task<MemoryAnswer> SearchAsync(string userId, string query)
+    public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
         var facts = string.Empty;
         var tokensAvailable = 8000
@@ -86,9 +87,9 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetNearestMatchesAsync(
-            indexName: userId, embedding, MatchesCount, MinSimilarity, false);
+            indexName: userId, embedding, MatchesCount, MinSimilarity, false, cancellationToken: cancellationToken);
 
-        await foreach ((MemoryRecord, double) memory in matches)
+        await foreach ((MemoryRecord, double) memory in matches.WithCancellation(cancellationToken))
         {
             if (!memory.Item1.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
             {

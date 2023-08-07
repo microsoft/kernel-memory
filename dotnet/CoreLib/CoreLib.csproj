@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <RollForward>LatestMajor</RollForward>		
+        <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308</NoWarn>
@@ -27,6 +27,7 @@
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
         <PackageReference Include="System.Memory.Data" Version="7.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
