@@ -69,11 +69,6 @@ public sealed class FileBasedQueue : IQueue
         this._log = log ?? DefaultLogger<FileBasedQueue>.Instance;
         if (!Directory.Exists(config.Path))
         {
-            if (!config.CreateIfNotExist)
-            {
-                throw new InvalidOperationException($"The directory specified doesn't exist: {config.Path}");
-            }
-
             Directory.CreateDirectory(config.Path);
         }
 

@@ -12,7 +12,7 @@ public static partial class DependencyInjection
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetService<AzureQueue>() 
+            return serviceProvider.GetService<AzureQueue>()
                    ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(AzureQueue));
         }
 

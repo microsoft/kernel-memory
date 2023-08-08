@@ -12,7 +12,7 @@ public static partial class DependencyInjection
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
-            return serviceProvider.GetService<RabbitMqQueue>() 
+            return serviceProvider.GetService<RabbitMqQueue>()
                    ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(RabbitMqQueue));
         }
 
