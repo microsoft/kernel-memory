@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.ContentStorage.FileSystemStorage;
@@ -11,14 +11,14 @@ public static partial class DependencyInjection
     public static IServiceCollection AddFileSystemAsContentStorage(this IServiceCollection services, FileSystemConfig config)
     {
         return services
-            .AddSingleton<IContentStorage>(serviceProvider => new FileSystem(
-                directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()))
-            .AddSingleton<FileSystem>(serviceProvider => new FileSystem(
-                directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()));
+            .AddSingleton<FileSystemConfig>(config)
+            .AddSingleton<IContentStorage, FileSystem>()
+            .AddSingleton<FileSystem, FileSystem>();
     }
 
     public static void AddFileSystemAsContentStorageToList(this ConfiguredServices<IContentStorage> services, FileSystemConfig config)
     {
-        services.Add(serviceProvider => new FileSystem(directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()));
+        services.Add(serviceProvider => serviceProvider.GetService<FileSystem>()
+                                        ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(FileSystem)));
     }
 }

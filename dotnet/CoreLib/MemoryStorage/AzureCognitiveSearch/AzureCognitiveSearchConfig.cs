@@ -6,6 +6,7 @@ using Microsoft.SemanticMemory.Core.Configuration;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
+#pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 public class AzureCognitiveSearchConfig
 {
     private TokenCredential? _tokenCredential;

@@ -22,27 +22,17 @@ public sealed class RabbitMqQueue : IQueue
     /// <summary>
     /// Create a new RabbitMQ queue instance
     /// </summary>
-    /// <param name="host">RabbitMQ hostname/IP address</param>
-    /// <param name="port">RabbitMQ TCP port</param>
-    /// <param name="user">RabbitMQ auth username</param>
-    /// <param name="password">RabbitMQ auth password</param>
-    /// <param name="log">App logger</param>
-    public RabbitMqQueue(
-        string host,
-        int port,
-        string user,
-        string password,
-        ILogger<RabbitMqQueue>? log = null)
+    public RabbitMqQueue(RabbitMqConfig config, ILogger<RabbitMqQueue>? log = null)
     {
         this._log = log ?? DefaultLogger<RabbitMqQueue>.Instance;
 
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         var factory = new ConnectionFactory
         {
-            HostName = host,
-            Port = port,
-            UserName = user,
-            Password = password,
+            HostName = config.Host,
+            Port = config.Port,
+            UserName = config.Username,
+            Password = config.Password,
             DispatchConsumersAsync = true
         };
 

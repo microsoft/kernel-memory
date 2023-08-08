@@ -8,6 +8,7 @@ using Microsoft.SemanticMemory.Core.Configuration;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
 
+#pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 public class AzureQueueConfig
 {
     private StorageSharedKeyCredential? _storageSharedKeyCredential;

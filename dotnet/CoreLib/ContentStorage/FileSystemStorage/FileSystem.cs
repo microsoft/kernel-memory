@@ -17,15 +17,11 @@ public class FileSystem : IContentStorage
     // Application logger
     private readonly ILogger<FileSystem> _log;
 
-    public FileSystem(string directory) : this(directory, DefaultLogger<FileSystem>.Instance)
-    {
-    }
-
-    public FileSystem(string directory, ILogger<FileSystem>? log = null)
+    public FileSystem(FileSystemConfig config, ILogger<FileSystem>? log = null)
     {
         this._log = log ?? DefaultLogger<FileSystem>.Instance;
-        this.CreateDirectory(directory);
-        this._directory = directory;
+        this.CreateDirectory(config.Directory);
+        this._directory = config.Directory;
     }
 
     /// <inherit />
