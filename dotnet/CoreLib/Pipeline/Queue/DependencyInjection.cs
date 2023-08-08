@@ -15,6 +15,7 @@ public static partial class DependencyInjection
         {
             return new FileBasedQueue(
                 directory: config.Path,
+                createIfNotExist: config.CreateIfNotExist,
                 log: serviceProvider.GetService<ILogger<FileBasedQueue>>());
         }
 
