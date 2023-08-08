@@ -13,10 +13,7 @@ public static partial class DependencyInjection
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
-            return new FileBasedQueue(
-                directory: config.Path,
-                createIfNotExist: config.CreateIfNotExist,
-                log: serviceProvider.GetService<ILogger<FileBasedQueue>>());
+            return new FileBasedQueue(config, log: serviceProvider.GetService<ILogger<FileBasedQueue>>());
         }
 
         // The orchestrator uses multiple queue clients, each linked to a specific queue,

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Azure;
-using Azure.Core;
+using Azure.Identity;
 using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
@@ -18,6 +18,8 @@ namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
 
 public sealed class AzureQueue : IQueue
 {
+    private const string DefaultEndpointSuffix = "core.windows.net";
+
     private sealed class MessageEventArgs : EventArgs
     {
         public QueueMessage? Message { get; set; }
@@ -67,43 +69,66 @@ public sealed class AzureQueue : IQueue
     private readonly CancellationTokenSource _cancellation = new();
 
     public AzureQueue(
-        string accountName,
-        TokenCredential credential,
-        string endpointSuffix = "core.windows.net",
-        ILogger<AzureQueue>? logger = null)
-        : this(GetClientBuilder(accountName, credential, endpointSuffix), logger)
+        AzureQueueConfig config,
+        ILogger<AzureQueue>? log = null)
     {
-    }
+        this._log = log ?? DefaultLogger<AzureQueue>.Instance;
 
-    public AzureQueue(
-        string connectionString,
-        ILogger<AzureQueue>? logger = null)
-        : this(GetClientBuilder(connectionString), logger)
-    {
-    }
+        switch (config.Auth)
+        {
+            case AzureQueueConfig.AuthTypes.ConnectionString:
+            {
+                this.ValidateConnectionString(config.ConnectionString);
+                this._clientBuilder = queueName => new QueueClient(config.ConnectionString, queueName);
+                break;
+            }
 
-    public AzureQueue(
-        string accountName,
-        string accountKey,
-        string endpointSuffix = "core.windows.net",
-        ILogger<AzureQueue>? logger = null)
-        : this(GetClientBuilder(accountName, accountKey, endpointSuffix), logger)
-    {
-    }
+            case AzureQueueConfig.AuthTypes.AccountKey:
+            {
+                this.ValidateAccountName(config.Account);
+                this.ValidateAccountKey(config.AccountKey);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new StorageSharedKeyCredential(config.Account, config.AccountKey));
+                break;
+            }
 
-    public AzureQueue(Func<string, QueueClient> clientBuilder, ILogger<AzureQueue>? logger)
-    {
-        this._clientBuilder = clientBuilder;
-        this._log = logger ?? DefaultLogger<AzureQueue>.Instance;
-    }
+            case AzureQueueConfig.AuthTypes.AzureIdentity:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new DefaultAzureCredential());
+                break;
+            }
 
-    // public AzureQueue(
-    //     string accountName,
-    //     string endpointSuffix = "core.windows.net",
-    //     ILogger<AzureQueue>? logger = null)
-    //     : this(GetClientBuilder(accountName, endpointSuffix), logger)
-    // {
-    // }
+            case AzureQueueConfig.AuthTypes.ManualStorageSharedKeyCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetStorageSharedKeyCredential());
+                break;
+            }
+
+            case AzureQueueConfig.AuthTypes.ManualAzureSasCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetAzureSasCredential());
+                break;
+            }
+
+            case AzureQueueConfig.AuthTypes.ManualTokenCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetTokenCredential());
+                break;
+            }
+
+            default:
+                this._log.LogCritical("Azure Queue authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ContentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
+        }
+    }
 
     /// <inherit />
     public async Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
@@ -212,50 +237,6 @@ public sealed class AzureQueue : IQueue
         this._dispatchTimer?.Dispose();
     }
 
-    // /// <summary>
-    // /// Create queue client using account name and Azure Identity credentials
-    // /// </summary>
-    // /// <param name="accountName">Account name (letters and digits only)</param>
-    // /// <param name="endpointSuffix">Azure suffix, usually "core.windows.net"</param>
-    // /// <returns>Function to invoke to create queue client</returns>
-    // private static Func<string, QueueClient> GetClientBuilder(string accountName, string endpointSuffix)
-    // {
-    //     return queueName => new QueueClient(
-    //         new($"https://{accountName}.queue.{endpointSuffix}/{queueName}"),
-    //         new DefaultAzureCredential());
-    // }
-
-    /// <summary>
-    /// Create queue client using connection string
-    /// </summary>
-    /// <param name="connectionString">Connection string</param>
-    /// <returns>Function to invoke to create queue client</returns>
-    private static Func<string, QueueClient> GetClientBuilder(string connectionString)
-    {
-        return queueName => new QueueClient(connectionString, queueName);
-    }
-
-    /// <summary>
-    /// Create queue client using account name and account key
-    /// </summary>
-    /// <param name="accountName">Account name (letters and digits only)</param>
-    /// <param name="accountKey">Account key, primary or secondary</param>
-    /// <param name="endpointSuffix">Azure suffix, usually "core.windows.net"</param>
-    /// <returns>Function to invoke to create queue client</returns>
-    private static Func<string, QueueClient> GetClientBuilder(string accountName, string accountKey, string endpointSuffix)
-    {
-        return queueName => new QueueClient(
-            new Uri($"https://{accountName}.queue.{endpointSuffix}/{queueName}"),
-            new StorageSharedKeyCredential(accountName, accountKey));
-    }
-
-    private static Func<string, QueueClient> GetClientBuilder(string accountName, TokenCredential credential, string endpointSuffix)
-    {
-        return queueName => new QueueClient(
-            new Uri($"https://{accountName}.queue.{endpointSuffix}/{queueName}"),
-            credential);
-    }
-
     /// <summary>
     /// Fetch messages from the queue and dispatch them
     /// </summary>
@@ -353,6 +334,44 @@ public sealed class AzureQueue : IQueue
             visibilityTimeout: TimeSpan.Zero,
             timeToLive: neverExpire).ConfigureAwait(false);
         await this.DeleteMessageAsync(message).ConfigureAwait(false);
+    }
+
+    private void ValidateAccountName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Queue account name is empty");
+            throw new ContentStorageException("The account name is empty");
+        }
+    }
+
+    private void ValidateAccountKey(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Queue account key is empty");
+            throw new ContentStorageException("The Azure Queue account key is empty");
+        }
+    }
+
+    private void ValidateConnectionString(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Queue connection string is empty");
+            throw new ContentStorageException("The Azure Queue connection string is empty");
+        }
+    }
+
+    private string ValidateEndpointSuffix(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            value = DefaultEndpointSuffix;
+            this._log.LogError("The Azure Queue account endpoint suffix is empty, using default value {0}", value);
+        }
+
+        return value;
     }
 
     private static string ToJson(object data, bool indented = false)

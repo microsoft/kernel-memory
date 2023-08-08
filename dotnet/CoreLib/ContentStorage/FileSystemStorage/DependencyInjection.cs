@@ -12,13 +12,13 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<IContentStorage>(serviceProvider => new FileSystem(
-                directory: config.Directory, logger: serviceProvider.GetService<ILogger<FileSystem>>()))
+                directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()))
             .AddSingleton<FileSystem>(serviceProvider => new FileSystem(
-                directory: config.Directory, logger: serviceProvider.GetService<ILogger<FileSystem>>()));
+                directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()));
     }
 
     public static void AddFileSystemAsContentStorageToList(this ConfiguredServices<IContentStorage> services, FileSystemConfig config)
     {
-        services.Add(serviceProvider => new FileSystem(directory: config.Directory, logger: serviceProvider.GetService<ILogger<FileSystem>>()));
+        services.Add(serviceProvider => new FileSystem(directory: config.Directory, log: serviceProvider.GetService<ILogger<FileSystem>>()));
     }
 }

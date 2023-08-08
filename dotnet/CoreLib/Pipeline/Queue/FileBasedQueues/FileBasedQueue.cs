@@ -61,26 +61,23 @@ public sealed class FileBasedQueue : IQueue
     /// <summary>
     /// Create new file based queue
     /// </summary>
-    /// <param name="directory">Folder where to store messages</param>
-    /// <param name="createIfNotExist">Create the directory if it doesn't exist</param>
+    /// <param name="config">File queue configuration</param>
     /// <param name="log">Application logger</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public FileBasedQueue(string directory, bool createIfNotExist, ILogger<FileBasedQueue>? log = null)
+    public FileBasedQueue(FileBasedQueueConfig config, ILogger<FileBasedQueue>? log = null)
     {
         this._log = log ?? DefaultLogger<FileBasedQueue>.Instance;
-        if (!Directory.Exists(directory))
+        if (!Directory.Exists(config.Path))
         {
-            if (!createIfNotExist)
+            if (!config.CreateIfNotExist)
             {
-                throw new InvalidOperationException($"The directory specified doesn't exist: {directory}");
+                throw new InvalidOperationException($"The directory specified doesn't exist: {config.Path}");
             }
-            else
-            {
-                Directory.CreateDirectory(directory);
-            }
+
+            Directory.CreateDirectory(config.Path);
         }
 
-        this._directory = directory;
+        this._directory = config.Path;
     }
 
     /// <inherit />

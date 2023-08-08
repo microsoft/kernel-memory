@@ -21,9 +21,9 @@ public class FileSystem : IContentStorage
     {
     }
 
-    public FileSystem(string directory, ILogger<FileSystem>? logger = null)
+    public FileSystem(string directory, ILogger<FileSystem>? log = null)
     {
-        this._log = logger ?? DefaultLogger<FileSystem>.Instance;
+        this._log = log ?? DefaultLogger<FileSystem>.Instance;
         this.CreateDirectory(directory);
         this._directory = directory;
     }

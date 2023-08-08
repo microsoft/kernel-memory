@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
+using Azure.Identity;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
@@ -27,41 +27,43 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
     public AzureCognitiveSearchMemory(
-        string endpoint,
-        TokenCredential credential,
-        string indexPrefix = "",
+        AzureCognitiveSearchConfig config,
         ILogger<AzureCognitiveSearchMemory>? log = null)
     {
-        if (string.IsNullOrEmpty(endpoint))
+        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
+
+        if (string.IsNullOrEmpty(config.Endpoint))
         {
+            this._log.LogCritical("Azure Cognitive Search Endpoint is empty");
             throw new ConfigurationException("Azure Cognitive Search Endpoint is empty");
         }
 
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credential, GetClientOptions());
-        this._indexPrefix = indexPrefix;
-        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
-    }
-
-    public AzureCognitiveSearchMemory(
-        string endpoint,
-        string apiKey,
-        string indexPrefix = "",
-        ILogger<AzureCognitiveSearchMemory>? log = null)
-    {
-        if (string.IsNullOrEmpty(endpoint))
+        switch (config.Auth)
         {
-            throw new ConfigurationException("Azure Cognitive Search Endpoint is empty");
+            case AzureCognitiveSearchConfig.AuthTypes.AzureIdentity:
+                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new DefaultAzureCredential(), GetClientOptions());
+                break;
+
+            case AzureCognitiveSearchConfig.AuthTypes.APIKey:
+                if (string.IsNullOrEmpty(config.APIKey))
+                {
+                    this._log.LogCritical("Azure Cognitive Search API key is empty");
+                    throw new ConfigurationException("Azure Cognitive Search API key is empty");
+                }
+
+                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), GetClientOptions());
+                break;
+
+            case AzureCognitiveSearchConfig.AuthTypes.ManualTokenCredential:
+                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), config.GetTokenCredential(), GetClientOptions());
+                break;
+
+            default:
+                this._log.LogCritical("Azure Cognitive Search authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ContentStorageException($"Azure Cognitive Search authentication type '{config.Auth}' undefined or not supported");
         }
 
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            throw new ConfigurationException("Azure Cognitive Search API key is empty");
-        }
-
-        AzureKeyCredential credentials = new(apiKey);
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
-        this._indexPrefix = indexPrefix;
-        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
+        this._indexPrefix = config.VectorIndexPrefix;
     }
 
     /// <inheritdoc />

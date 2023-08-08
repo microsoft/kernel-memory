@@ -18,57 +18,88 @@ namespace Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
 // TODO: a container can contain up to 50000 blocks
 public class AzureBlob : IContentStorage
 {
+    private const string DefaultContainerName = "smemory";
+    private const string DefaultEndpointSuffix = "core.windows.net";
+
     private readonly BlobContainerClient _containerClient;
     private readonly string _containerName;
     private readonly ILogger<AzureBlob> _log;
 
     public AzureBlob(
-        string connectionString,
-        string containerName = "smemory",
-        ILogger<AzureBlob>? logger = null)
-        : this(new BlobServiceClient(connectionString), containerName, logger)
+        AzureBlobConfig config,
+        ILogger<AzureBlob>? log = null)
     {
-    }
+        this._log = log ?? DefaultLogger<AzureBlob>.Instance;
 
-    public AzureBlob(
-        string accountName,
-        string endpointSuffix = "core.windows.net",
-        string containerName = "smemory",
-        ILogger<AzureBlob>? logger = null)
-        : this(new BlobServiceClient(
-            new Uri($"https://{accountName}.blob.{endpointSuffix}"),
-            new DefaultAzureCredential()), containerName, logger)
-    {
-    }
-
-    public AzureBlob(
-        string accountName,
-        string accountKey,
-        string endpointSuffix = "core.windows.net",
-        string containerName = "smemory",
-        ILogger<AzureBlob>? logger = null)
-        : this(new BlobServiceClient(
-            new Uri($"https://{accountName}.blob.{endpointSuffix}"),
-            new StorageSharedKeyCredential(accountName, accountKey)), containerName, logger)
-    {
-    }
-
-    public AzureBlob(BlobServiceClient client, string containerName = "smemory", ILogger<AzureBlob>? logger = null)
-    {
-        if (string.IsNullOrEmpty(containerName))
+        BlobServiceClient client;
+        switch (config.Auth)
         {
-            throw new ContentStorageException("The container name is empty");
+            case AzureBlobConfig.AuthTypes.ConnectionString:
+            {
+                this.ValidateConnectionString(config.ConnectionString);
+                client = new BlobServiceClient(config.ConnectionString);
+                break;
+            }
+
+            case AzureBlobConfig.AuthTypes.AccountKey:
+            {
+                this.ValidateAccountName(config.Account);
+                this.ValidateAccountKey(config.AccountKey);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), new StorageSharedKeyCredential(config.Account, config.AccountKey));
+                break;
+            }
+
+            case AzureBlobConfig.AuthTypes.AzureIdentity:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), new DefaultAzureCredential());
+                break;
+            }
+
+            case AzureBlobConfig.AuthTypes.ManualStorageSharedKeyCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetStorageSharedKeyCredential());
+                break;
+            }
+
+            case AzureBlobConfig.AuthTypes.ManualAzureSasCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetAzureSasCredential());
+                break;
+            }
+
+            case AzureBlobConfig.AuthTypes.ManualTokenCredential:
+            {
+                this.ValidateAccountName(config.Account);
+                var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
+                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetTokenCredential());
+                break;
+            }
+
+            default:
+                this._log.LogCritical("Azure Blob authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ContentStorageException($"Azure Blob authentication type '{config.Auth}' undefined or not supported");
         }
 
-        this._containerName = containerName;
-        this._containerClient = client.GetBlobContainerClient(containerName);
+        this._containerName = config.Container;
+        if (string.IsNullOrEmpty(this._containerName))
+        {
+            this._containerName = DefaultContainerName;
+            this._log.LogError("The Azure Blob container name is empty, using default value {0}", this._containerName);
+        }
 
+        this._containerClient = client.GetBlobContainerClient(this._containerName);
         if (this._containerClient == null)
         {
+            this._log.LogCritical("Unable to instantiate Azure Blob container client");
             throw new ContentStorageException("Unable to instantiate Azure Blob container client");
         }
-
-        this._log = logger ?? DefaultLogger<AzureBlob>.Instance;
     }
 
     /// <inherit />
@@ -222,5 +253,43 @@ public class AzureBlob : IContentStorage
                 .ConfigureAwait(false);
             this._log.LogTrace("Blob released {0} ...", blobLeaseClient.Uri);
         }
+    }
+
+    private void ValidateAccountName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Blob account name is empty");
+            throw new ContentStorageException("The account name is empty");
+        }
+    }
+
+    private void ValidateAccountKey(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Blob account key is empty");
+            throw new ContentStorageException("The Azure Blob account key is empty");
+        }
+    }
+
+    private void ValidateConnectionString(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            this._log.LogCritical("The Azure Blob connection string is empty");
+            throw new ContentStorageException("The Azure Blob connection string is empty");
+        }
+    }
+
+    private string ValidateEndpointSuffix(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            value = DefaultEndpointSuffix;
+            this._log.LogError("The Azure Blob account endpoint suffix is empty, using default value {0}", value);
+        }
+
+        return value;
     }
 }
