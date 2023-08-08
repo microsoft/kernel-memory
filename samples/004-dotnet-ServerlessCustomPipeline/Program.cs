@@ -25,7 +25,7 @@ var app = Builder.CreateBuilder(out SemanticMemoryConfig config).Build();
 var storage = app.Services.GetService<IContentStorage>();
 
 // Data pipelines orchestrator
-InProcessPipelineOrchestrator orchestrator = new(storage!);
+InProcessPipelineOrchestrator orchestrator = new(storage!, app.Services);
 
 // Add pipeline handlers
 Console.WriteLine("* Defining pipeline handlers...");
@@ -36,10 +36,10 @@ await orchestrator.AddHandlerAsync(textExtraction);
 TextPartitioningHandler textPartitioning = new("partition", orchestrator);
 await orchestrator.AddHandlerAsync(textPartitioning);
 
-GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator, app.Services.GetService<IServiceProvider>()!);
+GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator);
 await orchestrator.AddHandlerAsync(textEmbedding);
 
-SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator, app.Services.GetService<IServiceProvider>()!);
+SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator);
 await orchestrator.AddHandlerAsync(saveEmbedding);
 
 // orchestrator.AddHandlerAsync(...);

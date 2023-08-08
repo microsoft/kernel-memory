@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
@@ -118,4 +120,16 @@ public interface IPipelineOrchestrator
     /// <param name="fileContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of embedding generators to use during the ingestion, e.g. to create
+    /// multiple vectors.
+    /// </summary>
+    List<ITextEmbeddingGeneration> GetEmbeddingGenerators();
+
+    /// <summary>
+    /// Get list of Vector DBs where to store embeddings.
+    /// </summary>
+    /// <returns></returns>
+    List<ISemanticMemoryVectorDb> GetVectorDbs();
 }

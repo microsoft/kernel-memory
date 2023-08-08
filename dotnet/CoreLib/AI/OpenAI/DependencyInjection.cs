@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
 namespace Microsoft.SemanticMemory.Core.AI.OpenAI;
@@ -63,14 +62,5 @@ public static partial class DependencyInjection
                     alsoAsTextCompletion: true,
                     setAsDefault: true)
                 .Build());
-    }
-
-    public static void AddOpenAITextEmbeddingGenerationToList(this ConfiguredServices<ITextEmbeddingGeneration> services, OpenAIConfig config)
-    {
-        services.Add(serviceProvider => new OpenAITextEmbeddingGeneration(
-            modelId: config.EmbeddingModel,
-            apiKey: config.APIKey,
-            organization: config.OrgId,
-            logger: serviceProvider.GetService<ILogger<OpenAITextEmbeddingGeneration>>()));
     }
 }

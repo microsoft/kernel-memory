@@ -21,6 +21,7 @@
         <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
         <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
         <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230718.1-preview" />

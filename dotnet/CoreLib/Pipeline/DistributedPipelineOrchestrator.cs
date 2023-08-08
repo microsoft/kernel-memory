@@ -22,8 +22,9 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IContentStorage contentStorage,
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
+        IServiceProvider serviceProvider,
         ILogger<DistributedPipelineOrchestrator> log)
-        : base(contentStorage, mimeTypeDetection, log)
+        : base(contentStorage, serviceProvider, mimeTypeDetection, log)
     {
         this._queueClientFactory = queueClientFactory;
     }

@@ -6,10 +6,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
@@ -29,26 +27,16 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="serviceProvider">.NET service provider</param>
     /// <param name="log">Application logger</param>
     public SaveEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        IServiceProvider serviceProvider,
         ILogger<SaveEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log
-                    ?? serviceProvider.GetService<ILogger<SaveEmbeddingsHandler>>()
-                    ?? DefaultLogger<SaveEmbeddingsHandler>.Instance;
-
-        var vectorDbBuilders = serviceProvider.GetService<ConfiguredServices<ISemanticMemoryVectorDb>>()
-                               ?? throw new SemanticMemoryException("List of embedding generators not configured");
-        foreach (Func<IServiceProvider, ISemanticMemoryVectorDb> x in vectorDbBuilders.GetList())
-        {
-            this._vectorDbs.Add(x.Invoke(serviceProvider));
-        }
+        this._log = log ?? DefaultLogger<SaveEmbeddingsHandler>.Instance;
+        this._vectorDbs = orchestrator.GetVectorDbs();
 
         this._log.LogInformation("Handler {0} ready, {1} vector storages", stepName, this._vectorDbs.Count);
         if (this._vectorDbs.Count < 1)

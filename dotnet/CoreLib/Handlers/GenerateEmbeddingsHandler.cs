@@ -6,11 +6,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
@@ -32,26 +29,16 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="serviceProvider">.NET service provider</param>
     /// <param name="log">Application logger</param>
     public GenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        IServiceProvider serviceProvider,
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log
-                    ?? serviceProvider.GetService<ILogger<GenerateEmbeddingsHandler>>()
-                    ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
-
-        var embeddingGeneratorBuilders = serviceProvider.GetService<ConfiguredServices<ITextEmbeddingGeneration>>()
-                                         ?? throw new SemanticMemoryException("List of embedding generators not configured");
-        foreach (Func<IServiceProvider, ITextEmbeddingGeneration> x in embeddingGeneratorBuilders.GetList())
-        {
-            this._embeddingGenerators.Add(x.Invoke(serviceProvider));
-        }
+        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
+        this._embeddingGenerators = orchestrator.GetEmbeddingGenerators();
 
         this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
         if (this._embeddingGenerators.Count < 1)

@@ -24,12 +24,8 @@ namespace Microsoft.SemanticMemory.Core.Pipeline;
 /// </summary>
 public class MemoryServerlessClient : ISemanticMemoryClient
 {
-    private readonly IServiceProvider _serviceProvider;
-
     public MemoryServerlessClient(IServiceProvider serviceProvider)
     {
-        this._serviceProvider = serviceProvider;
-
         this._configuration = serviceProvider.GetService<SemanticMemoryConfig>()
                               ?? throw new SemanticMemoryException("Unable to load configuration. Are all the dependencies configured?");
 
@@ -106,11 +102,11 @@ public class MemoryServerlessClient : ISemanticMemoryClient
             await this._orchestrator.AddHandlerAsync(textPartitioning, cancellationToken).ConfigureAwait(false);
 
             // Embedding generation handler
-            GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", this._orchestrator, this._serviceProvider);
+            GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", this._orchestrator);
             await this._orchestrator.AddHandlerAsync(textEmbedding, cancellationToken).ConfigureAwait(false);
 
             // Embedding storage handler
-            SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", this._orchestrator, this._serviceProvider);
+            SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", this._orchestrator);
             await this._orchestrator.AddHandlerAsync(saveEmbedding, cancellationToken).ConfigureAwait(false);
 
             this._orchestratorReady = true;

@@ -17,9 +17,10 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
 
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
+        IServiceProvider serviceProvider,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, mimeTypeDetection, log)
+        : base(contentStorage, serviceProvider, mimeTypeDetection, log)
     {
     }
 

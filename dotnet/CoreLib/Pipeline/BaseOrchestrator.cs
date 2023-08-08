@@ -7,17 +7,24 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
+    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
+
     protected IContentStorage ContentStorage { get; private set; }
     protected ILogger<BaseOrchestrator> Log { get; private set; }
     protected CancellationTokenSource CancellationTokenSource { get; private set; }
@@ -25,6 +32,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,
+        IServiceProvider serviceProvider,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<BaseOrchestrator>? log = null)
     {
@@ -32,6 +40,27 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this.ContentStorage = contentStorage;
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
         this.CancellationTokenSource = new CancellationTokenSource();
+
+        this._embeddingGenerators = new List<ITextEmbeddingGeneration>();
+
+        var embeddingGenerators = serviceProvider.GetService<TypeCollection<ITextEmbeddingGeneration>>()
+                                  ?? throw new SemanticMemoryException("Service provider is missing " + typeof(TypeCollection<ITextEmbeddingGeneration>));
+        foreach (Type t in embeddingGenerators.GetList())
+        {
+            var service = serviceProvider.GetService(t)
+                          ?? throw new SemanticMemoryException("Unable to instantiate " + t.FullName);
+            this._embeddingGenerators.Add((ITextEmbeddingGeneration)service);
+        }
+
+        this._vectorDbs = new List<ISemanticMemoryVectorDb>();
+        var vectorDbs = serviceProvider.GetService<TypeCollection<ISemanticMemoryVectorDb>>()
+                        ?? throw new SemanticMemoryException("Service provider is missing " + typeof(TypeCollection<ISemanticMemoryVectorDb>));
+        foreach (Type t in vectorDbs.GetList())
+        {
+            var service = serviceProvider.GetService(t)
+                          ?? throw new SemanticMemoryException("Unable to instantiate " + t.FullName);
+            this._vectorDbs.Add((ISemanticMemoryVectorDb)service);
+        }
     }
 
     ///<inheritdoc />
@@ -152,6 +181,18 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
     {
         return this.WriteFileAsync(pipeline, fileName, BinaryData.FromString(fileContent), cancellationToken);
+    }
+
+    ///<inheritdoc />
+    public List<ITextEmbeddingGeneration> GetEmbeddingGenerators()
+    {
+        return this._embeddingGenerators;
+    }
+
+    ///<inheritdoc />
+    public List<ISemanticMemoryVectorDb> GetVectorDbs()
+    {
+        return this._vectorDbs;
     }
 
     ///<inheritdoc />

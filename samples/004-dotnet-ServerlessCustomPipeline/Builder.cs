@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticMemory.Core.AI.AzureOpenAI;
 using Microsoft.SemanticMemory.Core.AI.OpenAI;
 using Microsoft.SemanticMemory.Core.AppBuilders;
@@ -61,7 +62,7 @@ public static class Builder
         builder.Services.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
 
         // List of embedding generators to use (multiple generators allowed during ingestion)
-        var embeddingGenerationServices = new ConfiguredServices<ITextEmbeddingGeneration>();
+        var embeddingGenerationServices = new TypeCollection<ITextEmbeddingGeneration>();
         builder.Services.AddSingleton(embeddingGenerationServices);
         foreach (var type in config.DataIngestion.EmbeddingGeneratorTypes)
         {
@@ -69,31 +70,34 @@ public static class Builder
             {
                 case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                    embeddingGenerationServices.AddAzureOpenAIEmbeddingGenerationToList(builder.Configuration
+                    embeddingGenerationServices.Add<AzureTextEmbeddingGeneration>();
+                    builder.Services.AddAzureOpenAIEmbeddingGeneration(builder.Configuration
                         .GetSection(ConfigRoot).GetSection("Services").GetSection("AzureOpenAIEmbedding")
                         .Get<AzureOpenAIConfig>()!);
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    embeddingGenerationServices.AddOpenAITextEmbeddingGenerationToList(builder.Configuration
+                    embeddingGenerationServices.Add<OpenAITextEmbeddingGeneration>();
+                    builder.Services.AddOpenAITextEmbeddingGeneration(builder.Configuration
                         .GetSection(ConfigRoot).GetSection("Services").GetSection("OpenAI")
                         .Get<OpenAIConfig>()!);
                     break;
 
                 default:
-                    throw new NotSupportedException($"Unknown/unsupported {type} text generator");
+                    throw new NotSupportedException($"Unknown/unsupported {type} embedding generator");
             }
         }
 
         // List of Vector DB list where to store embeddings (multiple DBs allowed during ingestion)
-        var vectorDbServices = new ConfiguredServices<ISemanticMemoryVectorDb>();
+        var vectorDbServices = new TypeCollection<ISemanticMemoryVectorDb>();
         builder.Services.AddSingleton(vectorDbServices);
         foreach (var type in config.DataIngestion.VectorDbTypes)
         {
             switch (type)
             {
                 case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
-                    vectorDbServices.AddAzureCognitiveSearchAsVectorDbToList(builder.Configuration
+                    vectorDbServices.Add<AzureCognitiveSearchMemory>();
+                    builder.Services.AddAzureCognitiveSearchAsVectorDb(builder.Configuration
                         .GetSection(ConfigRoot).GetSection("Services").GetSection("AzureCognitiveSearch")
                         .Get<AzureCognitiveSearchConfig>()!);
                     break;

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
@@ -79,32 +78,6 @@ public static partial class DependencyInjection
                             alsoAsTextCompletion: true,
                             setAsDefault: true)
                         .Build());
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
-    }
-
-    public static void AddAzureOpenAIEmbeddingGenerationToList(this ConfiguredServices<ITextEmbeddingGeneration> services, AzureOpenAIConfig config)
-    {
-        switch (config.Auth)
-        {
-            case "":
-            case string x when x.Equals("AzureIdentity", StringComparison.OrdinalIgnoreCase):
-                services.Add(serviceProvider => new AzureTextEmbeddingGeneration(
-                    modelId: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: new DefaultAzureCredential(),
-                    logger: serviceProvider.GetService<ILogger<AzureBlob>>()));
-                break;
-
-            case string y when y.Equals("APIKey", StringComparison.OrdinalIgnoreCase):
-                services.Add(serviceProvider => new AzureTextEmbeddingGeneration(
-                    modelId: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    logger: serviceProvider.GetService<ILogger<AzureBlob>>()));
-                break;
 
             default:
                 throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
