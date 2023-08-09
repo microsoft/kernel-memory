@@ -16,6 +16,7 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
@@ -93,11 +94,12 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        MemoryFilter? filter = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -110,7 +112,25 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             Value = embedding.Vector.ToList()
         };
 
-        SearchOptions options = new() { Vector = vectorQuery };
+        SearchOptions options = new()
+        {
+            Vector = vectorQuery
+        };
+
+        if (filter != null && !filter.IsEmpty())
+        {
+            // We need to fetch more vectors because filters are applied after the vector search
+            vectorQuery.KNearestNeighborsCount = limit * 100;
+
+            IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
+                                              let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
+                                              select $"tags/any(s: s eq '{keyValue.Key}={fieldValue}')");
+            options.Filter = string.Join(" and ", conditions);
+            options.Size = limit;
+
+            this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
+        }
+
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
@@ -137,26 +157,36 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
+    public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        string fieldName,
-        bool fieldIsCollection,
-        string fieldValue,
-        int limit,
+        MemoryFilter? filter = null,
+        int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var client = this.GetSearchClient(indexName);
 
-        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
-        var options = new SearchOptions
+        var options = new SearchOptions();
+        if (filter != null && !filter.IsEmpty())
         {
-            Filter = fieldIsCollection
-                ? $"{fieldName}/any(s: s eq '{fieldValue}')"
-                : $"{fieldName} eq '{fieldValue}')",
-            Size = limit
-        };
+            IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
+                                              let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
+                                              select $"tags/any(s: s eq '{keyValue.Key}={fieldValue}')");
+            options.Filter = string.Join(" and ", conditions);
+            options.Size = limit;
+
+            this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
+        }
+
+        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
+        // fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
+        // var options = new SearchOptions
+        // {
+        //     Filter = fieldIsCollection
+        //         ? $"{fieldName}/any(s: s eq '{fieldValue}')"
+        //         : $"{fieldName} eq '{fieldValue}')",
+        //     Size = limit
+        // };
 
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try

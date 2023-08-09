@@ -91,12 +91,12 @@ if (config.Service.RunWebService)
     // Ask endpoint
     app.MapPost("/ask",
             async Task<IResult> (
-                SearchRequest request,
+                MemoryQuery query,
                 ISemanticMemoryService service,
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(request);
+                MemoryAnswer answer = await service.AskAsync(query);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);

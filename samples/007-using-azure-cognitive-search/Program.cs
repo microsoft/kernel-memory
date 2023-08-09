@@ -60,7 +60,7 @@ public static class Program
                 { "category", "samples" },
                 { "category", "dotnet" },
                 { "category", "search" },
-                { "year", "2023" },
+                { "year", "2024" },
             },
             embedding: new Embedding<float>(new[] { 0f, 0.5f, 1 }));
 
@@ -81,7 +81,8 @@ public static class Program
         // Search by tags
         var records = await SearchByFieldValueAsync(IndexName,
             fieldName: "tags",
-            fieldValue: "category=pyt'hon",
+            fieldValue1: "category=pyt'hon",
+            fieldValue2: "year=2024",
             fieldIsCollection: true,
             limit: 5);
 
@@ -92,7 +93,7 @@ public static class Program
             Console.WriteLine("   " + rec.Metadata.FirstOrDefault().Value);
         }
 
-        // Delete the record
+        // // Delete the record
         await DeleteRecordAsync(IndexName, recordId1);
         await DeleteRecordAsync(IndexName, recordId2);
     }
@@ -212,19 +213,20 @@ public static class Program
         string indexName,
         string fieldName,
         bool fieldIsCollection,
-        string fieldValue,
+        string fieldValue1,
+        string fieldValue2,
         int limit)
     {
         Console.WriteLine("\n== FILTER SEARCH ==\n");
         var client = adminClient.GetSearchClient(indexName);
 
-        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
+        fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
+        fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
         var options = new SearchOptions
         {
             Filter = fieldIsCollection
-                ? $"{fieldName}/any(s: s eq '{fieldValue}')"
-                : $"{fieldName} eq '{fieldValue}')",
+                ? $"{fieldName}/any(s: s eq '{fieldValue1}') and {fieldName}/any(s: s eq '{fieldValue2}')"
+                : $"{fieldName} eq '{fieldValue1}' or {fieldName} eq '{fieldValue2}')",
             Size = limit
         };
 

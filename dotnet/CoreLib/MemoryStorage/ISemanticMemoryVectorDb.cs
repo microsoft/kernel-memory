@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Client.Models;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage;
 
@@ -60,14 +61,16 @@ public interface ISemanticMemoryVectorDb
     /// <param name="embedding">Target vector to compare to</param>
     /// <param name="limit">Max number of results</param>
     /// <param name="minRelevanceScore">Minimum similarity required</param>
+    /// <param name="filter">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of similar vectors, starting from the most similar</returns>
-    IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+    IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
         Embedding<float> embedding,
         int limit,
         double minRelevanceScore = 0,
+        MemoryFilter? filter = null,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
@@ -76,19 +79,15 @@ public interface ISemanticMemoryVectorDb
     /// E.g. searching vectors by tag, for deletions.
     /// </summary>
     /// <param name="indexName">Index/Collection name</param>
-    /// <param name="fieldName">Field to search</param>
-    /// <param name="fieldIsCollection">Whether the field is a string or a collection of strings</param>
-    /// <param name="fieldValue">Value to match (if the field is a collection, the collection must contain the value)</param>
+    /// <param name="filter">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="limit">Max number of records to return</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of records</returns>
-    IAsyncEnumerable<MemoryRecord> SearchByFieldValueAsync(
+    IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        string fieldName,
-        bool fieldIsCollection,
-        string fieldValue,
-        int limit,
+        MemoryFilter? filter = null,
+        int limit = 1,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 

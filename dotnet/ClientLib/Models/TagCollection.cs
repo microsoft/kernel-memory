@@ -122,6 +122,11 @@ public class TagCollection : IDictionary<string, List<string?>>
         }
     }
 
+    public IEnumerable<KeyValuePair<string, string?>> ToKeyValueList()
+    {
+        return (from tag in this._data from tagValue in tag.Value select new KeyValuePair<string, string?>(tag.Key, tagValue));
+    }
+
     public bool Remove(KeyValuePair<string, List<string?>> item)
     {
         return this._data.Remove(item);

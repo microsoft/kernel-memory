@@ -44,22 +44,22 @@ public interface ISemanticMemoryClient
 
     /// <summary>
     /// Search the default user memory for an answer to the given query.
-    /// TODO: add support for tags.
     /// </summary>
     /// <param name="query">Query/question to answer</param>
+    /// <param name="filter">Filter to match</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(string query, CancellationToken cancellationToken = default);
+    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Search a user memory for an answer to the given query.
-    /// TODO: add support for tags.
     /// </summary>
     /// <param name="userId">ID of the user's memory to search</param>
     /// <param name="query">Query/question to answer</param>
+    /// <param name="filter">Filter to match</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default);
+    public Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Check if a document ID exists in a user memory and is ready for usage.

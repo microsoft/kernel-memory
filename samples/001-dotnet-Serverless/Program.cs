@@ -49,9 +49,9 @@ if (!await memory.IsReadyAsync(userId: "user2", documentId: "f05"))
 {
     await memory.ImportFileAsync("file5-NASA-news.pdf",
         new DocumentDetails("user2", "f05")
-            .AddTag("collection", "samples")
-            .AddTag("collection", "webClient")
-            .AddTag("collection", ".NET")
+            .AddTag("collection", "meetings")
+            .AddTag("collection", "NASA")
+            .AddTag("collection", "space")
             .AddTag("type", "news"));
 }
 
@@ -85,3 +85,16 @@ foreach (var x in answer.RelevantSources)
 {
     Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }
+
+// Test with tags
+question = "What is Orion?";
+Console.WriteLine($"\n\nQuestion: {question}");
+
+var filter1 = new MemoryFilter().ByTag("type", "article");
+var filter2 = new MemoryFilter().ByTag("type", "news");
+
+answer = await memory.AskAsync("user2", question, filter1);
+Console.WriteLine($"\nArticles: {answer.Result}\n\n");
+
+answer = await memory.AskAsync("user2", question, filter2);
+Console.WriteLine($"\nNews: {answer.Result}\n\n");

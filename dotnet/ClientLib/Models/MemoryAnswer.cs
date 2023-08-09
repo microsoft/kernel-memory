@@ -80,14 +80,6 @@ public class MemoryAnswer
             public float Relevance { get; set; } = 0;
 
             /// <summary>
-            /// Size in tokens of the partition. The size depends
-            /// on the AI model used to generate the answer.
-            /// </summary>
-            [JsonPropertyName("SizeInTokens")]
-            [JsonPropertyOrder(3)]
-            public int SizeInTokens { get; set; } = 0;
-
-            /// <summary>
             /// Timestamp about the file/text partition.
             /// </summary>
             [JsonPropertyName("LastUpdate")]

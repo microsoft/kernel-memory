@@ -52,13 +52,13 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(new DocumentDetails().UserId, query, cancellationToken);
+        return this.AskAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         var request = new { UserId = userId, Query = query, Tags = new TagCollection() };
         using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");

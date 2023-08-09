@@ -57,12 +57,12 @@ public class SearchClient
                        "Answer: ";
     }
 
-    public Task<MemoryAnswer> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(MemoryQuery query, CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(request.UserId, request.Query, cancellationToken);
+        return this.AskAsync(query.UserId, query.Query, query.Filter, cancellationToken);
     }
 
-    public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         var facts = new StringBuilder();
         var tokensAvailable = 8000
@@ -82,9 +82,10 @@ public class SearchClient
         var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
 
         this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetNearestMatchesAsync(
-            indexName: userId, embedding, MatchesCount, MinSimilarity, false, cancellationToken: cancellationToken);
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
+            indexName: userId, embedding, MatchesCount, MinSimilarity, filter, false, cancellationToken: cancellationToken);
 
+        // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
@@ -156,7 +157,6 @@ public class SearchClient
                 {
                     Text = partitionText,
                     Relevance = (float)relevance,
-                    SizeInTokens = size,
                     LastUpdate = lastUpdate,
                 });
 

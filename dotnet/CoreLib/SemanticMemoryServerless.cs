@@ -64,15 +64,15 @@ public class SemanticMemoryServerless : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(new DocumentDetails().UserId, query, cancellationToken);
+        return this.AskAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this._searchClient.SearchAsync(userId: userId, query: query, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(userId: userId, query: query, filter: filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />

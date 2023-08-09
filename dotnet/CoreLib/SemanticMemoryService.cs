@@ -28,7 +28,7 @@ public interface ISemanticMemoryService
     /// <returns>Pipeline status if available</returns>
     Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
-    Task<MemoryAnswer> AskAsync(SearchRequest request, CancellationToken cancellationToken = default);
+    Task<MemoryAnswer> AskAsync(MemoryQuery query, CancellationToken cancellationToken = default);
 }
 
 public class SemanticMemoryService : ISemanticMemoryService
@@ -59,8 +59,8 @@ public class SemanticMemoryService : ISemanticMemoryService
     }
 
     ///<inheritdoc />
-    public Task<MemoryAnswer> AskAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(MemoryQuery query, CancellationToken cancellationToken = default)
     {
-        return this._searchClient.SearchAsync(request, cancellationToken);
+        return this._searchClient.AskAsync(query, cancellationToken);
     }
 }
