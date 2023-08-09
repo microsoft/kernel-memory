@@ -408,19 +408,23 @@ public static class Main
         {
             config = new Dictionary<string, object>
             {
+                { "APIType", "ChatCompletion" },
                 { "Auth", "ApiKey" },
                 { "Endpoint", "" },
                 { "Deployment", "" },
                 { "APIKey", "" },
+                { "MaxRetries", 10 },
             };
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
+            { "APIType", "ChatCompletion" },
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()) },
             { "Deployment", SetupUI.AskOpenQuestion("Azure OpenAI <text/chat completion deployment name>", config["Deployment"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Azure OpenAI <API Key>", config["APIKey"].ToString()) },
+            { "MaxRetries", 10 },
         });
     }
 
@@ -466,6 +470,7 @@ public static class Main
                 { "EmbeddingModel", "" },
                 { "APIKey", "" },
                 { "OrgId", "" },
+                { "MaxRetries", 10 },
             };
         }
 
@@ -475,6 +480,7 @@ public static class Main
             { "EmbeddingModel", SetupUI.AskOpenQuestion("OpenAI <embedding model name>", config.TryGet("EmbeddingModel")) },
             { "APIKey", SetupUI.AskPassword("OpenAI <API Key>", config.TryGet("APIKey")) },
             { "OrgId", SetupUI.AskOptionalOpenQuestion("Optional OpenAI <Organization Id>", config.TryGet("OrgId")) },
+            { "MaxRetries", 10 },
         });
     }
 

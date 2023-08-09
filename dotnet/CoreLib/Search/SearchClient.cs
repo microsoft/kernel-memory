@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.AI;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.WebService;
 
@@ -22,19 +21,18 @@ public class SearchClient
     private const int MatchesCount = 100;
     private const int AnswerTokens = 300;
 
-    private readonly IKernel _kernel;
     private readonly MemoryClient memoryClient;
+    private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
     private readonly string _prompt;
-    private readonly ISKFunction _skFunction;
 
     public SearchClient(
         MemoryClient memoryClient,
-        IKernel kernel,
+        ITextGeneration textGenerator,
         ILogger<SearchClient>? log = null)
     {
         this.memoryClient = memoryClient ?? throw new SemanticMemoryException("MemoryClient not configured"); ;
-        this._kernel = kernel ?? throw new SemanticMemoryException("Semantic Kernel not configured");
+        this._textGenerator = textGenerator ?? throw new SemanticMemoryException("Text generator not configured"); ;
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
         this._prompt = "Facts:\n" +
@@ -45,8 +43,6 @@ public class SearchClient
                        "If you don't have sufficient information, reply with 'INFO NOT FOUND'.\n" +
                        "Question: {{$question}}\n" +
                        "Answer: ";
-
-        this._skFunction = this._kernel.CreateSemanticFunction(this._prompt.Trim(), maxTokens: AnswerTokens, temperature: 0);
     }
 
     public Task<MemoryAnswer> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
@@ -56,7 +52,7 @@ public class SearchClient
 
     public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
-        var factBuilder = new StringBuilder();
+        var facts = new StringBuilder();
         var tokensAvailable = 8000
                               - GPT3Tokenizer.Encode(this._prompt).Count
                               - GPT3Tokenizer.Encode(query).Count
@@ -88,7 +84,7 @@ public class SearchClient
                 factsUsedCount++;
                 this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, partition.Relevance);
 
-                factBuilder.AppendLine(fact);
+                facts.AppendLine(fact);
                 tokensAvailable -= size;
             }
 
@@ -111,28 +107,26 @@ public class SearchClient
             return new MemoryAnswer { Query = query, Result = "INFO NOT FOUND" };
         }
 
-        answer.Result = await this.GenerateAnswerAsync(query, factBuilder.ToString()).ConfigureAwait(false);
+        var text = new StringBuilder();
+        await foreach (var x in this.GenerateAnswerAsync(query, facts.ToString()).ConfigureAwait(false))
+        {
+            text.Append(x);
+        }
+
+        answer.Result = text.ToString();
 
         return answer;
     }
 
-    private async Task<string> GenerateAnswerAsync(string query, string facts)
+    private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
     {
-        SKContext context = this._kernel.CreateNewContext();
-        context["facts"] = facts.Trim();
+        var prompt = this._prompt;
+        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
-        query = query.Trim();
-        context["question"] = query;
-        context["question"] = query.EndsWith('?') ? query : $"{query}?";
+        question = question.Trim();
+        question = question.EndsWith('?') ? question : $"{question}?";
+        prompt = prompt.Replace("{{$question}}", question, StringComparison.OrdinalIgnoreCase);
 
-        SKContext result = await this._skFunction.InvokeAsync(context).ConfigureAwait(false);
-
-        if (result.ErrorOccurred)
-        {
-            this._log.LogError(result.LastException, "Failed to generate answer: {0}", result.LastErrorDescription);
-            throw result.LastException ?? new SemanticMemoryException($"Failed to generate answer: {result.LastErrorDescription}");
-        }
-
-        return result.Result.Trim();
+        return this._textGenerator.GenerateTextAsync(prompt, new TextGenerationOptions());
     }
 }

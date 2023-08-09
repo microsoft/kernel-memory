@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.6" />
         <PackageReference Include="Azure.Identity" Version="1.9.0" />
         <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
         <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />

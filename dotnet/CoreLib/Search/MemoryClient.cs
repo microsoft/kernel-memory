@@ -47,35 +47,35 @@ public class MemoryClient
 
         var memories = new Dictionary<string, MemoryAnswer.Citation>();
 
-        await foreach ((MemoryRecord Record, double Similarity) memory in matches.WithCancellation(cancellationToken))
+        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
         {
-            if (!memory.Record.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
             }
 
-            if (!memory.Record.Tags.ContainsKey(Constants.ReservedFileIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
             }
 
-            if (!memory.Record.Tags.ContainsKey(Constants.ReservedFileTypeTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileTypeTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
             }
 
             // Note: a document can be composed by multiple files
-            string documentId = memory.Record.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
 
             // Identify the file in case there are multiple files
-            string fileId = memory.Record.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             string linkToFile = $"{documentId}/{fileId}";
 
-            var partitionText = memory.Record.Metadata["text"].ToString()?.Trim() ?? string.Empty;
+            var partitionText = memory.Metadata["text"].ToString()?.Trim() ?? string.Empty;
             if (string.IsNullOrEmpty(partitionText))
             {
-                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Record.Owner, memory.Record.Id);
+                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
                 continue;
             }
 
@@ -84,8 +84,8 @@ public class MemoryClient
             // If the file is already in the list of citations, only add the partition
             if (!memories.TryGetValue(linkToFile, out var citation))
             {
-                string fileContentType = memory.Record.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-                string fileName = memory.Record.Metadata["file_name"].ToString() ?? string.Empty;
+                string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
+                string fileName = memory.Metadata["file_name"].ToString() ?? string.Empty;
 
                 citation = new MemoryAnswer.Citation();
                 citation.Link = linkToFile;
@@ -98,14 +98,14 @@ public class MemoryClient
             // Add the partition to the list of citation
 
 #pragma warning disable CA1806 // it's ok if parsing fails
-            DateTimeOffset.TryParse(memory.Record.Metadata["last_update"].ToString(), out var lastUpdate);
+            DateTimeOffset.TryParse(memory.Metadata["last_update"].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
             var partition =
                 new MemoryAnswer.Citation.Partition
                 {
                     Text = partitionText,
-                    Relevance = Convert.ToSingle(memory.Similarity),
+                    Relevance = Convert.ToSingle(relevance),
                     SizeInTokens = 0, // TODO: from metadata
                     LastUpdate = lastUpdate,
                 };
