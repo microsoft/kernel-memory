@@ -64,7 +64,7 @@ public class SearchClient
 
     public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
-        var facts = string.Empty;
+        var facts = new StringBuilder();
         var tokensAvailable = 8000
                               - GPT3Tokenizer.Encode(this._prompt).Count
                               - GPT3Tokenizer.Encode(query).Count
@@ -85,54 +85,54 @@ public class SearchClient
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetNearestMatchesAsync(
             indexName: userId, embedding, MatchesCount, MinSimilarity, false, cancellationToken: cancellationToken);
 
-        await foreach ((MemoryRecord, double) memory in matches.WithCancellation(cancellationToken))
+        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
         {
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
             }
 
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedFileIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
             }
 
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedFileTypeTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileTypeTag))
             {
                 this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
             }
 
             // Note: a document can be composed by multiple files
-            string documentId = memory.Item1.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
 
             // Identify the file in case there are multiple files
-            string fileId = memory.Item1.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             // TODO: URL to access the file
             string linkToFile = $"{documentId}/{fileId}";
 
-            string fileContentType = memory.Item1.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Item1.Metadata["file_name"].ToString() ?? string.Empty;
+            string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
+            string fileName = memory.Metadata["file_name"].ToString() ?? string.Empty;
 
             factsAvailableCount++;
-            var partitionText = memory.Item1.Metadata["text"].ToString()?.Trim() ?? "";
+            var partitionText = memory.Metadata["text"].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
-                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Item1.Owner, memory.Item1.Id);
+                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
                 continue;
             }
 
             // TODO: add file age in days, to push relevance of newer documents
-            var fact = $"==== [File:{fileName};Relevance:{memory.Item2:P1}]:\n{partitionText}\n";
+            var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
             var size = GPT3Tokenizer.Encode(fact).Count;
             if (size < tokensAvailable)
             {
                 factsUsedCount++;
-                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, memory.Item2);
+                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
 
-                facts += fact;
+                facts.Append(fact);
                 tokensAvailable -= size;
 
                 // If the file is already in the list of citations, only add the partition
@@ -149,13 +149,13 @@ public class SearchClient
                 citation.SourceName = fileName;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
-                DateTimeOffset.TryParse(memory.Item1.Metadata["last_update"].ToString(), out var lastUpdate);
+                DateTimeOffset.TryParse(memory.Metadata["last_update"].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
                 citation.Partitions.Add(new MemoryAnswer.Citation.Partition
                 {
                     Text = partitionText,
-                    Relevance = (float)memory.Item2,
+                    Relevance = (float)relevance,
                     SizeInTokens = size,
                     LastUpdate = lastUpdate,
                 });
@@ -179,7 +179,7 @@ public class SearchClient
         }
 
         var text = new StringBuilder();
-        await foreach (var x in this.GenerateAnswerAsync(query, facts).ConfigureAwait(false))
+        await foreach (var x in this.GenerateAnswerAsync(query, facts.ToString()).ConfigureAwait(false))
         {
             text.Append(x);
         }
