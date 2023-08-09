@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Client.Models;
@@ -29,6 +30,8 @@ public interface ISemanticMemoryService
     Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     Task<MemoryAnswer> AskAsync(SearchRequest request, CancellationToken cancellationToken = default);
+
+    Task<IList<(MemoryAnswer.Citation, MemoryAnswer.Citation.Partition)>> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default);
 }
 
 public class SemanticMemoryService : ISemanticMemoryService
@@ -60,6 +63,12 @@ public class SemanticMemoryService : ISemanticMemoryService
 
     ///<inheritdoc />
     public Task<MemoryAnswer> AskAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    {
+        return this._searchClient.AnswerAsync(request, cancellationToken);
+    }
+
+    ///<inheritdoc />
+    public Task<IList<(MemoryAnswer.Citation, MemoryAnswer.Citation.Partition)>> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
     {
         return this._searchClient.SearchAsync(request, cancellationToken);
     }

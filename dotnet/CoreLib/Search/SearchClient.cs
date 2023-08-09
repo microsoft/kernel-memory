@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticMemory.Client;
@@ -45,12 +47,19 @@ public class SearchClient
                        "Answer: ";
     }
 
-    public Task<MemoryAnswer> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    public async Task<IList<(MemoryAnswer.Citation, MemoryAnswer.Citation.Partition)>> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(request.UserId, request.Query, cancellationToken);
+        var memories = await this.memoryClient.QueryMemoryAsync(request.UserId, request.Query, MinSimilarity, MatchesCount, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+
+        return memories ?? Array.Empty<(MemoryAnswer.Citation, MemoryAnswer.Citation.Partition)>();
     }
 
-    public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AnswerAsync(SearchRequest request, CancellationToken cancellationToken = default)
+    {
+        return this.AnswerAsync(request.UserId, request.Query, cancellationToken);
+    }
+
+    public async Task<MemoryAnswer> AnswerAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
         var facts = new StringBuilder();
         var tokensAvailable = 8000

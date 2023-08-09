@@ -72,7 +72,7 @@ public class SemanticMemoryServerless : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
-        return this._searchClient.SearchAsync(userId: userId, query: query, cancellationToken: cancellationToken);
+        return this._searchClient.AnswerAsync(userId: userId, query: query, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />

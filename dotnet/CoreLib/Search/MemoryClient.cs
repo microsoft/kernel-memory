@@ -106,11 +106,9 @@ public class MemoryClient
                 {
                     Text = partitionText,
                     Relevance = Convert.ToSingle(relevance),
-                    SizeInTokens = 0, // TODO: from metadata
+                    SizeInTokens = 0, // TODO: from metadata (or devis mentioned to be removed)
                     LastUpdate = lastUpdate,
                 };
-
-            citation.Partitions.Add(partition);
 
             yield return (citation, partition);
         }
