@@ -32,6 +32,7 @@ public static partial class DependencyInjection
     public static void ConfigureRuntime(this IServiceCollection services, SemanticMemoryConfig config)
     {
         services.AddSingleton<SemanticMemoryConfig>(config);
+        services.AddSingleton<MemoryClient, MemoryClient>();
         services.AddSingleton<SearchClient, SearchClient>();
         services.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
 

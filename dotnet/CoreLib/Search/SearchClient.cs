@@ -1,20 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Search;
@@ -26,28 +23,19 @@ public class SearchClient
     private const int AnswerTokens = 300;
 
     private readonly IKernel _kernel;
-    private readonly ISemanticMemoryVectorDb _vectorDb;
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly MemoryClient memoryClient;
     private readonly ILogger<SearchClient> _log;
     private readonly string _prompt;
     private readonly ISKFunction _skFunction;
 
     public SearchClient(
-        ISemanticMemoryVectorDb vectorDb,
-        ITextEmbeddingGeneration embeddingGenerator,
+        MemoryClient memoryClient,
         IKernel kernel,
         ILogger<SearchClient>? log = null)
     {
-        this._vectorDb = vectorDb;
-        this._embeddingGenerator = embeddingGenerator;
-        this._kernel = kernel;
+        this.memoryClient = memoryClient ?? throw new SemanticMemoryException("MemoryClient not configured"); ;
+        this._kernel = kernel ?? throw new SemanticMemoryException("Semantic Kernel not configured");
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
-
-        if (this._embeddingGenerator == null) { throw new SemanticMemoryException("Embedding generator not configured"); }
-
-        if (this._vectorDb == null) { throw new SemanticMemoryException("Search vector DB not configured"); }
-
-        if (this._kernel == null) { throw new SemanticMemoryException("Semantic Kernel not configured"); }
 
         this._prompt = "Facts:\n" +
                        "{{$facts}}" +
@@ -68,7 +56,7 @@ public class SearchClient
 
     public async Task<MemoryAnswer> SearchAsync(string userId, string query, CancellationToken cancellationToken = default)
     {
-        var facts = string.Empty;
+        var factBuilder = new StringBuilder();
         var tokensAvailable = 8000
                               - GPT3Tokenizer.Encode(this._prompt).Count
                               - GPT3Tokenizer.Encode(query).Count
@@ -83,91 +71,32 @@ public class SearchClient
             Result = "INFO NOT FOUND",
         };
 
-        var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
+        var citationTracker = new HashSet<string>();
 
-        this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetNearestMatchesAsync(
-            indexName: userId, embedding, MatchesCount, MinSimilarity, false, cancellationToken: cancellationToken);
-
-        await foreach ((MemoryRecord, double) memory in matches.WithCancellation(cancellationToken))
+        await foreach ((var citation, var partition) in this.memoryClient.QueryMemoryAsync(query, userId, MinSimilarity, MatchesCount, cancellationToken).ConfigureAwait(false))
         {
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
-            }
-
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedFileIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
-            }
-
-            if (!memory.Item1.Tags.ContainsKey(Constants.ReservedFileTypeTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
-            }
-
-            // Note: a document can be composed by multiple files
-            string documentId = memory.Item1.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
-
-            // Identify the file in case there are multiple files
-            string fileId = memory.Item1.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+            factsAvailableCount++;
 
             // TODO: URL to access the file
-            string linkToFile = $"{documentId}/{fileId}";
+            var fact = $"==== [File:{citation.SourceName};Relevance:{partition.Relevance:P1}]:\n{partition.Text}";
 
-            string fileContentType = memory.Item1.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Item1.Metadata["file_name"].ToString() ?? string.Empty;
-
-            factsAvailableCount++;
-            var partitionText = memory.Item1.Metadata["text"].ToString()?.Trim() ?? "";
-            if (string.IsNullOrEmpty(partitionText))
-            {
-                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Item1.Owner, memory.Item1.Id);
-                continue;
-            }
-
-            // TODO: add file age in days, to push relevance of newer documents
-            var fact = $"==== [File:{fileName};Relevance:{memory.Item2:P1}]:\n{partitionText}\n";
+            var size = GPT3Tokenizer.Encode(fact).Count;
 
             // Use the partition/chunk only if there's room for it
-            var size = GPT3Tokenizer.Encode(fact).Count;
             if (size < tokensAvailable)
             {
                 factsUsedCount++;
-                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, memory.Item2);
+                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, partition.Relevance);
 
-                facts += fact;
+                factBuilder.AppendLine(fact);
                 tokensAvailable -= size;
-
-                // If the file is already in the list of citations, only add the partition
-                var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-                if (citation == null)
-                {
-                    citation = new MemoryAnswer.Citation();
-                    answer.RelevantSources.Add(citation);
-                }
-
-                // Add the partition to the list of citations
-                citation.Link = linkToFile;
-                citation.SourceContentType = fileContentType;
-                citation.SourceName = fileName;
-
-#pragma warning disable CA1806 // it's ok if parsing fails
-                DateTimeOffset.TryParse(memory.Item1.Metadata["last_update"].ToString(), out var lastUpdate);
-#pragma warning restore CA1806
-
-                citation.Partitions.Add(new MemoryAnswer.Citation.Partition
-                {
-                    Text = partitionText,
-                    Relevance = (float)memory.Item2,
-                    SizeInTokens = size,
-                    LastUpdate = lastUpdate,
-                });
-
-                continue;
             }
 
-            break;
+            // Add each citation as answer source, once.
+            if (citationTracker.Add(citation.Link))
+            {
+                answer.RelevantSources.Add(citation);
+            }
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)
@@ -182,22 +111,9 @@ public class SearchClient
             return new MemoryAnswer { Query = query, Result = "INFO NOT FOUND" };
         }
 
-        answer.Result = await this.GenerateAnswerAsync(query, facts).ConfigureAwait(false);
+        answer.Result = await this.GenerateAnswerAsync(query, factBuilder.ToString()).ConfigureAwait(false);
 
         return answer;
-    }
-
-    private async Task<Embedding<float>> GenerateEmbeddingAsync(string text)
-    {
-        this._log.LogTrace("Generating embedding for the query");
-        IList<Embedding<float>> embeddings = await this._embeddingGenerator
-            .GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
-        if (embeddings.Count == 0)
-        {
-            throw new SemanticMemoryException("Failed to generate embedding for the given question");
-        }
-
-        return embeddings.First();
     }
 
     private async Task<string> GenerateAnswerAsync(string query, string facts)
