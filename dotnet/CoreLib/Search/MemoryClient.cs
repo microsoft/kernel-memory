@@ -110,6 +110,8 @@ public class MemoryClient
                     LastUpdate = lastUpdate,
                 };
 
+            citation.Partitions.Add(partition);
+
             yield return (citation, partition);
         }
     }
