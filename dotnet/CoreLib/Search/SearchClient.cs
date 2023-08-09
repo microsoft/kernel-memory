@@ -3,16 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.AI;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.WebService;
@@ -25,29 +24,28 @@ public class SearchClient
     private const int MatchesCount = 100;
     private const int AnswerTokens = 300;
 
-    private readonly IKernel _kernel;
     private readonly ISemanticMemoryVectorDb _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
     private readonly string _prompt;
-    private readonly ISKFunction _skFunction;
 
     public SearchClient(
         ISemanticMemoryVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
-        IKernel kernel,
+        ITextGeneration textGenerator,
         ILogger<SearchClient>? log = null)
     {
         this._vectorDb = vectorDb;
         this._embeddingGenerator = embeddingGenerator;
-        this._kernel = kernel;
+        this._textGenerator = textGenerator;
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
         if (this._embeddingGenerator == null) { throw new SemanticMemoryException("Embedding generator not configured"); }
 
         if (this._vectorDb == null) { throw new SemanticMemoryException("Search vector DB not configured"); }
 
-        if (this._kernel == null) { throw new SemanticMemoryException("Semantic Kernel not configured"); }
+        if (this._textGenerator == null) { throw new SemanticMemoryException("Text generator not configured"); }
 
         this._prompt = "Facts:\n" +
                        "{{$facts}}" +
@@ -57,8 +55,6 @@ public class SearchClient
                        "If you don't have sufficient information, reply with 'INFO NOT FOUND'.\n" +
                        "Question: {{$question}}\n" +
                        "Answer: ";
-
-        this._skFunction = this._kernel.CreateSemanticFunction(this._prompt.Trim(), maxTokens: AnswerTokens, temperature: 0);
     }
 
     public Task<MemoryAnswer> SearchAsync(SearchRequest request, CancellationToken cancellationToken = default)
@@ -182,7 +178,13 @@ public class SearchClient
             return new MemoryAnswer { Query = query, Result = "INFO NOT FOUND" };
         }
 
-        answer.Result = await this.GenerateAnswerAsync(query, facts).ConfigureAwait(false);
+        var text = new StringBuilder();
+        await foreach (var x in this.GenerateAnswerAsync(query, facts).ConfigureAwait(false))
+        {
+            text.Append(x);
+        }
+
+        answer.Result = text.ToString();
 
         return answer;
     }
@@ -200,23 +202,15 @@ public class SearchClient
         return embeddings.First();
     }
 
-    private async Task<string> GenerateAnswerAsync(string query, string facts)
+    private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
     {
-        SKContext context = this._kernel.CreateNewContext();
-        context["facts"] = facts.Trim();
+        var prompt = this._prompt;
+        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
-        query = query.Trim();
-        context["question"] = query;
-        context["question"] = query.EndsWith('?') ? query : $"{query}?";
+        question = question.Trim();
+        question = question.EndsWith('?') ? question : $"{question}?";
+        prompt = prompt.Replace("{{$question}}", question, StringComparison.OrdinalIgnoreCase);
 
-        SKContext result = await this._skFunction.InvokeAsync(context).ConfigureAwait(false);
-
-        if (result.ErrorOccurred)
-        {
-            this._log.LogError(result.LastException, "Failed to generate answer: {0}", result.LastErrorDescription);
-            throw result.LastException ?? new SemanticMemoryException($"Failed to generate answer: {result.LastErrorDescription}");
-        }
-
-        return result.Result.Trim();
+        return this._textGenerator.GenerateTextAsync(prompt, new TextGenerationOptions());
     }
 }

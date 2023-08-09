@@ -68,7 +68,7 @@ public static class AzureBuilder
             .Get<AzureCognitiveSearchConfig>()!);
 
         // How to generate an answer
-        builder.Services.AddSemanticKernelWithAzureOpenAI(builder.Configuration
+        builder.Services.AddAzureOpenAITextGeneration(builder.Configuration
             .GetSection(ConfigRoot).GetSection("Services").GetSection("AzureOpenAIText")
             .Get<AzureOpenAIConfig>()!);
     }

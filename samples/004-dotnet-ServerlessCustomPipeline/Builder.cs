@@ -148,13 +148,13 @@ public static class Builder
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSemanticKernelWithAzureOpenAI(builder.Configuration
+                builder.Services.AddAzureOpenAITextGeneration(builder.Configuration
                     .GetSection(ConfigRoot).GetSection("Services").GetSection("AzureOpenAIText")
                     .Get<AzureOpenAIConfig>()!);
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSemanticKernelWithOpenAI(builder.Configuration
+                builder.Services.AddOpenAITextGeneration(builder.Configuration
                     .GetSection(ConfigRoot).GetSection("Services").GetSection("OpenAI")
                     .Get<OpenAIConfig>()!);
                 break;

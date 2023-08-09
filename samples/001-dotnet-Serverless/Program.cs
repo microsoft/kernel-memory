@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Core;
 using Microsoft.SemanticMemory.InteractiveSetup;
 
 // Run `dotnet run setup` to run this code and setup the example
@@ -18,7 +18,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryServerlessClient(Builder.GetServiceProvider());
+var memory = new SemanticMemoryServerless(Builder.GetServiceProvider());
 
 // =======================
 // === UPLOAD ============

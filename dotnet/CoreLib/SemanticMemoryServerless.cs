@@ -10,9 +10,10 @@ using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Handlers;
+using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Search;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Core;
 
 /// <summary>
 /// Memory client to upload files and search for answers, without depending
@@ -22,9 +23,9 @@ namespace Microsoft.SemanticMemory.Core.Pipeline;
 ///
 /// TODO: pipeline structure is hardcoded, should allow custom handlers/steps
 /// </summary>
-public class MemoryServerlessClient : ISemanticMemoryClient
+public class SemanticMemoryServerless : ISemanticMemoryClient
 {
-    public MemoryServerlessClient(IServiceProvider serviceProvider)
+    public SemanticMemoryServerless(IServiceProvider serviceProvider)
     {
         this._configuration = serviceProvider.GetService<SemanticMemoryConfig>()
                               ?? throw new SemanticMemoryException("Unable to load configuration. Are all the dependencies configured?");
