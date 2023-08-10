@@ -25,7 +25,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230718.1-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
         <PackageReference Include="PdfPig" Version="0.1.8" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
