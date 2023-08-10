@@ -116,7 +116,9 @@ internal sealed class SqlSchemaProvider
     {
         using var cmd = this.connection.CreateCommand();
 
+#pragma warning disable CA2100 // Queries passed in from static resource
         cmd.CommandText = statement;
+#pragma warning restore CA2100
 
         return await cmd.ExecuteReaderAsync().ConfigureAwait(false);
     }
