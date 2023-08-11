@@ -10,16 +10,16 @@ namespace Microsoft.SemanticMemory.Client.Models;
 public class MemoryAnswer
 {
     /// <summary>
-    /// Content of the query.
+    /// Client question.
     /// </summary>
-    [JsonPropertyName("Query")]
+    [JsonPropertyName("question")]
     [JsonPropertyOrder(1)]
-    public string Query { get; set; } = string.Empty;
+    public string Question { get; set; } = string.Empty;
 
     /// <summary>
     /// Content of the answer.
     /// </summary>
-    [JsonPropertyName("Text")]
+    [JsonPropertyName("text")]
     [JsonPropertyOrder(2)]
     public string Result { get; set; } = string.Empty;
 
@@ -28,7 +28,7 @@ public class MemoryAnswer
     /// Key = Document ID
     /// Value = List of partitions used from the document.
     /// </summary>
-    [JsonPropertyName("RelevantSources")]
+    [JsonPropertyName("relevantSources")]
     [JsonPropertyOrder(3)]
     public List<Citation> RelevantSources { get; set; } = new();
 
@@ -37,28 +37,28 @@ public class MemoryAnswer
         /// <summary>
         /// Link to the source, if available.
         /// </summary>
-        [JsonPropertyName("Link")]
+        [JsonPropertyName("link")]
         [JsonPropertyOrder(1)]
         public string Link { get; set; } = string.Empty;
 
         /// <summary>
         /// Type of source, e.g. PDF, Word, Chat, etc.
         /// </summary>
-        [JsonPropertyName("SourceContentType")]
+        [JsonPropertyName("sourceContentType")]
         [JsonPropertyOrder(2)]
         public string SourceContentType { get; set; } = string.Empty;
 
         /// <summary>
         /// Name of the source, e.g. file name.
         /// </summary>
-        [JsonPropertyName("SourceName")]
+        [JsonPropertyName("sourceName")]
         [JsonPropertyOrder(3)]
         public string SourceName { get; set; } = string.Empty;
 
         /// <summary>
         /// List of chunks/blocks of text used.
         /// </summary>
-        [JsonPropertyName("Partitions")]
+        [JsonPropertyName("partitions")]
         [JsonPropertyOrder(4)]
         public List<Partition> Partitions { get; set; } = new();
 
@@ -67,7 +67,7 @@ public class MemoryAnswer
             /// <summary>
             /// Content of the document partition, aka chunk/block of text.
             /// </summary>
-            [JsonPropertyName("Text")]
+            [JsonPropertyName("text")]
             [JsonPropertyOrder(1)]
             public string Text { get; set; } = string.Empty;
 
@@ -75,14 +75,14 @@ public class MemoryAnswer
             /// Relevance of this partition against the given query.
             /// Value usually is between 0 and 1, when using cosine similarity.
             /// </summary>
-            [JsonPropertyName("Relevance")]
+            [JsonPropertyName("relevance")]
             [JsonPropertyOrder(2)]
             public float Relevance { get; set; } = 0;
 
             /// <summary>
             /// Timestamp about the file/text partition.
             /// </summary>
-            [JsonPropertyName("LastUpdate")]
+            [JsonPropertyName("lastUpdate")]
             [JsonPropertyOrder(4)]
             public DateTimeOffset LastUpdate { get; set; } = DateTimeOffset.MinValue;
         }

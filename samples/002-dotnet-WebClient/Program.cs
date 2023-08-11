@@ -20,42 +20,44 @@ MemoryWebClient memory = new(endpoint);
 // =======================
 
 // Uploading one file - This will create
-// a new upload every time because no file ID is specified, and
+// a new upload every time because no document ID is specified, and
 // stored under the "default" user because no User ID is specified.
-await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt");
+Console.WriteLine("Uploading file without document ID");
+await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt");
 
-// Uploading only if the file has not been (successfully) uploaded already
-if (!await memory.IsReadyAsync(userId: "user1", documentId: "f01"))
+// Uploading only if the document has not been (successfully) uploaded already
+if (!await memory.IsDocumentReadyAsync(userId: "user1", documentId: "doc001"))
 {
-    await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt",
-        new DocumentDetails(userId: "user1", documentId: "f01"));
+    Console.WriteLine("Uploading doc001");
+    await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt",
+        new DocumentDetails(userId: "user1", documentId: "doc001"));
 }
 
-// Uploading multiple files
-await memory.ImportFilesAsync(new[]
+// Uploading a document containing multiple files
+Console.WriteLine("Uploading doc002");
+await memory.ImportDocumentAsync(new Document(new[]
 {
-    new Document("file2-Wikipedia-Moon.txt", new DocumentDetails("user1", "f02")),
-    new Document("file3-lorem-ipsum.docx", new DocumentDetails("user1", "f03")),
-    new Document("file4-SK-Readme.pdf", new DocumentDetails("user1", "f04")),
-});
+    "file2-Wikipedia-Moon.txt",
+    "file3-lorem-ipsum.docx",
+    "file4-SK-Readme.pdf"
+}, new DocumentDetails("user1", "doc002")));
 
 // Categorizing files with tags
-if (!await memory.IsReadyAsync(userId: "user2", documentId: "f05"))
+if (!await memory.IsDocumentReadyAsync(userId: "user2", documentId: "doc003"))
 {
-    await memory.ImportFileAsync("file5-NASA-news.pdf",
-        new DocumentDetails("user2", "f05")
-            .AddTag("collection", "samples")
-            .AddTag("collection", "webClient")
-            .AddTag("collection", ".NET")
+    Console.WriteLine("Uploading doc003");
+    await memory.ImportDocumentAsync("file5-NASA-news.pdf",
+        new DocumentDetails("user2", "doc003")
+            .AddTag("collection", "meetings")
+            .AddTag("collection", "NASA")
+            .AddTag("collection", "space")
             .AddTag("type", "news"));
 }
 
 while (
-    !await memory.IsReadyAsync(userId: "user1", documentId: "f01")
-    || !await memory.IsReadyAsync(userId: "user1", documentId: "f02")
-    || !await memory.IsReadyAsync(userId: "user1", documentId: "f03")
-    || !await memory.IsReadyAsync(userId: "user1", documentId: "f04")
-    || !await memory.IsReadyAsync(userId: "user2", documentId: "f05")
+    !await memory.IsDocumentReadyAsync(userId: "user1", documentId: "doc001")
+    || !await memory.IsDocumentReadyAsync(userId: "user1", documentId: "doc002")
+    || !await memory.IsDocumentReadyAsync(userId: "user2", documentId: "doc003")
 )
 {
     Console.WriteLine("Waiting for memory ingestion to complete...");
@@ -92,3 +94,16 @@ foreach (var x in answer.RelevantSources)
 {
     Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }
+
+// Test with tags
+question = "What is Orion?";
+Console.WriteLine($"\n\nQuestion: {question}");
+
+var filter1 = new MemoryFilter().ByTag("type", "article");
+var filter2 = new MemoryFilter().ByTag("type", "news");
+
+answer = await memory.AskAsync("user2", question, filter1);
+Console.WriteLine($"\nArticles: {answer.Result}\n\n");
+
+answer = await memory.AskAsync("user2", question, filter2);
+Console.WriteLine($"\nNews: {answer.Result}\n\n");

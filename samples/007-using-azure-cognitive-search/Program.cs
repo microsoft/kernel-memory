@@ -54,7 +54,7 @@ public static class Program
         // Insert two records
         var recordId1 = await InsertRecordAsync(IndexName,
             externalId: ExternalRecordId1,
-            metadata: new Dictionary<string, object> { { "filename", "dotnet.pdf" }, { "text", "this is a sentence" }, },
+            payload: new Dictionary<string, object> { { "filename", "dotnet.pdf" }, { "text", "this is a sentence" }, },
             tags: new TagCollection
             {
                 { "category", "samples" },
@@ -66,7 +66,7 @@ public static class Program
 
         var recordId2 = await InsertRecordAsync(IndexName,
             externalId: ExternalRecordId2,
-            metadata: new Dictionary<string, object> { { "filename", "python.pdf" }, { "text", "this is a sentence" }, },
+            payload: new Dictionary<string, object> { { "filename", "python.pdf" }, { "text", "this is a sentence" }, },
             tags: new TagCollection
             {
                 { "category", "samples" },
@@ -90,7 +90,7 @@ public static class Program
         foreach (MemoryRecord rec in records)
         {
             Console.WriteLine(" - " + rec.Id);
-            Console.WriteLine("   " + rec.Metadata.FirstOrDefault().Value);
+            Console.WriteLine("   " + rec.Payload.FirstOrDefault().Value);
         }
 
         // // Delete the record
@@ -137,7 +137,7 @@ public static class Program
             IsSortable = false,
         });
 
-        indexSchema.Fields.Add(new SearchField("metadata", SearchFieldDataType.String)
+        indexSchema.Fields.Add(new SearchField("payload", SearchFieldDataType.String)
         {
             IsKey = false,
             IsFilterable = true,
@@ -174,7 +174,7 @@ public static class Program
 
     // ===============================================================================================
     private static async Task<string> InsertRecordAsync(string indexName,
-        string externalId, Dictionary<string, object> metadata, TagCollection tags, Embedding<float> embedding)
+        string externalId, Dictionary<string, object> payload, TagCollection tags, Embedding<float> embedding)
     {
         Console.WriteLine("\n== INSERT ==\n");
         var client = adminClient.GetSearchClient(indexName);
@@ -185,7 +185,7 @@ public static class Program
             Vector = embedding,
             Owner = "userAB",
             Tags = tags,
-            Metadata = metadata
+            Payload = payload
         };
 
         AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);

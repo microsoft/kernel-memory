@@ -10,16 +10,20 @@ Start `dotnet/Service/Service.csproj`. See `dotnet/Service/README.md` for detail
 ```csharp
 var memory = new MemoryWebClient("http://127.0.0.1:9001/");
 
-await memory.ImportFilesAsync(new[]
+await memory.ImportDocumentAsync(new Document(new[]
 {
-    new Document("file2.txt", new DocumentDetails("f02", "user1")),
-    new Document("file3.docx", new DocumentDetails("f03", "user1")),
-    new Document("file4.pdf", new DocumentDetails("f04", "user1")),
-});
+    "file2.txt",
+    "file3.docx",
+    "file4.pdf"
+}, new DocumentDetails("user1", "doc002")));
 
-// ...wait for the service to import the files in the background...
+while (!await memory.IsDocumentReadyAsync(userId: "user1", documentId: "doc002"))
+{
+    Console.WriteLine("Waiting for memory ingestion to complete...");
+    await Task.Delay(TimeSpan.FromSeconds(2));
+}
 
-string answer = await memory.AskAsync("What's Semantic Kernel?", "user1");
+string answer = await memory.AskAsync("user1", "What's Semantic Kernel?");
 ```
 
 # Prepare the example

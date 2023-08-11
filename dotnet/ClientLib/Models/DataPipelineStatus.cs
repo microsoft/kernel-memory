@@ -20,8 +20,8 @@ public class DataPipelineStatus
     /// Unique Id
     /// </summary>
     [JsonPropertyOrder(10)]
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("document_id")]
+    public string DocumentId { get; set; } = string.Empty;
 
     [JsonPropertyOrder(11)]
     [JsonPropertyName("user_id")]

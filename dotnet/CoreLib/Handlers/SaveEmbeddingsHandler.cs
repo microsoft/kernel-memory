@@ -66,28 +66,28 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
             var record = new MemoryRecord
             {
-                Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Value.Id),
+                Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.DocumentId, embeddingFile.Value.Id),
                 Vector = embeddingData.Vector,
                 Owner = pipeline.UserId,
             };
 
             // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
-            record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.Id);
+            record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.DocumentId);
             record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
             record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
             record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
 
             pipeline.Tags.CopyTo(record.Tags);
 
-            record.Metadata.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
-            record.Metadata.Add("vector_provider", embeddingData.GeneratorProvider);
-            record.Metadata.Add("vector_generator", embeddingData.GeneratorName);
-            record.Metadata.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
+            record.Payload.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
+            record.Payload.Add("vector_provider", embeddingData.GeneratorProvider);
+            record.Payload.Add("vector_generator", embeddingData.GeneratorName);
+            record.Payload.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
 
             // Store text partition for RAG
             // TODO: make this optional to reduce space usage, using blob files instead
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
-            record.Metadata.Add("text", partitionContent);
+            record.Payload.Add("text", partitionContent);
 
             string indexName = record.Owner;
 
@@ -113,7 +113,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         // Decide which embeddings not to delete, looking at the current pipeline
         foreach (DataPipeline.GeneratedFileDetails embeddingFile in pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
         {
-            string recordId = GetEmbeddingRecordId(pipeline.UserId, pipeline.Id, embeddingFile.Id);
+            string recordId = GetEmbeddingRecordId(pipeline.UserId, pipeline.DocumentId, embeddingFile.Id);
             embeddingsToKeep.Add(recordId);
         }
 
@@ -122,7 +122,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         {
             foreach (DataPipeline.GeneratedFileDetails embeddingFile in oldPipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
             {
-                string recordId = GetEmbeddingRecordId(pipeline.UserId, oldPipeline.Id, embeddingFile.Id);
+                string recordId = GetEmbeddingRecordId(pipeline.UserId, oldPipeline.DocumentId, embeddingFile.Id);
                 if (embeddingsToKeep.Contains(recordId)) { continue; }
 
                 string indexName = pipeline.UserId;

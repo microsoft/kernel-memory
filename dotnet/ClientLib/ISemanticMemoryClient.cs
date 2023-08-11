@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Client.Models;
@@ -10,28 +9,20 @@ namespace Microsoft.SemanticMemory.Client;
 public interface ISemanticMemoryClient
 {
     /// <summary>
-    /// Import a file into memory. The file can have tags and other details.
+    /// Import a document into memory. The document can contain one or more files, can have tags and other details.
     /// </summary>
-    /// <param name="file">Details of the file to import</param>
+    /// <param name="uploadRequest">Upload request containing the document files and details</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Document ID</returns>
-    public Task<string> ImportFileAsync(Document file, CancellationToken cancellationToken = default);
+    public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Import multiple files into memory. Each file can have tags and other details.
+    /// Import a document into memory. The document can contain one or more files, can have tags and other details.
     /// </summary>
-    /// <param name="files">Details of the files to import</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>List of document IDs</returns>
-    public Task<IList<string>> ImportFilesAsync(Document[] files, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Import a file from disk into the default user memory.
-    /// </summary>
-    /// <param name="fileName">Path and name of the file to import</param>
+    /// <param name="document">Details of the files to import</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Document ID</returns>
-    public Task<string> ImportFileAsync(string fileName, CancellationToken cancellationToken = default);
+    public Task<string> ImportDocumentAsync(Document document, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Import a files from disk into memory, with details such as tags and user ID.
@@ -40,26 +31,7 @@ public interface ISemanticMemoryClient
     /// <param name="details">File details such as tags and user ID</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Document ID</returns>
-    public Task<string> ImportFileAsync(string fileName, DocumentDetails details, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Search the default user memory for an answer to the given query.
-    /// </summary>
-    /// <param name="query">Query/question to answer</param>
-    /// <param name="filter">Filter to match</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Search a user memory for an answer to the given query.
-    /// </summary>
-    /// <param name="userId">ID of the user's memory to search</param>
-    /// <param name="query">Query/question to answer</param>
-    /// <param name="filter">Filter to match</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
+    public Task<string> ImportDocumentAsync(string fileName, DocumentDetails? details = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Check if a document ID exists in a user memory and is ready for usage.
@@ -70,5 +42,33 @@ public interface ISemanticMemoryClient
     /// <param name="documentId">Document ID</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>True if the document has been successfully uploaded and imported</returns>
-    public Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+    public Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get information about an uploaded document
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <param name="documentId">Document ID (aka pipeline ID)</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Information about an uploaded document</returns>
+    public Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search the default user memory for an answer to the given query.
+    /// </summary>
+    /// <param name="question">Query/question to answer</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Answer to the query, if possible</returns>
+    public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search a user memory for an answer to the given query.
+    /// </summary>
+    /// <param name="userId">ID of the user's memory to search</param>
+    /// <param name="question">Question to answer</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Answer to the query, if possible</returns>
+    public Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
 }

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +10,7 @@ using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Search;
+using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core;
 
@@ -23,9 +22,9 @@ namespace Microsoft.SemanticMemory.Core;
 ///
 /// TODO: pipeline structure is hardcoded, should allow custom handlers/steps
 /// </summary>
-public class SemanticMemoryServerless : ISemanticMemoryClient
+public class Memory : ISemanticMemoryClient
 {
-    public SemanticMemoryServerless(IServiceProvider serviceProvider)
+    public Memory(IServiceProvider serviceProvider)
     {
         this._configuration = serviceProvider.GetService<SemanticMemoryConfig>()
                               ?? throw new SemanticMemoryException("Unable to load configuration. Are all the dependencies configured?");
@@ -38,48 +37,46 @@ public class SemanticMemoryServerless : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportFileAsync(Document file, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
-        var ids = await this.ImportFilesAsync(new[] { file }, cancellationToken).ConfigureAwait(false);
-        return ids.First();
+        return this.ImportInternalAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<IList<string>> ImportFilesAsync(Document[] files, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(Document document, CancellationToken cancellationToken = default)
     {
-        return this.ImportFilesInternalAsync(files, cancellationToken);
+        return this.ImportInternalAsync(document, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(string fileName, DocumentDetails? details = null, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileAsync(new Document(fileName), cancellationToken);
+        return this.ImportInternalAsync(new Document(fileName) { Details = details ?? new DocumentDetails() }, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportFileAsync(string fileName, DocumentDetails details, CancellationToken cancellationToken = default)
-    {
-        var ids = await this.ImportFilesAsync(new[] { new Document(fileName) { Details = details } }, cancellationToken).ConfigureAwait(false);
-        return ids.First();
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this._searchClient.AskAsync(userId: userId, query: query, filter: filter, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
         var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        return await orchestrator.IsReadyAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        return await orchestrator.IsDocumentReadyAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        return this.AskAsync(new DocumentDetails().UserId, question, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        return this._searchClient.AskAsync(userId: userId, question: question, filter: filter, cancellationToken: cancellationToken);
     }
 
     #region private
@@ -116,36 +113,17 @@ public class SemanticMemoryServerless : ISemanticMemoryClient
         return this._orchestrator;
     }
 
-    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files, CancellationToken cancellationToken)
+    private async Task<string> ImportInternalAsync(Document document, CancellationToken cancellationToken)
     {
-        List<string> ids = new();
+        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(cancellationToken).ConfigureAwait(false);
         InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
+        return await orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+    }
 
-        foreach (Document file in files)
-        {
-            var pipeline = orchestrator
-                .PrepareNewFileUploadPipeline(
-                    userId: file.Details.UserId,
-                    documentId: file.Details.DocumentId,
-                    file.Details.Tags);
-
-            pipeline.AddUploadFile(
-                name: "file1",
-                filename: file.FileName,
-                sourceFile: file.FileName);
-
-            pipeline
-                .Then("extract")
-                .Then("partition")
-                .Then("gen_embeddings")
-                .Then("save_embeddings")
-                .Build();
-
-            await orchestrator.RunPipelineAsync(pipeline, cancellationToken).ConfigureAwait(false);
-            ids.Add(file.Details.DocumentId);
-        }
-
-        return ids;
+    private async Task<string> ImportInternalAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
+    {
+        InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
+        return await orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

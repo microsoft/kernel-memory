@@ -30,17 +30,17 @@ in your app.
 > ### Importing documents into your Semantic Memory can be as simple as this:
 >
 > ```csharp
-> var memory = new MemoryServerlessClient();
+> var memory = new Memory(serviceProvider);
 >
 > // Import a file (default user)
-> await memory.ImportFileAsync("meeting-transcript.docx");
+> await memory.ImportDocumentAsync("meeting-transcript.docx");
 >
-> // Import a file specifying a User and Tags
-> await memory.ImportFileAsync("business-plan.docx",
->     new DocumentDetails("user@some.email", "file1")
+> // Import a file specifying a Document ID, User and Tags
+> await memory.ImportDocumentAsync("business-plan.docx",
+>     new DocumentDetails("user@some.email", "file001")
 >         .AddTag("collection", "business")
 >         .AddTag("collection", "plans")
->         .AddTag("type", "doc"));
+>         .AddTag("fiscalYear", "2023"));
 > ```
 
 > ### Asking questions:
@@ -155,13 +155,15 @@ to **start the Semantic Memory Service**:
 >
 > var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 >
-> await memory.ImportFileAsync("meeting-transcript.docx");
+> // Import a file (default user)
+> await memory.ImportDocumentAsync("meeting-transcript.docx");
 >
-> await memory.ImportFileAsync("business-plan.docx",
->     new DocumentDetails("file1", "user0022")
+> // Import a file specifying a Document ID, User and Tags
+> await memory.ImportDocumentAsync("business-plan.docx",
+>     new DocumentDetails("user@some.email", "file001")
 >         .AddTag("collection", "business")
 >         .AddTag("collection", "plans")
->         .AddTag("type", "doc"));
+>         .AddTag("fiscalYear", "2023"));
 > ```
 
 > ### Getting answers via the web service
@@ -202,7 +204,7 @@ var app = AppBuilder.Build();
 var storage = app.Services.GetService<IContentStorage>();
 
 // Use a local, synchronous, orchestrator
-var orchestrator = new InProcessPipelineOrchestrator(storage);
+var orchestrator = new InProcessPipelineOrchestrator(storage, app.Services);
 
 // Define custom .NET handlers
 var step1 = new MyHandler1("step1", orchestrator);

@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Search;
@@ -37,7 +38,7 @@ public static partial class DependencyInjection
 
         if (config.Service.RunWebService)
         {
-            services.AddSingleton<ISemanticMemoryService, SemanticMemoryService>();
+            services.AddSingleton<ISemanticMemoryClient, MemoryService>();
 
             if (config.Service.OpenApiEnabled)
             {

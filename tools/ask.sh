@@ -13,11 +13,12 @@ Help for Bash script
 
 Usage:
 
-    ./ask.sh -s <url> -u <id> -q "<question>"
+    ./ask.sh -s <url> -u <id> -q "<question>" -f "<filter>"
 
     -s web service URL     (required) Semantic Memory web service URL.
     -u userId              (required) User ID.
     -q question            (required) Question, using quotes.
+    -f filter              (optional) Key-value filter, e.g. -f '"type":["news","article"],"group":["emails"]'
 
     -h                     Print this help content.
 
@@ -45,7 +46,11 @@ readParameters() {
       ;;
     -q)
       shift
-      QUERY=$1
+      QUESTION=$1
+      ;;
+    -f)
+      shift
+      FILTER=$1
       ;;
     *)
       help
@@ -65,7 +70,7 @@ validateParameters() {
     echo "Please specify the user ID"
     exit 2
   fi
-  if [ -z "$QUERY" ]; then
+  if [ -z "$QUESTION" ]; then
     echo "Please specify the user ID"
     exit 2
   fi
@@ -73,7 +78,7 @@ validateParameters() {
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL USER_ID QUERY
+  unset SERVICE_URL USER_ID QUESTION FILTER
   unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
@@ -89,6 +94,5 @@ validateParameters
 # Send HTTP request using curl
 set -x
 curl -v -H 'Content-Type: application/json' \
-  -d'{"query":"'"${QUERY}"'","userId":"'"${USER_ID}"'"}' \
-  $SERVICE_URL/ask
-
+    -d'{"question":"'"${QUESTION}"'","userId":"'"${USER_ID}"'","filter":{'"${FILTER}"'}}' \
+    $SERVICE_URL/ask

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 
@@ -104,11 +104,11 @@ public class DataPipeline
     }
 
     /// <summary>
-    /// Id of the pipeline instance. This value will persist throughout the execution and in the final data lineage used for citations.
+    /// Id of the document and the pipeline instance. This value will persist throughout the execution and in the final data lineage used for citations.
     /// </summary>
     [JsonPropertyOrder(1)]
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("document_id")]
+    public string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
     /// Unique execution id. If the pipeline is executed again, this value will change.
@@ -183,7 +183,7 @@ public class DataPipeline
     public bool Complete => this.RemainingSteps.Count == 0;
 
     [JsonIgnore]
-    public List<IFormFile> FilesToUpload { get; set; } = new();
+    public List<DocumentUploadRequest.UploadedFile> FilesToUpload { get; set; } = new();
 
     [JsonIgnore]
     public bool UploadComplete { get; set; }
@@ -212,7 +212,7 @@ public class DataPipeline
     public DataPipeline AddUploadFile(string name, string filename, Stream content)
     {
         content.Seek(0, SeekOrigin.Begin);
-        this.FilesToUpload.Add(new FormFile(content, 0, content.Length, name, filename));
+        this.FilesToUpload.Add(new DocumentUploadRequest.UploadedFile(filename, content));
         return this;
     }
 
@@ -240,7 +240,7 @@ public class DataPipeline
     {
         if (this.RemainingSteps.Count == 0)
         {
-            throw new PipelineCompletedException("The list of remaining steps is empty");
+            throw new SemanticMemoryException("The list of remaining steps is empty");
         }
 
         var stepName = this.RemainingSteps.First();
@@ -252,9 +252,9 @@ public class DataPipeline
 
     public void Validate()
     {
-        if (string.IsNullOrEmpty(this.Id))
+        if (string.IsNullOrEmpty(this.DocumentId))
         {
-            throw new ArgumentException("The pipeline ID is empty", nameof(this.Id));
+            throw new ArgumentException("The pipeline ID is empty", nameof(this.DocumentId));
         }
 
         if (string.IsNullOrEmpty(this.UserId))

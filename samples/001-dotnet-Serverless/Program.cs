@@ -18,37 +18,41 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new SemanticMemoryServerless(Builder.GetServiceProvider());
+var memory = new Memory(Builder.GetServiceProvider());
 
 // =======================
 // === UPLOAD ============
 // =======================
 
 // Uploading one file - This will create
-// a new upload every time because no file ID is specified, and
+// a new upload every time because no document ID is specified, and
 // stored under the "default" user because no User ID is specified.
-await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt");
+Console.WriteLine("Uploading file without document ID");
+await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt");
 
-// Uploading only if the file has not been (successfully) uploaded already
-if (!await memory.IsReadyAsync(userId: "user1", documentId: "f01"))
+// Uploading only if the document has not been (successfully) uploaded already
+if (!await memory.IsDocumentReadyAsync(userId: "user1", documentId: "doc001"))
 {
-    await memory.ImportFileAsync("file1-Wikipedia-Carbon.txt",
-        new DocumentDetails(userId: "user1", documentId: "f01"));
+    Console.WriteLine("Uploading doc001");
+    await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt",
+        new DocumentDetails(userId: "user1", documentId: "doc001"));
 }
 
-// Uploading multiple files
-await memory.ImportFilesAsync(new[]
+// Uploading a document containing multiple files
+Console.WriteLine("Uploading doc002");
+await memory.ImportDocumentAsync(new Document(new[]
 {
-    new Document("file2-Wikipedia-Moon.txt", new DocumentDetails("user1", "f02")),
-    new Document("file3-lorem-ipsum.docx", new DocumentDetails("user1", "f03")),
-    new Document("file4-SK-Readme.pdf", new DocumentDetails("user1", "f04")),
-});
+    "file2-Wikipedia-Moon.txt",
+    "file3-lorem-ipsum.docx",
+    "file4-SK-Readme.pdf"
+}, new DocumentDetails("user1", "doc002")));
 
 // Categorizing files with tags
-if (!await memory.IsReadyAsync(userId: "user2", documentId: "f05"))
+if (!await memory.IsDocumentReadyAsync(userId: "user2", documentId: "doc003"))
 {
-    await memory.ImportFileAsync("file5-NASA-news.pdf",
-        new DocumentDetails("user2", "f05")
+    Console.WriteLine("Uploading doc003");
+    await memory.ImportDocumentAsync("file5-NASA-news.pdf",
+        new DocumentDetails("user2", "doc003")
             .AddTag("collection", "meetings")
             .AddTag("collection", "NASA")
             .AddTag("collection", "space")

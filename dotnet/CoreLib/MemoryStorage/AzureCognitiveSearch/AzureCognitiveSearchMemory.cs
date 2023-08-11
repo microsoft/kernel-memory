@@ -108,13 +108,13 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = AzureCognitiveSearchMemoryRecord.VectorField,
-            Value = embedding.Vector.ToList()
+            Value = embedding.Vector.ToList(),
+            Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
         };
 
         SearchOptions options = new()
         {
-            Vector = vectorQuery
+            Vectors = { vectorQuery }
         };
 
         if (filter != null && !filter.IsEmpty())

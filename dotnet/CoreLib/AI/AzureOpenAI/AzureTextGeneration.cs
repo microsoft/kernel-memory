@@ -112,7 +112,7 @@ public class AzureTextGeneration : ITextGeneration
                 NucleusSamplingFactor = (float)options.TopP,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
-                ChoiceCount = 1,
+                // ChoiceCount = 1,
             };
 
             if (options.StopSequences is { Count: > 0 })

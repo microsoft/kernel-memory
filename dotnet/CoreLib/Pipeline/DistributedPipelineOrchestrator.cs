@@ -113,7 +113,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline {0} complete", pipeline.Id);
+            this.Log.LogInformation("Pipeline {0} complete", pipeline.DocumentId);
             return;
         }
 
@@ -131,7 +131,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline {0} complete", pipeline.Id);
+            this.Log.LogInformation("Pipeline {0} complete", pipeline.DocumentId);
             // Note: returning True, the message is removed from the queue
             return true;
         }
@@ -144,13 +144,13 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         {
             pipeline = updatedPipeline;
 
-            this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.Id);
+            this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
             pipeline.MoveToNextStep();
             await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.Id);
+            this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
         }
 
         // Note: returning True, the message is removed from the queue
@@ -166,7 +166,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
         if (pipeline.RemainingSteps.Count == 0)
         {
-            this.Log.LogInformation("Pipeline '{0}' complete", pipeline.Id);
+            this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
 
             // Try to save the pipeline status
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
@@ -174,7 +174,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         else
         {
             string nextStepName = pipeline.RemainingSteps.First();
-            this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.Id, nextStepName);
+            this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.DocumentId, nextStepName);
 
             using IQueue queue = this._queueClientFactory.Build();
             await queue.ConnectToQueueAsync(nextStepName, QueueOptions.PublishOnly, cancellationToken).ConfigureAwait(false);
