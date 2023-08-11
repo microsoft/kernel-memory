@@ -62,9 +62,24 @@ public class Memory : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
+        DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        return pipeline?.ToDataPipelineStatus();
+    }
+
+    /// <inheritdoc />
+    public Task<SearchResult> SearchAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        // TODO: the user ID might be in the filter
+        return this.SearchAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        return this._searchClient.SearchAsync(userId, query, filter, cancellationToken);
     }
 
     /// <inheritdoc />

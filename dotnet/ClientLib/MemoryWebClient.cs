@@ -55,7 +55,10 @@ public class MemoryWebClient : ISemanticMemoryClient
     /// <inheritdoc />
     public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
-        HttpResponseMessage? response = await this._client.GetAsync($"/upload-status?user={userId}&id={documentId}", cancellationToken).ConfigureAwait(false);
+        var url = Constants.HttpUploadStatusEndpointWithParams
+            .Replace(Constants.HttpUserIdPlaceholder, userId)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
+        HttpResponseMessage? response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -75,6 +78,26 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public Task<SearchResult> SearchAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        // TODO: the user ID might be in the filter
+        return this.SearchAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        SearchQuery request = new() { UserId = userId, Query = query, Filter = filter ?? new MemoryFilter() };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return JsonSerializer.Deserialize<SearchResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new SearchResult();
+    }
+
+    /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         return this.AskAsync(new DocumentDetails().UserId, question, filter, cancellationToken);
@@ -83,10 +106,10 @@ public class MemoryWebClient : ISemanticMemoryClient
     /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        var request = new MemoryQuery { UserId = userId, Question = question, Filter = filter ?? new MemoryFilter() };
-        using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        MemoryQuery request = new() { UserId = userId, Question = question, Filter = filter ?? new MemoryFilter() };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        HttpResponseMessage? response = await this._client.PostAsync("/ask", content, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -98,7 +121,7 @@ public class MemoryWebClient : ISemanticMemoryClient
     private async Task<string> ImportInternalAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
-        using var formData = new MultipartFormDataContent();
+        using MultipartFormDataContent formData = new();
 
         using StringContent documentIdContent = new(uploadRequest.DocumentId);
         using (StringContent userContent = new(uploadRequest.UserId))
@@ -160,7 +183,7 @@ public class MemoryWebClient : ISemanticMemoryClient
     private async Task<string> ImportInternalAsync(Document document, CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
-        using var formData = new MultipartFormDataContent();
+        using MultipartFormDataContent formData = new();
 
         using StringContent documentIdContent = new(document.Details.DocumentId);
         using (StringContent userContent = new(document.Details.UserId))

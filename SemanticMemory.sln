@@ -44,6 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\upload-file.sh = tools\upload-file.sh
 		tools\README.md = tools\README.md
 		tools\ask.sh = tools\ask.sh
+		tools\search.sh = tools\search.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientLib", "dotnet\ClientLib\ClientLib.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"

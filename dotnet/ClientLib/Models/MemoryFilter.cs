@@ -6,6 +6,8 @@ namespace Microsoft.SemanticMemory.Client.Models;
 
 public class MemoryFilter : TagCollection
 {
+    public float MinRelevance { get; set; } = 0.5f;
+
     public bool IsEmpty()
     {
         return this.Count == 0;

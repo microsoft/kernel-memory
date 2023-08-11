@@ -10,9 +10,9 @@ public class UploadAccepted
     [JsonPropertyOrder(1)]
     public string UserId { get; set; } = string.Empty;
 
-    [JsonPropertyName("id")]
+    [JsonPropertyName("documentId")]
     [JsonPropertyOrder(2)]
-    public string Id { get; set; } = string.Empty;
+    public string DocumentId { get; set; } = string.Empty;
 
     [JsonPropertyName("message")]
     [JsonPropertyOrder(3)]

@@ -289,4 +289,21 @@ public class DataPipeline
 
         throw new OrchestrationException($"File '{id}' not found in the upload");
     }
+
+    public DataPipelineStatus ToDataPipelineStatus()
+    {
+        return new DataPipelineStatus
+        {
+            Completed = this.Complete,
+            Failed = false, // TODO
+            DocumentId = this.DocumentId,
+            UserId = this.UserId,
+            Tags = this.Tags,
+            Creation = this.Creation,
+            LastUpdate = this.LastUpdate,
+            Steps = this.Steps,
+            RemainingSteps = this.RemainingSteps,
+            CompletedSteps = this.CompletedSteps,
+        };
+    }
 }

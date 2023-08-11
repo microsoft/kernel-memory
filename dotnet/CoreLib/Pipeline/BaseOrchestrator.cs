@@ -151,21 +151,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
         var pipeline = await this.ReadPipelineStatusAsync(userId: userId, documentId: documentId, cancellationToken).ConfigureAwait(false);
-        if (pipeline == null) { return null; }
-
-        return new DataPipelineStatus
-        {
-            Completed = pipeline.Complete,
-            Failed = false, // TODO
-            DocumentId = pipeline.DocumentId,
-            UserId = pipeline.UserId,
-            Tags = pipeline.Tags,
-            Creation = pipeline.Creation,
-            LastUpdate = pipeline.LastUpdate,
-            Steps = pipeline.Steps,
-            RemainingSteps = pipeline.RemainingSteps,
-            CompletedSteps = pipeline.CompletedSteps,
-        };
+        return pipeline?.ToDataPipelineStatus();
     }
 
     ///<inheritdoc />

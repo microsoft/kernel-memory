@@ -58,7 +58,7 @@ if (config.Service.RunWebService)
                                      "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                                                    - start.ToUnixTimeSeconds()) + " secs"));
     // File upload endpoint
-    app.MapPost("/upload", async Task<IResult> (
+    app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
             HttpRequest request,
             ISemanticMemoryClient service,
             ILogger<Program> log) =>
@@ -77,9 +77,16 @@ if (config.Service.RunWebService)
             try
             {
                 // UploadRequest => Document
-                var id = await service.ImportDocumentAsync(input.ToDocumentUploadRequest());
-                return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
-                    new UploadAccepted { Id = id, UserId = input.UserId, Message = "Document upload completed, ingestion pipeline started" });
+                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest());
+                var url = Constants.HttpUploadStatusEndpointWithParams
+                    .Replace(Constants.HttpUserIdPlaceholder, input.UserId, StringComparison.Ordinal)
+                    .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
+                return Results.Accepted(url, new UploadAccepted
+                {
+                    DocumentId = documentId,
+                    UserId = input.UserId,
+                    Message = "Document upload completed, ingestion pipeline started"
+                });
             }
             catch (Exception e)
             {
@@ -89,7 +96,7 @@ if (config.Service.RunWebService)
         .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
 
     // Ask endpoint
-    app.MapPost("/ask",
+    app.MapPost(Constants.HttpAskEndpoint,
             async Task<IResult> (
                 MemoryQuery query,
                 ISemanticMemoryClient service,
@@ -101,8 +108,21 @@ if (config.Service.RunWebService)
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
 
+    // Ask endpoint
+    app.MapPost(Constants.HttpSearchEndpoint,
+            async Task<IResult> (
+                SearchQuery query,
+                ISemanticMemoryClient service,
+                ILogger<Program> log) =>
+            {
+                log.LogTrace("New search request");
+                SearchResult answer = await service.SearchAsync(query.UserId, query.Query, query.Filter);
+                return Results.Ok(answer);
+            })
+        .Produces<SearchResult>(StatusCodes.Status200OK);
+
     // Document status endpoint
-    app.MapGet("/upload-status",
+    app.MapGet(Constants.HttpUploadStatusEndpoint,
             async Task<IResult> (
                 [FromQuery(Name = "user")] string userId,
                 [FromQuery(Name = "id")] string pipelineId,

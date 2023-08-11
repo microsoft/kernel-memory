@@ -54,9 +54,28 @@ public interface ISemanticMemoryClient
     public Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Search the default user memory for a list of relevant documents for the given query.
+    /// </summary>
+    /// <param name="query">Query to filter memories</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Answer to the query, if possible</returns>
+    public Task<SearchResult> SearchAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search the default user memory for a list of relevant documents for the given query.
+    /// </summary>
+    /// <param name="userId">ID of the user's memory to search</param>
+    /// <param name="query">Query to filter memories</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Answer to the query, if possible</returns>
+    public Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Search the default user memory for an answer to the given query.
     /// </summary>
-    /// <param name="question">Query/question to answer</param>
+    /// <param name="question">Question to answer</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>

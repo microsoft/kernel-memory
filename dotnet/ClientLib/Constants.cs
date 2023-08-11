@@ -22,4 +22,13 @@ public static class Constants
     public const string ReservedFileIdTag = "__file_id";
     public const string ReservedFilePartitionTag = "__file_part";
     public const string ReservedFileTypeTag = "__file_type";
+
+    // Endpoints
+    public const string HttpAskEndpoint = "/ask";
+    public const string HttpSearchEndpoint = "/search";
+    public const string HttpUploadEndpoint = "/upload";
+    public const string HttpUploadStatusEndpoint = "/upload-status";
+    public const string HttpUploadStatusEndpointWithParams = "/upload-status?user={userId}&id={documentId}";
+    public const string HttpUserIdPlaceholder = "{userId}";
+    public const string HttpDocumentIdPlaceholder = "{documentId}";
 }

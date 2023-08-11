@@ -19,7 +19,6 @@ namespace Microsoft.SemanticMemory.Core.Search;
 
 public class SearchClient
 {
-    private const float MinSimilarity = 0.5f;
     private const int MatchesCount = 100;
     private const int AnswerTokens = 300;
 
@@ -56,9 +55,108 @@ public class SearchClient
                        "Answer: ";
     }
 
-    public Task<MemoryAnswer> AskAsync(MemoryQuery query, CancellationToken cancellationToken = default)
+    public async Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(query.UserId, query.Question, query.Filter, cancellationToken);
+        var result = new SearchResult
+        {
+            Query = query,
+            Results = new List<SearchResult.Citation>()
+        };
+
+        if (string.IsNullOrEmpty(query))
+        {
+            this._log.LogWarning("No query provided");
+            return result;
+        }
+
+        var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
+
+        if (filter == null)
+        {
+            filter = new MemoryFilter();
+        }
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            filter.ByUser(userId);
+        }
+
+        this._log.LogTrace("Fetching relevant memories");
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
+            indexName: userId, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
+
+        // Memories are sorted by relevance, starting from the most relevant
+        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
+        {
+            if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
+            {
+                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
+            }
+
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
+            {
+                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
+            }
+
+            if (!memory.Tags.ContainsKey(Constants.ReservedFileTypeTag))
+            {
+                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
+            }
+
+            // Note: a document can be composed by multiple files
+            string documentId = memory.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
+
+            // Identify the file in case there are multiple files
+            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+
+            // TODO: URL to access the file
+            string linkToFile = $"{documentId}/{fileId}";
+
+            string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
+            string fileName = memory.Payload["file_name"].ToString() ?? string.Empty;
+
+            var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
+            if (string.IsNullOrEmpty(partitionText))
+            {
+                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
+                continue;
+            }
+
+            this._log.LogTrace("Adding result with relevance {0}", relevance);
+
+            // If the file is already in the list of citations, only add the partition
+            var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
+            if (citation == null)
+            {
+                citation = new SearchResult.Citation();
+                result.Results.Add(citation);
+            }
+
+            // Add the partition to the list of citations
+            citation.Link = linkToFile;
+            citation.SourceContentType = fileContentType;
+            citation.SourceName = fileName;
+
+#pragma warning disable CA1806 // it's ok if parsing fails
+            DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
+#pragma warning restore CA1806
+
+            citation.Partitions.Add(new SearchResult.Citation.Partition
+            {
+                Text = partitionText,
+                Relevance = (float)relevance,
+                LastUpdate = lastUpdate,
+            });
+
+            break;
+        }
+
+        if (result.Results.Count == 0)
+        {
+            this._log.LogWarning("No memories found");
+        }
+
+        return result;
     }
 
     public async Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
@@ -90,16 +188,19 @@ public class SearchClient
 
         var embedding = await this.GenerateEmbeddingAsync(question).ConfigureAwait(false);
 
+        if (filter == null)
+        {
+            filter = new MemoryFilter();
+        }
+
         if (!string.IsNullOrEmpty(userId))
         {
-            if (filter == null) { filter = new MemoryFilter(); }
-
             filter.ByUser(userId);
         }
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: userId, embedding, MatchesCount, MinSimilarity, filter, false, cancellationToken: cancellationToken);
+            indexName: userId, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
