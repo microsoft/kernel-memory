@@ -17,7 +17,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
     private const string IdField = "id";
     internal const string VectorField = "embedding";
     private const string TagsField = "tags";
-    private const string MetadataField = "metadata";
+    private const string PayloadField = "payload";
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
@@ -39,8 +39,8 @@ public sealed class AzureCognitiveSearchMemoryRecord
     [JsonPropertyName(TagsField)]
     public List<string> Tags { get; set; } = new();
 
-    [JsonPropertyName(MetadataField)]
-    public string Metadata { get; set; } = string.Empty;
+    [JsonPropertyName(PayloadField)]
+    public string Payload { get; set; } = string.Empty;
 
     public static VectorDbSchema GetSchema(int vectorSize)
     {
@@ -51,7 +51,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
                 new() { Name = IdField, Type = VectorDbField.FieldType.Text, IsKey = true },
                 new() { Name = VectorField, Type = VectorDbField.FieldType.Vector, VectorSize = vectorSize },
                 new() { Name = TagsField, Type = VectorDbField.FieldType.ListOfStrings, IsFilterable = true },
-                new() { Name = MetadataField, Type = VectorDbField.FieldType.Text, IsFilterable = false },
+                new() { Name = PayloadField, Type = VectorDbField.FieldType.Text, IsFilterable = false },
             }
         };
     }
@@ -61,8 +61,8 @@ public sealed class AzureCognitiveSearchMemoryRecord
         MemoryRecord result = new()
         {
             Id = DecodeId(this.Id),
-            Metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Metadata, s_jsonOptions)
-                       ?? new Dictionary<string, object>()
+            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload, s_jsonOptions)
+                      ?? new Dictionary<string, object>()
         };
 
         if (withEmbedding)
@@ -95,7 +95,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
         {
             Id = EncodeId(record.Id),
             Vector = record.Vector.Vector.ToArray(),
-            Metadata = JsonSerializer.Serialize(record.Metadata, s_jsonOptions)
+            Payload = JsonSerializer.Serialize(record.Payload, s_jsonOptions)
         };
 
         // Note: record owner is stored inside Tags

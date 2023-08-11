@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -31,10 +29,10 @@ public interface IPipelineOrchestrator
     /// <summary>
     /// Upload a file and start the processing pipeline
     /// </summary>
-    /// <param name="uploadDetails">Details about the file and how to import it</param>
+    /// <param name="uploadRequest">Details about the file and how to import it</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Import Id</returns>
-    Task<string> UploadFileAsync(UploadRequest uploadDetails, CancellationToken cancellationToken = default);
+    Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new pipeline value object for files upload
@@ -44,7 +42,7 @@ public interface IPipelineOrchestrator
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string userId, string documentId, TagCollection tags, IEnumerable<IFormFile> filesToUpload);
+    DataPipeline PrepareNewDocumentUpload(string userId, string documentId, TagCollection tags, IEnumerable<DocumentUploadRequest.UploadedFile> filesToUpload);
 
     /// <summary>
     /// Create a new pipeline value object, with an empty list of files
@@ -53,7 +51,7 @@ public interface IPipelineOrchestrator
     /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewFileUploadPipeline(string userId, string documentId, TagCollection tags);
+    DataPipeline PrepareNewDocumentUpload(string userId, string documentId, TagCollection tags);
 
     /// <summary>
     /// Start a new data pipeline execution
@@ -72,6 +70,15 @@ public interface IPipelineOrchestrator
     Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Fetch the pipeline status from storage
+    /// </summary>
+    /// <param name="userId">Primary user who the data belongs to. Other users, e.g. sharing, is not supported in the pipeline at this time.</param>
+    /// <param name="documentId">Id of the document and pipeline execution instance</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Pipeline status if available</returns>
+    Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Check if a document ID exists in a user memory and is ready for usage.
     /// The logic checks if the uploaded document has been fully processed.
     /// When the document exists in storage but is not processed yet, the method returns False.
@@ -80,7 +87,7 @@ public interface IPipelineOrchestrator
     /// <param name="documentId">Document ID</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>True if the document has been successfully uploaded and imported</returns>
-    public Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default);
+    public Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stop all the pipelines in progress

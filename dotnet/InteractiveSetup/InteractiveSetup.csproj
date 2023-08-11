@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
         <NoWarn>CA1031,CA1303,CA1724</NoWarn>
@@ -25,7 +25,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40">
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.30">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

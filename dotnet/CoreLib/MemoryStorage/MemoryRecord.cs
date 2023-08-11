@@ -39,7 +39,7 @@ public class MemoryRecord
     public TagCollection Tags { get; set; } = new();
 
     /// <summary>
-    /// Optional Non-Searchable metadata processed client side.
+    /// Optional Non-Searchable payload processed client side.
     ///
     /// Use cases:
     ///  * citations
@@ -51,5 +51,5 @@ public class MemoryRecord
     ///  * timestamps
     ///  * etc.
     /// </summary>
-    public Dictionary<string, object> Metadata { get; set; } = new();
+    public Dictionary<string, object> Payload { get; set; } = new();
 }

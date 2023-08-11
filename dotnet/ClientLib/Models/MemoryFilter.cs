@@ -4,40 +4,33 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticMemory.Client.Models;
 
-public class MemoryFilter
+public class MemoryFilter : TagCollection
 {
-    private readonly TagCollection _tags;
-
-    public MemoryFilter()
-    {
-        this._tags = new TagCollection();
-    }
-
     public bool IsEmpty()
     {
-        return this._tags.Count == 0;
+        return this.Count == 0;
     }
 
     public MemoryFilter ByTag(string name, string value)
     {
-        this._tags.Add(name, value);
+        this.Add(name, value);
         return this;
     }
 
     public MemoryFilter ByUser(string userId)
     {
-        this._tags.Add(Constants.ReservedUserIdTag, userId);
+        this.Add(Constants.ReservedUserIdTag, userId);
         return this;
     }
 
     public MemoryFilter ByDocument(string docId)
     {
-        this._tags.Add(Constants.ReservedPipelineIdTag, docId);
+        this.Add(Constants.ReservedPipelineIdTag, docId);
         return this;
     }
 
     public IEnumerable<KeyValuePair<string, string?>> GetFilters()
     {
-        return this._tags.ToKeyValueList();
+        return this.ToKeyValueList();
     }
 }

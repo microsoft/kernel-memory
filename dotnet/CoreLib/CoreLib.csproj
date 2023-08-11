@@ -14,23 +14,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.6" />
         <PackageReference Include="Azure.Identity" Version="1.9.0" />
-        <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
+        <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.4" />
         <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
         <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
         <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230718.1-preview" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
         <PackageReference Include="PdfPig" Version="0.1.8" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
-        <PackageReference Include="System.Memory.Data" Version="7.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,7 +42,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40">
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.30">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

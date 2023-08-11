@@ -14,7 +14,6 @@ using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.AI;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.WebService;
 
 namespace Microsoft.SemanticMemory.Core.Search;
 
@@ -59,15 +58,25 @@ public class SearchClient
 
     public Task<MemoryAnswer> AskAsync(MemoryQuery query, CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(query.UserId, query.Query, query.Filter, cancellationToken);
+        return this.AskAsync(query.UserId, query.Question, query.Filter, cancellationToken);
     }
 
-    public async Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(question))
+        {
+            this._log.LogWarning("No question provided");
+            return new MemoryAnswer
+            {
+                Question = question,
+                Result = "INFO NOT FOUND",
+            };
+        }
+
         var facts = new StringBuilder();
         var tokensAvailable = 8000
                               - GPT3Tokenizer.Encode(this._prompt).Count
-                              - GPT3Tokenizer.Encode(query).Count
+                              - GPT3Tokenizer.Encode(question).Count
                               - AnswerTokens;
 
         var factsUsedCount = 0;
@@ -75,11 +84,18 @@ public class SearchClient
 
         var answer = new MemoryAnswer
         {
-            Query = query,
+            Question = question,
             Result = "INFO NOT FOUND",
         };
 
-        var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
+        var embedding = await this.GenerateEmbeddingAsync(question).ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            if (filter == null) { filter = new MemoryFilter(); }
+
+            filter.ByUser(userId);
+        }
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
@@ -113,10 +129,10 @@ public class SearchClient
             string linkToFile = $"{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Metadata["file_name"].ToString() ?? string.Empty;
+            string fileName = memory.Payload["file_name"].ToString() ?? string.Empty;
 
             factsAvailableCount++;
-            var partitionText = memory.Metadata["text"].ToString()?.Trim() ?? "";
+            var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
                 this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
@@ -150,7 +166,7 @@ public class SearchClient
                 citation.SourceName = fileName;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
-                DateTimeOffset.TryParse(memory.Metadata["last_update"].ToString(), out var lastUpdate);
+                DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
                 citation.Partitions.Add(new MemoryAnswer.Citation.Partition
@@ -169,17 +185,17 @@ public class SearchClient
         if (factsAvailableCount > 0 && factsUsedCount == 0)
         {
             this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            return new MemoryAnswer { Query = query, Result = "INFO NOT FOUND" };
+            return new MemoryAnswer { Question = question, Result = "INFO NOT FOUND" };
         }
 
         if (factsUsedCount == 0)
         {
             this._log.LogWarning("No memories available");
-            return new MemoryAnswer { Query = query, Result = "INFO NOT FOUND" };
+            return new MemoryAnswer { Question = question, Result = "INFO NOT FOUND" };
         }
 
         var text = new StringBuilder();
-        await foreach (var x in this.GenerateAnswerAsync(query, facts.ToString()).ConfigureAwait(false))
+        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString()).ConfigureAwait(false))
         {
             text.Append(x);
         }

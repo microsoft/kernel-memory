@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
-// using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -85,6 +84,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         paragraphs = TextChunker.SplitMarkdownParagraphs(lines, maxTokensPerParagraph: TokensPerParagraph, overlapTokens: OverlappingTokens);
                         break;
                     }
+
+                    // TODO: add virtual/injectable logic
+                    // TODO: see https://learn.microsoft.com/en-us/windows/win32/search/-search-ifilter-about
 
                     default:
                         this._log.LogWarning("File {0} cannot be partitioned, type not supported", file.Name);

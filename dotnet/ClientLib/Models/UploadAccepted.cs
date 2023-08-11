@@ -6,15 +6,15 @@ namespace Microsoft.SemanticMemory.Client.Models;
 
 public class UploadAccepted
 {
-    [JsonPropertyName("UserId")]
+    [JsonPropertyName("userId")]
     [JsonPropertyOrder(1)]
     public string UserId { get; set; } = string.Empty;
 
-    [JsonPropertyName("Id")]
+    [JsonPropertyName("id")]
     [JsonPropertyOrder(2)]
     public string Id { get; set; } = string.Empty;
 
-    [JsonPropertyName("Message")]
+    [JsonPropertyName("message")]
     [JsonPropertyOrder(3)]
     public string Message { get; set; } = string.Empty;
 }

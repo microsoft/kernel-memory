@@ -7,11 +7,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.WebService;
 using Microsoft.SemanticMemory.InteractiveSetup;
 using Microsoft.SemanticMemory.Service;
@@ -61,13 +60,13 @@ if (config.Service.RunWebService)
     // File upload endpoint
     app.MapPost("/upload", async Task<IResult> (
             HttpRequest request,
-            ISemanticMemoryService service,
+            ISemanticMemoryClient service,
             ILogger<Program> log) =>
         {
             log.LogTrace("New upload request");
 
             // Note: .NET doesn't yet support binding multipart forms including data and files
-            (UploadRequest input, bool isValid, string errMsg) = await UploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
+            (HttpDocumentUploadRequest input, bool isValid, string errMsg) = await HttpDocumentUploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
 
             if (!isValid)
             {
@@ -77,13 +76,14 @@ if (config.Service.RunWebService)
 
             try
             {
-                var id = await service.UploadFileAsync(input);
+                // UploadRequest => Document
+                var id = await service.ImportDocumentAsync(input.ToDocumentUploadRequest());
                 return Results.Accepted($"/upload-status?user={input.UserId}&id={id}",
-                    new UploadAccepted { Id = id, UserId = input.UserId, Message = "Upload completed, ingestion started" });
+                    new UploadAccepted { Id = id, UserId = input.UserId, Message = "Document upload completed, ingestion pipeline started" });
             }
             catch (Exception e)
             {
-                return Results.Problem(title: "Upload failed", detail: e.Message, statusCode: 503);
+                return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
             }
         })
         .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
@@ -92,11 +92,11 @@ if (config.Service.RunWebService)
     app.MapPost("/ask",
             async Task<IResult> (
                 MemoryQuery query,
-                ISemanticMemoryService service,
+                ISemanticMemoryClient service,
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(query);
+                MemoryAnswer answer = await service.AskAsync(query.UserId, query.Question, query.Filter);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -106,7 +106,7 @@ if (config.Service.RunWebService)
             async Task<IResult> (
                 [FromQuery(Name = "user")] string userId,
                 [FromQuery(Name = "id")] string pipelineId,
-                ISemanticMemoryService service) =>
+                ISemanticMemoryClient service) =>
             {
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -118,27 +118,13 @@ if (config.Service.RunWebService)
                     return Results.BadRequest("'id' query parameter is missing or has no value");
                 }
 
-                DataPipeline? pipeline = await service.ReadPipelineStatusAsync(userId, pipelineId);
+                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(userId, pipelineId);
                 if (pipeline == null)
                 {
                     return Results.NotFound("Document pipeline not found");
                 }
 
-                var result = new DataPipelineStatus
-                {
-                    Completed = pipeline.Complete,
-                    Failed = false, // TODO
-                    Id = pipeline.Id,
-                    UserId = pipeline.UserId,
-                    Tags = pipeline.Tags,
-                    Creation = pipeline.Creation,
-                    LastUpdate = pipeline.LastUpdate,
-                    Steps = pipeline.Steps,
-                    RemainingSteps = pipeline.RemainingSteps,
-                    CompletedSteps = pipeline.CompletedSteps,
-                };
-
-                return Results.Ok(result);
+                return Results.Ok(pipeline);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)

@@ -13,7 +13,7 @@ using Microsoft.SemanticMemory.Client.Models;
 namespace Microsoft.SemanticMemory.Core.WebService;
 
 // Note: use multiform part serialization
-public class UploadRequest
+public class HttpDocumentUploadRequest
 {
     public string DocumentId { get; set; } = string.Empty;
     public string UserId { get; set; } = string.Empty;
@@ -26,12 +26,12 @@ public class UploadRequest
      * https://stackoverflow.com/questions/71499435/how-do-i-do-file-upload-using-asp-net-core-6-minimal-api
      * https://stackoverflow.com/questions/57033535/multipartformdatacontent-add-stringcontent-is-adding-carraige-return-linefeed-to
      */
-    public static async Task<(UploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
+    public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
     {
         string userIdField = Constants.WebServiceUserIdField;
         string documentIdField = Constants.WebServiceDocumentIdField;
 
-        var result = new UploadRequest();
+        var result = new HttpDocumentUploadRequest();
 
         // Content format validation
         if (!httpRequest.HasFormContentType)

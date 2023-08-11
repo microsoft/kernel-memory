@@ -28,55 +28,37 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(Document file, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileInternalAsync(file, cancellationToken);
+        return this.ImportInternalAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<IList<string>> ImportFilesAsync(Document[] files, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(Document document, CancellationToken cancellationToken = default)
     {
-        return this.ImportFilesInternalAsync(files, cancellationToken);
+        return this.ImportInternalAsync(document, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(string fileName, DocumentDetails? details = null, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileAsync(new Document(fileName), cancellationToken);
+        return this.ImportInternalAsync(new Document(fileName) { Details = details ?? new DocumentDetails() }, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportFileAsync(string fileName, DocumentDetails details, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
-        return this.ImportFileInternalAsync(new Document(fileName) { Details = details }, cancellationToken);
+        DataPipelineStatus? status = await this.GetDocumentStatusAsync(userId: userId, documentId: documentId, cancellationToken).ConfigureAwait(false);
+        return status != null && status.Completed;
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<MemoryAnswer> AskAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        var request = new { UserId = userId, Query = query, Tags = new TagCollection() };
-        using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-
-        HttpResponseMessage? response = await this._client.PostAsync("/ask", content, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new MemoryAnswer();
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> IsReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage? response = await this._client.GetAsync($"/upload-status?user={userId}&id={documentId}", cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            return false;
+            return null;
         }
 
         response.EnsureSuccessStatusCode();
@@ -86,48 +68,67 @@ public class MemoryWebClient : ISemanticMemoryClient
 
         if (status == null)
         {
-            throw new SemanticMemoryWebException("Unable to parse status response");
+            return null;
         }
 
-        return status.Completed;
+        return status;
+    }
+
+    /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        return this.AskAsync(new DocumentDetails().UserId, question, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    {
+        var request = new MemoryQuery { UserId = userId, Question = question, Filter = filter ?? new MemoryFilter() };
+        using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        HttpResponseMessage? response = await this._client.PostAsync("/ask", content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new MemoryAnswer();
     }
 
     #region private
 
-    private async Task<IList<string>> ImportFilesInternalAsync(Document[] files, CancellationToken cancellationToken)
-    {
-        List<string> docIds = new();
-        foreach (Document file in files)
-        {
-            docIds.Add(await this.ImportFileInternalAsync(file, cancellationToken).ConfigureAwait(false));
-        }
-
-        return docIds;
-    }
-
-    private async Task<string> ImportFileInternalAsync(Document file, CancellationToken cancellationToken)
+    private async Task<string> ImportInternalAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
         using var formData = new MultipartFormDataContent();
 
-        using StringContent documentIdContent = new(file.Details.DocumentId);
-        using (StringContent userContent = new(file.Details.UserId))
+        using StringContent documentIdContent = new(uploadRequest.DocumentId);
+        using (StringContent userContent = new(uploadRequest.UserId))
         {
             List<IDisposable> disposables = new();
             formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
             formData.Add(userContent, Constants.WebServiceUserIdField);
 
-            foreach (var tag in file.Details.Tags.Pairs)
+            foreach (var tag in uploadRequest.Tags.Pairs)
             {
                 var tagContent = new StringContent(tag.Value);
                 disposables.Add(tagContent);
                 formData.Add(tagContent, tag.Key);
             }
 
-            byte[] bytes = File.ReadAllBytes(file.FileName);
-            var fileContent = new ByteArrayContent(bytes, 0, bytes.Length);
-            disposables.Add(fileContent);
-            formData.Add(fileContent, "file1", file.FileName);
+            for (int index = 0; index < uploadRequest.Files.Count; index++)
+            {
+                string fileName = uploadRequest.Files[index].FileName;
+
+                byte[] bytes;
+                using (var binaryReader = new BinaryReader(uploadRequest.Files[index].FileContent))
+                {
+                    bytes = binaryReader.ReadBytes((int)uploadRequest.Files[index].FileContent.Length);
+                }
+
+                var fileContent = new ByteArrayContent(bytes, 0, bytes.Length);
+                disposables.Add(fileContent);
+
+                formData.Add(fileContent, $"file{index}", fileName);
+            }
 
             // Send HTTP request
             try
@@ -153,7 +154,62 @@ public class MemoryWebClient : ISemanticMemoryClient
             }
         }
 
-        return file.Details.DocumentId;
+        return uploadRequest.DocumentId;
+    }
+
+    private async Task<string> ImportInternalAsync(Document document, CancellationToken cancellationToken)
+    {
+        // Populate form with values and files from disk
+        using var formData = new MultipartFormDataContent();
+
+        using StringContent documentIdContent = new(document.Details.DocumentId);
+        using (StringContent userContent = new(document.Details.UserId))
+        {
+            List<IDisposable> disposables = new();
+            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
+            formData.Add(userContent, Constants.WebServiceUserIdField);
+
+            foreach (var tag in document.Details.Tags.Pairs)
+            {
+                var tagContent = new StringContent(tag.Value);
+                disposables.Add(tagContent);
+                formData.Add(tagContent, tag.Key);
+            }
+
+            for (int index = 0; index < document.FileNames.Count; index++)
+            {
+                string fileName = document.FileNames[index];
+                byte[] bytes = File.ReadAllBytes(fileName);
+                var fileContent = new ByteArrayContent(bytes, 0, bytes.Length);
+                disposables.Add(fileContent);
+                formData.Add(fileContent, $"file{index}", fileName);
+            }
+
+            // Send HTTP request
+            try
+            {
+                HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
+                formData.Dispose();
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
+            {
+                throw new SemanticMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
+            }
+            catch (Exception e)
+            {
+                throw new SemanticMemoryWebException(e.Message, e);
+            }
+            finally
+            {
+                foreach (var disposable in disposables)
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
+
+        return document.Details.DocumentId;
     }
 
     #endregion
