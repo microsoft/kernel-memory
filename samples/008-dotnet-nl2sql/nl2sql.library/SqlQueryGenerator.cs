@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Data.Nl2Sql.Library.Internal;
@@ -31,12 +32,14 @@ public sealed class SqlQueryGenerator
 
     private readonly ISKFunction promptEval;
     private readonly ISKFunction promptGenerator;
+    private readonly ISemanticTextMemory memory;
 
     public SqlQueryGenerator(IKernel kernel, string rootSkillFolder)
     {
         var functions = kernel.ImportSemanticSkillFromDirectory(rootSkillFolder, SkillName);
         this.promptEval = functions["isquery"];
         this.promptGenerator = functions["generatequery"];
+        this.memory = kernel.Memory;
 
         kernel.ImportSkill(this, SkillName);
     }
@@ -53,7 +56,7 @@ public sealed class SqlQueryGenerator
     {
         // Search for schema with best similarity match to the objective
         var recall =
-            await context.Memory.SearchAsync(
+            await this.memory.SearchAsync(
                 SchemaProvider.MemoryCollectionName,
                 objective,
                 limit: 1,
@@ -70,10 +73,10 @@ public sealed class SqlQueryGenerator
         var schemaText = best.Metadata.Text;
         var sqlPlatform = best.Metadata.AdditionalMetadata;
 
-        context[ContextParamObjective] = objective;
-        context[ContextParamSchema] = schemaText;
-        context[ContextParamSchemaId] = schemaName;
-        context[ContextParamPlatform] = sqlPlatform;
+        context.Variables[ContextParamObjective] = objective;
+        context.Variables[ContextParamSchema] = schemaText;
+        context.Variables[ContextParamSchemaId] = schemaName;
+        context.Variables[ContextParamPlatform] = sqlPlatform;
 
         // Screen objective to determine if it can be solved with the selected schema.
         if (!await this.ScreenObjectiveAsync(context).ConfigureAwait(false))

@@ -16,12 +16,7 @@ internal static class SKContextExtensions
 
         if (context.ErrorOccurred)
         {
-            if (context.LastException != null)
-            {
-                throw new InvalidDataException("No result available due to an unexpected failure.", context.LastException);
-            }
-
-            throw new InvalidDataException(context.LastErrorDescription);
+            throw new InvalidDataException("No result available due to an unexpected failure.", context.LastException);
         }
 
         var result = context.Result;

@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
+
 namespace SemanticKernel.Data.Nl2Sql;
 
 using System;
@@ -11,14 +13,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Data.Nl2Sql.Library;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 internal sealed class Nl2SqlConsole : BackgroundService
 {
     private const ConsoleColor FocusColor = ConsoleColor.Yellow;
-    private const ConsoleColor PromptColor = ConsoleColor.Gray;
     private const ConsoleColor QueryColor = ConsoleColor.Green;
     private const ConsoleColor SystemColor = ConsoleColor.Cyan;
 
@@ -67,7 +67,9 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 continue;
             }
 
+#pragma warning disable CA2016 // CancellationToken overload obsolete
             var context = this.kernel.CreateNewContext();
+#pragma warning restore CA2016
             var query =
                 await this.queryGenerator.SolveObjectiveAsync(
                     objective,
@@ -95,7 +97,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 this.WriteLine(FocusColor, "Cancellation detected...");
 
                 // Yield to sync stoppingToken state
-                await Task.Delay(TimeSpan.FromMilliseconds(300));
+                await Task.Delay(TimeSpan.FromMilliseconds(300), stoppingToken).ConfigureAwait(false);
             }
             else if (string.IsNullOrWhiteSpace(objective))
             {
@@ -131,7 +133,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 return;
             }
 
-            await Task.Delay(300).ConfigureAwait(false); // Human feedback window
+            await Task.Delay(300, stoppingToken).ConfigureAwait(false); // Human feedback window
 
             this.ClearLine();
             this.Write(SystemColor, "Executing...");
@@ -154,9 +156,12 @@ internal sealed class Nl2SqlConsole : BackgroundService
             {
                 using var connection = await this.sqlProvider.ConnectAsync(schema).ConfigureAwait(false);
                 using var command = connection.CreateCommand();
-                command.CommandText = query;
 
-                using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+                command.CommandText = query;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+                using var reader = await command.ExecuteReaderAsync(stoppingToken).ConfigureAwait(false);
                 callback.Invoke(reader);
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -264,7 +269,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 return value;
             }
 
-            return value.Substring(0, width - 4) + "...";
+            return string.Concat(value.AsSpan(0, width - 4), "...");
         }
 
         void WriteSeparator(int[] widths)
