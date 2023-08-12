@@ -9,6 +9,8 @@
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
+    <Import Project="../nuget/nuget-package.props" />
+
     <ItemGroup>
         <ProjectReference Include="..\ClientLib\ClientLib.csproj" />
     </ItemGroup>
