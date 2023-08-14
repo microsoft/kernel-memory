@@ -7,8 +7,8 @@
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Product>Semantic Memory</Product>
-    <Description>Enhances data-driven features in applications built using Semantic Kernel.</Description>
-    <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
+    <Description>Index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
+    <PackageTags>Memory, Semantic Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL, SDK</PackageTags>
     <PackageId>$(AssemblyName)</PackageId>
 
     <!-- Required license, copyright, and repo information. Packages can override. -->
