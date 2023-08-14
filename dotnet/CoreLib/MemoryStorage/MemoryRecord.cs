@@ -19,11 +19,6 @@ public class MemoryRecord
     public Embedding<float> Vector { get; set; } = new();
 
     /// <summary>
-    /// User ID
-    /// </summary>
-    public string Owner { get; set; } = string.Empty;
-
-    /// <summary>
     /// Optional Searchable Key=Value tags (string => string[] collection)
     ///
     /// Multiple values per keys are supported.

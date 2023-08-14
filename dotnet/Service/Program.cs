@@ -79,12 +79,12 @@ if (config.Service.RunWebService)
                 // UploadRequest => Document
                 var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest());
                 var url = Constants.HttpUploadStatusEndpointWithParams
-                    .Replace(Constants.HttpUserIdPlaceholder, input.UserId, StringComparison.Ordinal)
+                    .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
                     .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
                 return Results.Accepted(url, new UploadAccepted
                 {
                     DocumentId = documentId,
-                    UserId = input.UserId,
+                    Index = input.Index,
                     Message = "Document upload completed, ingestion pipeline started"
                 });
             }
@@ -103,7 +103,7 @@ if (config.Service.RunWebService)
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(query.UserId, query.Question, query.Filter);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -116,7 +116,7 @@ if (config.Service.RunWebService)
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                SearchResult answer = await service.SearchAsync(query.UserId, query.Query, query.Filter);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter);
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);
@@ -124,24 +124,23 @@ if (config.Service.RunWebService)
     // Document status endpoint
     app.MapGet(Constants.HttpUploadStatusEndpoint,
             async Task<IResult> (
-                [FromQuery(Name = "user")] string userId,
-                [FromQuery(Name = "id")] string pipelineId,
+                [FromQuery(Name = Constants.WebServiceIndexField)]
+                string? index,
+                [FromQuery(Name = Constants.WebServiceDocumentIdField)]
+                string documentId,
                 ISemanticMemoryClient service) =>
             {
-                if (string.IsNullOrEmpty(userId))
+                index = IndexExtensions.CleanName(index);
+
+                if (string.IsNullOrEmpty(documentId))
                 {
-                    return Results.BadRequest("'user' query parameter is missing or has no value");
+                    return Results.BadRequest($"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value");
                 }
 
-                if (string.IsNullOrEmpty(pipelineId))
-                {
-                    return Results.BadRequest("'id' query parameter is missing or has no value");
-                }
-
-                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(userId, pipelineId);
+                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(documentId: documentId, index: index);
                 if (pipeline == null)
                 {
-                    return Results.NotFound("Document pipeline not found");
+                    return Results.NotFound("Document not found");
                 }
 
                 return Results.Ok(pipeline);

@@ -48,7 +48,7 @@ await orchestrator.AddHandlerAsync(saveEmbedding);
 // Create sample pipeline with 4 files
 Console.WriteLine("* Defining pipeline with 4 files...");
 var pipeline = orchestrator
-    .PrepareNewDocumentUpload("userZ", "inProcessTest", new TagCollection { { "testName", "example3" } })
+    .PrepareNewDocumentUpload(index: "tests", documentId: "inProcessTest", new TagCollection { { "testName", "example3" } })
     .AddUploadFile("file1", "file1-Wikipedia-Carbon.txt", "file1-Wikipedia-Carbon.txt")
     .AddUploadFile("file2", "file2-Wikipedia-Moon.txt", "file2-Wikipedia-Moon.txt")
     .AddUploadFile("file3", "file3-lorem-ipsum.docx", "file3-lorem-ipsum.docx")
@@ -65,5 +65,3 @@ Console.WriteLine("* Executing pipeline...");
 await orchestrator.RunPipelineAsync(pipeline);
 
 Console.WriteLine("* File import completed.");
-
-Console.WriteLine("Refactoring in progress");

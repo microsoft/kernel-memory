@@ -29,7 +29,7 @@ using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 public static class Program
 {
     // Azure Search Index name
-    private const string IndexName = "test01";
+    private const string Index = "test01";
 
     // A Memory ID example. This value is later serialized.
     private const string ExternalRecordId1 = "usr=user2//ppl=f05//prt=7b9bad8968804121bb9b1264104608ac";
@@ -49,10 +49,10 @@ public static class Program
             new SearchClientOptions { Diagnostics = { IsTelemetryEnabled = true, ApplicationId = "SemanticMemory" } });
 
         // Create an index (if doesn't exist)
-        await CreateIndexAsync(IndexName);
+        await CreateIndexAsync(Index);
 
         // Insert two records
-        var recordId1 = await InsertRecordAsync(IndexName,
+        var recordId1 = await InsertRecordAsync(Index,
             externalId: ExternalRecordId1,
             payload: new Dictionary<string, object> { { "filename", "dotnet.pdf" }, { "text", "this is a sentence" }, },
             tags: new TagCollection
@@ -64,7 +64,7 @@ public static class Program
             },
             embedding: new Embedding<float>(new[] { 0f, 0.5f, 1 }));
 
-        var recordId2 = await InsertRecordAsync(IndexName,
+        var recordId2 = await InsertRecordAsync(Index,
             externalId: ExternalRecordId2,
             payload: new Dictionary<string, object> { { "filename", "python.pdf" }, { "text", "this is a sentence" }, },
             tags: new TagCollection
@@ -79,7 +79,7 @@ public static class Program
         await Task.Delay(TimeSpan.FromSeconds(2));
 
         // Search by tags
-        var records = await SearchByFieldValueAsync(IndexName,
+        var records = await SearchByFieldValueAsync(Index,
             fieldName: "tags",
             fieldValue1: "category=pyt'hon",
             fieldValue2: "year=2024",
@@ -94,8 +94,8 @@ public static class Program
         }
 
         // // Delete the record
-        await DeleteRecordAsync(IndexName, recordId1);
-        await DeleteRecordAsync(IndexName, recordId2);
+        await DeleteRecordAsync(Index, recordId1);
+        await DeleteRecordAsync(Index, recordId2);
     }
 
     // ===============================================================================================
@@ -173,17 +173,17 @@ public static class Program
     }
 
     // ===============================================================================================
-    private static async Task<string> InsertRecordAsync(string indexName,
+    private static async Task<string> InsertRecordAsync(string index,
         string externalId, Dictionary<string, object> payload, TagCollection tags, Embedding<float> embedding)
     {
         Console.WriteLine("\n== INSERT ==\n");
-        var client = adminClient.GetSearchClient(indexName);
+        var client = adminClient.GetSearchClient(index);
 
         var record = new MemoryRecord
         {
             Id = externalId,
             Vector = embedding,
-            Owner = "userAB",
+            // Owner = "userAB",
             Tags = tags,
             Payload = payload
         };
@@ -210,7 +210,7 @@ public static class Program
 
     // ===============================================================================================
     private static async Task<IList<MemoryRecord>> SearchByFieldValueAsync(
-        string indexName,
+        string index,
         string fieldName,
         bool fieldIsCollection,
         string fieldValue1,
@@ -218,7 +218,7 @@ public static class Program
         int limit)
     {
         Console.WriteLine("\n== FILTER SEARCH ==\n");
-        var client = adminClient.GetSearchClient(indexName);
+        var client = adminClient.GetSearchClient(index);
 
         fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
         fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
@@ -255,11 +255,11 @@ public static class Program
     }
 
     // ===============================================================================================
-    private static async Task DeleteRecordAsync(string indexName, string recordId)
+    private static async Task DeleteRecordAsync(string index, string recordId)
     {
         Console.WriteLine("\n== DELETE ==\n");
 
-        var client = adminClient.GetSearchClient(indexName);
+        var client = adminClient.GetSearchClient(index);
 
         Console.WriteLine($"DELETING {recordId}\n");
 

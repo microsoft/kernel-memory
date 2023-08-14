@@ -55,7 +55,7 @@ public class SearchClient
                        "Answer: ";
     }
 
-    public async Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<SearchResult> SearchAsync(string index, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         var result = new SearchResult
         {
@@ -76,21 +76,16 @@ public class SearchClient
             filter = new MemoryFilter();
         }
 
-        if (!string.IsNullOrEmpty(userId))
-        {
-            filter.ByUser(userId);
-        }
-
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: userId, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
         {
-            if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
+                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedDocumentIdTag);
             }
 
             if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
@@ -104,7 +99,7 @@ public class SearchClient
             }
 
             // Note: a document can be composed by multiple files
-            string documentId = memory.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.Tags[Constants.ReservedDocumentIdTag].FirstOrDefault() ?? string.Empty;
 
             // Identify the file in case there are multiple files
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
@@ -118,7 +113,7 @@ public class SearchClient
             var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
-                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
                 continue;
             }
 
@@ -159,7 +154,7 @@ public class SearchClient
         return result;
     }
 
-    public async Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(string index, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
         {
@@ -193,21 +188,16 @@ public class SearchClient
             filter = new MemoryFilter();
         }
 
-        if (!string.IsNullOrEmpty(userId))
-        {
-            filter.ByUser(userId);
-        }
-
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: userId, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
         {
-            if (!memory.Tags.ContainsKey(Constants.ReservedPipelineIdTag))
+            if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedPipelineIdTag);
+                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedDocumentIdTag);
             }
 
             if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
@@ -221,7 +211,7 @@ public class SearchClient
             }
 
             // Note: a document can be composed by multiple files
-            string documentId = memory.Tags[Constants.ReservedPipelineIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.Tags[Constants.ReservedDocumentIdTag].FirstOrDefault() ?? string.Empty;
 
             // Identify the file in case there are multiple files
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
@@ -236,7 +226,7 @@ public class SearchClient
             var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
-                this._log.LogError("The document partition is empty, user: {0}, doc: {1}", memory.Owner, memory.Id);
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
                 continue;
             }
 

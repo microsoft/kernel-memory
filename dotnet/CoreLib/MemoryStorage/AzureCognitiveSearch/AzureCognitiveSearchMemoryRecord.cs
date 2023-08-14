@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
 
 namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
@@ -74,16 +73,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
         {
             string key = keyValue[0];
             string? value = keyValue.Length == 1 ? null : keyValue[1];
-
-            // Note: record owner is stored inside Tags
-            if (key == Constants.ReservedUserIdTag)
-            {
-                result.Owner = value ?? string.Empty;
-            }
-            else
-            {
-                result.Tags.Add(key, value);
-            }
+            result.Tags.Add(key, value);
         }
 
         return result;
@@ -97,9 +87,6 @@ public sealed class AzureCognitiveSearchMemoryRecord
             Vector = record.Vector.Vector.ToArray(),
             Payload = JsonSerializer.Serialize(record.Payload, s_jsonOptions)
         };
-
-        // Note: record owner is stored inside Tags
-        result.Tags.Add($"{Constants.ReservedUserIdTag}={record.Owner}");
 
         foreach (var tag in record.Tags.Pairs)
         {

@@ -71,14 +71,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public async Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadRequest.Files.Count, uploadRequest.DocumentId);
 
         // TODO: allow custom pipeline steps from UploadRequest
         // Define all the steps in the pipeline
         var pipeline = this.PrepareNewDocumentUpload(
-                userId: uploadRequest.UserId,
+                index: index,
                 documentId: uploadRequest.DocumentId,
                 uploadRequest.Tags,
                 uploadRequest.Files)
@@ -102,23 +102,16 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     ///<inheritdoc />
     public DataPipeline PrepareNewDocumentUpload(
-        string userId,
-        string documentId,
-        TagCollection tags)
-    {
-        return this.PrepareNewDocumentUpload(userId: userId, documentId: documentId, tags, new List<DocumentUploadRequest.UploadedFile>());
-    }
-
-    ///<inheritdoc />
-    public DataPipeline PrepareNewDocumentUpload(
-        string userId,
+        string index,
         string documentId,
         TagCollection tags,
-        IEnumerable<DocumentUploadRequest.UploadedFile> filesToUpload)
+        IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null)
     {
+        filesToUpload ??= new List<DocumentUploadRequest.UploadedFile>();
+
         var pipeline = new DataPipeline
         {
-            UserId = userId,
+            Index = IndexExtensions.CleanName(index),
             DocumentId = documentId,
             Tags = tags,
             Creation = DateTimeOffset.UtcNow,
@@ -132,9 +125,10 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipeline?> ReadPipelineStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        var dirPath = this.ContentStorage.JoinPaths(userId, documentId);
+        index = IndexExtensions.CleanName(index);
+        var dirPath = this.ContentStorage.JoinPaths(index, documentId);
         try
         {
             BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, cancellationToken)
@@ -148,16 +142,16 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        var pipeline = await this.ReadPipelineStatusAsync(userId: userId, documentId: documentId, cancellationToken).ConfigureAwait(false);
+        var pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
         return pipeline?.ToDataPipelineStatus();
     }
 
     ///<inheritdoc />
-    public async Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
         return pipeline != null && pipeline.Complete;
     }
 
@@ -169,6 +163,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    {
+        var path = this.ContentStorage.JoinPaths(pipeline.Index, pipeline.DocumentId);
+        return this.ContentStorage.ReadFileAsync(path, fileName, cancellationToken);
+    }
+
+    ///<inheritdoc />
     public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
         BinaryData content = await this.ReadFileAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
@@ -176,10 +177,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
     {
-        var path = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.DocumentId);
-        return this.ContentStorage.ReadFileAsync(path, fileName, cancellationToken);
+        var dirPath = this.ContentStorage.JoinPaths(pipeline.Index, pipeline.DocumentId);
+        return this.ContentStorage.WriteStreamAsync(
+            dirPath,
+            fileName,
+            fileContent.ToStream(),
+            cancellationToken);
     }
 
     ///<inheritdoc />
@@ -201,17 +206,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
-    {
-        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.DocumentId);
-        return this.ContentStorage.WriteStreamAsync(
-            dirPath,
-            fileName,
-            fileContent.ToStream(),
-            cancellationToken);
-    }
-
-    ///<inheritdoc />
     public void Dispose()
     {
         this.Dispose(true);
@@ -229,7 +223,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // If the folder contains the status of a previous execution,
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
-        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.UserId, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {
             var dedupe = new HashSet<string>();
@@ -269,7 +263,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this.Log.LogDebug("Saving pipeline status to {0}/{1}", pipeline.DocumentId, Constants.PipelineStatusFilename);
         try
         {
-            var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.DocumentId);
+            var dirPath = this.ContentStorage.JoinPaths(pipeline.Index, pipeline.DocumentId);
             await this.ContentStorage.WriteTextFileAsync(
                     dirPath,
                     Constants.PipelineStatusFilename,
@@ -302,9 +296,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log.LogDebug("Uploading {0} files, pipeline {1}", pipeline.FilesToUpload.Count, pipeline.DocumentId);
 
-        await this.ContentStorage.CreateDirectoryAsync(pipeline.UserId, cancellationToken).ConfigureAwait(false);
+        await this.ContentStorage.CreateDirectoryAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
 
-        var dirPath = this.ContentStorage.JoinPaths(pipeline.UserId, pipeline.DocumentId);
+        var dirPath = this.ContentStorage.JoinPaths(pipeline.Index, pipeline.DocumentId);
         await this.ContentStorage.CreateDirectoryAsync(dirPath, cancellationToken).ConfigureAwait(false);
 
         foreach (DocumentUploadRequest.UploadedFile file in pipeline.FilesToUpload)

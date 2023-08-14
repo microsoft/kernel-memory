@@ -23,7 +23,6 @@ public class AzureCognitiveSearchConfig
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
-    public string VectorIndexPrefix { get; set; } = string.Empty;
 
     public void SetCredential(TokenCredential credential)
     {

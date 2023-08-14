@@ -6,8 +6,8 @@ namespace Microsoft.SemanticMemory.Client.Models;
 
 public class SearchQuery
 {
-    [JsonPropertyName("userId")]
-    public string UserId { get; set; } = string.Empty;
+    [JsonPropertyName("index")]
+    public string Index { get; set; } = string.Empty;
 
     [JsonPropertyName("query")]
     public string Query { get; set; } = string.Empty;

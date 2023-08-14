@@ -14,8 +14,8 @@ public static class HttpDocumentUploadRequestExtensions
     {
         var result = new DocumentUploadRequest
         {
+            Index = request.Index,
             DocumentId = request.DocumentId,
-            UserId = request.UserId,
             Tags = request.Tags
         };
 

@@ -24,67 +24,52 @@ public class MemoryService : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task<string> ImportDocumentAsync(Document document, string? index = null, CancellationToken cancellationToken = default)
+    {
+        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(index, cancellationToken).ConfigureAwait(false);
+        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ImportDocumentAsync(string fileName, string? documentId = null, TagCollection? tags = null, string? index = null, CancellationToken cancellationToken = default)
+    {
+        var document = new Document(documentId, tags: tags).AddFile(fileName);
+        var uploadRequest = await document.ToDocumentUploadRequestAsync(index, cancellationToken).ConfigureAwait(false);
+        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken);
+        var index = IndexExtensions.CleanName(uploadRequest.Index);
+        return this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportDocumentAsync(Document document, CancellationToken cancellationToken = default)
+    public Task<bool> IsDocumentReadyAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        return await this.ImportInternalAsync(document, cancellationToken).ConfigureAwait(false);
+        index = IndexExtensions.CleanName(index);
+        return this._orchestrator.IsDocumentReadyAsync(index: index, documentId, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(string fileName, DocumentDetails? details = null, CancellationToken cancellationToken = default)
+    public Task<DataPipelineStatus?> GetDocumentStatusAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        return this.ImportInternalAsync(new Document(fileName) { Details = details ?? new DocumentDetails() }, cancellationToken);
+        index = IndexExtensions.CleanName(index);
+        return this._orchestrator.ReadPipelineSummaryAsync(index: index, documentId, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public Task<SearchResult> SearchAsync(string query, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.IsDocumentReadyAsync(userId, documentId, cancellationToken);
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.SearchAsync(index: index, query, filter, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(string question, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.ReadPipelineSummaryAsync(userId, documentId, cancellationToken);
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.AskAsync(index: index, question: question, filter: filter, cancellationToken: cancellationToken);
     }
-
-    /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        // TODO: the user ID might be in the filter
-        return this.SearchAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this._searchClient.SearchAsync(userId, query, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(new DocumentDetails().UserId, question, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this._searchClient.AskAsync(userId: userId, question: question, filter: filter, cancellationToken: cancellationToken);
-    }
-
-    #region private
-
-    private async Task<string> ImportInternalAsync(Document document, CancellationToken cancellationToken)
-    {
-        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(cancellationToken).ConfigureAwait(false);
-        return await this._orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
-    }
-
-    #endregion
 }

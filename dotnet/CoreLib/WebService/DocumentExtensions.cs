@@ -13,20 +13,18 @@ namespace Microsoft.SemanticMemory.Core.WebService;
 public static class DocumentExtensions
 {
     // Note: this code is not .NET Standard 2.0 compatible
-    public static async Task<DocumentUploadRequest> ToDocumentUploadRequestAsync(this Document file, CancellationToken cancellationToken)
+    public static async Task<DocumentUploadRequest> ToDocumentUploadRequestAsync(this Document doc, string? index, CancellationToken cancellationToken)
     {
         var uploadRequest = new DocumentUploadRequest
         {
-            DocumentId = file.Details.DocumentId,
-            UserId = file.Details.UserId,
-            Tags = file.Details.Tags
+            Index = IndexExtensions.CleanName(index),
+            DocumentId = doc.Id,
+            Tags = doc.Tags
         };
 
         var files = new List<DocumentUploadRequest.UploadedFile>();
-        for (int index = 0; index < file.FileNames.Count; index++)
+        foreach (var fileName in doc.FileNames)
         {
-            string fileName = file.FileNames[index];
-
             if (!File.Exists(fileName))
             {
                 throw new SemanticMemoryException($"File not found: {fileName}");

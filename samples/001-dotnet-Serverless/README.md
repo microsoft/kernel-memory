@@ -7,16 +7,18 @@ All the logic is executed locally using the default C# handlers. Depending
 on your settings, files can be stored locally or in Azure Blobs.
 
 ```csharp
+// Use .NET Host.CreateDefaultBuilder() or WebApplication.CreateBuilder() to prepare your service provider
 var memory = new Memory(serviceProvider);
 
-await memory.ImportDocumentAsync(new Document(new[]
-{
-    "file2.txt",
-    "file3.docx",
-    "file4.pdf"
-}, new DocumentDetails("user1", "doc002")));
+await memory.ImportDocumentAsync(new Document("doc012")
+    .AddFiles(new[] {
+        "file2.txt",
+        "file3.docx",
+        "file4.pdf"
+    })
+    .AddTag("user", "Blake"));
 
-string answer = await memory.AskAsync("user1", "What's Semantic Kernel?");
+string answer = await memory.AskAsync("What's Semantic Kernel?");
 ```
 
 # Prepare the example

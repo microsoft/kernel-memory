@@ -6,9 +6,9 @@ namespace Microsoft.SemanticMemory.Client.Models;
 
 public class UploadAccepted
 {
-    [JsonPropertyName("userId")]
+    [JsonPropertyName("index")]
     [JsonPropertyOrder(1)]
-    public string UserId { get; set; } = string.Empty;
+    public string Index { get; set; } = string.Empty;
 
     [JsonPropertyName("documentId")]
     [JsonPropertyOrder(2)]

@@ -15,8 +15,8 @@ namespace Microsoft.SemanticMemory.Core.WebService;
 // Note: use multiform part serialization
 public class HttpDocumentUploadRequest
 {
+    public string Index { get; set; } = string.Empty;
     public string DocumentId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
     public TagCollection Tags { get; set; } = new();
     public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
 
@@ -28,7 +28,7 @@ public class HttpDocumentUploadRequest
      */
     public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
     {
-        string userIdField = Constants.WebServiceUserIdField;
+        string indexField = Constants.WebServiceIndexField;
         string documentIdField = Constants.WebServiceDocumentIdField;
 
         var result = new HttpDocumentUploadRequest();
@@ -48,10 +48,10 @@ public class HttpDocumentUploadRequest
             return (result, false, "No file was uploaded");
         }
 
-        // TODO: extract user ID from auth headers
-        if (!form.TryGetValue(userIdField, out StringValues userIds) || userIds.Count != 1 || string.IsNullOrEmpty(userIds[0]))
+        // // TODO: extract user ID from auth headers
+        if (!form.TryGetValue(indexField, out StringValues indexes) || indexes.Count != 1 || string.IsNullOrEmpty(indexes[0]))
         {
-            return (result, false, $"Invalid or missing user ID, '{userIdField}' value empty or not found, or multiple values provided");
+            return (result, false, $"Invalid or missing index name, '{indexField}' value empty or not found, or multiple values provided");
         }
 
         if (form.TryGetValue(documentIdField, out StringValues documentIds) && documentIds.Count > 1)
@@ -61,13 +61,13 @@ public class HttpDocumentUploadRequest
 
         // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
         result.DocumentId = documentIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
-        result.UserId = userIds[0]!;
+        result.Index = indexes[0]!;
         result.Files = form.Files;
 
         // Store any extra field as a tag
         foreach (string key in form.Keys)
         {
-            if (key == documentIdField || key == userIdField || !form.TryGetValue(key, out StringValues values)) { continue; }
+            if (key == documentIdField || key == indexField || !form.TryGetValue(key, out StringValues values)) { continue; }
 
             ValidateTagName(key);
             foreach (string? x in values)
@@ -86,8 +86,8 @@ public class HttpDocumentUploadRequest
             throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
         }
 
-        if (key is Constants.ReservedUserIdTag
-            or Constants.ReservedPipelineIdTag
+        if (key is
+            Constants.ReservedDocumentIdTag
             or Constants.ReservedFileIdTag
             or Constants.ReservedFilePartitionTag
             or Constants.ReservedFileTypeTag)

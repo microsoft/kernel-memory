@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 
 namespace Microsoft.SemanticMemory.Client.Models;
 
@@ -10,37 +13,94 @@ namespace Microsoft.SemanticMemory.Client.Models;
 /// </summary>
 public class Document
 {
+    public string Id
+    {
+        get { return this._id; }
+        set { this._id = string.IsNullOrWhiteSpace(value) ? RandomId() : value; }
+    }
+
+    public TagCollection Tags { get; set; } = new();
+
     public List<string> FileNames { get; set; } = new();
 
-    public DocumentDetails Details { get; set; } = new();
+    public Document(string? id = null, TagCollection? tags = null, IEnumerable<string>? fileNames = null)
+    {
+        if (id == null || string.IsNullOrWhiteSpace(id)) { id = RandomId(); }
 
-    public Document() { }
+        this.Id = id;
 
-    public Document(string fileName)
+        if (tags != null) { this.Tags = tags; }
+
+        if (fileNames != null) { this.FileNames.AddRange(fileNames); }
+    }
+
+    public Document AddTag(string name, string value)
+    {
+        this.Tags.Add(name, value);
+        return this;
+    }
+
+    public Document AddFile(string fileName)
     {
         this.FileNames.Add(fileName);
+        return this;
     }
 
-    public Document(List<string> fileNames)
+    public Document AddFiles(IEnumerable<string>? fileNames)
     {
-        this.FileNames.AddRange(fileNames);
+        if (fileNames != null) { this.FileNames.AddRange(fileNames); }
+
+        return this;
     }
 
-    public Document(string fileName, DocumentDetails details)
+    public Document AddFiles(string[]? fileNames)
     {
-        this.FileNames.Add(fileName);
-        this.Details = details;
+        if (fileNames != null) { this.FileNames.AddRange(fileNames); }
+
+        return this;
     }
 
-    public Document(List<string> fileNames, DocumentDetails details)
+    #region private
+
+    private string _id = string.Empty;
+
+    private static string RandomId()
     {
-        this.FileNames.AddRange(fileNames);
-        this.Details = details;
+        const string LocalDateFormat = "yyyyMMddhhmmssfffffff";
+        return Guid.NewGuid().ToString("N") + DateTimeOffset.Now.ToString(LocalDateFormat, CultureInfo.InvariantCulture);
     }
 
-    public Document(string[] fileNames, DocumentDetails details)
+    #endregion
+}
+
+public static class DocumentExtensions
+{
+    // Note: this code is a .NET Standard 2.0 version of ToDocumentUploadRequestAsync()
+    public static DocumentUploadRequest ToDocumentUploadRequest(this Document doc, string? index)
     {
-        this.FileNames.AddRange(fileNames);
-        this.Details = details;
+        var uploadRequest = new DocumentUploadRequest
+        {
+            Index = IndexExtensions.CleanName(index),
+            DocumentId = doc.Id,
+            Tags = doc.Tags
+        };
+
+        var files = new List<DocumentUploadRequest.UploadedFile>();
+        foreach (var fileName in doc.FileNames)
+        {
+            if (!File.Exists(fileName))
+            {
+                throw new SemanticMemoryException($"File not found: {fileName}");
+            }
+
+            byte[] bytes = File.ReadAllBytes(fileName);
+            var data = new BinaryData(bytes);
+            var formFile = new DocumentUploadRequest.UploadedFile(fileName, data.ToStream());
+            files.Add(formFile);
+        }
+
+        uploadRequest.Files = files;
+
+        return uploadRequest;
     }
 }

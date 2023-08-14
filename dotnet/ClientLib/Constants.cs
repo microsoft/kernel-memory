@@ -4,11 +4,11 @@ namespace Microsoft.SemanticMemory.Client;
 
 public static class Constants
 {
-    // Default User ID owning documents uploaded without specifying a user
-    public const string DefaultDocumentOwnerUserId = "defaultUser";
+    // // Default User ID owning documents uploaded without specifying a user
+    // public const string DefaultDocumentOwnerUserId = "defaultUser";
 
     // Form field containing the User ID
-    public const string WebServiceUserIdField = "userId";
+    public const string WebServiceIndexField = "index";
 
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
@@ -16,9 +16,12 @@ public static class Constants
     // Internal file used to track progress of asynchronous pipelines
     public const string PipelineStatusFilename = "__pipeline_status.json";
 
+    // Index name used when none is specified
+    public const string DefaultIndex = "default";
+
     // Tags reserved for internal logic
-    public const string ReservedUserIdTag = "__user";
-    public const string ReservedPipelineIdTag = "__pipeline_id";
+    // public const string ReservedUserIdTag = "__user";
+    public const string ReservedDocumentIdTag = "__document_id";
     public const string ReservedFileIdTag = "__file_id";
     public const string ReservedFilePartitionTag = "__file_part";
     public const string ReservedFileTypeTag = "__file_type";
@@ -28,7 +31,7 @@ public static class Constants
     public const string HttpSearchEndpoint = "/search";
     public const string HttpUploadEndpoint = "/upload";
     public const string HttpUploadStatusEndpoint = "/upload-status";
-    public const string HttpUploadStatusEndpointWithParams = "/upload-status?user={userId}&id={documentId}";
-    public const string HttpUserIdPlaceholder = "{userId}";
+    public const string HttpUploadStatusEndpointWithParams = $"/upload-status?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
 }

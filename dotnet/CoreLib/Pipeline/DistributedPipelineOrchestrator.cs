@@ -103,9 +103,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     }
 
     ///<inheritdoc />
-    public override async Task RunPipelineAsync(
-        DataPipeline pipeline,
-        CancellationToken cancellationToken = default)
+    public override async Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
@@ -119,6 +117,8 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
         await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
     }
+
+    #region private
 
     private async Task<bool> RunPipelineStepAsync(
         DataPipeline pipeline,
@@ -184,4 +184,6 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: true).ConfigureAwait(false);
         }
     }
+
+    #endregion
 }

@@ -76,9 +76,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     }
 
     ///<inheritdoc />
-    public override async Task RunPipelineAsync(
-        DataPipeline pipeline,
-        CancellationToken cancellationToken = default)
+    public override async Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);

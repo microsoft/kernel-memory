@@ -442,7 +442,6 @@ public static class Main
                 { "Auth", "ApiKey" },
                 { "Endpoint", "" },
                 { "APIKey", "" },
-                { "VectorIndexPrefix", "smemory-" },
             };
         }
 
@@ -451,7 +450,6 @@ public static class Main
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Search <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Azure Cognitive Search <API Key>", config["APIKey"].ToString()) },
-            { "VectorIndexPrefix", SetupUI.AskOptionalOpenQuestion("Optional index name prefix, e.g. 'smemory-'", config["VectorIndexPrefix"].ToString()) },
         });
     }
 

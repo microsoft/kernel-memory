@@ -19,90 +19,80 @@ namespace Microsoft.SemanticMemory.Core;
 /// on a web service. By design this class is hardcoded to use
 /// <see cref="InProcessPipelineOrchestrator"/>, hence the name "Serverless".
 /// The class accesses directly storage, vectors and AI.
-///
-/// TODO: pipeline structure is hardcoded, should allow custom handlers/steps
 /// </summary>
 public class Memory : ISemanticMemoryClient
 {
     public Memory(IServiceProvider serviceProvider)
     {
-        this._configuration = serviceProvider.GetService<SemanticMemoryConfig>()
-                              ?? throw new SemanticMemoryException("Unable to load configuration. Are all the dependencies configured?");
-
-        this._searchClient = serviceProvider.GetService<SearchClient>()
-                             ?? throw new ConfigurationException("Unable to load search client. Are all the dependencies configured?");
-
         this._orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>()
                              ?? throw new ConfigurationException("Unable to load orchestrator. Are all the dependencies configured?");
+        this._searchClient = serviceProvider.GetService<SearchClient>()
+                             ?? throw new ConfigurationException("Unable to load search client. Are all the dependencies configured?");
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(Document document, string? index = null, CancellationToken cancellationToken = default)
     {
-        return this.ImportInternalAsync(uploadRequest, cancellationToken);
+        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(index, cancellationToken).ConfigureAwait(false);
+        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(Document document, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(string fileName, string? documentId = null, TagCollection? tags = null, string? index = null, CancellationToken cancellationToken = default)
     {
-        return this.ImportInternalAsync(document, cancellationToken);
+        var document = new Document(documentId, tags: tags).AddFile(fileName);
+        var uploadRequest = await document.ToDocumentUploadRequestAsync(index, cancellationToken).ConfigureAwait(false);
+        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(string fileName, DocumentDetails? details = null, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
-        return this.ImportInternalAsync(new Document(fileName) { Details = details ?? new DocumentDetails() }, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> IsDocumentReadyAsync(string userId, string documentId, CancellationToken cancellationToken = default)
-    {
+        var index = IndexExtensions.CleanName(uploadRequest.Index);
         var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        return await orchestrator.IsDocumentReadyAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        return await orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string userId, string documentId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
+        index = IndexExtensions.CleanName(index);
         var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(userId, documentId, cancellationToken).ConfigureAwait(false);
+        return await orchestrator.IsDocumentReadyAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    {
+        index = IndexExtensions.CleanName(index);
+        var orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
+        DataPipeline? pipeline = await orchestrator.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
         return pipeline?.ToDataPipelineStatus();
     }
 
     /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<SearchResult> SearchAsync(string query, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        // TODO: the user ID might be in the filter
-        return this.SearchAsync(new DocumentDetails().UserId, query, filter, cancellationToken);
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.SearchAsync(index: index, query, filter, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(string userId, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public Task<MemoryAnswer> AskAsync(string question, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
     {
-        return this._searchClient.SearchAsync(userId, query, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(new DocumentDetails().UserId, question, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(string userId, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
-    {
-        return this._searchClient.AskAsync(userId: userId, question: question, filter: filter, cancellationToken: cancellationToken);
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.AskAsync(index: index, question: question, filter: filter, cancellationToken: cancellationToken);
     }
 
     #region private
 
     private readonly SearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
-    private readonly SemanticMemoryConfig _configuration;
     private bool _orchestratorReady = false;
 
     // TODO: handle contentions
-    private async Task<InProcessPipelineOrchestrator> GetOrchestratorAsync(CancellationToken cancellationToken)
+    // TODO: allow custom handlers, remove hardcoded ones
+    private async Task<IPipelineOrchestrator> GetOrchestratorAsync(CancellationToken cancellationToken)
     {
         if (!this._orchestratorReady)
         {
@@ -126,19 +116,6 @@ public class Memory : ISemanticMemoryClient
         }
 
         return this._orchestrator;
-    }
-
-    private async Task<string> ImportInternalAsync(Document document, CancellationToken cancellationToken)
-    {
-        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(cancellationToken).ConfigureAwait(false);
-        InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        return await orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<string> ImportInternalAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
-    {
-        InProcessPipelineOrchestrator orchestrator = await this.GetOrchestratorAsync(cancellationToken).ConfigureAwait(false);
-        return await orchestrator.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

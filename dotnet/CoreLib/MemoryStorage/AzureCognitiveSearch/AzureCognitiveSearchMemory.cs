@@ -24,7 +24,6 @@ namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 {
-    private readonly string _indexPrefix;
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
     public AzureCognitiveSearchMemory(
@@ -63,8 +62,6 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                 this._log.LogCritical("Azure Cognitive Search authentication type '{0}' undefined or not supported", config.Auth);
                 throw new ContentStorageException($"Azure Cognitive Search authentication type '{config.Auth}' undefined or not supported");
         }
-
-        this._indexPrefix = config.VectorIndexPrefix;
     }
 
     /// <inheritdoc />
@@ -376,8 +373,6 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <returns>Normalized name</returns>
     private string NormalizeIndexName(string indexName)
     {
-        indexName = $"{this._indexPrefix}{indexName}";
-
         if (indexName.Length > 128)
         {
             throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");

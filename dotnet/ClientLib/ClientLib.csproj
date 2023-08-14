@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="System.Memory.Data" Version="7.0.0" />
         <PackageReference Include="System.Text.Json" Version="7.0.3" />
     </ItemGroup>
 

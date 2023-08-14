@@ -16,16 +16,16 @@ public class DataPipelineStatus
     [JsonPropertyName("failed")]
     public bool Failed { get; set; } = false;
 
+    [JsonPropertyOrder(10)]
+    [JsonPropertyName("index")]
+    public string Index { get; set; } = string.Empty;
+
     /// <summary>
     /// Unique Id
     /// </summary>
-    [JsonPropertyOrder(10)]
+    [JsonPropertyOrder(11)]
     [JsonPropertyName("document_id")]
     public string DocumentId { get; set; } = string.Empty;
-
-    [JsonPropertyOrder(11)]
-    [JsonPropertyName("user_id")]
-    public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyOrder(12)]
     [JsonPropertyName("tags")]

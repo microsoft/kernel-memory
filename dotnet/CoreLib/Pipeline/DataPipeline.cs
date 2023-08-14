@@ -104,6 +104,13 @@ public class DataPipeline
     }
 
     /// <summary>
+    /// Index where the data ingestion pipeline is working.
+    /// </summary>
+    [JsonPropertyOrder(0)]
+    [JsonPropertyName("index")]
+    public string Index { get; set; } = string.Empty;
+
+    /// <summary>
     /// Id of the document and the pipeline instance. This value will persist throughout the execution and in the final data lineage used for citations.
     /// </summary>
     [JsonPropertyOrder(1)]
@@ -139,10 +146,6 @@ public class DataPipeline
     [JsonPropertyOrder(5)]
     [JsonPropertyName("completed_steps")]
     public List<string> CompletedSteps { get; set; } = new();
-
-    [JsonPropertyOrder(6)]
-    [JsonPropertyName("user_id")]
-    public string UserId { get; set; } = string.Empty;
 
     [JsonPropertyOrder(7)]
     [JsonPropertyName("tags")]
@@ -257,9 +260,9 @@ public class DataPipeline
             throw new ArgumentException("The pipeline ID is empty", nameof(this.DocumentId));
         }
 
-        if (string.IsNullOrEmpty(this.UserId))
+        if (string.IsNullOrEmpty(this.Index))
         {
-            throw new ArgumentException("The user ID is empty", nameof(this.UserId));
+            throw new ArgumentException("The index name is empty", nameof(this.Index));
         }
 
         string previous = string.Empty;
@@ -296,8 +299,8 @@ public class DataPipeline
         {
             Completed = this.Complete,
             Failed = false, // TODO
+            Index = this.Index,
             DocumentId = this.DocumentId,
-            UserId = this.UserId,
             Tags = this.Tags,
             Creation = this.Creation,
             LastUpdate = this.LastUpdate,

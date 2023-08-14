@@ -30,17 +30,20 @@ in your app.
 > ### Importing documents into your Semantic Memory can be as simple as this:
 >
 > ```csharp
+> // Use .NET Host.CreateDefaultBuilder() or WebApplication.CreateBuilder() to prepare your service provider
 > var memory = new Memory(serviceProvider);
 >
-> // Import a file (default user)
-> await memory.ImportDocumentAsync("meeting-transcript.docx");
+> // Import a file
+> await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
 >
-> // Import a file specifying a Document ID, User and Tags
-> await memory.ImportDocumentAsync("business-plan.docx",
->     new DocumentDetails("user@some.email", "file001")
->         .AddTag("collection", "business")
->         .AddTag("collection", "plans")
->         .AddTag("fiscalYear", "2023"));
+> // Import multiple files and apply multiple tags
+> await memory.ImportDocumentAsync(new Document("file001")
+>     .AddFile("business-plan.docx")
+>     .AddFile("project-timeline.pdf")
+>     .AddTag("user", "Blake")
+>     .AddTag("collection", "business")
+>     .AddTag("collection", "plans")
+>     .AddTag("fiscalYear", "2023"));
 > ```
 
 > ### Asking questions:
@@ -48,7 +51,7 @@ in your app.
 > ```csharp
 > var answer1 = await memory.AskAsync("How many people attended the meeting?");
 >
-> var answer2 = await memory.AskAsync("user@some.email", "what's the project timeline?");
+> var answer2 = await memory.AskAsync("what's the project timeline?", filter: new MemoryFilter().ByTag("user", "Blake"));
 > ```
 
 The code leverages the default documents ingestion pipeline:

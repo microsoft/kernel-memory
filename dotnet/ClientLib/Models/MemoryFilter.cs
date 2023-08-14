@@ -19,15 +19,9 @@ public class MemoryFilter : TagCollection
         return this;
     }
 
-    public MemoryFilter ByUser(string userId)
-    {
-        this.Add(Constants.ReservedUserIdTag, userId);
-        return this;
-    }
-
     public MemoryFilter ByDocument(string docId)
     {
-        this.Add(Constants.ReservedPipelineIdTag, docId);
+        this.Add(Constants.ReservedDocumentIdTag, docId);
         return this;
     }
 

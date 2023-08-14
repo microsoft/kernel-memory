@@ -18,7 +18,7 @@ namespace Microsoft.SemanticMemory.Core.Handlers;
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs = new();
+    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
     /// <summary>
@@ -66,13 +66,12 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
             var record = new MemoryRecord
             {
-                Id = GetEmbeddingRecordId(pipeline.UserId, pipeline.DocumentId, embeddingFile.Value.Id),
+                Id = GetEmbeddingRecordId(pipeline.DocumentId, embeddingFile.Value.Id),
                 Vector = embeddingData.Vector,
-                Owner = pipeline.UserId,
             };
 
             // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
-            record.Tags.Add(Constants.ReservedPipelineIdTag, pipeline.DocumentId);
+            record.Tags.Add(Constants.ReservedDocumentIdTag, pipeline.DocumentId);
             record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
             record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
             record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
@@ -89,15 +88,13 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
             record.Payload.Add("text", partitionContent);
 
-            string indexName = record.Owner;
-
             foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
             {
-                this._log.LogTrace("Creating index '{0}'", indexName);
-                await client.CreateIndexAsync(indexName, record.Vector.Count, cancellationToken).ConfigureAwait(false);
+                this._log.LogTrace("Creating index '{0}'", pipeline.Index);
+                await client.CreateIndexAsync(pipeline.Index, record.Vector.Count, cancellationToken).ConfigureAwait(false);
 
-                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, indexName);
-                await client.UpsertAsync(indexName, record, cancellationToken).ConfigureAwait(false);
+                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -113,7 +110,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         // Decide which embeddings not to delete, looking at the current pipeline
         foreach (DataPipeline.GeneratedFileDetails embeddingFile in pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
         {
-            string recordId = GetEmbeddingRecordId(pipeline.UserId, pipeline.DocumentId, embeddingFile.Id);
+            string recordId = GetEmbeddingRecordId(pipeline.DocumentId, embeddingFile.Id);
             embeddingsToKeep.Add(recordId);
         }
 
@@ -122,22 +119,20 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         {
             foreach (DataPipeline.GeneratedFileDetails embeddingFile in oldPipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
             {
-                string recordId = GetEmbeddingRecordId(pipeline.UserId, oldPipeline.DocumentId, embeddingFile.Id);
+                string recordId = GetEmbeddingRecordId(oldPipeline.DocumentId, embeddingFile.Id);
                 if (embeddingsToKeep.Contains(recordId)) { continue; }
-
-                string indexName = pipeline.UserId;
 
                 foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
                 {
                     this._log.LogTrace("Deleting old embedding {0}", recordId);
-                    await client.DeleteAsync(indexName, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);
+                    await client.DeleteAsync(pipeline.Index, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
     }
 
-    private static string GetEmbeddingRecordId(string userId, string pipelineId, string filePartitionId)
+    private static string GetEmbeddingRecordId(string pipelineId, string filePartitionId)
     {
-        return $"usr={userId}//ppl={pipelineId}//prt={filePartitionId}";
+        return $"pl={pipelineId}//fp={filePartitionId}";
     }
 }

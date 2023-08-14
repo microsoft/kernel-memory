@@ -26,8 +26,8 @@ public class DocumentUploadRequest
         }
     }
 
+    public string Index { get; set; } = string.Empty;
     public string DocumentId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
     public TagCollection Tags { get; set; } = new();
     public List<UploadedFile> Files { get; set; } = new List<UploadedFile>();
 }
