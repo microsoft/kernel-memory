@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: ["6.0.x"]
+        dotnet-version: ["7.0.x"]
 
     environment: publish-sm-preview-packages-to-ado
 
