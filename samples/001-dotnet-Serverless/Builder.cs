@@ -9,6 +9,7 @@ using Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.Core.ContentStorage.FileSystemStorage;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Search;
 
@@ -126,10 +127,21 @@ public static class Builder
             switch (type)
             {
                 case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
+                    // Add the class for the handlers using multiple vector DBs
                     vectorDbServices.Add<AzureCognitiveSearchMemory>();
+                    // Usual DI registration
                     builder.Services.AddAzureCognitiveSearchAsVectorDb(builder.Configuration
                         .GetSection(ConfigRoot).GetSection("Services").GetSection("AzureCognitiveSearch")
                         .Get<AzureCognitiveSearchConfig>()!);
+                    break;
+
+                case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                    // Add the class for the handlers using multiple vector DBs
+                    vectorDbServices.Add<QdrantMemory>();
+                    // Usual DI registration
+                    builder.Services.AddQdrantAsVectorDb(builder.Configuration
+                        .GetSection(ConfigRoot).GetSection("Services").GetSection("Qdrant")
+                        .Get<QdrantConfig>()!);
                     break;
 
                 default:

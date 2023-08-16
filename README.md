@@ -16,6 +16,19 @@ Designed for seamless integration with
 [Semantic Kernel](https://github.com/microsoft/semantic-kernel),
 Semantic Memory enhances data-driven features in applications built using SK.
 
+### Supported backends
+
+* ↗️ Vector storage
+    * Azure Cognitive Search
+    * Qdrant
+* 📀 Content storage
+    * Azure Blobs
+    * Local file system
+* ⏳ Asynchronous ingestion queues
+    * Azure Queues
+    * RabbitMQ
+    * Local file based queue
+
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
 

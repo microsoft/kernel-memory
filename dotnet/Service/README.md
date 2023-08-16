@@ -63,8 +63,7 @@ The service depends on three main components:
   and transformed when uploaded. Currently, the solution supports local
   filesystem and Azure Blobs.
 * **Vector storage**: service used to persist embeddings. Currently, the solution
-  support Azure Cognitive Search. Soon we'll add support for Qdrant, Pinecone,
-  Chroma and more.
+  support Azure Cognitive Search and Qdrant. Soon we'll add support for more vector DBs.
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
   case it requires persistent queues like Azure Queues or RabbitMQ.

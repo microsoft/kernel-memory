@@ -1,34 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
-        <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
-        <NoWarn>CA1711,CA1724,CA1308,CA1812</NoWarn>
-        <IsPackable>true</IsPackable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <NoWarn>CA1050,CA2007,CA1826,CA1303,CA1307</NoWarn>
     </PropertyGroup>
 
-    <Import Project="../nuget/nuget-package.props" />
-
     <ItemGroup>
-        <ProjectReference Include="..\ClientLib\ClientLib.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Azure.Identity" Version="1.9.0" />
-        <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.4" />
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
-        <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
-        <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
-        <PackageReference Include="PdfPig" Version="0.1.8" />
-        <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -56,6 +37,13 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="appsettings.json" />
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "dotnet\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-using-azure-cognitive-search", "samples\007-using-azure-cognitive-search\007-using-azure-cognitive-search.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-using-qdrant", "samples\009-using-qdrant\009-using-qdrant.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,7 @@ Global
 		{CF55CAED-81D1-4748-8172-AE678047B760} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{795302A5-9006-46A6-886F-7932F6A1D8C1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{8A90555B-C28B-401B-960A-619DE9A87C4C} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -112,5 +115,9 @@ Global
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

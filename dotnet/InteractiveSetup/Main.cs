@@ -15,6 +15,7 @@ public static class Main
     private static BoundedBoolean s_cfgAzureOpenAIText = new();
     private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
     private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
+    private static BoundedBoolean s_cfgQdrant = new();
     private static BoundedBoolean s_cfgOpenAI = new();
     private static BoundedBoolean s_cfgFileSystemStorage = new();
     private static BoundedBoolean s_cfgQueue = new();
@@ -31,6 +32,7 @@ public static class Main
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
         s_cfgAzureCognitiveSearch = new();
+        s_cfgQdrant = new();
         s_cfgOpenAI = new();
         s_cfgFileSystemStorage = new();
         s_cfgQueue = new();
@@ -61,6 +63,7 @@ public static class Main
             // Embedding storage
             VectorDbTypeSetup();
             AzureCognitiveSearchSetup();
+            QdrantSetup();
 
             // Text generation
             TextGeneratorTypeSetup();
@@ -229,6 +232,15 @@ public static class Main
                         x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
                     });
                     s_cfgAzureCognitiveSearch.Value = true;
+                }),
+                new("Qdrant", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.VectorDbType = "Qdrant";
+                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                    });
+                    s_cfgQdrant.Value = true;
                 }),
                 new("-exit-", SetupUI.Exit),
             }
@@ -450,6 +462,29 @@ public static class Main
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Search <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Azure Cognitive Search <API Key>", config["APIKey"].ToString()) },
+        });
+    }
+
+    private static void QdrantSetup()
+    {
+        if (!s_cfgQdrant.Value) { return; }
+
+        s_cfgQdrant.Value = false;
+        const string ServiceName = "Qdrant";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "Endpoint", "http://127.0.0.1:6333" },
+                { "APIKey", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Endpoint", SetupUI.AskOpenQuestion("Qdrant <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Qdrant <API Key> (for cloud only)", config["APIKey"].ToString(), optional: true) },
         });
     }
 
