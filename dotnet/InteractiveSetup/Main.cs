@@ -523,7 +523,7 @@ public static class Main
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "Directory where to store files", SetupUI.AskOpenQuestion("Directory", config["Directory"].ToString()) }
+            { "Directory", SetupUI.AskOpenQuestion("Directory where to store files", config["Directory"].ToString()) }
         });
     }
 }
