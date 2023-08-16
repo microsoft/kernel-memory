@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client;
@@ -40,6 +41,13 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         string indexName,
         CancellationToken cancellationToken = default)
     {
+        indexName = this.NormalizeIndexName(indexName);
+        if (string.Equals(indexName, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
+        {
+            this._log.LogWarning("The default index cannot be deleted");
+            return Task.CompletedTask;
+        }
+
         return this._qdrantClient.DeleteCollectionAsync(indexName, cancellationToken);
     }
 
@@ -49,6 +57,8 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
+        indexName = this.NormalizeIndexName(indexName);
+
         QdrantPoint<DefaultQdrantPayload> qdrantPoint;
 
         if (string.IsNullOrEmpty(record.Id))
@@ -92,6 +102,8 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        indexName = this.NormalizeIndexName(indexName);
+
         var requiredTags = (filter != null && !filter.IsEmpty())
             ? filter.GetFilters().Select(x => $"{x.Key}={x.Value}")
             : new List<string>();
@@ -119,6 +131,8 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        indexName = this.NormalizeIndexName(indexName);
+
         var requiredTags = (filter != null && !filter.IsEmpty())
             ? filter.GetFilters().Select(x => $"{x.Key}={x.Value}")
             : new List<string>();
@@ -143,6 +157,8 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
+        indexName = this.NormalizeIndexName(indexName);
+
         QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
             .GetVectorByPayloadIdAsync(indexName, record.Id, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
@@ -154,5 +170,15 @@ public class QdrantMemory : ISemanticMemoryVectorDb
 
         this._log.LogTrace("Point ID {0} found, deleting...", existingPoint.Id);
         await this._qdrantClient.DeleteVectorsAsync(indexName, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
+    }
+
+    private string NormalizeIndexName(string indexName)
+    {
+        if (string.IsNullOrWhiteSpace(indexName))
+        {
+            indexName = Constants.DefaultIndex;
+        }
+
+        return indexName.Trim();
     }
 }

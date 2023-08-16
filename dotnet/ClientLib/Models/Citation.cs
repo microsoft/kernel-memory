@@ -8,11 +8,14 @@ namespace Microsoft.SemanticMemory.Client.Models;
 
 public class Citation
 {
+    private TagCollection _tags = new();
+
     /// <summary>
     /// Link to the source, if available.
     /// </summary>
     [JsonPropertyName("link")]
     [JsonPropertyOrder(1)]
+
     public string Link { get; set; } = string.Empty;
 
     /// <summary>
@@ -35,6 +38,27 @@ public class Citation
     [JsonPropertyName("partitions")]
     [JsonPropertyOrder(4)]
     public List<Partition> Partitions { get; set; } = new();
+
+    /// <summary>
+    /// List of document tags
+    /// </summary>
+    [JsonPropertyName("tags")]
+    [JsonPropertyOrder(5)]
+    public TagCollection Tags
+    {
+        get { return this._tags; }
+        set
+        {
+            this._tags = new();
+            foreach (KeyValuePair<string, List<string?>> tag in value)
+            {
+                // Exclude internal tags
+                if (tag.Key.StartsWith(Constants.ReservedTagsPrefix, StringComparison.OrdinalIgnoreCase)) { continue; }
+
+                this._tags[tag.Key] = tag.Value;
+            }
+        }
+    }
 
     public class Partition
     {

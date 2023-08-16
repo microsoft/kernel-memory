@@ -21,10 +21,11 @@ public static class Constants
 
     // Tags reserved for internal logic
     // public const string ReservedUserIdTag = "__user";
-    public const string ReservedDocumentIdTag = "__document_id";
-    public const string ReservedFileIdTag = "__file_id";
-    public const string ReservedFilePartitionTag = "__file_part";
-    public const string ReservedFileTypeTag = "__file_type";
+    public const string ReservedTagsPrefix = "__";
+    public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
+    public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
+    public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
+    public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
 
     // Endpoints
     public const string HttpAskEndpoint = "/ask";

@@ -16,6 +16,7 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
@@ -73,7 +74,14 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
     {
-        return this._adminClient.DeleteIndexAsync(this.NormalizeIndexName(indexName), cancellationToken);
+        indexName = this.NormalizeIndexName(indexName);
+        if (string.Equals(indexName, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
+        {
+            this._log.LogWarning("The default index cannot be deleted");
+            return Task.CompletedTask;
+        }
+
+        return this._adminClient.DeleteIndexAsync(indexName, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -373,6 +381,11 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <returns>Normalized name</returns>
     private string NormalizeIndexName(string indexName)
     {
+        if (string.IsNullOrWhiteSpace(indexName))
+        {
+            indexName = Constants.DefaultIndex;
+        }
+
         if (indexName.Length > 128)
         {
             throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");

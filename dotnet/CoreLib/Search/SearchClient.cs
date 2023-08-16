@@ -131,6 +131,7 @@ public class SearchClient
             citation.Link = linkToFile;
             citation.SourceContentType = fileContentType;
             citation.SourceName = fileName;
+            citation.Tags = memory.Tags;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
             DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
@@ -142,8 +143,6 @@ public class SearchClient
                 Relevance = (float)relevance,
                 LastUpdate = lastUpdate,
             });
-
-            break;
         }
 
         if (result.Results.Count == 0)
@@ -255,6 +254,7 @@ public class SearchClient
                 citation.Link = linkToFile;
                 citation.SourceContentType = fileContentType;
                 citation.SourceName = fileName;
+                citation.Tags = memory.Tags;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
                 DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
@@ -270,6 +270,7 @@ public class SearchClient
                 continue;
             }
 
+            // We get here after reaching the max number of tokens, in which case we stop
             break;
         }
 
