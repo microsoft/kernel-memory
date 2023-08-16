@@ -39,20 +39,18 @@ jobs:
 
       - name: Build and pack Client NuGet package
         run: |
-          dotnet pack dotnet/ClientLib/ClientLib.csproj \
+          dotnet build dotnet/ClientLib/ClientLib.csproj \
             -c Release \
             -v normal \
-            --version-suffix preview \
-            -p:VersionPrefix=${{ env.VersionPrefix }} \
+            -p:Version=${{ env.VersionPrefix }}-preview \
             --output dotnet/ClientLib/bin/Release
 
       - name: Build and pack Core NuGet package
         run: |
-          dotnet pack dotnet/CoreLib/CoreLib.csproj \
+          dotnet build dotnet/CoreLib/CoreLib.csproj \
             -c Release \
             -v normal \
-            --version-suffix preview \
-            -p:VersionPrefix=${{ env.VersionPrefix }} \
+            -p:Version=${{ env.VersionPrefix }}-preview \
             --output dotnet/CoreLib/bin/Release
 
       - name: Push Client NuGet package to ADO feed
