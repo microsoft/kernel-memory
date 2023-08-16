@@ -60,7 +60,7 @@ public class SearchClient
         var result = new SearchResult
         {
             Query = query,
-            Results = new List<SearchResult.Citation>()
+            Results = new List<Citation>()
         };
 
         if (string.IsNullOrEmpty(query))
@@ -123,7 +123,7 @@ public class SearchClient
             var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
             if (citation == null)
             {
-                citation = new SearchResult.Citation();
+                citation = new Citation();
                 result.Results.Add(citation);
             }
 
@@ -136,7 +136,7 @@ public class SearchClient
             DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
-            citation.Partitions.Add(new SearchResult.Citation.Partition
+            citation.Partitions.Add(new Citation.Partition
             {
                 Text = partitionText,
                 Relevance = (float)relevance,
@@ -247,7 +247,7 @@ public class SearchClient
                 var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
                 if (citation == null)
                 {
-                    citation = new MemoryAnswer.Citation();
+                    citation = new Citation();
                     answer.RelevantSources.Add(citation);
                 }
 
@@ -260,7 +260,7 @@ public class SearchClient
                 DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
-                citation.Partitions.Add(new MemoryAnswer.Citation.Partition
+                citation.Partitions.Add(new Citation.Partition
                 {
                     Text = partitionText,
                     Relevance = (float)relevance,

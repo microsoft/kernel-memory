@@ -244,6 +244,11 @@ var pipeline = orchestrator
 await orchestrator.RunPipelineAsync(pipeline);
 ```
 
+# Web API specs
+
+The API schema is available at http://127.0.0.1:9001/swagger/index.html when
+running the service locally with OpenAPI enabled.
+
 # Examples and Tools
 
 1. [Using the web service](samples/dotnet-WebClient)
