@@ -54,7 +54,7 @@ jobs:
             --output dotnet/CoreLib/bin/Release
 
       - name: Push Client NuGet package to ADO feed
-        run: dotnet nuget push dotnet/ClientLib/bin/Release/*.nupkg --api-key az
+        run: dotnet nuget push dotnet/ClientLib/bin/Release/Microsoft.SemanticMemory.Client.*-preview.nupkg --api-key az
 
       - name: Push Core NuGet package to ADO feed
-        run: dotnet nuget push dotnet/CoreLib/bin/Release/*.nupkg --api-key az
+        run: dotnet nuget push dotnet/CoreLib/bin/Release/Microsoft.SemanticMemory.Core.*-preview.nupkg --api-key az
