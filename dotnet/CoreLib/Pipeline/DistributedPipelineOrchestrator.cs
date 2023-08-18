@@ -34,14 +34,14 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IPipelineStepHandler handler,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
-
         if (handler == null)
         {
             throw new ArgumentNullException(nameof(handler), "The handler is NULL");
+        }
+
+        if (string.IsNullOrEmpty(handler.StepName))
+        {
+            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
         }
 
         if (this._queues.ContainsKey(handler.StepName))
@@ -79,14 +79,14 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override async Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
-
         if (handler == null)
         {
             throw new ArgumentNullException(nameof(handler), "The handler is NULL");
+        }
+
+        if (string.IsNullOrEmpty(handler.StepName))
+        {
+            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
         }
 
         if (this._queues.ContainsKey(handler.StepName)) { return; }
