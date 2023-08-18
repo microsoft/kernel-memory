@@ -49,9 +49,9 @@ public class HttpDocumentUploadRequest
         }
 
         // // TODO: extract user ID from auth headers
-        if (!form.TryGetValue(indexField, out StringValues indexes) || indexes.Count != 1 || string.IsNullOrEmpty(indexes[0]))
+        if (form.TryGetValue(indexField, out StringValues indexes) && indexes.Count > 1)
         {
-            return (result, false, $"Invalid or missing index name, '{indexField}' value empty or not found, or multiple values provided");
+            return (result, false, $"Invalid index name, '{indexField}', multiple values provided");
         }
 
         if (form.TryGetValue(documentIdField, out StringValues documentIds) && documentIds.Count > 1)
@@ -60,7 +60,13 @@ public class HttpDocumentUploadRequest
         }
 
         // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
-        result.DocumentId = documentIds.FirstOrDefault() ?? DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
+        var documentId = documentIds.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(documentId))
+        {
+            documentId = DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
+        }
+
+        result.DocumentId = documentId;
         result.Index = indexes[0]!;
         result.Files = form.Files;
 

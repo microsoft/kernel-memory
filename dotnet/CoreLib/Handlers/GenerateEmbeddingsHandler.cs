@@ -20,7 +20,7 @@ namespace Microsoft.SemanticMemory.Core.Handlers;
 public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
+    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
 
     /// <summary>
@@ -43,7 +43,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
         if (this._embeddingGenerators.Count < 1)
         {
-            this._log.LogWarning("No embedding generators configured");
+            this._log.LogError("No embedding generators configured");
         }
     }
 

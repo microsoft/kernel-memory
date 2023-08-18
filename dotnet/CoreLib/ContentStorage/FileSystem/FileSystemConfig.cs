@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage.FileSystemStorage;
+namespace Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
 
 public class FileSystemConfig
 {

@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
 using Microsoft.SemanticMemory.Core.Configuration;
@@ -22,12 +20,22 @@ namespace Microsoft.SemanticMemory.Core;
 /// </summary>
 public class Memory : ISemanticMemoryClient
 {
-    public Memory(IServiceProvider serviceProvider)
+    public Memory(
+        InProcessPipelineOrchestrator orchestrator,
+        SearchClient searchClient)
     {
-        this._orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>()
-                             ?? throw new ConfigurationException("Unable to load orchestrator. Are all the dependencies configured?");
-        this._searchClient = serviceProvider.GetService<SearchClient>()
-                             ?? throw new ConfigurationException("Unable to load search client. Are all the dependencies configured?");
+        if (orchestrator == null)
+        {
+            throw new ConfigurationException("The orchestrator is NULL");
+        }
+
+        if (searchClient == null)
+        {
+            throw new ConfigurationException("The search client is NULL");
+        }
+
+        this._orchestrator = orchestrator;
+        this._searchClient = searchClient;
     }
 
     /// <inheritdoc />

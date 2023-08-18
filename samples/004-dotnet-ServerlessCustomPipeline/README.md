@@ -1,6 +1,6 @@
 ## Example: serverless, custom ingestion pipeline using \<InProcessPipelineOrchestrator>
 
-This is a more advanced example, showing how to customize how documents
+This is a more advanced example, showing how to customize the way documents
 are processed and turned into memories.
 
 The example uses `InProcessPipelineOrchestrator` to run all the code locally,

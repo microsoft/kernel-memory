@@ -43,8 +43,10 @@ in your app.
 > ### Importing documents into your Semantic Memory can be as simple as this:
 >
 > ```csharp
-> // Use .NET Host.CreateDefaultBuilder() or WebApplication.CreateBuilder() to prepare your service provider
-> var memory = new Memory(serviceProvider);
+> var memory = new MemoryClientBuilder()
+>     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+>     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+>     .Build();
 >
 > // Import a file
 > await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
@@ -216,11 +218,12 @@ On the other hand, if you need a custom data pipeline, you can also
 customize the steps, which will be handled by your custom business logic:
 
 ```csharp
-var app = AppBuilder.Build();
-var storage = app.Services.GetService<IContentStorage>();
-
-// Use a local, synchronous, orchestrator
-var orchestrator = new InProcessPipelineOrchestrator(storage, app.Services);
+// Memory setup, e.g. how to calculate and where to store embeddings
+var memoryBuilder = new MemoryClientBuilder()
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"));
+memoryBuilder.Build();
+var orchestrator = memoryBuilder.GetOrchestrator();
 
 // Define custom .NET handlers
 var step1 = new MyHandler1("step1", orchestrator);

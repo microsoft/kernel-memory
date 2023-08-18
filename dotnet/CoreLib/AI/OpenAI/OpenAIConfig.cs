@@ -25,7 +25,7 @@ public class OpenAIConfig
     /// <summary>
     /// Optional OpenAI Organization ID.
     /// </summary>
-    public string OrgId { get; set; } = string.Empty;
+    public string? OrgId { get; set; } = string.Empty;
 
     /// <summary>
     /// How many times to retry in case of throttling.

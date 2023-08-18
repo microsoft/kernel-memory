@@ -1,16 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
 
-public static partial class DependencyInjection
+public static class MemoryClientBuilderExtensions
 {
-    public static IServiceCollection AddAzureBlobAsContentStorage(this IServiceCollection services, AzureBlobConfig config)
+    public static MemoryClientBuilder WithAzureBlobsStorage(this MemoryClientBuilder builder, AzureBlobsConfig config)
+    {
+        builder.Services.AddAzureBlobAsContentStorage(config);
+        return builder;
+    }
+}
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddAzureBlobAsContentStorage(this IServiceCollection services, AzureBlobsConfig config)
     {
         return services
-            .AddSingleton<AzureBlobConfig>(config)
-            .AddSingleton<IContentStorage, AzureBlob>()
-            .AddSingleton<AzureBlob, AzureBlob>();
+            .AddSingleton<AzureBlobsConfig>(config)
+            .AddSingleton<IContentStorage, AzureBlobsStorage>();
     }
 }

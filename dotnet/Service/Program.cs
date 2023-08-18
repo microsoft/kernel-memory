@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.Handlers;
 using Microsoft.SemanticMemory.Core.WebService;
 using Microsoft.SemanticMemory.InteractiveSetup;
-using Microsoft.SemanticMemory.Service;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -29,10 +32,28 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 // ************** APP BUILD *******************************
 // ********************************************************
 
-// The AzureBuild is a simplified version, defaulting to Azure services
-// var app = AzureBuilder.CreateBuilder(out SemanticMemoryConfig config).Build();
+// Usual .NET web app builder
+var appBuilder = WebApplication.CreateBuilder();
 
-var app = Builder.CreateBuilder(out SemanticMemoryConfig config).Build();
+// OpenAPI/swagger
+appBuilder.Services.AddEndpointsApiExplorer();
+appBuilder.Services.AddSwaggerGen();
+
+// Handlers
+appBuilder.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract");
+appBuilder.Services.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
+appBuilder.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+appBuilder.Services.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+
+// Inject memory client and its dependencies
+ISemanticMemoryClient memory = new MemoryClientBuilder(appBuilder.Services).FromAppSettings().Build();
+appBuilder.Services.AddSingleton(memory);
+
+// Build .NET web app as usual
+var app = appBuilder.Build();
+
+// Read the settings, needed below
+var config = app.Configuration.GetSection("SemanticMemory").Get<SemanticMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -108,7 +129,7 @@ if (config.Service.RunWebService)
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
 
-    // Ask endpoint
+    // Search endpoint
     app.MapPost(Constants.HttpSearchEndpoint,
             async Task<IResult> (
                 SearchQuery query,

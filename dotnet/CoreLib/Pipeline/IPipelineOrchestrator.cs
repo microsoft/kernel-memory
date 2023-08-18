@@ -48,7 +48,6 @@ public interface IPipelineOrchestrator
     /// <summary>
     /// Start a new data pipeline execution
     /// </summary>
-    /// <param name="index">Index where memory is stored</param>
     /// <param name="pipeline">Pipeline to execute</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);

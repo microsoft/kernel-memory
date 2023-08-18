@@ -7,7 +7,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
 using Microsoft.SemanticMemory.Core.Pipeline.Queue;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
@@ -22,9 +24,10 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IContentStorage contentStorage,
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
-        IServiceProvider serviceProvider,
-        ILogger<DistributedPipelineOrchestrator> log)
-        : base(contentStorage, serviceProvider, mimeTypeDetection, log)
+        List<ITextEmbeddingGeneration> embeddingGenerators,
+        List<ISemanticMemoryVectorDb> vectorDbs,
+        ILogger<DistributedPipelineOrchestrator>? log = null)
+        : base(contentStorage, embeddingGenerators, vectorDbs, mimeTypeDetection, log)
     {
         this._queueClientFactory = queueClientFactory;
     }

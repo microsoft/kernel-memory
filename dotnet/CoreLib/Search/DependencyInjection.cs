@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticMemory.Core.Search;
 
-public static partial class DependencyInjection
+public static class DependencyInjection
 {
     public static IServiceCollection AddSearchClient(this IServiceCollection services)
     {

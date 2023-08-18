@@ -1,13 +1,11 @@
 ﻿Notes about Qdrant:
 
-* Record keys (ie point IDs) can only be GUID or INT. Custom strings keys
-  are not supported. To use custom string keys the code uses a payload field.
-  This forces every upsert to check if a record exists first and to fetch
-  the point ID required for sending update requests.
+* Record keys (point IDs) are limited to GUID or INT formats. To utilize
+  custom string keys, each point has a custom "id" payload field used to
+  identify records. This methods requires one extra request during upsert
+  operations, to obtain the point ID required.
 
-* Similarity search results are sorted alphabetically, not by similarity.
-  This forces clients to download all the results and sort them locally
-  before returning the list. This also blocks from streaming results.
-
-* Search by payload requires an empty vector even if not used. This forces
-  clients searching by payload values to know the size of vectors.
+* Qdrant returns similarity search results sorted in alphabetical order,
+  rather than by similarity. To present results sorted by relevance, starting
+  from the most relevant, all search results are downloaded and sorted in
+  memory first, before being returned to the user.

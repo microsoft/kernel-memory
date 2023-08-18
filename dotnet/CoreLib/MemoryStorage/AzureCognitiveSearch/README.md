@@ -5,5 +5,5 @@
   filters. This requires clients to increase the value of "limit" ("top")
   to allow for vectors to be filtered out without leaving an empty result set.
 
-* Currently, the code does not support hybrid search combining vector search
-  with full text search.
+* Hybrid search, combining vector search with full text search, is not
+  implemented at this stage.

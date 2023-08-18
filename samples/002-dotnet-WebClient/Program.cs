@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 
 /* Use SemanticMemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".
@@ -12,14 +12,14 @@ using Microsoft.SemanticMemory.Client.Models;
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var endpoint = "http://127.0.0.1:9001/";
-MemoryWebClient memory = new(endpoint);
+var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // =======================
 // === UPLOAD ============
 // =======================
 
 // Simple file upload (checking if the file exists)
+
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
     Console.WriteLine("Uploading doc001");

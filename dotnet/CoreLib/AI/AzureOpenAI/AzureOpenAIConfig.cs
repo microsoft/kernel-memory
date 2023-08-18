@@ -27,6 +27,7 @@ public class AzureOpenAIConfig
         TextCompletion,
         ChatCompletion,
         ImageGeneration,
+        EmbeddingGeneration,
     }
 
     /// <summary>

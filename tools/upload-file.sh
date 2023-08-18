@@ -13,12 +13,12 @@ Help for Bash script
 
 Usage:
 
-    ./upload-file.sh -s <url> -f <file path> -u <id> [-i <id>] [-t <tag1> -t <tag2> -t <tag3> (...)]
+    ./upload-file.sh -s <url> -f <file path> [-p <index name>] [-i <id>] [-t <tag1> -t <tag2> -t <tag3> (...)]
 
     -s web service URL     (required) Semantic Memory web service URL.
     -f file path           (required) Path to the document to upload.
-    -u userId              (required) User ID.
 
+    -p index               (optional) Index where to store memories.
     -i document ID         (optional) Unique identifier for the document uploaded.
     -t "key=value"         (optional) Key-Value tag. Multiple tags and values per tag can be set.
 
@@ -46,9 +46,9 @@ readParameters() {
       shift
       FILENAME=$1
       ;;
-    -u)
+    -p)
       shift
-      USER_ID=$1
+      INDEXNAME=$1
       ;;
     -i)
       shift
@@ -72,10 +72,6 @@ validateParameters() {
     echo "Please specify the web service URL"
     exit 1
   fi
-  if [ -z "$USER_ID" ]; then
-    echo "Please specify the user ID"
-    exit 2
-  fi
   if [ -z "$FILENAME" ]; then
     echo "Please specify a file to upload"
     exit 3
@@ -92,7 +88,7 @@ validateParameters() {
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL USER_ID FILENAME DOCUMENT_ID TAGS
+  unset SERVICE_URL FILENAME INDEXNAME DOCUMENT_ID TAGS
   unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
@@ -115,7 +111,7 @@ done
 set -x
 curl -v \
   -F 'file1=@"'"${FILENAME}"'"' \
-  -F 'userId="'"${USER_ID}"'"' \
+  -F 'index="'"${INDEXNAME}"'"' \
   -F 'documentId="'"${DOCUMENT_ID}"'"' \
   $TAGS_FIELD \
   $SERVICE_URL/upload

@@ -3,10 +3,20 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
 
-public static partial class DependencyInjection
+public static class MemoryClientBuilderExtensions
+{
+    public static MemoryClientBuilder WithAzurequeuePipeline(this MemoryClientBuilder builder, AzureQueueConfig config)
+    {
+        builder.Services.AddAzureQueue(config);
+        return builder;
+    }
+}
+
+public static class DependencyInjection
 {
     public static IServiceCollection AddAzureQueue(this IServiceCollection services, AzureQueueConfig config)
     {

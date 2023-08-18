@@ -1,31 +1,31 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.AI.OpenAI;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage;
+using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
 using Microsoft.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticMemory.InteractiveSetup;
+using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
-// Run `dotnet run setup` to run this code and setup the example
-if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
-{
-    Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
-}
+// Alternative approach using appsettings.json and appsettings.development.json
+//
+// Run `dotnet run setup` to create appsettings.development.json
+// if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+// {
+//     Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
+// }
+//
+// var builder = new MemoryClientBuilder().FromAppSettings();
 
-/* Define a custom pipeline, 100% C# handlers, and run it in this process.
- * Note: no web service required to run this.
- * The pipeline might use settings in appsettings.json, but uses
- * 'InProcessPipelineOrchestrator' explicitly. */
+var memoryBuilder = new MemoryClientBuilder()
+    .WithFilesystemStorage("tmp")
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    // .WithQdrant("http://127.0.0.1:6333")
+    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"));
 
-Console.WriteLine("=== In process file import example ===");
-var app = Builder.CreateBuilder(out SemanticMemoryConfig config).Build();
-
-// Azure Blobs or FileSystem, depending on settings in appsettings.json
-var storage = app.Services.GetService<IContentStorage>();
-
-// Data pipelines orchestrator
-InProcessPipelineOrchestrator orchestrator = new(storage!, app.Services);
+var _ = memoryBuilder.Build();
+var orchestrator = memoryBuilder.GetOrchestrator();
 
 // Add pipeline handlers
 Console.WriteLine("* Defining pipeline handlers...");
@@ -65,3 +65,5 @@ Console.WriteLine("* Executing pipeline...");
 await orchestrator.RunPipelineAsync(pipeline);
 
 Console.WriteLine("* File import completed.");
+
+Console.WriteLine("Refactoring in progress");

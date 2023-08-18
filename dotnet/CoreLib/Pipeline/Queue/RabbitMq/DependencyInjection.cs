@@ -3,10 +3,20 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticMemory.Client;
+using Microsoft.SemanticMemory.Core.AppBuilders;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.RabbitMq;
 
-public static partial class DependencyInjection
+public static class MemoryClientBuilderExtensions
+{
+    public static MemoryClientBuilder WithRabbitMQPipeline(this MemoryClientBuilder builder, RabbitMqConfig config)
+    {
+        builder.Services.AddRabbitMq(config);
+        return builder;
+    }
+}
+
+public static class DependencyInjection
 {
     public static IServiceCollection AddRabbitMq(this IServiceCollection services, RabbitMqConfig config)
     {

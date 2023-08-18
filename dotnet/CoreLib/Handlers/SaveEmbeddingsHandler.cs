@@ -41,7 +41,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         this._log.LogInformation("Handler {0} ready, {1} vector storages", stepName, this._vectorDbs.Count);
         if (this._vectorDbs.Count < 1)
         {
-            this._log.LogWarning("No vector storage configured");
+            this._log.LogError("No vector storage configured");
         }
     }
 

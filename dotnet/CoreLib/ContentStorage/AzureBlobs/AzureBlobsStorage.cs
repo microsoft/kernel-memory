@@ -16,32 +16,32 @@ using Microsoft.SemanticMemory.Core.Diagnostics;
 namespace Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
-public class AzureBlob : IContentStorage
+public class AzureBlobsStorage : IContentStorage
 {
     private const string DefaultContainerName = "smemory";
     private const string DefaultEndpointSuffix = "core.windows.net";
 
     private readonly BlobContainerClient _containerClient;
     private readonly string _containerName;
-    private readonly ILogger<AzureBlob> _log;
+    private readonly ILogger<AzureBlobsStorage> _log;
 
-    public AzureBlob(
-        AzureBlobConfig config,
-        ILogger<AzureBlob>? log = null)
+    public AzureBlobsStorage(
+        AzureBlobsConfig config,
+        ILogger<AzureBlobsStorage>? log = null)
     {
-        this._log = log ?? DefaultLogger<AzureBlob>.Instance;
+        this._log = log ?? DefaultLogger<AzureBlobsStorage>.Instance;
 
         BlobServiceClient client;
         switch (config.Auth)
         {
-            case AzureBlobConfig.AuthTypes.ConnectionString:
+            case AzureBlobsConfig.AuthTypes.ConnectionString:
             {
                 this.ValidateConnectionString(config.ConnectionString);
                 client = new BlobServiceClient(config.ConnectionString);
                 break;
             }
 
-            case AzureBlobConfig.AuthTypes.AccountKey:
+            case AzureBlobsConfig.AuthTypes.AccountKey:
             {
                 this.ValidateAccountName(config.Account);
                 this.ValidateAccountKey(config.AccountKey);
@@ -50,7 +50,7 @@ public class AzureBlob : IContentStorage
                 break;
             }
 
-            case AzureBlobConfig.AuthTypes.AzureIdentity:
+            case AzureBlobsConfig.AuthTypes.AzureIdentity:
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
@@ -58,7 +58,7 @@ public class AzureBlob : IContentStorage
                 break;
             }
 
-            case AzureBlobConfig.AuthTypes.ManualStorageSharedKeyCredential:
+            case AzureBlobsConfig.AuthTypes.ManualStorageSharedKeyCredential:
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
@@ -66,7 +66,7 @@ public class AzureBlob : IContentStorage
                 break;
             }
 
-            case AzureBlobConfig.AuthTypes.ManualAzureSasCredential:
+            case AzureBlobsConfig.AuthTypes.ManualAzureSasCredential:
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
@@ -74,7 +74,7 @@ public class AzureBlob : IContentStorage
                 break;
             }
 
-            case AzureBlobConfig.AuthTypes.ManualTokenCredential:
+            case AzureBlobsConfig.AuthTypes.ManualTokenCredential:
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);

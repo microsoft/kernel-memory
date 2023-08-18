@@ -21,7 +21,7 @@ public class AzureTextGeneration : ITextGeneration
     private readonly bool _isTextModel;
     private readonly string _deployment;
 
-    public AzureTextGeneration(AzureOpenAIConfig config, ILogger<AzureTextGeneration>? log)
+    public AzureTextGeneration(AzureOpenAIConfig config, ILogger<AzureTextGeneration>? log = null)
     {
         this._log = log ?? DefaultLogger<AzureTextGeneration>.Instance;
 
@@ -40,7 +40,7 @@ public class AzureTextGeneration : ITextGeneration
 
         OpenAIClientOptions options = new()
         {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Min(0, config.MaxRetries), new SequentialDelayStrategy()),
+            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), new SequentialDelayStrategy()),
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,

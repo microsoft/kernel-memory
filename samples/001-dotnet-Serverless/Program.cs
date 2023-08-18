@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core;
-using Microsoft.SemanticMemory.InteractiveSetup;
-
-// Run `dotnet run setup` to run this code and setup the example
-if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
-{
-    Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
-}
+using Microsoft.SemanticMemory.Core.AI.OpenAI;
+using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -18,18 +15,16 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new Memory(Builder.GetServiceProvider());
+var memory = new MemoryClientBuilder()
+    .WithFilesystemStorage("tmp")
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    // .WithQdrant("http://127.0.0.1:6333")
+    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+    .BuildServerlessClient();
 
 // =======================
 // === UPLOAD ============
 // =======================
-await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
-await memory.ImportDocumentAsync(new Document("file001")
-    .AddFile("business-plan.docx")
-    .AddTag("user", "user@some.email")
-    .AddTag("collection", "business")
-    .AddTag("collection", "plans")
-    .AddTag("fiscalYear", "2023"));
 
 // Simple file upload (checking if the file exists)
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))

@@ -13,11 +13,12 @@ Help for Bash script
 
 Usage:
 
-    ./search.sh -s <url> -u <id> -q "<query>" -f "<filter>"
+    ./search.sh -s <url> -q "<query>" [-p <index name>] [-f "<filter>"]
 
     -s web service URL     (required) Semantic Memory web service URL.
-    -u userId              (required) User ID.
     -q query               (required) Text to search, using quotes.
+
+    -p index               (optional) Index to search.
     -f filter              (optional) Key-value filter, e.g. -f '"type":["news","article"],"group":["emails"]'
 
     -h                     Print this help content.
@@ -25,7 +26,7 @@ Usage:
 
 Example:
 
-    ./search.sh -s http://127.0.0.1:9001 -u me -q "Semantic Kernel"
+    ./search.sh -s http://127.0.0.1:9001 -p mydata -q "Semantic Kernel"
 
 
 For more information visit https://github.com/microsoft/semantic-memory
@@ -40,13 +41,13 @@ readParameters() {
       shift
       SERVICE_URL=$1
       ;;
-    -u)
-      shift
-      USER_ID=$1
-      ;;
     -q)
       shift
-      QUESTION=$1
+      QUERY=$1
+      ;;
+    -p)
+      shift
+      INDEXNAME=$1
       ;;
     -f)
       shift
@@ -66,11 +67,7 @@ validateParameters() {
     echo "Please specify the web service URL"
     exit 1
   fi
-  if [ -z "$USER_ID" ]; then
-    echo "Please specify the user ID"
-    exit 2
-  fi
-  if [ -z "$QUESTION" ]; then
+  if [ -z "$QUERY" ]; then
     echo "Please specify the user ID"
     exit 2
   fi
@@ -78,7 +75,7 @@ validateParameters() {
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL USER_ID QUESTION FILTER
+  unset SERVICE_URL QUERY INDEXNAME FILTER
   unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
@@ -94,5 +91,5 @@ validateParameters
 # Send HTTP request using curl
 set -x
 curl -v -H 'Content-Type: application/json' \
-    -d'{"query":"'"${QUESTION}"'","userId":"'"${USER_ID}"'","filter":{'"${FILTER}"'}}' \
+    -d'{"query":"'"${QUERY}"'","index":"'"${INDEXNAME}"'","filter":{'"${FILTER}"'}}' \
     $SERVICE_URL/search

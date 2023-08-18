@@ -20,7 +20,7 @@ public class OpenAITextGeneration : ITextGeneration
     private readonly bool _isTextModel;
     private readonly string _model;
 
-    public OpenAITextGeneration(OpenAIConfig config, ILogger<OpenAITextGeneration>? log)
+    public OpenAITextGeneration(OpenAIConfig config, ILogger<OpenAITextGeneration>? log = null)
     {
         var textModels = new List<string>
         {
@@ -44,7 +44,7 @@ public class OpenAITextGeneration : ITextGeneration
 
         OpenAIClientOptions options = new()
         {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Min(0, config.MaxRetries), new SequentialDelayStrategy()),
+            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), new SequentialDelayStrategy()),
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,

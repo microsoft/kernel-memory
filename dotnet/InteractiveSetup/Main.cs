@@ -402,6 +402,7 @@ public static class Main
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
+            { "APIType", "EmbeddingGeneration" },
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()) },
             { "Deployment", SetupUI.AskOpenQuestion("Azure OpenAI <embedding model deployment name>", config["Deployment"].ToString()) },

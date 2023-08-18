@@ -7,8 +7,12 @@ All the logic is executed locally using the default C# handlers. Depending
 on your settings, files can be stored locally or in Azure Blobs.
 
 ```csharp
-// Use .NET Host.CreateDefaultBuilder() or WebApplication.CreateBuilder() to prepare your service provider
-var memory = new Memory(serviceProvider);
+// Use the memory builder to customize credentials and dependencies
+var memory = new MemoryClientBuilder()
+    .WithFilesystemStorage("tmp")
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+    .BuildServerlessClient();
 
 await memory.ImportDocumentAsync(new Document("doc012")
     .AddFiles(new[] {

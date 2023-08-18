@@ -28,7 +28,7 @@ public class SequentialDelayStrategy : DelayStrategy
 
     protected override TimeSpan GetNextDelayCore(Response? response, int retryNumber)
     {
-        int index = retryNumber - 1;
+        int index = Math.Max(0, retryNumber - 1);
         return index >= s_pollingSequence.Length ? s_maxDelay : s_pollingSequence[index];
     }
 }

@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "003-curl-calling-webservice
 		samples\curl\README.md = samples\003-curl-calling-webservice\README.md
 		samples\curl\ask-example.sh = samples\003-curl-calling-webservice\ask-example.sh
 		samples\curl\upload-example.sh = samples\003-curl-calling-webservice\upload-example.sh
+		samples\003-curl-calling-webservice\search-example.sh = samples\003-curl-calling-webservice\search-example.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "samples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"

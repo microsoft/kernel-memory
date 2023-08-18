@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.Pipeline;
 using Microsoft.SemanticMemory.Core.Search;
 using Microsoft.SemanticMemory.Core.WebService;
@@ -19,6 +20,16 @@ public class MemoryService : ISemanticMemoryClient
         IPipelineOrchestrator orchestrator,
         SearchClient searchClient)
     {
+        if (orchestrator == null)
+        {
+            throw new ConfigurationException("The orchestrator is NULL");
+        }
+
+        if (searchClient == null)
+        {
+            throw new ConfigurationException("The search client is NULL");
+        }
+
         this._orchestrator = orchestrator;
         this._searchClient = searchClient;
     }

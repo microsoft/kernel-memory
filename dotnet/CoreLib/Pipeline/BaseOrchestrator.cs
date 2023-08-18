@@ -6,12 +6,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
@@ -30,7 +28,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,
-        IServiceProvider serviceProvider,
+        List<ITextEmbeddingGeneration> embeddingGenerators,
+        List<ISemanticMemoryVectorDb> vectorDbs,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<BaseOrchestrator>? log = null)
     {
@@ -38,26 +37,17 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this.ContentStorage = contentStorage;
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
         this.CancellationTokenSource = new CancellationTokenSource();
+        this._embeddingGenerators = embeddingGenerators;
+        this._vectorDbs = vectorDbs;
 
-        this._embeddingGenerators = new List<ITextEmbeddingGeneration>();
-
-        var embeddingGenerators = serviceProvider.GetService<TypeCollection<ITextEmbeddingGeneration>>()
-                                  ?? throw new SemanticMemoryException("Service provider is missing " + typeof(TypeCollection<ITextEmbeddingGeneration>));
-        foreach (Type t in embeddingGenerators.GetList())
+        if (embeddingGenerators?.Count == 0)
         {
-            var service = serviceProvider.GetService(t)
-                          ?? throw new SemanticMemoryException("Unable to instantiate " + t.FullName);
-            this._embeddingGenerators.Add((ITextEmbeddingGeneration)service);
+            this.Log.LogWarning("No embedding generators available");
         }
 
-        this._vectorDbs = new List<ISemanticMemoryVectorDb>();
-        var vectorDbs = serviceProvider.GetService<TypeCollection<ISemanticMemoryVectorDb>>()
-                        ?? throw new SemanticMemoryException("Service provider is missing " + typeof(TypeCollection<ISemanticMemoryVectorDb>));
-        foreach (Type t in vectorDbs.GetList())
+        if (vectorDbs?.Count == 0)
         {
-            var service = serviceProvider.GetService(t)
-                          ?? throw new SemanticMemoryException("Unable to instantiate " + t.FullName);
-            this._vectorDbs.Add((ISemanticMemoryVectorDb)service);
+            this.Log.LogWarning("No vector DBs available");
         }
     }
 

@@ -6,8 +6,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Core.MemoryStorage;
 
 namespace Microsoft.SemanticMemory.Core.Pipeline;
 
@@ -17,10 +19,11 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
 
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
-        IServiceProvider serviceProvider,
+        List<ITextEmbeddingGeneration> embeddingGenerators,
+        List<ISemanticMemoryVectorDb> vectorDbs,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, serviceProvider, mimeTypeDetection, log)
+        : base(contentStorage, embeddingGenerators, vectorDbs, mimeTypeDetection, log)
     {
     }
 
