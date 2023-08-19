@@ -60,6 +60,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-using-azure-cognitive-s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-using-qdrant", "samples\009-using-qdrant\009-using-qdrant.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{02B67859-5B16-46E3-9CB4-916887275649}"
+	ProjectSection(SolutionItems) = preProject
+		dotnet\nuget\icon.png = dotnet\nuget\icon.png
+		dotnet\nuget\nuget-package.props = dotnet\nuget\nuget-package.props
+		dotnet\nuget\NUGET.md = dotnet\nuget\NUGET.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +83,8 @@ Global
 		{795302A5-9006-46A6-886F-7932F6A1D8C1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{8A90555B-C28B-401B-960A-619DE9A87C4C} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
+		{02B67859-5B16-46E3-9CB4-916887275649} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
