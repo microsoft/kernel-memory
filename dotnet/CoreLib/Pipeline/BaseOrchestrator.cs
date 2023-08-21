@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Client;
 using Microsoft.SemanticMemory.Client.Models;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
@@ -20,6 +21,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
     private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
+    private readonly List<string> _defaultIngestionSteps;
 
     protected IContentStorage ContentStorage { get; private set; }
     protected ILogger<BaseOrchestrator> Log { get; private set; }
@@ -31,11 +33,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         List<ITextEmbeddingGeneration> embeddingGenerators,
         List<ISemanticMemoryVectorDb> vectorDbs,
         IMimeTypeDetection? mimeTypeDetection = null,
+        SemanticMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
-        this.MimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this.ContentStorage = contentStorage;
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
+        this.MimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
+        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.DefaultSteps;
+
+        this.ContentStorage = contentStorage;
         this.CancellationTokenSource = new CancellationTokenSource();
         this._embeddingGenerators = embeddingGenerators;
         this._vectorDbs = vectorDbs;
@@ -65,18 +70,28 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadRequest.Files.Count, uploadRequest.DocumentId);
 
-        // TODO: allow custom pipeline steps from UploadRequest
-        // Define all the steps in the pipeline
         var pipeline = this.PrepareNewDocumentUpload(
-                index: index,
-                documentId: uploadRequest.DocumentId,
-                uploadRequest.Tags,
-                uploadRequest.Files)
-            .Then("extract")
-            .Then("partition")
-            .Then("gen_embeddings")
-            .Then("save_embeddings")
-            .Build();
+            index: index,
+            documentId: uploadRequest.DocumentId,
+            uploadRequest.Tags,
+            uploadRequest.Files);
+
+        if (uploadRequest.Steps.Count > 0)
+        {
+            foreach (var step in uploadRequest.Steps)
+            {
+                pipeline.Then(step);
+            }
+        }
+        else
+        {
+            foreach (var step in this._defaultIngestionSteps)
+            {
+                pipeline.Then(step);
+            }
+        }
+
+        pipeline.Build();
 
         try
         {

@@ -13,6 +13,9 @@ public static class Constants
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
 
+    // Form field containing the list of pipeline steps
+    public const string WebServiceStepsField = "steps";
+
     // Internal file used to track progress of asynchronous pipelines
     public const string PipelineStatusFilename = "__pipeline_status.json";
 

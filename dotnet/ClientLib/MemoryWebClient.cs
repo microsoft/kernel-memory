@@ -29,36 +29,54 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(Document document, string? index = null, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(
+        Document document,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
     {
-        var uploadRequest = document.ToDocumentUploadRequest(index);
+        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(string fileName, string? documentId = null, TagCollection? tags = null, string? index = null, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(
+        string fileName,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddFile(fileName);
-        var uploadRequest = document.ToDocumentUploadRequest(index);
+        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<string> ImportDocumentAsync(DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
+    public Task<string> ImportDocumentAsync(
+        DocumentUploadRequest uploadRequest,
+        CancellationToken cancellationToken = default)
     {
         var index = IndexExtensions.CleanName(uploadRequest.Index);
         return this.ImportInternalAsync(index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<bool> IsDocumentReadyAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(
+        string documentId,
+        string? index = null,
+        CancellationToken cancellationToken = default)
     {
         DataPipelineStatus? status = await this.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken).ConfigureAwait(false);
         return status != null && status.Completed;
     }
 
     /// <inheritdoc />
-    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> GetDocumentStatusAsync(
+        string documentId,
+        string? index = null,
+        CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
         var url = Constants.HttpUploadStatusEndpointWithParams
@@ -84,7 +102,11 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<SearchResult> SearchAsync(string query, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<SearchResult> SearchAsync(
+        string query,
+        string? index = null,
+        MemoryFilter? filter = null,
+        CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
         SearchQuery request = new() { Index = index, Query = query, Filter = filter ?? new MemoryFilter() };
@@ -98,7 +120,11 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<MemoryAnswer> AskAsync(string question, string? index = null, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
         MemoryQuery request = new() { Index = index, Question = question, Filter = filter ?? new MemoryFilter() };

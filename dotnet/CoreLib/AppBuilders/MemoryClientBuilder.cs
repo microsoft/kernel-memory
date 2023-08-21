@@ -381,7 +381,7 @@ public class MemoryClientBuilder
         return new MemoryWebClient(endpoint);
     }
 
-    public ISemanticMemoryClient BuildServerlessClient()
+    public Memory BuildServerlessClient()
     {
         try
         {
@@ -404,7 +404,7 @@ public class MemoryClientBuilder
         }
     }
 
-    public ISemanticMemoryClient BuildAsyncClient()
+    public MemoryService BuildAsyncClient()
     {
         this.CompleteAsyncClient();
         var app = this._appBuilder.Build();

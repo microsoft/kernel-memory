@@ -18,6 +18,7 @@ public class HttpDocumentUploadRequest
     public string Index { get; set; } = string.Empty;
     public string DocumentId { get; set; } = string.Empty;
     public TagCollection Tags { get; set; } = new();
+    public List<string> Steps { get; set; } = new();
     public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
 
     /* Resources:
@@ -30,6 +31,7 @@ public class HttpDocumentUploadRequest
     {
         string indexField = Constants.WebServiceIndexField;
         string documentIdField = Constants.WebServiceDocumentIdField;
+        string stepsField = Constants.WebServiceStepsField;
 
         var result = new HttpDocumentUploadRequest();
 
@@ -48,7 +50,6 @@ public class HttpDocumentUploadRequest
             return (result, false, "No file was uploaded");
         }
 
-        // // TODO: extract user ID from auth headers
         if (form.TryGetValue(indexField, out StringValues indexes) && indexes.Count > 1)
         {
             return (result, false, $"Invalid index name, '{indexField}', multiple values provided");
@@ -64,6 +65,18 @@ public class HttpDocumentUploadRequest
         if (string.IsNullOrWhiteSpace(documentId))
         {
             documentId = DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
+        }
+
+        // Optional pipeline steps. The user can pass a custom list or leave it to the system to use the default.
+        if (form.TryGetValue(stepsField, out StringValues steps))
+        {
+            foreach (string? step in steps)
+            {
+                if (string.IsNullOrWhiteSpace(step)) { continue; }
+
+                var list = step.Replace(' ', ';').Replace(',', ';').Split(';');
+                result.Steps.AddRange(from s in list where !string.IsNullOrWhiteSpace(s) select s.Trim());
+            }
         }
 
         result.DocumentId = documentId;

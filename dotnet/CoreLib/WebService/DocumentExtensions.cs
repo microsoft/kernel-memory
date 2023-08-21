@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Client;
@@ -13,13 +14,18 @@ namespace Microsoft.SemanticMemory.Core.WebService;
 public static class DocumentExtensions
 {
     // Note: this code is not .NET Standard 2.0 compatible
-    public static async Task<DocumentUploadRequest> ToDocumentUploadRequestAsync(this Document doc, string? index, CancellationToken cancellationToken)
+    public static async Task<DocumentUploadRequest> ToDocumentUploadRequestAsync(
+        this Document doc,
+        string? index,
+        IEnumerable<string>? steps,
+        CancellationToken cancellationToken)
     {
         var uploadRequest = new DocumentUploadRequest
         {
             Index = IndexExtensions.CleanName(index),
             DocumentId = doc.Id,
-            Tags = doc.Tags
+            Tags = doc.Tags,
+            Steps = steps?.ToList() ?? new List<string>(),
         };
 
         var files = new List<DocumentUploadRequest.UploadedFile>();

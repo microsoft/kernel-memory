@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.SemanticMemory.Client.Models;
 
@@ -76,13 +77,17 @@ public class Document
 public static class DocumentExtensions
 {
     // Note: this code is a .NET Standard 2.0 version of ToDocumentUploadRequestAsync()
-    public static DocumentUploadRequest ToDocumentUploadRequest(this Document doc, string? index)
+    public static DocumentUploadRequest ToDocumentUploadRequest(
+        this Document doc,
+        string? index,
+        IEnumerable<string>? steps)
     {
         var uploadRequest = new DocumentUploadRequest
         {
             Index = IndexExtensions.CleanName(index),
             DocumentId = doc.Id,
-            Tags = doc.Tags
+            Tags = doc.Tags,
+            Steps = steps?.ToList() ?? new List<string>(),
         };
 
         var files = new List<DocumentUploadRequest.UploadedFile>();

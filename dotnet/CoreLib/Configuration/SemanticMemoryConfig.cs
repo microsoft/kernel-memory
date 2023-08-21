@@ -24,6 +24,8 @@ public class SemanticMemoryConfig
         public List<string> EmbeddingGeneratorTypes { get; set; } = new();
 
         public List<string> VectorDbTypes { get; set; } = new();
+
+        public List<string> DefaultSteps { get; set; } = new() { "extract", "partition", "gen_embeddings", "save_embeddings" };
     }
 
     /// <summary>
@@ -41,7 +43,7 @@ public class SemanticMemoryConfig
     /// <summary>
     /// Semantic Memory Service settings.
     /// </summary>
-    public ServiceConfig Service { get; set; } = new ServiceConfig();
+    public ServiceConfig Service { get; set; } = new();
 
     /// <summary>
     /// Documents storage settings.

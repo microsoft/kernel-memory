@@ -39,7 +39,8 @@ var appBuilder = WebApplication.CreateBuilder();
 appBuilder.Services.AddEndpointsApiExplorer();
 appBuilder.Services.AddSwaggerGen();
 
-// Handlers
+// Handlers - Register these handlers to run as hosted services. At start
+// each service cass IPipelineOrchestrator.AddHandlerAsync() to register the in the orchestrator.
 appBuilder.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract");
 appBuilder.Services.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
 appBuilder.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");

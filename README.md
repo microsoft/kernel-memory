@@ -210,7 +210,7 @@ to **start the Semantic Memory Service**:
 > }
 > ```
 
-You can find a [full example here](samples/002-dotnet-WebClient/README.md).
+You can find a [full example here](examples/002-dotnet-WebClient/README.md).
 
 ## Custom memory ingestion pipelines
 
@@ -256,12 +256,13 @@ running the service locally with OpenAPI enabled.
 
 ## Examples
 
-1. [Collection of Jupyter notebooks with various tests](samples/000-notebooks)
-2. [Importing files and asking question without running the service (serverless mode)](samples/001-dotnet-Serverless)
-3. [Using the Semantic Memory web service](samples/002-dotnet-WebClient)
-4. [How to upload files from command line with curl](samples/003-curl-calling-webservice)
-5. [Processing files with custom steps](samples/004-dotnet-ServerlessCustomPipeline)
-6. [Writing a custom pipeline handler](samples/006-dotnet-CustomHandler)
+1. [Collection of Jupyter notebooks with various tests](examples/000-notebooks)
+2. [Importing files and asking question without running the service (serverless mode)](examples/001-dotnet-Serverless)
+3. [Using the Semantic Memory web service](examples/002-dotnet-WebClient)
+4. [How to upload files from command line with curl](examples/003-curl-calling-webservice)
+5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
+6. [Using a custom pipeline handler with serveless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)
+6. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
 
 ## Tools
 

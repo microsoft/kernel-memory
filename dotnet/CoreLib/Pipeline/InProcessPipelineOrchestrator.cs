@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage;
 using Microsoft.SemanticMemory.Core.Diagnostics;
 using Microsoft.SemanticMemory.Core.MemoryStorage;
@@ -21,9 +22,10 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
         List<ISemanticMemoryVectorDb> vectorDbs,
+        SemanticMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, vectorDbs, mimeTypeDetection, log)
+        : base(contentStorage, embeddingGenerators, vectorDbs, mimeTypeDetection, config, log)
     {
     }
 
@@ -31,6 +33,17 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     public override Task AddHandlerAsync(
         IPipelineStepHandler handler,
         CancellationToken cancellationToken = default)
+    {
+        this.AddHandler(handler);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Synchronous (queue less) version of AddHandlerAsync. Register a pipeline handler.
+    /// If a handler for the same step name already exists, it gets replaced.
+    /// </summary>
+    /// <param name="handler">Pipeline handler instance</param>
+    public void AddHandler(IPipelineStepHandler handler)
     {
         if (handler == null)
         {
@@ -48,8 +61,6 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         }
 
         this._handlers[handler.StepName] = handler;
-
-        return Task.CompletedTask;
     }
 
     ///<inheritdoc />

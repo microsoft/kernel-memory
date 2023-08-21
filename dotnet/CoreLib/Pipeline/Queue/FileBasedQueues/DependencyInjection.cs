@@ -9,6 +9,11 @@ namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.FileBasedQueues;
 
 public static class MemoryClientBuilderExtensions
 {
+    public static MemoryClientBuilder WithFileBasedQueuePipeline(this MemoryClientBuilder builder, string path)
+    {
+        return builder.WithFileBasedQueuePipeline(new FileBasedQueueConfig { Path = path });
+    }
+
     public static MemoryClientBuilder WithFileBasedQueuePipeline(this MemoryClientBuilder builder, FileBasedQueueConfig config)
     {
         builder.Services.AddFileBasedQueue(config);
@@ -18,6 +23,11 @@ public static class MemoryClientBuilderExtensions
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddFileBasedQueue(this IServiceCollection services, string path)
+    {
+        return services.AddFileBasedQueue(new FileBasedQueueConfig { Path = path });
+    }
+
     public static IServiceCollection AddFileBasedQueue(this IServiceCollection services, FileBasedQueueConfig config)
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)

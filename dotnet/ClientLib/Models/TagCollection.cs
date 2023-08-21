@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticMemory.Client.Models;
 // JSON serializable alternative to NameValueCollection
 public class TagCollection : IDictionary<string, List<string?>>
 {
-    private readonly IDictionary<string, List<string?>> _data = new Dictionary<string, List<string?>>();
+    private readonly IDictionary<string, List<string?>> _data = new Dictionary<string, List<string?>>(StringComparer.OrdinalIgnoreCase);
 
     public ICollection<string> Keys { get { return this._data.Keys; } }
 

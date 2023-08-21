@@ -15,30 +15,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
 	ProjectSection(SolutionItems) = preProject
-		samples\README.md = samples\README.md
-		samples\.editorconfig = samples\.editorconfig
+		examples\README.md = examples\README.md
+		examples\.editorconfig = examples\.editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-Serverless", "samples\001-dotnet-Serverless\001-dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-Serverless", "examples\001-dotnet-Serverless\001-dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-WebClient", "samples\002-dotnet-WebClient\002-dotnet-WebClient.csproj", "{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-WebClient", "examples\002-dotnet-WebClient\002-dotnet-WebClient.csproj", "{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "003-curl-calling-webservice", "003-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
 	ProjectSection(SolutionItems) = preProject
-		samples\curl\test.pdf = samples\003-curl-calling-webservice\test.pdf
-		samples\curl\README.md = samples\003-curl-calling-webservice\README.md
-		samples\curl\ask-example.sh = samples\003-curl-calling-webservice\ask-example.sh
-		samples\curl\upload-example.sh = samples\003-curl-calling-webservice\upload-example.sh
-		samples\003-curl-calling-webservice\search-example.sh = samples\003-curl-calling-webservice\search-example.sh
+		examples\curl\test.pdf = examples\003-curl-calling-webservice\test.pdf
+		examples\curl\README.md = examples\003-curl-calling-webservice\README.md
+		examples\curl\ask-example.sh = examples\003-curl-calling-webservice\ask-example.sh
+		examples\curl\upload-example.sh = examples\003-curl-calling-webservice\upload-example.sh
+		examples\003-curl-calling-webservice\search-example.sh = examples\003-curl-calling-webservice\search-example.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "samples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "examples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "005-dotnet-ExtractTextFromDocs", "samples\005-dotnet-ExtractTextFromDocs\005-dotnet-ExtractTextFromDocs.csproj", "{375A8841-9C49-46B1-8F26-2F80C70D3A32}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "005-dotnet-InProcessMemoryWithCustomHandler", "examples\005-dotnet-InProcessMemoryWithCustomHandler\005-dotnet-InProcessMemoryWithCustomHandler.csproj", "{375A8841-9C49-46B1-8F26-2F80C70D3A32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "006-dotnet-CustomHandler", "samples\006-dotnet-CustomHandler\006-dotnet-CustomHandler.csproj", "{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "006-dotnet-CustomHandlerAsAService", "examples\006-dotnet-CustomHandlerAsAService\006-dotnet-CustomHandlerAsAService.csproj", "{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
@@ -58,9 +58,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "dotnet\Service\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "dotnet\InteractiveSetup\InteractiveSetup.csproj", "{2C252647-50A5-49B9-9E5F-A32C3DB22218}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-using-azure-cognitive-search", "samples\007-using-azure-cognitive-search\007-using-azure-cognitive-search.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "102-using-azure-cognitive-search", "examples\102-using-azure-cognitive-search\102-using-azure-cognitive-search.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-using-qdrant", "samples\009-using-qdrant\009-using-qdrant.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "103-using-qdrant", "examples\103-using-qdrant\103-using-qdrant.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
 EndProject
@@ -71,13 +71,72 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{02B67859
 		dotnet\nuget\NUGET.md = dotnet\nuget\NUGET.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-using-core-nuget", "samples\010-using-core-nuget\010-using-core-nuget.csproj", "{17F42A38-46CB-4471-AF93-3AE6981B7278}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101-using-core-nuget", "examples\101-using-core-nuget\101-using-core-nuget.csproj", "{17F42A38-46CB-4471-AF93-3AE6981B7278}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebooks", "{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD}"
 	ProjectSection(SolutionItems) = preProject
-		samples\000-notebooks\001-upload-and-ask.ipynb = samples\000-notebooks\001-upload-and-ask.ipynb
-		samples\000-notebooks\appsettings.json = samples\000-notebooks\appsettings.json
-		samples\000-notebooks\sample-SK-Readme.pdf = samples\000-notebooks\sample-SK-Readme.pdf
+		examples\000-notebooks\001-upload-and-ask.ipynb = examples\000-notebooks\001-upload-and-ask.ipynb
+		examples\000-notebooks\appsettings.json = examples\000-notebooks\appsettings.json
+		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-ExtractTextFromDocs", "examples\104-dotnet-ExtractTextFromDocs\104-dotnet-ExtractTextFromDocs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\README.md = examples\200-dotnet-nl2sql\README.md
+		examples\200-dotnet-nl2sql\run.cmd = examples\200-dotnet-nl2sql\run.cmd
+		examples\200-dotnet-nl2sql\run.sh = examples\200-dotnet-nl2sql\run.sh
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nl2Sql.Library", "examples\200-dotnet-nl2sql\nl2sql.library\Nl2Sql.Library.csproj", "{67F37386-9D93-4591-98A1-32FD4C3AD8BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nl2Sql.Harness", "examples\200-dotnet-nl2sql\nl2sql.harness\Nl2Sql.Harness.csproj", "{53E5B525-8CB3-42A7-82FD-2DBB2044A076}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nl2Sql.Console", "examples\200-dotnet-nl2sql\nl2sql.console\Nl2Sql.Console.csproj", "{8E2CDC51-5F00-4E60-807F-A2267FB98224}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nl2sql.config", "nl2sql.config", "{B019B7DE-BA26-454E-8BAA-91D9369ACD83}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\README.md = examples\200-dotnet-nl2sql\nl2sql.config\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nl2sql", "nl2sql", "{2174DDEE-2B43-41CE-9955-3C6AAB2F1929}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "schema", "schema", "{F8391B98-7C8F-4794-A028-A492EA25037F}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.json = examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.json
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.objectives = examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.objectives
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.yaml = examples\200-dotnet-nl2sql\nl2sql.config\schema\AdventureWorksLT.yaml
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.json = examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.json
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.objectives = examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.objectives
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.yaml = examples\200-dotnet-nl2sql\nl2sql.config\schema\DescriptionTest.yaml
+		examples\200-dotnet-nl2sql\nl2sql.config\schema\README.md = examples\200-dotnet-nl2sql\nl2sql.config\schema\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "generatequery", "generatequery", "{4C3951B7-D7BD-4BDC-89B9-A2FA69986381}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\generatequery\config.json = examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\generatequery\config.json
+		examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\generatequery\skprompt.txt = examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\generatequery\skprompt.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "isquery", "isquery", "{E4C713CE-BFAF-426C-89EF-E039EE5664C7}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\isquery\config.json = examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\isquery\config.json
+		examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\isquery\skprompt.txt = examples\200-dotnet-nl2sql\nl2sql.config\nl2sql\isquery\skprompt.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sql", "sql", "{9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\setup-user.sql = examples\200-dotnet-nl2sql\nl2sql.config\sql\setup-user.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DescriptionTest", "DescriptionTest", "{C95AECD6-8EF0-48FB-9BB4-317059748CF5}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\A.sql = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\A.sql
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\B.sql = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\B.sql
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\C.sql = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\C.sql
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\README.md = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\README.md
+		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png
 	EndProjectSection
 EndProject
 Global
@@ -98,6 +157,18 @@ Global
 		{02B67859-5B16-46E3-9CB4-916887275649} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
 		{17F42A38-46CB-4471-AF93-3AE6981B7278} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{67F37386-9D93-4591-98A1-32FD4C3AD8BA} = {2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}
+		{53E5B525-8CB3-42A7-82FD-2DBB2044A076} = {2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}
+		{8E2CDC51-5F00-4E60-807F-A2267FB98224} = {2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}
+		{B019B7DE-BA26-454E-8BAA-91D9369ACD83} = {2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}
+		{2174DDEE-2B43-41CE-9955-3C6AAB2F1929} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
+		{F8391B98-7C8F-4794-A028-A492EA25037F} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
+		{4C3951B7-D7BD-4BDC-89B9-A2FA69986381} = {2174DDEE-2B43-41CE-9955-3C6AAB2F1929}
+		{E4C713CE-BFAF-426C-89EF-E039EE5664C7} = {2174DDEE-2B43-41CE-9955-3C6AAB2F1929}
+		{9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
+		{C95AECD6-8EF0-48FB-9BB4-317059748CF5} = {9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -148,5 +219,21 @@ Global
 		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F37386-9D93-4591-98A1-32FD4C3AD8BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F37386-9D93-4591-98A1-32FD4C3AD8BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F37386-9D93-4591-98A1-32FD4C3AD8BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F37386-9D93-4591-98A1-32FD4C3AD8BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53E5B525-8CB3-42A7-82FD-2DBB2044A076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53E5B525-8CB3-42A7-82FD-2DBB2044A076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53E5B525-8CB3-42A7-82FD-2DBB2044A076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53E5B525-8CB3-42A7-82FD-2DBB2044A076}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
