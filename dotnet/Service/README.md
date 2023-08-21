@@ -1,3 +1,5 @@
+# Semantic Memory as a Service
+
 This folder contains **Semantic Memory Service**, used to manage memory
 settings, ingest data and query for answers.
 
@@ -8,6 +10,11 @@ The service is composed by two main components:
 
 If you need deploying and scaling the webservice and the pipeline handlers
 separately, you can configure the service to enable/disable them.
+
+Once the service is up and running, you can use the **Semantic Service web
+client** or simply interact with the Web API. The API schema is available
+at http://127.0.0.1:9001/swagger/index.html when running the service locally
+with **OpenAPI** enabled.
 
 # ⚙️ Configuration
 
@@ -48,28 +55,60 @@ To run the Semantic Memory service:
 > ### On Windows:
 >
 > ```shell
-> cd dotnet/Service
+> cd dotnet\Service
 > run.cmd
 > ```
 
-The `run.sh`/`run.cmd` scripts internally use the `ASPNETCORE_ENVIRONMENT` env var,
-so the code will use the settings stored in `appsettings.Development.json`.
+The `run.sh`/`run.cmd` scripts internally use the `ASPNETCORE_ENVIRONMENT`
+env var, so the code will use the settings stored in `appsettings.Development.json`.
 
 # ⚙️ Dependencies
 
 The service depends on three main components:
 
-* **Content storage**: this is where content like files, chats, emails are saved
-  and transformed when uploaded. Currently, the solution supports local
+* **Content storage**: this is where content like files, chats, emails are
+  saved and transformed when uploaded. Currently, the solution supports local
   filesystem and Azure Blobs.
-* **Vector storage**: service used to persist embeddings. Currently, the solution
-  support Azure Cognitive Search and Qdrant. Soon we'll add support for more vector DBs.
+
+
+* **Embedding generator**: all the documents uploaded are automatically
+  partioned (aka "chunked") and indexed for vector search, generating
+  several embedding vectors for each file. We recommend using
+  [OpenAI ADA v2](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)
+  model, though you can easily plug in any embedding generator if needed.
+
+
+* **Text generator** (aka LLM): during document ingestion and when asking
+  questions, the service requires an LLM to execute prompts, e.g. to
+  generate synthetic data, and to generate answers. The service has
+  been tested with OpenAI
+  [GPT3.5 and GPT4](https://platform.openai.com/docs/models/overview)
+  which we recommend. The number of tokens available is also an important
+  factor affecting summarization and answer generations, so you might
+  get better results with 16k and 32k models.
+
+
+* **Vector storage**: service used to persist embeddings. Currently, the
+  service supports **Azure Cognitive Search** and **Qdrant**. Soon we'll add
+  support for more vector DBs.
+
+  > To use Qdrant locally, install docker and launch Qdrant with:
+  >
+  >       docker run -it --rm --name qdrant -p 6333:6333 qdrant/qdrant
+  > or simply use the `run-qdrant.sh` script from the `tools` folder.
+
+
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
-  case it requires persistent queues like Azure Queues or RabbitMQ.
+  case it requires persistent queues like **Azure Queues** or **RabbitMQ**
+  (corelib includes also a basic-experimental file-based queue, that might be
+  good enough for tests and demos).
+  When running a service, we recommend persistent queues for reliability and
+  horizontal scaling.
 
-To use RabbitMQ locally, install docker and launch RabbitMQ with:
-
-      docker run -it --rm --name rabbitmq \
-         -p 5672:5672 -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password \
-         rabbitmq:3
+  > To use RabbitMQ locally, install docker and launch RabbitMQ with:
+  >
+  >      docker run -it --rm --name rabbitmq \
+  >         -p 5672:5672 -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password \
+  >         rabbitmq:3
+  > or simply use the `run-rabbitmq.sh` script from the `tools` folder.

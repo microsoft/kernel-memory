@@ -8,15 +8,37 @@ Instructions:
 ./upload-file.sh -h
 ```
 
-Example:
+# ask.sh
+
+Simple client for asking questions about your documents from the command line.
+
+Instructions:
 
 ```bash
-./upload-file.sh -f test.pdf -s http://127.0.0.1:9001/upload -u curlUser -c curlDataCollection -i curlExample01
+./ask.sh -h
 ```
+
+# search.sh
+
+Simple client for searching your indexed documents from the command line.
+
+Instructions:
+
+```bash
+./search.sh -h
+```
+
+# run-qdrant.sh
+
+Script to start Qdrant using Docker, for local development/debugging.
+
+Qdrant is used to store and search vectors, as an alternative to
+[Azure Cognitive Search](https://azure.microsoft.com/products/ai-services/cognitive-search).
 
 # run-rabbitmq.sh
 
 Script to start RabbitMQ using Docker, for local development/debugging.
 
-RabbitMQ is used to provides queues for the asynchronous pipelines, as an alternative
-to Azure Queues.
+RabbitMQ is used to provides queues for the asynchronous pipelines,
+as an alternative to
+[Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction).

@@ -47,6 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\README.md = tools\README.md
 		tools\ask.sh = tools\ask.sh
 		tools\search.sh = tools\search.sh
+		tools\run-qdrant.sh = tools\run-qdrant.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientLib", "dotnet\ClientLib\ClientLib.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -72,6 +73,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{02B67859
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-using-core-nuget", "samples\010-using-core-nuget\010-using-core-nuget.csproj", "{17F42A38-46CB-4471-AF93-3AE6981B7278}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebooks", "{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD}"
+	ProjectSection(SolutionItems) = preProject
+		samples\000-notebooks\001-upload-and-ask.ipynb = samples\000-notebooks\001-upload-and-ask.ipynb
+		samples\000-notebooks\appsettings.json = samples\000-notebooks\appsettings.json
+		samples\000-notebooks\sample-SK-Readme.pdf = samples\000-notebooks\sample-SK-Readme.pdf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +97,7 @@ Global
 		{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{02B67859-5B16-46E3-9CB4-916887275649} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
 		{17F42A38-46CB-4471-AF93-3AE6981B7278} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

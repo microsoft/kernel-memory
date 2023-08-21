@@ -1,6 +1,6 @@
 # Semantic Memory
 
-**Semantic Memory** is an open-source library and [service](dotnet/Service)
+**Semantic Memory** is an open-source library and [service](dotnet/Service/README.md)
 specialized in the efficient indexing of datasets through custom continuous data
 pipelines.
 
@@ -210,7 +210,7 @@ to **start the Semantic Memory Service**:
 > }
 > ```
 
-You can find a [full example here](samples/dotnet-WebClient/).
+You can find a [full example here](samples/002-dotnet-WebClient/README.md).
 
 ## Custom memory ingestion pipelines
 
@@ -254,11 +254,20 @@ running the service locally with OpenAPI enabled.
 
 # Examples and Tools
 
-1. [Using the web service](samples/dotnet-WebClient)
-2. [Importing files without the service (serverless ingestion)](samples/dotnet-Serverless)
-3. [Upload files and get answers from command line with curl](samples/curl)
-4. [Writing a custom pipeline handler](samples/dotnet-CustomHandler)
-5. [Importing files with custom steps](samples/dotnet-ServerlessCustomPipeline)
-6. [Extracting text from documents](samples/dotnet-ExtractTextFromDocs)
-7. [Curl script to upload files](tools/upload-file.sh)
-8. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
+## Examples
+
+1. [Collection of Jupyter notebooks with various tests](samples/000-notebooks)
+2. [Importing files and asking question without running the service (serverless mode)](samples/001-dotnet-Serverless)
+3. [Using the Semantic Memory web service](samples/002-dotnet-WebClient)
+4. [How to upload files from command line with curl](samples/003-curl-calling-webservice)
+5. [Processing files with custom steps](samples/004-dotnet-ServerlessCustomPipeline)
+6. [Writing a custom pipeline handler](samples/006-dotnet-CustomHandler)
+
+## Tools
+
+1. [Curl script to upload files](tools/upload-file.sh)
+2. [Curl script to ask questions](tools/ask.sh)
+3. [Curl script to search documents](tools/search.sh)
+4. [Script to start Qdrant for development tasks](tools/run-qdrant.sh)
+5. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
+
