@@ -63,5 +63,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="AI\Tokenizers\GPT3\encoder.json" />
+        <EmbeddedResource Include="AI\Tokenizers\GPT3\vocab.bpe" />
+    </ItemGroup>
 
 </Project>

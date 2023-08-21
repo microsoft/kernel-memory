@@ -159,7 +159,7 @@ public static class Program
 
         try
         {
-            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema).ConfigureAwait(false);
+            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema);
 
             Console.WriteLine("Status: " + response.GetRawResponse().Status);
             Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
@@ -233,9 +233,7 @@ public static class Program
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
-            searchResult = await client
-                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options)
-                .ConfigureAwait(false);
+            searchResult = await client.SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options);
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {

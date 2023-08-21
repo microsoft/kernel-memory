@@ -161,7 +161,7 @@ to **start the Semantic Memory Service**:
 > ### On Windows:
 >
 > ```shell
-> cd dotnet/Service
+> cd dotnet\Service
 > setup.cmd
 > run.cmd
 > ```

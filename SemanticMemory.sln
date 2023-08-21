@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
 	ProjectSection(SolutionItems) = preProject
 		samples\README.md = samples\README.md
+		samples\.editorconfig = samples\.editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-Serverless", "samples\001-dotnet-Serverless\001-dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
@@ -69,6 +70,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{02B67859
 		dotnet\nuget\NUGET.md = dotnet\nuget\NUGET.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-using-core-nuget", "samples\010-using-core-nuget\010-using-core-nuget.csproj", "{17F42A38-46CB-4471-AF93-3AE6981B7278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +88,7 @@ Global
 		{8A90555B-C28B-401B-960A-619DE9A87C4C} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{02B67859-5B16-46E3-9CB4-916887275649} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{17F42A38-46CB-4471-AF93-3AE6981B7278} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -131,5 +135,9 @@ Global
 		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A90555B-C28B-401B-960A-619DE9A87C4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17F42A38-46CB-4471-AF93-3AE6981B7278}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
