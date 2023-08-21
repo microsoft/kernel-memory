@@ -1,18 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using dotenv.net;
 using Microsoft.SemanticMemory.Core.AI.OpenAI;
 using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Core.Configuration;
 using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
 using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
-DotEnv.Load();
-var env = DotEnv.Read();
-
 var memory = new MemoryClientBuilder()
     .WithFilesystemStorage("tmp")
-    .WithOpenAIDefaults(env["OPENAI_API_KEY"])
-    .WithAzureCognitiveSearch(env["ACS_ENDPOINT"], env["ACS_API_KEY"])
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
     .BuildServerlessClient();
 
 await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");
