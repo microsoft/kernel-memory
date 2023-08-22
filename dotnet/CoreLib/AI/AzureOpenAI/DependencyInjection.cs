@@ -6,12 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
+using Microsoft.SemanticMemory.AI;
+using Microsoft.SemanticMemory.AI.AzureOpenAI;
+using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 
-namespace Microsoft.SemanticMemory.Core.AI.AzureOpenAI;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithAzureOpenAITextCompletion(this MemoryClientBuilder builder, AzureOpenAIConfig config)
     {
@@ -26,7 +28,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddAzureOpenAIEmbeddingGeneration(this IServiceCollection services, AzureOpenAIConfig config)
     {

@@ -9,7 +9,7 @@ on your settings, files can be stored locally or in Azure Blobs.
 ```csharp
 // Use the memory builder to customize credentials and dependencies
 var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp")
+    .WithFilesystemStorage("tmpdir")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
     .BuildServerlessClient();

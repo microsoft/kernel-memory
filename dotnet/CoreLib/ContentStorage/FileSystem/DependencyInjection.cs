@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.ContentStorage;
+using Microsoft.SemanticMemory.ContentStorage.FileSystem;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithFilesystemStorage(this MemoryClientBuilder builder, FileSystemConfig config)
     {
@@ -20,7 +22,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddFileSystemAsContentStorage(this IServiceCollection services, FileSystemConfig config)
     {

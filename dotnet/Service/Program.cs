@@ -9,14 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticMemory.Core.WebService;
+using Microsoft.SemanticMemory;
+using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.InteractiveSetup;
+using Microsoft.SemanticMemory.WebService;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************

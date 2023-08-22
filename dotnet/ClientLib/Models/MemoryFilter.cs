@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticMemory.Client.Models;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.SemanticMemory;
 
 public class MemoryFilter : TagCollection
 {

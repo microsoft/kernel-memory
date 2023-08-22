@@ -3,9 +3,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Core.Diagnostics;
+namespace Microsoft.SemanticMemory.Diagnostics;
 
 /// <summary>
 /// Create and cache a logger instance using the same

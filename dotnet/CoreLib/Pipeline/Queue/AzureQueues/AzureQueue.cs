@@ -11,10 +11,10 @@ using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Diagnostics;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
+namespace Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
 
 public sealed class AzureQueue : IQueue
 {

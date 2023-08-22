@@ -3,9 +3,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Client.Models;
 
-namespace Microsoft.SemanticMemory.Client;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
 public interface ISemanticMemoryClient
 {

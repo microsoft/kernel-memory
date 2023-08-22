@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithQdrant(this MemoryClientBuilder builder, QdrantConfig config)
     {
@@ -20,7 +22,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddQdrantAsVectorDb(this IServiceCollection services, QdrantConfig config)
     {

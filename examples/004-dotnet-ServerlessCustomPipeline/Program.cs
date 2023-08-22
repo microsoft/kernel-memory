@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AI.OpenAI;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
-using Microsoft.SemanticMemory.Core.Handlers;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.SemanticMemory;
+using Microsoft.SemanticMemory.Handlers;
 
 // Alternative approach using appsettings.json and appsettings.development.json
 //
@@ -19,7 +14,7 @@ using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 // var builder = new MemoryClientBuilder().FromAppSettings();
 
 var memoryBuilder = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp")
+    .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithQdrant("http://127.0.0.1:6333")
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"));

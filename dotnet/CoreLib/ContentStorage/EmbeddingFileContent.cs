@@ -4,7 +4,7 @@ using System;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage;
+namespace Microsoft.SemanticMemory.ContentStorage;
 
 public class EmbeddingFileContent
 {

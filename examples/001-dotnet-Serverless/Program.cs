@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AI.OpenAI;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.SemanticMemory;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -16,7 +11,7 @@ using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
  * Note: no web service required, each file is processed in this process. */
 
 var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp")
+    .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithQdrant("http://127.0.0.1:6333")
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
@@ -117,7 +112,7 @@ doc003 already uploaded.
 
 
 Question: What's Semantic Kernel?
-warn: Microsoft.SemanticMemory.Core.Search.SearchClient[0]
+warn: Microsoft.SemanticMemory.Search.SearchClient[0]
       No memories available
 
 Answer: INFO NOT FOUND
@@ -150,7 +145,7 @@ Question: What is Orion?
 Articles: INFO NOT FOUND
 
 
-warn: Microsoft.SemanticMemory.Core.Search.SearchClient[0]
+warn: Microsoft.SemanticMemory.Search.SearchClient[0]
       No memories available
 
 News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis program which aims 

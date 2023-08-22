@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Core;
-using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Core.AI.AzureOpenAI;
+namespace Microsoft.SemanticMemory.AI.AzureOpenAI;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 /// <summary>

@@ -7,7 +7,7 @@ using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
 using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
 
 var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp")
+    .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
     .BuildServerlessClient();

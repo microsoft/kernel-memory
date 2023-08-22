@@ -8,12 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 public class QdrantMemory : ISemanticMemoryVectorDb
 {

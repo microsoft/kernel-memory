@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory.Core</RootNamespace>
+        <RootNamespace>Microsoft.SemanticMemory</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308,CA1812</NoWarn>
         <IsPackable>true</IsPackable>
     </PropertyGroup>

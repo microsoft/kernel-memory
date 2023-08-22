@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
 internal sealed class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<float>>
 {

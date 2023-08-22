@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Core.AI.OpenAI;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue.FileBasedQueues;
+using Microsoft.SemanticMemory;
 
 /* The following code shows how to create a custom handler, attached
  * to a queue and listening for work to do. You can also add multiple handlers
@@ -26,8 +21,8 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 
 // Inject memory dependencies
 var _ = new MemoryClientBuilder(appBuilder)
-    .WithFileBasedQueuePipeline(Path.Join("tmp", "queue"))
-    .WithFilesystemStorage("tmp")
+    .WithFileBasedQueuePipeline("tmp-queue")
+    .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithQdrant("http://127.0.0.1:6333")
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))

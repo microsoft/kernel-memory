@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.Pipeline;
 
 public class MyHandler : IHostedService, IPipelineStepHandler
 {

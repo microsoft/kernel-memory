@@ -3,11 +3,13 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Pipeline.Queue;
+using Microsoft.SemanticMemory.Pipeline.Queue.FileBasedQueues;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.FileBasedQueues;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithFileBasedQueuePipeline(this MemoryClientBuilder builder, string path)
     {
@@ -21,7 +23,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddFileBasedQueue(this IServiceCollection services, string path)
     {

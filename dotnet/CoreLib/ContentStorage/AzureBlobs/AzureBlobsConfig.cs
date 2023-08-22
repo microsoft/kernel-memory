@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 using Azure;
 using Azure.Core;
 using Azure.Storage;
-using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
+namespace Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 public class AzureBlobsConfig

@@ -2,9 +2,8 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client.Models;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.MemoryStorage;
 
 public class MemoryRecord
 {

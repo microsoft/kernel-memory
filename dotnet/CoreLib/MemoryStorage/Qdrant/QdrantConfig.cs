@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 public class QdrantConfig
 {

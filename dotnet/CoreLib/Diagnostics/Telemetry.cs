@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Core.Diagnostics;
+namespace Microsoft.SemanticMemory.Diagnostics;
 
 public static class Telemetry
 {

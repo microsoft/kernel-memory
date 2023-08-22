@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Core.AppBuilders;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.SemanticMemory;
 
 /// <summary>
 /// Wrapper of handler classes, allowing to run handlers as services hosted by IHost

@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue;
+using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.ContentStorage;
+using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.Pipeline.Queue;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Pipeline;
 
 public class DistributedPipelineOrchestrator : BaseOrchestrator
 {

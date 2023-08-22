@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.Diagnostics;
+namespace Microsoft.SemanticMemory.Diagnostics;
 
 public class ContentStorageException : SemanticMemoryException
 {

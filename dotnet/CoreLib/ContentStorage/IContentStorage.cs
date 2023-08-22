@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage;
+namespace Microsoft.SemanticMemory.ContentStorage;
 
 public interface IContentStorage
 {

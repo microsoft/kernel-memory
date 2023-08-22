@@ -8,11 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Text;
-using Microsoft.SemanticMemory.Core.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Handlers;
 
 public class TextPartitioningHandler : IPipelineStepHandler
 {

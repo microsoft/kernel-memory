@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
+using Microsoft.SemanticMemory.ContentStorage.FileSystem;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage;
+namespace Microsoft.SemanticMemory.ContentStorage;
 
 public class ContentStorageConfig
 {

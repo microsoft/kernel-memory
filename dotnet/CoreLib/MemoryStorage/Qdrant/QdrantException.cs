@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 public class QdrantException : SemanticMemoryException
 {

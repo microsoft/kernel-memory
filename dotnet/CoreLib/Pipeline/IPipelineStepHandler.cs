@@ -3,7 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Pipeline;
 
 public interface IPipelineStepHandler
 {

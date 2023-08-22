@@ -8,25 +8,26 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.AI;
-using Microsoft.SemanticMemory.Core.AI.AzureOpenAI;
-using Microsoft.SemanticMemory.Core.AI.OpenAI;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
-using Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
-using Microsoft.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue.FileBasedQueues;
-using Microsoft.SemanticMemory.Core.Pipeline.Queue.RabbitMq;
-using Microsoft.SemanticMemory.Core.Search;
+using Microsoft.SemanticMemory.AI;
+using Microsoft.SemanticMemory.AI.AzureOpenAI;
+using Microsoft.SemanticMemory.AI.OpenAI;
+using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.ContentStorage;
+using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
+using Microsoft.SemanticMemory.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.SemanticMemory.Pipeline.Queue;
+using Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
+using Microsoft.SemanticMemory.Pipeline.Queue.FileBasedQueues;
+using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.SemanticMemory.Search;
 
-namespace Microsoft.SemanticMemory.Core.AppBuilders;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.SemanticMemory;
 
 public class MemoryClientBuilder
 {

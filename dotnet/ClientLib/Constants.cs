@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Client;
+namespace Microsoft.SemanticMemory;
 
 public static class Constants
 {

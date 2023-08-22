@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal sealed class DeleteCollectionRequest
 {

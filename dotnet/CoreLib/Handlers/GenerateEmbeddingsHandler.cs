@@ -8,11 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.ContentStorage;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Handlers;
 
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.

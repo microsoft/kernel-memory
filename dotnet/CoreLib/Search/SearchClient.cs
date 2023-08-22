@@ -8,14 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AI;
-using Microsoft.SemanticMemory.Core.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
+using Microsoft.SemanticMemory.AI;
+using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Core.Search;
+namespace Microsoft.SemanticMemory.Search;
 
 public class SearchClient
 {

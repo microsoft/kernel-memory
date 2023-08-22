@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal sealed class ListCollectionsResponse : QdrantResponse
 {

@@ -4,11 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.AI;
+using Microsoft.SemanticMemory.AI.OpenAI;
 
-namespace Microsoft.SemanticMemory.Core.AI.OpenAI;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithOpenAIDefaults(this MemoryClientBuilder builder, string apiKey, string? organization = null)
     {
@@ -47,7 +49,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services, OpenAIConfig config)
     {

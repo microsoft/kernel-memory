@@ -6,10 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
 
-namespace Microsoft.SemanticMemory.Core.WebService;
+namespace Microsoft.SemanticMemory.WebService;
 
 public static class DocumentExtensions
 {

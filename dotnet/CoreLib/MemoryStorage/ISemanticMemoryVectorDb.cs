@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client.Models;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.MemoryStorage;
 
 public interface ISemanticMemoryVectorDb
 {

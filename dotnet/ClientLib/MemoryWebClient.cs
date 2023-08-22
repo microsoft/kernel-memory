@@ -9,10 +9,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Client.Models;
-using StringContent = System.Net.Http.StringContent;
 
-namespace Microsoft.SemanticMemory.Client;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
 public class MemoryWebClient : ISemanticMemoryClient
 {

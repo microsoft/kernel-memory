@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant.Client;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
 /// <summary>
 /// The vector distance type used by Qdrant.

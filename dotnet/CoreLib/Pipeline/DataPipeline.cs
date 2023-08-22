@@ -5,11 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline;
+namespace Microsoft.SemanticMemory.Pipeline;
 
 /// <summary>
 /// DataPipeline representation.

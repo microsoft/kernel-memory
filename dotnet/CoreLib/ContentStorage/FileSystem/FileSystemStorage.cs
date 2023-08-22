@@ -5,9 +5,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
+namespace Microsoft.SemanticMemory.ContentStorage.FileSystem;
 
 public class FileSystemStorage : IContentStorage
 {

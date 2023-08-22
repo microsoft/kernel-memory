@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemoryException : SemanticMemoryException
 {

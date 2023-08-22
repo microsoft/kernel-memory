@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.RabbitMq;
+namespace Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
 
 public class RabbitMqConfig
 {

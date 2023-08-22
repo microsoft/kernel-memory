@@ -2,12 +2,13 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Pipeline.Queue;
+using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.RabbitMq;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithRabbitMQPipeline(this MemoryClientBuilder builder, RabbitMqConfig config)
     {
@@ -16,7 +17,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddRabbitMq(this IServiceCollection services, RabbitMqConfig config)
     {

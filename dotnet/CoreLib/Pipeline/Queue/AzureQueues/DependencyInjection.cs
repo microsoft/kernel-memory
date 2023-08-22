@@ -2,12 +2,13 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory.Pipeline.Queue;
+using Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.AzureQueues;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
-public static class MemoryClientBuilderExtensions
+public static partial class MemoryClientBuilderExtensions
 {
     public static MemoryClientBuilder WithAzurequeuePipeline(this MemoryClientBuilder builder, AzureQueueConfig config)
     {
@@ -16,7 +17,7 @@ public static class MemoryClientBuilderExtensions
     }
 }
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddAzureQueue(this IServiceCollection services, AzureQueueConfig config)
     {

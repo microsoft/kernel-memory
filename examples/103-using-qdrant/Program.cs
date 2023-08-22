@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+using Microsoft.SemanticMemory;
+using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 var config = new QdrantConfig
 {

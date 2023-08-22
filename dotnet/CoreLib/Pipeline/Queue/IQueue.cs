@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue;
+namespace Microsoft.SemanticMemory.Pipeline.Queue;
 
 public interface IQueue : IDisposable
 {

@@ -2,9 +2,9 @@
 
 using System.Text.Json.Serialization;
 using Azure.Core;
-using Microsoft.SemanticMemory.Core.Configuration;
+using Microsoft.SemanticMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 public class AzureCognitiveSearchConfig

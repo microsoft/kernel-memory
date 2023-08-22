@@ -7,7 +7,7 @@ using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace Microsoft.SemanticMemory.Core.DataFormats.Office;
+namespace Microsoft.SemanticMemory.DataFormats.Office;
 
 public class MsWordDecoder
 {

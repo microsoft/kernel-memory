@@ -11,9 +11,9 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Core.ContentStorage.AzureBlobs;
+namespace Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
 public class AzureBlobsStorage : IContentStorage

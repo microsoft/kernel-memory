@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Client;
+namespace Microsoft.SemanticMemory;
 
 public class SemanticMemoryWebException : SemanticMemoryException
 {

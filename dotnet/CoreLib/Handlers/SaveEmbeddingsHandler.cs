@@ -7,13 +7,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Core.ContentStorage;
-using Microsoft.SemanticMemory.Core.Diagnostics;
-using Microsoft.SemanticMemory.Core.MemoryStorage;
-using Microsoft.SemanticMemory.Core.Pipeline;
+using Microsoft.SemanticMemory.ContentStorage;
+using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Core.Handlers;
+namespace Microsoft.SemanticMemory.Handlers;
 
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {

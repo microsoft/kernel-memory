@@ -16,12 +16,10 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 {

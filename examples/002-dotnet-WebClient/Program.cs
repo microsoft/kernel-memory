@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.AppBuilders;
+using Microsoft.SemanticMemory;
+
+// using Microsoft.SemanticMemory.Client.Models;
 
 /* Use SemanticMemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".

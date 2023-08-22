@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.Configuration;
+namespace Microsoft.SemanticMemory.Configuration;
 
 public class ConfigurationException : SemanticMemoryException
 {

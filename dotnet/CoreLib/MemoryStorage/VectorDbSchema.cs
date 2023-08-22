@@ -2,9 +2,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticMemory.Client;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage;
+namespace Microsoft.SemanticMemory.MemoryStorage;
 
 public class VectorDbField
 {

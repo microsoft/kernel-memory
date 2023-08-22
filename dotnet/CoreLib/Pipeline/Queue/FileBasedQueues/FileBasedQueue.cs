@@ -8,10 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Core.Diagnostics;
+using Microsoft.SemanticMemory.Diagnostics;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.SemanticMemory.Core.Pipeline.Queue.FileBasedQueues;
+namespace Microsoft.SemanticMemory.Pipeline.Queue.FileBasedQueues;
 
 /// <summary>
 /// Basic implementation of a file based queue for local testing.

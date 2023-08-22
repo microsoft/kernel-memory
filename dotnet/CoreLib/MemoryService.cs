@@ -3,14 +3,13 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Client;
-using Microsoft.SemanticMemory.Client.Models;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.Pipeline;
-using Microsoft.SemanticMemory.Core.Search;
-using Microsoft.SemanticMemory.Core.WebService;
+using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.SemanticMemory.Search;
+using Microsoft.SemanticMemory.WebService;
 
-namespace Microsoft.SemanticMemory.Core;
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticMemory;
 
 public class MemoryService : ISemanticMemoryClient
 {

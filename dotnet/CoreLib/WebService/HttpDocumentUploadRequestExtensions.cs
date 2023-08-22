@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.SemanticMemory.Client.Models;
 
-namespace Microsoft.SemanticMemory.Core.WebService;
+namespace Microsoft.SemanticMemory.WebService;
 
 // Note: this class is designed to avoid using Asp.Net IForm
 // and avoiding dependencies on Asp.Net HTTP that would lead

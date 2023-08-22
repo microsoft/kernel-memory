@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.Qdrant;
+namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 public static class QdrantConstants
 {

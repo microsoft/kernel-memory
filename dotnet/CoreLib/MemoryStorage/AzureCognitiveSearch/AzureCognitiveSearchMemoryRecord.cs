@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
-namespace Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 
 // TODO: support bring your own index schema
 public sealed class AzureCognitiveSearchMemoryRecord

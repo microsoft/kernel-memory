@@ -6,7 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.SemanticMemory.Client.Models;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.SemanticMemory;
 
 /// <summary>
 /// A document is a collection of one or multiple files, with additional
