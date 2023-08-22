@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Core.AI.OpenAI;
-using Microsoft.SemanticMemory.Core.AppBuilders;
-using Microsoft.SemanticMemory.Core.Configuration;
-using Microsoft.SemanticMemory.Core.ContentStorage.FileSystem;
-using Microsoft.SemanticMemory.Core.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.SemanticMemory;
 
 var memory = new MemoryClientBuilder()
     .WithFilesystemStorage("tmp-storage")

@@ -103,7 +103,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
 
         var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}={x.Value}")
+            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
             : new List<string>();
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
@@ -132,7 +132,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
 
         var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}={x.Value}")
+            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
             : new List<string>();
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(

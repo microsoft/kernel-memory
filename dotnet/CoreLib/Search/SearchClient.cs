@@ -12,6 +12,7 @@ using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.Prompts;
 
 namespace Microsoft.SemanticMemory.Search;
 
@@ -24,7 +25,7 @@ public class SearchClient
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
-    private readonly string _prompt;
+    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("answer-with-facts.txt");
 
     public SearchClient(
         ISemanticMemoryVectorDb vectorDb,
@@ -42,15 +43,6 @@ public class SearchClient
         if (this._vectorDb == null) { throw new SemanticMemoryException("Search vector DB not configured"); }
 
         if (this._textGenerator == null) { throw new SemanticMemoryException("Text generator not configured"); }
-
-        this._prompt = "Facts:\n" +
-                       "{{$facts}}" +
-                       "======\n" +
-                       "Given only the facts above, provide a comprehensive/detailed answer.\n" +
-                       "You don't know where the knowledge comes from, just answer.\n" +
-                       "If you don't have sufficient information, reply with 'INFO NOT FOUND'.\n" +
-                       "Question: {{$question}}\n" +
-                       "Answer: ";
     }
 
     public async Task<SearchResult> SearchAsync(string index, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
@@ -106,9 +98,9 @@ public class SearchClient
             string linkToFile = $"{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Payload["file_name"].ToString() ?? string.Empty;
+            string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
 
-            var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
+            var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
                 this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
@@ -132,7 +124,7 @@ public class SearchClient
             citation.Tags = memory.Tags;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
-            DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
+            DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
             citation.Partitions.Add(new Citation.Partition
@@ -217,10 +209,10 @@ public class SearchClient
             string linkToFile = $"{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Payload["file_name"].ToString() ?? string.Empty;
+            string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
 
             factsAvailableCount++;
-            var partitionText = memory.Payload["text"].ToString()?.Trim() ?? "";
+            var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
             {
                 this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
@@ -255,7 +247,7 @@ public class SearchClient
                 citation.Tags = memory.Tags;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
-                DateTimeOffset.TryParse(memory.Payload["last_update"].ToString(), out var lastUpdate);
+                DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
 #pragma warning restore CA1806
 
                 citation.Partitions.Add(new Citation.Partition
@@ -315,7 +307,7 @@ public class SearchClient
 
         question = question.Trim();
         question = question.EndsWith('?') ? question : $"{question}?";
-        prompt = prompt.Replace("{{$question}}", question, StringComparison.OrdinalIgnoreCase);
+        prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
 
         return this._textGenerator.GenerateTextAsync(prompt, new TextGenerationOptions());
     }

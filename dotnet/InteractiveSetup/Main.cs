@@ -281,17 +281,17 @@ public static class Main
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "When generating answers, which LLM text generator should be used?",
+            Title = "When generating synthetic data and answers, which LLM text generator should be used?",
             Options = new List<Answer>
             {
                 new("Azure OpenAI text/chat model", () =>
                 {
-                    AppSettings.Change(x => { x.Retrieval.TextGeneratorType = "AzureOpenAIText"; });
+                    AppSettings.Change(x => { x.TextGeneratorType = "AzureOpenAIText"; });
                     s_cfgAzureOpenAIText.Value = true;
                 }),
                 new("OpenAI text/chat model", () =>
                 {
-                    AppSettings.Change(x => { x.Retrieval.TextGeneratorType = "OpenAI"; });
+                    AppSettings.Change(x => { x.TextGeneratorType = "OpenAI"; });
                     s_cfgOpenAI.Value = true;
                 }),
                 new("-exit-", SetupUI.Exit),

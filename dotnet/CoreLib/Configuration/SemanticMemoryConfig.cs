@@ -21,11 +21,38 @@ public class SemanticMemoryConfig
 
         public DistributedOrchestrationConfig DistributedOrchestration { get; set; } = new();
 
+        /// <summary>
+        /// List of embedding types to generate during document ingestion.
+        /// Using multiple types can help with migration from two different models, or for comparing models performance.
+        /// </summary>
         public List<string> EmbeddingGeneratorTypes { get; set; } = new();
 
+        /// <summary>
+        /// List of vector storages where embeddings will be saved during ingestion.
+        /// Multiple storages can help with data migrations and testing purposes.
+        /// </summary>
         public List<string> VectorDbTypes { get; set; } = new();
 
-        public List<string> DefaultSteps { get; set; } = new() { "extract", "partition", "gen_embeddings", "save_embeddings" };
+        /// <summary>
+        /// Default document ingestion pipeline steps.
+        /// * extract: extract text from files
+        /// * partition: spit the text in small chunks
+        /// * gen_embeddings: generate embeddings for each chunk
+        /// * save_embeddings: save the embeddings
+        /// * summarize: use LLMs to summarize the document (this step can be slow, so it's meant to run after gen_embeddings/save_embeddings)
+        /// * gen_embeddings: generate embeddings for new chunks (e.g. the summary)
+        /// * save_embeddings: save new embeddings
+        /// </summary>
+        public List<string> DefaultSteps { get; set; } = new()
+        {
+            "extract",
+            "partition",
+            "gen_embeddings",
+            "save_embeddings",
+            "summarize",
+            "gen_embeddings",
+            "save_embeddings"
+        };
     }
 
     /// <summary>
@@ -33,11 +60,15 @@ public class SemanticMemoryConfig
     /// </summary>
     public class RetrievalConfig
     {
+        /// <summary>
+        /// The vector storage to search for relevant data used to generate answers
+        /// </summary>
         public string VectorDbType { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The embedding generator used for questions and searching for relevant data in the vector DB
+        /// </summary>
         public string EmbeddingGeneratorType { get; set; } = string.Empty;
-
-        public string TextGeneratorType { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -49,6 +80,12 @@ public class SemanticMemoryConfig
     /// Documents storage settings.
     /// </summary>
     public string ContentStorageType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The text generator used to generate synthetic data during ingestion
+    /// and to generate answers during retrieval.
+    /// </summary>
+    public string TextGeneratorType { get; set; } = string.Empty;
 
     /// <summary>
     /// Settings for the upload of documents and memory creation/update.

@@ -69,7 +69,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
             result.Vector = new Embedding<float>(this.Vector);
         }
 
-        foreach (string[] keyValue in this.Tags.Select(tag => tag.Split('=', 2)))
+        foreach (string[] keyValue in this.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
         {
             string key = keyValue[0];
             string? value = keyValue.Length == 1 ? null : keyValue[1];
@@ -90,7 +90,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
 
         foreach (var tag in record.Tags.Pairs)
         {
-            result.Tags.Add($"{tag.Key}={tag.Value}");
+            result.Tags.Add($"{tag.Key}{Constants.ReservedEqualsSymbol}{tag.Value}");
         }
 
         return result;
@@ -99,12 +99,12 @@ public sealed class AzureCognitiveSearchMemoryRecord
     private static string EncodeId(string realId)
     {
         var bytes = Encoding.UTF8.GetBytes(realId);
-        return Convert.ToBase64String(bytes);
+        return Convert.ToBase64String(bytes).Replace('=', '_');
     }
 
     private static string DecodeId(string encodedId)
     {
-        var bytes = Convert.FromBase64String(encodedId);
+        var bytes = Convert.FromBase64String(encodedId.Replace('_', '='));
         return Encoding.UTF8.GetString(bytes);
     }
 }

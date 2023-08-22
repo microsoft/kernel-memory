@@ -40,6 +40,7 @@ appBuilder.Services.AddSwaggerGen();
 // Handlers - Register these handlers to run as hosted services. At start
 // each service cass IPipelineOrchestrator.AddHandlerAsync() to register the in the orchestrator.
 appBuilder.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract");
+appBuilder.Services.AddHandlerAsHostedService<SummarizationHandler>("summarize");
 appBuilder.Services.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
 appBuilder.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
 appBuilder.Services.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");

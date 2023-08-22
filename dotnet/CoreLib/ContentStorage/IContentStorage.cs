@@ -47,7 +47,8 @@ public interface IContentStorage
     /// </summary>
     /// <param name="directoryName"></param>
     /// <param name="fileName"></param>
+    /// <param name="errIfNotFound">Whether to log an error if the file does not exist. An exception will be raised anyway.</param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<BinaryData> ReadFileAsync(string directoryName, string fileName, CancellationToken cancellationToken = default);
+    /// <returns>File content</returns>
+    Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default);
 }

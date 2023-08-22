@@ -54,6 +54,32 @@ public class DataPipeline
         {
             return this.Type == MimeTypes.TextEmbeddingVector;
         }
+
+        /// <summary>
+        /// List of handlers who have already processed this file
+        /// </summary>
+        [JsonPropertyOrder(17)]
+        [JsonPropertyName("processed_by")]
+        public List<string> ProcessedBy { get; set; } = new();
+
+        /// <summary>
+        /// Check whether this file has already been processed by the given handler
+        /// </summary>
+        /// <param name="handler">Handler instance</param>
+        /// <returns>True if the handler already processed the file</returns>
+        public bool AlreadyProcessedBy(IPipelineStepHandler handler)
+        {
+            return this.ProcessedBy.Contains(handler.StepName, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Mark the file as already processed by the given handler
+        /// </summary>
+        /// <param name="handler">Handler instance</param>
+        public void MarkProcessedBy(IPipelineStepHandler handler)
+        {
+            this.ProcessedBy.Add(handler.StepName);
+        }
     }
 
     public class GeneratedFileDetails : FileDetailsBase
@@ -89,15 +115,14 @@ public class DataPipeline
         [JsonPropertyName("generated_files")]
         public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = new();
 
-        public bool IsAlreadyPartitioned()
-        {
-            string firstPartitionFileName = this.GetPartitionFileName(0);
-            return (this.GeneratedFiles.ContainsKey(firstPartitionFileName));
-        }
-
         public string GetPartitionFileName(int partitionNumber)
         {
             return $"{this.Name}.partition.{partitionNumber}.txt";
+        }
+
+        public string GetHandlerOutputFileName(IPipelineStepHandler handler, int index = 0)
+        {
+            return $"{this.Name}.{handler.StepName}.{index}.txt";
         }
     }
 

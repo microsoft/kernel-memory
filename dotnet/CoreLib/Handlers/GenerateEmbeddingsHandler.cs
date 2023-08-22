@@ -23,6 +23,9 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
 
+    /// <inheritdoc />
+    public string StepName { get; }
+
     /// <summary>
     /// Handler responsible for generating embeddings and saving them to content storages.
     /// Note: stepName and other params are injected with DI
@@ -48,9 +51,6 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public string StepName { get; }
-
-    /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
@@ -64,6 +64,11 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
             foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
                 var partitionFile = generatedFile.Value;
+                if (partitionFile.AlreadyProcessedBy(this))
+                {
+                    this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
+                    continue;
+                }
 
                 // Calc embeddings only for partitions
                 if (!partitionFile.IsPartition)
@@ -85,7 +90,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 SourceFileName = partitionFile.Name
                             };
 
-                            embeddingData.GeneratorProvider = generator.GetType().FullName ?? generator.GetType().Name;
+                            var generatorProviderClassName = generator.GetType().FullName ?? generator.GetType().Name;
+                            embeddingData.GeneratorProvider = string.Join('.', generatorProviderClassName.Split('.').TakeLast(3));
 
                             // TODO: model name
                             embeddingData.GeneratorName = "TODO";
@@ -121,7 +127,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             string text = JsonSerializer.Serialize(embeddingData);
                             await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, cancellationToken).ConfigureAwait(false);
 
-                            newFiles.Add(embeddingFileName, new DataPipeline.GeneratedFileDetails
+                            var embeddingFileNameDetails = new DataPipeline.GeneratedFileDetails
                             {
                                 Id = Guid.NewGuid().ToString("N"),
                                 ParentId = uploadedFile.Id,
@@ -129,7 +135,9 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 Size = text.Length,
                                 Type = MimeTypes.TextEmbeddingVector,
                                 IsPartition = false
-                            });
+                            };
+                            embeddingFileNameDetails.MarkProcessedBy(this);
+                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
                         }
 
                         break;
@@ -138,6 +146,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                         this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
                         continue;
                 }
+
+                partitionFile.MarkProcessedBy(this);
             }
 
             // Add new files to pipeline status

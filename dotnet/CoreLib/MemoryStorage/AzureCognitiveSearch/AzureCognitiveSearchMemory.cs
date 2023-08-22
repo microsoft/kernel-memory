@@ -127,7 +127,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
             IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
                                               let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
-                                              select $"tags/any(s: s eq '{keyValue.Key}={fieldValue}')");
+                                              select $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')");
             options.Filter = string.Join(" and ", conditions);
             options.Size = limit;
 
@@ -174,7 +174,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         {
             IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
                                               let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
-                                              select $"tags/any(s: s eq '{keyValue.Key}={fieldValue}')");
+                                              select $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')");
             options.Filter = string.Join(" and ", conditions);
             options.Size = limit;
 

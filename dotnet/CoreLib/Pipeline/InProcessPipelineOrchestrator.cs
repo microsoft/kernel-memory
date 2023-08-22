@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.Diagnostics;
@@ -22,10 +23,11 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
         List<ISemanticMemoryVectorDb> vectorDbs,
+        ITextGeneration textGenerator,
         SemanticMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, vectorDbs, mimeTypeDetection, config, log)
+        : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
     {
     }
 

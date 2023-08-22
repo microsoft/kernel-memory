@@ -35,6 +35,7 @@ public class Memory : ISemanticMemoryClient
         // Default handlers - Use AddHandler to replace them.
         this.AddHandler(new TextExtractionHandler("extract", this._orchestrator));
         this.AddHandler(new TextPartitioningHandler("partition", this._orchestrator));
+        this.AddHandler(new SummarizationHandler("summarize", this._orchestrator));
         this.AddHandler(new GenerateEmbeddingsHandler("gen_embeddings", this._orchestrator));
         this.AddHandler(new SaveEmbeddingsHandler("save_embeddings", this._orchestrator));
     }

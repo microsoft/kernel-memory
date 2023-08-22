@@ -16,12 +16,15 @@ namespace Microsoft.SemanticMemory.Handlers;
 
 public class TextPartitioningHandler : IPipelineStepHandler
 {
-    private const int OverlappingTokens = 30;
-    private const int TokensPerLine = 500;
-    private const int TokensPerParagraph = 1000;
+    private const int MaxTokensPerLine = 300;
+    private const int MaxTokensPerParagraph = 1000;
+    private const int OverlappingTokens = 100;
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<TextPartitioningHandler> _log;
+
+    /// <inheritdoc />
+    public string StepName { get; }
 
     /// <summary>
     /// Handler responsible for partitioning text in small chunks.
@@ -42,8 +45,6 @@ public class TextPartitioningHandler : IPipelineStepHandler
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
 
-    public string StepName { get; }
-
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
@@ -55,10 +56,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
             foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
                 var file = generatedFile.Value;
-
-                if (uploadedFile.IsAlreadyPartitioned())
+                if (file.AlreadyProcessedBy(this))
                 {
-                    this._log.LogDebug("File {0} has already been partitioned", uploadedFile.Name);
+                    this._log.LogTrace("File {0} already processed by this handler", file.Name);
                     continue;
                 }
 
@@ -71,8 +71,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
-                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: TokensPerLine);
-                        paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: TokensPerParagraph, overlapTokens: OverlappingTokens);
+                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: MaxTokensPerLine);
+                        paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: MaxTokensPerParagraph, overlapTokens: OverlappingTokens);
                         break;
                     }
 
@@ -80,8 +80,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
-                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: TokensPerLine);
-                        paragraphs = TextChunker.SplitMarkdownParagraphs(lines, maxTokensPerParagraph: TokensPerParagraph, overlapTokens: OverlappingTokens);
+                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: MaxTokensPerLine);
+                        paragraphs = TextChunker.SplitMarkdownParagraphs(lines, maxTokensPerParagraph: MaxTokensPerParagraph, overlapTokens: OverlappingTokens);
                         break;
                     }
 
@@ -107,7 +107,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     var destFile = uploadedFile.GetPartitionFileName(index);
                     await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
-                    newFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+                    var destFileDetails = new DataPipeline.GeneratedFileDetails
                     {
                         Id = Guid.NewGuid().ToString("N"),
                         ParentId = uploadedFile.Id,
@@ -116,8 +116,12 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Type = MimeTypes.PlainText,
                         IsPartition = true,
                         ContentSHA256 = CalculateSHA256(text),
-                    });
+                    };
+                    newFiles.Add(destFile, destFileDetails);
+                    destFileDetails.MarkProcessedBy(this);
                 }
+
+                file.MarkProcessedBy(this);
             }
 
             // Add new files to pipeline status

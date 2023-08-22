@@ -31,6 +31,9 @@ await orchestrator.AddHandlerAsync(textExtraction);
 TextPartitioningHandler textPartitioning = new("partition", orchestrator);
 await orchestrator.AddHandlerAsync(textPartitioning);
 
+SummarizationHandler summarizeEmbedding = new("summarize", orchestrator);
+await orchestrator.AddHandlerAsync(summarizeEmbedding);
+
 GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator);
 await orchestrator.AddHandlerAsync(textEmbedding);
 
@@ -51,6 +54,7 @@ var pipeline = orchestrator
     .AddUploadFile("file5", "file5-NASA-news.pdf", "file5-NASA-news.pdf")
     .Then("extract")
     .Then("partition")
+    .Then("summarize")
     .Then("gen_embeddings")
     .Then("save_embeddings")
     .Build();

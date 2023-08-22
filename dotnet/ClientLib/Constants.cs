@@ -23,12 +23,20 @@ public static class Constants
     public const string DefaultIndex = "default";
 
     // Tags reserved for internal logic
-    // public const string ReservedUserIdTag = "__user";
+    public const char ReservedEqualsSymbol = ':';
     public const string ReservedTagsPrefix = "__";
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
+
+    // Properties stored inside the payload
+    public const string ReservedPayloadTextField = "text";
+    public const string ReservedPayloadFileNameField = "file";
+    public const string ReservedPayloadEmbeddingSrcFileNameField = "emb_src_file";
+    public const string ReservedPayloadLastUpdateField = "last_update";
+    public const string ReservedPayloadVectorProviderField = "vector_provider";
+    public const string ReservedPayloadVectorGeneratorField = "vector_generator";
 
     // Endpoints
     public const string HttpAskEndpoint = "/ask";

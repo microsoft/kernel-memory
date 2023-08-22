@@ -133,7 +133,7 @@ public class AzureBlobsStorage : IContentStorage
     }
 
     /// <inherit />
-    public async Task<BinaryData> ReadFileAsync(string directoryName, string fileName, CancellationToken cancellationToken = default)
+    public async Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default)
     {
         var blobName = $"{directoryName}/{fileName}";
         BlobClient blobClient = this.GetBlobClient(blobName);
@@ -147,7 +147,8 @@ public class AzureBlobsStorage : IContentStorage
                 return content.Value.Content;
             }
 
-            this._log.LogError("Unable to download file {0}", blobName);
+            if (errIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
+
             throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
         }
         catch (RequestFailedException e) when (e.Status == 404)

@@ -72,12 +72,13 @@ public class FileSystemStorage : IContentStorage
     }
 
     /// <inherit />
-    public Task<BinaryData> ReadFileAsync(string directoryName, string fileName, CancellationToken cancellationToken = default)
+    public Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default)
     {
         var path = Path.Join(this._directory, directoryName, fileName);
         if (!File.Exists(path))
         {
-            this._log.LogError("File not found {0}", path);
+            if (errIfNotFound) { this._log.LogError("File not found {0}", path); }
+
             throw new ContentStorageFileNotFoundException("File not found");
         }
 

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.Diagnostics;
@@ -19,6 +20,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
     private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
+    private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
 
     protected IContentStorage ContentStorage { get; private set; }
@@ -30,6 +32,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
         List<ISemanticMemoryVectorDb> vectorDbs,
+        ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         SemanticMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
@@ -42,6 +45,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this.CancellationTokenSource = new CancellationTokenSource();
         this._embeddingGenerators = embeddingGenerators;
         this._vectorDbs = vectorDbs;
+        this._textGenerator = textGenerator;
 
         if (embeddingGenerators?.Count == 0)
         {
@@ -134,7 +138,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         var dirPath = this.ContentStorage.JoinPaths(index, documentId);
         try
         {
-            BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, cancellationToken)
+            BinaryData? content = await (this.ContentStorage.ReadFileAsync(dirPath, Constants.PipelineStatusFilename, false, cancellationToken)
                 .ConfigureAwait(false));
             return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString());
         }
@@ -169,7 +173,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
         var path = this.ContentStorage.JoinPaths(pipeline.Index, pipeline.DocumentId);
-        return this.ContentStorage.ReadFileAsync(path, fileName, cancellationToken);
+        return this.ContentStorage.ReadFileAsync(path, fileName, true, cancellationToken);
     }
 
     ///<inheritdoc />
@@ -206,6 +210,12 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public List<ISemanticMemoryVectorDb> GetVectorDbs()
     {
         return this._vectorDbs;
+    }
+
+    ///<inheritdoc />
+    public ITextGeneration GetTextGenerator()
+    {
+        return this._textGenerator;
     }
 
     ///<inheritdoc />

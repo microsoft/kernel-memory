@@ -66,6 +66,8 @@
     <ItemGroup>
         <EmbeddedResource Include="AI\Tokenizers\GPT3\encoder.json" />
         <EmbeddedResource Include="AI\Tokenizers\GPT3\vocab.bpe" />
+        <EmbeddedResource Include="Prompts\summarize.txt" />
+        <EmbeddedResource Include="Prompts\answer-with-facts.txt" />
     </ItemGroup>
 
 </Project>

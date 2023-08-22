@@ -19,6 +19,9 @@ public class TextExtractionHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<TextExtractionHandler> _log;
 
+    /// <inheritdoc />
+    public string StepName { get; }
+
     /// <summary>
     /// Handler responsible for extracting text from documents.
     /// Note: stepName and other params are injected with DI.
@@ -39,14 +42,17 @@ public class TextExtractionHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public string StepName { get; }
-
-    /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
+            if (uploadedFile.AlreadyProcessedBy(this))
+            {
+                this._log.LogTrace("File {0} already processed by this handler", uploadedFile.Name);
+                continue;
+            }
+
             var sourceFile = uploadedFile.Name;
             var destFile = $"{uploadedFile.Name}.extract.txt";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
@@ -97,7 +103,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             this._log.LogDebug("Saving extracted text file {0}", destFile);
             await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
-            uploadedFile.GeneratedFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+            var destFileDetails = new DataPipeline.GeneratedFileDetails
             {
                 Id = Guid.NewGuid().ToString("N"),
                 ParentId = uploadedFile.Id,
@@ -105,7 +111,11 @@ public class TextExtractionHandler : IPipelineStepHandler
                 Size = text.Length,
                 Type = extractType,
                 IsPartition = false
-            });
+            };
+            destFileDetails.MarkProcessedBy(this);
+
+            uploadedFile.GeneratedFiles.Add(destFile, destFileDetails);
+            uploadedFile.MarkProcessedBy(this);
         }
 
         return (true, pipeline);

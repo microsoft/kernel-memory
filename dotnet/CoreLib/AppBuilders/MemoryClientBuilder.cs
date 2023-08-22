@@ -297,7 +297,7 @@ public class MemoryClientBuilder
         }
 
         // Text generation
-        switch (config.Retrieval.TextGeneratorType)
+        switch (config.TextGeneratorType)
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):

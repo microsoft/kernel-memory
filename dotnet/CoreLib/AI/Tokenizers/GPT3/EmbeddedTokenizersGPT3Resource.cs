@@ -16,9 +16,9 @@ namespace Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
 ///
 /// To know which resources are embedded, check the csproj file.
 /// </summary>
-internal static class EmbeddedResource
+internal static class EmbeddedTokenizersGPT3Resource
 {
-    private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
+    private static readonly string? s_namespace = typeof(EmbeddedTokenizersGPT3Resource).Namespace;
 
     /// <summary>
     /// Return content of BPE file.
@@ -39,7 +39,7 @@ internal static class EmbeddedResource
     private static string Read(string fileName)
     {
         // Get the current assembly. Note: this class is in the same assembly where the embedded resources are stored.
-        Assembly? assembly = typeof(EmbeddedResource).GetTypeInfo().Assembly;
+        Assembly? assembly = typeof(EmbeddedTokenizersGPT3Resource).GetTypeInfo().Assembly;
         if (assembly == null) { throw new ConfigurationException($"[{s_namespace}] {fileName} assembly not found"); }
 
         // Resources are mapped like types, using the namespace and appending "." (dot) and the file name

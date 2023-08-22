@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.MemoryStorage;
 
 namespace Microsoft.SemanticMemory.Pipeline;
@@ -130,4 +131,11 @@ public interface IPipelineOrchestrator
     /// </summary>
     /// <returns></returns>
     List<ISemanticMemoryVectorDb> GetVectorDbs();
+
+    /// <summary>
+    /// Get the text generator used for prompts, synthetic data, answer generation, etc.
+    /// TODO: support multiple generators, for different tasks, with different cost/quality.
+    /// </summary>
+    /// <returns>Instance of the text generator</returns>
+    ITextGeneration GetTextGenerator();
 }

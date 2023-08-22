@@ -38,7 +38,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
             result.Vector = new Embedding<float>(this.Vector.ToArray());
         }
 
-        foreach (string[] keyValue in this.Payload.Tags.Select(tag => tag.Split('=', 2)))
+        foreach (string[] keyValue in this.Payload.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
         {
             string key = keyValue[0];
             string? value = keyValue.Length == 1 ? null : keyValue[1];
@@ -56,7 +56,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
             Payload = new T
             {
                 Id = record.Id,
-                Tags = record.Tags.Pairs.Select(tag => $"{tag.Key}={tag.Value}").ToList(),
+                Tags = record.Tags.Pairs.Select(tag => $"{tag.Key}{Constants.ReservedEqualsSymbol}{tag.Value}").ToList(),
                 Payload = JsonSerializer.Serialize(record.Payload, QdrantConfig.JSONOptions),
             }
         };

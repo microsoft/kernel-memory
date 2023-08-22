@@ -16,6 +16,7 @@ var pipeline = orchestrator
     .AddUploadFile("file4", "file4.pdf", "file4.pdf")
     .Then("extract")
     .Then("partition")
+    .Then("summarize")
     .Then("gen_embeddings")
     .Then("save_embeddings")
     .Build();

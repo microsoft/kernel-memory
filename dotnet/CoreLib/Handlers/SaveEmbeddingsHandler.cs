@@ -20,6 +20,9 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
+    /// <inheritdoc />
+    public string StepName { get; }
+
     /// <summary>
     /// Handler responsible for copying embeddings from storage to list of vector DBs
     /// Note: stepName and other params are injected with DI
@@ -45,9 +48,6 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public string StepName { get; }
-
-    /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         await this.DeletePreviousEmbeddingsAsync(pipeline, cancellationToken).ConfigureAwait(false);
@@ -56,6 +56,12 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
         foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
         {
+            if (embeddingFile.Value.AlreadyProcessedBy(this))
+            {
+                this._log.LogTrace("File {0} already processed by this handler", embeddingFile.Value.Name);
+                continue;
+            }
+
             string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
             EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
             if (embeddingData == null)
@@ -77,15 +83,16 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
             pipeline.Tags.CopyTo(record.Tags);
 
-            record.Payload.Add("file_name", pipeline.GetFile(embeddingFile.Value.ParentId).Name);
-            record.Payload.Add("vector_provider", embeddingData.GeneratorProvider);
-            record.Payload.Add("vector_generator", embeddingData.GeneratorName);
-            record.Payload.Add("last_update", DateTimeOffset.UtcNow.ToString("s"));
+            record.Payload.Add(Constants.ReservedPayloadFileNameField, pipeline.GetFile(embeddingFile.Value.ParentId).Name);
+            record.Payload.Add(Constants.ReservedPayloadEmbeddingSrcFileNameField, embeddingData.SourceFileName);
+            record.Payload.Add(Constants.ReservedPayloadLastUpdateField, DateTimeOffset.UtcNow.ToString("s"));
+            record.Payload.Add(Constants.ReservedPayloadVectorProviderField, embeddingData.GeneratorProvider);
+            record.Payload.Add(Constants.ReservedPayloadVectorGeneratorField, embeddingData.GeneratorName);
 
             // Store text partition for RAG
             // TODO: make this optional to reduce space usage, using blob files instead
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
-            record.Payload.Add("text", partitionContent);
+            record.Payload.Add(Constants.ReservedPayloadTextField, partitionContent);
 
             foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
             {
@@ -95,6 +102,8 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
                 await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
             }
+
+            embeddingFile.Value.MarkProcessedBy(this);
         }
 
         return (true, pipeline);
@@ -132,6 +141,9 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
 
     private static string GetEmbeddingRecordId(string pipelineId, string filePartitionId)
     {
-        return $"pl={pipelineId}//fp={filePartitionId}";
+        // Note: this value is serialized in different ways depending on the vector DB, so you
+        // can search for: tags[] contains "__document_id:{pipelineId}" && tags[] contains "__file_part={filePartitionId}"
+        // e.g. $filter=tags/any(s: s eq '__document_id:doc001')&$select=tags,payload
+        return $"pi={pipelineId}//fpi={filePartitionId}";
     }
 }
