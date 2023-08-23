@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Configuration;
@@ -37,14 +39,14 @@ public class MemoryService : ISemanticMemoryClient
 
     /// <inheritdoc />
     public async Task<string> ImportDocumentAsync(
-        string fileName,
+        string filePath,
         string? documentId = null,
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        var document = new Document(documentId, tags: tags).AddFile(fileName);
+        var document = new Document(documentId, tags: tags).AddFile(filePath);
         var uploadRequest = await document.ToDocumentUploadRequestAsync(index, steps, cancellationToken).ConfigureAwait(false);
         return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
     }
@@ -56,6 +58,38 @@ public class MemoryService : ISemanticMemoryClient
     {
         var index = IndexExtensions.CleanName(uploadRequest.Index);
         return this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ImportDocumentAsync(
+        Stream content,
+        string? fileName = null,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
+    {
+        var document = new Document(documentId, tags: tags).AddStream(fileName, content);
+        var uploadRequest = await document.ToDocumentUploadRequestAsync(index, steps, cancellationToken).ConfigureAwait(false);
+        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ImportTextAsync(
+        string text,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
+    {
+        var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />

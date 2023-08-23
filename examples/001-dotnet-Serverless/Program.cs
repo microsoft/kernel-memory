@@ -21,6 +21,20 @@ var memory = new MemoryClientBuilder()
 // === UPLOAD ============
 // =======================
 
+// Uploading some text, without using files
+if (!await memory.IsDocumentReadyAsync(documentId: "doc000"))
+{
+    Console.WriteLine("Uploading doc000");
+    await memory.ImportTextAsync("In physics, mass–energy equivalence is the relationship between mass and energy " +
+                                 "in a system's rest frame, where the two quantities differ only by a multiplicative " +
+                                 "constant and the units of measurement. The principle is described by the physicist " +
+                                 "Albert Einstein's formula: E = m*c^2", documentId: "doc000");
+}
+else
+{
+    Console.WriteLine("doc000 already uploaded.");
+}
+
 // Simple file upload (checking if the file exists)
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
@@ -67,10 +81,17 @@ else
 // =======================
 
 // Question without filters
-var question = "What's Semantic Kernel?";
+var question = "What's mc^2?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);
+Console.WriteLine($"\nAnswer: {answer.Result}\n\n");
+
+// Another question without filters
+question = "What's Semantic Kernel?";
+Console.WriteLine($"\n\nQuestion: {question}");
+
+answer = await memory.AskAsync(question);
 Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
@@ -106,9 +127,20 @@ Console.WriteLine($"\nNews: {answer.Result}\n\n");
 // ReSharper disable CommentTypo
 /* ==== OUTPUT ====
 
+Uploading doc000
 doc001 already uploaded.
 doc002 already uploaded.
 doc003 already uploaded.
+
+
+Question: What's mc^2?
+
+Answer: mc^2 refers to the equation E=mc^2, which is the famous mass-energy equivalence equation proposed by
+Albert Einstein in his theory of relativity. In this equation, E represents energy, m represents mass, and
+c represents the speed of light in a vacuum. The equation states that energy is equal to mass multiplied by
+the square of the speed of light. This equation shows the relationship between mass and energy, suggesting
+that mass can be converted into energy and vice versa. It is a fundamental equation in physics and has
+significant implications in various fields, including nuclear energy and particle physics.
 
 
 Question: What's Semantic Kernel?

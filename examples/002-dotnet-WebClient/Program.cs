@@ -21,6 +21,20 @@ var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // Simple file upload (checking if the file exists)
 
+// Uploading some text, without using files
+if (!await memory.IsDocumentReadyAsync(documentId: "doc000"))
+{
+    Console.WriteLine("Uploading doc000");
+    await memory.ImportTextAsync("In physics, mass–energy equivalence is the relationship between mass and energy " +
+                                 "in a system's rest frame, where the two quantities differ only by a multiplicative " +
+                                 "constant and the units of measurement. The principle is described by the physicist " +
+                                 "Albert Einstein's formula: E = m*c^2", documentId: "doc000");
+}
+else
+{
+    Console.WriteLine("doc000 already uploaded.");
+}
+
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
     Console.WriteLine("Uploading doc001");
@@ -76,10 +90,17 @@ while (
 // =======================
 
 // Question without filters
-var question = "What's Semantic Kernel?";
+var question = "What's mc^2?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);
+Console.WriteLine($"\nAnswer: {answer.Result}\n\n");
+
+// Another question without filters
+question = "What's Semantic Kernel?";
+Console.WriteLine($"\n\nQuestion: {question}");
+
+answer = await memory.AskAsync(question);
 Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)

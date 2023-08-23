@@ -40,14 +40,14 @@ public class MemoryWebClient : ISemanticMemoryClient
 
     /// <inheritdoc />
     public Task<string> ImportDocumentAsync(
-        string fileName,
+        string filePath,
         string? documentId = null,
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        var document = new Document(documentId, tags: tags).AddFile(fileName);
+        var document = new Document(documentId, tags: tags).AddFile(filePath);
         var uploadRequest = document.ToDocumentUploadRequest(index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
@@ -59,6 +59,35 @@ public class MemoryWebClient : ISemanticMemoryClient
     {
         var index = IndexExtensions.CleanName(uploadRequest.Index);
         return this.ImportInternalAsync(index, uploadRequest, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<string> ImportDocumentAsync(
+        Stream content,
+        string? fileName = null,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
+    {
+        var document = new Document(documentId, tags: tags).AddStream(fileName, content);
+        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
+        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ImportTextAsync(
+        string text,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
+    {
+        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(text));
+        return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />

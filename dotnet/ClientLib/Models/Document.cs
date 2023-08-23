@@ -26,6 +26,8 @@ public class Document
 
     public List<string> FileNames { get; set; } = new();
 
+    public Dictionary<string, Stream> Streams { get; set; } = new();
+
     public Document(string? id = null, TagCollection? tags = null, IEnumerable<string>? fileNames = null)
     {
         if (id == null || string.IsNullOrWhiteSpace(id)) { id = RandomId(); }
@@ -47,6 +49,32 @@ public class Document
     {
         this.FileNames.Add(fileName);
         return this;
+    }
+
+    public Document AddStream(string? filename, Stream content)
+    {
+        if (content == null)
+        {
+            throw new SemanticMemoryException("The content stream is NULL");
+        }
+
+        if (string.IsNullOrWhiteSpace(filename))
+        {
+            var i = 0;
+            filename = "content.txt";
+            while (this.HasStream(filename))
+            {
+                filename = $"content{i++}.txt";
+            }
+        }
+
+        this.Streams.Add(filename!, content);
+        return this;
+    }
+
+    public bool HasStream(string name)
+    {
+        return this.Streams.ContainsKey(name);
     }
 
     public Document AddFiles(IEnumerable<string>? fileNames)
@@ -103,6 +131,12 @@ public static class DocumentExtensions
             byte[] bytes = File.ReadAllBytes(fileName);
             var data = new BinaryData(bytes);
             var formFile = new DocumentUploadRequest.UploadedFile(fileName, data.ToStream());
+            files.Add(formFile);
+        }
+
+        foreach (KeyValuePair<string, Stream> stream in doc.Streams)
+        {
+            var formFile = new DocumentUploadRequest.UploadedFile(stream.Key, stream.Value);
             files.Add(formFile);
         }
 
