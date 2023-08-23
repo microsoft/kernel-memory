@@ -11,6 +11,8 @@ extend-exclude = [
     "package-lock.json",
     "*.bicep",
     "*.sql",
+    "vocab.bpe",
+    "vocab.bpe"
 ]
 
 [default.extend-words]
