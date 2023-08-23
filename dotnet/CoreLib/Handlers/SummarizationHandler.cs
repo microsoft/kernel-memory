@@ -74,14 +74,14 @@ public class SummarizationHandler : IPipelineStepHandler
                     continue;
                 }
 
-                // Don't summarize partitions
-                if (file.IsPartition)
+                // Summarize only the original content
+                if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
                 {
                     this._log.LogTrace("Skipping partition file {0}", file.Name);
                     continue;
                 }
 
-                switch (file.Type)
+                switch (file.MimeType)
                 {
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
@@ -99,8 +99,8 @@ public class SummarizationHandler : IPipelineStepHandler
                                 ParentId = uploadedFile.Id,
                                 Name = destFile,
                                 Size = summary.Length,
-                                Type = MimeTypes.PlainText,
-                                IsPartition = true, // TODO
+                                MimeType = MimeTypes.PlainText,
+                                ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
                                 ContentSHA256 = CalculateSHA256(summary),
                             });
                         }

@@ -62,10 +62,17 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     continue;
                 }
 
+                // Partition only the original text
+                if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
+                {
+                    this._log.LogTrace("Skipping file {0} (not original text)", file.Name);
+                    continue;
+                }
+
                 // Use a different partitioning strategy depending on the file type
                 List<string> paragraphs;
                 List<string> lines;
-                switch (file.Type)
+                switch (file.MimeType)
                 {
                     case MimeTypes.PlainText:
                     {
@@ -113,8 +120,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         ParentId = uploadedFile.Id,
                         Name = destFile,
                         Size = text.Length,
-                        Type = MimeTypes.PlainText,
-                        IsPartition = true,
+                        MimeType = MimeTypes.PlainText,
+                        ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
                         ContentSHA256 = CalculateSHA256(text),
                     };
                     newFiles.Add(destFile, destFileDetails);

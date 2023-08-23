@@ -16,6 +16,16 @@ namespace Microsoft.SemanticMemory.Pipeline;
 /// </summary>
 public class DataPipeline
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ArtifactTypes
+    {
+        Undefined = 0,
+        TextPartition = 1,
+        ExtractedText = 2,
+        TextEmbeddingVector = 3,
+        SyntheticData = 4,
+    }
+
     public abstract class FileDetailsBase
     {
         /// <summary>
@@ -43,17 +53,15 @@ public class DataPipeline
         /// File (MIME) type
         /// </summary>
         [JsonPropertyOrder(3)]
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
+        [JsonPropertyName("mime_type")]
+        public string MimeType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Check if this is an embedding file (checking the file extension)
+        /// File (MIME) type
         /// </summary>
-        /// <returns>True if the file contains an embedding</returns>
-        public bool IsEmbeddingFile()
-        {
-            return this.Type == MimeTypes.TextEmbeddingVector;
-        }
+        [JsonPropertyOrder(4)]
+        [JsonPropertyName("artifact_type")]
+        public ArtifactTypes ArtifactType { get; set; } = ArtifactTypes.Undefined;
 
         /// <summary>
         /// List of handlers who have already processed this file
@@ -90,13 +98,6 @@ public class DataPipeline
         [JsonPropertyOrder(14)]
         [JsonPropertyName("parent_id")]
         public string ParentId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Whether this is a partition/chunk/piece of the original content
-        /// </summary>
-        [JsonPropertyOrder(15)]
-        [JsonPropertyName("is_partition")]
-        public bool IsPartition { get; set; } = false;
 
         /// <summary>
         /// Deduplication hash used for consolidation tasks

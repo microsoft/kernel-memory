@@ -329,7 +329,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 Id = Guid.NewGuid().ToString("N"),
                 Name = file.FileName,
                 Size = size,
-                Type = this.MimeTypeDetection.GetFileType(file.FileName),
+                MimeType = this.MimeTypeDetection.GetFileType(file.FileName),
             });
 
             this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, size);

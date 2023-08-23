@@ -22,5 +22,5 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true
     },
-    "dotnet.defaultSolution": ".\\SemanticMemory.sln"
+    "dotnet.defaultSolution": "SemanticMemory.sln"
 }

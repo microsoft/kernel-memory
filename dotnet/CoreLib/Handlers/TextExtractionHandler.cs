@@ -59,7 +59,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             string text = string.Empty;
             string extractType = MimeTypes.PlainText;
 
-            switch (uploadedFile.Type)
+            switch (uploadedFile.MimeType)
             {
                 case MimeTypes.PlainText:
                     this._log.LogDebug("Extracting text from plain text file {0}", uploadedFile.Name);
@@ -97,7 +97,7 @@ public class TextExtractionHandler : IPipelineStepHandler
                     break;
 
                 default:
-                    throw new NotSupportedException($"File type not supported: {uploadedFile.Type}");
+                    throw new NotSupportedException($"File type not supported: {uploadedFile.MimeType}");
             }
 
             this._log.LogDebug("Saving extracted text file {0}", destFile);
@@ -109,8 +109,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                 ParentId = uploadedFile.Id,
                 Name = destFile,
                 Size = text.Length,
-                Type = extractType,
-                IsPartition = false
+                MimeType = extractType,
+                ArtifactType = DataPipeline.ArtifactTypes.ExtractedText
             };
             destFileDetails.MarkProcessedBy(this);
 

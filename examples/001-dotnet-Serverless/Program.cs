@@ -81,7 +81,7 @@ else
 // =======================
 
 // Question without filters
-var question = "What's mc^2?";
+var question = "What's E = m*c^2?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);
