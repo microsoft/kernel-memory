@@ -261,7 +261,7 @@ running the service locally with OpenAPI enabled.
 3. [Using the Semantic Memory web service](examples/002-dotnet-WebClient)
 4. [How to upload files from command line with curl](examples/003-curl-calling-webservice)
 5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
-6. [Using a custom pipeline handler with serveless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)
+6. [Using a custom pipeline handler with serverless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)
 6. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
 
 ## Tools

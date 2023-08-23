@@ -72,7 +72,7 @@ The service depends on three main components:
 
 
 * **Embedding generator**: all the documents uploaded are automatically
-  partioned (aka "chunked") and indexed for vector search, generating
+  partitioned (aka "chunked") and indexed for vector search, generating
   several embedding vectors for each file. We recommend using
   [OpenAI ADA v2](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings)
   model, though you can easily plug in any embedding generator if needed.
