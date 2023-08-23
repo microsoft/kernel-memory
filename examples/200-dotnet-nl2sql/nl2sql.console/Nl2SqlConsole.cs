@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -38,13 +39,16 @@ internal sealed class Nl2SqlConsole : BackgroundService
 
     public Nl2SqlConsole(
         IKernel kernel,
+        IConfiguration config,
         SqlConnectionProvider sqlProvider,
         ILogger<Nl2SqlConsole> logger)
     {
+        var minRelevance = config.GetValue<double>("MinSchemaRelevance", SqlQueryGenerator.DefaultMinRelevance);
+
         this._kernel = kernel;
         this._sqlProvider = sqlProvider;
         this._logger = logger;
-        this._queryGenerator = new SqlQueryGenerator(this._kernel, Repo.RootConfigFolder);
+        this._queryGenerator = new SqlQueryGenerator(this._kernel, Repo.RootConfigFolder, minRelevance);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
