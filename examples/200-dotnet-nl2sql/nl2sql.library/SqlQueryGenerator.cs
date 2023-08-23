@@ -18,6 +18,8 @@ using SemanticKernel.Data.Nl2Sql.Library.Schema;
 /// </summary>
 public sealed class SqlQueryGenerator
 {
+    public const double DefaultMinRelevance = 0.7D;
+
     public const string ContextParamObjective = "data_objective";
     public const string ContextParamSchema = "data_schema";
     public const string ContextParamSchemaId = "data_schema_id";
@@ -35,7 +37,7 @@ public sealed class SqlQueryGenerator
     private readonly ISKFunction _promptGenerator;
     private readonly ISemanticTextMemory _memory;
 
-    public SqlQueryGenerator(IKernel kernel, string rootSkillFolder)
+    public SqlQueryGenerator(IKernel kernel, string rootSkillFolder, double minRelevanceScore = DefaultMinRelevance)
     {
         var functions = kernel.ImportSemanticSkillFromDirectory(rootSkillFolder, SkillName);
         this._promptEval = functions["isquery"];
