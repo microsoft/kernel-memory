@@ -13,7 +13,7 @@ using Microsoft.SemanticMemory;
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:54124/");
+var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // =======================
 // === UPLOAD ============
@@ -102,7 +102,6 @@ while (
 // =======================
 // === ASK ===============
 // =======================
-
 // Question without filters
 var question = "What's mc^2?";
 Console.WriteLine($"\n\nQuestion: {question}");
@@ -152,7 +151,7 @@ question = "What did the brown fox do?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 answer = await memory.AskAsync(question);
-Console.WriteLine($"\nNews: {answer.Result}\n\n");
+Console.WriteLine($"\nAnswer: {answer.Result}\n\n");
 
 // ReSharper disable CommentTypo
 /* ==== OUTPUT ====

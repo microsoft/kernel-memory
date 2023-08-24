@@ -12,8 +12,11 @@ public static class MimeTypes
     public const string MarkDown = "text/plain-markdown";
     public const string MsWord = "application/msword";
     public const string Pdf = "application/pdf";
-    public const string TextEmbeddingVector = "float[]";
     public const string Json = "application/json";
+    public const string TextEmbeddingVector = "float[]";
+    public const string ImageJpeg = "image/jpeg";
+    public const string ImagePng = "image/png";
+    public const string ImageTiff = "image/tiff";
 }
 
 public static class FileExtensions
@@ -25,6 +28,10 @@ public static class FileExtensions
     public const string MsWordX = ".docx";
     public const string Pdf = ".pdf";
     public const string TextEmbeddingVector = ".text_embedding";
+    public const string ImageJpeg = ".jpeg";
+    public const string ImageJpg = ".jpg";
+    public const string ImagePng = ".png";
+    public const string ImageTiff = ".tiff";
 }
 
 public interface IMimeTypeDetection
@@ -36,14 +43,26 @@ public interface IMimeTypeDetection
 
 public class MimeTypesDetection : IMimeTypeDetection
 {
+    private static readonly HashSet<string> imageTypes =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            MimeTypes.ImageJpeg,
+            MimeTypes.ImagePng,
+            MimeTypes.ImageTiff,
+        };
+
     private static readonly IReadOnlyDictionary<string, string> extensionTypes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { FileExtensions.PlainText, MimeTypes.PlainText },
-            { FileExtensions.MarkDown, MimeTypes.MarkDown },
+            { FileExtensions.ImageJpeg, MimeTypes.ImageJpeg },
+            { FileExtensions.ImageJpg, MimeTypes.ImageJpeg },
+            { FileExtensions.ImagePng, MimeTypes.ImagePng },
+            { FileExtensions.ImageTiff, MimeTypes.ImageTiff },
             { FileExtensions.Json, MimeTypes.Json },
+            { FileExtensions.MarkDown, MimeTypes.MarkDown },
             { FileExtensions.MsWord, MimeTypes.MsWord },
             { FileExtensions.MsWordX, MimeTypes.MsWord },
+            { FileExtensions.PlainText, MimeTypes.PlainText },
             { FileExtensions.Pdf, MimeTypes.Pdf },
             { FileExtensions.TextEmbeddingVector, MimeTypes.TextEmbeddingVector },
         };

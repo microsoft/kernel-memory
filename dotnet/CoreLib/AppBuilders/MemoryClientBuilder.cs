@@ -17,7 +17,6 @@ using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.ContentStorage.FileSystem;
 using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
-using Microsoft.SemanticMemory.DataFormats.Image.Tesseract;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
@@ -328,9 +327,8 @@ public class MemoryClientBuilder
         // Image OCR
         switch (config.ImageOcrType)
         {
-            case string x when x.Equals("TesseractOcr", StringComparison.OrdinalIgnoreCase):
-                this._appBuilder.Services.AddTesseractOCR(this.GetServiceConfig<TesseractConfig>(config, "TesseractOcr"));
-                this._sharedServiceCollection?.AddTesseractOCR(this.GetServiceConfig<TesseractConfig>(config, "TesseractOcr"));
+            case string y when string.IsNullOrWhiteSpace(y):
+            case string x when x.Equals("None", StringComparison.OrdinalIgnoreCase):
                 break;
 
             case string x when x.Equals("AzureFormRecognizer", StringComparison.OrdinalIgnoreCase):

@@ -100,7 +100,21 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                     break;
 
-                // $$$ IMAGE HANDLING
+                case MimeTypes.ImageJpeg:
+                case MimeTypes.ImagePng:
+                case MimeTypes.ImageTiff:
+                    this._log.LogDebug("Extracting text from image file {0}", uploadedFile.Name);
+                    if (this._ocrEngine == null)
+                    {
+                        throw new NotSupportedException($"Image extraction not configured: {uploadedFile.Name}");
+                    }
+
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent).ConfigureAwait(false);
+                    }
+
+                    break;
 
                 default:
                     throw new NotSupportedException($"File type not supported: {uploadedFile.Type}");

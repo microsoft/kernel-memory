@@ -2,21 +2,18 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure;
-using Azure.AI.FormRecognizer;
-using Azure.AI.FormRecognizer.Models;
+using Azure.AI.FormRecognizer.DocumentAnalysis;
 
 namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 
 /// <summary>
-/// Wrapper for the Azure.AI.FormRecognizer.
+/// OCR engine based on Azure.AI.FormRecognizer.
 /// </summary>
 public class AzureFormRecognizerEngine : IOcrEngine
 {
-    private readonly FormRecognizerClient formRecognizerClient;
+    private readonly DocumentAnalysisClient recognizerClient;
 
     /// <summary>
     /// Creates a new instance of the AzureFormRecognizerOcrEngine passing in the Form Recognizer endpoint and key.
@@ -25,30 +22,18 @@ public class AzureFormRecognizerEngine : IOcrEngine
     /// <param name="credential">The AzureKeyCredential containing the provisioned Azure Form Recognizer access key</param>
     public AzureFormRecognizerEngine(string endpoint, AzureKeyCredential credential)
     {
-        this.formRecognizerClient = new FormRecognizerClient(new Uri(endpoint), credential);
+        this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), credential);
     }
 
     ///<inheritdoc/>
     public async Task<string> ExtractTextFromImageAsync(Stream imageContent)
     {
         // Start the OCR operation
-        RecognizeContentOperation operation = await this.formRecognizerClient.StartRecognizeContentAsync(imageContent).ConfigureAwait(false);
+        var operation = await this.recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent).ConfigureAwait(false);
 
         // Wait for the result
-        Response<FormPageCollection> operationResponse = await operation.WaitForCompletionAsync().ConfigureAwait(false);
-        FormPageCollection formPages = operationResponse.Value;
+        Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync().ConfigureAwait(false);
 
-        StringBuilder text = new();
-
-        foreach (FormPage page in formPages)
-        {
-            foreach (FormLine line in page.Lines)
-            {
-                string lineText = string.Join(" ", line.Words.Select(word => word.Text));
-                text.AppendLine(lineText);
-            }
-        }
-
-        return text.ToString();
+        return operationResponse.Value.Content;
     }
 }
