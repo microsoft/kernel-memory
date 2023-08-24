@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -8,17 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticMemory.Core" Version="0.0.230821.5-preview" />
+        <PackageReference Include="Microsoft.SemanticMemory.Core" Version="0.0.230823.2-preview" />
     </ItemGroup>
 
+    <!--    <ItemGroup>-->
+    <!--        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />-->
+    <!--    </ItemGroup>-->
+
     <ItemGroup>
-        <None Remove=".env" />
         <None Remove="sample-SK-Readme.pdf" />
         <Content Include="sample-SK-Readme.pdf">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <None Remove="appsettings.json" />
-        <Content Include="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

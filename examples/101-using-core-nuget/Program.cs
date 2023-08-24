@@ -5,6 +5,20 @@ using Microsoft.SemanticMemory;
 var memory = new MemoryClientBuilder()
     .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    // .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
+    // {
+    //     APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
+    //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
+    //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
+    //     Deployment = Env.Var("AZURE_OPENAI_EMBED_MODEL")
+    // })
+    // .WithAzureOpenAITextCompletion(new AzureOpenAIConfig
+    // {
+    //     APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
+    //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
+    //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
+    //     Deployment = Env.Var("AZURE_OPENAI_CHAT_MODEL")
+    // })
     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
     .BuildServerlessClient();
 

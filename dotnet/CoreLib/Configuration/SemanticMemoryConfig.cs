@@ -2,8 +2,11 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Configuration;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.SemanticMemory;
 
 public class SemanticMemoryConfig
 {

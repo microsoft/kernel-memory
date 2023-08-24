@@ -2,7 +2,6 @@
 
 using System;
 using System.IO;
-using Microsoft.SemanticMemory.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
