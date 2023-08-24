@@ -40,7 +40,7 @@ Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): 
 
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
-    Console.WriteLine($"Uploading doc001");
+    Console.WriteLine("Uploading doc001");
     await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt", documentId: "doc001");
 }
 else
@@ -80,7 +80,7 @@ else
 
 if (!await memory.IsDocumentReadyAsync(documentId: "doc004"))
 {
-    Console.WriteLine($"Uploading doc004");
+    Console.WriteLine("Uploading doc004");
     await memory.ImportDocumentAsync("file6-ocr.png", documentId: "doc004");
 }
 else
