@@ -65,7 +65,7 @@ public class MemoryClientBuilder
         this.AddSingleton<List<ISemanticMemoryVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
         this.WithFilesystemStorage(new FileSystemConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
     }
 
@@ -80,7 +80,7 @@ public class MemoryClientBuilder
         this.AddSingleton<List<ISemanticMemoryVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
         this.WithFilesystemStorage(new FileSystemConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
     }
 
@@ -95,6 +95,13 @@ public class MemoryClientBuilder
     {
         service = service ?? throw new ConfigurationException("The content storage instance is NULL");
         this.AddSingleton<IContentStorage>(service);
+        return this;
+    }
+
+    public MemoryClientBuilder WithDefaultMimeTypeDetection()
+    {
+        this.AddSingleton<IMimeTypeDetection>(sp => new MimeTypesDetection(supportImage: sp.GetService<IOcrEngine>() != null));
+
         return this;
     }
 
@@ -158,7 +165,7 @@ public class MemoryClientBuilder
         var config = this._appBuilder.Configuration.GetSection(ConfigRoot).Get<SemanticMemoryConfig>();
         if (config == null) { throw new ConfigurationException("Unable to parse configuration files"); }
 
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
 
         // Ingestion queue
         if (string.Equals(config.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
@@ -463,6 +470,14 @@ public class MemoryClientBuilder
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
+        return this;
+    }
+
+    private MemoryClientBuilder AddSingleton<TService>(Func<IServiceProvider, TService> serviceFactory)
+        where TService : class
+    {
+        this._appBuilder.Services.AddSingleton<TService>(serviceFactory);
+        this._sharedServiceCollection?.AddSingleton<TService>(serviceFactory);
         return this;
     }
 

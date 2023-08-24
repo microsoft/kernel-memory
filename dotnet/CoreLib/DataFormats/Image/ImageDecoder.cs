@@ -8,16 +8,16 @@ namespace Microsoft.SemanticMemory.DataFormats.Image;
 
 public class ImageDecoder
 {
-    public Task<string> ImageToTextAsync(IOcrEngine engine, string filename)
+    public async Task<string> ImageToTextAsync(IOcrEngine engine, string filename)
     {
         using var stream = File.OpenRead(filename);
-        return this.ImageToTextAsync(engine, stream);
+        return await this.ImageToTextAsync(engine, stream).ConfigureAwait(false);
     }
 
-    public Task<string> ImageToTextAsync(IOcrEngine engine, BinaryData data)
+    public async Task<string> ImageToTextAsync(IOcrEngine engine, BinaryData data)
     {
         using var stream = data.ToStream();
-        return this.ImageToTextAsync(engine, stream);
+        return await this.ImageToTextAsync(engine, stream).ConfigureAwait(false);
     }
 
     public Task<string> ImageToTextAsync(IOcrEngine engine, Stream data)

@@ -16,6 +16,23 @@ using Microsoft.SemanticMemory;
 var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // =======================
+// === SUPPORT ===========
+// =======================
+
+var isSupported = await memory.IsDocumentSupportedAsync("file1-Wikipedia-Carbon.txt");
+Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): {isSupported}");
+
+isSupported = await memory.IsDocumentSupportedAsync("file3-lorem-ipsum.docx");
+Console.WriteLine($"Document supported for import (file3-lorem-ipsum.docx): {isSupported}");
+
+isSupported = await memory.IsDocumentSupportedAsync("file6-ocr.png");
+Console.WriteLine($"Document supported for import (file6-ocr.png): {isSupported}");
+var isImageSupported = isSupported;
+
+isSupported = await memory.IsDocumentSupportedAsync("fileX-ocr.bin");
+Console.WriteLine($"Document supported for import (fileX-ocr.bin): {isSupported}");
+
+// =======================
 // === UPLOAD ============
 // =======================
 
@@ -34,9 +51,6 @@ else
 {
     Console.WriteLine("doc000 already uploaded.");
 }
-
-var isSupported = await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt");
-Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): {isSupported}");
 
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
@@ -78,21 +92,24 @@ else
     Console.WriteLine("doc003 already uploaded.");
 }
 
-if (!await memory.IsDocumentReadyAsync(documentId: "doc004"))
+if (isImageSupported)
 {
-    Console.WriteLine("Uploading doc004");
-    await memory.ImportDocumentAsync("file6-ocr.png", documentId: "doc004");
-}
-else
-{
-    Console.WriteLine("doc004 already uploaded.");
+    if (!await memory.IsDocumentReadyAsync(documentId: "doc004"))
+    {
+        Console.WriteLine("Uploading doc004");
+        await memory.ImportDocumentAsync("file6-ocr.png", documentId: "doc004");
+    }
+    else
+    {
+        Console.WriteLine("doc004 already uploaded.");
+    }
 }
 
 while (
     !await memory.IsDocumentReadyAsync(documentId: "doc001")
     || !await memory.IsDocumentReadyAsync(documentId: "doc002")
     || !await memory.IsDocumentReadyAsync(documentId: "doc003")
-    || !await memory.IsDocumentReadyAsync(documentId: "doc004")
+    || (isImageSupported && !await memory.IsDocumentReadyAsync(documentId: "doc004"))
 )
 {
     Console.WriteLine("Waiting for memory ingestion to complete...");

@@ -43,14 +43,6 @@ public interface IMimeTypeDetection
 
 public class MimeTypesDetection : IMimeTypeDetection
 {
-    private static readonly HashSet<string> imageTypes =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            MimeTypes.ImageJpeg,
-            MimeTypes.ImagePng,
-            MimeTypes.ImageTiff,
-        };
-
     private static readonly IReadOnlyDictionary<string, string> extensionTypes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -67,11 +59,41 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.TextEmbeddingVector, MimeTypes.TextEmbeddingVector },
         };
 
+    private readonly HashSet<string> supportedTypes;
+
+    internal MimeTypesDetection(bool supportImage = false)
+    {
+        this.supportedTypes =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                FileExtensions.TextEmbeddingVector,
+                FileExtensions.MarkDown,
+                FileExtensions.MsWord,
+                FileExtensions.MsWordX,
+                FileExtensions.PlainText,
+                FileExtensions.Pdf,
+                FileExtensions.Json,
+            };
+
+        if (supportImage)
+        {
+            this.supportedTypes.UnionWith(
+                new[]
+                {
+                    FileExtensions.ImageJpeg,
+                    FileExtensions.ImageJpg,
+                    FileExtensions.ImagePng,
+                    FileExtensions.ImageTiff,
+                });
+        }
+    }
+
     public string GetFileType(string filename)
     {
         string extension = Path.GetExtension(filename);
 
-        if (extensionTypes.TryGetValue(extension, out var mimeType))
+        if (this.supportedTypes.Contains(extension) &&
+            extensionTypes.TryGetValue(extension, out var mimeType))
         {
             return mimeType;
         }
@@ -83,6 +105,6 @@ public class MimeTypesDetection : IMimeTypeDetection
     {
         string extension = Path.GetExtension(filename);
 
-        return extensionTypes.ContainsKey(extension);
+        return this.supportedTypes.Contains(extension);
     }
 }

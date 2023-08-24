@@ -18,6 +18,22 @@ var memory = new MemoryClientBuilder()
     .BuildServerlessClient();
 
 // =======================
+// === SUPPORT ===========
+// =======================
+
+var isSupported = await memory.IsDocumentSupportedAsync("file1-Wikipedia-Carbon.txt");
+Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): {isSupported}");
+
+isSupported = await memory.IsDocumentSupportedAsync("file3-lorem-ipsum.docx");
+Console.WriteLine($"Document supported for import (file3-lorem-ipsum.docx): {isSupported}");
+
+isSupported = await memory.IsDocumentSupportedAsync("file6-ocr.png");
+Console.WriteLine($"Document supported for import (file6-ocr.png): {isSupported}");
+
+isSupported = await memory.IsDocumentSupportedAsync("fileX-ocr.bin");
+Console.WriteLine($"Document supported for import (fileX-ocr.bin): {isSupported}");
+
+// =======================
 // === UPLOAD ============
 // =======================
 
@@ -76,16 +92,6 @@ else
     Console.WriteLine("doc003 already uploaded.");
 }
 
-if (!await memory.IsDocumentReadyAsync(documentId: "doc004"))
-{
-    Console.WriteLine($"Uploading doc004");
-    await memory.ImportDocumentAsync("file6-ocr.png", documentId: "doc004");
-}
-else
-{
-    Console.WriteLine("doc004 already uploaded.");
-}
-
 // =======================
 // === ASK ===============
 // =======================
@@ -132,13 +138,6 @@ answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type"
 Console.WriteLine($"\nArticles: {answer.Result}\n\n");
 
 answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type", "news"));
-Console.WriteLine($"\nNews: {answer.Result}\n\n");
-
-// Verify OCR memory
-question = "What did the brown fox do?";
-Console.WriteLine($"\n\nQuestion: {question}");
-
-answer = await memory.AskAsync(question);
 Console.WriteLine($"\nNews: {answer.Result}\n\n");
 
 // ReSharper disable CommentTypo

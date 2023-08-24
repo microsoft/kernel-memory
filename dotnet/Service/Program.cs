@@ -171,7 +171,7 @@ if (config.Service.RunWebService)
         .Produces(StatusCodes.Status404NotFound);
 
     // IsSupported endpoint
-    app.MapPost(Constants.HttpSearchEndpoint,
+    app.MapGet(Constants.HttpIsSupportedEndpoint,
             async Task<IResult> (
                 [FromQuery(Name = Constants.ReservedPayloadFileNameField)]
                 string? fileName,
