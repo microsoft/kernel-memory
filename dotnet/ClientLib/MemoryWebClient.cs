@@ -130,6 +130,24 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task<bool> IsDocumentSupportedAsync(string fileName, CancellationToken cancellationToken = default)
+    {
+        var url = string.Concat(Constants.HttpIsSupportedEndpointWithParams, fileName);
+        HttpResponseMessage? response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = JsonSerializer.Deserialize<bool>(json);
+
+        return result;
+    }
+
+    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,

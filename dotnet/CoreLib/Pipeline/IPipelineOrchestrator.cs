@@ -82,6 +82,11 @@ public interface IPipelineOrchestrator
     public Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Expose mime-type detection for external use.
+    /// </summary>
+    public IMimeTypeDetection MimeTypeDetection { get; }
+
+    /// <summary>
     /// Stop all the pipelines in progress
     /// </summary>
     Task StopAllPipelinesAsync();

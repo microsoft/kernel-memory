@@ -26,7 +26,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected IContentStorage ContentStorage { get; private set; }
     protected ILogger<BaseOrchestrator> Log { get; private set; }
     protected CancellationTokenSource CancellationTokenSource { get; private set; }
-    protected IMimeTypeDetection MimeTypeDetection { get; private set; }
+
+    /// <inheritdoc/>
+    public IMimeTypeDetection MimeTypeDetection { get; private set; }
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,

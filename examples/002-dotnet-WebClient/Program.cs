@@ -13,7 +13,7 @@ using Microsoft.SemanticMemory;
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:54124/");
 
 // =======================
 // === UPLOAD ============
@@ -35,9 +35,12 @@ else
     Console.WriteLine("doc000 already uploaded.");
 }
 
+var isSupported = await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt");
+Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): {isSupported}");
+
 if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
 {
-    Console.WriteLine("Uploading doc001");
+    Console.WriteLine($"Uploading doc001");
     await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt", documentId: "doc001");
 }
 else
@@ -75,10 +78,21 @@ else
     Console.WriteLine("doc003 already uploaded.");
 }
 
+if (!await memory.IsDocumentReadyAsync(documentId: "doc004"))
+{
+    Console.WriteLine($"Uploading doc004");
+    await memory.ImportDocumentAsync("file6-ocr.png", documentId: "doc004");
+}
+else
+{
+    Console.WriteLine("doc004 already uploaded.");
+}
+
 while (
     !await memory.IsDocumentReadyAsync(documentId: "doc001")
     || !await memory.IsDocumentReadyAsync(documentId: "doc002")
     || !await memory.IsDocumentReadyAsync(documentId: "doc003")
+    || !await memory.IsDocumentReadyAsync(documentId: "doc004")
 )
 {
     Console.WriteLine("Waiting for memory ingestion to complete...");
@@ -131,6 +145,13 @@ answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type"
 Console.WriteLine($"\nArticles: {answer.Result}\n\n");
 
 answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type", "news"));
+Console.WriteLine($"\nNews: {answer.Result}\n\n");
+
+// Verify OCR memory
+question = "What did the brown fox do?";
+Console.WriteLine($"\n\nQuestion: {question}");
+
+answer = await memory.AskAsync(question);
 Console.WriteLine($"\nNews: {answer.Result}\n\n");
 
 // ReSharper disable CommentTypo

@@ -40,6 +40,8 @@ public static class Constants
 
     // Endpoints
     public const string HttpAskEndpoint = "/ask";
+    public const string HttpIsSupportedEndpoint = $"/issupported";
+    public const string HttpIsSupportedEndpointWithParams = $"/issupported?{ReservedPayloadFileNameField}=";
     public const string HttpSearchEndpoint = "/search";
     public const string HttpUploadEndpoint = "/upload";
     public const string HttpUploadStatusEndpoint = "/upload-status";

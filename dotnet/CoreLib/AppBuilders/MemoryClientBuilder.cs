@@ -15,6 +15,9 @@ using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.DataFormats.Image;
+using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.SemanticMemory.DataFormats.Image.Tesseract;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
@@ -141,6 +144,13 @@ public class MemoryClientBuilder
     {
         service = service ?? throw new ConfigurationException("The text generator instance is NULL");
         this.AddSingleton<ITextGeneration>(service);
+        return this;
+    }
+
+    public MemoryClientBuilder WithCustomImageOcr(IOcrEngine service)
+    {
+        service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
+        this.AddSingleton<IOcrEngine>(service);
         return this;
     }
 
@@ -312,6 +322,24 @@ public class MemoryClientBuilder
 
             default:
                 // NOOP - allow custom implementations, via WithCustomTextGeneration()
+                break;
+        }
+
+        // Image OCR
+        switch (config.ImageOcrType)
+        {
+            case string x when x.Equals("TesseractOcr", StringComparison.OrdinalIgnoreCase):
+                this._appBuilder.Services.AddTesseractOCR(this.GetServiceConfig<TesseractConfig>(config, "TesseractOcr"));
+                this._sharedServiceCollection?.AddTesseractOCR(this.GetServiceConfig<TesseractConfig>(config, "TesseractOcr"));
+                break;
+
+            case string x when x.Equals("AzureFormRecognizer", StringComparison.OrdinalIgnoreCase):
+                this._appBuilder.Services.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+                this._sharedServiceCollection?.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+                break;
+
+            default:
+                // NOOP - allow custom implementations, via WithCustomImageOCR()
                 break;
         }
 

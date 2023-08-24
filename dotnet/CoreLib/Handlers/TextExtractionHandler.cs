@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Office;
 using Microsoft.SemanticMemory.DataFormats.Pdf;
 using Microsoft.SemanticMemory.Diagnostics;
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticMemory.Handlers;
 public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
+    private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -32,10 +34,12 @@ public class TextExtractionHandler : IPipelineStepHandler
     public TextExtractionHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        IOcrEngine? ocrEngine = null,
         ILogger<TextExtractionHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._ocrEngine = ocrEngine;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
@@ -95,6 +99,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     }
 
                     break;
+
+                // $$$ IMAGE HANDLING
 
                 default:
                     throw new NotSupportedException($"File type not supported: {uploadedFile.Type}");

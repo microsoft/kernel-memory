@@ -169,6 +169,25 @@ if (config.Service.RunWebService)
         .Produces<MemoryAnswer>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
+
+    // IsSupported endpoint
+    app.MapPost(Constants.HttpSearchEndpoint,
+            async Task<IResult> (
+                [FromQuery(Name = Constants.ReservedPayloadFileNameField)]
+                string? fileName,
+                ISemanticMemoryClient service,
+                ILogger<Program> log) =>
+            {
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return Results.BadRequest($"'{Constants.ReservedPayloadFileNameField}' query parameter is missing or has no value");
+                }
+
+                bool result = await service.IsDocumentSupportedAsync(fileName);
+
+                return Results.Ok(result);
+            })
+        .Produces<SearchResult>(StatusCodes.Status200OK);
 }
 #pragma warning restore CA1031
 #pragma warning restore CA2254
