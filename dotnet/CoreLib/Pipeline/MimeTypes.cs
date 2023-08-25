@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.SemanticMemory.Pipeline;
 
@@ -14,6 +15,8 @@ public static class MimeTypes
     public const string Pdf = "application/pdf";
     public const string Json = "application/json";
     public const string TextEmbeddingVector = "float[]";
+    public const string ImageBmp = "image/bmp";
+    public const string ImageGif = "image/gif";
     public const string ImageJpeg = "image/jpeg";
     public const string ImagePng = "image/png";
     public const string ImageTiff = "image/tiff";
@@ -28,6 +31,8 @@ public static class FileExtensions
     public const string MsWordX = ".docx";
     public const string Pdf = ".pdf";
     public const string TextEmbeddingVector = ".text_embedding";
+    public const string ImageBmp = ".bmp";
+    public const string ImageGif = ".gif";
     public const string ImageJpeg = ".jpeg";
     public const string ImageJpg = ".jpg";
     public const string ImagePng = ".png";
@@ -38,7 +43,7 @@ public interface IMimeTypeDetection
 {
     public string GetFileType(string filename);
 
-    public bool HasFileType(string filename);
+    public IEnumerable<string> GetFileTypes();
 }
 
 public class MimeTypesDetection : IMimeTypeDetection
@@ -46,6 +51,8 @@ public class MimeTypesDetection : IMimeTypeDetection
     private static readonly IReadOnlyDictionary<string, string> extensionTypes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            { FileExtensions.ImageBmp, MimeTypes.ImageBmp },
+            { FileExtensions.ImageGif, MimeTypes.ImageGif },
             { FileExtensions.ImageJpeg, MimeTypes.ImageJpeg },
             { FileExtensions.ImageJpg, MimeTypes.ImageJpeg },
             { FileExtensions.ImagePng, MimeTypes.ImagePng },
@@ -80,6 +87,8 @@ public class MimeTypesDetection : IMimeTypeDetection
             this.supportedTypes.UnionWith(
                 new[]
                 {
+                    FileExtensions.ImageBmp,
+                    FileExtensions.ImageGif,
                     FileExtensions.ImageJpeg,
                     FileExtensions.ImageJpg,
                     FileExtensions.ImagePng,
@@ -101,10 +110,8 @@ public class MimeTypesDetection : IMimeTypeDetection
         throw new NotSupportedException($"File type not supported: {filename}");
     }
 
-    public bool HasFileType(string filename)
+    public IEnumerable<string> GetFileTypes()
     {
-        string extension = Path.GetExtension(filename);
-
-        return this.supportedTypes.Contains(extension);
+        return this.supportedTypes.ToArray();
     }
 }

@@ -171,7 +171,7 @@ if (config.Service.RunWebService)
         .Produces(StatusCodes.Status404NotFound);
 
     // IsSupported endpoint
-    app.MapGet(Constants.HttpIsSupportedEndpoint,
+    app.MapGet(Constants.HttpDocumentTypesEndpoint,
             async Task<IResult> (
                 [FromQuery(Name = Constants.ReservedPayloadFileNameField)]
                 string? fileName,
@@ -183,7 +183,7 @@ if (config.Service.RunWebService)
                     return Results.BadRequest($"'{Constants.ReservedPayloadFileNameField}' query parameter is missing or has no value");
                 }
 
-                bool result = await service.IsDocumentSupportedAsync(fileName);
+                var result = await service.GetDocumentTypesAsync();
 
                 return Results.Ok(result);
             })

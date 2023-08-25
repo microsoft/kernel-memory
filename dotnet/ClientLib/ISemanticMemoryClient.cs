@@ -68,18 +68,14 @@ public interface ISemanticMemoryClient
 
 
     /// <summary>
-    /// Check if a document is supported for import.
+    /// Get list of supported document extensions.
     /// </summary>
-    /// <param name="fileName">File name used to detect the file type</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>True if the document is supported for import.</returns>
     /// <remarks>
-    /// Useful for early validation UX to short-cut queuing an invalid document for import
-    /// and provide more actionable and timely message.
+    /// Transition method for early validation UX to short-cut queuing an invalid document for import
+    /// and provide more actionable and timely message as the system evolves.
+    /// May be removed in the future.
     /// </remarks>
-    public Task<bool> IsDocumentSupportedAsync(
-        string fileName,
-        CancellationToken cancellationToken = default);
+    public Task<IEnumerable<string>> GetDocumentTypesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Import any stream from memory, e.g. text or binary data, with details such as tags and user ID.

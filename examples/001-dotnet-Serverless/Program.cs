@@ -21,17 +21,11 @@ var memory = new MemoryClientBuilder()
 // === SUPPORT ===========
 // =======================
 
-var isSupported = await memory.IsDocumentSupportedAsync("file1-Wikipedia-Carbon.txt");
-Console.WriteLine($"Document supported for import (file1-Wikipedia-Carbon.txt): {isSupported}");
-
-isSupported = await memory.IsDocumentSupportedAsync("file3-lorem-ipsum.docx");
-Console.WriteLine($"Document supported for import (file3-lorem-ipsum.docx): {isSupported}");
-
-isSupported = await memory.IsDocumentSupportedAsync("file6-ocr.png");
-Console.WriteLine($"Document supported for import (file6-ocr.png): {isSupported}");
-
-isSupported = await memory.IsDocumentSupportedAsync("fileX-ocr.bin");
-Console.WriteLine($"Document supported for import (fileX-ocr.bin): {isSupported}");
+Console.WriteLine("Document supported for import:");
+foreach (var type in await memory.GetDocumentTypesAsync().ConfigureAwait(false))
+{
+    Console.WriteLine($"- {type}");
+}
 
 // =======================
 // === UPLOAD ============

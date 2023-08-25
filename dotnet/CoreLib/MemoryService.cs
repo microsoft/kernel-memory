@@ -102,9 +102,10 @@ public class MemoryService : ISemanticMemoryClient
         return this._orchestrator.IsDocumentReadyAsync(index: index, documentId, cancellationToken);
     }
 
-    public Task<bool> IsDocumentSupportedAsync(string fileName, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<IEnumerable<string>> GetDocumentTypesAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._orchestrator.MimeTypeDetection.HasFileType(fileName));
+        return Task.FromResult(this._orchestrator.MimeTypeDetection.GetFileTypes());
     }
 
     /// <inheritdoc />
