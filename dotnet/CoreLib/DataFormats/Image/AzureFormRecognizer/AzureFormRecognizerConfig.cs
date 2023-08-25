@@ -15,6 +15,7 @@ public class AzureFormRecognizerConfig
     }
 
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
+
     public string Endpoint { get; set; } = string.Empty;
 
     public string APIKey { get; set; } = string.Empty;
