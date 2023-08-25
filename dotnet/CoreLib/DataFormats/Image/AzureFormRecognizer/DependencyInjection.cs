@@ -23,6 +23,6 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<AzureFormRecognizerConfig>(config)
-            .AddTransient<IOcrEngine>(sp => new AzureFormRecognizerEngine(config.Endpoint, new Azure.AzureKeyCredential(config.APIKey)));
+            .AddTransient<IOcrEngine, AzureFormRecognizerEngine>();
     }
 }

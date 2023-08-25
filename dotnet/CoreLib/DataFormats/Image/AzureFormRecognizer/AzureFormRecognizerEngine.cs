@@ -5,6 +5,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
+using Azure.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.Configuration;
 
 namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 
@@ -14,15 +17,37 @@ namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 public class AzureFormRecognizerEngine : IOcrEngine
 {
     private readonly DocumentAnalysisClient recognizerClient;
+    private readonly ILogger<AzureFormRecognizerEngine> _log;
 
     /// <summary>
     /// Creates a new instance of the AzureFormRecognizerOcrEngine passing in the Form Recognizer endpoint and key.
     /// </summary>
     /// <param name="endpoint">The endpoint for accessing a provisioned Azure Form Recognizer instance</param>
-    /// <param name="credential">The AzureKeyCredential containing the provisioned Azure Form Recognizer access key</param>
-    public AzureFormRecognizerEngine(string endpoint, AzureKeyCredential credential)
+    /// <param name="config">The AzureFormRecognizerConfig config for this service.</param>
+    public AzureFormRecognizerEngine(string endpoint, AzureFormRecognizerConfig config, ILogger<AzureFormRecognizerEngine> log)
     {
-        this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), credential);
+        this._log = log;
+
+        switch (config.Auth)
+        {
+            case AzureFormRecognizerConfig.AuthTypes.AzureIdentity:
+                this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new DefaultAzureCredential());
+                break;
+
+            case AzureFormRecognizerConfig.AuthTypes.APIKey:
+                if (string.IsNullOrEmpty(config.APIKey))
+                {
+                    this._log.LogCritical("Azure Cognitive Search API key is empty");
+                    throw new ConfigurationException("Azure Form Recognizer API key is empty");
+                }
+
+                this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new AzureKeyCredential(config.APIKey));
+                break;
+
+            default:
+                this._log.LogCritical("Form Recognizer authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ConfigurationException($"Azure Form Recognizer authentication type '{config.Auth}' undefined or not supported");
+        }
     }
 
     ///<inheritdoc/>
