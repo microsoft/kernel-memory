@@ -66,17 +66,6 @@ public interface ISemanticMemoryClient
         string? index = null,
         CancellationToken cancellationToken = default);
 
-
-    /// <summary>
-    /// Get list of supported document extensions.
-    /// </summary>
-    /// <remarks>
-    /// Transition method for early validation UX to short-cut queuing an invalid document for import
-    /// and provide more actionable and timely message as the system evolves.
-    /// May be removed in the future.
-    /// </remarks>
-    public Task<IEnumerable<string>> GetDocumentTypesAsync(CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Import any stream from memory, e.g. text or binary data, with details such as tags and user ID.
     /// </summary>

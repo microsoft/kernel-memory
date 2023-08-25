@@ -18,16 +18,6 @@ var memory = new MemoryClientBuilder()
     .BuildServerlessClient();
 
 // =======================
-// === SUPPORT ===========
-// =======================
-
-Console.WriteLine("Document supported for import:");
-foreach (var type in await memory.GetDocumentTypesAsync().ConfigureAwait(false))
-{
-    Console.WriteLine($"- {type}");
-}
-
-// =======================
 // === UPLOAD ============
 // =======================
 

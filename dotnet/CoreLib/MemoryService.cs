@@ -103,12 +103,6 @@ public class MemoryService : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<string>> GetDocumentTypesAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._orchestrator.MimeTypeDetection.GetFileTypes());
-    }
-
-    /// <inheritdoc />
     public Task<DataPipelineStatus?> GetDocumentStatusAsync(
         string documentId,
         string? index = null,

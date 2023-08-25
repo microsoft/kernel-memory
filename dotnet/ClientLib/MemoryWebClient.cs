@@ -130,19 +130,6 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<string>> GetDocumentTypesAsync(CancellationToken cancellationToken = default)
-    {
-        HttpResponseMessage? response = await this._client.GetAsync(Constants.HttpDocumentTypesEndpoint, cancellationToken).ConfigureAwait(false);
-
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var result = JsonSerializer.Deserialize<IEnumerable<string>>(json);
-
-        return result ?? Array.Empty<string>();
-    }
-
-    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
