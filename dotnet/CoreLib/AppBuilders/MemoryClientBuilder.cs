@@ -257,8 +257,9 @@ public class MemoryClientBuilder
                 this._sharedServiceCollection?.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
                 break;
 
-            default:
-                // NOOP - allow custom implementations, via WithCustomVectorDb()
+            default: // $$$ DEFAULT OR EXPLICIT
+                this._appBuilder.Services.AddVolitileMemory();
+                this._sharedServiceCollection?.AddVolitileMemory();
                 break;
         }
 
@@ -287,9 +288,15 @@ public class MemoryClientBuilder
                     break;
                 }
 
-                default:
-                    // NOOP - allow custom implementations, via WithCustomVectorDb()
+                default: // $$$ DEFAULT OR EXPLICIT
+                {
+                    var tmpBuilder = WebApplication.CreateBuilder();
+                    tmpBuilder.Services.AddVolitileMemory();
+                    var tmpApp = tmpBuilder.Build();
+                    var service = tmpApp.Services.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    this._vectorDbs.Add(service);
                     break;
+                }
             }
         }
 
