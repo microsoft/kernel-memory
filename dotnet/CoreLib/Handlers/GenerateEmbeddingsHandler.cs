@@ -70,15 +70,16 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     continue;
                 }
 
-                // Calc embeddings only for partitions
-                if (!partitionFile.IsPartition)
+                // Calc embeddings only for partitions (text chunks) and synthetic data
+                if (partitionFile.ArtifactType != DataPipeline.ArtifactTypes.TextPartition
+                    && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
                 {
-                    this._log.LogTrace("Skipping file {0} (not a partition)", partitionFile.Name);
+                    this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
                     continue;
                 }
 
                 // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
-                switch (partitionFile.Type)
+                switch (partitionFile.MimeType)
                 {
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
@@ -133,8 +134,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 ParentId = uploadedFile.Id,
                                 Name = embeddingFileName,
                                 Size = text.Length,
-                                Type = MimeTypes.TextEmbeddingVector,
-                                IsPartition = false
+                                MimeType = MimeTypes.TextEmbeddingVector,
+                                ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
                             newFiles.Add(embeddingFileName, embeddingFileNameDetails);

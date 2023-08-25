@@ -54,7 +54,8 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
 
         // For each embedding file => For each Vector DB => Store vector (collections ==> tags)
-        foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.IsEmbeddingFile())))
+        foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> embeddingFile in
+                 pipeline.Files.SelectMany(x => x.GeneratedFiles.Where(f => f.Value.ArtifactType == DataPipeline.ArtifactTypes.TextEmbeddingVector)))
         {
             if (embeddingFile.Value.AlreadyProcessedBy(this))
             {
@@ -79,7 +80,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             record.Tags.Add(Constants.ReservedDocumentIdTag, pipeline.DocumentId);
             record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
             record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
-            record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).Type);
+            record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(embeddingFile.Value.ParentId).MimeType);
 
             pipeline.Tags.CopyTo(record.Tags);
 
@@ -116,7 +117,8 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         var embeddingsToKeep = new HashSet<string>();
 
         // Decide which embeddings not to delete, looking at the current pipeline
-        foreach (DataPipeline.GeneratedFileDetails embeddingFile in pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
+        foreach (DataPipeline.GeneratedFileDetails embeddingFile
+                 in pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.ArtifactType == DataPipeline.ArtifactTypes.TextEmbeddingVector).Select(x => x.Value)))
         {
             string recordId = GetEmbeddingRecordId(pipeline.DocumentId, embeddingFile.Id);
             embeddingsToKeep.Add(recordId);
@@ -125,7 +127,8 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
         // Purge old pipelines data, unless it's still relevant in the current pipeline
         foreach (DataPipeline oldPipeline in pipeline.PreviousExecutionsToPurge)
         {
-            foreach (DataPipeline.GeneratedFileDetails embeddingFile in oldPipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.IsEmbeddingFile()).Select(x => x.Value)))
+            foreach (DataPipeline.GeneratedFileDetails embeddingFile
+                     in oldPipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(f2 => f2.Value.ArtifactType == DataPipeline.ArtifactTypes.TextEmbeddingVector).Select(x => x.Value)))
             {
                 string recordId = GetEmbeddingRecordId(oldPipeline.DocumentId, embeddingFile.Id);
                 if (embeddingsToKeep.Contains(recordId)) { continue; }
