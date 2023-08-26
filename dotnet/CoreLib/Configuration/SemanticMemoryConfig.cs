@@ -46,16 +46,27 @@ public class SemanticMemoryConfig
         /// * gen_embeddings: generate embeddings for new chunks (e.g. the summary)
         /// * save_embeddings: save new embeddings
         /// </summary>
-        public List<string> DefaultSteps { get; set; } = new()
+        public List<string> DefaultSteps { get; set; } = new();
+
+        /// <summary>
+        /// Note: do not store these values in DefaultSteps, to avoid
+        /// the values being duplicated when using the interactive setup.
+        /// </summary>
+        public List<string> GetDefaultStepsOrDefaults()
         {
-            "extract",
-            "partition",
-            "gen_embeddings",
-            "save_embeddings",
-            "summarize",
-            "gen_embeddings",
-            "save_embeddings"
-        };
+            return (this.DefaultSteps.Count > 0)
+                ? this.DefaultSteps
+                : new()
+                {
+                    "extract",
+                    "partition",
+                    "gen_embeddings",
+                    "save_embeddings",
+                    "summarize",
+                    "gen_embeddings",
+                    "save_embeddings"
+                };
+        }
     }
 
     /// <summary>

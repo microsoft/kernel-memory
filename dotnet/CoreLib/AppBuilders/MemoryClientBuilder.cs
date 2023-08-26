@@ -12,13 +12,14 @@ using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
-using Microsoft.SemanticMemory.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.ContentStorage.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage;
+using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 using Microsoft.SemanticMemory.Pipeline;
 using Microsoft.SemanticMemory.Pipeline.Queue;
 using Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
-using Microsoft.SemanticMemory.Pipeline.Queue.FileBasedQueues;
+using Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
 using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
 using Microsoft.SemanticMemory.Search;
 
@@ -61,7 +62,8 @@ public class MemoryClientBuilder
 
         // Default configuration for tests and demos
         this.WithCustomMimeTypeDetection(new MimeTypesDetection());
-        this.WithFilesystemStorage(new FileSystemConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
+        this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-memory-files" });
+        this.WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-memory-vectors" });
     }
 
     public MemoryClientBuilder(WebApplicationBuilder appBuilder)
@@ -76,7 +78,7 @@ public class MemoryClientBuilder
 
         // Default configuration for tests and demos
         this.WithCustomMimeTypeDetection(new MimeTypesDetection());
-        this.WithFilesystemStorage(new FileSystemConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
+        this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
     }
 
     public MemoryClientBuilder WithCustomIngestionQueueClientFactory(QueueClientFactory service)
@@ -163,9 +165,9 @@ public class MemoryClientBuilder
                     this._sharedServiceCollection?.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>(config, "RabbitMq"));
                     break;
 
-                case string y when y.Equals("FileBasedQueue", StringComparison.OrdinalIgnoreCase):
-                    this._appBuilder.Services.AddFileBasedQueue(this.GetServiceConfig<FileBasedQueueConfig>(config, "FileBasedQueue"));
-                    this._sharedServiceCollection?.AddFileBasedQueue(this.GetServiceConfig<FileBasedQueueConfig>(config, "FileBasedQueue"));
+                case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
+                    this._appBuilder.Services.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
+                    this._sharedServiceCollection?.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
                     break;
 
                 default:
@@ -182,9 +184,9 @@ public class MemoryClientBuilder
                 this._sharedServiceCollection?.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>(config, "AzureBlobs"));
                 break;
 
-            case string x when x.Equals("FileSystemContentStorage", StringComparison.OrdinalIgnoreCase):
-                this._appBuilder.Services.AddFileSystemAsContentStorage(this.GetServiceConfig<FileSystemConfig>(config, "FileSystemContentStorage"));
-                this._sharedServiceCollection?.AddFileSystemAsContentStorage(this.GetServiceConfig<FileSystemConfig>(config, "FileSystemContentStorage"));
+            case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
+                this._appBuilder.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
+                this._sharedServiceCollection?.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
                 break;
 
             default:

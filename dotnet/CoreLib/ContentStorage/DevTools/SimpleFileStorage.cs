@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.ContentStorage.FileSystem;
+namespace Microsoft.SemanticMemory.ContentStorage.DevTools;
 
-public class FileSystemStorage : IContentStorage
+public class SimpleFileStorage : IContentStorage
 {
     // Parent directory of the directory containing messages
     private readonly string _directory;
 
     // Application logger
-    private readonly ILogger<FileSystemStorage> _log;
+    private readonly ILogger<SimpleFileStorage> _log;
 
-    public FileSystemStorage(FileSystemConfig config, ILogger<FileSystemStorage>? log = null)
+    public SimpleFileStorage(SimpleFileStorageConfig config, ILogger<SimpleFileStorage>? log = null)
     {
-        this._log = log ?? DefaultLogger<FileSystemStorage>.Instance;
+        this._log = log ?? DefaultLogger<SimpleFileStorage>.Instance;
         this.CreateDirectory(config.Directory);
         this._directory = config.Directory;
     }

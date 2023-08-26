@@ -20,13 +20,8 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 // builder.Services.AddHandlerAsHostedService<MyHandler3>("mypipelinestep-3");
 
 // Inject memory dependencies
-var _ = new MemoryClientBuilder(appBuilder)
-    .WithFileBasedQueuePipeline("tmp-queue")
-    .WithFilesystemStorage("tmp-storage")
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithQdrant("http://127.0.0.1:6333")
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-    .Complete();
+
+var _ = new MemoryClientBuilder(appBuilder).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
 
 // Build and run .NET web app as usual
 var app = appBuilder.Build();

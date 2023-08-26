@@ -140,6 +140,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DescriptionTest", "Descript
 		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D-B5E7-4827-B57D-447E5B428589}"
+	ProjectSection(SolutionItems) = preProject
+		tests\.editorconfig = tests\.editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -170,6 +177,7 @@ Global
 		{E4C713CE-BFAF-426C-89EF-E039EE5664C7} = {2174DDEE-2B43-41CE-9955-3C6AAB2F1929}
 		{9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
 		{C95AECD6-8EF0-48FB-9BB4-317059748CF5} = {9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B}
+		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -236,5 +244,9 @@ Global
 		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E2CDC51-5F00-4E60-807F-A2267FB98224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -10,12 +10,10 @@ using Microsoft.SemanticMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp-storage")
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithQdrant("http://127.0.0.1:6333")
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-    .BuildServerlessClient();
+var memory = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).BuildServerlessClient();
+// To use Azure Cognitive Search => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+// To use Qdrant docker          => .WithQdrant("http://127.0.0.1:6333")
+// etc.
 
 // =======================
 // === UPLOAD ============

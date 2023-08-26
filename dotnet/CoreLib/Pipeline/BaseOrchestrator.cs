@@ -38,7 +38,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
         this.MimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.DefaultSteps;
+        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
 
         this.ContentStorage = contentStorage;
         this.CancellationTokenSource = new CancellationTokenSource();
