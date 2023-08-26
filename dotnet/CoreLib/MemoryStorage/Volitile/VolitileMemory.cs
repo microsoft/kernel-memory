@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -90,7 +89,7 @@ public class VolitileMemory : ISemanticMemoryVectorDb
         TopNCollection<MemoryRecord> embeddings = new(limit);
 
         var embeddingSpan = embedding.AsReadOnlySpan();
-        foreach (var record in FilterEmbeedings())
+        foreach (var record in FilterEmbeddings(filter, embeddingCollection))
         {
             double similarity = embeddingSpan.CosineSimilarity(record.Vector.AsReadOnlySpan());
             if (similarity >= minRelevanceScore)
@@ -102,51 +101,33 @@ public class VolitileMemory : ISemanticMemoryVectorDb
         embeddings.SortByScore();
 
         return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
-
-        IEnumerable<MemoryRecord> FilterEmbeedings()
-        {
-            if (filter == null)
-            {
-                return embeddingCollection;
-            }
-
-            return embeddingCollection.Where(
-                e =>
-                {
-                    if (filter.Keys.Count == 0)
-                    {
-                        return true;
-                    }
-
-                    var commonKeys = e.Tags.Keys.Intersect(filter.Keys).ToArray();
-                    if (commonKeys.Length != filter.Count)
-                    {
-                        return false;
-                    }
-
-                    foreach (var key in commonKeys)
-                    {
-                        var filterSet = filter[key].ToHashSet();
-                        if (filterSet.Intersect(e.Tags[key]).Count() != filterSet.Count)
-                        {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-        }
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<MemoryRecord> GetListAsync(
+    public IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
         MemoryFilter? filter = null,
         int limit = 1,
         bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        yield break; // $$$ TODO
+        if (limit <= 0)
+        {
+            return AsyncEnumerable.Empty<MemoryRecord>();
+        }
+
+        ICollection<MemoryRecord>? embeddingCollection = null;
+        if (this.TryGetCollection(indexName, out var collectionDict))
+        {
+            embeddingCollection = collectionDict.Values;
+        }
+
+        if (embeddingCollection == null || embeddingCollection.Count == 0)
+        {
+            return AsyncEnumerable.Empty<MemoryRecord>();
+        }
+
+        return FilterEmbeddings(filter, embeddingCollection).Take(limit).ToAsyncEnumerable();
     }
 
     /// <inheritdoc />
@@ -162,6 +143,42 @@ public class VolitileMemory : ISemanticMemoryVectorDb
         }
 
         return Task.CompletedTask;
+    }
+
+    private static IEnumerable<MemoryRecord> FilterEmbeddings(
+        MemoryFilter? filter,
+        IEnumerable<MemoryRecord> embeddingCollection)
+    {
+        if (filter == null)
+        {
+            return embeddingCollection;
+        }
+
+        return embeddingCollection.Where(
+            e =>
+            {
+                if (filter.Keys.Count == 0)
+                {
+                    return true;
+                }
+
+                var commonKeys = e.Tags.Keys.Intersect(filter.Keys).ToArray();
+                if (commonKeys.Length != filter.Count)
+                {
+                    return false;
+                }
+
+                foreach (var key in commonKeys)
+                {
+                    var filterSet = filter[key].ToHashSet();
+                    if (filterSet.Intersect(e.Tags[key]).Count() != filterSet.Count)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
     }
 
     private bool TryGetCollection(
