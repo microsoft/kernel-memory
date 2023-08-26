@@ -1,6 +1,6 @@
 # Semantic Memory F.A.Q.
 
-> ### Is it possible to download web pages and turn the content into memory? Can I ask questions about the content of a web page?
+### Is it possible to download web pages and turn the content into memory? Can I ask questions about the content of a web page?
 
 Yes, the memory API includes a `ImportWebPageAsync` method that can be used to take
 a web page content, and process the text content like files. Once the content is imported,
@@ -12,7 +12,10 @@ var docId = await memory.ImportWebPageAsync("https://raw.githubusercontent.com/m
 var answer = await memory.AskAsync("Where can I store my semantic memory records?", MemoryFilters.ByDocument(docId));
 ```
 
-> ### I've stored several documents in memory, how can I target a question to a specific document, getting answers grounded only on the selected doc?
+![image](https://github.com/microsoft/semantic-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
+
+
+### I've stored several documents in memory, how can I target a question to a specific document, getting answers grounded only on the selected doc?
 
 When uploading a file (or multiple files), you can specify a document ID, or you can let
 the service generate a document ID for you. You will see these Document IDs also when
@@ -37,3 +40,5 @@ var answer1 = await memory.AskAsync("What's the produc name?", MemoryFilters.ByD
 
 var answer2 = await memory.AskAsync("What's the total population?", MemoryFilters.ByDocument("europe001"));
 ```
+
+![image](https://github.com/microsoft/semantic-memory/assets/371009/18ea98ee-1210-498d-8513-56abc795ce4d)
