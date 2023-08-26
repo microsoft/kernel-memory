@@ -32,3 +32,21 @@ public class MemoryFilter : TagCollection
         return this.ToKeyValueList();
     }
 }
+
+/// <summary>
+/// Factory for <see cref="MemoryFilter"/>, to allow for a simpler syntax
+/// Instead of: new MemoryFilter().ByDocument(id).ByTag(k, v)
+/// Recommended: MemoryFilters.ByDocument(id).ByTag(k, v)
+/// </summary>
+public static class MemoryFilters
+{
+    public static MemoryFilter ByTag(string name, string value)
+    {
+        return new MemoryFilter().ByTag(name, value);
+    }
+
+    public static MemoryFilter ByDocument(string docId)
+    {
+        return new MemoryFilter().ByDocument(docId);
+    }
+}

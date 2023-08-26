@@ -20,14 +20,14 @@ Usage:
 
     -p index               (optional) Index where to store memories.
     -i document ID         (optional) Unique identifier for the document uploaded.
-    -t "key=value"         (optional) Key-Value tag. Multiple tags and values per tag can be set.
+    -t "key:value"         (optional) Key-Value tag. Multiple tags and values per tag can be set.
 
     -h                     Print this help content.
 
 
 Example:
 
-    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type=notes" -t "type=test" -i "bash test"
+    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type:notes" -t "type:test" -i "bash test"
 
 
 For more information visit https://github.com/microsoft/semantic-memory

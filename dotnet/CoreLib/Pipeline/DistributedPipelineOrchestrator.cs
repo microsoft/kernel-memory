@@ -149,6 +149,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         if (success)
         {
             pipeline = updatedPipeline;
+            pipeline.LastUpdate = DateTimeOffset.UtcNow;
 
             this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
             pipeline.MoveToNextStep();

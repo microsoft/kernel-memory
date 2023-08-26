@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.DataFormats.Office;
 using Microsoft.SemanticMemory.DataFormats.Pdf;
+using Microsoft.SemanticMemory.DataFormats.WebPages;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Pipeline;
 
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticMemory.Handlers;
 public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
+    private readonly WebScraper _webScraper;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -37,6 +39,8 @@ public class TextExtractionHandler : IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
+
+        this._webScraper = new WebScraper(this._log);
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -59,6 +63,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             string text = string.Empty;
             string extractType = MimeTypes.PlainText;
 
+            var skipFile = false;
             switch (uploadedFile.MimeType)
             {
                 case MimeTypes.PlainText:
@@ -96,25 +101,73 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                     break;
 
+                case MimeTypes.WebPageUrl:
+                    var url = fileContent.ToString();
+                    this._log.LogDebug("Downloading web page specified in {0} and extracting text from {1}", uploadedFile.Name, url);
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        skipFile = true;
+                        uploadedFile.Log(this, "The web page URL is emtpy");
+                        this._log.LogWarning("The web page URL is emtpy");
+                        break;
+                    }
+
+                    var result = await this._webScraper.GetTextAsync(url).ConfigureAwait(false);
+                    if (!result.Success)
+                    {
+                        skipFile = true;
+                        uploadedFile.Log(this, $"Download error: {result.Error}");
+                        this._log.LogWarning("Web page download error: {0}", result.Error);
+                        break;
+                    }
+
+                    if (string.IsNullOrEmpty(result.Text))
+                    {
+                        skipFile = true;
+                        uploadedFile.Log(this, "The web page has no text content, skipping it");
+                        this._log.LogWarning("The web page has no text content, skipping it");
+                        break;
+                    }
+
+                    text = result.Text;
+                    break;
+
+                case "":
+                    skipFile = true;
+                    uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
+                    this._log.LogWarning("Empty MIME type, the file will be ignored");
+                    break;
+
                 default:
-                    throw new NotSupportedException($"File type not supported: {uploadedFile.MimeType}");
+                    skipFile = true;
+                    uploadedFile.Log(this, $"File MIME type not supported: {uploadedFile.MimeType}. Ignoring the file.");
+                    this._log.LogWarning("File MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
+                    break;
             }
 
-            this._log.LogDebug("Saving extracted text file {0}", destFile);
-            await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
-
-            var destFileDetails = new DataPipeline.GeneratedFileDetails
+            // If the handler cannot extract text, we move on. There might be other handlers in the pipeline
+            // capable of doing so, and in any case if a document contains multiple docs, the pipeline will
+            // not fail, only do its best to export as much data as possible. The user can inspect the pipeline
+            // status to know if a file has been ignored.
+            if (!skipFile)
             {
-                Id = Guid.NewGuid().ToString("N"),
-                ParentId = uploadedFile.Id,
-                Name = destFile,
-                Size = text.Length,
-                MimeType = extractType,
-                ArtifactType = DataPipeline.ArtifactTypes.ExtractedText
-            };
-            destFileDetails.MarkProcessedBy(this);
+                this._log.LogDebug("Saving extracted text file {0}", destFile);
+                await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
 
-            uploadedFile.GeneratedFiles.Add(destFile, destFileDetails);
+                var destFileDetails = new DataPipeline.GeneratedFileDetails
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    ParentId = uploadedFile.Id,
+                    Name = destFile,
+                    Size = text.Length,
+                    MimeType = extractType,
+                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedText
+                };
+                destFileDetails.MarkProcessedBy(this);
+
+                uploadedFile.GeneratedFiles.Add(destFile, destFileDetails);
+            }
+
             uploadedFile.MarkProcessedBy(this);
         }
 

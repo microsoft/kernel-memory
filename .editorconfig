@@ -176,6 +176,7 @@ dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
 dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to cover more ctors
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
+dotnet_diagnostic.CA1054.severity = none # URI parameters should not be strings
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static

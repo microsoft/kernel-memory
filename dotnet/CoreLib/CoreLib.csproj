@@ -21,10 +21,12 @@
         <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
         <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
         <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.52" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
         <PackageReference Include="PdfPig" Version="0.1.8" />
+        <PackageReference Include="Polly" Version="7.2.4" />
         <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />

@@ -19,7 +19,7 @@ Content of [upload-example.sh](upload-example.sh):
 ../../tools/upload-file.sh -f test.pdf \
                            -s http://127.0.0.1:9001 \
                            -u curlUser \
-                           -t "type=test" \
+                           -t "type:test" \
                            -i curlExample01
 ```
 

@@ -393,12 +393,26 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
 
     private static Uri SanitizeEndpoint(string endpoint, int? port = null)
     {
-        Verify.IsValidUrl(nameof(endpoint), endpoint, false, true, false);
+        ValidateUrl(nameof(endpoint), endpoint);
 
         UriBuilder builder = new(endpoint);
         if (port.HasValue) { builder.Port = port.Value; }
 
         return builder.Uri;
+    }
+
+    private static void ValidateUrl(string name, string url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            throw new ArgumentException($"The {name} is empty", name);
+        }
+
+        bool result = Uri.TryCreate(url, UriKind.Absolute, out Uri? uri);
+        if (!result || string.IsNullOrEmpty(uri?.Host))
+        {
+            throw new ArgumentException($"The {name} `{url}` is not valid", name);
+        }
     }
 
     #endregion

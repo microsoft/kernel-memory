@@ -77,7 +77,7 @@ public class SummarizationHandler : IPipelineStepHandler
                 // Summarize only the original content
                 if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
                 {
-                    this._log.LogTrace("Skipping partition file {0}", file.Name);
+                    this._log.LogTrace("Skipping file {0}", file.Name);
                     continue;
                 }
 
