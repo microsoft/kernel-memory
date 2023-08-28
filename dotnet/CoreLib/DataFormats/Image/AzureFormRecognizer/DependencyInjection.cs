@@ -25,4 +25,10 @@ public static partial class DependencyInjection
             .AddSingleton<AzureFormRecognizerConfig>(config)
             .AddTransient<IOcrEngine, AzureFormRecognizerEngine>();
     }
+
+    public static IServiceCollection AddAzureFormRecognizer(this IServiceCollection services, string endpoint, string apiKey)
+    {
+        var config = new AzureFormRecognizerConfig { Endpoint = endpoint, APIKey = apiKey, Auth = AzureFormRecognizerConfig.AuthTypes.APIKey };
+        return services.AddAzureFormRecognizer(config);
+    }
 }
