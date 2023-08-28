@@ -153,7 +153,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                     if (fileContent.ToArray().Length > 0)
                     {
-                        text = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent).ConfigureAwait(false);
+                        text = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent, cancellationToken).ConfigureAwait(false);
                     }
 
                     break;
