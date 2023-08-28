@@ -12,7 +12,7 @@ using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
-using Microsoft.SemanticMemory.ContentStorage.FileSystem;
+using Microsoft.SemanticMemory.ContentStorage.DevTools;
 using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 using Microsoft.SemanticMemory.MemoryStorage;
@@ -99,7 +99,7 @@ public class MemoryClientBuilder
 
     public MemoryClientBuilder WithDefaultMimeTypeDetection()
     {
-        this.AddSingleton<IMimeTypeDetection>(sp => new MimeTypesDetection(supportImage: sp.GetService<IOcrEngine>() != null));
+        this.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
 
         return this;
     }

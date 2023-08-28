@@ -44,13 +44,11 @@ public static class FileExtensions
 public interface IMimeTypeDetection
 {
     public string GetFileType(string filename);
-
-    public IEnumerable<string> GetFileTypes();
 }
 
 public class MimeTypesDetection : IMimeTypeDetection
 {
-    private static readonly IReadOnlyDictionary<string, string> extensionTypes =
+    private static readonly IReadOnlyDictionary<string, string> s_extensionTypes =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { FileExtensions.ImageBmp, MimeTypes.ImageBmp },
@@ -69,52 +67,15 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.TextEmbeddingVector, MimeTypes.TextEmbeddingVector },
         };
 
-    private readonly HashSet<string> supportedTypes;
-
-    internal MimeTypesDetection(bool supportImage = false)
-    {
-        this.supportedTypes =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                FileExtensions.TextEmbeddingVector,
-                FileExtensions.MarkDown,
-                FileExtensions.MsWord,
-                FileExtensions.MsWordX,
-                FileExtensions.PlainText,
-                FileExtensions.Pdf,
-                FileExtensions.Json,
-            };
-
-        if (supportImage)
-        {
-            this.supportedTypes.UnionWith(
-                new[]
-                {
-                    FileExtensions.ImageBmp,
-                    FileExtensions.ImageGif,
-                    FileExtensions.ImageJpeg,
-                    FileExtensions.ImageJpg,
-                    FileExtensions.ImagePng,
-                    FileExtensions.ImageTiff,
-                });
-        }
-    }
-
     public string GetFileType(string filename)
     {
         string extension = Path.GetExtension(filename);
 
-        if (this.supportedTypes.Contains(extension) &&
-            extensionTypes.TryGetValue(extension, out var mimeType))
+        if (s_extensionTypes.TryGetValue(extension, out var mimeType))
         {
             return mimeType;
         }
 
         throw new NotSupportedException($"File type not supported: {filename}");
-    }
-
-    public IEnumerable<string> GetFileTypes()
-    {
-        return this.supportedTypes.ToArray();
     }
 }
