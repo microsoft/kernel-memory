@@ -37,7 +37,7 @@ public class AzureFormRecognizerEngine : IOcrEngine
             case AzureFormRecognizerConfig.AuthTypes.APIKey:
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
-                    this._log.LogCritical("Azure Cognitive Search API key is empty");
+                    this._log.LogCritical("Azure Form Recognizer API key is empty");
                     throw new ConfigurationException("Azure Form Recognizer API key is empty");
                 }
 
@@ -45,7 +45,7 @@ public class AzureFormRecognizerEngine : IOcrEngine
                 break;
 
             default:
-                this._log.LogCritical("Form Recognizer authentication type '{0}' undefined or not supported", config.Auth);
+                this._log.LogCritical("Azure Form Recognizer authentication type '{0}' undefined or not supported", config.Auth);
                 throw new ConfigurationException($"Azure Form Recognizer authentication type '{config.Auth}' undefined or not supported");
         }
     }
