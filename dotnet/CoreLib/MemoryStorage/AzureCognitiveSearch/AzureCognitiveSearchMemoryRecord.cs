@@ -13,7 +13,7 @@ namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 // TODO: support bring your own index schema
 public sealed class AzureCognitiveSearchMemoryRecord
 {
-    private const string IdField = "id";
+    internal const string IdField = "id";
     internal const string VectorField = "embedding";
     private const string TagsField = "tags";
     private const string PayloadField = "payload";

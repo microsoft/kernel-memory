@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.InteractiveSetup;
 using Microsoft.SemanticMemory.WebService;
 
@@ -37,15 +36,8 @@ var appBuilder = WebApplication.CreateBuilder();
 appBuilder.Services.AddEndpointsApiExplorer();
 appBuilder.Services.AddSwaggerGen();
 
-// Handlers - Register these handlers to run as hosted services. At start
-// each service cass IPipelineOrchestrator.AddHandlerAsync() to register the in the orchestrator.
-appBuilder.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract");
-appBuilder.Services.AddHandlerAsHostedService<SummarizationHandler>("summarize");
-appBuilder.Services.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
-appBuilder.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-appBuilder.Services.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
-
 // Inject memory client and its dependencies
+// Note: pass the current service collection to the builder, in order to start the pipeline handlers
 ISemanticMemoryClient memory = new MemoryClientBuilder(appBuilder.Services).FromAppSettings().Build();
 appBuilder.Services.AddSingleton(memory);
 
@@ -84,7 +76,7 @@ if (config.Service.RunWebService)
             ISemanticMemoryClient service,
             ILogger<Program> log) =>
         {
-            log.LogTrace("New upload request");
+            log.LogTrace("New upload HTTP request");
 
             // Note: .NET doesn't yet support binding multipart forms including data and files
             (HttpDocumentUploadRequest input, bool isValid, string errMsg) = await HttpDocumentUploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
@@ -116,6 +108,22 @@ if (config.Service.RunWebService)
         })
         .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
 
+    // Delete document endpoint
+    app.MapDelete(Constants.HttpDocumentsEndpoint,
+            async Task<IResult> (
+                [FromQuery(Name = Constants.WebServiceIndexField)]
+                string? index,
+                [FromQuery(Name = Constants.WebServiceDocumentIdField)]
+                string documentId,
+                ISemanticMemoryClient service,
+                ILogger<Program> log) =>
+            {
+                log.LogTrace("New delete document HTTP request");
+                await service.DeleteDocumentAsync(documentId: documentId, index: index);
+                return Results.Accepted();
+            })
+        .Produces<MemoryAnswer>(StatusCodes.Status202Accepted);
+
     // Ask endpoint
     app.MapPost(Constants.HttpAskEndpoint,
             async Task<IResult> (
@@ -136,7 +144,7 @@ if (config.Service.RunWebService)
                 ISemanticMemoryClient service,
                 ILogger<Program> log) =>
             {
-                log.LogTrace("New search request");
+                log.LogTrace("New search HTTP request");
                 SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter);
                 return Results.Ok(answer);
             })
@@ -149,8 +157,10 @@ if (config.Service.RunWebService)
                 string? index,
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
-                ISemanticMemoryClient service) =>
+                ISemanticMemoryClient service,
+                ILogger<Program> log) =>
             {
+                log.LogTrace("New document status HTTP request");
                 index = IndexExtensions.CleanName(index);
 
                 if (string.IsNullOrEmpty(documentId))

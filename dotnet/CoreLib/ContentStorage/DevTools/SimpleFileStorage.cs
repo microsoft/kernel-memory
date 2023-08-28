@@ -25,39 +25,46 @@ public class SimpleFileStorage : IContentStorage
     }
 
     /// <inherit />
-    public string JoinPaths(string path1, string path2)
+    public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
-        return Path.Join(path1, path2);
-    }
-
-    /// <inherit />
-    public Task CreateDirectoryAsync(string directoryName, CancellationToken cancellationToken = default)
-    {
-        var path = Path.Join(this._directory, directoryName);
-
-        if (!Directory.Exists(path))
-        {
-            this._log.LogDebug("Creating directory {0}", path);
-            Directory.CreateDirectory(path);
-        }
-
+        this.CreateDirectory(Path.Join(this._directory, index));
         return Task.CompletedTask;
     }
 
     /// <inherit />
-    public async Task WriteTextFileAsync(string directoryName, string fileName, string fileContent, CancellationToken cancellationToken = default)
+    public async Task CreateDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
     {
-        await this.CreateDirectoryAsync(directoryName, cancellationToken).ConfigureAwait(false);
-        var path = Path.Join(this._directory, directoryName, fileName);
+        await this.CreateIndexDirectoryAsync(index, cancellationToken).ConfigureAwait(false);
+        this.CreateDirectory(Path.Join(this._directory, index, documentId));
+    }
+
+    /// <inherit />
+    public async Task WriteTextFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        string fileContent,
+        CancellationToken cancellationToken = default)
+    {
+        await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
+        var path = Path.Join(this._directory, index, documentId, fileName);
         this._log.LogDebug("Writing file {0}", path);
         await File.WriteAllTextAsync(path, fileContent, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inherit />
-    public async Task<long> WriteStreamAsync(string directoryName, string fileName, Stream contentStream, CancellationToken cancellationToken = default)
+    public async Task<long> WriteStreamAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream contentStream,
+        CancellationToken cancellationToken = default)
     {
-        await this.CreateDirectoryAsync(directoryName, cancellationToken).ConfigureAwait(false);
-        var path = Path.Join(this._directory, directoryName, fileName);
+        await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
+        var path = Path.Join(this._directory, index, documentId, fileName);
 
         this._log.LogDebug("Creating file {0}", path);
         FileStream outputStream = File.Create(path);
@@ -72,9 +79,14 @@ public class SimpleFileStorage : IContentStorage
     }
 
     /// <inherit />
-    public Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default)
+    public Task<BinaryData> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool errIfNotFound = true,
+        CancellationToken cancellationToken = default)
     {
-        var path = Path.Join(this._directory, directoryName, fileName);
+        var path = Path.Join(this._directory, index, documentId, fileName);
         if (!File.Exists(path))
         {
             if (errIfNotFound) { this._log.LogError("File not found {0}", path); }
@@ -84,6 +96,25 @@ public class SimpleFileStorage : IContentStorage
 
         byte[] data = File.ReadAllBytes(path);
         return Task.FromResult(new BinaryData(data));
+    }
+
+    /// <inherit />
+    public Task DeleteDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        var path = Path.Join(this._directory, index, documentId);
+        string[] files = Directory.GetFiles(path);
+        foreach (string fileName in files)
+        {
+            // Don't delete the pipeline status file
+            if (fileName == Constants.PipelineStatusFilename) { continue; }
+
+            File.Delete(fileName);
+        }
+
+        return Task.CompletedTask;
     }
 
     private void CreateDirectory(string path)

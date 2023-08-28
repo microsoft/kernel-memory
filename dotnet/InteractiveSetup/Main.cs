@@ -26,6 +26,7 @@ public static class Main
     private static BoundedBoolean s_cfgAzureOpenAIText = new();
     private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
     private static BoundedBoolean s_cfgOpenAI = new();
+    private static BoundedBoolean s_cfgAzureOCR = new();
 
     // Vectors
     private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
@@ -53,6 +54,7 @@ public static class Main
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
         s_cfgOpenAI = new();
+        s_cfgAzureOCR = new();
 
         // Vectors
         s_cfgAzureCognitiveSearch = new();
@@ -77,6 +79,10 @@ public static class Main
             ContentStorageTypeSetup();
             AzureBlobsSetup();
             SimpleFileStorageSetup();
+
+            // Image support
+            OCRSetup();
+            AzureCognitiveFormSetup();
 
             // Embedding generation
             EmbeddingGeneratorTypeSetup();
@@ -332,6 +338,52 @@ public static class Main
             { "APIKey", SetupUI.AskPassword("OpenAI <API Key>", config.TryGet("APIKey")) },
             { "OrgId", SetupUI.AskOptionalOpenQuestion("Optional OpenAI <Organization Id>", config.TryGet("OrgId")) },
             { "MaxRetries", 10 },
+        });
+    }
+
+    private static void OCRSetup()
+    {
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "Which service should be used to extract text from images?",
+            Options = new List<Answer>
+            {
+                new("None", () =>
+                {
+                    AppSettings.Change(x => { x.ImageOcrType = "None"; });
+                }),
+                new("Azure Form Recognizer", () =>
+                {
+                    AppSettings.Change(x => { x.ImageOcrType = "AzureFormRecognizer"; });
+                    s_cfgAzureOCR.Value = true;
+                }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+    }
+
+    private static void AzureCognitiveFormSetup()
+    {
+        if (!s_cfgAzureOCR.Value) { return; }
+
+        s_cfgAzureOCR.Value = false;
+        const string ServiceName = "AzureFormRecognizer";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "Auth", "ApiKey" },
+                { "Endpoint", "" },
+                { "APIKey", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Auth", "ApiKey" },
+            { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Services <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Azure Cognitive Services <API Key>", config["APIKey"].ToString()) },
         });
     }
 

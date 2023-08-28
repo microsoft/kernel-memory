@@ -15,6 +15,7 @@ using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.ContentStorage.DevTools;
 using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
@@ -33,6 +34,7 @@ public class MemoryClientBuilder
 {
     private readonly IServiceCollection? _sharedServiceCollection;
     private const string ConfigRoot = "SemanticMemory";
+    private bool _useDefaultHandlers = true;
 
     private enum ClientTypes
     {
@@ -81,6 +83,12 @@ public class MemoryClientBuilder
         // Default configuration for tests and demos
         this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
+    }
+
+    public MemoryClientBuilder WithoutDefaultHandlers()
+    {
+        this._useDefaultHandlers = false;
+        return this;
     }
 
     public MemoryClientBuilder WithCustomIngestionQueueClientFactory(QueueClientFactory service)
@@ -419,6 +427,28 @@ public class MemoryClientBuilder
         try
         {
             this.CompleteServerlessClient();
+
+            if (this._useDefaultHandlers)
+            {
+                this._appBuilder.Services.AddTransient<TextExtractionHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<TextExtractionHandler>(serviceProvider, "extract"));
+
+                this._appBuilder.Services.AddTransient<TextPartitioningHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<TextPartitioningHandler>(serviceProvider, "partition"));
+
+                this._appBuilder.Services.AddTransient<SummarizationHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
+
+                this._appBuilder.Services.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
+
+                this._appBuilder.Services.AddTransient<SaveEmbeddingsHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<SaveEmbeddingsHandler>(serviceProvider, "save_embeddings"));
+
+                this._appBuilder.Services.AddTransient<DeleteDocumentHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
+            }
+
             this._app = this._appBuilder.Build();
 
             // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval 
@@ -427,9 +457,20 @@ public class MemoryClientBuilder
 
             var orchestrator = this._app.Services.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = this._app.Services.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-            var ocrEngine = this._app.Services.GetService<IOcrEngine>();
 
-            return new Memory(orchestrator, searchClient, ocrEngine);
+            var instance = new Memory(orchestrator, searchClient);
+
+            if (this._useDefaultHandlers)
+            {
+                instance.AddHandler(this._app.Services.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
+                instance.AddHandler(this._app.Services.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
+                instance.AddHandler(this._app.Services.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
+                instance.AddHandler(this._app.Services.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
+                instance.AddHandler(this._app.Services.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
+                instance.AddHandler(this._app.Services.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
+            }
+
+            return instance;
         }
         catch (Exception e)
         {
@@ -449,6 +490,27 @@ public class MemoryClientBuilder
 
         var orchestrator = app.Services.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
         var searchClient = app.Services.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+
+        if (this._useDefaultHandlers)
+        {
+            if (this._sharedServiceCollection == null)
+            {
+                const string ClassName = nameof(MemoryClientBuilder);
+                const string MethodName = nameof(this.WithoutDefaultHandlers);
+                throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
+                                                 $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
+                                                 $"otherwise use `{ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
+            }
+
+            // Handlers - Register these handlers to run as hosted services in the caller app.
+            // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
+            this._sharedServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>("extract");
+            this._sharedServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
+            this._sharedServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
+            this._sharedServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+            this._sharedServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+            this._sharedServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
+        }
 
         return new MemoryService(orchestrator, searchClient);
     }
@@ -470,14 +532,6 @@ public class MemoryClientBuilder
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
-        return this;
-    }
-
-    private MemoryClientBuilder AddSingleton<TService>(Func<IServiceProvider, TService> serviceFactory)
-        where TService : class
-    {
-        this._appBuilder.Services.AddSingleton<TService>(serviceFactory);
-        this._sharedServiceCollection?.AddSingleton<TService>(serviceFactory);
         return this;
     }
 

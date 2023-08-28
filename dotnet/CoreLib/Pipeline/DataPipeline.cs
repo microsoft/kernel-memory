@@ -301,6 +301,8 @@ public sealed class DataPipeline
         this.Creation = DateTimeOffset.UtcNow;
         this.LastUpdate = this.Creation;
 
+        this.Validate();
+
         return this;
     }
 

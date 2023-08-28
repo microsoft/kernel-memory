@@ -103,13 +103,9 @@ public class AzureBlobsStorage : IContentStorage
     }
 
     /// <inherit />
-    public string JoinPaths(string path1, string path2)
-    {
-        return $"{path1}/{path2}";
-    }
-
-    /// <inherit />
-    public async Task CreateDirectoryAsync(string directoryName, CancellationToken cancellationToken = default)
+    public async Task CreateIndexDirectoryAsync(
+        string index,
+        CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Creating container '{0}' ...", this._containerName);
 
@@ -121,20 +117,53 @@ public class AzureBlobsStorage : IContentStorage
     }
 
     /// <inherit />
-    public Task WriteTextFileAsync(string directoryName, string fileName, string fileContent, CancellationToken cancellationToken = default)
+    public async Task CreateDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
     {
+        this._log.LogTrace("Creating container '{0}' ...", this._containerName);
+
+        await this._containerClient
+            .CreateIfNotExistsAsync(PublicAccessType.None, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        this._log.LogTrace("Container '{0}' ready", this._containerName);
+    }
+
+    /// <inherit />
+    public Task WriteTextFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        string fileContent,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
         return this.InternalWriteAsync(directoryName, fileName, fileContent, cancellationToken);
     }
 
     /// <inherit />
-    public Task<long> WriteStreamAsync(string directoryName, string fileName, Stream contentStream, CancellationToken cancellationToken = default)
+    public Task<long> WriteStreamAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream contentStream,
+        CancellationToken cancellationToken = default)
     {
+        var directoryName = JoinPaths(index, documentId);
         return this.InternalWriteAsync(directoryName, fileName, contentStream, cancellationToken);
     }
 
     /// <inherit />
-    public async Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default)
+    public async Task<BinaryData> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool errIfNotFound = true,
+        CancellationToken cancellationToken = default)
     {
+        var directoryName = JoinPaths(index, documentId);
         var blobName = $"{directoryName}/{fileName}";
         BlobClient blobClient = this.GetBlobClient(blobName);
 
@@ -156,6 +185,57 @@ public class AzureBlobsStorage : IContentStorage
             this._log.LogInformation("File not found: {0}", blobName);
             throw new ContentStorageFileNotFoundException("File not found", e);
         }
+    }
+
+    /// <inherit />
+    public async Task DeleteDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
+        {
+            throw new ContentStorageException("The blob prefix is empty, stopping the process to prevent data loss");
+        }
+
+        this._log.LogInformation("Deleting blobs at {0}", directoryName);
+
+        AsyncPageable<BlobItem>? blobList = this._containerClient.GetBlobsAsync(prefix: directoryName, cancellationToken: cancellationToken);
+        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken))
+        {
+            foreach (BlobItem blob in page.Values)
+            {
+                // Skip root and empty names
+                if (string.IsNullOrWhiteSpace(blob.Name) || blob.Name == directoryName) { continue; }
+
+                // Remove the prefix, skip root and empty names
+                var fileName = blob.Name.Trim('/').Substring(directoryName.Trim('/').Length).Trim('/');
+                if (string.IsNullOrWhiteSpace(fileName)) { continue; }
+
+                // Don't delete the pipeline status file
+                if (fileName == Constants.PipelineStatusFilename) { continue; }
+
+                this._log.LogInformation("Deleting blob {0}", blob.Name);
+                Response? response = await this.GetBlobClient(blob.Name).DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (response.Status < 300)
+                {
+                    this._log.LogDebug("Delete response: {0}", response.Status);
+                }
+                else
+                {
+                    this._log.LogWarning("Unexpected delete response: {0}", response.Status);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Join index name and document ID, using the platform specific logic, to calculate the directory name
+    /// </summary>
+    /// <param name="index">Index name, left side of the path</param>
+    /// <param name="documentId">Document ID, right side of the path (appended to index)</param>
+    /// <returns>Index name concatenated with Document Id into a single path</returns>
+    private static string JoinPaths(string index, string documentId)
+    {
+        return $"{index}/{documentId}";
     }
 
     private async Task<long> InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)

@@ -101,6 +101,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         indexName = this.NormalizeIndexName(indexName);
+        if (limit <= 0) { limit = int.MaxValue; }
 
         var requiredTags = (filter != null && !filter.IsEmpty())
             ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
@@ -130,6 +131,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         indexName = this.NormalizeIndexName(indexName);
+        if (limit <= 0) { limit = int.MaxValue; }
 
         var requiredTags = (filter != null && !filter.IsEmpty())
             ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")

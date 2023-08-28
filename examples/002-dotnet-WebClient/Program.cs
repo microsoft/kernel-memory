@@ -15,198 +15,270 @@ using Microsoft.SemanticMemory;
 
 var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
+// Use these boolean to enable/disable parts of the examples below
+bool ingestion = true;
+bool useImages = true; // Enable Azure Form Recognizer OCR to use this
+bool retrieval = true;
+bool purge = true;
+
 // =======================
-// === UPLOAD ============
+// === INGESTION =========
 // =======================
 
-// Simple file upload (checking if the file exists)
+var toDelete = new List<string>();
+if (ingestion)
+{
+    Console.WriteLine("\n====================================\n");
 
-// Uploading some text, without using files
-if (!await memory.IsDocumentReadyAsync(documentId: "doc000"))
-{
-    Console.WriteLine("Uploading doc000");
-    await memory.ImportTextAsync("In physics, mass–energy equivalence is the relationship between mass and energy " +
-                                 "in a system's rest frame, where the two quantities differ only by a multiplicative " +
-                                 "constant and the units of measurement. The principle is described by the physicist " +
-                                 "Albert Einstein's formula: E = m*c^2", documentId: "doc000");
-}
-else
-{
-    Console.WriteLine("doc000 already uploaded.");
-}
+    // Uploading some text, without using files. Hold a copy of the ID to delete it later.
+    Console.WriteLine("Uploading text about E=mc^2");
+    var docId = await memory.ImportTextAsync("In physics, mass–energy equivalence is the relationship between mass and energy " +
+                                             "in a system's rest frame, where the two quantities differ only by a multiplicative " +
+                                             "constant and the units of measurement. The principle is described by the physicist " +
+                                             "Albert Einstein's formula: E = m*c^2");
+    toDelete.Add(docId);
 
-if (!await memory.IsDocumentReadyAsync(documentId: "doc001"))
-{
-    Console.WriteLine("Uploading doc001");
+    // Simple file upload, with document ID
+    toDelete.Add("doc001");
+    Console.WriteLine("Uploading article file about Carbon");
     await memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt", documentId: "doc001");
-}
-else
-{
-    Console.WriteLine("doc001 already uploaded.");
-}
 
-// Uploading multiple files and adding a user tag
-if (!await memory.IsDocumentReadyAsync(documentId: "doc002"))
-{
-    Console.WriteLine("Uploading doc002");
-    await memory.ImportDocumentAsync(new Document("doc002")
-        .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-SK-Readme.pdf" })
-        .AddTag("user", "Blake"));
-}
-else
-{
-    Console.WriteLine("doc002 already uploaded.");
-}
+    // Extract memory from images (if OCR enabled)
+    if (useImages)
+    {
+        toDelete.Add("img001");
+        Console.WriteLine("Uploading Image file with a news about a conference sponsored by Microsoft");
+        await memory.ImportDocumentAsync(new Document("img001").AddFiles(new[] { "file6-ANWC-image.jpg" }));
+    }
 
-// Categorizing files with several tags
-if (!await memory.IsDocumentReadyAsync(documentId: "doc003"))
-{
-    Console.WriteLine("Uploading doc003");
-    await memory.ImportDocumentAsync(new Document("doc003")
-        .AddFile("file5-NASA-news.pdf")
-        .AddTag("user", "Taylor")
-        .AddTag("collection", "meetings")
-        .AddTag("collection", "NASA")
-        .AddTag("collection", "space")
-        .AddTag("type", "news"));
-}
-else
-{
-    Console.WriteLine("doc003 already uploaded.");
-}
+    // Uploading multiple files and adding a user tag, checking if the document already exists
+    toDelete.Add("doc002");
+    if (!await memory.IsDocumentReadyAsync(documentId: "doc002"))
+    {
+        Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Semantic Kernel");
+        await memory.ImportDocumentAsync(new Document("doc002")
+            .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-SK-Readme.pdf" })
+            .AddTag("user", "Blake"));
+    }
+    else
+    {
+        Console.WriteLine("doc002 already uploaded.");
+    }
 
-// Downloading web pages
-if (!await memory.IsDocumentReadyAsync("webPage1"))
-{
-    Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
-    await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
-}
-else
-{
-    Console.WriteLine("webPage1 already uploaded.");
+    // Categorizing files with several tags
+    toDelete.Add("doc003");
+    if (!await memory.IsDocumentReadyAsync(documentId: "doc003"))
+    {
+        Console.WriteLine("Uploading a PDF with a news about NASA and Orion");
+        await memory.ImportDocumentAsync(new Document("doc003")
+            .AddFile("file5-NASA-news.pdf")
+            .AddTag("user", "Taylor")
+            .AddTag("collection", "meetings")
+            .AddTag("collection", "NASA")
+            .AddTag("collection", "space")
+            .AddTag("type", "news"));
+    }
+    else
+    {
+        Console.WriteLine("doc003 already uploaded.");
+    }
+
+    // Downloading web pages
+    toDelete.Add("webPage1");
+    if (!await memory.IsDocumentReadyAsync("webPage1"))
+    {
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
+    }
+    else
+    {
+        Console.WriteLine("webPage1 already uploaded.");
+    }
 }
 
 // =======================
 // === WATCH PROGRESS ====
 // =======================
 
-while (
-    !await memory.IsDocumentReadyAsync(documentId: "doc001")
-    || !await memory.IsDocumentReadyAsync(documentId: "doc002")
-    || !await memory.IsDocumentReadyAsync(documentId: "doc003")
-    || !await memory.IsDocumentReadyAsync(documentId: "webPage1")
-)
+Console.WriteLine("\n====================================\n");
+
+foreach (var docId in toDelete)
 {
-    Console.WriteLine("Waiting for memory ingestion to complete...");
-    await Task.Delay(TimeSpan.FromSeconds(2));
+    while (!await memory.IsDocumentReadyAsync(documentId: docId))
+    {
+        Console.WriteLine("Waiting for memory ingestion to complete...");
+        await Task.Delay(TimeSpan.FromSeconds(2));
+    }
 }
 
 // =======================
-// === ASK ===============
+// === RETRIEVAL =========
 // =======================
 
-// Question without filters
-var question = "What's mc^2?";
-Console.WriteLine($"\n\nQuestion: {question}");
-
-var answer = await memory.AskAsync(question);
-Console.WriteLine($"\nAnswer: {answer.Result}\n\n");
-
-// Another question without filters
-question = "What's Semantic Kernel?";
-Console.WriteLine($"\n\nQuestion: {question}");
-
-answer = await memory.AskAsync(question);
-Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
-
-foreach (var x in answer.RelevantSources)
+if (retrieval)
 {
-    Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+    Console.WriteLine("\n====================================\n");
+
+    // Question without filters
+    var question = "What's E = m*c^2?";
+    Console.WriteLine($"Question: {question}");
+
+    var answer = await memory.AskAsync(question);
+    Console.WriteLine($"\nAnswer: {answer.Result}");
+
+    Console.WriteLine("\n====================================\n");
+
+    // Another question without filters
+    question = "What's Semantic Kernel?";
+    Console.WriteLine($"Question: {question}");
+
+    answer = await memory.AskAsync(question);
+    Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
+
+    foreach (var x in answer.RelevantSources)
+    {
+        Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+    }
+
+    if (useImages)
+    {
+        Console.WriteLine("\n====================================\n");
+        question = "Which conference is Microsoft sponsoring?";
+        Console.WriteLine($"Question: {question}");
+
+        answer = await memory.AskAsync(question);
+        Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
+
+        foreach (var x in answer.RelevantSources)
+        {
+            Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+        }
+    }
+
+    Console.WriteLine("\n====================================\n");
+
+    // Filter question by "user" tag
+    question = "Any news from NASA about Orion?";
+    Console.WriteLine($"Question: {question}");
+
+    // Blake doesn't know
+    answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Blake"));
+    Console.WriteLine($"\nBlake Answer: {answer.Result}");
+
+    // Taylor knows
+    answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Taylor"));
+    Console.WriteLine($"\nTaylor Answer: {answer.Result}\n  Sources:\n");
+
+    foreach (var x in answer.RelevantSources)
+    {
+        Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+    }
+
+    Console.WriteLine("\n====================================\n");
+
+    // Filter question by "type" tag, there are news but no articles
+    question = "What is Orion?";
+    Console.WriteLine($"Question: {question}");
+
+    answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "article"));
+    Console.WriteLine($"\nArticles: {answer.Result}");
+
+    answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "news"));
+    Console.WriteLine($"\nNews: {answer.Result}");
 }
 
-// Filter question by "user" tag
-question = "Any news from NASA about Orion?";
-Console.WriteLine($"\n\nQuestion: {question}");
+// =======================
+// === PURGE =============
+// =======================
 
-answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Blake"));
-Console.WriteLine($"\nBlake Answer: {answer.Result}\n");
-
-answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Taylor"));
-Console.WriteLine($"\nTaylor Answer: {answer.Result}\n\n  Sources:\n");
-
-foreach (var x in answer.RelevantSources)
+if (purge)
 {
-    Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+    Console.WriteLine("====================================");
+
+    foreach (var docId in toDelete)
+    {
+        Console.WriteLine($"Deleting memories derived from {docId}");
+        await memory.DeleteDocumentAsync(docId);
+    }
 }
-
-// Filter question by "type" tag
-question = "What is Orion?";
-Console.WriteLine($"\n\nQuestion: {question}");
-
-answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "article"));
-Console.WriteLine($"\nArticles: {answer.Result}\n\n");
-
-answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "news"));
-Console.WriteLine($"\nNews: {answer.Result}\n\n");
 
 // ReSharper disable CommentTypo
 /* ==== OUTPUT ====
  
-doc001 already uploaded.
-doc002 already uploaded.
-doc003 already uploaded.
+Uploading text about E=mc^2
+Uploading article file about Carbon
+Uploading Image file with a news about a conference sponsored by Microsoft
+Uploading a text file, a Word doc, and a PDF about Semantic Kernel
+Uploading a PDF with a news about NASA and Orion
+Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md
 
+====================================
+
+Waiting for memory ingestion to complete...
+Waiting for memory ingestion to complete...
+Waiting for memory ingestion to complete...
+Waiting for memory ingestion to complete...
+Waiting for memory ingestion to complete...
+Waiting for memory ingestion to complete...
+
+====================================
+
+Question: What's E = m*c^2?
+
+Answer: E = m*c^2 is the formula for mass-energy equivalence in physics, where mass and energy are equivalent in a system's rest frame, differing only by a multiplicative constant and the units of measurement.
+
+====================================
 
 Question: What's Semantic Kernel?
 
-Answer: Semantic Kernel is a lightweight SDK that enables integration of AI Large Language Models 
-(LLMs) with conventional programming languages. It combines natural language semantic functions, 
-traditional code native functions, and embeddings-based memory to add value to applications with AI. 
-It supports prompt templating, function chaining, vectorized memory, and intelligent planning 
-capabilities out of the box. Semantic Kernel encapsulates several design patterns from the latest 
-in AI research, such that developers can infuse their applications with plugins like prompt chaining, 
-recursive reasoning, summarization, zero/few-shot learning, contextual memory, long-term memory, 
-embeddings, semantic indexing, planning, retrieval-augmented generation and accessing external 
-knowledge stores as well as your own data. It is available to explore AI and build apps with C# 
-and Python.
+Answer: Semantic Kernel is a lightweight SDK that allows integration of AI Large Language Models with conventional programming languages. It combines natural language semantic functions, traditional code native functions, and embeddings-based memory to add value to applications with AI. The SK community is invited to contribute to the development of the SDK through GitHub Discussions, opening GitHub Issues, sending PRs, and joining the Discord community. SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities out of the box. The SDK supports several design patterns from the latest in AI research, such as prompt chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory, long-term memory, embeddings, semantic indexing, planning, retrieval-augmented generation, and accessing external knowledge stores as well as your own data.
 
   Sources:
 
-  - file4-SK-Readme.pdf  - doc002/b426b222c4434d6d9c1e4a4101bfd8e3 [Monday, August 14, 2023]
-  - file3-lorem-ipsum.docx  - doc002/46296fc7999e4a888f790bc81d591c54 [Monday, August 14, 2023]
-  - file2-Wikipedia-Moon.txt  - doc002/d8bc5b9400704878b0bbbffa34dc504c [Monday, August 14, 2023]
-  - file1-Wikipedia-Carbon.txt  - doc001/b9333cdc30a34870b2022358e327ff8c [Monday, August 14, 2023]
-  - file5-NASA-news.pdf  - doc003/8b99b4534cc54a14860c15bd6c28beb2 [Monday, August 14, 2023]
+  - file4-SK-Readme.pdf  - doc002/136dec405e694b199bd62bb3b2195453 [Tuesday, August 29, 2023]
+  - content.url  - webPage1/acca787af5bc4294b103bb583b31d3da [Tuesday, August 29, 2023]
+  - file3-lorem-ipsum.docx  - doc002/78590246af224918a0a96e96d34c8f38 [Tuesday, August 29, 2023]
+  - content.txt  - 988f0db29c114ed38267980f1af4bb26202308280750056313730/d9c41b08e22547dfa66899b48b75b2b8 [Tuesday, August 29, 2023]
 
+====================================
+
+Question: Which conference is Microsoft sponsoring?
+
+Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event in Detroit on September 12, 2023.
+
+  Sources:
+
+  - file6-ANWC-image.jpg  - img001/a4c04abf11344c9790640b00714c3177 [Tuesday, August 29, 2023]
+  - content.url  - webPage1/701ca43b9bbd40a3b4500c31c60fc6bc [Tuesday, August 29, 2023]
+  - file5-NASA-news.pdf  - doc003/8e8ee6081255407da573fdd297f0719a [Tuesday, August 29, 2023]
+  - file4-SK-Readme.pdf  - doc002/5f529a9d13d24f2faa9c8941f46a9169 [Tuesday, August 29, 2023]
+  - file3-lorem-ipsum.docx  - doc002/75d848ced15749699b65fefc8a888400 [Tuesday, August 29, 2023]
+
+====================================
 
 Question: Any news from NASA about Orion?
 
 Blake Answer: INFO NOT FOUND.
 
-
-Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft 
-and the hardware teams will use to recover the capsule and astronauts upon their return from 
-space during the Artemis II mission. Personnel involved in recovery operations from NASA, the 
-U.S. Navy, and the U.S. Air Force will be available to speak with media. The event will take 
-place at Naval Base San Diego on August 2, 2023. Teams are currently conducting the first in 
-a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, 
-and hardware for recovery operations for crewed Artemis missions. The tests will help prepare 
-the team for Artemis II, NASA’s first crewed mission under Artemis that will send four 
-astronauts in Orion around the Moon to checkout systems ahead of future lunar missions.
-
+Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event will take place at Naval Base San Diego and personnel involved in recovery operations from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with media. The Artemis II crew will participate in recovery testing at sea next year.
   Sources:
 
-  - file5-NASA-news.pdf  - doc003/8b99b4534cc54a14860c15bd6c28beb2 [Monday, August 14, 2023]
+  - file5-NASA-news.pdf  - doc003/3cc5eefb83ac40cc80b445a1d70b71f0 [Tuesday, August 29, 2023]
 
+====================================
 
 Question: What is Orion?
 
 Articles: INFO NOT FOUND
 
+News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis II mission which will send four astronauts around the Moon to checkout systems ahead of future lunar missions. NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission.
 
-
-News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis 
-program which aims to send astronauts to the Moon. NASA has invited media to see the 
-recovery craft for the Artemis II mission, which will use the Orion spacecraft.
+====================================
+Deleting memories derived from 9e1ecae343cb4134a7ec955625d51aa6202901120755348131790
+Deleting memories derived from doc001
+Deleting memories derived from img001
+Deleting memories derived from doc002
+Deleting memories derived from doc003
+Deleting memories derived from webPage1
 
 */

@@ -61,6 +61,8 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (limit <= 0) { limit = int.MaxValue; }
+
         var list = this.GetListAsync(indexName, filter, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
@@ -99,6 +101,8 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (limit <= 0) { limit = int.MaxValue; }
+
         Dictionary<string, string> list = await this._storage.ReadAllAsync(indexName, cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)
         {
@@ -108,20 +112,18 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             var match = true;
             if (filter != null && !filter.IsEmpty())
             {
-                foreach (KeyValuePair<string, List<string?>> tag in record.Tags)
+                foreach (KeyValuePair<string, string?> tagFilter in filter.GetFilters())
                 {
                     if (!match) { continue; }
 
-                    for (int index = 0; match && index < tag.Value.Count; index++)
-                    {
-                        string? value = tag.Value[index];
-                        match = match && (record.Tags.ContainsKey(tag.Key) && record.Tags[tag.Key].Contains(value));
-                    }
+                    match = match && record.Tags.ContainsKey(tagFilter.Key) && record.Tags[tagFilter.Key].Contains(tagFilter.Value);
                 }
             }
 
             if (match)
             {
+                if (limit-- <= 0) { yield break; }
+
                 yield return record;
             }
         }

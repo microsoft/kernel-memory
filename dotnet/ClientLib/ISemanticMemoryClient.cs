@@ -109,6 +109,17 @@ public interface ISemanticMemoryClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Delete a specified document from memory, and update all derived memories.
+    /// </summary>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="index">Optional index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    public Task DeleteDocumentAsync(
+        string documentId,
+        string? index = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Check if a document ID exists in the given index and is ready for usage.
     /// The logic checks if the uploaded document has been fully processed.
     /// When the document exists in storage but is not processed yet, the method returns False.

@@ -10,45 +10,79 @@ namespace Microsoft.SemanticMemory.ContentStorage;
 public interface IContentStorage
 {
     /// <summary>
-    /// Join two path/directory names using the platform specific char
+    /// Create a new container, if it doesn't exist already
     /// </summary>
-    /// <param name="path1">Left side of the path</param>
-    /// <param name="path2">Right side of the path (appended to path1)</param>
-    /// <returns>Path1 concatenated with Path2 into a single path</returns>
-    string JoinPaths(string path1, string path2);
+    /// <param name="index">Index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task CreateIndexDirectoryAsync(
+        string index,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new container, if it doesn't exist already
     /// </summary>
-    /// <param name="directoryName">Name of the directory</param>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task CreateDirectoryAsync(string directoryName, CancellationToken cancellationToken = default);
+    Task CreateDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create/Overwrite a file
     /// </summary>
-    /// <param name="directoryName">Directory name (ie collection/directory)</param>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
     /// <param name="fileName">Name of the file</param>
     /// <param name="fileContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task WriteTextFileAsync(string directoryName, string fileName, string fileContent, CancellationToken cancellationToken = default);
+    Task WriteTextFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        string fileContent,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create/Overwrite a file
     /// </summary>
-    /// <param name="directoryName">Directory name (ie collection/directory)</param>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
     /// <param name="fileName">Name of the file</param>
     /// <param name="contentStream">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task<long> WriteStreamAsync(string directoryName, string fileName, Stream contentStream, CancellationToken cancellationToken = default);
+    Task<long> WriteStreamAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream contentStream,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetch a file from storage
     /// </summary>
-    /// <param name="directoryName"></param>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
     /// <param name="fileName"></param>
     /// <param name="errIfNotFound">Whether to log an error if the file does not exist. An exception will be raised anyway.</param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>File content</returns>
-    Task<BinaryData> ReadFileAsync(string directoryName, string fileName, bool errIfNotFound = true, CancellationToken cancellationToken = default);
+    Task<BinaryData> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool errIfNotFound = true,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete all artifacts of a document
+    /// </summary>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task DeleteDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default);
 }

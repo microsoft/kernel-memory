@@ -109,6 +109,36 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(documentId))
+        {
+            throw new SemanticMemoryException("The document ID is empty");
+        }
+
+        index = IndexExtensions.CleanName(index);
+        var url = Constants.HttpDeleteEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, index)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
+        HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+
+        // No error if the document doesn't exist
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            throw new SemanticMemoryException($"Delete failed, status code: {response.StatusCode}", e);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<bool> IsDocumentReadyAsync(
         string documentId,
         string? index = null,

@@ -123,19 +123,34 @@ public interface IPipelineOrchestrator
     /// <summary>
     /// Get list of embedding generators to use during the ingestion, e.g. to create
     /// multiple vectors.
+    /// TODO: remove and inject dependency to handlers who need this
     /// </summary>
     List<ITextEmbeddingGeneration> GetEmbeddingGenerators();
 
     /// <summary>
     /// Get list of Vector DBs where to store embeddings.
+    /// TODO: remove and inject dependency to handlers who need this
     /// </summary>
-    /// <returns></returns>
     List<ISemanticMemoryVectorDb> GetVectorDbs();
 
     /// <summary>
     /// Get the text generator used for prompts, synthetic data, answer generation, etc.
+    /// TODO: remove and inject dependency to handlers who need this
     /// TODO: support multiple generators, for different tasks, with different cost/quality.
     /// </summary>
     /// <returns>Instance of the text generator</returns>
     ITextGeneration GetTextGenerator();
+
+    /// <summary>
+    /// Start an asynchronous job, via handlers, to delete a specified document
+    /// from memory, and update all derived memories. This might be a long running
+    /// operation, hence the use of queue/handlers.
+    /// </summary>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="index">Optional index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task StartDocumentDeletionAsync(
+        string documentId,
+        string? index = null,
+        CancellationToken cancellationToken = default);
 }

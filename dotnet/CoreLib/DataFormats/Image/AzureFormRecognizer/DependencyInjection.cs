@@ -12,8 +12,17 @@ public static partial class MemoryClientBuilderExtensions
     public static MemoryClientBuilder WithAzureFormRecognizer(this MemoryClientBuilder builder, AzureFormRecognizerConfig config)
     {
         builder.Services.AddAzureFormRecognizer(config);
-
         return builder;
+    }
+
+    public static MemoryClientBuilder WithAzureFormRecognizer(this MemoryClientBuilder builder, string endpoint, string apiKey)
+    {
+        return builder.WithAzureFormRecognizer(new AzureFormRecognizerConfig
+        {
+            Auth = AzureFormRecognizerConfig.AuthTypes.APIKey,
+            Endpoint = endpoint,
+            APIKey = apiKey
+        });
     }
 }
 
@@ -23,7 +32,7 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<AzureFormRecognizerConfig>(config)
-            .AddTransient<IOcrEngine, AzureFormRecognizerEngine>();
+            .AddSingleton<IOcrEngine, AzureFormRecognizerEngine>();
     }
 
     public static IServiceCollection AddAzureFormRecognizer(this IServiceCollection services, string endpoint, string apiKey)

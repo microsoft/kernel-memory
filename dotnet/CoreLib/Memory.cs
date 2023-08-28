@@ -7,9 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.Pipeline;
 using Microsoft.SemanticMemory.Search;
 using Microsoft.SemanticMemory.WebService;
@@ -32,18 +30,10 @@ public class Memory : ISemanticMemoryClient
 
     public Memory(
         InProcessPipelineOrchestrator orchestrator,
-        SearchClient searchClient,
-        IOcrEngine? ocrEngine = null)
+        SearchClient searchClient)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
-
-        // Default handlers - Use AddHandler to replace them.
-        this.AddHandler(new TextExtractionHandler("extract", this._orchestrator, ocrEngine));
-        this.AddHandler(new TextPartitioningHandler("partition", this._orchestrator));
-        this.AddHandler(new SummarizationHandler("summarize", this._orchestrator));
-        this.AddHandler(new GenerateEmbeddingsHandler("gen_embeddings", this._orchestrator));
-        this.AddHandler(new SaveEmbeddingsHandler("save_embeddings", this._orchestrator));
     }
 
     /// <summary>
@@ -136,6 +126,12 @@ public class Memory : ISemanticMemoryClient
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
         return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    {
+        return this._orchestrator.StartDocumentDeletionAsync(documentId: documentId, index: index, cancellationToken);
     }
 
     /// <inheritdoc />

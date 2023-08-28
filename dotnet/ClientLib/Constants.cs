@@ -43,7 +43,12 @@ public static class Constants
     public const string HttpSearchEndpoint = "/search";
     public const string HttpUploadEndpoint = "/upload";
     public const string HttpUploadStatusEndpoint = "/upload-status";
-    public const string HttpUploadStatusEndpointWithParams = $"/upload-status?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpDocumentsEndpoint = "/documents";
+    public const string HttpDeleteEndpointWithParams = $"{HttpDocumentsEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpUploadStatusEndpointWithParams = $"{HttpUploadStatusEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
     public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
+
+    // Handlers
+    public const string DeleteDocumentPipelineStepName = "private_delete_document";
 }

@@ -112,6 +112,12 @@ public class MemoryService : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
+    {
+        return this._orchestrator.StartDocumentDeletionAsync(documentId: documentId, index: index, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task<bool> IsDocumentReadyAsync(
         string documentId,
         string? index = null,

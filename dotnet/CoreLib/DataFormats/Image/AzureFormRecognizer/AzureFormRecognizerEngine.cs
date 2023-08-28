@@ -9,6 +9,7 @@ using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.Diagnostics;
 
 namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 
@@ -21,18 +22,20 @@ public class AzureFormRecognizerEngine : IOcrEngine
     private readonly ILogger<AzureFormRecognizerEngine> _log;
 
     /// <summary>
-    /// Creates a new instance of the AzureFormRecognizerOcrEngine passing in the Form Recognizer endpoint and key.
+    /// Creates a new instance of the Azure Form Recognizer.
     /// </summary>
-    /// <param name="endpoint">The endpoint for accessing a provisioned Azure Form Recognizer instance</param>
-    /// <param name="config">The AzureFormRecognizerConfig config for this service.</param>
-    public AzureFormRecognizerEngine(string endpoint, AzureFormRecognizerConfig config, ILogger<AzureFormRecognizerEngine> log)
+    /// <param name="config">The AzureFormRecognizerConfig config for this service</param>
+    /// <param name="log">Application logger</param>
+    public AzureFormRecognizerEngine(
+        AzureFormRecognizerConfig config,
+        ILogger<AzureFormRecognizerEngine>? log = null)
     {
-        this._log = log;
+        this._log = log ?? DefaultLogger<AzureFormRecognizerEngine>.Instance;
 
         switch (config.Auth)
         {
             case AzureFormRecognizerConfig.AuthTypes.AzureIdentity:
-                this._recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new DefaultAzureCredential());
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new DefaultAzureCredential());
                 break;
 
             case AzureFormRecognizerConfig.AuthTypes.APIKey:
@@ -42,7 +45,7 @@ public class AzureFormRecognizerEngine : IOcrEngine
                     throw new ConfigurationException("Azure Form Recognizer API key is empty");
                 }
 
-                this._recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new AzureKeyCredential(config.APIKey));
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
                 break;
 
             default:

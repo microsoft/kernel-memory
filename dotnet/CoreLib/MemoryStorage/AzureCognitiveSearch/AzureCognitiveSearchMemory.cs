@@ -106,6 +106,8 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (limit <= 0) { limit = int.MaxValue; }
+
         var client = this.GetSearchClient(indexName);
 
         SearchQueryVector vectorQuery = new()
@@ -123,7 +125,14 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         if (filter != null && !filter.IsEmpty())
         {
             // We need to fetch more vectors because filters are applied after the vector search
-            vectorQuery.KNearestNeighborsCount = limit * 100;
+            try
+            {
+                checked { vectorQuery.KNearestNeighborsCount = limit * 100; }
+            }
+            catch (OverflowException)
+            {
+                vectorQuery.KNearestNeighborsCount = int.MaxValue;
+            }
 
             IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
                                               let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
@@ -167,6 +176,8 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (limit <= 0) { limit = int.MaxValue; }
+
         var client = this.GetSearchClient(indexName);
 
         var options = new SearchOptions();
@@ -208,6 +219,9 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
+            // stop after returning the amount requested, in case we fetched more to workaround the lack of pre-filtering 
+            if (limit-- <= 0) { yield break; }
+
             yield return doc.Document.ToMemoryRecord(withEmbeddings);
         }
     }
@@ -221,7 +235,10 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         try
         {
             this._log.LogDebug("Deleting record {0} from index {1}", id, indexName);
-            Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync("id", new List<string> { id }, cancellationToken: cancellationToken)
+            Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync(
+                    AzureCognitiveSearchMemoryRecord.IdField,
+                    new List<string> { id },
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             this._log.LogTrace("Delete response status: {0}, content: {1}", result.GetRawResponse().Status, result.GetRawResponse().Content.ToString());
         }

@@ -70,6 +70,10 @@
         <Content Include="file5-NASA-news.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="file6-ANWC-image.jpg" />
+        <Content Include="file6-ANWC-image.jpg">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
