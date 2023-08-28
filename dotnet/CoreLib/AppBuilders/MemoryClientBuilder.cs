@@ -427,8 +427,9 @@ public class MemoryClientBuilder
 
             var orchestrator = this._app.Services.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = this._app.Services.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+            var ocrEngine = this._app.Services.GetService<IOcrEngine>();
 
-            return new Memory(orchestrator, searchClient);
+            return new Memory(orchestrator, searchClient, ocrEngine);
         }
         catch (Exception e)
         {

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.Pipeline;
@@ -31,13 +32,14 @@ public class Memory : ISemanticMemoryClient
 
     public Memory(
         InProcessPipelineOrchestrator orchestrator,
-        SearchClient searchClient)
+        SearchClient searchClient,
+        IOcrEngine? ocrEngine = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
 
         // Default handlers - Use AddHandler to replace them.
-        this.AddHandler(new TextExtractionHandler("extract", this._orchestrator));
+        this.AddHandler(new TextExtractionHandler("extract", this._orchestrator, ocrEngine));
         this.AddHandler(new TextPartitioningHandler("partition", this._orchestrator));
         this.AddHandler(new SummarizationHandler("summarize", this._orchestrator));
         this.AddHandler(new GenerateEmbeddingsHandler("gen_embeddings", this._orchestrator));

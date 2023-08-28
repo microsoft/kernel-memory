@@ -32,6 +32,7 @@ public class TextExtractionHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="ocrEngine">The ocr engine to use for parsing image files</param>
     /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,
