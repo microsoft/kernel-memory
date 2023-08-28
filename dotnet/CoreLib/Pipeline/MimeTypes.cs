@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.SemanticMemory.Pipeline;
 
@@ -10,9 +12,14 @@ public static class MimeTypes
     public const string MarkDown = "text/plain-markdown";
     public const string MsWord = "application/msword";
     public const string Pdf = "application/pdf";
-    public const string TextEmbeddingVector = "float[]";
     public const string Json = "application/json";
     public const string WebPageUrl = "text/x-uri";
+    public const string TextEmbeddingVector = "float[]";
+    public const string ImageBmp = "image/bmp";
+    public const string ImageGif = "image/gif";
+    public const string ImageJpeg = "image/jpeg";
+    public const string ImagePng = "image/png";
+    public const string ImageTiff = "image/tiff";
 }
 
 public static class FileExtensions
@@ -25,6 +32,12 @@ public static class FileExtensions
     public const string Pdf = ".pdf";
     public const string WebPageUrl = ".url";
     public const string TextEmbeddingVector = ".text_embedding";
+    public const string ImageBmp = ".bmp";
+    public const string ImageGif = ".gif";
+    public const string ImageJpeg = ".jpeg";
+    public const string ImageJpg = ".jpg";
+    public const string ImagePng = ".png";
+    public const string ImageTiff = ".tiff";
 }
 
 public interface IMimeTypeDetection
@@ -34,42 +47,32 @@ public interface IMimeTypeDetection
 
 public class MimeTypesDetection : IMimeTypeDetection
 {
+    private static readonly IReadOnlyDictionary<string, string> s_extensionTypes =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { FileExtensions.ImageBmp, MimeTypes.ImageBmp },
+            { FileExtensions.ImageGif, MimeTypes.ImageGif },
+            { FileExtensions.ImageJpeg, MimeTypes.ImageJpeg },
+            { FileExtensions.ImageJpg, MimeTypes.ImageJpeg },
+            { FileExtensions.ImagePng, MimeTypes.ImagePng },
+            { FileExtensions.ImageTiff, MimeTypes.ImageTiff },
+            { FileExtensions.Json, MimeTypes.Json },
+            { FileExtensions.MarkDown, MimeTypes.MarkDown },
+            { FileExtensions.WebPageUrl, MimeTypes.WebPageUrl },
+            { FileExtensions.MsWord, MimeTypes.MsWord },
+            { FileExtensions.MsWordX, MimeTypes.MsWord },
+            { FileExtensions.PlainText, MimeTypes.PlainText },
+            { FileExtensions.Pdf, MimeTypes.Pdf },
+            { FileExtensions.TextEmbeddingVector, MimeTypes.TextEmbeddingVector },
+        };
+
     public string GetFileType(string filename)
     {
-        if (filename.EndsWith(FileExtensions.PlainText, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.PlainText;
-        }
+        string extension = Path.GetExtension(filename);
 
-        if (filename.EndsWith(FileExtensions.MarkDown, StringComparison.InvariantCultureIgnoreCase))
+        if (s_extensionTypes.TryGetValue(extension, out var mimeType))
         {
-            return MimeTypes.MarkDown;
-        }
-
-        if (filename.EndsWith(FileExtensions.Json, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.Json;
-        }
-
-        if (filename.EndsWith(FileExtensions.MsWord, StringComparison.InvariantCultureIgnoreCase)
-            || filename.EndsWith(FileExtensions.MsWordX, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.MsWord;
-        }
-
-        if (filename.EndsWith(FileExtensions.Pdf, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.Pdf;
-        }
-
-        if (filename.EndsWith(FileExtensions.TextEmbeddingVector, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.TextEmbeddingVector;
-        }
-
-        if (filename.EndsWith(FileExtensions.WebPageUrl, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return MimeTypes.WebPageUrl;
+            return mimeType;
         }
 
         throw new NotSupportedException($"File type not supported: {filename}");

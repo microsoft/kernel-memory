@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Office;
 using Microsoft.SemanticMemory.DataFormats.Pdf;
 using Microsoft.SemanticMemory.DataFormats.WebPages;
@@ -19,6 +20,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly WebScraper _webScraper;
+    private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -30,14 +32,17 @@ public class TextExtractionHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="ocrEngine">The ocr engine to use for parsing image files</param>
     /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        IOcrEngine? ocrEngine = null,
         ILogger<TextExtractionHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._ocrEngine = ocrEngine;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
 
         this._webScraper = new WebScraper(this._log);
@@ -107,8 +112,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     if (string.IsNullOrWhiteSpace(url))
                     {
                         skipFile = true;
-                        uploadedFile.Log(this, "The web page URL is emtpy");
-                        this._log.LogWarning("The web page URL is emtpy");
+                        uploadedFile.Log(this, "The web page URL is empty");
+                        this._log.LogWarning("The web page URL is empty");
                         break;
                     }
 
@@ -136,6 +141,22 @@ public class TextExtractionHandler : IPipelineStepHandler
                     skipFile = true;
                     uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
                     this._log.LogWarning("Empty MIME type, the file will be ignored");
+                    break;
+
+                case MimeTypes.ImageJpeg:
+                case MimeTypes.ImagePng:
+                case MimeTypes.ImageTiff:
+                    this._log.LogDebug("Extracting text from image file {0}", uploadedFile.Name);
+                    if (this._ocrEngine == null)
+                    {
+                        throw new NotSupportedException($"Image extraction not configured: {uploadedFile.Name}");
+                    }
+
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent, cancellationToken).ConfigureAwait(false);
+                    }
+
                     break;
 
                 default:

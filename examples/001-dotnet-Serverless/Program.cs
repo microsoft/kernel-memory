@@ -11,8 +11,10 @@ using Microsoft.SemanticMemory;
  * Note: no web service required, each file is processed in this process. */
 
 var memory = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).BuildServerlessClient();
-// To use Azure Cognitive Search => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-// To use Qdrant docker          => .WithQdrant("http://127.0.0.1:6333")
+// To use Azure Cognitive Search    => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+// To use Qdrant docker             => .WithQdrant("http://127.0.0.1:6333")
+// To use Azure Form Recognizer OCR => .WithAzureFormRecognizer(Env.Var("AFR_ENDPOINT"), Env.Var("AFR_API_KEY"))
+
 // etc.
 
 // =======================

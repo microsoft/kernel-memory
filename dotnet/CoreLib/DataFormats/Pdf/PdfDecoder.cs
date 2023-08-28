@@ -12,12 +12,14 @@ public class PdfDecoder
 {
     public string DocToText(string filename)
     {
-        return this.DocToText(File.OpenRead(filename));
+        using var stream = File.OpenRead(filename);
+        return this.DocToText(stream);
     }
 
     public string DocToText(BinaryData data)
     {
-        return this.DocToText(data.ToStream());
+        using var stream = data.ToStream();
+        return this.DocToText(stream);
     }
 
     public string DocToText(Stream data)

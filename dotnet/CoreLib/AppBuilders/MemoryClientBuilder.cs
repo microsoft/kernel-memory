@@ -13,6 +13,8 @@ using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.ContentStorage.DevTools;
+using Microsoft.SemanticMemory.DataFormats.Image;
+using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
@@ -61,7 +63,7 @@ public class MemoryClientBuilder
         this.AddSingleton<List<ISemanticMemoryVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-memory-files" });
         this.WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-memory-vectors" });
     }
@@ -77,7 +79,7 @@ public class MemoryClientBuilder
         this.AddSingleton<List<ISemanticMemoryVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
     }
 
@@ -92,6 +94,13 @@ public class MemoryClientBuilder
     {
         service = service ?? throw new ConfigurationException("The content storage instance is NULL");
         this.AddSingleton<IContentStorage>(service);
+        return this;
+    }
+
+    public MemoryClientBuilder WithDefaultMimeTypeDetection()
+    {
+        this.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
+
         return this;
     }
 
@@ -143,12 +152,19 @@ public class MemoryClientBuilder
         return this;
     }
 
+    public MemoryClientBuilder WithCustomImageOcr(IOcrEngine service)
+    {
+        service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
+        this.AddSingleton<IOcrEngine>(service);
+        return this;
+    }
+
     public MemoryClientBuilder FromAppSettings()
     {
         var config = this._appBuilder.Configuration.GetSection(ConfigRoot).Get<SemanticMemoryConfig>();
         if (config == null) { throw new ConfigurationException("Unable to parse configuration files"); }
 
-        this.WithCustomMimeTypeDetection(new MimeTypesDetection());
+        this.WithDefaultMimeTypeDetection();
 
         // Ingestion queue
         if (string.Equals(config.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
@@ -314,6 +330,23 @@ public class MemoryClientBuilder
                 break;
         }
 
+        // Image OCR
+        switch (config.ImageOcrType)
+        {
+            case string y when string.IsNullOrWhiteSpace(y):
+            case string x when x.Equals("None", StringComparison.OrdinalIgnoreCase):
+                break;
+
+            case string x when x.Equals("AzureFormRecognizer", StringComparison.OrdinalIgnoreCase):
+                this._appBuilder.Services.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+                this._sharedServiceCollection?.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+                break;
+
+            default:
+                // NOOP - allow custom implementations, via WithCustomImageOCR()
+                break;
+        }
+
         return this;
     }
 
@@ -394,8 +427,9 @@ public class MemoryClientBuilder
 
             var orchestrator = this._app.Services.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = this._app.Services.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+            var ocrEngine = this._app.Services.GetService<IOcrEngine>();
 
-            return new Memory(orchestrator, searchClient);
+            return new Memory(orchestrator, searchClient, ocrEngine);
         }
         catch (Exception e)
         {
@@ -436,6 +470,14 @@ public class MemoryClientBuilder
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
+        return this;
+    }
+
+    private MemoryClientBuilder AddSingleton<TService>(Func<IServiceProvider, TService> serviceFactory)
+        where TService : class
+    {
+        this._appBuilder.Services.AddSingleton<TService>(serviceFactory);
+        this._sharedServiceCollection?.AddSingleton<TService>(serviceFactory);
         return this;
     }
 

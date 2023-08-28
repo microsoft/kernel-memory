@@ -102,6 +102,11 @@ public class SemanticMemoryConfig
     public string TextGeneratorType { get; set; } = string.Empty;
 
     /// <summary>
+    /// The OCR generator used to recognize text in images.
+    /// </summary>
+    public string ImageOcrType { get; set; } = string.Empty;
+
+    /// <summary>
     /// Settings for the upload of documents and memory creation/update.
     /// </summary>
     public DataIngestionConfig DataIngestion { get; set; } = new();
