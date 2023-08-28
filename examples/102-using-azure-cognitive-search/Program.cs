@@ -38,14 +38,14 @@ public static class Program
     // Size of the vectors
     private const int EmbeddingSize = 3;
 
-    private static SearchIndexClient adminClient = null!;
-    private static readonly string Endpoint = Environment.GetEnvironmentVariable("SEARCH_ENDPOINT")!;
-    private static readonly string APIKey = Environment.GetEnvironmentVariable("SEARCH_KEY")!;
+    private static SearchIndexClient s_adminClient = null!;
+    private static readonly string s_endpoint = Environment.GetEnvironmentVariable("SEARCH_ENDPOINT")!;
+    private static readonly string s_apiKey = Environment.GetEnvironmentVariable("SEARCH_KEY")!;
 
     public static async Task Main(string[] args)
     {
         // Azure Cognitive Search service client
-        adminClient = new SearchIndexClient(new Uri(Endpoint), new AzureKeyCredential(APIKey),
+        s_adminClient = new SearchIndexClient(new Uri(s_endpoint), new AzureKeyCredential(s_apiKey),
             new SearchClientOptions { Diagnostics = { IsTelemetryEnabled = true, ApplicationId = "SemanticMemory" } });
 
         // Create an index (if doesn't exist)
@@ -159,7 +159,7 @@ public static class Program
 
         try
         {
-            Response<SearchIndex>? response = await adminClient.CreateIndexAsync(indexSchema);
+            Response<SearchIndex>? response = await s_adminClient.CreateIndexAsync(indexSchema);
 
             Console.WriteLine("Status: " + response.GetRawResponse().Status);
             Console.WriteLine("IsError: " + response.GetRawResponse().IsError);
@@ -177,7 +177,7 @@ public static class Program
         string externalId, Dictionary<string, object> payload, TagCollection tags, Embedding<float> embedding)
     {
         Console.WriteLine("\n== INSERT ==\n");
-        var client = adminClient.GetSearchClient(index);
+        var client = s_adminClient.GetSearchClient(index);
 
         var record = new MemoryRecord
         {
@@ -218,7 +218,7 @@ public static class Program
         int limit)
     {
         Console.WriteLine("\n== FILTER SEARCH ==\n");
-        var client = adminClient.GetSearchClient(index);
+        var client = s_adminClient.GetSearchClient(index);
 
         fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
         fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
@@ -257,7 +257,7 @@ public static class Program
     {
         Console.WriteLine("\n== DELETE ==\n");
 
-        var client = adminClient.GetSearchClient(index);
+        var client = s_adminClient.GetSearchClient(index);
 
         Console.WriteLine($"DELETING {recordId}\n");
 

@@ -11,13 +11,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.SemanticMemory.Pipeline.Queue.FileBasedQueues;
+namespace Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
 
 /// <summary>
 /// Basic implementation of a file based queue for local testing.
 /// This is not meant for production scenarios, only to avoid spinning up additional services.
 /// </summary>
-public sealed class FileBasedQueue : IQueue
+public sealed class SimpleQueues : IQueue
 {
     private sealed class MessageEventArgs : EventArgs
     {
@@ -56,7 +56,7 @@ public sealed class FileBasedQueue : IQueue
     private Timer? _dispatchTimer;
 
     // Application logger
-    private readonly ILogger<FileBasedQueue> _log;
+    private readonly ILogger<SimpleQueues> _log;
 
     /// <summary>
     /// Create new file based queue
@@ -64,15 +64,15 @@ public sealed class FileBasedQueue : IQueue
     /// <param name="config">File queue configuration</param>
     /// <param name="log">Application logger</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public FileBasedQueue(FileBasedQueueConfig config, ILogger<FileBasedQueue>? log = null)
+    public SimpleQueues(SimpleQueuesConfig config, ILogger<SimpleQueues>? log = null)
     {
-        this._log = log ?? DefaultLogger<FileBasedQueue>.Instance;
-        if (!Directory.Exists(config.Path))
+        this._log = log ?? DefaultLogger<SimpleQueues>.Instance;
+        if (!Directory.Exists(config.Directory))
         {
-            Directory.CreateDirectory(config.Path);
+            Directory.CreateDirectory(config.Directory);
         }
 
-        this._directory = config.Path;
+        this._directory = config.Directory;
     }
 
     /// <inherit />

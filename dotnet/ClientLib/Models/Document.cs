@@ -106,7 +106,14 @@ public class Document
 
 public static class DocumentExtensions
 {
-    // Note: this code is a .NET Standard 2.0 version of ToDocumentUploadRequestAsync()
+    /// <summary>
+    /// Note: this code is a .NET Standard 2.0 version of ToDocumentUploadRequestAsync()
+    /// See: DocumentExtensions.ToDocumentUploadRequestAsync()
+    /// </summary>
+    /// <param name="doc">Document to convert</param>
+    /// <param name="index">Storage index</param>
+    /// <param name="steps">Pipeline steps to execute</param>
+    /// <returns>Instance of <see cref="DocumentUploadRequest"/>doc upload request</returns>
     public static DocumentUploadRequest ToDocumentUploadRequest(
         this Document doc,
         string? index,
@@ -136,8 +143,7 @@ public static class DocumentExtensions
 
         foreach (KeyValuePair<string, Stream> stream in doc.Streams)
         {
-            var formFile = new DocumentUploadRequest.UploadedFile(stream.Key, stream.Value);
-            files.Add(formFile);
+            files.Add(new DocumentUploadRequest.UploadedFile(stream.Key, stream.Value));
         }
 
         uploadRequest.Files = files;

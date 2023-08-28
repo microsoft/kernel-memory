@@ -51,7 +51,7 @@ public class MsWordDecoder
                 }
             }
 
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
         finally
         {

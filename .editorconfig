@@ -135,6 +135,7 @@ dotnet_diagnostic.CA2225.severity = warning # Operator overloads have named alte
 
 dotnet_diagnostic.IDE0001.severity = warning # Simplify name
 dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary using directives
+dotnet_diagnostic.IDE1006.severity = warning # Code style errors, e.g. dotnet_naming_rule rules violations
 dotnet_diagnostic.IDE0009.severity = warning # Add this or Me qualification
 dotnet_diagnostic.IDE0011.severity = warning # Add braces
 dotnet_diagnostic.IDE0018.severity = warning # Inline variable declaration
@@ -175,6 +176,7 @@ dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
 dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to cover more ctors
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
+dotnet_diagnostic.CA1054.severity = none # URI parameters should not be strings
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static

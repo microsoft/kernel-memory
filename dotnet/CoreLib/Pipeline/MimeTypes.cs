@@ -14,6 +14,7 @@ public static class MimeTypes
     public const string MsWord = "application/msword";
     public const string Pdf = "application/pdf";
     public const string Json = "application/json";
+    public const string WebPageUrl = "text/x-uri";
     public const string TextEmbeddingVector = "float[]";
     public const string ImageBmp = "image/bmp";
     public const string ImageGif = "image/gif";
@@ -30,6 +31,7 @@ public static class FileExtensions
     public const string MsWord = ".doc";
     public const string MsWordX = ".docx";
     public const string Pdf = ".pdf";
+    public const string WebPageUrl = ".url";
     public const string TextEmbeddingVector = ".text_embedding";
     public const string ImageBmp = ".bmp";
     public const string ImageGif = ".gif";
@@ -59,6 +61,7 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.ImageTiff, MimeTypes.ImageTiff },
             { FileExtensions.Json, MimeTypes.Json },
             { FileExtensions.MarkDown, MimeTypes.MarkDown },
+            { FileExtensions.WebPageUrl, MimeTypes.WebPageUrl },
             { FileExtensions.MsWord, MimeTypes.MsWord },
             { FileExtensions.MsWordX, MimeTypes.MsWord },
             { FileExtensions.PlainText, MimeTypes.PlainText },

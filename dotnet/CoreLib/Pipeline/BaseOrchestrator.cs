@@ -40,7 +40,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
         this.MimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.DefaultSteps;
+        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
 
         this.ContentStorage = contentStorage;
         this.CancellationTokenSource = new CancellationTokenSource();
@@ -325,12 +325,23 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
             this.Log.LogDebug("Uploading file: {0}", file.FileName);
             var size = await this.ContentStorage.WriteStreamAsync(dirPath, file.FileName, file.FileContent, cancellationToken).ConfigureAwait(false);
+
+            string mimeType = string.Empty;
+            try
+            {
+                mimeType = this.MimeTypeDetection.GetFileType(file.FileName);
+            }
+            catch (NotSupportedException)
+            {
+                this.Log.LogWarning("File type not supported, the ingestion pipeline might skip it");
+            }
+
             pipeline.Files.Add(new DataPipeline.FileDetails
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = file.FileName,
                 Size = size,
-                MimeType = this.MimeTypeDetection.GetFileType(file.FileName),
+                MimeType = mimeType,
             });
 
             this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, size);

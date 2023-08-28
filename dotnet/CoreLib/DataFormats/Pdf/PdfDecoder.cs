@@ -32,6 +32,6 @@ public class PdfDecoder
             sb.Append(text);
         }
 
-        return sb.ToString();
+        return sb.ToString().Trim();
     }
 }

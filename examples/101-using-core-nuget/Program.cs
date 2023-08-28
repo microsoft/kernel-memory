@@ -3,7 +3,6 @@
 using Microsoft.SemanticMemory;
 
 var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp-storage")
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
     // {
@@ -19,7 +18,7 @@ var memory = new MemoryClientBuilder()
     //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
     //     Deployment = Env.Var("AZURE_OPENAI_CHAT_MODEL")
     // })
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
     .BuildServerlessClient();
 
 await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");

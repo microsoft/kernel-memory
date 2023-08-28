@@ -10,12 +10,10 @@ using Microsoft.SemanticMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp-storage")
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithQdrant("http://127.0.0.1:6333")
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-    .BuildServerlessClient();
+var memory = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).BuildServerlessClient();
+// To use Azure Cognitive Search => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+// To use Qdrant docker          => .WithQdrant("http://127.0.0.1:6333")
+// etc.
 
 // =======================
 // === UPLOAD ============
@@ -76,6 +74,17 @@ else
     Console.WriteLine("doc003 already uploaded.");
 }
 
+// Downloading web pages
+if (!await memory.IsDocumentReadyAsync("webPage1"))
+{
+    Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
+    await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
+}
+else
+{
+    Console.WriteLine("webPage1 already uploaded.");
+}
+
 // =======================
 // === ASK ===============
 // =======================
@@ -103,10 +112,10 @@ foreach (var x in answer.RelevantSources)
 question = "Any news from NASA about Orion?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
-answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("user", "Blake"));
+answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Blake"));
 Console.WriteLine($"\nBlake Answer: {answer.Result}\n");
 
-answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("user", "Taylor"));
+answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Taylor"));
 Console.WriteLine($"\nTaylor Answer: {answer.Result}\n\n  Sources:\n");
 
 foreach (var x in answer.RelevantSources)
@@ -118,10 +127,10 @@ foreach (var x in answer.RelevantSources)
 question = "What is Orion?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
-answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type", "article"));
+answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "article"));
 Console.WriteLine($"\nArticles: {answer.Result}\n\n");
 
-answer = await memory.AskAsync(question, filter: new MemoryFilter().ByTag("type", "news"));
+answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "news"));
 Console.WriteLine($"\nNews: {answer.Result}\n\n");
 
 // ReSharper disable CommentTypo

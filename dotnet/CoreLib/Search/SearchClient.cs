@@ -224,44 +224,42 @@ public class SearchClient
 
             // Use the partition/chunk only if there's room for it
             var size = GPT3Tokenizer.Encode(fact).Count;
-            if (size < tokensAvailable)
+            if (size >= tokensAvailable)
             {
-                factsUsedCount++;
-                this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
-
-                facts.Append(fact);
-                tokensAvailable -= size;
-
-                // If the file is already in the list of citations, only add the partition
-                var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-                if (citation == null)
-                {
-                    citation = new Citation();
-                    answer.RelevantSources.Add(citation);
-                }
-
-                // Add the partition to the list of citations
-                citation.Link = linkToFile;
-                citation.SourceContentType = fileContentType;
-                citation.SourceName = fileName;
-                citation.Tags = memory.Tags;
-
-#pragma warning disable CA1806 // it's ok if parsing fails
-                DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
-#pragma warning restore CA1806
-
-                citation.Partitions.Add(new Citation.Partition
-                {
-                    Text = partitionText,
-                    Relevance = (float)relevance,
-                    LastUpdate = lastUpdate,
-                });
-
-                continue;
+                // Stop after reaching the max number of tokens
+                break;
             }
 
-            // We get here after reaching the max number of tokens, in which case we stop
-            break;
+            factsUsedCount++;
+            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
+
+            facts.Append(fact);
+            tokensAvailable -= size;
+
+            // If the file is already in the list of citations, only add the partition
+            var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
+            if (citation == null)
+            {
+                citation = new Citation();
+                answer.RelevantSources.Add(citation);
+            }
+
+            // Add the partition to the list of citations
+            citation.Link = linkToFile;
+            citation.SourceContentType = fileContentType;
+            citation.SourceName = fileName;
+            citation.Tags = memory.Tags;
+
+#pragma warning disable CA1806 // it's ok if parsing fails
+            DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
+#pragma warning restore CA1806
+
+            citation.Partitions.Add(new Citation.Partition
+            {
+                Text = partitionText,
+                Relevance = (float)relevance,
+                LastUpdate = lastUpdate,
+            });
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)
