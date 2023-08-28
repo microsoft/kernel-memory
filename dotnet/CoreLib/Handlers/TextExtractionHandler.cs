@@ -111,8 +111,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     if (string.IsNullOrWhiteSpace(url))
                     {
                         skipFile = true;
-                        uploadedFile.Log(this, "The web page URL is emtpy");
-                        this._log.LogWarning("The web page URL is emtpy");
+                        uploadedFile.Log(this, "The web page URL is empty");
+                        this._log.LogWarning("The web page URL is empty");
                         break;
                     }
 
