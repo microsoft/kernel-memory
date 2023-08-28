@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticMemory.Configuration;
+using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Pipeline;
 using Microsoft.SemanticMemory.Search;
 using Microsoft.SemanticMemory.WebService;
@@ -93,6 +95,23 @@ public class MemoryService : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task<string> ImportWebPageAsync(
+        string url,
+        string? documentId = null,
+        TagCollection? tags = null,
+        string? index = null,
+        IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default)
+    {
+        var uri = new Uri(url);
+        Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
+
+        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
+        return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public Task<bool> IsDocumentReadyAsync(
         string documentId,
         string? index = null,
@@ -115,12 +134,30 @@ public class MemoryService : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
+        MemoryFilter? filter,
+        CancellationToken cancellationToken = default)
+    {
+        return this.SearchAsync(query, index: null, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<SearchResult> SearchAsync(
+        string query,
         string? index = null,
         MemoryFilter? filter = null,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
         return this._searchClient.SearchAsync(index: index, query, filter, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<MemoryAnswer> AskAsync(
+        string question,
+        MemoryFilter? filter,
+        CancellationToken cancellationToken = default)
+    {
+        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />

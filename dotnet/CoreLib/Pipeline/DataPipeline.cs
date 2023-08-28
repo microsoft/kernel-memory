@@ -14,8 +14,39 @@ namespace Microsoft.SemanticMemory.Pipeline;
 /// Note: this object could be generalized to support any kind of pipeline, for now it's tailored
 ///       to specific design of SK memory indexer. You can use 'CustomData' to extend the logic.
 /// </summary>
-public class DataPipeline
+public sealed class DataPipeline
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ArtifactTypes
+    {
+        Undefined = 0,
+        TextPartition = 1,
+        ExtractedText = 2,
+        TextEmbeddingVector = 3,
+        SyntheticData = 4,
+    }
+
+    public sealed class PipelineLogEntry
+    {
+        [JsonPropertyOrder(0)]
+        [JsonPropertyName("t")]
+        public DateTimeOffset Time { get; set; } = DateTimeOffset.UtcNow;
+
+        [JsonPropertyOrder(1)]
+        [JsonPropertyName("src")]
+        public string Source { get; set; }
+
+        [JsonPropertyOrder(2)]
+        [JsonPropertyName("txt")]
+        public string Text { get; set; }
+
+        public PipelineLogEntry(string source, string text)
+        {
+            this.Source = source;
+            this.Text = text;
+        }
+    }
+
     public abstract class FileDetailsBase
     {
         /// <summary>
@@ -43,17 +74,15 @@ public class DataPipeline
         /// File (MIME) type
         /// </summary>
         [JsonPropertyOrder(3)]
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
+        [JsonPropertyName("mime_type")]
+        public string MimeType { get; set; } = string.Empty;
 
         /// <summary>
-        /// Check if this is an embedding file (checking the file extension)
+        /// File (MIME) type
         /// </summary>
-        /// <returns>True if the file contains an embedding</returns>
-        public bool IsEmbeddingFile()
-        {
-            return this.Type == MimeTypes.TextEmbeddingVector;
-        }
+        [JsonPropertyOrder(4)]
+        [JsonPropertyName("artifact_type")]
+        public ArtifactTypes ArtifactType { get; set; } = ArtifactTypes.Undefined;
 
         /// <summary>
         /// List of handlers who have already processed this file
@@ -61,6 +90,16 @@ public class DataPipeline
         [JsonPropertyOrder(17)]
         [JsonPropertyName("processed_by")]
         public List<string> ProcessedBy { get; set; } = new();
+
+        /// <summary>
+        /// Optional log describing how the file has been processed.
+        /// The list is meant to contain only important details, avoiding excessive/verbose
+        /// information that could affect the async queue performance.
+        /// </summary>
+        [JsonPropertyOrder(18)]
+        [JsonPropertyName("log")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<PipelineLogEntry>? LogEntries { get; set; } = null;
 
         /// <summary>
         /// Check whether this file has already been processed by the given handler
@@ -80,6 +119,22 @@ public class DataPipeline
         {
             this.ProcessedBy.Add(handler.StepName);
         }
+
+        /// <summary>
+        /// Add a new log entry, with some important information for the end user.
+        /// DO NOT STORE PII OR SECRETS here.
+        /// </summary>
+        /// <param name="handler">Handler sending the information to log</param>
+        /// <param name="text">Text to store for the end user</param>
+        public void Log(IPipelineStepHandler handler, string text)
+        {
+            if (this.LogEntries == null)
+            {
+                this.LogEntries = new List<PipelineLogEntry>();
+            }
+
+            this.LogEntries.Add(new PipelineLogEntry(source: handler.StepName, text: text));
+        }
     }
 
     public class GeneratedFileDetails : FileDetailsBase
@@ -90,13 +145,6 @@ public class DataPipeline
         [JsonPropertyOrder(14)]
         [JsonPropertyName("parent_id")]
         public string ParentId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Whether this is a partition/chunk/piece of the original content
-        /// </summary>
-        [JsonPropertyOrder(15)]
-        [JsonPropertyName("is_partition")]
-        public bool IsPartition { get; set; } = false;
 
         /// <summary>
         /// Deduplication hash used for consolidation tasks

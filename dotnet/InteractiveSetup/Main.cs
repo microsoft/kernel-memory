@@ -10,32 +10,54 @@ namespace Microsoft.SemanticMemory.InteractiveSetup;
 public static class Main
 {
     private static BoundedBoolean s_cfgOpenAPI = new();
+
+    // Storage
     private static BoundedBoolean s_cfgContentStorage = new();
     private static BoundedBoolean s_cfgAzureBlobs = new();
-    private static BoundedBoolean s_cfgAzureOpenAIText = new();
-    private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
-    private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
-    private static BoundedBoolean s_cfgQdrant = new();
-    private static BoundedBoolean s_cfgOpenAI = new();
-    private static BoundedBoolean s_cfgFileSystemStorage = new();
+    private static BoundedBoolean s_cfgSimpleFileStorage = new();
+
+    // Queues
     private static BoundedBoolean s_cfgQueue = new();
     private static BoundedBoolean s_cfgAzureQueue = new();
     private static BoundedBoolean s_cfgRabbitMq = new();
+    private static BoundedBoolean s_cfgSimpleQueues = new();
+
+    // AI
+    private static BoundedBoolean s_cfgAzureOpenAIText = new();
+    private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
+    private static BoundedBoolean s_cfgOpenAI = new();
+
+    // Vectors
+    private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
+    private static BoundedBoolean s_cfgQdrant = new();
+    private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
     public static void InteractiveSetup(
         bool cfgService = false,
         bool cfgOrchestration = true)
     {
         s_cfgOpenAPI = new();
+
+        // Storage
         s_cfgContentStorage = new(initialState: true);
         s_cfgAzureBlobs = new();
+        s_cfgSimpleFileStorage = new();
+
+        // Queues
+        s_cfgQueue = new();
+        s_cfgAzureQueue = new();
+        s_cfgRabbitMq = new();
+        s_cfgSimpleQueues = new();
+
+        // AI
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
+        s_cfgOpenAI = new();
+
+        // Vectors
         s_cfgAzureCognitiveSearch = new();
         s_cfgQdrant = new();
-        s_cfgOpenAI = new();
-        s_cfgFileSystemStorage = new();
-        s_cfgQueue = new();
+        s_cfgSimpleVectorDb = new();
 
         try
         {
@@ -48,12 +70,13 @@ public static class Main
                 QueuesSetup();
                 AzureQueueSetup();
                 RabbitMQSetup();
+                SimpleQueuesSetup();
             }
 
             // Storage
             ContentStorageTypeSetup();
             AzureBlobsSetup();
-            FileSystemStorageSetup();
+            SimpleFileStorageSetup();
 
             // Embedding generation
             EmbeddingGeneratorTypeSetup();
@@ -64,6 +87,7 @@ public static class Main
             VectorDbTypeSetup();
             AzureCognitiveSearchSetup();
             QdrantSetup();
+            SimpleVectorDbSetup();
 
             // Text generation
             TextGeneratorTypeSetup();
@@ -140,110 +164,34 @@ public static class Main
         });
     }
 
-    private static void OrchestrationTypeSetup()
+    private static void LoggerSetup()
     {
+        string logLevel = "Debug";
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "How should memory ingestion be orchestrated?",
+            Title = "Log level?",
             Options = new List<Answer>
             {
-                new("Using asynchronous distributed queues (allows to mix handlers written in different languages)",
-                    () =>
-                    {
-                        AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "Distributed"; });
-                        s_cfgQueue.Value = true;
-                    }),
-                new("In process orchestration, all .NET handlers run synchronously",
-                    () => { AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "InProcess"; }); }),
+                new("Trace", () => { logLevel = "Trace"; }),
+                new("Debug", () => { logLevel = "Debug"; }),
+                new("Information", () => { logLevel = "Information"; }),
+                new("Warning", () => { logLevel = "Warning"; }),
+                new("Error", () => { logLevel = "Error"; }),
+                new("Critical", () => { logLevel = "Critical"; }),
                 new("-exit-", SetupUI.Exit),
             }
         });
-    }
 
-    private static void QueuesSetup()
-    {
-        if (!s_cfgQueue.Value) { return; }
-
-        s_cfgQueue.Value = false;
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        AppSettings.GlobalChange(data =>
         {
-            Title = "Which queue service will be used?",
-            Options = new List<Answer>
-            {
-                new("Azure Queue",
-                    () =>
-                    {
-                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueue"; });
-                        s_cfgAzureQueue.Value = true;
-                    }),
-                new("RabbitMQ",
-                    () =>
-                    {
-                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "RabbitMQ"; });
-                        s_cfgRabbitMq.Value = true;
-                    }),
-                new("-exit-", SetupUI.Exit),
-            }
-        });
-    }
+            if (data["Logging"] == null) { data["Logging"] = new JObject(); }
 
-    private static void ContentStorageTypeSetup()
-    {
-        if (!s_cfgContentStorage.Value) { return; }
-
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
-        {
-            Title = "Where should the service store files?",
-            Options = new List<Answer>
+            if (data["Logging"]!["LogLevel"] == null)
             {
-                new("Azure Blobs", () =>
-                {
-                    AppSettings.Change(x =>
-                    {
-                        x.ContentStorageType = "AzureBlobs";
-                    });
-                    s_cfgAzureBlobs.Value = true;
-                }),
-                new("Local file system", () =>
-                {
-                    AppSettings.Change(x =>
-                    {
-                        x.ContentStorageType = "FileSystemContentStorage";
-                    });
-                    s_cfgFileSystemStorage.Value = true;
-                }),
-                new("-exit-", SetupUI.Exit),
+                data["Logging"]!["LogLevel"] = new JObject { ["Microsoft.AspNetCore"] = "Warning" };
             }
-        });
-    }
 
-    private static void VectorDbTypeSetup()
-    {
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
-        {
-            Title = "When searching for answers, which vector DB service contains embeddings to search?",
-            Options = new List<Answer>
-            {
-                new("Azure Cognitive Search", () =>
-                {
-                    AppSettings.Change(x =>
-                    {
-                        x.Retrieval.VectorDbType = "AzureCognitiveSearch";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
-                    });
-                    s_cfgAzureCognitiveSearch.Value = true;
-                }),
-                new("Qdrant", () =>
-                {
-                    AppSettings.Change(x =>
-                    {
-                        x.Retrieval.VectorDbType = "Qdrant";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
-                    });
-                    s_cfgQdrant.Value = true;
-                }),
-                new("-exit-", SetupUI.Exit),
-            }
+            data["Logging"]!["LogLevel"]!["Default"] = logLevel;
         });
     }
 
@@ -296,89 +244,6 @@ public static class Main
                 }),
                 new("-exit-", SetupUI.Exit),
             }
-        });
-    }
-
-    private static void LoggerSetup()
-    {
-        string logLevel = "Debug";
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
-        {
-            Title = "Log level?",
-            Options = new List<Answer>
-            {
-                new("Trace", () => { logLevel = "Trace"; }),
-                new("Debug", () => { logLevel = "Debug"; }),
-                new("Information", () => { logLevel = "Information"; }),
-                new("Warning", () => { logLevel = "Warning"; }),
-                new("Error", () => { logLevel = "Error"; }),
-                new("Critical", () => { logLevel = "Critical"; }),
-                new("-exit-", SetupUI.Exit),
-            }
-        });
-
-        AppSettings.GlobalChange(data =>
-        {
-            if (data["Logging"] == null) { data["Logging"] = new JObject(); }
-
-            if (data["Logging"]!["LogLevel"] == null)
-            {
-                data["Logging"]!["LogLevel"] = new JObject { ["Microsoft.AspNetCore"] = "Warning" };
-            }
-
-            data["Logging"]!["LogLevel"]!["Default"] = logLevel;
-        });
-    }
-
-    private static void AzureQueueSetup()
-    {
-        if (!s_cfgAzureQueue.Value) { return; }
-
-        s_cfgAzureQueue.Value = false;
-        const string ServiceName = "AzureQueue";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object>
-            {
-                { "Auth", "ConnectionString" },
-                { "Account", "" },
-                { "ConnectionString", "" },
-            };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "Auth", "ConnectionString" },
-            { "Account", SetupUI.AskOpenQuestion("Azure Queue <account name>", config["Account"].ToString()) },
-            { "ConnectionString", SetupUI.AskPassword("Azure Queue <connection string>", config["ConnectionString"].ToString()) },
-        });
-    }
-
-    private static void AzureBlobsSetup()
-    {
-        if (!s_cfgAzureBlobs.Value) { return; }
-
-        s_cfgAzureBlobs.Value = false;
-        const string ServiceName = "AzureBlobs";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object>
-            {
-                { "Auth", "ConnectionString" },
-                { "Account", "" },
-                { "Container", "smemory" },
-                { "ConnectionString", "" },
-            };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "Auth", "ConnectionString" },
-            { "Container", SetupUI.AskOpenQuestion("Azure Blobs <container name>", config["Container"].ToString()) },
-            { "Account", SetupUI.AskOpenQuestion("Azure Blobs <account name>", config["Account"].ToString()) },
-            { "ConnectionString", SetupUI.AskPassword("Azure Blobs <connection string>", config["ConnectionString"].ToString()) },
         });
     }
 
@@ -441,6 +306,283 @@ public static class Main
         });
     }
 
+    private static void OpenAISetup()
+    {
+        if (!s_cfgOpenAI.Value) { return; }
+
+        s_cfgOpenAI.Value = false;
+        const string ServiceName = "OpenAI";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "TextModel", "" },
+                { "EmbeddingModel", "" },
+                { "APIKey", "" },
+                { "OrgId", "" },
+                { "MaxRetries", 10 },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "TextModel", SetupUI.AskOpenQuestion("OpenAI <text/chat model name>", config.TryGet("TextModel")) },
+            { "EmbeddingModel", SetupUI.AskOpenQuestion("OpenAI <embedding model name>", config.TryGet("EmbeddingModel")) },
+            { "APIKey", SetupUI.AskPassword("OpenAI <API Key>", config.TryGet("APIKey")) },
+            { "OrgId", SetupUI.AskOptionalOpenQuestion("Optional OpenAI <Organization Id>", config.TryGet("OrgId")) },
+            { "MaxRetries", 10 },
+        });
+    }
+
+    private static void OrchestrationTypeSetup()
+    {
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "How should memory ingestion be orchestrated?",
+            Options = new List<Answer>
+            {
+                new("Using asynchronous distributed queues (allows to mix handlers written in different languages)",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "Distributed"; });
+                        s_cfgQueue.Value = true;
+                    }),
+                new("In process orchestration, all .NET handlers run synchronously",
+                    () => { AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "InProcess"; }); }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+    }
+
+    private static void QueuesSetup()
+    {
+        if (!s_cfgQueue.Value) { return; }
+
+        s_cfgQueue.Value = false;
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "Which queue service will be used?",
+            Options = new List<Answer>
+            {
+                new("Azure Queue",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueue"; });
+                        s_cfgAzureQueue.Value = true;
+                    }),
+                new("RabbitMQ",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "RabbitMQ"; });
+                        s_cfgRabbitMq.Value = true;
+                    }),
+                new("SimpleQueues (local file system, only for tests)",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
+                        s_cfgSimpleQueues.Value = true;
+                    }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+    }
+
+    private static void SimpleQueuesSetup()
+    {
+        if (!s_cfgSimpleQueues.Value) { return; }
+
+        s_cfgSimpleQueues.Value = false;
+        const string ServiceName = "SimpleQueues";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object> { { "Directory", "" } };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Directory", SetupUI.AskOpenQuestion("Directory where to store queue messages", config["Directory"].ToString()) }
+        });
+    }
+
+    private static void AzureQueueSetup()
+    {
+        if (!s_cfgAzureQueue.Value) { return; }
+
+        s_cfgAzureQueue.Value = false;
+        const string ServiceName = "AzureQueue";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "Auth", "ConnectionString" },
+                { "Account", "" },
+                { "ConnectionString", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Auth", "ConnectionString" },
+            { "Account", SetupUI.AskOpenQuestion("Azure Queue <account name>", config["Account"].ToString()) },
+            { "ConnectionString", SetupUI.AskPassword("Azure Queue <connection string>", config["ConnectionString"].ToString()) },
+        });
+    }
+
+    private static void RabbitMQSetup()
+    {
+        if (!s_cfgRabbitMq.Value) { return; }
+
+        s_cfgRabbitMq.Value = false;
+        const string ServiceName = "RabbitMq";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "Host", "127.0.0.1" },
+                { "Port", "5672" },
+                { "Username", "user" },
+                { "Password", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Host", SetupUI.AskOpenQuestion("RabbitMQ <host>", config["Host"].ToString()) },
+            { "Port", SetupUI.AskOpenQuestion("RabbitMQ <TCP port>", config["Port"].ToString()) },
+            { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
+            { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
+        });
+    }
+
+    private static void ContentStorageTypeSetup()
+    {
+        if (!s_cfgContentStorage.Value) { return; }
+
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "Where should the service store files?",
+            Options = new List<Answer>
+            {
+                new("Azure Blobs", () =>
+                {
+                    AppSettings.Change(x => { x.ContentStorageType = "AzureBlobs"; });
+                    s_cfgAzureBlobs.Value = true;
+                }),
+                new("SimpleFileStorage (local file system)", () =>
+                {
+                    AppSettings.Change(x => { x.ContentStorageType = "SimpleFileStorage"; });
+                    s_cfgSimpleFileStorage.Value = true;
+                }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+    }
+
+    private static void SimpleFileStorageSetup()
+    {
+        if (!s_cfgSimpleFileStorage.Value) { return; }
+
+        s_cfgSimpleFileStorage.Value = false;
+        const string ServiceName = "SimpleFileStorage";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object> { { "Directory", "" } };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Directory", SetupUI.AskOpenQuestion("Directory where to store files", config["Directory"].ToString()) }
+        });
+    }
+
+    private static void AzureBlobsSetup()
+    {
+        if (!s_cfgAzureBlobs.Value) { return; }
+
+        s_cfgAzureBlobs.Value = false;
+        const string ServiceName = "AzureBlobs";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "Auth", "ConnectionString" },
+                { "Account", "" },
+                { "Container", "smemory" },
+                { "ConnectionString", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Auth", "ConnectionString" },
+            { "Container", SetupUI.AskOpenQuestion("Azure Blobs <container name>", config["Container"].ToString()) },
+            { "Account", SetupUI.AskOpenQuestion("Azure Blobs <account name>", config["Account"].ToString()) },
+            { "ConnectionString", SetupUI.AskPassword("Azure Blobs <connection string>", config["ConnectionString"].ToString()) },
+        });
+    }
+
+    private static void VectorDbTypeSetup()
+    {
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "When searching for answers, which vector DB service contains embeddings to search?",
+            Options = new List<Answer>
+            {
+                new("Azure Cognitive Search", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.VectorDbType = "AzureCognitiveSearch";
+                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                    });
+                    s_cfgAzureCognitiveSearch.Value = true;
+                }),
+                new("Qdrant", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.VectorDbType = "Qdrant";
+                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                    });
+                    s_cfgQdrant.Value = true;
+                }),
+                new("SimpleVectorDb (file based vector DB, only for tests)", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.VectorDbType = "SimpleVectorDb";
+                    });
+                    s_cfgSimpleVectorDb.Value = true;
+                }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+    }
+
+    private static void SimpleVectorDbSetup()
+    {
+        if (!s_cfgSimpleVectorDb.Value) { return; }
+
+        s_cfgSimpleVectorDb.Value = false;
+        const string ServiceName = "SimpleVectorDb";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object> { { "Directory", "" } };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "Directory", SetupUI.AskOpenQuestion("Directory where to store vectors", config["Directory"].ToString()) }
+        });
+    }
+
     private static void AzureCognitiveSearchSetup()
     {
         if (!s_cfgAzureCognitiveSearch.Value) { return; }
@@ -486,80 +628,6 @@ public static class Main
         {
             { "Endpoint", SetupUI.AskOpenQuestion("Qdrant <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Qdrant <API Key> (for cloud only)", config["APIKey"].ToString(), optional: true) },
-        });
-    }
-
-    private static void OpenAISetup()
-    {
-        if (!s_cfgOpenAI.Value) { return; }
-
-        s_cfgOpenAI.Value = false;
-        const string ServiceName = "OpenAI";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object>
-            {
-                { "TextModel", "" },
-                { "EmbeddingModel", "" },
-                { "APIKey", "" },
-                { "OrgId", "" },
-                { "MaxRetries", 10 },
-            };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "TextModel", SetupUI.AskOpenQuestion("OpenAI <text/chat model name>", config.TryGet("TextModel")) },
-            { "EmbeddingModel", SetupUI.AskOpenQuestion("OpenAI <embedding model name>", config.TryGet("EmbeddingModel")) },
-            { "APIKey", SetupUI.AskPassword("OpenAI <API Key>", config.TryGet("APIKey")) },
-            { "OrgId", SetupUI.AskOptionalOpenQuestion("Optional OpenAI <Organization Id>", config.TryGet("OrgId")) },
-            { "MaxRetries", 10 },
-        });
-    }
-
-    private static void RabbitMQSetup()
-    {
-        if (!s_cfgRabbitMq.Value) { return; }
-
-        s_cfgRabbitMq.Value = false;
-        const string ServiceName = "RabbitMq";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object>
-            {
-                { "Host", "127.0.0.1" },
-                { "Port", "5672" },
-                { "Username", "user" },
-                { "Password", "" },
-            };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "Host", SetupUI.AskOpenQuestion("RabbitMQ <host>", config["Host"].ToString()) },
-            { "Port", SetupUI.AskOpenQuestion("RabbitMQ <TCP port>", config["Port"].ToString()) },
-            { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
-            { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
-        });
-    }
-
-    private static void FileSystemStorageSetup()
-    {
-        if (!s_cfgFileSystemStorage.Value) { return; }
-
-        s_cfgFileSystemStorage.Value = false;
-        const string ServiceName = "FileSystemContentStorage";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object> { { "Directory", "" } };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "Directory", SetupUI.AskOpenQuestion("Directory where to store files", config["Directory"].ToString()) }
         });
     }
 }

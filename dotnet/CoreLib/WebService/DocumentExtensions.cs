@@ -11,7 +11,16 @@ namespace Microsoft.SemanticMemory.WebService;
 
 public static class DocumentExtensions
 {
-    // Note: this code is not .NET Standard 2.0 compatible
+    /// <summary>
+    /// Note: this code is NOT .NET Standard 2.0 compatible, for which we have
+    /// a similar version, see DocumentExtensions.ToDocumentUploadRequest()
+    /// </summary>
+    /// <param name="doc">Document to convert</param>
+    /// <param name="index">Storage index</param>
+    /// <param name="steps">Pipeline steps to execute</param>
+    /// <returns>Instance of <see cref="DocumentUploadRequest"/>doc upload request</returns>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Instance of <see cref="DocumentUploadRequest"/>doc upload request</returns>
     public static async Task<DocumentUploadRequest> ToDocumentUploadRequestAsync(
         this Document doc,
         string? index,
@@ -27,7 +36,7 @@ public static class DocumentExtensions
         };
 
         var files = new List<DocumentUploadRequest.UploadedFile>();
-        foreach (var fileName in doc.FileNames)
+        foreach (string fileName in doc.FileNames)
         {
             if (!File.Exists(fileName))
             {
@@ -38,6 +47,11 @@ public static class DocumentExtensions
             var data = new BinaryData(bytes);
             var formFile = new DocumentUploadRequest.UploadedFile(fileName, data.ToStream());
             files.Add(formFile);
+        }
+
+        foreach (KeyValuePair<string, Stream> stream in doc.Streams)
+        {
+            files.Add(new DocumentUploadRequest.UploadedFile(stream.Key, stream.Value));
         }
 
         uploadRequest.Files = files;

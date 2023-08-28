@@ -12,6 +12,7 @@ public static class MimeTypes
     public const string Pdf = "application/pdf";
     public const string TextEmbeddingVector = "float[]";
     public const string Json = "application/json";
+    public const string WebPageUrl = "text/x-uri";
 }
 
 public static class FileExtensions
@@ -22,6 +23,7 @@ public static class FileExtensions
     public const string MsWord = ".doc";
     public const string MsWordX = ".docx";
     public const string Pdf = ".pdf";
+    public const string WebPageUrl = ".url";
     public const string TextEmbeddingVector = ".text_embedding";
 }
 
@@ -63,6 +65,11 @@ public class MimeTypesDetection : IMimeTypeDetection
         if (filename.EndsWith(FileExtensions.TextEmbeddingVector, StringComparison.InvariantCultureIgnoreCase))
         {
             return MimeTypes.TextEmbeddingVector;
+        }
+
+        if (filename.EndsWith(FileExtensions.WebPageUrl, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return MimeTypes.WebPageUrl;
         }
 
         throw new NotSupportedException($"File type not supported: {filename}");

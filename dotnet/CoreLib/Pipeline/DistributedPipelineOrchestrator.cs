@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.Pipeline.Queue;
@@ -150,6 +149,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         if (success)
         {
             pipeline = updatedPipeline;
+            pipeline.LastUpdate = DateTimeOffset.UtcNow;
 
             this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
             pipeline.MoveToNextStep();

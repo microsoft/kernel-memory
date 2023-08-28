@@ -45,7 +45,6 @@ in your app.
 > ```csharp
 > var memory = new MemoryClientBuilder()
 >     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
->     .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
 >     .Build();
 >
 > // Import a file
@@ -219,9 +218,7 @@ customize the steps, which will be handled by your custom business logic:
 
 ```csharp
 // Memory setup, e.g. how to calculate and where to store embeddings
-var memoryBuilder = new MemoryClientBuilder()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"));
+var memoryBuilder = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
 memoryBuilder.Build();
 var orchestrator = memoryBuilder.GetOrchestrator();
 

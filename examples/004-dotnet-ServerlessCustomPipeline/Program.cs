@@ -13,11 +13,10 @@ using Microsoft.SemanticMemory.Handlers;
 //
 // var builder = new MemoryClientBuilder().FromAppSettings();
 
-var memoryBuilder = new MemoryClientBuilder()
-    .WithFilesystemStorage("tmp-storage")
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithQdrant("http://127.0.0.1:6333")
-    .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"));
+var memoryBuilder = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+// To use Azure Cognitive Search => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
+// To use Qdrant docker          => .WithQdrant("http://127.0.0.1:6333")
+// etc.
 
 var _ = memoryBuilder.Build();
 var orchestrator = memoryBuilder.GetOrchestrator();

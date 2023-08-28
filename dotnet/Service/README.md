@@ -101,8 +101,8 @@ The service depends on three main components:
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
   case it requires persistent queues like **Azure Queues** or **RabbitMQ**
-  (corelib includes also a basic-experimental file-based queue, that might be
-  good enough for tests and demos).
+  (corelib includes also a basic file-based queue, that might be useful
+  for tests and demos).
   When running a service, we recommend persistent queues for reliability and
   horizontal scaling.
 
