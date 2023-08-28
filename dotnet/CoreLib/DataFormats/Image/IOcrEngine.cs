@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticMemory.DataFormats.Image;
@@ -14,5 +15,5 @@ public interface IOcrEngine
     /// Reads all text from the image.
     /// </summary>
     /// <param name="imageContent">The image content stream.</param>
-    Task<string> ExtractTextFromImageAsync(Stream imageContent);
+    Task<string> ExtractTextFromImageAsync(Stream imageContent, CancellationToken cancellationToken = default);
 }

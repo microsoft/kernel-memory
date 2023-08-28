@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
 /// </summary>
 public class AzureFormRecognizerEngine : IOcrEngine
 {
-    private readonly DocumentAnalysisClient recognizerClient;
+    private readonly DocumentAnalysisClient _recognizerClient;
     private readonly ILogger<AzureFormRecognizerEngine> _log;
 
     /// <summary>
@@ -31,7 +32,7 @@ public class AzureFormRecognizerEngine : IOcrEngine
         switch (config.Auth)
         {
             case AzureFormRecognizerConfig.AuthTypes.AzureIdentity:
-                this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new DefaultAzureCredential());
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new DefaultAzureCredential());
                 break;
 
             case AzureFormRecognizerConfig.AuthTypes.APIKey:
@@ -41,7 +42,7 @@ public class AzureFormRecognizerEngine : IOcrEngine
                     throw new ConfigurationException("Azure Form Recognizer API key is empty");
                 }
 
-                this.recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new AzureKeyCredential(config.APIKey));
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(endpoint), new AzureKeyCredential(config.APIKey));
                 break;
 
             default:
@@ -51,13 +52,13 @@ public class AzureFormRecognizerEngine : IOcrEngine
     }
 
     ///<inheritdoc/>
-    public async Task<string> ExtractTextFromImageAsync(Stream imageContent)
+    public async Task<string> ExtractTextFromImageAsync(Stream imageContent, CancellationToken cancellationToken = default)
     {
         // Start the OCR operation
-        var operation = await this.recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent).ConfigureAwait(false);
+        var operation = await this._recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Wait for the result
-        Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync().ConfigureAwait(false);
+        Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
 
         return operationResponse.Value.Content;
     }
