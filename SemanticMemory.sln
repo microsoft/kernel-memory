@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		.gitignore = .gitignore
 		.gitattributes = .gitattributes
 		.editorconfig = .editorconfig
-		FAQ.md = FAQ.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
@@ -146,6 +145,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
+	ProjectSection(SolutionItems) = preProject
+		docs\FAQ.md = docs\FAQ.md
+		docs\SECURITY_FILTERS.md = docs\SECURITY_FILTERS.md
+		docs\network.png = docs\network.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
