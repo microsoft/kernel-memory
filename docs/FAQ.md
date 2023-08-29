@@ -29,6 +29,8 @@ Serverless changing only the memory client instance.
 [Here](../examples/001-dotnet-Serverless/README.md) you can find an example
 showing the serverless client.
 
+![image](https://github.com/microsoft/semantic-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
+
 ### How do I protect users information, e.g. isolating data and making sure users cannot access reserved information?
 
 In order to protect users data, you should follow these design principles:
