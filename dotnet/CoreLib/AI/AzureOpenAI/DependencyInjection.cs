@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticMemory.AI;
 using Microsoft.SemanticMemory.AI.AzureOpenAI;
-using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticMemory;
@@ -40,7 +39,7 @@ public static partial class DependencyInjection
                         modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         credential: new DefaultAzureCredential(),
-                        logger: serviceProvider.GetService<ILogger<AzureBlobsStorage>>()));
+                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 return services
@@ -48,7 +47,7 @@ public static partial class DependencyInjection
                         modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         apiKey: config.APIKey,
-                        logger: serviceProvider.GetService<ILogger<AzureBlobsStorage>>()));
+                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
             default:
                 throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");

@@ -42,7 +42,7 @@ internal static class KernelFactory
 
         IKernel CreateKernel(IServiceProvider provider)
         {
-            var logger = provider.GetService<ILogger<IKernel>>();
+            var loggerFactory = provider.GetService<ILoggerFactory>();
 
             var apikey = configuration.GetValue<string>(SettingNameAzureApiKey);
             if (!string.IsNullOrWhiteSpace(apikey))
@@ -53,7 +53,7 @@ internal static class KernelFactory
                 var modelCompletion = configuration.GetValue<string>(SettingNameAzureModelCompletion);
                 var modelEmbedding = configuration.GetValue<string>(SettingNameAzureModelEmbedding);
 
-                return ConfigureAzure(endpoint, apikey, modelCompletion, modelEmbedding, logger).Build();
+                return ConfigureAzure(endpoint, apikey, modelCompletion, modelEmbedding, loggerFactory).Build();
             }
 
             apikey = configuration.GetValue<string>(SettingNameOpenAIApiKey);
@@ -62,7 +62,7 @@ internal static class KernelFactory
                 var modelCompletion = configuration.GetValue<string>(SettingNameOpenAIModelCompletion);
                 var modelEmbedding = configuration.GetValue<string>(SettingNameOpenAIModelEmbedding);
 
-                return ConfigureOpenAI(apikey, modelCompletion, modelEmbedding, logger).Build();
+                return ConfigureOpenAI(apikey, modelCompletion, modelEmbedding, loggerFactory).Build();
             }
 
             throw new InvalidDataException($"No api-key configured in {SettingNameAzureApiKey} or {SettingNameOpenAIApiKey}.");
@@ -73,13 +73,13 @@ internal static class KernelFactory
         string apikey,
         string? modelCompletion,
         string? modelEmbedding,
-        ILogger<IKernel>? logger)
+        ILoggerFactory? loggerFactory)
     {
         var builder = new KernelBuilder();
 
-        if (logger != null)
+        if (loggerFactory != null)
         {
-            builder.WithLogger(logger);
+            builder.WithLoggerFactory(loggerFactory);
         }
 
         modelCompletion ??= DefaultChatModel;
@@ -102,13 +102,13 @@ internal static class KernelFactory
         string apikey,
         string? modelCompletion,
         string? modelEmbedding,
-        ILogger<IKernel>? logger)
+        ILoggerFactory? loggerFactory)
     {
         var builder = new KernelBuilder();
 
-        if (logger != null)
+        if (loggerFactory != null)
         {
-            builder.WithLogger(logger);
+            builder.WithLoggerFactory(loggerFactory);
         }
 
         modelCompletion ??= DefaultChatModel;

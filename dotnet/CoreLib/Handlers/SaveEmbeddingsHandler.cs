@@ -76,7 +76,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 Vector = embeddingData.Vector,
             };
 
-            // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema 
+            // Note that the User Id is not set here, but when mapping MemoryRecord to the specific VectorDB schema
             record.Tags.Add(Constants.ReservedDocumentIdTag, pipeline.DocumentId);
             record.Tags.Add(Constants.ReservedFileIdTag, embeddingFile.Value.ParentId);
             record.Tags.Add(Constants.ReservedFilePartitionTag, embeddingFile.Value.Id);
@@ -98,7 +98,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
             {
                 this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                await client.CreateIndexAsync(pipeline.Index, record.Vector.Count, cancellationToken).ConfigureAwait(false);
+                await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
                 this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
                 await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);

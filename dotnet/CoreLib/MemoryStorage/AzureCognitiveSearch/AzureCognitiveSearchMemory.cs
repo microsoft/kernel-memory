@@ -15,7 +15,6 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.Diagnostics;
 
@@ -99,7 +98,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,
@@ -113,7 +112,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Value = embedding.Vector.ToList(),
+            Value = embedding.ToArray(),
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
         };
 
@@ -219,7 +218,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
-            // stop after returning the amount requested, in case we fetched more to workaround the lack of pre-filtering 
+            // stop after returning the amount requested, in case we fetched more to workaround the lack of pre-filtering
             if (limit-- <= 0) { yield break; }
 
             yield return doc.Document.ToMemoryRecord(withEmbeddings);

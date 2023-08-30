@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
@@ -26,7 +25,7 @@ Console.WriteLine("===== INSERT RECORD 1 =====");
 var memoryRecord1 = new MemoryRecord
 {
     Id = "memory 1",
-    Vector = new Embedding<float>(new[] { 0f, 0, 1, 0, 1 }),
+    Vector = new ReadOnlyMemory<float>(new[] { 0f, 0, 1, 0, 1 }),
     Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
     Payload = new Dictionary<string, object>()
 };
@@ -39,7 +38,7 @@ Console.WriteLine("===== INSERT RECORD 2 =====");
 var memoryRecord2 = new MemoryRecord
 {
     Id = "memory two",
-    Vector = new Embedding<float>(new[] { 0f, 0, 1, 0, 1 }),
+    Vector = new ReadOnlyMemory<float>(new[] { 0f, 0, 1, 0, 1 }),
     Tags = new TagCollection { { "type", "news" } },
     Payload = new Dictionary<string, object>()
 };
@@ -54,18 +53,18 @@ Console.WriteLine($"Update 2: {id2} {memoryRecord2.Id}");
 
 Console.WriteLine("===== SEARCH 1 =====");
 
-var similarList = memory.GetSimilarListAsync("test", new Embedding<float>(new[] { 0f, 0, 1, 0, 1 }),
+var similarList = memory.GetSimilarListAsync("test", new ReadOnlyMemory<float>(new[] { 0f, 0, 1, 0, 1 }),
     limit: 10, withEmbeddings: true);
 await foreach ((MemoryRecord, double) record in similarList)
 {
     Console.WriteLine(record.Item1.Id);
     Console.WriteLine("  tags: " + record.Item1.Tags.Count);
-    Console.WriteLine("  size: " + record.Item1.Vector.Count);
+    Console.WriteLine("  size: " + record.Item1.Vector.Length);
 }
 
 Console.WriteLine("===== SEARCH 2 =====");
 
-similarList = memory.GetSimilarListAsync("test", new Embedding<float>(new[] { 0f, 0, 1, 0, 1 }),
+similarList = memory.GetSimilarListAsync("test", new ReadOnlyMemory<float>(new[] { 0f, 0, 1, 0, 1 }),
     limit: 10, withEmbeddings: true, filter: new MemoryFilter().ByTag("type", "email"));
 await foreach ((MemoryRecord, double) record in similarList)
 {

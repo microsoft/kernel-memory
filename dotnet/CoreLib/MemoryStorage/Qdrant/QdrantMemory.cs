@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
@@ -93,7 +92,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,
@@ -109,7 +108,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: indexName,
-            target: embedding.Vector.ToArray(),
+            target: embedding.ToArray(),
             minSimilarityScore: minRelevanceScore,
             requiredTags: requiredTags,
             limit: limit,
