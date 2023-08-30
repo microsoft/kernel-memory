@@ -15,7 +15,7 @@ internal sealed class UpsertVectorRequest<T> where T : DefaultQdrantPayload, new
         public List<Guid> Ids { get; set; } = new();
 
         [JsonPropertyName("vectors")]
-        public List<ReadOnlyMemory<float>> Vectors { get; set; } = new();
+        public List<Embedding> Vectors { get; set; } = new();
 
         [JsonPropertyName("payloads")]
         public List<T> Payloads { get; set; } = new();

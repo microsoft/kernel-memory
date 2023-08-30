@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticMemory.MemoryStorage;
 
@@ -10,12 +10,15 @@ public class MemoryRecord
     /// <summary>
     /// Unique record ID
     /// </summary>
+    [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Embedding vector
     /// </summary>
-    public ReadOnlyMemory<float> Vector { get; set; } = new();
+    [JsonPropertyName("vector")]
+    [JsonConverter(typeof(Embedding.JsonConverter))]
+    public Embedding Vector { get; set; } = new();
 
     /// <summary>
     /// Optional Searchable Key=Value tags (string => string[] collection)
@@ -30,6 +33,7 @@ public class MemoryRecord
     ///  * versioning, e.g. [ "LLM=AzureAda2", "Schema=1.0" ]
     ///  * etc.
     /// </summary>
+    [JsonPropertyName("tags")]
     public TagCollection Tags { get; set; } = new();
 
     /// <summary>
@@ -45,5 +49,6 @@ public class MemoryRecord
     ///  * timestamps
     ///  * etc.
     /// </summary>
+    [JsonPropertyName("payload")]
     public Dictionary<string, object> Payload { get; set; } = new();
 }

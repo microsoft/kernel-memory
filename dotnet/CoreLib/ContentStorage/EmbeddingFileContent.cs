@@ -2,7 +2,6 @@
 
 using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticMemory.Text;
 
 namespace Microsoft.SemanticMemory.ContentStorage;
 
@@ -26,8 +25,8 @@ public class EmbeddingFileContent
 
     [JsonPropertyName("vector")]
     [JsonPropertyOrder(100)]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
-    public ReadOnlyMemory<float> Vector { get; set; }
+    [JsonConverter(typeof(Embedding.JsonConverter))]
+    public Embedding Vector { get; set; }
 
     [JsonPropertyName("timestamp")]
     [JsonPropertyOrder(5)]

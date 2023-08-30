@@ -92,7 +92,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        ReadOnlyMemory<float> embedding,
+        Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,
@@ -108,7 +108,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: indexName,
-            target: embedding.ToArray(),
+            target: embedding,
             minSimilarityScore: minRelevanceScore,
             requiredTags: requiredTags,
             limit: limit,

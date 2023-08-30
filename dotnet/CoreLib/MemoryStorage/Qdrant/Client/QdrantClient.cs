@@ -274,6 +274,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
 
     /// <summary>
     /// Find similar vectors
+    /// TODO: return IAsyncEnumerable
     /// </summary>
     /// <param name="collectionName">Collection name</param>
     /// <param name="target">Vector to compare to</param>
@@ -285,7 +286,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     /// <returns>List of vectors</returns>
     public async Task<List<(QdrantPoint<T>, double)>> GetSimilarListAsync(
         string collectionName,
-        ReadOnlyMemory<float> target,
+        Embedding target,
         double minSimilarityScore,
         int limit = 1,
         bool withVectors = false,
@@ -339,9 +340,6 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
                 Payload = vector.Payload
             }, vector.Score ?? 0.0));
         }
-
-        // Qdrant search results are currently sorted by id, alphabetically, sort list in place
-        result.Sort((a, b) => b.Item2.CompareTo(a.Item2));
 
         return result;
     }
