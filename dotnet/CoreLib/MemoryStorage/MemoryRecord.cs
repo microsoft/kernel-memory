@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticMemory.MemoryStorage;
 
@@ -15,7 +15,7 @@ public class MemoryRecord
     /// <summary>
     /// Embedding vector
     /// </summary>
-    public Embedding<float> Vector { get; set; } = new();
+    public ReadOnlyMemory<float> Vector { get; set; } = new();
 
     /// <summary>
     /// Optional Searchable Key=Value tags (string => string[] collection)

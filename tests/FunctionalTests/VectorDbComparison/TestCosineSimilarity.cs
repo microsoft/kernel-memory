@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
@@ -52,10 +51,10 @@ public class TestCosineSimilarity
 
         var records = new Dictionary<string, MemoryRecord>
         {
-            ["01"] = new() { Id = "01", Vector = new Embedding<float>(new List<float> { 0.1f, 0.1f, 0.1f }) },
-            ["02"] = new() { Id = "02", Vector = new Embedding<float>(new List<float> { 0.81f, 0.12f, 0.13f }) },
-            ["03"] = new() { Id = "03", Vector = new Embedding<float>(new List<float> { 0.25f, 0.25f, 0.35f }) },
-            ["04"] = new() { Id = "04", Vector = new Embedding<float>(new List<float> { 0.05f, 0.91f, 0.03f }) },
+            ["01"] = new() { Id = "01", Vector = new ReadOnlyMemory<float>(new[] { 0.1f, 0.1f, 0.1f }) },
+            ["02"] = new() { Id = "02", Vector = new ReadOnlyMemory<float>(new[] { 0.81f, 0.12f, 0.13f }) },
+            ["03"] = new() { Id = "03", Vector = new ReadOnlyMemory<float>(new[] { 0.25f, 0.25f, 0.35f }) },
+            ["04"] = new() { Id = "04", Vector = new ReadOnlyMemory<float>(new[] { 0.05f, 0.91f, 0.03f }) },
         };
 
         foreach (KeyValuePair<string, MemoryRecord> r in records)
@@ -67,7 +66,7 @@ public class TestCosineSimilarity
 
         await Task.Delay(TimeSpan.FromSeconds(2));
 
-        var target = new Embedding<float>(new[] { 0.01f, 0.5f, 0.01f });
+        var target = new ReadOnlyMemory<float>(new[] { 0.01f, 0.5f, 0.01f });
         IAsyncEnumerable<(MemoryRecord, double)> acsList = acs.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList = qdrant.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
         IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
@@ -79,19 +78,19 @@ public class TestCosineSimilarity
         this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
         foreach ((MemoryRecord, double) r in acsResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.Vector, records[r.Item1.Id].Vector.Vector)}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
         }
 
         this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
         foreach ((MemoryRecord, double) r in qdrantResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.Vector, records[r.Item1.Id].Vector.Vector)}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
         foreach ((MemoryRecord, double) r in simpleVecDbResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.Vector, records[r.Item1.Id].Vector.Vector)}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
         }
     }
 

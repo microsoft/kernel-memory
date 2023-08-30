@@ -285,10 +285,10 @@ public class SearchClient
         return answer;
     }
 
-    private async Task<Embedding<float>> GenerateEmbeddingAsync(string text)
+    private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text)
     {
         this._log.LogTrace("Generating embedding for the query");
-        IList<Embedding<float>> embeddings = await this._embeddingGenerator
+        IList<ReadOnlyMemory<float>> embeddings = await this._embeddingGenerator
             .GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
         if (embeddings.Count == 0)
         {

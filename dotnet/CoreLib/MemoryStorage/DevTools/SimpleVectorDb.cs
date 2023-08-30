@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticMemory.Diagnostics;
 
@@ -54,7 +54,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,
@@ -75,7 +75,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         var distances = new Dictionary<string, double>();
         foreach (var record in records)
         {
-            var similarity = embedding.Vector.ToArray().CosineSimilarity(record.Value.Vector.Vector.ToArray());
+            var similarity = embedding.ToArray().CosineSimilarity(record.Value.Vector.ToArray());
             distances[record.Value.Id] = similarity;
         }
 

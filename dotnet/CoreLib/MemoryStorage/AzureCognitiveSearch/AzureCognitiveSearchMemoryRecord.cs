@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 
@@ -66,7 +65,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
 
         if (withEmbedding)
         {
-            result.Vector = new Embedding<float>(this.Vector);
+            result.Vector = new ReadOnlyMemory<float>(this.Vector);
         }
 
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
@@ -84,7 +83,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
         AzureCognitiveSearchMemoryRecord result = new()
         {
             Id = EncodeId(record.Id),
-            Vector = record.Vector.Vector.ToArray(),
+            Vector = record.Vector.ToArray(),
             Payload = JsonSerializer.Serialize(record.Payload, s_jsonOptions)
         };
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticMemory.Text;
 
 namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
@@ -24,6 +24,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
     [JsonPropertyName(QdrantConstants.PointPayloadField)]
     public T Payload { get; set; } = new();
 
+    [Obsolete]
     public MemoryRecord ToMemoryRecord(bool withEmbedding = true)
     {
         MemoryRecord result = new()
@@ -35,7 +36,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
 
         if (withEmbedding)
         {
-            result.Vector = new Embedding<float>(this.Vector.ToArray());
+            result.Vector = new ReadOnlyMemory<float>(this.Vector.ToArray());
         }
 
         foreach (string[] keyValue in this.Payload.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
@@ -52,7 +53,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
     {
         return new QdrantPoint<T>
         {
-            Vector = record.Vector.Vector.ToArray(),
+            Vector = record.Vector.ToArray(),
             Payload = new T
             {
                 Id = record.Id,

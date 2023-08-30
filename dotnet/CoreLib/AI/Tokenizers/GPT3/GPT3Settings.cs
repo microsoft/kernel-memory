@@ -41,7 +41,7 @@ internal static class GPT3Settings
         var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json, new JsonSerializerOptions());
 
         return encoder
-               ?? throw new AIException(AIException.ErrorCodes.InvalidConfiguration,
+               ?? throw new AIException(AIException.ErrorCodes.ServiceError,
                    "Encoding table deserialization returned NULL");
     }
 

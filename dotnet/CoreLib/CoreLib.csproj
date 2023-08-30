@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview">
+        <PackageReference Include="Microsoft.SemanticKernel" Version="0.21.230828.2-preview">
             <PrivateAssets>none</PrivateAssets>
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>

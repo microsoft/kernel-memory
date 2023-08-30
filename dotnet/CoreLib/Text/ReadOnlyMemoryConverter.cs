@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
+namespace Microsoft.SemanticMemory.Text;
 
 internal sealed class ReadOnlyMemoryConverter : JsonConverter<ReadOnlyMemory<float>>
 {

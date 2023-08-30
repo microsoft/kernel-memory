@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticMemory.MemoryStorage;
 
@@ -66,7 +66,7 @@ public interface ISemanticMemoryVectorDb
     /// <returns>List of similar vectors, starting from the most similar</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,

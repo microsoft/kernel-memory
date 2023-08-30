@@ -18,7 +18,7 @@ public static partial class MemoryClientBuilderExtensions
             modelId: "text-embedding-ada-002",
             apiKey: apiKey,
             organization: organization,
-            logger: serviceProvider.GetService<ILogger<OpenAITextEmbeddingGeneration>>()));
+            loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
 
         builder.Services.AddSingleton<ITextGeneration>(serviceProvider =>
             new OpenAITextGeneration(new OpenAIConfig
@@ -58,7 +58,7 @@ public static partial class DependencyInjection
                 modelId: config.EmbeddingModel,
                 apiKey: config.APIKey,
                 organization: config.OrgId,
-                logger: serviceProvider.GetService<ILogger<OpenAITextEmbeddingGeneration>>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     public static IServiceCollection AddOpenAITextGeneration(this IServiceCollection services, OpenAIConfig config)
