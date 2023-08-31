@@ -285,11 +285,10 @@ public class SearchClient
         return answer;
     }
 
-    private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text)
+    private async Task<Embedding> GenerateEmbeddingAsync(string text)
     {
         this._log.LogTrace("Generating embedding for the query");
-        IList<ReadOnlyMemory<float>> embeddings = await this._embeddingGenerator
-            .GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
+        var embeddings = await this._embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
         if (embeddings.Count == 0)
         {
             throw new SemanticMemoryException("Failed to generate embedding for the given question");

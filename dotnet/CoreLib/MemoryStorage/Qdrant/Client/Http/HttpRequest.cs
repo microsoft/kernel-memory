@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Microsoft.SemanticMemory.Text;
 
 namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
 
@@ -58,7 +57,7 @@ internal static class HttpRequest
     private static JsonSerializerOptions CreateSerializerOptions()
     {
         var jso = new JsonSerializerOptions();
-        jso.Converters.Add(new ReadOnlyMemoryConverter());
+        jso.Converters.Add(new Embedding.JsonConverter());
         return jso;
     }
 }

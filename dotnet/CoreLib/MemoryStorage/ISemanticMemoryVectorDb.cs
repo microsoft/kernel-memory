@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +65,7 @@ public interface ISemanticMemoryVectorDb
     /// <returns>List of similar vectors, starting from the most similar</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        ReadOnlyMemory<float> embedding,
+        Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,

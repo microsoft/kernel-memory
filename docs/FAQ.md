@@ -44,7 +44,7 @@ In order to protect users data, you should follow these design principles:
 * Use Semantic Memory as **a private backend component**, similar to a SQL
   Server, without granting direct access. When using Semantic Memory as a
   service, consider assigning the service a reserved IP, accessible only to
-  your IP, and using HTTPS only.
+  your services, and using HTTPS only.
 * Authenticate users in your backend using a secure solution like Azure
   Active Directory, extract the user ID from the signed credentials like JWT
   tokens or client certs, and tag every interaction with Semantic Memory with

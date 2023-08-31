@@ -61,7 +61,7 @@ public static class Program
                 { "category", "search" },
                 { "year", "2024" },
             },
-            embedding: new ReadOnlyMemory<float>(new[] { 0f, 0.5f, 1 }));
+            embedding: new[] { 0f, 0.5f, 1 });
 
         var recordId2 = await InsertRecordAsync(Index,
             externalId: ExternalRecordId2,
@@ -73,7 +73,7 @@ public static class Program
                 { "category", "search" },
                 { "year", "2023" },
             },
-            embedding: new ReadOnlyMemory<float>(new[] { 0f, 0.5f, 1 }));
+            embedding: new[] { 0f, 0.5f, 1 });
 
         await Task.Delay(TimeSpan.FromSeconds(2));
 
@@ -173,7 +173,7 @@ public static class Program
 
     // ===============================================================================================
     private static async Task<string> InsertRecordAsync(string index,
-        string externalId, Dictionary<string, object> payload, TagCollection tags, ReadOnlyMemory<float> embedding)
+        string externalId, Dictionary<string, object> payload, TagCollection tags, Embedding embedding)
     {
         Console.WriteLine("\n== INSERT ==\n");
         var client = s_adminClient.GetSearchClient(index);

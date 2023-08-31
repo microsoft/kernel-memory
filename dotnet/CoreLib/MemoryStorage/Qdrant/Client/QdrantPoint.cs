@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticMemory.Text;
 
 namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
 
@@ -18,13 +17,12 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
     public Guid Id { get; set; } = Guid.Empty;
 
     [JsonPropertyName(QdrantConstants.PointVectorField)]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
-    public ReadOnlyMemory<float> Vector { get; set; } = new();
+    [JsonConverter(typeof(Embedding.JsonConverter))]
+    public Embedding Vector { get; set; } = new();
 
     [JsonPropertyName(QdrantConstants.PointPayloadField)]
     public T Payload { get; set; } = new();
 
-    [Obsolete]
     public MemoryRecord ToMemoryRecord(bool withEmbedding = true)
     {
         MemoryRecord result = new()
@@ -36,7 +34,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
 
         if (withEmbedding)
         {
-            result.Vector = new ReadOnlyMemory<float>(this.Vector.ToArray());
+            result.Vector = this.Vector;
         }
 
         foreach (string[] keyValue in this.Payload.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
@@ -53,7 +51,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
     {
         return new QdrantPoint<T>
         {
-            Vector = record.Vector.ToArray(),
+            Vector = record.Vector,
             Payload = new T
             {
                 Id = record.Id,

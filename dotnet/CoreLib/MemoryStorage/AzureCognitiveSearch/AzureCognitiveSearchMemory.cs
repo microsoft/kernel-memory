@@ -98,7 +98,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string indexName,
-        ReadOnlyMemory<float> embedding,
+        Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
         MemoryFilter? filter = null,
@@ -112,7 +112,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Value = embedding.ToArray(),
+            Value = embedding.Data.ToArray(),
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
         };
 

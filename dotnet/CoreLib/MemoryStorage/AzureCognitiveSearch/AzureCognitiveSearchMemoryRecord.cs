@@ -31,7 +31,8 @@ public sealed class AzureCognitiveSearchMemoryRecord
 
 #pragma warning disable CA1819
     [JsonPropertyName(VectorField)]
-    public float[] Vector { get; set; } = Array.Empty<float>();
+    [JsonConverter(typeof(Embedding.JsonConverter))]
+    public Embedding Vector { get; set; } = new();
 #pragma warning restore CA1819
 
     [JsonPropertyName(TagsField)]
@@ -65,7 +66,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
 
         if (withEmbedding)
         {
-            result.Vector = new ReadOnlyMemory<float>(this.Vector);
+            result.Vector = this.Vector;
         }
 
         foreach (string[] keyValue in this.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
@@ -83,7 +84,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
         AzureCognitiveSearchMemoryRecord result = new()
         {
             Id = EncodeId(record.Id),
-            Vector = record.Vector.ToArray(),
+            Vector = record.Vector,
             Payload = JsonSerializer.Serialize(record.Payload, s_jsonOptions)
         };
 

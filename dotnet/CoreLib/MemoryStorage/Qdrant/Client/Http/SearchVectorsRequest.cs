@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json.Serialization;
@@ -12,7 +11,8 @@ internal sealed class SearchVectorsRequest
     private readonly string _collectionName;
 
     [JsonPropertyName("vector")]
-    public ReadOnlyMemory<float> StartingVector { get; set; }
+    [JsonConverter(typeof(Embedding.JsonConverter))]
+    public Embedding StartingVector { get; set; }
 
     [JsonPropertyName("filter")]
     public Filter Filters { get; set; }
@@ -39,10 +39,10 @@ internal sealed class SearchVectorsRequest
 
     public static SearchVectorsRequest Create(string collectionName, int vectorSize)
     {
-        return new SearchVectorsRequest(collectionName).SimilarTo(new float[vectorSize]);
+        return new SearchVectorsRequest(collectionName).SimilarTo(new Embedding(vectorSize));
     }
 
-    public SearchVectorsRequest SimilarTo(ReadOnlyMemory<float> vector)
+    public SearchVectorsRequest SimilarTo(Embedding vector)
     {
         this.StartingVector = vector;
         return this;

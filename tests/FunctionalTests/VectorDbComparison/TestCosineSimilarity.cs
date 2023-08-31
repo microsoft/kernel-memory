@@ -51,10 +51,13 @@ public class TestCosineSimilarity
 
         var records = new Dictionary<string, MemoryRecord>
         {
-            ["01"] = new() { Id = "01", Vector = new ReadOnlyMemory<float>(new[] { 0.1f, 0.1f, 0.1f }) },
-            ["02"] = new() { Id = "02", Vector = new ReadOnlyMemory<float>(new[] { 0.81f, 0.12f, 0.13f }) },
-            ["03"] = new() { Id = "03", Vector = new ReadOnlyMemory<float>(new[] { 0.25f, 0.25f, 0.35f }) },
-            ["04"] = new() { Id = "04", Vector = new ReadOnlyMemory<float>(new[] { 0.05f, 0.91f, 0.03f }) },
+            ["1"] = new() { Id = "1", Vector = new[] { 0.25f, 0.33f, 0.29f } },
+            ["2"] = new() { Id = "2", Vector = new[] { 0.25f, 0.25f, 0.35f } },
+            ["3"] = new() { Id = "3", Vector = new[] { 0.1f, 0.1f, 0.1f } },
+            ["4"] = new() { Id = "4", Vector = new[] { 0.05f, 0.91f, 0.03f } },
+            ["5"] = new() { Id = "5", Vector = new[] { 0.65f, 0.12f, 0.99f } },
+            ["6"] = new() { Id = "6", Vector = new[] { 0.81f, 0.12f, 0.13f } },
+            ["7"] = new() { Id = "7", Vector = new[] { 0.88f, 0.01f, 0.13f } },
         };
 
         foreach (KeyValuePair<string, MemoryRecord> r in records)
@@ -65,8 +68,7 @@ public class TestCosineSimilarity
         }
 
         await Task.Delay(TimeSpan.FromSeconds(2));
-
-        var target = new ReadOnlyMemory<float>(new[] { 0.01f, 0.5f, 0.01f });
+        var target = new[] { 0.01f, 0.5f, 0.41f };
         IAsyncEnumerable<(MemoryRecord, double)> acsList = acs.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList = qdrant.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
         IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
@@ -78,33 +80,33 @@ public class TestCosineSimilarity
         this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
         foreach ((MemoryRecord, double) r in acsResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
         }
 
         this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
         foreach ((MemoryRecord, double) r in qdrantResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
         foreach ((MemoryRecord, double) r in simpleVecDbResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target.ToArray(), records[r.Item1.Id].Vector.ToArray())}");
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
         }
     }
 
-    private static double CosineSim(IEnumerable<float> vec1, IEnumerable<float> vec2)
+    private static double CosineSim(Embedding vec1, Embedding vec2)
     {
-        var v1 = vec1.ToArray();
-        var v2 = vec2.ToArray();
+        var v1 = vec1.Data.ToArray();
+        var v2 = vec2.Data.ToArray();
 
-        if (v1.Length != v2.Length)
+        if (vec1.Length != vec2.Length)
         {
-            throw new Exception($"Vector size should be the same: {v1.Length} != {v2.Length}");
+            throw new Exception($"Vector size should be the same: {vec1.Length} != {vec2.Length}");
         }
 
-        int size = v1.Length;
+        int size = vec1.Length;
         double dot = 0.0d;
         double m1 = 0.0d;
         double m2 = 0.0d;
