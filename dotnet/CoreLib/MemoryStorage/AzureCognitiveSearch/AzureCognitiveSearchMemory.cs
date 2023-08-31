@@ -101,7 +101,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -121,7 +121,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             Vectors = { vectorQuery }
         };
 
-        if (filter != null && !filter.IsEmpty())
+        if (filters is { Count: > 0 })
         {
             // We need to fetch more vectors because filters are applied after the vector search
             try
@@ -133,10 +133,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                 vectorQuery.KNearestNeighborsCount = int.MaxValue;
             }
 
-            IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
-                                              let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
-                                              select $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')");
-            options.Filter = string.Join(" and ", conditions);
+            options.Filter = this.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -170,7 +167,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -180,12 +177,9 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         var client = this.GetSearchClient(indexName);
 
         var options = new SearchOptions();
-        if (filter != null && !filter.IsEmpty())
+        if (filters is { Count: > 0 })
         {
-            IEnumerable<string> conditions = (from keyValue in filter.GetFilters()
-                                              let fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal)
-                                              select $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')");
-            options.Filter = string.Join(" and ", conditions);
+            options.Filter = this.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -558,6 +552,25 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         indexSchema.Fields.Add(vectorField);
 
         return indexSchema;
+    }
+
+    private string BuildSearchFilter(IList<MemoryFilter> filters)
+    {
+        List<string> conditions = new();
+
+        foreach (var filter in filters)
+        {
+            var filterConditions = filter.GetFilters()
+                .Select((keyValue) =>
+                {
+                    var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
+                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
+                });
+
+            conditions.Add($"({string.Join(" or ", filterConditions)})");
+        }
+
+        return string.Join(" and ", conditions);
     }
 
     #endregion
