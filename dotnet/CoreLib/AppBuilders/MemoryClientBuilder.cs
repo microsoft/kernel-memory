@@ -53,6 +53,8 @@ public class MemoryClientBuilder
         get => this._appBuilder.Services;
     }
 
+    public WebApplication? App => this._app;
+
     public MemoryClientBuilder(IServiceCollection? sharedServiceCollection = null)
     {
         this._sharedServiceCollection = sharedServiceCollection;
@@ -83,6 +85,7 @@ public class MemoryClientBuilder
         // Default configuration for tests and demos
         this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = Path.Join(Path.GetTempPath(), "content") });
+        this.WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = Path.Join(Path.GetTempPath(), "vector-db") });
     }
 
     public MemoryClientBuilder WithoutDefaultHandlers()

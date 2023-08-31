@@ -38,11 +38,12 @@ appBuilder.Services.AddSwaggerGen();
 
 // Inject memory client and its dependencies
 // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-ISemanticMemoryClient memory = new MemoryClientBuilder(appBuilder.Services).FromAppSettings().Build();
+var memoryClientBuilder = new MemoryClientBuilder(appBuilder).FromAppSettings();
+var memory = memoryClientBuilder.Build();
 appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
-var app = appBuilder.Build();
+var app = memoryClientBuilder.App ?? throw new InvalidOperationException("Unable to retrieve app");
 
 // Read the settings, needed below
 var config = app.Configuration.GetSection("SemanticMemory").Get<SemanticMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
