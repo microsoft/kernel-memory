@@ -58,7 +58,7 @@ public interface ISemanticMemoryVectorDb
     /// <param name="indexName">Index/Collection name</param>
     /// <param name="embedding">Target vector to compare to</param>
     /// <param name="limit">Max number of results</param>
-    /// <param name="minRelevanceScore">Minimum similarity required</param>
+    /// <param name="minRelevanceScore">Minimum Cosine Similarity required</param>
     /// <param name="filter">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
