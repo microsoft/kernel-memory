@@ -1,6 +1,6 @@
 # Semantic Memory
 
-**Semantic Memory** is an open-source library and [service](dotnet/Service/README.md)
+**Semantic Memory** is an open-source .NET/C# library and [service](dotnet/Service/README.md)
 specialized in the efficient indexing of datasets through custom continuous data
 pipelines.
 
@@ -13,7 +13,7 @@ and links to the original sources.
 ![image](https://github.com/microsoft/semantic-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
 
 Designed for seamless integration with
-[Semantic Kernel](https://github.com/microsoft/semantic-kernel),
+[Semantic Kernel for .NET](https://github.com/microsoft/semantic-kernel/tree/main/dotnet),
 Semantic Memory enhances data-driven features in applications built using SK.
 
 ### Supported backends
