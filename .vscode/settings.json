@@ -23,5 +23,6 @@
     "**/Thumbs.db": true
   },
   "dotnet.defaultSolution": "SemanticMemory.sln",
-  "prettier.trailingComma": "es5"
+  "prettier.trailingComma": "es5",
+  "appService.deploySubpath": "dotnet/Service/bin/Publish"
 }
