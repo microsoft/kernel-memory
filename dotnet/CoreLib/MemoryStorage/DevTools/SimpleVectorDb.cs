@@ -55,13 +55,13 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var list = this.GetListAsync(indexName, filter, limit, withEmbeddings, cancellationToken);
+        var list = this.GetListAsync(indexName, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
         {
@@ -93,7 +93,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -107,13 +107,20 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             if (record == null) { continue; }
 
             var match = true;
-            if (filter != null && !filter.IsEmpty())
+            if (filters is { Count: > 0 })
             {
-                foreach (KeyValuePair<string, string?> tagFilter in filter.GetFilters())
+                foreach (var filter in filters)
                 {
-                    if (!match) { continue; }
+                    var filterMatch = false;
+                    foreach (var (key, value) in filter.GetFilters())
+                    {
+                        if (filterMatch) { break; }
 
-                    match = match && record.Tags.ContainsKey(tagFilter.Key) && record.Tags[tagFilter.Key].Contains(tagFilter.Value);
+                        filterMatch = filterMatch || (record.Tags.ContainsKey(key) && record.Tags[key].Contains(value));
+                    }
+                    match = match && filterMatch;
+
+                    if (!match) { break; }
                 }
             }
 
