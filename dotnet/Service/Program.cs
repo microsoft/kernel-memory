@@ -69,7 +69,8 @@ if (config.Service.RunWebService)
     // Simple ping endpoint
     app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                      "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                                                   - start.ToUnixTimeSeconds()) + " secs"));
+                                                   - start.ToUnixTimeSeconds()) + " secs " +
+                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"));
     // File upload endpoint
     app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
             HttpRequest request,

@@ -53,12 +53,6 @@ public struct Embedding : IEquatable<Embedding>
         return this.Data.ToArray().CosineSimilarity(embedding.Data.ToArray());
     }
 
-    public double CosineDistance(Embedding embedding)
-    {
-        var similarity = this.Data.ToArray().CosineSimilarity(embedding.Data.ToArray());
-        return 1 / (2 - similarity);
-    }
-
     /// <summary>
     /// Convert Semantic Kernel data type
     /// </summary>
