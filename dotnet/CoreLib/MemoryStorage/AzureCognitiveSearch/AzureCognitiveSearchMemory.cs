@@ -133,7 +133,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                 vectorQuery.KNearestNeighborsCount = int.MaxValue;
             }
 
-            options.Filter = this.BuildSearchFilter(filters);
+            options.Filter = BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -180,7 +180,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         var options = new SearchOptions();
         if (filters is { Count: > 0 })
         {
-            options.Filter = this.BuildSearchFilter(filters);
+            options.Filter = BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -565,7 +565,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         return 1 / (2 - similarity);
     }
 
-    private string BuildSearchFilter(IList<MemoryFilter> filters)
+    private static string BuildSearchFilter(IList<MemoryFilter> filters)
     {
         List<string> conditions = new();
 
