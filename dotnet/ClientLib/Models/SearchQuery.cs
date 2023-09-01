@@ -16,4 +16,7 @@ public class SearchQuery
 
     [JsonPropertyName("filter")]
     public MemoryFilter Filter { get; set; } = new();
+
+    [JsonPropertyName("limit")]
+    public int Limit { get; set; } = -1;
 }

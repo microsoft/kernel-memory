@@ -72,7 +72,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        var document = new Document(documentId, tags: tags).AddStream(fileName, content);
+        var document = new Document(documentId, tags).AddStream(fileName, content);
         var uploadRequest = document.ToDocumentUploadRequest(index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
@@ -87,7 +87,14 @@ public class MemoryWebClient : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(text));
-        return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+        return await this.ImportDocumentAsync(
+                content,
+                fileName: "content.txt",
+                documentId: documentId,
+                tags,
+                index: index,
+                steps,
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -104,7 +111,14 @@ public class MemoryWebClient : ISemanticMemoryClient
         Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
 
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
-        return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+        return await this.ImportDocumentAsync(
+                content,
+                fileName: "content.url",
+                documentId: documentId,
+                tags,
+                index: index,
+                steps,
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -181,9 +195,10 @@ public class MemoryWebClient : ISemanticMemoryClient
     public Task<SearchResult> SearchAsync(
         string query,
         MemoryFilter? filter,
+        int limit = -1,
         CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(query, index: null, filter, cancellationToken);
+        return this.SearchAsync(query: query, index: null, filter, limit, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -191,10 +206,11 @@ public class MemoryWebClient : ISemanticMemoryClient
         string query,
         string? index = null,
         MemoryFilter? filter = null,
+        int limit = -1,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filter = filter ?? new MemoryFilter() };
+        SearchQuery request = new() { Index = index, Query = query, Filter = filter ?? new MemoryFilter(), Limit = limit };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -210,7 +226,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         MemoryFilter? filter,
         CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
+        return this.AskAsync(question: question, index: null, filter, cancellationToken);
     }
 
     /// <inheritdoc />

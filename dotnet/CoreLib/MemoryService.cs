@@ -107,7 +107,14 @@ public class MemoryService : ISemanticMemoryClient
         Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
 
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
-        return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+        return await this.ImportDocumentAsync(
+                content,
+                fileName: "content.url",
+                documentId: documentId,
+                tags,
+                index: index,
+                steps,
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -141,9 +148,10 @@ public class MemoryService : ISemanticMemoryClient
     public Task<SearchResult> SearchAsync(
         string query,
         MemoryFilter? filter,
+        int limit = -1,
         CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(query, index: null, filter, cancellationToken);
+        return this.SearchAsync(query: query, index: null, filter, limit, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -151,10 +159,11 @@ public class MemoryService : ISemanticMemoryClient
         string query,
         string? index = null,
         MemoryFilter? filter = null,
+        int limit = -1,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.SearchAsync(index: index, query, filter, cancellationToken);
+        return this._searchClient.SearchAsync(index: index, query: query, filter, limit, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -163,7 +172,7 @@ public class MemoryService : ISemanticMemoryClient
         MemoryFilter? filter,
         CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
+        return this.AskAsync(question: question, index: null, filter, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -174,6 +183,6 @@ public class MemoryService : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.AskAsync(index: index, question: question, filter: filter, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(index: index, question: question, filter, cancellationToken);
     }
 }
