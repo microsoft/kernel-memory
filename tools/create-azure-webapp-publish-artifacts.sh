@@ -7,4 +7,4 @@ cd "$HERE"
 
 cd ../dotnet/Service
 
-dotnet publish -c Debug -o ./bin/Publish
+dotnet publish -c Release -o ./bin/Publish
