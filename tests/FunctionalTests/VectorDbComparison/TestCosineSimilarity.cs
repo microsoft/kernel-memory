@@ -80,19 +80,28 @@ public class TestCosineSimilarity
         this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
         foreach ((MemoryRecord, double) r in acsResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
+            var actual = r.Item2;
+            var expected = CosineSim(target, records[r.Item1.Id].Vector);
+            var diff = expected - actual;
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
         }
 
         this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
         foreach ((MemoryRecord, double) r in qdrantResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
+            var actual = r.Item2;
+            var expected = CosineSim(target, records[r.Item1.Id].Vector);
+            var diff = expected - actual;
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
         foreach ((MemoryRecord, double) r in simpleVecDbResults)
         {
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {r.Item2}, Expected distance: {CosineSim(target, records[r.Item1.Id].Vector)}");
+            var actual = r.Item2;
+            var expected = CosineSim(target, records[r.Item1.Id].Vector);
+            var diff = expected - actual;
+            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
         }
     }
 
