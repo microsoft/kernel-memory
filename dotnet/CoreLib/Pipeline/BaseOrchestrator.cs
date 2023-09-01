@@ -312,7 +312,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 return;
             }
 
-            this.Log.LogError(e, "Unable to save pipeline status");
+            this.Log.LogWarning(e, "Unable to save pipeline status");
             throw;
         }
     }

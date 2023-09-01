@@ -21,7 +21,7 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 
 // Inject memory dependencies
 
-var _ = new MemoryClientBuilder(appBuilder).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
+var _ = new MemoryClientBuilder(appBuilder.Services).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
 
 // Build and run .NET web app as usual
 var app = appBuilder.Build();
