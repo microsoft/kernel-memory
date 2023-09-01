@@ -1,8 +1,10 @@
 # Semantic Memory
 
-**Semantic Memory** is an open-source library and [service](dotnet/Service/README.md)
+**Semantic Memory** (SM) is an open-source [service](dotnet/Service/README.md) and
+[plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
 specialized in the efficient indexing of datasets through custom continuous data
-pipelines.
+hybrid pipelines. For some scenarios SM is also available as a library, and soon
+as a Docker container.
 
 ![image](https://github.com/microsoft/semantic-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -12,9 +14,10 @@ and links to the original sources.
 
 ![image](https://github.com/microsoft/semantic-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
 
-Designed for seamless integration with
-[Semantic Kernel](https://github.com/microsoft/semantic-kernel),
-Semantic Memory enhances data-driven features in applications built using SK.
+Designed for seamless integration as a Plugin with
+[Semantic Kernel](https://github.com/microsoft/semantic-kernel), Microsoft
+Copilot and ChatGPT, Semantic Memory enhances data-driven features in applications
+built for most popular AI platforms.
 
 ### Supported backends
 
