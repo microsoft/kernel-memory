@@ -45,7 +45,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 indexName: pipeline.Index,
                 limit: -1,
-                filter: MemoryFilters.ByDocument(pipeline.DocumentId),
+                filters: new List<MemoryFilter>() { MemoryFilters.ByDocument(pipeline.DocumentId) },
                 cancellationToken: cancellationToken);
 
             await foreach (var record in records.WithCancellation(cancellationToken))

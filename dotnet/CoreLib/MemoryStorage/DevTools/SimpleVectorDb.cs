@@ -106,24 +106,9 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
             if (record == null) { continue; }
 
-            var match = true;
-            if (filters is { Count: > 0 })
-            {
-                foreach (var filter in filters)
-                {
-                    var filterMatch = false;
-                    foreach (var (key, value) in filter.GetFilters())
-                    {
-                        if (filterMatch) { break; }
-
-                        filterMatch = filterMatch || (record.Tags.ContainsKey(key) && record.Tags[key].Contains(value));
-                    }
-                    match = match && filterMatch;
-
-                    if (!match) { break; }
-                }
-            }
-
+            var match = (filters is { Count: > 0 })
+                ? filters.Any((filter) => filter.GetFilters().All((tagFilter) => !record.Tags.ContainsKey(tagFilter.Key) || !record.Tags[tagFilter.Key].Contains(tagFilter.Value)))
+                : true;
             if (match)
             {
                 if (limit-- <= 0) { yield break; }

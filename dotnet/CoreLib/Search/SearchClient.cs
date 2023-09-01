@@ -45,7 +45,12 @@ public class SearchClient
         if (this._textGenerator == null) { throw new SemanticMemoryException("Text generator not configured"); }
     }
 
-    public async Task<SearchResult> SearchAsync(string index, string query, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<SearchResult> SearchAsync(
+        string index,
+        string query,
+        double minRelevanceScore = 0,
+        IList<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
     {
         var result = new SearchResult
         {
@@ -61,14 +66,9 @@ public class SearchClient
 
         var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
 
-        if (filter == null)
-        {
-            filter = new MemoryFilter();
-        }
-
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, MatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
@@ -143,7 +143,12 @@ public class SearchClient
         return result;
     }
 
-    public async Task<MemoryAnswer> AskAsync(string index, string question, MemoryFilter? filter = null, CancellationToken cancellationToken = default)
+    public async Task<MemoryAnswer> AskAsync(
+        string index,
+        string question,
+        double minRelevanceScore = 0,
+        IList<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
         {
@@ -172,14 +177,9 @@ public class SearchClient
 
         var embedding = await this.GenerateEmbeddingAsync(question).ConfigureAwait(false);
 
-        if (filter == null)
-        {
-            filter = new MemoryFilter();
-        }
-
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MatchesCount, filter.MinRelevance, filter, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, MatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))

@@ -158,40 +158,40 @@ public class Memory : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
-        MemoryFilter? filter,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(query, index: null, filter, cancellationToken);
+        return this.SearchAsync(query, index: null, filters, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.SearchAsync(index: index, query, filter, cancellationToken);
+        return this._searchClient.SearchAsync(index, query, filters: filters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(
         string question,
-        MemoryFilter? filter,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
+        return this.AskAsync(question: question, index: null, filters: filters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.AskAsync(index: index, question: question, filter: filter, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(index: index, question: question, filters: filters, cancellationToken: cancellationToken);
     }
 }

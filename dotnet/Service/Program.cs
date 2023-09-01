@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -132,7 +133,7 @@ if (config.Service.RunWebService)
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: new List<MemoryFilter>() { query.Filter });
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -145,7 +146,7 @@ if (config.Service.RunWebService)
                 ILogger<Program> log) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: new List<MemoryFilter>() { query.Filter });
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);

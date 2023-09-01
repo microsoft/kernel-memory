@@ -578,10 +578,10 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                     return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
                 });
 
-            conditions.Add($"({string.Join(" or ", filterConditions)})");
+            conditions.Add($"({string.Join(" and ", filterConditions)})");
         }
 
-        return string.Join(" and ", conditions);
+        return string.Join(" or ", conditions);
     }
 
     #endregion

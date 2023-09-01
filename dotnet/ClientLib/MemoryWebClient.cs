@@ -180,21 +180,26 @@ public class MemoryWebClient : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
-        MemoryFilter? filter,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        return this.SearchAsync(query, index: null, filter, cancellationToken);
+        return this.SearchAsync(query, index: null, filters, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
+        if (filters is { Count: > 1 })
+        {
+            throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
+        }
+
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filter = filter ?? new MemoryFilter() };
+        SearchQuery request = new() { Index = index, Query = query, Filter = (filters is { Count: > 0 }) ? filters[0] : new MemoryFilter() };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -207,21 +212,26 @@ public class MemoryWebClient : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<MemoryAnswer> AskAsync(
         string question,
-        MemoryFilter? filter,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
+        return this.AskAsync(question: question, index: null, filters: filters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
-        MemoryFilter? filter = null,
+        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
+        if (filters is { Count: > 1 })
+        {
+            throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
+        }
+
         index = IndexExtensions.CleanName(index);
-        MemoryQuery request = new() { Index = index, Question = question, Filter = filter ?? new MemoryFilter() };
+        MemoryQuery request = new() { Index = index, Question = question, Filter = (filters is { Count: > 0 }) ? filters[0] : new MemoryFilter() };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
