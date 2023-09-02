@@ -18,7 +18,7 @@ namespace Microsoft.SemanticMemory.Search;
 
 public class SearchClient
 {
-    private const int MatchesCount = 100;
+    private const int MaxMatchesCount = 100;
     private const int AnswerTokens = 300;
 
     private readonly ISemanticMemoryVectorDb _vectorDb;
@@ -46,12 +46,19 @@ public class SearchClient
     }
 
     public async Task<SearchResult> SearchAsync(
+
         string index,
+
         string query,
+
         double minRelevanceScore = 0,
         IList<MemoryFilter>? filters = null,
+
+        int limit = -1,
         CancellationToken cancellationToken = default)
     {
+        if (limit <= 0) { limit = MaxMatchesCount; }
+
         var result = new SearchResult
         {
             Query = query,
@@ -68,7 +75,7 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, limit, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
@@ -179,7 +186,7 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            indexName: index, embedding, MaxMatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
