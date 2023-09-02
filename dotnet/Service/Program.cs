@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,7 +138,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: new List<MemoryFilter>() { query.Filter }, cancellationToken: cancellationToken);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: query.Filters, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -153,7 +152,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: new List<MemoryFilter>() { query.Filter }, limit: query.Limit, cancellationToken: cancellationToken);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: query.Filters, limit: query.Limit, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);

@@ -46,14 +46,10 @@ public class SearchClient
     }
 
     public async Task<SearchResult> SearchAsync(
-
         string index,
-
         string query,
-
         double minRelevanceScore = 0,
         IList<MemoryFilter>? filters = null,
-
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
