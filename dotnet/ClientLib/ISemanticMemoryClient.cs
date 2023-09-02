@@ -150,11 +150,13 @@ public interface ISemanticMemoryClient
     /// </summary>
     /// <param name="query">Query to filter memories</param>
     /// <param name="filter">Filter to match</param>
+    /// <param name="limit">Max number of results to return</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<SearchResult> SearchAsync(
         string query,
         MemoryFilter? filter = null,
+        int limit = -1,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -164,11 +166,13 @@ public interface ISemanticMemoryClient
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <param name="limit">Max number of results to return</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
         MemoryFilter? filter = null,
+        int limit = -1,
         CancellationToken cancellationToken = default);
 
     /// <summary>

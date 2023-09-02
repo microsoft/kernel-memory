@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -25,7 +26,8 @@ public class HttpDocumentUploadRequest
      * https://stackoverflow.com/questions/71499435/how-do-i-do-file-upload-using-asp-net-core-6-minimal-api
      * https://stackoverflow.com/questions/57033535/multipartformdatacontent-add-stringcontent-is-adding-carraige-return-linefeed-to
      */
-    public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(HttpRequest httpRequest)
+    public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(
+        HttpRequest httpRequest, CancellationToken cancellationToken = default)
     {
         string indexField = Constants.WebServiceIndexField;
         string documentIdField = Constants.WebServiceDocumentIdField;
@@ -40,7 +42,7 @@ public class HttpDocumentUploadRequest
         }
 
         // Read form
-        IFormCollection form = await httpRequest.ReadFormAsync().ConfigureAwait(false);
+        IFormCollection form = await httpRequest.ReadFormAsync(cancellationToken).ConfigureAwait(false);
 
         // There must be at least one file
         if (form.Files.Count == 0)

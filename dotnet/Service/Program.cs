@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -75,12 +76,14 @@ if (config.Service.RunWebService)
     app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
             HttpRequest request,
             ISemanticMemoryClient service,
-            ILogger<Program> log) =>
+            ILogger<Program> log,
+            CancellationToken cancellationToken) =>
         {
             log.LogTrace("New upload HTTP request");
 
             // Note: .NET doesn't yet support binding multipart forms including data and files
-            (HttpDocumentUploadRequest input, bool isValid, string errMsg) = await HttpDocumentUploadRequest.BindHttpRequestAsync(request).ConfigureAwait(false);
+            (HttpDocumentUploadRequest input, bool isValid, string errMsg)
+                = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (!isValid)
             {
@@ -91,7 +94,7 @@ if (config.Service.RunWebService)
             try
             {
                 // UploadRequest => Document
-                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest());
+                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken);
                 var url = Constants.HttpUploadStatusEndpointWithParams
                     .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
                     .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
@@ -117,10 +120,11 @@ if (config.Service.RunWebService)
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
                 ISemanticMemoryClient service,
-                ILogger<Program> log) =>
+                ILogger<Program> log,
+                CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New delete document HTTP request");
-                await service.DeleteDocumentAsync(documentId: documentId, index: index);
+                await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken);
                 return Results.Accepted();
             })
         .Produces<MemoryAnswer>(StatusCodes.Status202Accepted);
@@ -130,10 +134,11 @@ if (config.Service.RunWebService)
             async Task<IResult> (
                 MemoryQuery query,
                 ISemanticMemoryClient service,
-                ILogger<Program> log) =>
+                ILogger<Program> log,
+                CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter, cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -143,10 +148,11 @@ if (config.Service.RunWebService)
             async Task<IResult> (
                 SearchQuery query,
                 ISemanticMemoryClient service,
-                ILogger<Program> log) =>
+                ILogger<Program> log,
+                CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter, query.Limit, cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);
@@ -159,7 +165,8 @@ if (config.Service.RunWebService)
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
                 ISemanticMemoryClient service,
-                ILogger<Program> log) =>
+                ILogger<Program> log,
+                CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New document status HTTP request");
                 index = IndexExtensions.CleanName(index);
@@ -169,7 +176,7 @@ if (config.Service.RunWebService)
                     return Results.BadRequest($"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value");
                 }
 
-                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(documentId: documentId, index: index);
+                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken);
                 if (pipeline == null)
                 {
                     return Results.NotFound("Document not found");
