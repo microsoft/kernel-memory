@@ -65,7 +65,7 @@ await foreach ((MemoryRecord, double) record in similarList)
 Console.WriteLine("===== SEARCH 2 =====");
 
 similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 },
-    limit: 10, withEmbeddings: true, filter: new MemoryFilter().ByTag("type", "email"));
+    limit: 10, withEmbeddings: true, filters: new List<MemoryFilter>() { MemoryFilters.ByTag("type", "email") });
 await foreach ((MemoryRecord, double) record in similarList)
 {
     Console.WriteLine(record.Item1.Id);
