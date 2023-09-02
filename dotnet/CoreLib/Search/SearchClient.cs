@@ -49,7 +49,7 @@ public class SearchClient
         string index,
         string query,
         double minRelevanceScore = 0,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -150,7 +150,7 @@ public class SearchClient
         string index,
         string question,
         double minRelevanceScore = 0,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))

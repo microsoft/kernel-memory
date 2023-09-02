@@ -159,7 +159,7 @@ public class Memory : ISemanticMemoryClient
     public Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -171,7 +171,7 @@ public class Memory : ISemanticMemoryClient
     public Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);

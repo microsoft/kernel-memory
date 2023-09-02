@@ -68,7 +68,7 @@ public interface ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
@@ -84,7 +84,7 @@ public interface ISemanticMemoryVectorDb
     /// <returns>List of records</returns>
     IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);

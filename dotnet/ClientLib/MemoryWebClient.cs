@@ -196,7 +196,7 @@ public class MemoryWebClient : ISemanticMemoryClient
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -220,7 +220,7 @@ public class MemoryWebClient : ISemanticMemoryClient
     public async Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
         if (filters is { Count: > 1 })

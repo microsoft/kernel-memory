@@ -55,7 +55,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -93,7 +93,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -95,7 +95,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -124,7 +124,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        IList<MemoryFilter>? filters = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -138,7 +138,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         if (limit <= 0) { limit = int.MaxValue; }
 
         var requiredTags = (filters is { Count: > 0 })
-            ? filters[0].GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
+            ? filters.First().GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
             : new List<string>();
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(
