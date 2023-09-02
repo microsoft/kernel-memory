@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -192,16 +193,6 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(
-        string query,
-        IList<MemoryFilter>? filters = null,
-        int limit = -1,
-        CancellationToken cancellationToken = default)
-    {
-        return this.SearchAsync(query: query, index: null, filters, limit, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
@@ -215,7 +206,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
 
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filter = (filters is { Count: > 0 }) ? filters[0] : new MemoryFilter(), Limit = limit };
+        SearchQuery request = new() { Index = index, Query = query, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(), Limit = limit };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -223,15 +214,6 @@ public class MemoryWebClient : ISemanticMemoryClient
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<SearchResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new SearchResult();
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        IList<MemoryFilter>? filters = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(question: question, index: null, filters: filters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -247,7 +229,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
 
         index = IndexExtensions.CleanName(index);
-        MemoryQuery request = new() { Index = index, Question = question, Filter = (filters is { Count: > 0 }) ? filters[0] : new MemoryFilter() };
+        MemoryQuery request = new() { Index = index, Question = question, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new() };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);

@@ -146,20 +146,6 @@ public interface ISemanticMemoryClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Search the default index for a list of relevant documents for the given query.
-    /// </summary>
-    /// <param name="query">Query to filter memories</param>
-    /// <param name="filters">Filter to match</param>
-    /// <param name="limit">Max number of results to return</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<SearchResult> SearchAsync(
-        string query,
-        IList<MemoryFilter>? filters = null,
-        int limit = -1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Search the given index for a list of relevant documents for the given query.
     /// </summary>
     /// <param name="query">Query to filter memories</param>
@@ -173,18 +159,6 @@ public interface ISemanticMemoryClient
         string? index = null,
         IList<MemoryFilter>? filters = null,
         int limit = -1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Search the default index for an answer to the given query.
-    /// </summary>
-    /// <param name="question">Question to answer</param>
-    /// <param name="filters">Filter to match</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        IList<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -147,16 +147,6 @@ public class MemoryService : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
-        IList<MemoryFilter>? filters = null,
-        int limit = -1,
-        CancellationToken cancellationToken = default)
-    {
-        return this.SearchAsync(query: query, index: null, filters, limit, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(
-        string query,
         string? index = null,
         IList<MemoryFilter>? filters = null,
         int limit = -1,
@@ -164,15 +154,6 @@ public class MemoryService : ISemanticMemoryClient
     {
         index = IndexExtensions.CleanName(index);
         return this._searchClient.SearchAsync(index, query: query, filters: filters, limit: limit, cancellationToken: cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        IList<MemoryFilter>? filters = null,
-        CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(question: question, index: null, filters: filters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
