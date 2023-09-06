@@ -708,6 +708,8 @@ public class MemoryClientBuilder
             }
         }
 
+        builder.AddEnvironmentVariables();
+
         return builder.Build();
     }
 }
