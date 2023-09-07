@@ -708,6 +708,10 @@ public class MemoryClientBuilder
             }
         }
 
+        builder
+            .AddEnvironmentVariables()
+            .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
+
         return builder.Build();
     }
 }
