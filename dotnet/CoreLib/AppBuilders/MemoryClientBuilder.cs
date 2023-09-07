@@ -708,7 +708,9 @@ public class MemoryClientBuilder
             }
         }
 
-        builder.AddEnvironmentVariables();
+        builder
+            .AddEnvironmentVariables()
+            .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
 
         return builder.Build();
     }
