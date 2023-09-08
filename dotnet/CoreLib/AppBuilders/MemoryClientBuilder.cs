@@ -307,6 +307,11 @@ public class MemoryClientBuilder
                 this._hostServiceCollection?.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
                 break;
 
+            case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                this._hostServiceCollection?.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                break;
+
             default:
                 // NOOP - allow custom implementations, via WithCustomVectorDb()
                 break;
@@ -329,6 +334,15 @@ public class MemoryClientBuilder
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
                 {
                     this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
+                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    this._vectorDbs.Add(service);
+                    break;
+                }
+
+                case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                {
+                    this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
                     var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
