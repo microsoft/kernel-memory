@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,19 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         ILogger<SimpleVectorDb>? log = null)
     {
         this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
-        this._storage = new TextFileStorage(config.Directory, this._log);
+        switch (config.StorageType)
+        {
+            case SimpleVectorDbConfig.StorageTypes.TextFile:
+                this._storage = new TextFileStorage(config.Directory, this._log);
+                break;
+
+            case SimpleVectorDbConfig.StorageTypes.Volatile:
+                this._storage = new VolatileStorage(this._log);
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown storage type {config.StorageType}");
+        }
     }
 
     /// <inheritdoc />
