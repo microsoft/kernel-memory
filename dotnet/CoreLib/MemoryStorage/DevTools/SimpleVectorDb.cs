@@ -77,7 +77,11 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         }
 
         // Sort distances, from closest to most distant
-        IEnumerable<string> sorted = (from entry in distances orderby entry.Value descending select entry.Key);
+        IEnumerable<string> sorted =
+            from entry in distances
+            where entry.Value >= minRelevanceScore
+            orderby entry.Value descending
+            select entry.Key;
 
         // Return <count> vectors, including the calculated distance
         var count = 0;
