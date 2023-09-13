@@ -22,6 +22,9 @@ internal interface ISimpleStorage
 
 #pragma warning disable CA1031 // need to catch all exceptions
 
+/// <summary>
+/// Simple storage that saves data to text files.
+/// </summary>
 internal sealed class TextFileStorage : ISimpleStorage
 {
     private readonly ILogger _log;
@@ -141,6 +144,77 @@ internal sealed class TextFileStorage : ISimpleStorage
     {
         var bytes = Convert.FromBase64String(encodedId.Replace('_', '='));
         return Encoding.UTF8.GetString(bytes);
+    }
+}
+
+/// <summary>
+/// Simple storage that saves data in memory.
+/// </summary>
+internal sealed class VolatileStorage : ISimpleStorage
+{
+    private readonly ILogger _log;
+
+    private readonly Dictionary<string, Dictionary<string, string>> _data = new();
+
+    public VolatileStorage(ILogger? log = null)
+    {
+        this._log = log ?? DefaultLogger<VolatileStorage>.Instance;
+    }
+
+    public Task<string> ReadAsync(string collection, string id, CancellationToken cancellationToken = default)
+    {
+        if (this._data.TryGetValue(collection, out var collectionData))
+        {
+            if (collectionData.TryGetValue(id, out var data))
+            {
+                return Task.FromResult(data);
+            }
+
+            this._log.LogError("Volatile storage read failed: id not found.");
+            return Task.FromResult(string.Empty);
+        }
+
+        this._log.LogError("Volatile storage read failed: collection not found");
+        return Task.FromResult(string.Empty);
+    }
+
+    public Task WriteAsync(string collection, string id, string data, CancellationToken cancellationToken = default)
+    {
+        if (this._data.TryGetValue(collection, out var collectionData))
+        {
+            collectionData[id] = data;
+        }
+        else
+        {
+            this._data[collection] = new Dictionary<string, string> { { id, data } };
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(string collection, string id, CancellationToken cancellationToken = default)
+    {
+        if (this._data.TryGetValue(collection, out var collectionData))
+        {
+            collectionData.Remove(id);
+
+            if (collectionData.Count == 0)
+            {
+                this._data.Remove(collection);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<Dictionary<string, string>> ReadAllAsync(string collection, CancellationToken cancellationToken = default)
+    {
+        if (this._data.TryGetValue(collection, out var collectionData))
+        {
+            return Task.FromResult(collectionData);
+        }
+
+        return Task.FromResult(new Dictionary<string, string>());
     }
 }
 
