@@ -483,7 +483,7 @@ public class MemoryClientBuilder
                 if (this._useSummarizeHandlers)
                 {
                     this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
+                        => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
                 }
 
                 this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
