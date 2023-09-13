@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="0.21.230828.2-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="0.23.230906.2-preview" />
     <PackageVersion Include="Microsoft.SemanticMemory.Core" Version="0.2.230901.2-preview" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
