@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-
+# 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4C35-4370-8539-5DDF45357A50}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -154,6 +154,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 		docs\network.png = docs\network.png
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "105-dotnet-CustomOptions", "examples\105-dotnet-CustomOptions\105-dotnet-CustomOptions.csproj", "{0F9A533C-C5DD-4FA9-9313-891F25834410}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -185,6 +187,7 @@ Global
 		{9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
 		{C95AECD6-8EF0-48FB-9BB4-317059748CF5} = {9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B}
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
+		{0F9A533C-C5DD-4FA9-9313-891F25834410} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -255,5 +258,9 @@ Global
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
