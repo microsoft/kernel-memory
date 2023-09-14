@@ -51,6 +51,7 @@ public sealed class SqlSchemaProviderHarness
             "Associates registered users with interest categories.").ConfigureAwait(false);
 
         // TODO: Reverse engineer your own database (comment-out others)
+        //       Pass in optional 'tableNames' parameter to limit which talbes or views are described.
     }
 
     private async Task CaptureSchemaAsync(string databaseKey, string? description, params string[] tableNames)

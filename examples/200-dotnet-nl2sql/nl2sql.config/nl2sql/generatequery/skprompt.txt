@@ -11,7 +11,6 @@ description: historical record of concerts, stadiums and singers
 tables:
   - stadium: 
     columns:
-      *: all columns
       Stadium_ID: 
       Location: 
       Name: 
@@ -21,7 +20,6 @@ tables:
       Average: 
   - singer: 
     columns:
-      *: all columns
       Singer_ID: 
       Name: 
       Country: 
@@ -31,7 +29,6 @@ tables:
       Is_male: 
   - concert: 
     columns:
-      *: all columns
       concert_ID: 
       concert_Name: 
       Theme: 
@@ -39,7 +36,6 @@ tables:
       Year: 
   - singer_in_concert: 
     columns:
-      *: all columns
       concert_ID: 
       Singer_ID: 
 references:
