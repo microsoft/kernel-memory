@@ -115,4 +115,4 @@ The console project includes an `appsettings.json` configuration file where the 
 ```
 The relevancy result determines if and which schema is associated with a natural language query.  The ranges for this can vary based on both the query and the schema as well as across models and model versions.  
 
->**Try lowering this value if recieving 'Unable to translate request into a query.'***
+>**Try lowering this value if receiving 'Unable to translate request into a query.'***
