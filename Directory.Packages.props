@@ -1,7 +1,9 @@
 <Project>
+
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.10.0" />
@@ -11,15 +13,6 @@
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.52" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="7.0.0" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="0.23.230906.2-preview" />
     <PackageVersion Include="Microsoft.SemanticMemory.Core" Version="0.2.230901.2-preview" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
@@ -31,16 +24,38 @@
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="7.0.0" />
     <PackageVersion Include="System.Text.Json" Version="7.0.3" />
+  </ItemGroup>
 
+  <!-- Microsoft.Extensions -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="7.0.0" />
+  </ItemGroup>
+
+  <!-- Test -->
+  <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="xunit" Version="2.5.0" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.8.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+  </ItemGroup>
 
+  <!-- Symbols -->
+  <ItemGroup>
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+  </ItemGroup>
 
+  <!-- Analyzers -->
+  <ItemGroup>
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
         <PrivateAssets>all</PrivateAssets>
@@ -72,4 +87,5 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  
 </Project>
