@@ -30,13 +30,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{0233
 		nl2sql.config\nl2sql\Readme.md = nl2sql.config\nl2sql\Readme.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IsQuery", "IsQuery", "{92D979F2-2DC5-4E97-A8D5-2BEB003DA964}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GenerateQuery", "GenerateQuery", "{92D979F2-2DC5-4E97-A8D5-2BEB003DA964}"
 	ProjectSection(SolutionItems) = preProject
 		nl2sql.config\nl2sql\generatequery\config.json = nl2sql.config\nl2sql\generatequery\config.json
 		nl2sql.config\nl2sql\generatequery\skprompt.txt = nl2sql.config\nl2sql\generatequery\skprompt.txt
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GenerateQuery", "GenerateQuery", "{F7B883B7-4F83-40C4-A9CB-6DD8BACBEEF9}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IsQuery", "IsQuery", "{F7B883B7-4F83-40C4-A9CB-6DD8BACBEEF9}"
 	ProjectSection(SolutionItems) = preProject
 		nl2sql.config\nl2sql\isquery\config.json = nl2sql.config\nl2sql\isquery\config.json
 		nl2sql.config\nl2sql\isquery\skprompt.txt = nl2sql.config\nl2sql\isquery\skprompt.txt
