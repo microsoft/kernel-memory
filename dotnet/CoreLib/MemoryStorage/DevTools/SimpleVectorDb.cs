@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,19 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         ILogger<SimpleVectorDb>? log = null)
     {
         this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
-        this._storage = new TextFileStorage(config.Directory, this._log);
+        switch (config.StorageType)
+        {
+            case SimpleVectorDbConfig.StorageTypes.TextFile:
+                this._storage = new TextFileStorage(config.Directory, this._log);
+                break;
+
+            case SimpleVectorDbConfig.StorageTypes.Volatile:
+                this._storage = new VolatileStorage(this._log);
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown storage type {config.StorageType}");
+        }
     }
 
     /// <inheritdoc />
@@ -77,7 +90,11 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         }
 
         // Sort distances, from closest to most distant
-        IEnumerable<string> sorted = (from entry in distances orderby entry.Value descending select entry.Key);
+        IEnumerable<string> sorted =
+            from entry in distances
+            where entry.Value >= minRelevanceScore
+            orderby entry.Value descending
+            select entry.Key;
 
         // Return <count> vectors, including the calculated distance
         var count = 0;

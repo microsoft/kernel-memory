@@ -25,7 +25,7 @@ These are the files that are deserialized at runtime.  The semantic YAML is gene
 - [DescriptionTest.json](./DescriptionTest.json)
 
 ## ⚙️ Objectives 
-Seed objectives (...to get the ball rolling!).
+Sample questions to get the ball rolling!
 
 - [AdventureWorksLT.objectives](./AdventureWorksLT.objectives)
 - [DescriptionTest.objectives](./DescriptionTest.objectives)

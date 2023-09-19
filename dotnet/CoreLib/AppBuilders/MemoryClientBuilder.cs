@@ -71,6 +71,12 @@ public class MemoryClientBuilder
     /// </summary>
     private bool _useDefaultHandlers = true;
 
+    /// <summary>
+    /// Whether to register summarization along with the default handlers.
+    /// Ignored if _useDefaultHandlers is set to false.
+    /// </summary>
+    private bool _useSummarizeHandlers = true;
+
     public IServiceCollection Services
     {
         get => this._memoryServiceCollection;
@@ -103,6 +109,12 @@ public class MemoryClientBuilder
     public MemoryClientBuilder WithoutDefaultHandlers()
     {
         this._useDefaultHandlers = false;
+        return this;
+    }
+
+    public MemoryClientBuilder WithoutSummarizeHandlers()
+    {
+        this._useSummarizeHandlers = false;
         return this;
     }
 
@@ -307,6 +319,11 @@ public class MemoryClientBuilder
                 this._hostServiceCollection?.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
                 break;
 
+            case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                this._hostServiceCollection?.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                break;
+
             default:
                 // NOOP - allow custom implementations, via WithCustomVectorDb()
                 break;
@@ -329,6 +346,15 @@ public class MemoryClientBuilder
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
                 {
                     this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
+                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    this._vectorDbs.Add(service);
+                    break;
+                }
+
+                case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                {
+                    this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
                     var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
@@ -454,8 +480,11 @@ public class MemoryClientBuilder
                 this._memoryServiceCollection.AddTransient<TextPartitioningHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<TextPartitioningHandler>(serviceProvider, "partition"));
 
-                this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
+                if (this._useSummarizeHandlers)
+                {
+                    this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
+                        => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
+                }
 
                 this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
@@ -482,7 +511,10 @@ public class MemoryClientBuilder
             {
                 memoryClientInstance.AddHandler(serviceProvider.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
+                if (this._useSummarizeHandlers)
+                {
+                    memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
+                }
                 memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
@@ -523,7 +555,10 @@ public class MemoryClientBuilder
             // Handlers - Register these handlers to run as hosted services in the caller app.
             // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
             this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>("extract");
-            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
+            if (this._useSummarizeHandlers)
+            {
+                this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
+            }
             this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
             this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
             this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
@@ -707,6 +742,10 @@ public class MemoryClientBuilder
                 builder.AddJsonFile(f2, optional: false);
             }
         }
+
+        builder
+            .AddEnvironmentVariables()
+            .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
 
         return builder.Build();
     }
