@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using DocumentFormat.OpenXml.Presentation;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
 using Timer = System.Timers.Timer;
