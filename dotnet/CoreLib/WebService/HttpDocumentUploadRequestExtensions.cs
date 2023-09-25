@@ -15,7 +15,8 @@ public static class HttpDocumentUploadRequestExtensions
         {
             Index = request.Index,
             DocumentId = request.DocumentId,
-            Tags = request.Tags
+            Tags = request.Tags,
+            Steps = request.Steps,
         };
 
         foreach (IFormFile file in request.Files)

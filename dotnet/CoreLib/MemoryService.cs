@@ -89,7 +89,7 @@ public class MemoryService : ISemanticMemoryClient
         var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await using (content.ConfigureAwait(false))
         {
-            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, cancellationToken: cancellationToken)
+            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -113,7 +113,7 @@ public class MemoryService : ISemanticMemoryClient
                 documentId: documentId,
                 tags,
                 index: index,
-                steps,
+                steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
     }

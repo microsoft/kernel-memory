@@ -39,6 +39,9 @@ public sealed class SimpleQueues : IQueue
     // Sorted list of messages (the key is the file path)
     private readonly SortedSet<string> _messages = new();
 
+    // List of messages currently being processed (the key is the file path)
+    private readonly HashSet<string> _processingMessages = new();
+
     // Lock helpers
     private readonly object _lock = new();
     private bool _busy = false;
@@ -136,6 +139,11 @@ public sealed class SimpleQueues : IQueue
             {
                 this.RemoveFileFromQueue(args.Filename);
             }
+            else
+            {
+                this._processingMessages.Remove(args.Filename);
+                this._log.LogError("Message processing failed. Putting message back in the queue");
+            }
         };
     }
 
@@ -158,6 +166,7 @@ public sealed class SimpleQueues : IQueue
 
         this._log.LogTrace("Deleting message from memory {0}", argsFilename);
         this._messages.Remove(argsFilename);
+        this._processingMessages.Remove(argsFilename);
     }
 
     private void PopulateQueue(object? sender, ElapsedEventArgs elapsedEventArgs)
@@ -177,15 +186,21 @@ public sealed class SimpleQueues : IQueue
                 FileInfo[] files = d.GetFiles($"*{FileExt}");
                 foreach (FileInfo f in files)
                 {
-                    this._log.LogInformation("found file {0}", f.FullName);
-                    this._messages.Add(f.FullName);
+                    if (!this._processingMessages.Contains(f.FullName))
+                    {
+                        this._log.LogInformation("found file {0}", f.FullName);
+                        this._messages.Add(f.FullName);
+                    }
                 }
             }
             catch (Exception e)
             {
                 this._log.LogError(e, "Fetch failed");
-                this._busy = false;
                 throw;
+            }
+            finally
+            {
+                this._busy = false;
             }
         }
     }
@@ -206,7 +221,14 @@ public sealed class SimpleQueues : IQueue
                 var messages = this._messages;
                 foreach (var filename in messages)
                 {
-                    this.Received?.Invoke(this, new MessageEventArgs { Filename = filename });
+                    if (this._processingMessages.Add(filename))
+                    {
+                        this.Received?.Invoke(this, new MessageEventArgs { Filename = filename });
+                    }
+                    else
+                    {
+                        this._log.LogTrace("Skipping message {0} since it is already being processed", filename);
+                    }
                 }
             }
             catch (Exception exception)

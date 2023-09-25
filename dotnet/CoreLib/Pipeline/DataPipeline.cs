@@ -372,6 +372,7 @@ public sealed class DataPipeline
         {
             Completed = this.Complete,
             Failed = false, // TODO
+            Empty = this.Files.Count == 0,
             Index = this.Index,
             DocumentId = this.DocumentId,
             Tags = this.Tags,

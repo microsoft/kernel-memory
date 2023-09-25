@@ -86,7 +86,10 @@ public class HttpDocumentUploadRequest
         // Store any extra field as a tag
         foreach (string key in form.Keys)
         {
-            if (key == documentIdField || key == indexField || !form.TryGetValue(key, out StringValues values)) { continue; }
+            if (key == documentIdField
+                || key == indexField
+                || key == stepsField
+                || !form.TryGetValue(key, out StringValues values)) { continue; }
 
             ValidateTagName(key);
             foreach (string? x in values)

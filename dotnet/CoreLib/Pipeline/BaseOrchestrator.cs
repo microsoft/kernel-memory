@@ -155,7 +155,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline != null && pipeline.Files.Count > 0 && pipeline.Complete;
+        return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
     }
 
     ///<inheritdoc />
@@ -215,7 +215,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        var pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
+        DataPipeline pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 

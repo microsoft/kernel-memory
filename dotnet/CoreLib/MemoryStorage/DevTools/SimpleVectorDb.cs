@@ -89,7 +89,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             distances[record.Value.Id] = embedding.CosineSimilarity(record.Value.Vector);
         }
 
-        // Sort distances, from closest to most distant
+        // Sort distances, from closest to most distant, and filter out irrelevant results
         IEnumerable<string> sorted =
             from entry in distances
             where entry.Value >= minRelevanceScore

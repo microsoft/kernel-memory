@@ -94,7 +94,7 @@ public class MemoryWebClient : ISemanticMemoryClient
                 documentId: documentId,
                 tags,
                 index: index,
-                steps,
+                steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -118,7 +118,7 @@ public class MemoryWebClient : ISemanticMemoryClient
                 documentId: documentId,
                 tags,
                 index: index,
-                steps,
+                steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -160,7 +160,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         DataPipelineStatus? status = await this.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken).ConfigureAwait(false);
-        return status != null && status.Completed;
+        return status != null && status.Completed && !status.Empty;
     }
 
     /// <inheritdoc />
@@ -253,8 +253,18 @@ public class MemoryWebClient : ISemanticMemoryClient
             formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
             formData.Add(indexContent, Constants.WebServiceIndexField);
 
+            // Add steps to the form
+            foreach (string? step in uploadRequest.Steps)
+            {
+                if (string.IsNullOrEmpty(step)) { continue; }
+
+                var stepContent = new StringContent(step);
+                disposables.Add(stepContent);
+                formData.Add(stepContent, Constants.WebServiceStepsField);
+            }
+
             // Add tags to the form
-            foreach (var tag in uploadRequest.Tags.Pairs)
+            foreach (KeyValuePair<string, string?> tag in uploadRequest.Tags.Pairs)
             {
                 var tagContent = new StringContent(tag.Value);
                 disposables.Add(tagContent);
