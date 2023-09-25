@@ -164,7 +164,7 @@ if (config.Service.RunWebService)
                 string? index,
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
-                ISemanticMemoryClient service,
+                ISemanticMemoryClient memory,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -176,10 +176,15 @@ if (config.Service.RunWebService)
                     return Results.BadRequest($"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value");
                 }
 
-                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken);
+                DataPipelineStatus? pipeline = await memory.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken);
                 if (pipeline == null)
                 {
                     return Results.NotFound("Document not found");
+                }
+
+                if (pipeline.Empty)
+                {
+                    return Results.NotFound(pipeline);
                 }
 
                 return Results.Ok(pipeline);

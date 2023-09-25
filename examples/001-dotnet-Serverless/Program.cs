@@ -97,6 +97,20 @@ if (ingestion)
     {
         Console.WriteLine("webPage1 already uploaded.");
     }
+
+    // Custom pipelines, e.g. excluding summarization
+    toDelete.Add("webPage2");
+    if (!await memory.IsDocumentReadyAsync("webPage2"))
+    {
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md",
+            documentId: "webPage2",
+            steps: Constants.PipelineWithoutSummary);
+    }
+    else
+    {
+        Console.WriteLine("webPage2 already uploaded.");
+    }
 }
 
 // =======================
