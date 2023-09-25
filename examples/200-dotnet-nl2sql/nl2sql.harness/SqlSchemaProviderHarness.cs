@@ -44,14 +44,14 @@ public sealed class SqlSchemaProviderHarness
     {
         await this.CaptureSchemaAsync(
             DatabaseAdventureWorksLt,
-            "Product, sales, and customer data for the AdentureWorks company.").ConfigureAwait(false);
+            "Product, sales, and customer data for the AdventureWorks company.").ConfigureAwait(false);
 
         await this.CaptureSchemaAsync(
             DatabaseDescriptionTest,
             "Associates registered users with interest categories.").ConfigureAwait(false);
 
         // TODO: Reverse engineer your own database (comment-out others)
-        //       Pass in optional 'tableNames' parameter to limit which talbes or views are described.
+        //       Pass in optional 'tableNames' parameter to limit which tables or views are described.
     }
 
     private async Task CaptureSchemaAsync(string databaseKey, string? description, params string[] tableNames)
