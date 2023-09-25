@@ -20,6 +20,18 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="Microsoft.Extensions.Logging.TraceSource" />
+        <PackageReference Include="System.Linq.Async" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Update="appsettings*.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
