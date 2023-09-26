@@ -310,8 +310,6 @@ public sealed class DataPipeline
     /// Change the pipeline to the next step, returning the name of the next step to execute.
     /// The name returned is used to choose the queue where the pipeline will be set.
     /// </summary>
-    /// <returns></returns>
-    /// <exception cref="IndexOutOfRangeException"></exception>
     public string MoveToNextStep()
     {
         if (this.RemainingSteps.Count == 0)
@@ -320,8 +318,25 @@ public sealed class DataPipeline
         }
 
         var stepName = this.RemainingSteps.First();
-        this.RemainingSteps = this.RemainingSteps.GetRange(1, this.RemainingSteps.Count - 1);
+        this.RemainingSteps.RemoveAt(0);
         this.CompletedSteps.Add(stepName);
+
+        return stepName;
+    }
+
+    /// <summary>
+    /// Change the pipeline to the previous step, returning the name of the step to execute
+    /// </summary>
+    public string RollbackToPreviousStep()
+    {
+        if (this.CompletedSteps.Count == 0)
+        {
+            throw new SemanticMemoryException("The list of completed steps is empty");
+        }
+
+        var stepName = this.CompletedSteps.Last();
+        this.CompletedSteps.RemoveAt(this.CompletedSteps.Count - 1);
+        this.RemainingSteps.Insert(0, stepName);
 
         return stepName;
     }

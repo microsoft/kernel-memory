@@ -13,7 +13,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="xunit" />
-        <PackageReference Include="Xunit.DependencyInjection"/>
+        <PackageReference Include="Xunit.DependencyInjection" />
         <PackageReference Include="xunit.runner.visualstudio">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -27,6 +27,13 @@
     <ItemGroup>
         <ProjectReference Include="..\..\dotnet\ClientLib\ClientLib.csproj" />
         <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="file1-NASA-news.pdf" />
+        <Content Include="file1-NASA-news.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

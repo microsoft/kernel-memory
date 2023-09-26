@@ -39,7 +39,7 @@ public sealed class SimpleQueues : IQueue
     // Sorted list of messages (the key is the file path)
     private readonly SortedSet<string> _messages = new();
 
-    // List of messages currently being processed (the key is the file path)
+    // List of messages being processed (the key is the file path)
     private readonly HashSet<string> _processingMessages = new();
 
     // Lock helpers
@@ -131,19 +131,32 @@ public sealed class SimpleQueues : IQueue
     {
         this.Received += async (sender, args) =>
         {
-            this._log.LogInformation("Message received");
+            try
+            {
+                this._log.LogInformation("Message received");
 
-            string message = await File.ReadAllTextAsync(args.Filename).ConfigureAwait(false);
-            bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
-            if (success)
-            {
-                this.RemoveFileFromQueue(args.Filename);
+                string message = await File.ReadAllTextAsync(args.Filename).ConfigureAwait(false);
+                bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
+                if (success)
+                {
+                    this.DeleteMessage(args.Filename);
+                }
+                else
+                {
+                    this._log.LogWarning("Message '{0}' processing failed with exception, putting message back in the queue", args.Filename);
+                    this.UnlockMessage(args.Filename);
+                }
             }
-            else
+#pragma warning disable CA1031 // Must catch all to handle queue properly
+            catch (Exception e)
             {
-                this._processingMessages.Remove(args.Filename);
-                this._log.LogError("Message processing failed. Putting message back in the queue");
+                // Exceptions caught by this block:
+                // - message processing failed with exception
+                // - failed to delete message from disk
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.Filename);
+                this.UnlockMessage(args.Filename);
             }
+#pragma warning restore CA1031
         };
     }
 
@@ -152,21 +165,6 @@ public sealed class SimpleQueues : IQueue
     {
         this._populateTimer?.Dispose();
         this._dispatchTimer?.Dispose();
-    }
-
-    private void RemoveFileFromQueue(string argsFilename)
-    {
-        if (!File.Exists(argsFilename) || !argsFilename.EndsWith(FileExt, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        this._log.LogTrace("Deleting file from disk {0}", argsFilename);
-        File.Delete(argsFilename);
-
-        this._log.LogTrace("Deleting message from memory {0}", argsFilename);
-        this._messages.Remove(argsFilename);
-        this._processingMessages.Remove(argsFilename);
     }
 
     private void PopulateQueue(object? sender, ElapsedEventArgs elapsedEventArgs)
@@ -186,9 +184,10 @@ public sealed class SimpleQueues : IQueue
                 FileInfo[] files = d.GetFiles($"*{FileExt}");
                 foreach (FileInfo f in files)
                 {
-                    if (!this._processingMessages.Contains(f.FullName))
+                    // This check is not strictly required, only used to reduce logging statements
+                    if (!this._messages.Contains(f.FullName))
                     {
-                        this._log.LogInformation("found file {0}", f.FullName);
+                        this._log.LogTrace("Found file {0}", f.FullName);
                         this._messages.Add(f.FullName);
                     }
                 }
@@ -221,7 +220,7 @@ public sealed class SimpleQueues : IQueue
                 var messages = this._messages;
                 foreach (var filename in messages)
                 {
-                    if (this._processingMessages.Add(filename))
+                    if (this.LockMessage(filename))
                     {
                         this.Received?.Invoke(this, new MessageEventArgs { Filename = filename });
                     }
@@ -241,5 +240,30 @@ public sealed class SimpleQueues : IQueue
                 this._busy = false;
             }
         }
+    }
+
+    private bool LockMessage(string filename)
+    {
+        return this._processingMessages.Add(filename);
+    }
+
+    private void UnlockMessage(string filename)
+    {
+        this._processingMessages.Remove(filename);
+    }
+
+    private void DeleteMessage(string filename)
+    {
+        this._log.LogTrace("Deleting message from memory {0}", filename);
+        this._messages.Remove(filename);
+        this.UnlockMessage(filename);
+
+        if (!File.Exists(filename) || !filename.EndsWith(FileExt, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        this._log.LogTrace("Deleting file from disk {0}", filename);
+        File.Delete(filename);
     }
 }
