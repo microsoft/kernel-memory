@@ -96,7 +96,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
-        await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
+        await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
         while (!pipeline.Complete)
         {
@@ -116,7 +116,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
                 this.Log.LogInformation("Handler '{0}' processed pipeline '{1}' successfully", currentStepName, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
-                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
+                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
             else
             {

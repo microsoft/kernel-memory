@@ -15,6 +15,16 @@ using Microsoft.SemanticMemory.Pipeline.Queue;
 
 namespace Microsoft.SemanticMemory.Pipeline;
 
+/// <summary>
+/// Design notes:
+/// The complete pipeline state is persisted on disk, and is often too big to fit into a queue message.
+/// The message in the queue contains only the Pipeline ID (aka Document ID), which is used to load the state from disk.
+/// In order, the state on disk is updated **before** enqueuing a message, so that a dequeued message will always find a consistent state.
+/// When enqueueing fails:
+/// - while starting a new pipeline, the client should get an error
+/// - while continuing a pipeline, the system should retry the current step (which must be designed to be idempotent)
+/// - while ending a pipeline, same thing, the last step will be repeated (and should be idempotent).
+/// </summary>
 public class DistributedPipelineOrchestrator : BaseOrchestrator
 {
     private readonly QueueClientFactory _queueClientFactory;
@@ -59,11 +69,19 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         this._queues[handler.StepName] = this._queueClientFactory.Build();
         this._queues[handler.StepName].OnDequeue(async msg =>
         {
-            var pipeline = JsonSerializer.Deserialize<DataPipeline>(msg);
+            this.Log.LogTrace("Step `{0}`: processing message received from queue", handler.StepName);
+            var pipelinePointer = JsonSerializer.Deserialize<DataPipelinePointer>(msg);
+            if (pipelinePointer == null)
+            {
+                this.Log.LogError("Pipeline deserialization failed, queue `{0}`", handler.StepName);
+                // Note: returning False, the message is put back in the queue and processed again, eventually this will be moved to the poison queue if available
+                return false;
+            }
 
+            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
             if (pipeline == null)
             {
-                this.Log.LogError("Pipeline deserialization failed, queue {0}`", handler.StepName);
+                this.Log.LogError("Pipeline deserialization failed, queue `{0}`", handler.StepName);
                 // Note: returning False, the message is put back in the queue and processed again, eventually this will be moved to the poison queue if available
                 return false;
             }
@@ -131,9 +149,6 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IPipelineStepHandler handler,
         CancellationToken cancellationToken)
     {
-        // Sync state on disk with state in the queue
-        await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
-
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
@@ -167,28 +182,27 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
     private async Task MoveForwardAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        // Note: the pipeline state is persisted in two places:
-        // * source of truth: in the queue (see the message enqueued)
-        // * async copy: in the container together with files - this can be out of sync and is synchronized on dequeue
-
-        if (pipeline.RemainingSteps.Count == 0)
+        if (pipeline.Complete)
         {
             this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
 
-            // Try to save the pipeline status
-            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: false).ConfigureAwait(false);
+            // Save the pipeline status. If this fails the system should retry the current step.
+            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             string nextStepName = pipeline.RemainingSteps.First();
             this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.DocumentId, nextStepName);
 
+            // Save the pipeline status to disk. If this fails the system should retry the current step.
+            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
             using IQueue queue = this._queueClientFactory.Build();
             await queue.ConnectToQueueAsync(nextStepName, QueueOptions.PublishOnly, cancellationToken).ConfigureAwait(false);
-            await queue.EnqueueAsync(ToJson(pipeline), cancellationToken).ConfigureAwait(false);
 
-            // Try to save the pipeline status
-            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken, ignoreExceptions: true).ConfigureAwait(false);
+            // Enqueue a pointer to the pipeline (the entire pipeline doc can be too big to fit)
+            // Note: if this fails, the pipeline will fail to continue and should retry the current step
+            await queue.EnqueueAsync(ToJson(new DataPipelinePointer(pipeline)), cancellationToken).ConfigureAwait(false);
         }
     }
 
