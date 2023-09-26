@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql;
-
 using System.Collections.Generic;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 /// <summary>
 /// Defines the schemas initialized by the console.

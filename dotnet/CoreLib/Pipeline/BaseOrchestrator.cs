@@ -46,12 +46,12 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this.CancellationTokenSource = new CancellationTokenSource();
 
-        if (embeddingGenerators?.Count == 0)
+        if (embeddingGenerators.Count == 0)
         {
             this.Log.LogWarning("No embedding generators available");
         }
 
-        if (vectorDbs?.Count == 0)
+        if (vectorDbs.Count == 0)
         {
             this.Log.LogWarning("No vector DBs available");
         }

@@ -170,7 +170,7 @@ internal sealed class VolatileStorage : ISimpleStorage
                 return Task.FromResult(data);
             }
 
-            this._log.LogError("Volatile storage read failed: id not found.");
+            this._log.LogError("Volatile storage read failed: id not found");
             return Task.FromResult(string.Empty);
         }
 

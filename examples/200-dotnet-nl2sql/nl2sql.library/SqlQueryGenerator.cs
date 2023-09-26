@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library;
-
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -12,6 +10,8 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Data.Nl2Sql.Library.Internal;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
+
+namespace SemanticKernel.Data.Nl2Sql.Library;
 
 /// <summary>
 /// Generate SQL query targeting Microsoft SQL Server.

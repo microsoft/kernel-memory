@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql;
-
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 /// <summary>
 /// Entry point for console execution.

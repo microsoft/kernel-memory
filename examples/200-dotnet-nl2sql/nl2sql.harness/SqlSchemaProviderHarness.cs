@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #define DISABLEHOST // Comment line to enable
-namespace SemanticKernel.Data.Nl2Sql.Harness;
-
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -10,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 using Xunit;
 using Xunit.Abstractions;
+
+namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 /// <summary>
 /// Harness for utilizing <see cref="SqlSchemaProvider"/> to capture live database schema

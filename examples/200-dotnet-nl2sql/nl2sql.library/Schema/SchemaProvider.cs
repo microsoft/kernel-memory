@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 /// <summary>
 /// Responsible for loading the defined schemas into semantic memory.

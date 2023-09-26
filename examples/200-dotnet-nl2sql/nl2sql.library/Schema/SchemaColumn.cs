@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
-
 using System.Text.Json.Serialization;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 public sealed class SchemaColumn
 {

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
-
 using System;
 using Microsoft.SemanticKernel.Orchestration;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
 internal static class SKContextExtensions
 {
