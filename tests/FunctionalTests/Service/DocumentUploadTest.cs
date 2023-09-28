@@ -33,7 +33,7 @@ public class DocumentUploadTest : BaseTestCase
 
         var answer = await this._memory.AskAsync("What is Orion?");
         this.Log(answer.Result);
-        Assert.Contains("spacecraft", answer.Result);
+        Assert.Contains("spacecraft", answer.Result, StringComparison.OrdinalIgnoreCase);
 
         this.Log("Deleting memories extracted from the document");
         await this._memory.DeleteDocumentAsync(Id);

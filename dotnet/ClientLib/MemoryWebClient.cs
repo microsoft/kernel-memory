@@ -196,10 +196,18 @@ public class MemoryWebClient : ISemanticMemoryClient
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
+        MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
         if (filters is { Count: > 1 })
         {
             throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
@@ -220,9 +228,17 @@ public class MemoryWebClient : ISemanticMemoryClient
     public async Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
+        MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
         if (filters is { Count: > 1 })
         {
             throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));

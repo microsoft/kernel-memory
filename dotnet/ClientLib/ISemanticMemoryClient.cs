@@ -150,13 +150,15 @@ public interface ISemanticMemoryClient
     /// </summary>
     /// <param name="query">Query to filter memories</param>
     /// <param name="index">Optional index name</param>
-    /// <param name="filters">Filter to match</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <param name="limit">Max number of results to return</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
+        MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default);
@@ -166,12 +168,14 @@ public interface ISemanticMemoryClient
     /// </summary>
     /// <param name="question">Question to answer</param>
     /// <param name="index">Optional index name</param>
-    /// <param name="filters">Filter to match</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
+        MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default);
 }
