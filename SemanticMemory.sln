@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		COMMUNITY.md = COMMUNITY.md
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		Directory.Build.props = Directory.Build.props
+                Directory.Packages.props = Directory.Packages.props
 		.gitignore = .gitignore
 		.gitattributes = .gitattributes
 		.editorconfig = .editorconfig

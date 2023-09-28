@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory</RootNamespace>
-        <NoWarn>CA1711,CA1724,CA1308,CA1812</NoWarn>
+        <NoWarn>CA1711,CA1724,CA1308,CA1812,CA1859</NoWarn>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
@@ -16,21 +16,21 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.AI.FormRecognizer" Version="4.1.0" />
-        <PackageReference Include="Azure.Identity" Version="1.10.0" />
-        <PackageReference Include="Azure.Search.Documents" Version="11.5.0-beta.4" />
-        <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
-        <PackageReference Include="Azure.Storage.Queues" Version="12.15.0" />
-        <PackageReference Include="DocumentFormat.OpenXml" Version="2.20.0" />
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.52" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-        <PackageReference Include="PdfPig" Version="0.1.8" />
-        <PackageReference Include="Polly" Version="7.2.4" />
-        <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <PackageReference Include="Azure.AI.FormRecognizer" />
+        <PackageReference Include="Azure.Identity" />
+        <PackageReference Include="Azure.Search.Documents" />
+        <PackageReference Include="Azure.Storage.Blobs" />
+        <PackageReference Include="Azure.Storage.Queues" />
+        <PackageReference Include="DocumentFormat.OpenXml" />
+        <PackageReference Include="HtmlAgilityPack" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="PdfPig" />
+        <PackageReference Include="Polly" />
+        <PackageReference Include="RabbitMQ.Client" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,32 +40,6 @@
         </PackageReference>
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.6.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.30">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.5.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.5.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="AI\Tokenizers\GPT3\encoder.json" />
         <EmbeddedResource Include="AI\Tokenizers\GPT3\vocab.bpe" />

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
-
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 /// <summary>
 /// Format a <see cref="SchemaDefinition"/> object in YAML format.
@@ -21,8 +20,6 @@ internal sealed class YamlSchemaFormatter : ISchemaFormatter
 
     async Task ISchemaFormatter.WriteAsync(TextWriter writer, SchemaDefinition schema)
     {
-        var builder = new StringBuilder();
-
         if (!string.IsNullOrWhiteSpace(schema.Description))
         {
             await writer.WriteLineAsync($"description: {schema.Description}").ConfigureAwait(false);

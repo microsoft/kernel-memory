@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 internal static class SchemaDefinitionExtensions
 {

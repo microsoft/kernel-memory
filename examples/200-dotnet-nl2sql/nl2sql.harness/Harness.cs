@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Harness;
-
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+
+namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 internal static class Harness
 {

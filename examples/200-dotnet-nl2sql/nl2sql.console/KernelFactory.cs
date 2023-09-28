@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql;
-
 using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 /// <summary>
 /// Responsible for initializing Semantic <see cref="Kernel"/> based on the configuration.

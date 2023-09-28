@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql;
-
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 /// <summary>
 /// Responsible for producing a connection string for the requested schema.

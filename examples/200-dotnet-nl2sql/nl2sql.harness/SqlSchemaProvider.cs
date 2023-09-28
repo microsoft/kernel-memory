@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Harness;
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
+
+namespace SemanticKernel.Data.Nl2Sql.Harness;
 
 internal sealed class SqlSchemaProvider
 {
