@@ -206,8 +206,9 @@ public sealed class AzureQueue : IQueue
                     }
                     else
                     {
-                        this._log.LogDebug("Message '{0}' dispatch rejected, putting message back in the queue with a delay", message.MessageId);
                         var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
+                        this._log.LogWarning("Message '{0}' dispatch rejected, putting message back in the queue with a delay of {1} msecs",
+                            message.MessageId, backoffDelay.TotalMilliseconds);
                         await this.UnlockMessageAsync(message, backoffDelay).ConfigureAwait(false);
                     }
                 }
@@ -220,9 +221,17 @@ public sealed class AzureQueue : IQueue
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
             {
-                // Note: exceptions in this block are caught by DispatchMessages()
-                this._log.LogError(e, "Message '{0}' processing failed with exception, putting message back in the queue", message.MessageId);
+                // Exceptions caught by this block:
+                // - message processing failed with exception
+                // - failed to delete message from queue
+                // - failed to unlock message in the queue
+                // - failed to move message to poison queue
+
                 var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue with a delay of {1} msecs",
+                    message.MessageId, backoffDelay.TotalMilliseconds);
+
+                // Note: if this fails, the exception is caught by this.DispatchMessages()
                 await this.UnlockMessageAsync(message, backoffDelay).ConfigureAwait(false);
             }
 #pragma warning restore CA1031
