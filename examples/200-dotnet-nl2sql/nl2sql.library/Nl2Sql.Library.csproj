@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.SqlClient" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="0.24.230918.1-preview"/>
+        <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="0.24.230918.1-preview"/>
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 
