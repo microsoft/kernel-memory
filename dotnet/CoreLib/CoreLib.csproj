@@ -34,7 +34,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="0.24.230918.1-preview">
+        <PackageReference Include="Microsoft.SemanticKernel.Core" VersionOverride="0.24.230918.1-preview">
+            <PrivateAssets>none</PrivateAssets>
+            <IncludeAssets>all</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" VersionOverride="0.24.230918.1-preview">
             <PrivateAssets>none</PrivateAssets>
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
