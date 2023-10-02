@@ -581,6 +581,9 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             conditions.Add($"({string.Join(" and ", filterConditions)})");
         }
 
+        // Examples:
+        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
+        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
         return string.Join(" or ", conditions);
     }
 
