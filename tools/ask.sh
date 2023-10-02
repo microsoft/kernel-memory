@@ -20,6 +20,7 @@ Usage:
 
     -p index               (optional) Index to search.
     -f filter              (optional) Key-value filter, e.g. -f '"type":["news","article"],"group":["emails"]'
+                                      Note: multiple filters not yet supported by this client.
 
     -h                     Print this help content.
 
@@ -91,5 +92,5 @@ validateParameters
 # Send HTTP request using curl
 set -x
 curl -v -H 'Content-Type: application/json' \
-    -d'{"question":"'"${QUESTION}"'","index":"'"${INDEXNAME}"'","filter":{'"${FILTER}"'}}' \
+    -d'{"question":"'"${QUESTION}"'","index":"'"${INDEXNAME}"'","filters":[{'"${FILTER}"'}]}' \
     $SERVICE_URL/ask

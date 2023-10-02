@@ -176,11 +176,11 @@ if (retrieval)
     Console.WriteLine($"Question: {question}");
 
     // Blake doesn't know
-    answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Blake"));
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Blake"));
     Console.WriteLine($"\nBlake Answer: {answer.Result}");
 
     // Taylor knows
-    answer = await memory.AskAsync(question, MemoryFilters.ByTag("user", "Taylor"));
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Taylor"));
     Console.WriteLine($"\nTaylor Answer: {answer.Result}\n  Sources:\n");
 
     foreach (var x in answer.RelevantSources)
@@ -194,10 +194,10 @@ if (retrieval)
     question = "What is Orion?";
     Console.WriteLine($"Question: {question}");
 
-    answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "article"));
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "article"));
     Console.WriteLine($"\nArticles: {answer.Result}");
 
-    answer = await memory.AskAsync(question, MemoryFilters.ByTag("type", "news"));
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "news"));
     Console.WriteLine($"\nNews: {answer.Result}");
 }
 
@@ -218,7 +218,7 @@ if (purge)
 
 // ReSharper disable CommentTypo
 /* ==== OUTPUT ====
- 
+
 Uploading text about E=mc^2
 Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft

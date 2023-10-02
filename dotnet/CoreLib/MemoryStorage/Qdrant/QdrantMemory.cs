@@ -95,15 +95,15 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
+        var requiredTags = (filters is { Count: > 0 })
+            ? filters.SelectMany((filter) => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}"))
             : new List<string>();
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
@@ -124,16 +124,21 @@ public class QdrantMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (filters is { Count: > 1 })
+        {
+            throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
+        }
+
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
+        var requiredTags = (filters is { Count: > 0 })
+            ? filters.First().GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
             : new List<string>();
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(

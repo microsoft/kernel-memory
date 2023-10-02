@@ -146,25 +146,12 @@ public interface ISemanticMemoryClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Search the default index for a list of relevant documents for the given query.
-    /// </summary>
-    /// <param name="query">Query to filter memories</param>
-    /// <param name="filter">Filter to match</param>
-    /// <param name="limit">Max number of results to return</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<SearchResult> SearchAsync(
-        string query,
-        MemoryFilter? filter = null,
-        int limit = -1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Search the given index for a list of relevant documents for the given query.
     /// </summary>
     /// <param name="query">Query to filter memories</param>
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <param name="limit">Max number of results to return</param>
     /// <returns>Answer to the query, if possible</returns>
@@ -172,19 +159,8 @@ public interface ISemanticMemoryClient
         string query,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Search the default index for an answer to the given query.
-    /// </summary>
-    /// <param name="question">Question to answer</param>
-    /// <param name="filter">Filter to match</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        MemoryFilter? filter,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -193,11 +169,13 @@ public interface ISemanticMemoryClient
     /// <param name="question">Question to answer</param>
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default);
 }

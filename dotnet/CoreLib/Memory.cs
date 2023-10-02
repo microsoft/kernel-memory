@@ -158,32 +158,21 @@ public class Memory : ISemanticMemoryClient
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,
-        MemoryFilter? filter,
-        int limit = -1,
-        CancellationToken cancellationToken = default)
-    {
-        return this.SearchAsync(query: query, index: null, filter, limit, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(
-        string query,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
-        return this._searchClient.SearchAsync(index: index, query: query, filter, limit: limit, cancellationToken);
-    }
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
 
-    /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        MemoryFilter? filter,
-        CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(question: question, index: null, filter: filter, cancellationToken: cancellationToken);
+            filters.Add(filter);
+        }
+
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.SearchAsync(index, query: query, filters: filters, limit: limit, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -191,9 +180,17 @@ public class Memory : ISemanticMemoryClient
         string question,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.AskAsync(index: index, question: question, filter: filter, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(index: index, question: question, filters: filters, cancellationToken: cancellationToken);
     }
 }

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable InconsistentNaming
+
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
-
-// ReSharper disable InconsistentNaming
 
 namespace FunctionalTests.VectorDbComparison;
 

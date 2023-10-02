@@ -20,6 +20,7 @@ Usage:
 
     -p index               (optional) Index to search.
     -f filter              (optional) Key-value filter, e.g. -f '"type":["news","article"],"group":["emails"]'
+                                      Note: multiple filters not yet supported by this client.
     -l limit               (optional) Max number of results, e.g. -f 1 to get only the top result
 
     -h                     Print this help content.
@@ -97,5 +98,5 @@ validateParameters
 # Send HTTP request using curl
 set -x
 curl -v -H 'Content-Type: application/json' \
-    -d'{"query":"'"${QUERY}"'","index":"'"${INDEXNAME}"'","filter":{'"${FILTER}"'},"limit":'${MAX_RESULTS}'}' \
+    -d'{"query":"'"${QUERY}"'","index":"'"${INDEXNAME}"'","filters":[{'"${FILTER}"'}],"limit":'${MAX_RESULTS}'}' \
     $SERVICE_URL/search

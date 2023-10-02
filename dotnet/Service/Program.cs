@@ -138,7 +138,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter, cancellationToken);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: query.Filters, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -152,7 +152,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter, query.Limit, cancellationToken);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: query.Filters, limit: query.Limit, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);

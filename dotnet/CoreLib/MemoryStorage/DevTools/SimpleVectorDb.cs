@@ -68,13 +68,13 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var list = this.GetListAsync(indexName, filter, limit, withEmbeddings, cancellationToken);
+        var list = this.GetListAsync(indexName, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
         {
@@ -110,7 +110,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -123,17 +123,9 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
             if (record == null) { continue; }
 
-            var match = true;
-            if (filter != null && !filter.IsEmpty())
-            {
-                foreach (KeyValuePair<string, string?> tagFilter in filter.GetFilters())
-                {
-                    if (!match) { continue; }
-
-                    match = match && record.Tags.ContainsKey(tagFilter.Key) && record.Tags[tagFilter.Key].Contains(tagFilter.Value);
-                }
-            }
-
+            var match = (filters is { Count: > 0 })
+                ? filters.Any(filter => filter.GetFilters().All(tagFilter => record.Tags.TryGetValue(tagFilter.Key, out var values) && values.Contains(tagFilter.Value)))
+                : true;
             if (match)
             {
                 if (limit-- <= 0) { yield break; }

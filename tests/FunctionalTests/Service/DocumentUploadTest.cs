@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable InconsistentNaming
+
+using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
 using Xunit.Abstractions;
 
@@ -15,7 +18,7 @@ public class DocumentUploadTest : BaseTestCase
     }
 
     [Fact]
-    public async Task ItUploadsPDFDocsAndDeletesAsync()
+    public async Task ItUploadsPDFDocsAndDeletes()
     {
         const string Id = "file1-NASA-news.pdf";
 
@@ -33,7 +36,7 @@ public class DocumentUploadTest : BaseTestCase
 
         var answer = await this._memory.AskAsync("What is Orion?");
         this.Log(answer.Result);
-        Assert.Contains("spacecraft", answer.Result);
+        Assert.Contains("spacecraft", answer.Result, StringComparison.OrdinalIgnoreCase);
 
         this.Log("Deleting memories extracted from the document");
         await this._memory.DeleteDocumentAsync(Id);

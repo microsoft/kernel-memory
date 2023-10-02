@@ -142,9 +142,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DescriptionTest", "Descript
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D-B5E7-4827-B57D-447E5B428589}"
-	ProjectSection(SolutionItems) = preProject
-		tests\.editorconfig = tests\.editorconfig
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
 EndProject

@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.Service;
+namespace FunctionalTests.TestHelpers;
 
 public abstract class BaseTestCase : IDisposable
 {
     private readonly RedirectConsole _output;
 
-    public BaseTestCase(ITestOutputHelper output)
+    protected BaseTestCase(ITestOutputHelper output)
     {
         this._output = new RedirectConsole(output);
         Console.SetOut(this._output);
@@ -17,11 +16,20 @@ public abstract class BaseTestCase : IDisposable
 
     public void Dispose()
     {
-        this._output.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     protected void Log(string text)
     {
         this._output.WriteLine(text);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._output.Dispose();
+        }
     }
 }
