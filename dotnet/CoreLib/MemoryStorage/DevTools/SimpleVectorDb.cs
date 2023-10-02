@@ -124,7 +124,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             if (record == null) { continue; }
 
             var match = (filters is { Count: > 0 })
-                ? filters.Any((filter) => filter.GetFilters().All((tagFilter) => record.Tags.TryGetValue(tagFilter.Key, out var values) && values.Contains(tagFilter.Value)))
+                ? filters.Any(filter => filter.GetFilters().All(tagFilter => record.Tags.TryGetValue(tagFilter.Key, out var values) && values.Contains(tagFilter.Value)))
                 : true;
             if (match)
             {
