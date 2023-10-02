@@ -198,6 +198,9 @@ public class MemoryClientBuilder
         this._memoryConfiguration = config ?? throw new ConfigurationException("The given memory configuration is NULL");
         this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
 
+        // Required by ctors expecting SemanticMemoryConfig via DI
+        this.AddSingleton(this._memoryConfiguration);
+
         this.WithDefaultMimeTypeDetection();
 
         // Ingestion queue
