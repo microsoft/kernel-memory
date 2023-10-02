@@ -13,10 +13,12 @@ builder.Services.AddSwaggerGen();
 
 // === Memory stuff begin ===
 ISemanticMemoryClient memory = new MemoryClientBuilder()
+    .FromAppSettings()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .Build();
 
 builder.Services.AddSingleton(memory);
+
 // === Memory stuff end ===
 
 var app = builder.Build();
