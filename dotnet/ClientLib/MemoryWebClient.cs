@@ -234,11 +234,6 @@ public class MemoryWebClient : ISemanticMemoryClient
             filters.Add(filter);
         }
 
-        if (filters is { Count: > 1 })
-        {
-            throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
-        }
-
         index = IndexExtensions.CleanName(index);
         MemoryQuery request = new() { Index = index, Question = question, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new() };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");

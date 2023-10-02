@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.Service;
+namespace FunctionalTests.TestHelpers;
 
 public abstract class BaseTestCase : IDisposable
 {

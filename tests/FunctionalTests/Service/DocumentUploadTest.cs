@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable InconsistentNaming
+
+using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
 using Xunit.Abstractions;
 
@@ -15,7 +18,7 @@ public class DocumentUploadTest : BaseTestCase
     }
 
     [Fact]
-    public async Task ItUploadsPDFDocsAndDeletesAsync()
+    public async Task ItUploadsPDFDocsAndDeletes()
     {
         const string Id = "file1-NASA-news.pdf";
 
