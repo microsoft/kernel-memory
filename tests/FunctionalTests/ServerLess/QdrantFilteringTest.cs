@@ -4,20 +4,22 @@
 
 using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-public class SimpleVectorDbFilteringTest : BaseTestCase
+public class QdrantFilteringTest : BaseTestCase
 {
     private readonly ISemanticMemoryClient _memory;
 
-    public SimpleVectorDbFilteringTest(IConfiguration cfg, ITestOutputHelper output) : base(output)
+    public QdrantFilteringTest(IConfiguration cfg, ITestOutputHelper output) : base(output)
     {
+        string? qdrantEndpoint = cfg.GetSection("Services").GetSection("Qdrant").GetValue<string>("Endpoint");
+        Assert.False(string.IsNullOrEmpty(qdrantEndpoint));
+
         this._memory = new MemoryClientBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = SimpleVectorDbConfig.StorageTypes.Volatile })
+            .WithQdrant(qdrantEndpoint)
             .BuildServerlessClient();
     }
 

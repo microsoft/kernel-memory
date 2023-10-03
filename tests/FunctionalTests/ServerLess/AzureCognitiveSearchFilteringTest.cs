@@ -16,8 +16,8 @@ public class AzureCognitiveSearchFilteringTest : BaseTestCase
     {
         var acsEndpoint = cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("Endpoint");
         var acsKey = cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("APIKey");
-        Assert.NotEmpty(acsEndpoint);
-        Assert.NotEmpty(acsKey);
+        Assert.False(string.IsNullOrEmpty(acsEndpoint));
+        Assert.False(string.IsNullOrEmpty(acsKey));
 
         this._memory = new MemoryClientBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
@@ -28,7 +28,9 @@ public class AzureCognitiveSearchFilteringTest : BaseTestCase
     [Fact]
     public async Task ItSupportsASingleFilter()
     {
-        string indexName = Guid.NewGuid().ToString("D");
+        string indexName = Guid.NewGuid().ToString("N");
+        Console.WriteLine($"Index name: {indexName}");
+
         const string Id = "file1-NASA-news.pdf";
         const string NotFound = "INFO NOT FOUND";
         const string Found = "spacecraft";
@@ -86,7 +88,9 @@ public class AzureCognitiveSearchFilteringTest : BaseTestCase
     [Fact]
     public async Task ItSupportsMultipleFilters()
     {
-        string indexName = Guid.NewGuid().ToString("D");
+        string indexName = Guid.NewGuid().ToString("N");
+        Console.WriteLine($"Index name: {indexName}");
+
         const string Id = "file1-NASA-news.pdf";
         const string NotFound = "INFO NOT FOUND";
         const string Found = "spacecraft";

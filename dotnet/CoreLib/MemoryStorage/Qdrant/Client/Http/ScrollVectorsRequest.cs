@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
@@ -11,7 +12,7 @@ internal sealed class ScrollVectorsRequest
     private readonly string _collectionName;
 
     [JsonPropertyName("filter")]
-    public Filter Filters { get; set; }
+    public Filter.AndClause Filters { get; set; }
 
     [JsonPropertyName("limit")]
     public int Limit { get; set; }
@@ -33,11 +34,11 @@ internal sealed class ScrollVectorsRequest
     public ScrollVectorsRequest HavingExternalId(string id)
     {
         Verify.NotNull(id, "External ID is NULL");
-        this.Filters.ValueMustMatch(QdrantConstants.PayloadIdField, id);
+        this.Filters.AndValue(QdrantConstants.PayloadIdField, id);
         return this;
     }
 
-    public ScrollVectorsRequest HavingTags(IEnumerable<string>? tags)
+    public ScrollVectorsRequest HavingAllTags(IEnumerable<string>? tags)
     {
         if (tags == null) { return this; }
 
@@ -45,9 +46,41 @@ internal sealed class ScrollVectorsRequest
         {
             if (!string.IsNullOrEmpty(tag))
             {
-                this.Filters.ValueMustMatch(QdrantConstants.PayloadTagsField, tag);
+                this.Filters.AndValue(QdrantConstants.PayloadTagsField, tag);
             }
         }
+
+        return this;
+    }
+
+    public ScrollVectorsRequest HavingSomeTags(IEnumerable<IEnumerable<string>?>? tagGroups)
+    {
+        if (tagGroups == null) { return this; }
+
+        var list = tagGroups.ToList();
+        if (list.Count < 2)
+        {
+            return this.HavingAllTags(list.FirstOrDefault());
+        }
+
+        var orFilter = new Filter.OrClause();
+        foreach (var tags in list)
+        {
+            if (tags == null) { continue; }
+
+            var andFilter = new Filter.AndClause();
+            foreach (var tag in tags)
+            {
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    andFilter.AndValue(QdrantConstants.PayloadTagsField, tag);
+                }
+            }
+
+            orFilter.Or(andFilter);
+        }
+
+        this.Filters.And(orFilter);
 
         return this;
     }
@@ -99,7 +132,7 @@ internal sealed class ScrollVectorsRequest
     private ScrollVectorsRequest(string collectionName)
     {
         this._collectionName = collectionName;
-        this.Filters = new Filter();
+        this.Filters = new Filter.AndClause();
         this.WithPayload = false;
         this.WithVector = false;
 

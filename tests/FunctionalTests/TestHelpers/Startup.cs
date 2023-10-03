@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // Must be in the root of the namespace
+// ReSharper disable once CheckNamespace
 namespace FunctionalTests;
 
 public class Startup

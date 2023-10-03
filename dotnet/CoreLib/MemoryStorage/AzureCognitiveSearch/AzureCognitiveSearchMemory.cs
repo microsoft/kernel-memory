@@ -572,7 +572,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         foreach (var filter in filters)
         {
             var filterConditions = filter.GetFilters()
-                .Select((keyValue) =>
+                .Select(keyValue =>
                 {
                     var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
                     return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
