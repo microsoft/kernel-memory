@@ -12,9 +12,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // === Memory stuff begin ===
-ISemanticMemoryClient memory = new MemoryClientBuilder()
+ISemanticMemoryClient memory = new MemoryClientBuilder(builder.Services)
     .FromAppSettings()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithCustomImageOcr(new MyOcrEngine())
     .Build();
 
 builder.Services.AddSingleton(memory);
