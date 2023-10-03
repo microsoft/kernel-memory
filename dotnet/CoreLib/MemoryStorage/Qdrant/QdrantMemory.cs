@@ -102,9 +102,11 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filters is { Count: > 0 })
-            ? filters.SelectMany((filter) => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}"))
-            : new List<string>();
+        var requiredTags = new List<IEnumerable<string>>();
+        if (filters != null)
+        {
+            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
+        }
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: indexName,
@@ -129,17 +131,14 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (filters is { Count: > 1 })
-        {
-            throw new ArgumentException("The method does not support a filter list greater than 1", nameof(filters));
-        }
-
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filters is { Count: > 0 })
-            ? filters.First().GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
-            : new List<string>();
+        var requiredTags = new List<IEnumerable<string>>();
+        if (filters != null)
+        {
+            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
+        }
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(
             collectionName: indexName,

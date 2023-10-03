@@ -230,7 +230,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     /// <returns>List of vectors</returns>
     public async Task<List<QdrantPoint<T>>> GetListAsync(
         string collectionName,
-        IEnumerable<string>? requiredTags = null,
+        IEnumerable<IEnumerable<string>?>? requiredTags = null,
         int offset = 0,
         int limit = 1,
         bool withVectors = false,
@@ -240,7 +240,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
 
         using HttpRequestMessage request = ScrollVectorsRequest
             .Create(collectionName)
-            .HavingTags(requiredTags)
+            .HavingSomeTags(requiredTags)
             .IncludePayLoad()
             .IncludeVectorData(withVectors)
             .FromPosition(offset)
@@ -290,7 +290,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         double minSimilarityScore,
         int limit = 1,
         bool withVectors = false,
-        IEnumerable<string>? requiredTags = null,
+        IEnumerable<IEnumerable<string>?>? requiredTags = null,
         CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Searching top {0} nearest vectors", limit);
@@ -300,7 +300,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         using HttpRequestMessage request = SearchVectorsRequest
             .Create(collectionName)
             .SimilarTo(target)
-            .HavingTags(requiredTags)
+            .HavingSomeTags(requiredTags)
             .WithScoreThreshold(minSimilarityScore)
             .IncludePayLoad()
             .IncludeVectorData(withVectors)
