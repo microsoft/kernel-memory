@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Text;
 using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Pipeline;
 
@@ -17,11 +16,8 @@ namespace Microsoft.SemanticMemory.Handlers;
 
 public class TextPartitioningHandler : IPipelineStepHandler
 {
-    private readonly int _maxTokensPerLine = 300;
-    private readonly int _maxTokensPerParagraph = 1000;
-    private readonly int _overlappingTokens = 100;
-
     private readonly IPipelineOrchestrator _orchestrator;
+    private readonly TextPartitioningOptions _options;
     private readonly ILogger<TextPartitioningHandler> _log;
 
     /// <inheritdoc />
@@ -43,25 +39,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._options = options ?? new TextPartitioningOptions();
         this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
-
-        if (options is not null)
-        {
-            this._maxTokensPerLine = options.MaxTokensPerLine;
-            this._maxTokensPerParagraph = options.MaxTokensPerParagraph;
-            this._overlappingTokens = Math.Max(0, options.OverlappingTokens);
-        }
-
-        if (this._maxTokensPerLine < 1)
-        {
-            throw new ConfigurationException("The number of tokens per line cannot be less than 1");
-        }
-
-        if (this._maxTokensPerParagraph < 1)
-        {
-            throw new ConfigurationException("The number of tokens per paragraph cannot be less than 1");
-        }
-
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
 
@@ -98,8 +77,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
-                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._maxTokensPerLine);
-                        paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: this._maxTokensPerParagraph, overlapTokens: this._overlappingTokens);
+                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
+                        paragraphs = TextChunker.SplitPlainTextParagraphs(
+                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
                         break;
                     }
 
@@ -107,8 +87,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
-                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._maxTokensPerLine);
-                        paragraphs = TextChunker.SplitMarkdownParagraphs(lines, maxTokensPerParagraph: this._maxTokensPerParagraph, overlapTokens: this._overlappingTokens);
+                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
+                        paragraphs = TextChunker.SplitMarkdownParagraphs(
+                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
                         break;
                     }
 
