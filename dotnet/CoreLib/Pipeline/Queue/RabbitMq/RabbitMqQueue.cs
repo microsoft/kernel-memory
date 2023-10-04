@@ -119,14 +119,21 @@ public sealed class RabbitMqQueue : IQueue
                 }
                 else
                 {
-                    this._log.LogDebug("Message '{0}' dispatch rejected, putting message back in the queue", args.BasicProperties.MessageId);
+                    this._log.LogWarning("Message '{0}' dispatch rejected, putting message back in the queue", args.BasicProperties.MessageId);
                     this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                 }
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
             {
-                this._log.LogDebug(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.BasicProperties.MessageId);
+                // Exceptions caught by this block:
+                // - message processing failed with exception
+                // - failed to delete message from queue
+                // - failed to unlock message in the queue
+
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.BasicProperties.MessageId);
+
+                // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
                 this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
             }
 #pragma warning restore CA1031

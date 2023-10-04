@@ -95,16 +95,18 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
-            : new List<string>();
+        var requiredTags = new List<IEnumerable<string>>();
+        if (filters != null)
+        {
+            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
+        }
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: indexName,
@@ -124,7 +126,7 @@ public class QdrantMemory : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -132,9 +134,11 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var requiredTags = (filter != null && !filter.IsEmpty())
-            ? filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")
-            : new List<string>();
+        var requiredTags = new List<IEnumerable<string>>();
+        if (filters != null)
+        {
+            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
+        }
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(
             collectionName: indexName,

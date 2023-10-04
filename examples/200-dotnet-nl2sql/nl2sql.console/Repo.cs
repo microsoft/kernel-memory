@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql;
-
 using System;
 using System.IO;
+
+namespace SemanticKernel.Data.Nl2Sql;
 
 /// <summary>
 /// Utility class to assist in resolving file-system paths.
@@ -12,7 +12,7 @@ internal static class Repo
 {
     private static string RootFolder { get; } = GetRoot();
 
-    public static string RootConfigFolder { get; } = $@"{Repo.RootFolder}\examples\200-dotnet-nl2sql\nl2sql.config";
+    public static string RootConfigFolder { get; } = $@"{RootFolder}\examples\200-dotnet-nl2sql\nl2sql.config";
 
     private static string GetRoot()
     {

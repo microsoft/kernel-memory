@@ -7,32 +7,109 @@ namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal sealed class Filter
 {
-    internal sealed class Match
+    internal sealed class OrClause
     {
-        [JsonPropertyName("value")]
-        public object Value { get; set; }
+        [JsonPropertyName("should")]
+        public List<object> Clauses { get; set; }
 
-        public Match()
+        internal OrClause()
         {
-            this.Value = string.Empty;
+            this.Clauses = new();
+        }
+
+        internal OrClause Or(object condition)
+        {
+            this.Clauses.Add(condition);
+            return this;
+        }
+
+        internal OrClause OrValue(string key, object value)
+        {
+            return this.Or(new MatchValueClause(key, value));
+        }
+
+        internal void Validate()
+        {
+            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            foreach (var x in this.Clauses)
+            {
+                switch (x)
+                {
+                    case AndClause ac:
+                        ac.Validate();
+                        break;
+
+                    case OrClause oc:
+                        oc.Validate();
+                        break;
+
+                    case MatchValueClause mvc:
+                        mvc.Validate();
+                        break;
+                }
+            }
         }
     }
 
-    internal sealed class Must
+    internal sealed class AndClause
+    {
+        [JsonPropertyName("must")]
+        public List<object> Clauses { get; set; }
+
+        internal AndClause()
+        {
+            this.Clauses = new();
+        }
+
+        internal AndClause And(object condition)
+        {
+            this.Clauses.Add(condition);
+            return this;
+        }
+
+        internal AndClause AndValue(string key, object value)
+        {
+            return this.And(new MatchValueClause(key, value));
+        }
+
+        internal void Validate()
+        {
+            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            foreach (var x in this.Clauses)
+            {
+                switch (x)
+                {
+                    case AndClause ac:
+                        ac.Validate();
+                        break;
+
+                    case OrClause oc:
+                        oc.Validate();
+                        break;
+
+                    case MatchValueClause mvc:
+                        mvc.Validate();
+                        break;
+                }
+            }
+        }
+    }
+
+    internal sealed class MatchValueClause
     {
         [JsonPropertyName("key")]
         public string Key { get; set; }
 
         [JsonPropertyName("match")]
-        public Match Match { get; set; }
+        public MatchValue Match { get; set; }
 
-        public Must()
+        public MatchValueClause()
         {
             this.Match = new();
             this.Key = string.Empty;
         }
 
-        public Must(string key, object value) : this()
+        public MatchValueClause(string key, object value) : this()
         {
             this.Key = key;
             this.Match.Value = value;
@@ -45,26 +122,14 @@ internal sealed class Filter
         }
     }
 
-    [JsonPropertyName("must")]
-    public List<Must> Conditions { get; set; }
-
-    internal Filter()
+    internal sealed class MatchValue
     {
-        this.Conditions = new();
-    }
+        [JsonPropertyName("value")]
+        public object Value { get; set; }
 
-    internal Filter ValueMustMatch(string key, object value)
-    {
-        this.Conditions.Add(new Must(key, value));
-        return this;
-    }
-
-    internal void Validate()
-    {
-        Verify.NotNull(this.Conditions, "Filter conditions are NULL");
-        foreach (var x in this.Conditions)
+        public MatchValue()
         {
-            x.Validate();
+            this.Value = string.Empty;
         }
     }
 }

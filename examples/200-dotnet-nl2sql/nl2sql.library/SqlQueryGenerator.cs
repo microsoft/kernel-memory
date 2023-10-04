@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library;
-
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -12,6 +10,8 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Data.Nl2Sql.Library.Internal;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
+
+namespace SemanticKernel.Data.Nl2Sql.Library;
 
 /// <summary>
 /// Generate SQL query targeting Microsoft SQL Server.
@@ -33,6 +33,7 @@ public sealed class SqlQueryGenerator
 
     private const string SkillName = "nl2sql";
 
+    private readonly double _minRelevanceScore;
     private readonly ISKFunction _promptEval;
     private readonly ISKFunction _promptGenerator;
     private readonly ISemanticTextMemory _memory;
@@ -43,6 +44,7 @@ public sealed class SqlQueryGenerator
         this._promptEval = functions["isquery"];
         this._promptGenerator = functions["generatequery"];
         this._memory = kernel.Memory;
+        this._minRelevanceScore = minRelevanceScore;
 
         kernel.ImportSkill(this, SkillName);
     }
@@ -62,8 +64,8 @@ public sealed class SqlQueryGenerator
             await this._memory.SearchAsync(
                 SchemaProvider.MemoryCollectionName,
                 objective,
-                limit: 1,
-                minRelevanceScore: 0.75,
+                limit: 1, // Take top result with maximum relevance (> minRelevanceScore)
+                minRelevanceScore: this._minRelevanceScore,
                 withEmbeddings: true).ToArrayAsync().ConfigureAwait(false);
 
         var best = recall.FirstOrDefault();

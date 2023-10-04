@@ -15,5 +15,6 @@ public interface IOcrEngine
     /// Reads all text from the image.
     /// </summary>
     /// <param name="imageContent">The image content stream.</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
     Task<string> ExtractTextFromImageAsync(Stream imageContent, CancellationToken cancellationToken = default);
 }

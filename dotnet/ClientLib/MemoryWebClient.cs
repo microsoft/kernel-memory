@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -93,7 +94,7 @@ public class MemoryWebClient : ISemanticMemoryClient
                 documentId: documentId,
                 tags,
                 index: index,
-                steps,
+                steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -117,7 +118,7 @@ public class MemoryWebClient : ISemanticMemoryClient
                 documentId: documentId,
                 tags,
                 index: index,
-                steps,
+                steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -159,7 +160,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         DataPipelineStatus? status = await this.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken).ConfigureAwait(false);
-        return status != null && status.Completed;
+        return status != null && status.Completed && !status.Empty;
     }
 
     /// <inheritdoc />
@@ -192,25 +193,23 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<SearchResult> SearchAsync(
-        string query,
-        MemoryFilter? filter,
-        int limit = -1,
-        CancellationToken cancellationToken = default)
-    {
-        return this.SearchAsync(query: query, index: null, filter, limit, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filter = filter ?? new MemoryFilter(), Limit = limit };
+        SearchQuery request = new() { Index = index, Query = query, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(), Limit = limit };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -221,23 +220,22 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(
-        string question,
-        MemoryFilter? filter,
-        CancellationToken cancellationToken = default)
-    {
-        return this.AskAsync(question: question, index: null, filter, cancellationToken);
-    }
-
-    /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
         index = IndexExtensions.CleanName(index);
-        MemoryQuery request = new() { Index = index, Question = question, Filter = filter ?? new MemoryFilter() };
+        MemoryQuery request = new() { Index = index, Question = question, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new() };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -261,8 +259,18 @@ public class MemoryWebClient : ISemanticMemoryClient
             formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
             formData.Add(indexContent, Constants.WebServiceIndexField);
 
+            // Add steps to the form
+            foreach (string? step in uploadRequest.Steps)
+            {
+                if (string.IsNullOrEmpty(step)) { continue; }
+
+                var stepContent = new StringContent(step);
+                disposables.Add(stepContent);
+                formData.Add(stepContent, Constants.WebServiceStepsField);
+            }
+
             // Add tags to the form
-            foreach (var tag in uploadRequest.Tags.Pairs)
+            foreach (KeyValuePair<string, string?> tag in uploadRequest.Tags.Pairs)
             {
                 var tagContent = new StringContent(tag.Value);
                 disposables.Add(tagContent);

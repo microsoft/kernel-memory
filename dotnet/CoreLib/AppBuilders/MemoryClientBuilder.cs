@@ -210,6 +210,9 @@ public class MemoryClientBuilder
         this._memoryConfiguration = config ?? throw new ConfigurationException("The given memory configuration is NULL");
         this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
 
+        // Required by ctors expecting SemanticMemoryConfig via DI
+        this.AddSingleton(this._memoryConfiguration);
+
         this.WithDefaultMimeTypeDetection();
 
         // Ingestion queue
@@ -734,9 +737,22 @@ public class MemoryClientBuilder
             }
         }
 
-        builder
-            .AddEnvironmentVariables()
-            .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true);
+        // Support for environment variables overriding the config files
+        builder.AddEnvironmentVariables();
+
+        // Support for user secrets. Secret Manager doesn't encrypt the stored secrets and
+        // shouldn't be treated as a trusted store. It's for development purposes only.
+        // see: https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager
+        if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
+        {
+            // GetEntryAssembly method can return null if this library is loaded
+            // from an unmanaged application, in which case UserSecrets are not supported.
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null)
+            {
+                builder.AddUserSecrets(entryAssembly, optional: true);
+            }
+        }
 
         return builder.Build();
     }

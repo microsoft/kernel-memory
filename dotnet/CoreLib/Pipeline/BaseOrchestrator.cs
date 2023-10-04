@@ -46,12 +46,12 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this.CancellationTokenSource = new CancellationTokenSource();
 
-        if (embeddingGenerators?.Count == 0)
+        if (embeddingGenerators.Count == 0)
         {
             this.Log.LogWarning("No embedding generators available");
         }
 
-        if (vectorDbs?.Count == 0)
+        if (vectorDbs.Count == 0)
         {
             this.Log.LogWarning("No vector DBs available");
         }
@@ -147,7 +147,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        var pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
         return pipeline?.ToDataPipelineStatus();
     }
 
@@ -155,7 +155,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline != null && pipeline.Files.Count > 0 && pipeline.Complete;
+        return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
     }
 
     ///<inheritdoc />
@@ -215,7 +215,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        var pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
+        DataPipeline pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
@@ -287,8 +287,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     /// </summary>
     /// <param name="pipeline">Pipeline data</param>
     /// <param name="cancellationToken">Task cancellation token</param>
-    /// <param name="ignoreExceptions">Whether to throw exceptions or just log them</param>
-    protected async Task UpdatePipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken, bool ignoreExceptions = false)
+    protected async Task UpdatePipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
         this.Log.LogDebug("Saving pipeline status to {0}/{1}", pipeline.DocumentId, Constants.PipelineStatusFilename);
         try
@@ -303,15 +302,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         }
         catch (Exception e)
         {
-            if (ignoreExceptions)
-            {
-                // Note: log a warning but continue. When a message is retrieved from the queue, the first step
-                //       is ensuring the state is consistent with the queue. Note that the state on disk cannot be
-                //       fully trusted, and the queue represents the source of truth.
-                this.Log.LogWarning(e, "Unable to save pipeline status, the status on disk will be fixed when the pipeline continues");
-                return;
-            }
-
             this.Log.LogWarning(e, "Unable to save pipeline status");
             throw;
         }

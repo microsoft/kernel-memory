@@ -18,6 +18,14 @@ public class DataPipelineStatus
     [JsonPropertyName("failed")]
     public bool Failed { get; set; } = false;
 
+    /// <summary>
+    /// Currently used to track deleted documents.
+    /// TODO: replace with "isDeleting" and "Deleted"
+    /// </summary>
+    [JsonPropertyOrder(2)]
+    [JsonPropertyName("empty")]
+    public bool Empty { get; set; } = false;
+
     [JsonPropertyOrder(10)]
     [JsonPropertyName("index")]
     public string Index { get; set; } = string.Empty;

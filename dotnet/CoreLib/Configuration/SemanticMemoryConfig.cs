@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticMemory.Configuration;
 
@@ -56,16 +57,7 @@ public class SemanticMemoryConfig
         {
             return (this.DefaultSteps.Count > 0)
                 ? this.DefaultSteps
-                : new()
-                {
-                    "extract",
-                    "partition",
-                    "gen_embeddings",
-                    "save_embeddings",
-                    "summarize",
-                    "gen_embeddings",
-                    "save_embeddings"
-                };
+                : Constants.DefaultPipeline.ToList();
         }
     }
 

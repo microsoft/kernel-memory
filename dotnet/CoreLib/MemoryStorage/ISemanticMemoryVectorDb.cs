@@ -59,7 +59,7 @@ public interface ISemanticMemoryVectorDb
     /// <param name="embedding">Target vector to compare to</param>
     /// <param name="limit">Max number of results</param>
     /// <param name="minRelevanceScore">Minimum Cosine Similarity required</param>
-    /// <param name="filter">Values to match in the field used for tagging records (the field must be a list of strings)</param>
+    /// <param name="filters">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of similar vectors, starting from the most similar</returns>
@@ -68,7 +68,7 @@ public interface ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
@@ -77,14 +77,14 @@ public interface ISemanticMemoryVectorDb
     /// E.g. searching vectors by tag, for deletions.
     /// </summary>
     /// <param name="indexName">Index/Collection name</param>
-    /// <param name="filter">Values to match in the field used for tagging records (the field must be a list of strings)</param>
+    /// <param name="filters">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="limit">Max number of records to return</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of records</returns>
     IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);

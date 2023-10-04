@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,19 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         ILogger<SimpleVectorDb>? log = null)
     {
         this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
-        this._storage = new TextFileStorage(config.Directory, this._log);
+        switch (config.StorageType)
+        {
+            case SimpleVectorDbConfig.StorageTypes.TextFile:
+                this._storage = new TextFileStorage(config.Directory, this._log);
+                break;
+
+            case SimpleVectorDbConfig.StorageTypes.Volatile:
+                this._storage = new VolatileStorage(this._log);
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown storage type {config.StorageType}");
+        }
     }
 
     /// <inheritdoc />
@@ -55,13 +68,13 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         Embedding embedding,
         int limit,
         double minRelevanceScore = 0,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var list = this.GetListAsync(indexName, filter, limit, withEmbeddings, cancellationToken);
+        var list = this.GetListAsync(indexName, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
         {
@@ -76,7 +89,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             distances[record.Value.Id] = embedding.CosineSimilarity(record.Value.Vector);
         }
 
-        // Sort distances, from closest to most distant
+        // Sort distances, from closest to most distant, and filter out irrelevant results
         IEnumerable<string> sorted =
             from entry in distances
             where entry.Value >= minRelevanceScore
@@ -97,7 +110,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string indexName,
-        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -110,17 +123,9 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
             if (record == null) { continue; }
 
-            var match = true;
-            if (filter != null && !filter.IsEmpty())
-            {
-                foreach (KeyValuePair<string, string?> tagFilter in filter.GetFilters())
-                {
-                    if (!match) { continue; }
-
-                    match = match && record.Tags.ContainsKey(tagFilter.Key) && record.Tags[tagFilter.Key].Contains(tagFilter.Value);
-                }
-            }
-
+            var match = (filters is { Count: > 0 })
+                ? filters.Any(filter => filter.GetFilters().All(tagFilter => record.Tags.TryGetValue(tagFilter.Key, out var values) && values.Contains(tagFilter.Value)))
+                : true;
             if (match)
             {
                 if (limit-- <= 0) { yield break; }

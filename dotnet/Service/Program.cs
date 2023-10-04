@@ -138,7 +138,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, query.Filter, cancellationToken);
+                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: query.Filters, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<MemoryAnswer>(StatusCodes.Status200OK);
@@ -152,7 +152,7 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, query.Filter, query.Limit, cancellationToken);
+                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: query.Filters, limit: query.Limit, cancellationToken: cancellationToken);
                 return Results.Ok(answer);
             })
         .Produces<SearchResult>(StatusCodes.Status200OK);
@@ -164,7 +164,7 @@ if (config.Service.RunWebService)
                 string? index,
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
-                ISemanticMemoryClient service,
+                ISemanticMemoryClient memoryClient,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -176,10 +176,15 @@ if (config.Service.RunWebService)
                     return Results.BadRequest($"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value");
                 }
 
-                DataPipelineStatus? pipeline = await service.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken);
+                DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken);
                 if (pipeline == null)
                 {
                     return Results.NotFound("Document not found");
+                }
+
+                if (pipeline.Empty)
+                {
+                    return Results.NotFound(pipeline);
                 }
 
                 return Results.Ok(pipeline);

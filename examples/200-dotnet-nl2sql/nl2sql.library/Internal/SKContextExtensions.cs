@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
-
 using System;
-using System.IO;
 using Microsoft.SemanticKernel.Orchestration;
+
+namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
 internal static class SKContextExtensions
 {
@@ -13,11 +12,6 @@ internal static class SKContextExtensions
         if (context == null)
         {
             return string.Empty;
-        }
-
-        if (context.ErrorOccurred)
-        {
-            throw new InvalidDataException("No result available due to an unexpected failure.", context.LastException);
         }
 
         var result = context.Result;

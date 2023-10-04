@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -14,6 +15,6 @@ public class MemoryQuery
     [JsonPropertyName("question")]
     public string Question { get; set; } = string.Empty;
 
-    [JsonPropertyName("filter")]
-    public MemoryFilter Filter { get; set; } = new();
+    [JsonPropertyName("filters")]
+    public List<MemoryFilter> Filters { get; set; } = new();
 }

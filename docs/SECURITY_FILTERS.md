@@ -62,10 +62,11 @@ cascade deletions, etc.
 > so you should consider these two important points:
 >
 > 1. Memories stored without tags are visible only when searching without
->    filters, e.g. they are visible to all users.
+     > filters, for instance they are visible when searching without specifying
+     > a user ID.
 > 2. Searching without filters searches the entire index. If you are using tags
->    as security filters, **you should always filter by tags when retrieving**
->    information.
+     > as security filters, **you should always filter by tags when retrieving**
+     > information.
 
 ## Code examples
 
@@ -107,7 +108,7 @@ current user can see only data tagged by their user ID.
 File upload with a `user` tag. The associated memory records can be filtered
 using the `user` tag.
 
-Note that filters are not mandatory, so the records are **visible also without
+Note that filters are not mandatory, so records are **visible also without
 a filter**.
 
 ```csharp
@@ -120,12 +121,12 @@ var answer = await memory.AskAsync("what's the project timeline?");
 
 // OK
 var answer = await memory.AskAsync("what's the project timeline?",
-                                    MemoryFilters.ByTag("user", "USER-333"));
+                                    filter: MemoryFilters.ByTag("user", "USER-333"));
 
 // NO ANSWER: memories are tagged with 'USER-333', so filter 'USER-444'
 //            will not match the information extracted from project.docs
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-444"));
+                                   filter: MemoryFilters.ByTag("user", "USER-444"));
 ```
 
 #### Example 2
@@ -144,11 +145,11 @@ var answer = await memory.AskAsync("what's the project timeline?");
 
 // NO ANSWER: even if the filter is correct, the data is not in the default index
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-333"));
+                                   filter: MemoryFilters.ByTag("user", "USER-333"));
 
 // OK
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-333"),
+                                   filter: MemoryFilters.ByTag("user", "USER-333"),
                                    index: "index002");
 
 // IMPORTANT: this command is missing the user tag and the service will return the data.
@@ -173,11 +174,11 @@ var docId = await memory.ImportDocumentAsync(new Document()
 
 // OK: USER-333 tag matches
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-333"));
+                                   filter: MemoryFilters.ByTag("user", "USER-333"));
 
 // OK: USER-444 tag matches
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-444"));
+                                   filter: MemoryFilters.ByTag("user", "USER-444"));
 ```
 
 #### Example 4
@@ -194,13 +195,13 @@ var docId = await memory.ImportDocumentAsync(new Document()
 
 // No information found, the type tag doesn't match
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-333")
-                                                .ByTag("type", "email"));
+                                   filter: MemoryFilters.ByTag("user", "USER-333")
+                                                        .ByTag("type", "email"));
 
 // OK
 var answer = await memory.AskAsync("what's the project timeline?",
-                                   MemoryFilters.ByTag("user", "USER-333")
-                                                .ByTag("type", "planning"));
+                                   filter: MemoryFilters.ByTag("user", "USER-333")
+                                                        .ByTag("type", "planning"));
 
 ```
 
@@ -218,3 +219,152 @@ Summarizing, we recommend these best practices to secure Semantic Memory usage:
   this User ID
 * **Use Semantic Memory Tags as Security Filters**. Make sure every API call
   to Semantic Memory uses a User tag, both when reading and writing to memory.
+
+# Complex filters
+
+When filtering memories it's possible to combine filters with `AND` and `OR` logic.
+For instance, consider these scenarios:
+
+1. Reply using memories belonging to "Taylor **OR** Andrea"
+2. Reply using memories belonging to "Taylor **AND** Andrea"
+3. Reply using "**News** belonging to **Taylor** AND **Blogs** belonging to **Andrea**"
+
+## Using OR logic
+
+Example:
+
+> Reply using memories belonging to "Taylor **OR** Andrea"
+
+Code:
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("user", "Taylor"),
+                                      // ... OR ...
+                                      MemoryFilters.ByTag("user", "Andrea"),
+                                   });
+```
+
+## AND vs OR syntax
+
+Example:
+
+> Reply using memories belonging to "Taylor **AND** Andrea"
+
+Code:
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("user", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("user", "Andrea"),
+                                   });
+```
+
+which can also be written more concisely as a single filter (using `filter` instead of `filters`):
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filter: MemoryFilters.ByTag("user", "Taylor")
+                                                        // ... AND ...
+                                                        .ByTag("user", "Andrea"));
+```
+
+## Using both AND and OR
+
+Examples:
+
+> Reply using "**News** belonging to **Taylor** AND **Blogs** belonging to **Andrea**"
+
+In this case the "AND" is not strictly a logical AND asking to intersect two sets, but
+an ask to merge (union) two results. As a result the sentence can be interpreted and
+implemented in two different ways:
+
+1. Ground the answer on memories that are both "news" **and** "blogs" **and** belong to both "Taylor" **and** "Andrea":
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("user", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("type", "News"),
+                                                   // ... AND ...
+                                                   .ByTag("user", "Andrea")
+                                                   // ... AND ...
+                                                   .ByTag("type", "Blog"),
+                                   });
+```
+
+2. Ground the answer on memories that are "news owned by Taylor" **or** "blogs owned by Andrea":
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("user", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("type", "News"),
+                                      // ... OR ...
+                                      MemoryFilters.ByTag("user", "Andrea")
+                                                   // ... AND ...
+                                                   .ByTag("type", "Blog"),
+                                   });
+```
+
+The latter is what users would expect. There are however several ways to ask a question, and
+ultimately the logc depends on the language (English, Spanish, Portuguese, etc.) and the
+user expectations.
+
+For instance:
+
+> Reply using "**News** written by **Taylor** using only **News** about **Space travel**"
+
+all these conditions must be met:
+
+* a memory must belong to Taylor
+* a memory must be of type News
+* a memory must be of type Space Travel
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("type", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("type", "News"),
+                                                   // ... AND ...
+                                                   .ByTag("type", "Space Travel"),
+                                   });
+```
+
+And one last example:
+
+> Reply using "**News** written by **Taylor** using only **News** about **Science** or **Space travel**"
+
+which translates to these conditions:
+
+* a memory must belong to Taylor
+* a memory must be a News about Science, OR a News about Space travel
+
+```csharp
+var answer = await memory.AskAsync(question,
+                                   filters: new List<MemoryFilter>
+                                   {
+                                      MemoryFilters.ByTag("user", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("type", "News")
+                                                   // ... AND ...
+                                                   .ByTag("type", "Science"),
+                                      // ... OR ...
+                                      MemoryFilters.ByTag("user", "Taylor")
+                                                   // ... AND ...
+                                                   .ByTag("type", "News")
+                                                   // ... AND ...
+                                                   .ByTag("type", "Space travel"),
+                                   });
+```

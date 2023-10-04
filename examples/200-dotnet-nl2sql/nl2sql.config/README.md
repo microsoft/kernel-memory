@@ -13,10 +13,14 @@ Choose the settings according to your endpoint (*Azure Open AI* or *Open AI*):
 - AZURE_OPENAI_DEPLOYMENT_NAME (optional: default to `gpt-4`)
 - AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME (optional: default to `text-embedding-ada-003`)
 
+Note: Azure allows the owner to specify the name of any model deployment.
+
 #### OpenAI
 - OPENAI_API_KEY
 - OPENAI_API_COMPLETION_MODEL (optional: default to `gpt-4`)
 - OPENAI_API_EMBEDDINGS_MODEL (optional: default to `text-embedding-ada-003`)
+
+Note: [OpenAI model names are predetermined](https://platform.openai.com/docs/models/overview).
 
 ### Examples
 To set your secrets with .NET 
@@ -25,16 +29,19 @@ To set your secrets with .NET
 ```
 cd examples/data/nl2sql/nl2sql.console
 
-dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_NAME" "gpt-4"
+dotnet user-secrets set "AZURE_OPENAI_DEPLOYMENT_NAME" "gpt-4-deployment"
+dotnet user-secrets set "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME" "text-embedding-ada-002-deployment"
 ```
 
 To set your secrets with environment variables, use either `SET` or `SETX`:
 ```
-SET AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
+SET AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4-deployment
+SET AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME=gpt-text-embedding-ada-002-deployment
 ```
 OR
 ```
-SETX AZURE_OPENAI_DEPLOYMENT_NAME "gpt-4"
+SETX AZURE_OPENAI_DEPLOYMENT_NAME "gpt-4-deployment"
+SETX AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME "text-embedding-ada-002-deployment"
 ```
 ## ⚙️ SQL Configuration
 
@@ -72,7 +79,7 @@ dotnet user-secrets set ConnectionStrings:DescriptionTest "..."
 Note: The user permissions should be restricted to only access specific data.  Ability to read from system views should be restricted (see: [setup-user.sql](./sql/setup-user.sql)).
 
 ## ⚙️ Advanced (Custom Schema)
-The following steps allows you to describe and target your own database schema.
+The following steps allows you to describe and target your own database schema.  This invoves using the [test harness](../nl2sql.harness/SqlSchemaProviderHarness.cs) to reverse engineer your database schema into json and updating the console to read the json schema during initialization.
 
 1. Define the connection string so it can be consumed to reverse engineer your schema and also by the console:
 ```
@@ -80,12 +87,15 @@ cd examples/data/nl2sql/nl2sql.console
 
 dotnet user-secrets set ConnectionStrings:YourSchema "..."
 ```
-2. Reverse-engineer your schema with the [development harness](../nl2sql.harness/SqlSchemaProviderHarness.cs) by editing the `ReverseEngineerSchemaAsync` method:
+2. Reverse-engineer your schema with the [test harness](../nl2sql.harness/SqlSchemaProviderHarness.cs) by editing the `ReverseEngineerSchemaAsync` method:
 ```
 await this.CaptureSchemaAsync(
     "YourSchema",
     "A description for your-schema.").ConfigureAwait(false);
 ```
+
+> The test harness is a **unit-test project** that can be executed via the test-explorer.  Be sure to DISABLEHOST is not defined when executing locally ([SqlSchemaProviderHarness, Line 3](../nl2sql.harness/SqlSchemaProviderHarness.cs))
+
 3. Review YourSchema.json in the [schema](./schema/) folder.
 4. Replace the default configuration with your own in [SchemaDefinitions.cs](../nl2sql.console/SchemaDefinitions.cs):
 ```
@@ -94,3 +104,15 @@ public static IEnumerable<string> GetNames()
     yield return "yourschema";
 }
 ```
+
+## ⚙️ App Configuration
+The console project includes an `appsettings.json` configuration file where the relevance threshold may be adjusted:
+```
+{
+  // Semantic relevancy threshold for selecting schema
+  "MinSchemaRelevance": 0.7
+}
+```
+The relevancy result determines if and which schema is associated with a natural language query.  The ranges for this can vary based on both the query and the schema as well as across models and model versions.  
+
+>**Try lowering this value if receiving 'Unable to translate request into a query.'***
