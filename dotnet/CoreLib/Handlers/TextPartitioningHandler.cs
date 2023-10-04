@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Text;
 using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Pipeline;
 
@@ -48,7 +49,17 @@ public class TextPartitioningHandler : IPipelineStepHandler
         {
             this._maxTokensPerLine = options.MaxTokensPerLine;
             this._maxTokensPerParagraph = options.MaxTokensPerParagraph;
-            this._overlappingTokens = options.OverlappingTokens;
+            this._overlappingTokens = Math.Max(0, options.OverlappingTokens);
+        }
+
+        if (this._maxTokensPerLine < 1)
+        {
+            throw new ConfigurationException("The number of tokens per line cannot be less than 1");
+        }
+
+        if (this._maxTokensPerParagraph < 1)
+        {
+            throw new ConfigurationException("The number of tokens per paragraph cannot be less than 1");
         }
 
         this._log.LogInformation("Handler '{0}' ready", stepName);

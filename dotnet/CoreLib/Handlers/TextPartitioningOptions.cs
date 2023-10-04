@@ -10,15 +10,15 @@ public class TextPartitioningOptions
     /// <summary>
     /// The maximum number of tokens per line.
     /// </summary>
-    public int MaxTokensPerLine { get; set; }
+    public int MaxTokensPerLine { get; set; } = 100;
 
     /// <summary>
     /// The number of overlapping tokens.
     /// </summary>
-    public int OverlappingTokens { get; set; }
+    public int OverlappingTokens { get; set; } = 300;
 
     /// <summary>
     /// The maximum number of tokens per paragraph.
     /// </summary>
-    public int MaxTokensPerParagraph { get; set; }
+    public int MaxTokensPerParagraph { get; set; } = 50;
 }
