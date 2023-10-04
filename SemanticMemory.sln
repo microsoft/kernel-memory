@@ -82,7 +82,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebo
 		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-ExtractTextFromDocs", "examples\104-dotnet-ExtractTextFromDocs\104-dotnet-ExtractTextFromDocs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-extract-text-from-docs", "examples\104-dotnet-extract-text-from-docs\104-dotnet-extract-text-from-docs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
 	ProjectSection(SolutionItems) = preProject
@@ -152,6 +152,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 		docs\network.png = docs\network.png
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "008-dotnet-custom-partitioning-options", "examples\008-dotnet-custom-partitioning-options\008-dotnet-custom-partitioning-options.csproj", "{0F9A533C-C5DD-4FA9-9313-891F25834410}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-aspnet-mvc-integration.csproj", "examples\007-aspnet-mvc-integration\007-aspnet-mvc-integration.csproj", "{490A0538-199D-46FF-A1C7-A309EAD698A9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{4AE9DB51-2A22-4FB3-A780-838738566D18}"
@@ -187,6 +189,7 @@ Global
 		{9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B} = {B019B7DE-BA26-454E-8BAA-91D9369ACD83}
 		{C95AECD6-8EF0-48FB-9BB4-317059748CF5} = {9DD64A4A-FB76-4DF8-8CFD-4F3A49BE065B}
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
+		{0F9A533C-C5DD-4FA9-9313-891F25834410} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{490A0538-199D-46FF-A1C7-A309EAD698A9} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{4AE9DB51-2A22-4FB3-A780-838738566D18} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 	EndGlobalSection
@@ -259,6 +262,10 @@ Global
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F9A533C-C5DD-4FA9-9313-891F25834410}.Release|Any CPU.Build.0 = Release|Any CPU
 		{490A0538-199D-46FF-A1C7-A309EAD698A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{490A0538-199D-46FF-A1C7-A309EAD698A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{490A0538-199D-46FF-A1C7-A309EAD698A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
