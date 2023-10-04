@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.0.230827.2-preview" />
+        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.3.231002.2-preview" />
     </ItemGroup>
 
     <!--    <ItemGroup>-->
