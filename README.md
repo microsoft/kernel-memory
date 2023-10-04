@@ -262,7 +262,9 @@ running the service locally with OpenAPI enabled.
 4. [How to upload files from command line with curl](examples/003-curl-calling-webservice)
 5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
 6. [Using a custom pipeline handler with serverless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)
-6. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
+7. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
+8. [Integrating Memory with ASP.NET applications and controllers](examples/007-aspnet-mvc-integration)
+9. [Partioning/Chunking documents with custom settings](examples/008-dotnet-custom-partitioning-options)
 
 ## Tools
 

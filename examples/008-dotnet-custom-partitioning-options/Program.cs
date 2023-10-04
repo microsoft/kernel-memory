@@ -7,9 +7,9 @@ var memory = new MemoryClientBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .With(new TextPartitioningOptions
     {
-        MaxTokensPerLine = 100,
-        MaxTokensPerParagraph = 300,
-        OverlappingTokens = 50,
+        MaxTokensPerParagraph = 299,
+        MaxTokensPerLine = 99,
+        OverlappingTokens = 47,
     })
     .BuildServerlessClient();
 

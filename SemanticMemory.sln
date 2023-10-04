@@ -82,7 +82,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebo
 		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-ExtractTextFromDocs", "examples\104-dotnet-ExtractTextFromDocs\104-dotnet-ExtractTextFromDocs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-extract-text-from-docs", "examples\104-dotnet-extract-text-from-docs\104-dotnet-extract-text-from-docs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
 	ProjectSection(SolutionItems) = preProject
@@ -152,7 +152,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 		docs\network.png = docs\network.png
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "105-dotnet-CustomOptions", "examples\105-dotnet-CustomOptions\105-dotnet-CustomOptions.csproj", "{0F9A533C-C5DD-4FA9-9313-891F25834410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "008-dotnet-custom-partitioning-options", "examples\008-dotnet-custom-partitioning-options\008-dotnet-custom-partitioning-options.csproj", "{0F9A533C-C5DD-4FA9-9313-891F25834410}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-aspnet-mvc-integration.csproj", "examples\007-aspnet-mvc-integration\007-aspnet-mvc-integration.csproj", "{490A0538-199D-46FF-A1C7-A309EAD698A9}"
 EndProject
