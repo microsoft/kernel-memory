@@ -31,7 +31,7 @@ internal static class KernelFactory
     /// </summary>
     private const string DefaultChatModel = "gpt-4";
 
-    private const string DefaultEmbedModel = "text-embedding-ada-003";
+    private const string DefaultEmbedModel = "text-embedding-ada-002";
 
     /// <summary>
     /// Factory method for <see cref="IServiceCollection"/>

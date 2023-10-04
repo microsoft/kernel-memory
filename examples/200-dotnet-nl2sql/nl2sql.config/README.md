@@ -11,14 +11,14 @@ Choose the settings according to your endpoint (*Azure Open AI* or *Open AI*):
 - AZURE_OPENAI_KEY
 - AZURE_OPENAI_ENDPOINT
 - AZURE_OPENAI_DEPLOYMENT_NAME (optional: default to `gpt-4`)
-- AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME (optional: default to `text-embedding-ada-003`)
+- AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME (optional: default to `text-embedding-ada-002`)
 
 Note: Azure allows the owner to specify the name of any model deployment.
 
 #### OpenAI
 - OPENAI_API_KEY
 - OPENAI_API_COMPLETION_MODEL (optional: default to `gpt-4`)
-- OPENAI_API_EMBEDDINGS_MODEL (optional: default to `text-embedding-ada-003`)
+- OPENAI_API_EMBEDDINGS_MODEL (optional: default to `text-embedding-ada-002`)
 
 Note: [OpenAI model names are predetermined](https://platform.openai.com/docs/models/overview).
 
