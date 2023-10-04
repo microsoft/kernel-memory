@@ -5,7 +5,7 @@ namespace Microsoft.SemanticMemory.Handlers;
 /// <summary>
 /// Represents options for text partitioning.
 /// </summary>
-public class TextPartitioningOption
+public class TextPartitioningOptions
 {
     /// <summary>
     /// The maximum number of tokens per line.

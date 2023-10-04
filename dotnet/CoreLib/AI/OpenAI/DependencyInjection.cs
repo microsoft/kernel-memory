@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -46,12 +45,6 @@ public static partial class MemoryClientBuilderExtensions
     public static MemoryClientBuilder WithOpenAITextGeneration(this MemoryClientBuilder builder, OpenAIConfig config)
     {
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
-        return builder;
-    }
-
-    public static MemoryClientBuilder WithOption<T>(this MemoryClientBuilder builder, T option) where T : class, new()
-    {
-        builder.Services.TryAddSingleton(option);
         return builder;
     }
 }

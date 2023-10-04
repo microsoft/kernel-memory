@@ -182,6 +182,18 @@ public class MemoryClientBuilder
         return this;
     }
 
+    /// <summary>
+    /// Allows to inject any dependency into the builder, e.g. options for handlers
+    /// and custom components used by the system
+    /// </summary>
+    /// <param name="dependency">Dependency. Can be NULL.</param>
+    /// <typeparam name="T">Type of dependency</typeparam>
+    public MemoryClientBuilder With<T>(T dependency) where T : class, new()
+    {
+        this.AddSingleton(dependency);
+        return this;
+    }
+
     public MemoryClientBuilder FromAppSettings(string? settingsDirectory = null)
     {
         this._servicesConfiguration = this.ReadAppSettings(settingsDirectory);

@@ -37,7 +37,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public TextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        TextPartitioningOption? options = null,
+        TextPartitioningOptions? options = null,
         ILogger<TextPartitioningHandler>? log = null)
     {
         this.StepName = stepName;

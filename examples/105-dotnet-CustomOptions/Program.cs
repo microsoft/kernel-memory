@@ -5,7 +5,7 @@ using Microsoft.SemanticMemory.Handlers;
 
 var memory = new MemoryClientBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .WithOption(new TextPartitioningOption()
+    .With(new TextPartitioningOptions
     {
         MaxTokensPerLine = 100,
         MaxTokensPerParagraph = 300,
@@ -14,8 +14,8 @@ var memory = new MemoryClientBuilder()
     .BuildServerlessClient();
 
 await memory.ImportDocumentAsync(new Document()
-    .AddFile("mswordfile.docx"), steps: new string[]
-    {
-        "extract",
-        "partition"
-    });
+    .AddFile("mswordfile.docx"), steps: new[]
+{
+    "extract",
+    "partition"
+});
