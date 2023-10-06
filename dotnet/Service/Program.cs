@@ -52,8 +52,6 @@ var config = app.Configuration.GetSection("SemanticMemory").Get<SemanticMemoryCo
 // ************** WEB SERVICE ENDPOINTS *******************
 // ********************************************************
 
-#pragma warning disable CA2254 // The log msg template should be a constant
-#pragma warning disable CA1031 // Catch all required to control all errors
 // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
 
 if (config.Service.RunWebService)

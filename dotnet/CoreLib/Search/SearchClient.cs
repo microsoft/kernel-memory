@@ -140,7 +140,7 @@ public class SearchClient
 
         if (result.Results.Count == 0)
         {
-            this._log.LogWarning("No memories found");
+            this._log.LogDebug("No memories found");
         }
 
         return result;

@@ -123,10 +123,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
             if (record == null) { continue; }
 
-            var match = (filters is { Count: > 0 })
-                ? filters.Any(filter => filter.GetFilters().All(tagFilter => record.Tags.TryGetValue(tagFilter.Key, out var values) && values.Contains(tagFilter.Value)))
-                : true;
-            if (match)
+            if (TagsMatchFilters(record.Tags, filters))
             {
                 if (limit-- <= 0) { yield break; }
 
@@ -139,5 +136,30 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     public Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         return this._storage.DeleteAsync(indexName, record.Id, cancellationToken);
+    }
+
+    private static bool TagsMatchFilters(TagCollection tags, ICollection<MemoryFilter>? filters)
+    {
+        if (filters == null || filters.Count == 0) { return true; }
+
+        // Verify that at least one filter matches (OR logic)
+        foreach (MemoryFilter filter in filters)
+        {
+            var match = true;
+
+            // Verify that all conditions are met (AND logic)
+            foreach (KeyValuePair<string, List<string?>> condition in filter)
+            {
+                // Check if the tag name + value is present
+                for (int index = 0; match && index < condition.Value.Count; index++)
+                {
+                    match = match && (tags.Keys.Contains(condition.Key) && tags[condition.Key].Contains(condition.Value[index]));
+                }
+            }
+
+            if (match) { return true; }
+        }
+
+        return false;
     }
 }

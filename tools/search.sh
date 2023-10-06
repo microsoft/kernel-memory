@@ -37,66 +37,68 @@ _EOF_
 
 # Read command line parameters
 readParameters() {
-  MAX_RESULTS="-1"
-  while [ "$1" != "" ]; do
-    case $1 in
-    -s)
-      shift
-      SERVICE_URL=$1
-      ;;
-    -q)
-      shift
-      QUERY=$1
-      ;;
-    -p)
-      shift
-      INDEXNAME=$1
-      ;;
-    -f)
-      shift
-      FILTER=$1
-      ;;
-    -l)
-      shift
-      MAX_RESULTS="$1"
-      ;;
-    *)
-      help
-      exitScript
-      ;;
-    esac
-    shift
-  done
+    MAX_RESULTS="-1"
+    while [ "$1" != "" ]; do
+        case $1 in
+            -s)
+                shift
+                SERVICE_URL=$1
+            ;;
+            -q)
+                shift
+                QUERY=$1
+            ;;
+            -p)
+                shift
+                INDEXNAME=$1
+            ;;
+            -f)
+                shift
+                FILTER=$1
+            ;;
+            -l)
+                shift
+                MAX_RESULTS="$1"
+            ;;
+            *)
+                help
+                exitScript
+            ;;
+        esac
+        shift
+    done
 }
 
 validateParameters() {
-  if [ -z "$SERVICE_URL" ]; then
-    echo "Please specify the web service URL"
-    exit 1
-  fi
-  if [ -z "$QUERY" ]; then
-    echo "Please specify the user ID"
-    exit 2
-  fi
+    if [ -z "$SERVICE_URL" ]; then
+        echo "Please specify the web service URL"
+        exit 1
+    fi
+    if [ -z "$QUERY" ]; then
+        echo "Please specify the user ID"
+        exit 2
+    fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL QUERY INDEXNAME FILTER MAX_RESULTS
-  unset -f help readParameters validateParameters cleanupEnv exitScript
+    unset SERVICE_URL QUERY INDEXNAME FILTER MAX_RESULTS CMD
+    unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
 # Clean exit for sourced scripts
 exitScript() {
-  cleanupEnv
-  kill -SIGINT $$
+    cleanupEnv
+    kill -SIGINT $$
 }
 
 readParameters "$@"
 validateParameters
 
 # Send HTTP request using curl
+CMD="curl -v -H 'Content-Type: application/json'"
+CMD="$CMD -d'{\"query\":\"${QUERY}\",\"filters\":[{${FILTER}}],\"index\":\"${INDEXNAME}\",\"limit\":${MAX_RESULTS}}'"
+CMD="$CMD $SERVICE_URL/search"
+
 set -x
-curl -v -H 'Content-Type: application/json' \
-    -d'{"query":"'"${QUERY}"'","index":"'"${INDEXNAME}"'","filters":[{'"${FILTER}"'}],"limit":'${MAX_RESULTS}'}' \
-    $SERVICE_URL/search
+eval $CMD

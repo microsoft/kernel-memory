@@ -36,61 +36,63 @@ _EOF_
 
 # Read command line parameters
 readParameters() {
-  while [ "$1" != "" ]; do
-    case $1 in
-    -s)
-      shift
-      SERVICE_URL=$1
-      ;;
-    -q)
-      shift
-      QUESTION=$1
-      ;;
-    -p)
-      shift
-      INDEXNAME=$1
-      ;;
-    -f)
-      shift
-      FILTER=$1
-      ;;
-    *)
-      help
-      exitScript
-      ;;
-    esac
-    shift
-  done
+    while [ "$1" != "" ]; do
+        case $1 in
+            -s)
+                shift
+                SERVICE_URL=$1
+            ;;
+            -q)
+                shift
+                QUESTION=$1
+            ;;
+            -p)
+                shift
+                INDEXNAME=$1
+            ;;
+            -f)
+                shift
+                FILTER=$1
+            ;;
+            *)
+                help
+                exitScript
+            ;;
+        esac
+        shift
+    done
 }
 
 validateParameters() {
-  if [ -z "$SERVICE_URL" ]; then
-    echo "Please specify the web service URL"
-    exit 1
-  fi
-  if [ -z "$QUESTION" ]; then
-    echo "Please specify the user ID"
-    exit 2
-  fi
+    if [ -z "$SERVICE_URL" ]; then
+        echo "Please specify the web service URL"
+        exit 1
+    fi
+    if [ -z "$QUESTION" ]; then
+        echo "Please specify the user ID"
+        exit 2
+    fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL QUESTION INDEXNAME FILTER
-  unset -f help readParameters validateParameters cleanupEnv exitScript
+    unset SERVICE_URL QUESTION INDEXNAME FILTER CMD
+    unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
 # Clean exit for sourced scripts
 exitScript() {
-  cleanupEnv
-  kill -SIGINT $$
+    cleanupEnv
+    kill -SIGINT $$
 }
 
 readParameters "$@"
 validateParameters
 
 # Send HTTP request using curl
+CMD="curl -v -H 'Content-Type: application/json'"
+CMD="$CMD -d'{\"question\":\"${QUESTION}\",\"filters\":[{${FILTER}}],\"index\":\"${INDEXNAME}\"}'"
+CMD="$CMD $SERVICE_URL/ask"
+
 set -x
-curl -v -H 'Content-Type: application/json' \
-    -d'{"question":"'"${QUESTION}"'","index":"'"${INDEXNAME}"'","filters":[{'"${FILTER}"'}]}' \
-    $SERVICE_URL/ask
+eval $CMD

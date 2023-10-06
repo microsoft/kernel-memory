@@ -178,6 +178,7 @@ public sealed class SimpleQueues : IQueue
         {
             this._busy = true;
             this._log.LogTrace("Populating queue");
+
             try
             {
                 DirectoryInfo d = new(this._queuePath);
@@ -191,6 +192,11 @@ public sealed class SimpleQueues : IQueue
                         this._messages.Add(f.FullName);
                     }
                 }
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                this._log.LogError(e, "Directory missing, recreating");
+                Directory.CreateDirectory(this._queuePath);
             }
             catch (Exception e)
             {
