@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticMemory.AI;
+using Microsoft.SemanticMemory.AppBuilders;
 using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
@@ -45,6 +46,10 @@ public class MemoryClientBuilder
     // ASP.NET env var
     private const string AspnetEnv = "ASPNETCORE_ENVIRONMENT";
 
+    // Proxy to the internal service collections, used to (optionally) inject dependencies
+    // into the user application space
+    private readonly ServiceCollectionPool _serviceCollections;
+
     // Services required to build the memory client class
     private readonly IServiceCollection _memoryServiceCollection;
 
@@ -71,9 +76,11 @@ public class MemoryClientBuilder
     /// </summary>
     private bool _useDefaultHandlers = true;
 
-    public IServiceCollection Services
+    // Proxy to the internal service collections, used to (optionally) inject
+    // dependencies into the user application space
+    public ServiceCollectionPool Services
     {
-        get => this._memoryServiceCollection;
+        get => this._serviceCollections;
     }
 
     /// <summary>
@@ -87,6 +94,12 @@ public class MemoryClientBuilder
     {
         this._memoryServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+
+        this._serviceCollections = new ServiceCollectionPool(this._memoryServiceCollection);
+        if (this._hostServiceCollection != null)
+        {
+            this._serviceCollections.AddServiceCollection(this._hostServiceCollection);
+        }
 
         // List of embedding generators and vector DBs used during the ingestion
         this._embeddingGenerators.Clear();
