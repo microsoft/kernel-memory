@@ -5,10 +5,9 @@
 using System.Reflection;
 using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess;
+namespace FunctionalTests.Service;
 
 public class ImportFilesTest : BaseTestCase
 {
@@ -21,16 +20,7 @@ public class ImportFilesTest : BaseTestCase
         Assert.NotNull(this._fixturesPath);
         Console.WriteLine($"\n# Fixtures directory found: {this._fixturesPath}");
 
-        // Save uploaded docs inside this project, under /tmp
-        var tmpPath = Path.GetFullPath(Path.Join(this._fixturesPath, "..", "tmp"));
-        Console.WriteLine($"Saving temp files in: {tmpPath}");
-
-        this._memory = new MemoryClientBuilder()
-            .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .WithSimpleFileStorage(tmpPath)
-            // Store embeddings in memory
-            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = SimpleVectorDbConfig.StorageTypes.Volatile })
-            .BuildServerlessClient();
+        this._memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }
 
     [Fact]
