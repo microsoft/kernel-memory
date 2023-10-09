@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -98,6 +99,7 @@ public class FileCollection
         }
     }
 
+#pragma warning disable CA1308 // lowercase is safe here and better for accessibility in external tools
     /// <summary>
     /// .NET Core 2.0 SHA256 string generator
     /// </summary>
@@ -106,6 +108,8 @@ public class FileCollection
     private static string CalculateSHA256(string value)
     {
         byte[] byteArray;
+
+#pragma warning disable CA1031 // ok to catch all
         try
         {
             using SHA256 mySHA256 = SHA256.Create();
@@ -115,9 +119,11 @@ public class FileCollection
         {
             return "SHA256Exception";
         }
+#pragma warning restore CA1031
 
         return ToHexString(byteArray).ToLowerInvariant();
     }
+#pragma warning restore CA1308
 
     /// <summary>
     /// .NET Core 2.0 equivalent of Convert.ToHexString
@@ -125,7 +131,7 @@ public class FileCollection
     public static string ToHexString(byte[] byteArray)
     {
         StringBuilder hex = new(byteArray.Length * 2);
-        foreach (byte b in byteArray) { hex.AppendFormat("{0:x2}", b); }
+        foreach (byte b in byteArray) { hex.AppendFormat(CultureInfo.InvariantCulture, "{0:x2}", b); }
 
         return hex.ToString();
     }

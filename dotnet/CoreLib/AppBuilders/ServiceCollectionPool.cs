@@ -60,6 +60,7 @@ public class ServiceCollectionPool : IServiceCollection
 
     #region unnecessary - risky for collections that could be different
 
+#pragma warning disable CA1065 // these methods are not safe to implement because the internal state can vary 
     IEnumerator IEnumerable.GetEnumerator()
     {
         throw new NotImplementedException();
@@ -113,4 +114,6 @@ public class ServiceCollectionPool : IServiceCollection
     }
 
     #endregion
+
+#pragma warning restore CA1065
 }

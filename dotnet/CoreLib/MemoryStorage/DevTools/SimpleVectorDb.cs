@@ -153,7 +153,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
                 // Check if the tag name + value is present
                 for (int index = 0; match && index < condition.Value.Count; index++)
                 {
-                    match = match && (tags.Keys.Contains(condition.Key) && tags[condition.Key].Contains(condition.Value[index]));
+                    match = match && (tags.ContainsKey(condition.Key) && tags[condition.Key].Contains(condition.Value[index]));
                 }
             }
 

@@ -43,14 +43,26 @@ public class FileCollectionTest
 
         // Act
         var target = new FileCollection();
-        target.AddStream(file0.Name, new FileStream(file0.FullName, FileMode.Open));
-        target.AddStream(file1.Name, new FileStream(file1.FullName, FileMode.Open));
-        target.AddStream(file2.Name, new FileStream(file2.FullName, FileMode.Open));
-        target.AddStream(file0.Name, new FileStream(file0.FullName, FileMode.Open));
-        target.AddStream(file1.Name, new FileStream(file1.FullName, FileMode.Open));
-        target.AddStream(file2.Name, new FileStream(file2.FullName, FileMode.Open));
+
+        using var f01 = new FileStream(file0.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+        using var f11 = new FileStream(file1.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+        using var f21 = new FileStream(file2.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+
+        using var f02 = new FileStream(file0.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+        using var f12 = new FileStream(file1.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+        using var f22 = new FileStream(file2.FullName, FileMode.Open);
+        target.AddStream(file0.Name, f01);
+
+        target.AddStream(file0.Name, f01);
+        target.AddStream(file1.Name, f12);
+        target.AddStream(file2.Name, f22);
 
         // Assert
-        Assert.Equal(6, target.GetStreams().ToList().Count);
+        Assert.Equal(9, target.GetStreams().ToList().Count);
     }
 }
