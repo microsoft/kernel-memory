@@ -36,7 +36,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
@@ -50,7 +50,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddFile(filePath);
-        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
@@ -74,7 +74,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags).AddStream(fileName, content);
-        var uploadRequest = document.ToDocumentUploadRequest(index, steps);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 

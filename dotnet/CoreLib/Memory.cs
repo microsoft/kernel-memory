@@ -10,7 +10,6 @@ using Microsoft.SemanticMemory.Configuration;
 using Microsoft.SemanticMemory.Diagnostics;
 using Microsoft.SemanticMemory.Pipeline;
 using Microsoft.SemanticMemory.Search;
-using Microsoft.SemanticMemory.WebService;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticMemory;
@@ -46,18 +45,18 @@ public class Memory : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportDocumentAsync(
+    public Task<string> ImportDocumentAsync(
         Document document,
         string? index = null,
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        DocumentUploadRequest uploadRequest = await document.ToDocumentUploadRequestAsync(index, steps, cancellationToken).ConfigureAwait(false);
-        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
+        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportDocumentAsync(
+    public Task<string> ImportDocumentAsync(
         string filePath,
         string? documentId = null,
         TagCollection? tags = null,
@@ -66,21 +65,21 @@ public class Memory : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddFile(filePath);
-        var uploadRequest = await document.ToDocumentUploadRequestAsync(index, steps, cancellationToken).ConfigureAwait(false);
-        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
+        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportDocumentAsync(
+    public Task<string> ImportDocumentAsync(
         DocumentUploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
         var index = IndexExtensions.CleanName(uploadRequest.Index);
-        return await this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken).ConfigureAwait(false);
+        return this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> ImportDocumentAsync(
+    public Task<string> ImportDocumentAsync(
         Stream content,
         string? fileName = null,
         string? documentId = null,
@@ -90,8 +89,8 @@ public class Memory : ISemanticMemoryClient
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddStream(fileName, content);
-        var uploadRequest = await document.ToDocumentUploadRequestAsync(index, steps, cancellationToken).ConfigureAwait(false);
-        return await this.ImportDocumentAsync(uploadRequest, cancellationToken).ConfigureAwait(false);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
+        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -106,8 +105,14 @@ public class Memory : ISemanticMemoryClient
         var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await using (content.ConfigureAwait(false))
         {
-            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            return await this.ImportDocumentAsync(
+                content,
+                fileName: "content.txt",
+                documentId: documentId,
+                tags: tags,
+                index: index,
+                steps: steps,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 

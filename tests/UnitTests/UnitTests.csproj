@@ -26,4 +26,15 @@
       <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Fixtures\Doc1.txt" />
+      <Content Include="Fixtures\Doc1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Fixtures\Documents\Doc1.txt" />
+      <Content Include="Fixtures\Documents\Doc1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
