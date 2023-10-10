@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <NoWarn>CS8625,CA1050</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

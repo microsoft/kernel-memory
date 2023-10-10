@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <AssemblyName>Microsoft.UnitTests</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,6 +25,17 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Fixtures\Doc1.txt" />
+      <Content Include="Fixtures\Doc1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Fixtures\Documents\Doc1.txt" />
+      <Content Include="Fixtures\Documents\Doc1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

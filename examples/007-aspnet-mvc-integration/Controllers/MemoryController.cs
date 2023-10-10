@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticMemory;
+using Microsoft.SemanticMemory.DataFormats.Image;
 
 namespace Controllers;
 
@@ -10,15 +11,18 @@ namespace Controllers;
 public class MemoryController : ControllerBase
 {
     private readonly ISemanticMemoryClient _memory;
+    private readonly IOcrEngine _ocr;
 
-    public MemoryController(ISemanticMemoryClient memory)
+    public MemoryController(ISemanticMemoryClient memory, IOcrEngine ocr)
     {
         this._memory = memory;
+        this._ocr = ocr;
     }
 
     [HttpGet(Name = "GetAnswer")]
-    public async Task<MemoryAnswer> GetAsync()
+    public async Task<string> GetAsync()
     {
-        return await this._memory.AskAsync("What's Microsoft Copilot?");
+        var ocrResult = await this._ocr.ExtractTextFromImageAsync(null);
+        return ocrResult;
     }
 }

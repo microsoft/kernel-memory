@@ -36,82 +36,82 @@ _EOF_
 
 # Read command line parameters
 readParameters() {
-  while [ "$1" != "" ]; do
-    case $1 in
-    -s)
-      shift
-      SERVICE_URL=$1
-      ;;
-    -f)
-      shift
-      FILENAME=$1
-      ;;
-    -p)
-      shift
-      INDEXNAME=$1
-      ;;
-    -i)
-      shift
-      DOCUMENT_ID=$1
-      ;;
-    -t)
-      shift
-      TAGS="$TAGS $1"
-      ;;
-    *)
-      help
-      exitScript
-      ;;
-    esac
-    shift
-  done
+    while [ "$1" != "" ]; do
+        case $1 in
+            -s)
+                shift
+                SERVICE_URL=$1
+            ;;
+            -f)
+                shift
+                FILENAME=$1
+            ;;
+            -p)
+                shift
+                INDEXNAME=$1
+            ;;
+            -i)
+                shift
+                DOCUMENT_ID=$1
+            ;;
+            -t)
+                shift
+                TAGS="$TAGS $1"
+            ;;
+            *)
+                help
+                exitScript
+            ;;
+        esac
+        shift
+    done
 }
 
 validateParameters() {
-  if [ -z "$SERVICE_URL" ]; then
-    echo "Please specify the web service URL"
-    exit 1
-  fi
-  if [ -z "$FILENAME" ]; then
-    echo "Please specify a file to upload"
-    exit 3
-  fi
-  if [ -d "$FILENAME" ]; then
-    echo "$FILENAME is a directory."
-    exit 3
-  fi
-  if [ ! -f "$FILENAME" ]; then
-    echo "$FILENAME does not exist."
-    exit 3
-  fi
+    if [ -z "$SERVICE_URL" ]; then
+        echo "Please specify the web service URL"
+        exit 1
+    fi
+    if [ -z "$FILENAME" ]; then
+        echo "Please specify a file to upload"
+        exit 3
+    fi
+    if [ -d "$FILENAME" ]; then
+        echo "$FILENAME is a directory."
+        exit 3
+    fi
+    if [ ! -f "$FILENAME" ]; then
+        echo "$FILENAME does not exist."
+        exit 3
+    fi
 }
 
 # Remove variables and functions from the environment, in case the script was sourced
 cleanupEnv() {
-  unset SERVICE_URL FILENAME INDEXNAME DOCUMENT_ID TAGS
-  unset -f help readParameters validateParameters cleanupEnv exitScript
+    unset SERVICE_URL FILENAME INDEXNAME DOCUMENT_ID TAGS TAG CMD
+    unset -f help readParameters validateParameters cleanupEnv exitScript
 }
 
 # Clean exit for sourced scripts
 exitScript() {
-  cleanupEnv
-  kill -SIGINT $$
+    cleanupEnv
+    kill -SIGINT $$
 }
 
 readParameters "$@"
 validateParameters
 
+# Prepare curl command
+CMD="curl -v -F 'file1=@\"${FILENAME}\"' -F 'index=\"${INDEXNAME}\"' -F 'documentId=\"${DOCUMENT_ID}\"'"
+
 # Handle list of tags
-TAGS_FIELD=""
-for x in $TAGS; do
-  TAGS_FIELD="${TAGS_FIELD} -F ${x}"
+for TAG in $TAGS; do
+    CMD="$CMD -F '${TAG}'"
 done
+
+# Add URL
+CMD="$CMD $SERVICE_URL/upload"
 
 # Send HTTP request using curl
 set -x
-curl -v \
-  -F 'file1=@"'"${FILENAME}"'"' \
-  -F 'index="'"${INDEXNAME}"'"' \
-  -F 'documentId="'"${DOCUMENT_ID}"'"' \
-  $TAGS_FIELD \
-  $SERVICE_URL/upload
+eval $CMD

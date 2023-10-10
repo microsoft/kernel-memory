@@ -5,6 +5,7 @@
         <AssemblyName>Microsoft.SemanticMemory.Client</AssemblyName>
         <RootNamespace>Microsoft.SemanticMemory</RootNamespace>
         <IsPackable>true</IsPackable>
+        <NoWarn>CA1711</NoWarn>
     </PropertyGroup>
 
     <Import Project="../nuget/nuget-package.props" />

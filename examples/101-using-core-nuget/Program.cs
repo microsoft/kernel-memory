@@ -11,7 +11,7 @@ var memory = new MemoryClientBuilder()
     //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
     //     Deployment = Env.Var("AZURE_OPENAI_EMBED_MODEL")
     // })
-    // .WithAzureOpenAITextCompletion(new AzureOpenAIConfig
+    // .WithAzureOpenAITextGeneration(new AzureOpenAIConfig
     // {
     //     APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
     //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
