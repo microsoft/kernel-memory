@@ -46,11 +46,9 @@ public class WebScraper
 
         // TODO: perf/TCP ports/reuse client
         using var client = new HttpClient();
-        HttpResponseMessage? response = await RetryLogic().ExecuteAsync(async (cancellationToken) =>
-        {
-            var response = await client.GetAsync(url, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return response;
-        }).ConfigureAwait(false);
+        HttpResponseMessage? response = await RetryLogic()
+            .ExecuteAsync(async cancellationToken => await client.GetAsync(url, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
