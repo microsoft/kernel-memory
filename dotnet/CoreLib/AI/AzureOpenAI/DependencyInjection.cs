@@ -14,7 +14,7 @@ namespace Microsoft.SemanticMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzureOpenAITextCompletion(this MemoryClientBuilder builder, AzureOpenAIConfig config)
+    public static MemoryClientBuilder WithAzureOpenAITextGeneration(this MemoryClientBuilder builder, AzureOpenAIConfig config)
     {
         builder.Services.AddAzureOpenAITextGeneration(config);
         return builder;
