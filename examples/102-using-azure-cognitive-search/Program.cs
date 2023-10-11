@@ -109,7 +109,7 @@ public static class Program
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Algorithms =
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
@@ -153,7 +153,7 @@ public static class Program
             IsFacetable = false,
             IsSortable = false,
             VectorSearchDimensions = EmbeddingSize,
-            VectorSearchConfiguration = VectorSearchConfigName,
+            VectorSearchProfile = VectorSearchConfigName,
         });
 
         try

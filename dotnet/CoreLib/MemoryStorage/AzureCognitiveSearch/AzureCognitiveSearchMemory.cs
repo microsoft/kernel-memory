@@ -109,16 +109,16 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         var client = this.GetSearchClient(indexName);
 
-        SearchQueryVector vectorQuery = new()
+        RawVectorQuery vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Value = embedding.Data.ToArray(),
+            Vector = embedding.Data.ToArray(),
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
         };
 
         SearchOptions options = new()
         {
-            Vectors = { vectorQuery }
+            VectorQueries = { vectorQuery }
         };
 
         if (filters is { Count: > 0 })
@@ -426,7 +426,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Algorithms =
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
@@ -458,7 +458,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                         IsFacetable = false,
                         IsSortable = false,
                         VectorSearchDimensions = field.VectorSize,
-                        VectorSearchConfiguration = VectorSearchConfigName,
+                        VectorSearchProfile = VectorSearchConfigName,
                     };
 
                     break;
