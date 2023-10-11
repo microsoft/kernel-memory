@@ -6,6 +6,14 @@ namespace Microsoft.SemanticMemory.Diagnostics;
 
 internal static class Verify
 {
+    public static void NotEmptyString(string value, string errMsg)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException(errMsg);
+        }
+    }
+
     public static void ValidateUrl(
         string url,
         bool requireHttps,

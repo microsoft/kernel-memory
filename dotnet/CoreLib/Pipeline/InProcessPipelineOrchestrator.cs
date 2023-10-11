@@ -114,17 +114,31 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             {
                 pipeline = updatedPipeline;
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}' successfully", currentStepName, pipeline.DocumentId);
+                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}'", currentStepName, pipeline.DocumentId);
+                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                 throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
             }
         }
 
-        this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
+        // If the pipeline asked to delete a document, there might be some files left over in the storage, such as the status file
+        // that we wish to delete to keep the storage clean. We try to delete what is left, ignoring exceptions.
+        if (pipeline.IsDocumentDeletionPipeline())
+        {
+            await this.TryToDeleteDocumentMetadataAsync(index: pipeline.Index, documentId: pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        }
+
+        // If the pipeline asked to delete a document, there might be some files left over in the storage, such as the status file
+        // that we wish to delete to keep the storage clean. We try to delete what is left, ignoring exceptions.
+        if (pipeline.IsIndexDeletionPipeline())
+        {
+            await this.TryToDeleteIndexMetadataAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
+        }
+
+        this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
     }
 }

@@ -17,6 +17,7 @@ internal interface ISimpleStorage
     Task<string> ReadAsync(string collection, string id, CancellationToken cancellationToken = default);
     Task WriteAsync(string collection, string id, string data, CancellationToken cancellationToken = default);
     Task DeleteAsync(string collection, string id, CancellationToken cancellationToken = default);
+    Task DeleteCollectionAsync(string collection, CancellationToken cancellationToken = default);
     Task<Dictionary<string, string>> ReadAllAsync(string collection, CancellationToken cancellationToken = default);
 }
 
@@ -100,6 +101,22 @@ internal sealed class TextFileStorage : ISimpleStorage
         catch (Exception e)
         {
             this._log.LogError(e, "Text file storage deletion failed");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteCollectionAsync(string collection, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var collectionPath = this.BuildCollectionPath(collection);
+            this._log.LogDebug("Deleting collection {0}", collectionPath);
+            if (Directory.Exists(collectionPath)) { Directory.Delete(collectionPath, recursive: true); }
+        }
+        catch (Exception e)
+        {
+            this._log.LogError(e, "Collection deletion failed");
         }
 
         return Task.CompletedTask;
@@ -203,6 +220,13 @@ internal sealed class VolatileStorage : ISimpleStorage
                 this._data.Remove(collection);
             }
         }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteCollectionAsync(string collection, CancellationToken cancellationToken = default)
+    {
+        this._data.Remove(collection);
 
         return Task.CompletedTask;
     }

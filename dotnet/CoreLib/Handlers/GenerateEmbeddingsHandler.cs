@@ -54,7 +54,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Generating embeddings, pipeline {0}", pipeline.DocumentId);
+        this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         foreach (var uploadedFile in pipeline.Files)
         {

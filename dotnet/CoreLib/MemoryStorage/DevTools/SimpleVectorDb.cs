@@ -44,18 +44,6 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     }
 
     /// <inheritdoc />
-    public async Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
-    {
-        // Note: delete only vectors! If the folder contains other files
-        // the code will error out on purpose, to avoid data loss.
-        var list = this.GetListAsync(indexName, null, int.MaxValue, true, cancellationToken);
-        await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
-        {
-            await this.DeleteAsync(indexName, r, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         await this._storage.WriteAsync(indexName, record.Id, JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
@@ -130,6 +118,12 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
                 yield return record;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
+    {
+        return this._storage.DeleteCollectionAsync(indexName, cancellationToken);
     }
 
     /// <inheritdoc />

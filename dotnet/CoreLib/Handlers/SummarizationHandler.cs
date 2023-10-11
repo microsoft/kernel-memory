@@ -59,6 +59,8 @@ public class SummarizationHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Generating summary, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)

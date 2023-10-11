@@ -117,7 +117,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         var pipeline = new DataPipeline
         {
-            Index = IndexExtensions.CleanName(index),
+            Index = index,
             DocumentId = documentId,
             Tags = tags,
             FilesToUpload = filesToUpload.ToList(),
@@ -213,6 +213,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
+    {
+        DataPipeline pipeline = this.PrepareIndexDeletion(index: index);
+        return this.RunPipelineAsync(pipeline, cancellationToken);
+    }
+
+    ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         DataPipeline pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
@@ -226,6 +233,52 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    protected Task TryToDeleteDocumentMetadataAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    {
+        Verify.NotEmptyString(index, "The index name is empty");
+        Verify.NotEmptyString(documentId, "The document ID is empty");
+
+#pragma warning disable CA1031 // catch all by design
+        try
+        {
+            return this._contentStorage.DeleteDocumentDirectoryAsync(index: index, documentId: documentId, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            this.Log.LogError(e, "Error while trying to delete the document directory");
+            return Task.CompletedTask;
+        }
+#pragma warning restore CA1031
+    }
+
+    protected Task TryToDeleteIndexMetadataAsync(string index, CancellationToken cancellationToken = default)
+    {
+        Verify.NotEmptyString(index, "The index name is empty");
+
+#pragma warning disable CA1031 // catch all by design
+        try
+        {
+            return this._contentStorage.DeleteIndexDirectoryAsync(index, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            this.Log.LogError(e, "Error while trying to delete the index directory");
+            return Task.CompletedTask;
+        }
+#pragma warning restore CA1031
+    }
+
+    protected DataPipeline PrepareIndexDeletion(string? index)
+    {
+        var pipeline = new DataPipeline
+        {
+            Index = index!,
+            DocumentId = string.Empty,
+        };
+
+        return pipeline.Then(Constants.DeleteIndexPipelineStepName).Build();
+    }
+
     protected DataPipeline PrepareDocumentDeletion(string? index, string documentId)
     {
         if (string.IsNullOrWhiteSpace(documentId))
@@ -235,7 +288,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         var pipeline = new DataPipeline
         {
-            Index = IndexExtensions.CleanName(index),
+            Index = index!,
             DocumentId = documentId,
         };
 
@@ -253,7 +306,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // If the folder contains the status of a previous execution,
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
-        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(
+            currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {
             var dedupe = new HashSet<string>();
@@ -289,7 +343,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     /// <param name="cancellationToken">Task cancellation token</param>
     protected async Task UpdatePipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        this.Log.LogDebug("Saving pipeline status to {0}/{1}", pipeline.DocumentId, Constants.PipelineStatusFilename);
+        this.Log.LogDebug("Saving pipeline status to '{0}/{1}/{2}'", pipeline.Index, pipeline.DocumentId, Constants.PipelineStatusFilename);
         try
         {
             await this._contentStorage.WriteTextFileAsync(
@@ -314,7 +368,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     private async Task UploadFormFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        this.Log.LogDebug("Uploading {0} files, pipeline {1}", pipeline.FilesToUpload.Count, pipeline.DocumentId);
+        this.Log.LogDebug("Uploading {0} files, pipeline '{1}/{2}'", pipeline.FilesToUpload.Count, pipeline.Index, pipeline.DocumentId);
 
         await this._contentStorage.CreateIndexDirectoryAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
         await this._contentStorage.CreateDocumentDirectoryAsync(pipeline.Index, pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
