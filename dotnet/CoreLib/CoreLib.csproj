@@ -27,7 +27,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="PdfPig" />
-        <PackageReference Include="Polly" />
+        <PackageReference Include="Polly.Core" />
         <PackageReference Include="RabbitMQ.Client" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="System.Linq.Async" />
