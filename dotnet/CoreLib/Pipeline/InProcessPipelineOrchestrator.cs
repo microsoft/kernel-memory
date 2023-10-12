@@ -125,19 +125,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             }
         }
 
-        // If the pipeline asked to delete a document, there might be some files left over in the storage, such as the status file
-        // that we wish to delete to keep the storage clean. We try to delete what is left, ignoring exceptions.
-        if (pipeline.IsDocumentDeletionPipeline())
-        {
-            await this.TryToDeleteDocumentMetadataAsync(index: pipeline.Index, documentId: pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
-        }
-
-        // If the pipeline asked to delete a document, there might be some files left over in the storage, such as the status file
-        // that we wish to delete to keep the storage clean. We try to delete what is left, ignoring exceptions.
-        if (pipeline.IsIndexDeletionPipeline())
-        {
-            await this.TryToDeleteIndexMetadataAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
-        }
+        await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
         this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
     }

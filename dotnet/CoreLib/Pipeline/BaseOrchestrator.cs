@@ -233,37 +233,36 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected Task TryToDeleteDocumentMetadataAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// If the pipeline asked to delete a document or an index, there might be some files
+    /// left over in the storage, such as the status file that we wish to delete to keep
+    /// the storage clean. We try to delete what is left, ignoring exceptions.
+    /// </summary>
+    protected async Task CleanUpAfterCompletionAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        Verify.NotEmptyString(index, "The index name is empty");
-        Verify.NotEmptyString(documentId, "The document ID is empty");
-
 #pragma warning disable CA1031 // catch all by design
-        try
+        if (pipeline.IsDocumentDeletionPipeline())
         {
-            return this._contentStorage.DeleteDocumentDirectoryAsync(index: index, documentId: documentId, cancellationToken);
+            try
+            {
+                await this._contentStorage.DeleteDocumentDirectoryAsync(index: pipeline.Index, documentId: pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.Log.LogError(e, "Error while trying to delete the document directory");
+            }
         }
-        catch (Exception e)
-        {
-            this.Log.LogError(e, "Error while trying to delete the document directory");
-            return Task.CompletedTask;
-        }
-#pragma warning restore CA1031
-    }
 
-    protected Task TryToDeleteIndexMetadataAsync(string index, CancellationToken cancellationToken = default)
-    {
-        Verify.NotEmptyString(index, "The index name is empty");
-
-#pragma warning disable CA1031 // catch all by design
-        try
+        if (pipeline.IsIndexDeletionPipeline())
         {
-            return this._contentStorage.DeleteIndexDirectoryAsync(index, cancellationToken);
-        }
-        catch (Exception e)
-        {
-            this.Log.LogError(e, "Error while trying to delete the index directory");
-            return Task.CompletedTask;
+            try
+            {
+                await this._contentStorage.DeleteIndexDirectoryAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.Log.LogError(e, "Error while trying to delete the index directory");
+            }
         }
 #pragma warning restore CA1031
     }

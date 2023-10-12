@@ -190,6 +190,8 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
             // Save the pipeline status. If this fails the system should retry the current step.
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+            await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
         else
         {
