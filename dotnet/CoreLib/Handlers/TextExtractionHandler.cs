@@ -54,6 +54,8 @@ public class TextExtractionHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Extracting text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             if (uploadedFile.AlreadyProcessedBy(this))

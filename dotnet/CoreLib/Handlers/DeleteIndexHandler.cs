@@ -11,24 +11,24 @@ using Microsoft.SemanticMemory.Pipeline;
 
 namespace Microsoft.SemanticMemory.Handlers;
 
-public class DeleteDocumentHandler : IPipelineStepHandler
+public class DeleteIndexHandler : IPipelineStepHandler
 {
     private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
     private readonly IContentStorage _contentStorage;
-    private readonly ILogger<DeleteDocumentHandler> _log;
+    private readonly ILogger<DeleteIndexHandler> _log;
 
     public string StepName { get; }
 
-    public DeleteDocumentHandler(
+    public DeleteIndexHandler(
         string stepName,
         IContentStorage contentStorage,
         List<ISemanticMemoryVectorDb> vectorDbs,
-        ILogger<DeleteDocumentHandler>? log = null)
+        ILogger<DeleteIndexHandler>? log = null)
     {
         this.StepName = stepName;
         this._contentStorage = contentStorage;
         this._vectorDbs = vectorDbs;
-        this._log = log ?? DefaultLogger<DeleteDocumentHandler>.Instance;
+        this._log = log ?? DefaultLogger<DeleteIndexHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -37,27 +37,17 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+        this._log.LogDebug("Deleting index, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
-        // Delete embeddings
+        // Delete index from vector storage
         foreach (ISemanticMemoryVectorDb db in this._vectorDbs)
         {
-            IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
-                indexName: pipeline.Index,
-                limit: -1,
-                filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
-                cancellationToken: cancellationToken);
-
-            await foreach (var record in records.WithCancellation(cancellationToken))
-            {
-                await db.DeleteAsync(indexName: pipeline.Index, record, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
+            await db.DeleteIndexAsync(indexName: pipeline.Index, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        // Delete files, leaving the status file
-        await this._contentStorage.EmptyDocumentDirectoryAsync(
+        // Delete index from file storage
+        await this._contentStorage.DeleteIndexDirectoryAsync(
             index: pipeline.Index,
-            documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 
         return (true, pipeline);

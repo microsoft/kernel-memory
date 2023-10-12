@@ -44,13 +44,16 @@ public static class Constants
     public const string HttpUploadEndpoint = "/upload";
     public const string HttpUploadStatusEndpoint = "/upload-status";
     public const string HttpDocumentsEndpoint = "/documents";
-    public const string HttpDeleteEndpointWithParams = $"{HttpDocumentsEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpIndexesEndpoint = "/indexes";
+    public const string HttpDeleteDocumentEndpointWithParams = $"{HttpDocumentsEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpDeleteIndexEndpointWithParams = $"{HttpIndexesEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}";
     public const string HttpUploadStatusEndpointWithParams = $"{HttpUploadStatusEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
     public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
 
     // Handlers
     public const string DeleteDocumentPipelineStepName = "private_delete_document";
+    public const string DeleteIndexPipelineStepName = "private_delete_index";
 
     // Pipeline steps
     public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_embeddings", "summarize", "gen_embeddings", "save_embeddings" };

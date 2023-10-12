@@ -114,17 +114,19 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             {
                 pipeline = updatedPipeline;
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}' successfully", currentStepName, pipeline.DocumentId);
+                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}'", currentStepName, pipeline.DocumentId);
+                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                 throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
             }
         }
 
-        this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
+        await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+        this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
     }
 }
