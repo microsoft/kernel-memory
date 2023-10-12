@@ -10,16 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
-
-internal interface ISimpleStorage
-{
-    Task<string> ReadAsync(string collection, string id, CancellationToken cancellationToken = default);
-    Task WriteAsync(string collection, string id, string data, CancellationToken cancellationToken = default);
-    Task DeleteAsync(string collection, string id, CancellationToken cancellationToken = default);
-    Task DeleteCollectionAsync(string collection, CancellationToken cancellationToken = default);
-    Task<Dictionary<string, string>> ReadAllAsync(string collection, CancellationToken cancellationToken = default);
-}
+namespace Microsoft.SemanticMemory.FileSystem.DevTools;
 
 #pragma warning disable CA1031 // need to catch all exceptions
 
@@ -38,7 +29,7 @@ internal sealed class TextFileStorage : ISimpleStorage
         this.CreateDirectory(this._dataPath);
     }
 
-    public async Task<string> ReadAsync(string collection, string id, CancellationToken cancellationToken = default)
+    public async Task<string> ReadFileAsTextAsync(string collection, string id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -57,7 +48,7 @@ internal sealed class TextFileStorage : ISimpleStorage
         return string.Empty;
     }
 
-    public async Task<Dictionary<string, string>> ReadAllAsync(string collection, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, string>> ReadAllFilesAtTextAsync(string collection, CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, string>();
         var collectionPath = this.BuildCollectionPath(collection);
@@ -73,7 +64,7 @@ internal sealed class TextFileStorage : ISimpleStorage
         return result;
     }
 
-    public async Task WriteAsync(string collection, string id, string data, CancellationToken cancellationToken = default)
+    public async Task WriteFileAsync(string collection, string id, string data, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -90,7 +81,7 @@ internal sealed class TextFileStorage : ISimpleStorage
         }
     }
 
-    public Task DeleteAsync(string collection, string id, CancellationToken cancellationToken = default)
+    public Task DeleteFileAsync(string collection, string id, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -162,84 +153,5 @@ internal sealed class TextFileStorage : ISimpleStorage
         var bytes = Convert.FromBase64String(encodedId.Replace('_', '='));
         return Encoding.UTF8.GetString(bytes);
     }
-}
-
-/// <summary>
-/// Simple storage that saves data in memory.
-/// </summary>
-internal sealed class VolatileStorage : ISimpleStorage
-{
-    private readonly ILogger _log;
-
-    private readonly Dictionary<string, Dictionary<string, string>> _data = new();
-
-    public VolatileStorage(ILogger? log = null)
-    {
-        this._log = log ?? DefaultLogger<VolatileStorage>.Instance;
-    }
-
-    public Task<string> ReadAsync(string collection, string id, CancellationToken cancellationToken = default)
-    {
-        if (this._data.TryGetValue(collection, out var collectionData))
-        {
-            if (collectionData.TryGetValue(id, out var data))
-            {
-                return Task.FromResult(data);
-            }
-
-            this._log.LogError("Volatile storage read failed: id not found");
-            return Task.FromResult(string.Empty);
-        }
-
-        this._log.LogError("Volatile storage read failed: collection not found");
-        return Task.FromResult(string.Empty);
-    }
-
-    public Task WriteAsync(string collection, string id, string data, CancellationToken cancellationToken = default)
-    {
-        if (this._data.TryGetValue(collection, out var collectionData))
-        {
-            collectionData[id] = data;
-        }
-        else
-        {
-            this._data[collection] = new Dictionary<string, string> { { id, data } };
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAsync(string collection, string id, CancellationToken cancellationToken = default)
-    {
-        if (this._data.TryGetValue(collection, out var collectionData))
-        {
-            collectionData.Remove(id);
-
-            if (collectionData.Count == 0)
-            {
-                this._data.Remove(collection);
-            }
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteCollectionAsync(string collection, CancellationToken cancellationToken = default)
-    {
-        this._data.Remove(collection);
-
-        return Task.CompletedTask;
-    }
-
-    public Task<Dictionary<string, string>> ReadAllAsync(string collection, CancellationToken cancellationToken = default)
-    {
-        if (this._data.TryGetValue(collection, out var collectionData))
-        {
-            return Task.FromResult(collectionData);
-        }
-
-        return Task.FromResult(new Dictionary<string, string>());
-    }
-}
-
 #pragma warning restore CA1031
+}

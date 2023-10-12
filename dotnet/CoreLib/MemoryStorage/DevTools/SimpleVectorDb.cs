@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 
 namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
 
@@ -46,7 +47,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        await this._storage.WriteAsync(indexName, record.Id, JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
+        await this._storage.WriteFileAsync(indexName, record.Id, JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
         return record.Id;
     }
 
@@ -105,7 +106,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        Dictionary<string, string> list = await this._storage.ReadAllAsync(indexName, cancellationToken).ConfigureAwait(false);
+        Dictionary<string, string> list = await this._storage.ReadAllFilesAtTextAsync(indexName, cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)
         {
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
@@ -129,7 +130,7 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return this._storage.DeleteAsync(indexName, record.Id, cancellationToken);
+        return this._storage.DeleteFileAsync(indexName, record.Id, cancellationToken);
     }
 
     private static bool TagsMatchFilters(TagCollection tags, ICollection<MemoryFilter>? filters)
