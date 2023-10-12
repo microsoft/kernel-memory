@@ -124,6 +124,30 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
+    {
+        index = IndexExtensions.CleanName(index);
+        var url = Constants.HttpDeleteIndexEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, index);
+        HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+
+        // No error if the index doesn't exist
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            throw new SemanticMemoryException($"Index delete failed, status code: {response.StatusCode}", e);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(documentId))
@@ -132,7 +156,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
 
         index = IndexExtensions.CleanName(index);
-        var url = Constants.HttpDeleteEndpointWithParams
+        var url = Constants.HttpDeleteDocumentEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
@@ -149,7 +173,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
         catch (Exception e)
         {
-            throw new SemanticMemoryException($"Delete failed, status code: {response.StatusCode}", e);
+            throw new SemanticMemoryException($"Document deletion failed, status code: {response.StatusCode}", e);
         }
     }
 

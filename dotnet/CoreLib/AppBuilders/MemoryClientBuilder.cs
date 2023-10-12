@@ -488,6 +488,7 @@ public class MemoryClientBuilder
         {
             this.CompleteServerlessClient();
 
+            // Add handlers to DI service collection
             if (this._useDefaultHandlers)
             {
                 this._memoryServiceCollection.AddTransient<TextExtractionHandler>(serviceProvider
@@ -507,6 +508,9 @@ public class MemoryClientBuilder
 
                 this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
+
+                this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
             }
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
@@ -520,6 +524,7 @@ public class MemoryClientBuilder
 
             var memoryClientInstance = new Memory(orchestrator, searchClient);
 
+            // Load handlers in the memory client
             if (this._useDefaultHandlers)
             {
                 memoryClientInstance.AddHandler(serviceProvider.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
@@ -528,6 +533,7 @@ public class MemoryClientBuilder
                 memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
             }
 
             return memoryClientInstance;
@@ -570,6 +576,7 @@ public class MemoryClientBuilder
             this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
             this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
         }
 
         return new MemoryService(orchestrator, searchClient);

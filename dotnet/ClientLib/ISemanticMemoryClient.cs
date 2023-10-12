@@ -109,6 +109,15 @@ public interface ISemanticMemoryClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Delete an entire index.
+    /// </summary>
+    /// <param name="index">Optional index name, when empty the default index is deleted</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    public Task DeleteIndexAsync(
+        string? index = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete a specified document from memory, and update all derived memories.
     /// </summary>
     /// <param name="documentId">Document ID</param>

@@ -15,7 +15,7 @@
         <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Include="PdfPig" Version="0.1.8" />
-        <PackageVersion Include="Polly" Version="7.2.4" />
+        <PackageVersion Include="Polly.Core" Version="8.0.0" />
         <PackageVersion Include="RabbitMQ.Client" Version="6.5.0" />
         <PackageVersion Include="ReadLine" Version="2.0.1" />
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />

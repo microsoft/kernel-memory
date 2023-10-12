@@ -110,6 +110,27 @@ if (config.Service.RunWebService)
         })
         .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
 
+    // Delete index endpoint
+    app.MapDelete(Constants.HttpIndexesEndpoint,
+            async Task<IResult> (
+                [FromQuery(Name = Constants.WebServiceIndexField)]
+                string? index,
+                ISemanticMemoryClient service,
+                ILogger<Program> log,
+                CancellationToken cancellationToken) =>
+            {
+                log.LogTrace("New delete document HTTP request");
+                await service.DeleteIndexAsync(index: index, cancellationToken);
+                // There's no API to check the index deletion progress, so the URL is empty
+                var url = string.Empty;
+                return Results.Accepted(url, new DeleteAccepted
+                {
+                    Index = index ?? string.Empty,
+                    Message = "Index deletion request received, pipeline started"
+                });
+            })
+        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted);
+
     // Delete document endpoint
     app.MapDelete(Constants.HttpDocumentsEndpoint,
             async Task<IResult> (
@@ -123,9 +144,17 @@ if (config.Service.RunWebService)
             {
                 log.LogTrace("New delete document HTTP request");
                 await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken);
-                return Results.Accepted();
+                var url = Constants.HttpUploadStatusEndpointWithParams
+                    .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.Ordinal)
+                    .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
+                return Results.Accepted(url, new DeleteAccepted
+                {
+                    DocumentId = documentId,
+                    Index = index ?? string.Empty,
+                    Message = "Document deletion request received, pipeline started"
+                });
             })
-        .Produces<MemoryAnswer>(StatusCodes.Status202Accepted);
+        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted);
 
     // Ask endpoint
     app.MapPost(Constants.HttpAskEndpoint,

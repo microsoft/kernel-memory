@@ -32,15 +32,6 @@ public interface ISemanticMemoryVectorDb
     //     CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Delete an index/collection
-    /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
-    Task DeleteIndexAsync(
-        string indexName,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Insert/Update a vector + payload
     /// </summary>
     /// <param name="indexName">Index/Collection name</param>
@@ -87,6 +78,15 @@ public interface ISemanticMemoryVectorDb
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete an index/collection
+    /// </summary>
+    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    Task DeleteIndexAsync(
+        string indexName,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -27,7 +27,7 @@ public class SimpleFileStorage : IContentStorage
     /// <inherit />
     public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
-        this.CreateDirectory(Path.Join(this._directory, index));
+        this.CreateDirectory(this.GetIndexPath(index));
         return Task.CompletedTask;
     }
 
@@ -38,7 +38,7 @@ public class SimpleFileStorage : IContentStorage
         CancellationToken cancellationToken = default)
     {
         await this.CreateIndexDirectoryAsync(index, cancellationToken).ConfigureAwait(false);
-        this.CreateDirectory(Path.Join(this._directory, index, documentId));
+        this.CreateDirectory(this.GetDocumentPath(index, documentId));
     }
 
     /// <inherit />
@@ -50,7 +50,7 @@ public class SimpleFileStorage : IContentStorage
         CancellationToken cancellationToken = default)
     {
         await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
-        var path = Path.Join(this._directory, index, documentId, fileName);
+        var path = this.GetFilePath(index, documentId, fileName);
         this._log.LogDebug("Writing file {0}", path);
         await File.WriteAllTextAsync(path, fileContent, cancellationToken).ConfigureAwait(false);
     }
@@ -64,7 +64,7 @@ public class SimpleFileStorage : IContentStorage
         CancellationToken cancellationToken = default)
     {
         await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
-        var path = Path.Join(this._directory, index, documentId, fileName);
+        var path = this.GetFilePath(index, documentId, fileName);
 
         this._log.LogDebug("Creating file {0}", path);
         FileStream outputStream = File.Create(path);
@@ -86,7 +86,7 @@ public class SimpleFileStorage : IContentStorage
         bool errIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
-        var path = Path.Join(this._directory, index, documentId, fileName);
+        var path = this.GetFilePath(index, documentId, fileName);
         if (!File.Exists(path))
         {
             if (errIfNotFound) { this._log.LogError("File not found {0}", path); }
@@ -99,13 +99,19 @@ public class SimpleFileStorage : IContentStorage
     }
 
     /// <inherit />
-    public Task DeleteDocumentDirectoryAsync(
+    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
+    {
+        this.DeleteDirectory(this.GetIndexPath(index));
+        return Task.CompletedTask;
+    }
+
+    /// <inherit />
+    public Task EmptyDocumentDirectoryAsync(
         string index,
         string documentId,
         CancellationToken cancellationToken = default)
     {
-        var path = Path.Join(this._directory, index, documentId);
-        string[] files = Directory.GetFiles(path);
+        string[] files = Directory.GetFiles(this.GetDocumentPath(index, documentId));
         foreach (string fileName in files)
         {
             // Don't delete the pipeline status file
@@ -115,6 +121,31 @@ public class SimpleFileStorage : IContentStorage
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <inherit />
+    public Task DeleteDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        this.DeleteDirectory(this.GetDocumentPath(index, documentId));
+        return Task.CompletedTask;
+    }
+
+    private string GetFilePath(string index, string documentId, string fileName)
+    {
+        return Path.Join(this.GetDocumentPath(index, documentId), fileName);
+    }
+
+    private string GetDocumentPath(string index, string documentId)
+    {
+        return Path.Join(this.GetIndexPath(index), documentId);
+    }
+
+    private string GetIndexPath(string index)
+    {
+        return Path.Join(this._directory, index);
     }
 
     private void CreateDirectory(string path)
@@ -128,6 +159,20 @@ public class SimpleFileStorage : IContentStorage
         {
             this._log.LogDebug("Creating directory {0}", path);
             Directory.CreateDirectory(path);
+        }
+    }
+
+    private void DeleteDirectory(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return;
+        }
+
+        if (Directory.Exists(path))
+        {
+            this._log.LogWarning("Deleting directory {0} ({1})", path, Path.GetFullPath(path));
+            Directory.Delete(path, recursive: true);
         }
     }
 }

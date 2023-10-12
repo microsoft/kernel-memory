@@ -10,7 +10,7 @@ namespace Microsoft.SemanticMemory.ContentStorage;
 public interface IContentStorage
 {
     /// <summary>
-    /// Create a new container, if it doesn't exist already
+    /// Create a new container (aka index), if it doesn't exist already
     /// </summary>
     /// <param name="index">Index name</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
@@ -76,7 +76,27 @@ public interface IContentStorage
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Delete all artifacts of a document
+    /// Delete a container (aka index)
+    /// </summary>
+    /// <param name="index">Index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task DeleteIndexDirectoryAsync(
+        string index,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete all artifacts of a document, except for the status file
+    /// </summary>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task EmptyDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete all artifacts of a document, including status file and the containing folder
     /// </summary>
     /// <param name="index">Index name</param>
     /// <param name="documentId">Document ID</param>

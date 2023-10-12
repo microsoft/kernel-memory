@@ -142,6 +142,15 @@ public interface IPipelineOrchestrator
     ITextGeneration GetTextGenerator();
 
     /// <summary>
+    /// Start an asynchronous job, via handlers, to delete a specified index
+    /// from vector and content storage. This might be a long running
+    /// operation, hence the use of queue/handlers.
+    /// </summary>
+    /// <param name="index">Optional index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Start an asynchronous job, via handlers, to delete a specified document
     /// from memory, and update all derived memories. This might be a long running
     /// operation, hence the use of queue/handlers.
