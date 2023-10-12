@@ -113,7 +113,8 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         {
             KNearestNeighborsCount = limit,
             Vector = embedding.Data.ToArray(),
-            Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
+            Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
+            Exhaustive = true
         };
 
         SearchOptions options = new()
@@ -419,7 +420,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchProfileName = "SemanticMemoryDefaultCosine";
 
         var indexSchema = new SearchIndex(indexName)
         {
@@ -428,7 +429,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             {
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
+                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchProfileName)
                     {
                         Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
                     }
@@ -458,7 +459,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                         IsFacetable = false,
                         IsSortable = false,
                         VectorSearchDimensions = field.VectorSize,
-                        VectorSearchProfile = VectorSearchConfigName,
+                        VectorSearchProfile = VectorSearchProfileName,
                     };
 
                     break;
