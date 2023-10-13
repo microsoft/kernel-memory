@@ -420,7 +420,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchProfileName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchProfileName = "SemanticMemoryDefaultHnsw";
         const string VectorSearchHnswConfig = "SemanticMemoryDefaultHnswConfig";
 
         var indexSchema = new SearchIndex(indexName)
