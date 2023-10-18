@@ -67,8 +67,8 @@ env var, so the code will use the settings stored in `appsettings.Development.js
 The service depends on three main components:
 
 * **Content storage**: this is where content like files, chats, emails are
-  saved and transformed when uploaded. Currently, the solution supports local
-  filesystem and Azure Blobs.
+  saved and transformed when uploaded. Currently, the solution supports Azure Blobs,
+  local filesystem and in-memory volatile filesystem.
 
 
 * **Embedding generator**: all the documents uploaded are automatically
@@ -89,8 +89,9 @@ The service depends on three main components:
 
 
 * **Vector storage**: service used to persist embeddings. Currently, the
-  service supports **Azure Cognitive Search** and **Qdrant**. Soon we'll add
-  support for more vector DBs.
+  service supports **Azure Cognitive Search**, **Qdrant** and a very basic
+  in memory vector storage with support for persistence on disk.
+  Soon we'll add support for more vector DBs.
 
   > To use Qdrant locally, install docker and launch Qdrant with:
   >
@@ -101,10 +102,11 @@ The service depends on three main components:
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
   case it requires persistent queues like **Azure Queues** or **RabbitMQ**
-  (corelib includes also a basic file-based queue, that might be useful
-  for tests and demos).
-  When running a service, we recommend persistent queues for reliability and
-  horizontal scaling.
+  (corelib includes also a basic in memory queue, that might be useful
+  for tests and demos, with support for persistence on disk).
+
+  When running the service, we recommend persistent queues for reliability and
+  horizontal scaling, like Azure Queues and RabbitMQ.
 
   > To use RabbitMQ locally, install docker and launch RabbitMQ with:
   >

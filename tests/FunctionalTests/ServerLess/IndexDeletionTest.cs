@@ -5,6 +5,7 @@
 using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.ContentStorage.DevTools;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
@@ -21,7 +22,7 @@ public class IndexDeletionTest : BaseTestCase
         var memory = new MemoryClientBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
-            .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-vectors", StorageType = SimpleVectorDbConfig.StorageTypes.TextFile })
+            .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-vectors", StorageType = FileSystemTypes.Disk })
             .BuildServerlessClient();
 
         // Act
