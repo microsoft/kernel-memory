@@ -49,7 +49,7 @@ public class FileCollection
             var count = 0;
 
             // Note: anonymize the path. This value will be visible in the storage service.
-            var dirNameId = CalculateSHA256(Document.FsNameToId(file.DirectoryName));
+            var dirNameId = CalculateSHA256(Document.ReplaceInvalidChars(file.DirectoryName));
             do
             {
                 // Prepend a unique ID (do not append, to avoid changing the file extension)
@@ -68,7 +68,7 @@ public class FileCollection
             throw new SemanticMemoryException("The content stream is NULL");
         }
 
-        fileName = Document.FsNameToId(fileName);
+        fileName = Document.ValidateId(fileName);
         if (string.IsNullOrWhiteSpace(fileName))
         {
             fileName = "content.txt";

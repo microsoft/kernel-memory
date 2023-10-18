@@ -88,12 +88,12 @@ public class SummarizationHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogDebug("Summarizing text file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteTextFileAsync(pipeline, destFile, summary, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(summary), cancellationToken).ConfigureAwait(false);
 
                             summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {

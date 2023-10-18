@@ -3,6 +3,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 using Microsoft.SemanticMemory.Pipeline.Queue;
 using Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
 
@@ -11,25 +12,21 @@ namespace Microsoft.SemanticMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, string path)
+    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, SimpleQueuesConfig? config = null)
     {
-        return builder.WithSimpleQueuesPipeline(new SimpleQueuesConfig { Directory = path });
+        builder.Services.AddSimpleQueues(config ?? new SimpleQueuesConfig());
+        return builder;
     }
 
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, SimpleQueuesConfig config)
+    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, string directory)
     {
-        builder.Services.AddSimpleQueues(config);
+        builder.Services.AddSimpleQueues(directory);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddSimpleQueues(this IServiceCollection services, string path)
-    {
-        return services.AddSimpleQueues(new SimpleQueuesConfig { Directory = path });
-    }
-
     public static IServiceCollection AddSimpleQueues(this IServiceCollection services, SimpleQueuesConfig config)
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)
@@ -43,5 +40,10 @@ public static partial class DependencyInjection
             .AddSingleton<SimpleQueuesConfig>(config)
             .AddTransient<SimpleQueues>()
             .AddSingleton<QueueClientFactory>(serviceProvider => new QueueClientFactory(() => QueueFactory(serviceProvider)));
+    }
+
+    public static IServiceCollection AddSimpleQueues(this IServiceCollection services, string directory)
+    {
+        return services.AddSimpleQueues(new SimpleQueuesConfig { StorageType = FileSystemTypes.Disk, Directory = directory });
     }
 }

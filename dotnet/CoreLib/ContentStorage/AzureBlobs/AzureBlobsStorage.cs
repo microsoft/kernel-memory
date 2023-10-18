@@ -121,6 +121,17 @@ public class AzureBlobsStorage : IContentStorage
     }
 
     /// <inherit />
+    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            throw new ContentStorageException("The index name is empty, stopping the process to prevent data loss");
+        }
+
+        return this.DeleteBlobsByPrefixAsync(index, cancellationToken);
+    }
+
+    /// <inherit />
     public async Task CreateDocumentDirectoryAsync(
         string index,
         string documentId,
@@ -137,73 +148,6 @@ public class AzureBlobsStorage : IContentStorage
             .ConfigureAwait(false);
 
         this._log.LogTrace("Container '{0}' ready", this._containerName);
-    }
-
-    /// <inherit />
-    public Task WriteTextFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        string fileContent,
-        CancellationToken cancellationToken = default)
-    {
-        var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, fileContent, cancellationToken);
-    }
-
-    /// <inherit />
-    public Task<long> WriteStreamAsync(
-        string index,
-        string documentId,
-        string fileName,
-        Stream contentStream,
-        CancellationToken cancellationToken = default)
-    {
-        var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, contentStream, cancellationToken);
-    }
-
-    /// <inherit />
-    public async Task<BinaryData> ReadFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        bool errIfNotFound = true,
-        CancellationToken cancellationToken = default)
-    {
-        var directoryName = JoinPaths(index, documentId);
-        var blobName = $"{directoryName}/{fileName}";
-        BlobClient blobClient = this.GetBlobClient(blobName);
-
-        try
-        {
-            Response<BlobDownloadResult>? content = await blobClient.DownloadContentAsync(cancellationToken).ConfigureAwait(false);
-
-            if (content != null && content.HasValue)
-            {
-                return content.Value.Content;
-            }
-
-            if (errIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
-
-            throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
-        }
-        catch (RequestFailedException e) when (e.Status == 404)
-        {
-            this._log.LogInformation("File not found: {0}", blobName);
-            throw new ContentStorageFileNotFoundException("File not found", e);
-        }
-    }
-
-    /// <inherit />
-    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(index))
-        {
-            throw new ContentStorageException("The index name is empty, stopping the process to prevent data loss");
-        }
-
-        return this.DeleteBlobsByPrefixAsync(index, cancellationToken);
     }
 
     /// <inherit />
@@ -233,6 +177,52 @@ public class AzureBlobsStorage : IContentStorage
         return this.DeleteBlobsByPrefixAsync(directoryName, cancellationToken);
     }
 
+    /// <inherit />
+    public Task WriteFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream streamContent,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        return this.InternalWriteAsync(directoryName, fileName, streamContent, cancellationToken);
+    }
+
+    /// <inherit />
+    public async Task<BinaryData> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        var blobName = $"{directoryName}/{fileName}";
+        BlobClient blobClient = this.GetBlobClient(blobName);
+
+        try
+        {
+            Response<BlobDownloadResult>? content = await blobClient.DownloadContentAsync(cancellationToken).ConfigureAwait(false);
+
+            if (content != null && content.HasValue)
+            {
+                return content.Value.Content;
+            }
+
+            if (logErrIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
+
+            throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            this._log.LogInformation("File not found: {0}", blobName);
+            throw new ContentStorageFileNotFoundException("File not found", e);
+        }
+    }
+
+    #region private
+
     /// <summary>
     /// Join index name and document ID, using the platform specific logic, to calculate the directory name
     /// </summary>
@@ -244,7 +234,7 @@ public class AzureBlobsStorage : IContentStorage
         return $"{index}/{documentId}";
     }
 
-    private async Task<long> InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
+    private async Task InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
     {
         var blobName = $"{directoryName}/{fileName}";
 
@@ -287,8 +277,6 @@ public class AzureBlobsStorage : IContentStorage
         await this.ReleaseBlobAsync(blobLeaseClient, lease, cancellationToken).ConfigureAwait(false);
 
         this._log.LogTrace("Blob {0} ready, size {1}", blobName, size);
-
-        return size;
     }
 
     private async Task DeleteBlobsByPrefixAsync(string prefix, CancellationToken cancellationToken)
@@ -417,4 +405,6 @@ public class AzureBlobsStorage : IContentStorage
 
         return value;
     }
+
+    #endregion
 }

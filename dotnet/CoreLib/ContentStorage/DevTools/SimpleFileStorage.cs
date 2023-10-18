@@ -6,121 +6,68 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 
 namespace Microsoft.SemanticMemory.ContentStorage.DevTools;
 
 public class SimpleFileStorage : IContentStorage
 {
-    // Parent directory of the directory containing messages
-    private readonly string _directory;
-
-    // Application logger
     private readonly ILogger<SimpleFileStorage> _log;
+    private readonly IFileSystem _fileSystem;
 
     public SimpleFileStorage(SimpleFileStorageConfig config, ILogger<SimpleFileStorage>? log = null)
     {
         this._log = log ?? DefaultLogger<SimpleFileStorage>.Instance;
-        this.CreateDirectory(config.Directory);
-        this._directory = config.Directory;
+        switch (config.StorageType)
+        {
+            case FileSystemTypes.Disk:
+                this._fileSystem = new DiskFileSystem(config.Directory, this._log);
+                break;
+
+            case FileSystemTypes.Volatile:
+                this._fileSystem = VolatileFileSystem.GetInstance(this._log);
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown storage type {config.StorageType}");
+        }
     }
 
     /// <inherit />
     public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
-        this.CreateDirectory(this.GetIndexPath(index));
-        return Task.CompletedTask;
-    }
-
-    /// <inherit />
-    public async Task CreateDocumentDirectoryAsync(
-        string index,
-        string documentId,
-        CancellationToken cancellationToken = default)
-    {
-        await this.CreateIndexDirectoryAsync(index, cancellationToken).ConfigureAwait(false);
-        this.CreateDirectory(this.GetDocumentPath(index, documentId));
-    }
-
-    /// <inherit />
-    public async Task WriteTextFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        string fileContent,
-        CancellationToken cancellationToken = default)
-    {
-        await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
-        var path = this.GetFilePath(index, documentId, fileName);
-        this._log.LogDebug("Writing file {0}", path);
-        await File.WriteAllTextAsync(path, fileContent, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inherit />
-    public async Task<long> WriteStreamAsync(
-        string index,
-        string documentId,
-        string fileName,
-        Stream contentStream,
-        CancellationToken cancellationToken = default)
-    {
-        await this.CreateDocumentDirectoryAsync(index, documentId, cancellationToken).ConfigureAwait(false);
-        var path = this.GetFilePath(index, documentId, fileName);
-
-        this._log.LogDebug("Creating file {0}", path);
-        FileStream outputStream = File.Create(path);
-
-        contentStream.Seek(0, SeekOrigin.Begin);
-
-        this._log.LogDebug("Writing to file {0}", path);
-        await contentStream.CopyToAsync(outputStream, cancellationToken).ConfigureAwait(false);
-        var size = outputStream.Length;
-        outputStream.Close();
-        return size;
-    }
-
-    /// <inherit />
-    public Task<BinaryData> ReadFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        bool errIfNotFound = true,
-        CancellationToken cancellationToken = default)
-    {
-        var path = this.GetFilePath(index, documentId, fileName);
-        if (!File.Exists(path))
-        {
-            if (errIfNotFound) { this._log.LogError("File not found {0}", path); }
-
-            throw new ContentStorageFileNotFoundException("File not found");
-        }
-
-        byte[] data = File.ReadAllBytes(path);
-        return Task.FromResult(new BinaryData(data));
+        return this._fileSystem.CreateVolumeAsync(index, cancellationToken);
     }
 
     /// <inherit />
     public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
-        this.DeleteDirectory(this.GetIndexPath(index));
-        return Task.CompletedTask;
+        return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
     }
 
     /// <inherit />
-    public Task EmptyDocumentDirectoryAsync(
+    public Task CreateDocumentDirectoryAsync(
         string index,
         string documentId,
         CancellationToken cancellationToken = default)
     {
-        string[] files = Directory.GetFiles(this.GetDocumentPath(index, documentId));
+        return this._fileSystem.CreateDirectoryAsync(index, documentId, cancellationToken);
+    }
+
+    /// <inherit />
+    public async Task EmptyDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        var files = await this._fileSystem.GetAllFileNamesAsync(index, documentId, cancellationToken).ConfigureAwait(false);
         foreach (string fileName in files)
         {
             // Don't delete the pipeline status file
             if (fileName == Constants.PipelineStatusFilename) { continue; }
 
-            File.Delete(fileName);
+            await this._fileSystem.DeleteFileAsync(index, documentId, fileName, cancellationToken).ConfigureAwait(false);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inherit />
@@ -129,50 +76,41 @@ public class SimpleFileStorage : IContentStorage
         string documentId,
         CancellationToken cancellationToken = default)
     {
-        this.DeleteDirectory(this.GetDocumentPath(index, documentId));
-        return Task.CompletedTask;
+        return this._fileSystem.DeleteDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    private string GetFilePath(string index, string documentId, string fileName)
+    /// <inherit />
+    public async Task WriteFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream streamContent,
+        CancellationToken cancellationToken = default)
     {
-        return Path.Join(this.GetDocumentPath(index, documentId), fileName);
+        await this._fileSystem.CreateDirectoryAsync(volume: index, relPath: documentId, cancellationToken).ConfigureAwait(false);
+        await this._fileSystem.WriteFileAsync(volume: index, relPath: documentId, fileName: fileName, streamContent: streamContent, cancellationToken).ConfigureAwait(false);
     }
 
-    private string GetDocumentPath(string index, string documentId)
+    /// <inherit />
+    public async Task<BinaryData> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
     {
-        return Path.Join(this.GetIndexPath(index), documentId);
-    }
-
-    private string GetIndexPath(string index)
-    {
-        return Path.Join(this._directory, index);
-    }
-
-    private void CreateDirectory(string path)
-    {
-        if (string.IsNullOrEmpty(path))
+        try
         {
-            return;
+            return await this._fileSystem.ReadFileAsBinaryAsync(volume: index, relPath: documentId, fileName: fileName, cancellationToken).ConfigureAwait(false);
         }
-
-        if (!Directory.Exists(path))
+        catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
         {
-            this._log.LogDebug("Creating directory {0}", path);
-            Directory.CreateDirectory(path);
-        }
-    }
+            if (logErrIfNotFound)
+            {
+                this._log.LogError("File not found {0}/{1}/{2}", index, documentId, fileName);
+            }
 
-    private void DeleteDirectory(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return;
-        }
-
-        if (Directory.Exists(path))
-        {
-            this._log.LogWarning("Deleting directory {0} ({1})", path, Path.GetFullPath(path));
-            Directory.Delete(path, recursive: true);
+            throw new ContentStorageFileNotFoundException("File not found");
         }
     }
 }
