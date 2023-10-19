@@ -1,9 +1,9 @@
 # Kernel Memory
 
-**Kernel Memory** (SM) is an open-source [service](dotnet/Service/README.md) and
+**Kernel Memory** (KM) is an open-source [service](dotnet/Service/README.md) and
 [plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
 specialized in the efficient indexing of datasets through custom continuous data
-hybrid pipelines. For some scenarios SM is also available as a library, and soon
+hybrid pipelines. For some scenarios KM is also available as a library, and soon
 as a Docker container.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
