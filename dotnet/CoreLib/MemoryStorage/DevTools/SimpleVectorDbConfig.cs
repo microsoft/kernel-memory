@@ -1,32 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticMemory.FileSystem.DevTools;
+
 namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
 
 public class SimpleVectorDbConfig
 {
     /// <summary>
-    /// The type of storage to use.
+    /// The type of storage to use. Defaults to volatile (in RAM).
     /// </summary>
-    public enum StorageTypes
-    {
-        /// <summary>
-        /// Save data to text files.
-        /// </summary>
-        TextFile,
-
-        /// <summary>
-        /// Save data to memory.
-        /// </summary>
-        Volatile,
-    }
+    public FileSystemTypes StorageType { get; set; } = FileSystemTypes.Volatile;
 
     /// <summary>
     /// Directory of the text file storage.
     /// </summary>
     public string Directory { get; set; } = "tmp-memory-vectors";
-
-    /// <summary>
-    /// The type of storage to use.
-    /// </summary>
-    public StorageTypes StorageType { get; set; } = StorageTypes.TextFile;
 }

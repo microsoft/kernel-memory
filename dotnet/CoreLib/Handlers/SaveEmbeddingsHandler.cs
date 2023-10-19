@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticMemory.ContentStorage;
 using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.Pipeline;
 
@@ -67,7 +68,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             }
 
             string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
-            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
+            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson.RemoveBOM().Trim());
             if (embeddingData == null)
             {
                 throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.Value.Name}");

@@ -78,7 +78,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitPlainTextParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -88,7 +88,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     case MimeTypes.MarkDown:
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitMarkdownParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -115,7 +115,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);
-                    await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
+                    await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
 
                     var destFileDetails = new DataPipeline.GeneratedFileDetails
                     {

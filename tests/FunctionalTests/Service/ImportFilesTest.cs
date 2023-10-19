@@ -34,7 +34,7 @@ public class ImportFilesTest : BaseTestCase
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
-            documentId: @"Documents\Doc1.txt",
+            documentId: "Documents-Doc1.txt",
             steps: new[] { "extract", "partition" });
     }
 

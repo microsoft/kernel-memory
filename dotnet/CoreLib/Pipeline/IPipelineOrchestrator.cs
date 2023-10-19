@@ -103,22 +103,22 @@ public interface IPipelineOrchestrator
     Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch a file from content storage
-    /// </summary>
-    /// <param name="pipeline">Pipeline containing the file</param>
-    /// <param name="fileName">Name of the file to fetch</param>
-    /// <param name="fileContent">File content</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Fetch a file from content storage
+    /// Write a text file from content storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
     /// <param name="fileContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Write a file from content storage
+    /// </summary>
+    /// <param name="pipeline">Pipeline containing the file</param>
+    /// <param name="fileName">Name of the file to fetch</param>
+    /// <param name="fileContent">File content</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get list of embedding generators to use during the ingestion, e.g. to create
