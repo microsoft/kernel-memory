@@ -204,4 +204,21 @@ public class Memory : ISemanticMemoryClient
         index = IndexExtensions.CleanName(index);
         return this._searchClient.AskAsync(index: index, question: question, filters: filters, cancellationToken: cancellationToken);
     }
+
+    public Task<SearchResult> ListAsync(
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        index = IndexExtensions.CleanName(index);
+        return this._searchClient.ListAsync(index: index, filters: filters, cancellationToken: cancellationToken);
+    }
 }

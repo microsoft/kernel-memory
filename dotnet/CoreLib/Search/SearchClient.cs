@@ -288,6 +288,76 @@ public class SearchClient
         return answer;
     }
 
+    public async Task<SearchResult> ListAsync(
+        string index,
+        ICollection<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new SearchResult
+        {
+            Query = string.Empty,
+            Results = new List<Citation>()
+        };
+
+        this._log.LogTrace("Fetching all memories");
+        IAsyncEnumerable<MemoryRecord> matches = this._vectorDb.GetListAsync(
+            indexName: index, limit: -1, filters: filters, cancellationToken: cancellationToken);
+
+        // Memories are sorted by relevance, starting from the most relevant
+        await foreach (MemoryRecord memory in matches.WithCancellation(cancellationToken))
+        {
+            // Note: a document can be composed by multiple files
+            string documentId = memory.Tags[Constants.ReservedDocumentIdTag].FirstOrDefault() ?? string.Empty;
+
+            // Identify the file in case there are multiple files
+            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+
+            // TODO: URL to access the file
+            string linkToFile = $"{documentId}/{fileId}";
+
+            string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
+            string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+
+            var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
+            if (string.IsNullOrEmpty(partitionText))
+            {
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
+                continue;
+            }
+
+            // If the file is already in the list of citations, only add the partition
+            var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
+            if (citation == null)
+            {
+                citation = new Citation();
+                result.Results.Add(citation);
+            }
+
+            // Add the partition to the list of citations
+            citation.Link = linkToFile;
+            citation.SourceContentType = fileContentType;
+            citation.SourceName = fileName;
+            citation.Tags = memory.Tags;
+
+#pragma warning disable CA1806 // it's ok if parsing fails
+            DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
+#pragma warning restore CA1806
+
+            citation.Partitions.Add(new Citation.Partition
+            {
+                Text = partitionText,
+                LastUpdate = lastUpdate,
+            });
+        }
+
+        if (result.Results.Count == 0)
+        {
+            this._log.LogDebug("No memories found");
+        }
+
+        return result;
+    }
+
     private async Task<Embedding> GenerateEmbeddingAsync(string text)
     {
         this._log.LogTrace("Generating embedding for the query");

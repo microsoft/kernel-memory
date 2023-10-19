@@ -23,6 +23,7 @@ bool ingestion = true;
 bool useImages = false; // Enable Azure Form Recognizer OCR to use this
 bool retrieval = true;
 bool purge = true;
+bool listContents = true;
 
 // =======================
 // === INGESTION =========
@@ -187,6 +188,25 @@ if (retrieval)
 
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "news"));
     Console.WriteLine($"\nNews: {answer.Result}");
+}
+
+// =======================
+// === LIST CONTENTS =====
+// =======================
+if (listContents)
+{
+    Console.WriteLine("\n====================================\n");
+    Console.WriteLine("Listing contents of memory");
+
+    var results = await memory.ListAsync();
+    foreach (var result in results.Results)
+    {
+        Console.WriteLine($"  - {result.SourceName}  - {result.Link}");
+        foreach (var partition in result.Partitions)
+        {
+            Console.WriteLine($"    - {partition.Text.Substring(0, 30)}... [{result.Partitions.First().LastUpdate:D}]");
+        }
+    }
 }
 
 // =======================
