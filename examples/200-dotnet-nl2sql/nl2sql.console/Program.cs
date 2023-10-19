@@ -14,7 +14,7 @@ namespace SemanticKernel.Data.Nl2Sql;
 /// Entry point for console execution.
 /// </summary>
 /// <remarks>
-/// See https://github.com/microsoft/semantic-memory/tree/main/examples/200-dotnet-nl2sql/README.md for configuration steps.
+/// See https://github.com/microsoft/kernel-memory/tree/main/examples/200-dotnet-nl2sql/README.md for configuration steps.
 /// </remarks>
 internal static class Program
 {

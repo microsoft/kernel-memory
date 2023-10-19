@@ -1,22 +1,22 @@
-# Semantic Memory
+# Kernel Memory
 
-**Semantic Memory** (SM) is an open-source [service](dotnet/Service/README.md) and
+**Kernel Memory** (KM) is an open-source [service](dotnet/Service/README.md) and
 [plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
 specialized in the efficient indexing of datasets through custom continuous data
-hybrid pipelines. For some scenarios SM is also available as a library, and soon
+hybrid pipelines. For some scenarios KM is also available as a library, and soon
 as a Docker container.
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
 Utilizing advanced embeddings and LLMs, the system enables Natural Language
 querying for obtaining answers from the indexed data, complete with citations
 and links to the original sources.
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
 
 Designed for seamless integration as a Plugin with
 [Semantic Kernel](https://github.com/microsoft/semantic-kernel), Microsoft
-Copilot and ChatGPT, Semantic Memory enhances data-driven features in applications
+Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
 ### Supported backends
@@ -35,15 +35,15 @@ built for most popular AI platforms.
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
 
-# Semantic Memory in serverless mode
+# Kernel Memory in serverless mode
 
-Semantic Memory works and scales at best when running as a service, allowing to
+Kernel Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Semantic Memory also serverless, embedding the `MemoryServerlessClient`
+However, you can use Kernel Memory also serverless, embedding the `MemoryServerlessClient`
 in your app.
 
-> ### Importing documents into your Semantic Memory can be as simple as this:
+> ### Importing documents into your Kernel Memory can be as simple as this:
 >
 > ```csharp
 > var memory = new MemoryClientBuilder()
@@ -87,7 +87,7 @@ efficient search and retrieval through faceted navigation.
 # Data lineage, citations
 
 All memories and answers are fully correlated to the data provided. When
-producing an answer, Semantic Memory includes all the information needed
+producing an answer, Kernel Memory includes all the information needed
 to verify its accuracy:
 
 ```csharp
@@ -121,7 +121,7 @@ foreach (var x in answer.RelevantSources)
 >
 > - **NASA-news.pdf -- Tuesday, August 1, 2023**
 
-## Using Semantic Memory Service
+## Using Kernel Memory Service
 
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
@@ -141,16 +141,16 @@ However, if you are in one of these scenarios:
 * I need memory import to **run independently, supporting failures and retry
   logic**
 
-then you can deploy Semantic Memory as a service, plugging in the
+then you can deploy Kernel Memory as a service, plugging in the
 default handlers or your custom Python/TypeScript/Java/etc. handlers,
 and leveraging the asynchronous non-blocking memory encoding process,
 sending documents and asking questions using the **MemoryWebClient**.
 
 [Here](dotnet/Service/README.md) you can find a complete set of instruction
-about [how to run the Semantic Memory service](dotnet/Service/README.md).
+about [how to run the Kernel Memory service](dotnet/Service/README.md).
 
 If you want to give the service a quick test, use the following command
-to **start the Semantic Memory Service**:
+to **start the Kernel Memory Service**:
 
 > ### On WSL / Linux / MacOS:
 >
@@ -168,7 +168,7 @@ to **start the Semantic Memory Service**:
 > run.cmd
 > ```
 
-> ### To import files using Semantic Memory **web service**, use `MemoryWebClient`:
+> ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
 >
 > ```csharp
 > #reference dotnet/ClientLib/ClientLib.csproj
@@ -258,7 +258,7 @@ running the service locally with OpenAPI enabled.
 
 1. [Collection of Jupyter notebooks with various tests](examples/000-notebooks)
 2. [Importing files and asking question without running the service (serverless mode)](examples/001-dotnet-Serverless)
-3. [Using the Semantic Memory web service](examples/002-dotnet-WebClient)
+3. [Using the Kernel Memory web service](examples/002-dotnet-WebClient)
 4. [How to upload files from command line with curl](examples/003-curl-calling-webservice)
 5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
 6. [Using a custom pipeline handler with serverless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)

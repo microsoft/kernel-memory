@@ -1,16 +1,16 @@
-# Semantic Memory F.A.Q.
+# Kernel Memory F.A.Q.
 
-### How do I integrate Semantic Memory with my application?
+### How do I integrate Kernel Memory with my application?
 
 There are two main modalities, **As a Service** and **Serverless**, plus
 customizations you can apply.
 
-1. Running Semantic Memory as a Service allows you to **interact with the memory
+1. Running Kernel Memory as a Service allows you to **interact with the memory
     via HTTP, in any language**. The repo contains a Memory Web client for .NET
     and some examples showing how to do the same from command line with `curl`.
     We will provide soon Web clients written in other languages.
     
-    Semantic Memory Service is designed to run as an internal service, behind
+    Kernel Memory Service is designed to run as an internal service, behind
     your backend, similarly to a DB, so you should not expose the service to
     public traffic without authenticating your users first, similar to a typical
     backend integrated with a SQL server, Service Bus, etc.
@@ -23,7 +23,7 @@ customizations you can apply.
     [Here](../examples/002-dotnet-WebClient/README.md) you can find an example
     showing the web client interacting with the service.
 
-2. Alternatively, you can **embed Semantic Memory directly into your .NET
+2. Alternatively, you can **embed Kernel Memory directly into your .NET
     applications**, using the **Serverless Memory client**. This is limited to
     .NET applications and doesn't allow mixing .NET pipelines with pipeline
     handlers written in Python or TypeScript. The serverless approach can be
@@ -35,27 +35,27 @@ customizations you can apply.
     [Here](../examples/001-dotnet-Serverless/README.md) you can find an example
     showing the serverless client.
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
 
 ### How do I protect users information, e.g. isolating data and making sure users cannot access reserved information?
 
 In order to protect users data, you should follow these design principles:
 
-* Use Semantic Memory as **a private backend component**, similar to a SQL
-  Server, without granting direct access. When using Semantic Memory as a
+* Use Kernel Memory as **a private backend component**, similar to a SQL
+  Server, without granting direct access. When using Kernel Memory as a
   service, consider assigning the service a reserved IP, accessible only to
   your services, and using HTTPS only.
 * Authenticate users in your backend using a secure solution like Azure
   Active Directory, extract the user ID from the signed credentials like JWT
-  tokens or client certs, and tag every interaction with Semantic Memory with
+  tokens or client certs, and tag every interaction with Kernel Memory with
   this User ID
-* **Use Semantic Memory Tags as Security Filters**. Make sure every API call
-  to Semantic Memory uses a User tag, both when reading and writing to memory.
+* **Use Kernel Memory Tags as Security Filters**. Make sure every API call
+  to Kernel Memory uses a User tag, both when reading and writing to memory.
   See [Security Filters](SECURITY_FILTERS.md) for more details.
 
 ![Network diagram](network.png)
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
 
 ### Is it possible to download web pages and turn the content into memory? Can I ask questions about the content of a web page?
 
@@ -66,14 +66,14 @@ the content is imported, asking questions is very simple:
 ```csharp
 // Import memories from a web page
 var docId = await memory.ImportWebPageAsync(
-    "https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
+    "https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md");
 
 // Answer questions using the page content to ground the answer
-var answer = await memory.AskAsync("Where can I store my semantic memory records?",
+var answer = await memory.AskAsync("Where can I store my kernel memory records?",
                                    MemoryFilters.ByDocument(docId));
 ```
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)
 
 ### I've stored several documents in memory, how can I target a question to a specific document, getting answers grounded only on the selected doc?
 
@@ -110,8 +110,8 @@ var answer2 = await memory.AskAsync("What's the total population?",
                                     MemoryFilters.ByDocument("europe001"));
 ```
 
-![image](https://github.com/microsoft/semantic-memory/assets/371009/18ea98ee-1210-498d-8513-56abc795ce4d)
+![image](https://github.com/microsoft/kernel-memory/assets/371009/18ea98ee-1210-498d-8513-56abc795ce4d)
 
 If you have any question, please do not hesitate to
-[open a new issue](https://github.com/microsoft/semantic-memory/issues/new)
-in the Semantic Memory repository. Thanks!
+[open a new issue](https://github.com/microsoft/kernel-memory/issues/new)
+in the Kernel Memory repository. Thanks!

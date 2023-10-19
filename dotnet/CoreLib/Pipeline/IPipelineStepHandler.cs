@@ -13,7 +13,7 @@ public interface IPipelineStepHandler
     string StepName { get; }
 
     /// <summary>
-    /// Method invoked by semantic memory orchestrators to process a pipeline.
+    /// Method invoked by kernel memory orchestrators to process a pipeline.
     /// The method is invoked only when the next step in the pipeline matches
     /// with the name handled by the handler. See <see cref="IPipelineOrchestrator.AddHandlerAsync"/>
     /// </summary>
