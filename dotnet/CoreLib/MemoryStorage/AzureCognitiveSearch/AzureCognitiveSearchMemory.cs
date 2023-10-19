@@ -114,7 +114,10 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             KNearestNeighborsCount = limit,
             Vector = embedding.Data.ToArray(),
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
-            Exhaustive = true
+            // Exhaustive search is a brute force comparison across all vectors,
+            // ignoring the index, which can be much slower once the index contains a lot of data.
+            // TODO: allow clients to manage this value either at configuration or run time.
+            Exhaustive = false
         };
 
         SearchOptions options = new()
@@ -420,8 +423,8 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchProfileName = "SemanticMemoryDefaultHnsw";
-        const string VectorSearchHnswConfig = "SemanticMemoryDefaultHnswConfig";
+        const string VectorSearchProfileName = "KMDefaultProfile";
+        const string VectorSearchConfigName = "KMDefaultAlgorithm";
 
         var indexSchema = new SearchIndex(indexName)
         {
@@ -430,11 +433,11 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
             {
                 Profiles =
                 {
-                    new VectorSearchProfile(VectorSearchProfileName, VectorSearchHnswConfig)
+                    new VectorSearchProfile(VectorSearchProfileName, VectorSearchConfigName)
                 },
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchHnswConfig)
+                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
                         Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
                     }
