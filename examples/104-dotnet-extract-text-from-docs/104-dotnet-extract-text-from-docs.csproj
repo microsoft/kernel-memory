@@ -15,6 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Remove="msexcelfile.xlsx" />
+        <Content Include="msexcelfile.xlsx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <None Remove="mswordfile.docx" />
         <Content Include="mswordfile.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
