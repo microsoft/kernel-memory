@@ -1,6 +1,6 @@
-# Semantic Memory as a Service
+# Kernel Memory as a Service
 
-This folder contains **Semantic Memory Service**, used to manage memory
+This folder contains **Kernel Memory Service**, used to manage memory
 settings, ingest data and query for answers.
 
 The service is composed by two main components:
@@ -43,7 +43,7 @@ Configuration settings can be saved in four places:
 
 # ▶️ Start the service
 
-To run the Semantic Memory service:
+To run the Kernel Memory service:
 
 > ### On WSL / Linux / MacOS:
 >

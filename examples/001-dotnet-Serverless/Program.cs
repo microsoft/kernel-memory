@@ -90,8 +90,8 @@ if (ingestion)
     toDelete.Add("webPage1");
     if (!await memory.IsDocumentReadyAsync("webPage1"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "webPage1");
     }
     else
     {
@@ -102,8 +102,8 @@ if (ingestion)
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md",
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md",
             documentId: "webPage2",
             steps: Constants.PipelineWithoutSummary);
     }
@@ -214,7 +214,7 @@ Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
-Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
 
 ====================================
 

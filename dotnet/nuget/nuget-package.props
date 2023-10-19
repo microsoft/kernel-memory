@@ -6,16 +6,16 @@
         <!-- Default description and tags. Packages can override. -->
         <Authors>Microsoft</Authors>
         <Company>Microsoft</Company>
-        <Product>Semantic Memory</Product>
+        <Product>Kernel Memory</Product>
         <Description>Index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
-        <PackageTags>Memory, Semantic Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL, SDK</PackageTags>
+        <PackageTags>Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
         <PackageId>$(AssemblyName)</PackageId>
 
         <!-- Required license, copyright, and repo information. Packages can override. -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-        <PackageProjectUrl>https://github.com/microsoft/semantic-memory</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/microsoft/semantic-memory</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/microsoft/kernel-memory</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/microsoft/kernel-memory</RepositoryUrl>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
         <!-- Use icon and NUGET readme from dotnet/nuget folder -->

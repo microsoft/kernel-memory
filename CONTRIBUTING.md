@@ -1,6 +1,6 @@
-# Contributing to Semantic Kernel
+# Contributing to Kernel Memory
 
-You can contribute to Semantic Memory with issues and pull requests (PRs).
+You can contribute to Kernel Memory with issues and pull requests (PRs).
 Simply filing issues for problems you encounter is a great way to contribute.
 Contributing code is greatly appreciated.
 
@@ -12,7 +12,7 @@ few tips on how you can make reporting your issue as effective as possible.
 ### Where to Report
 
 New issues can be reported in our
-[issues page](https://github.com/microsoft/semantic-memory/issues).
+[issues page](https://github.com/microsoft/kernel-memory/issues).
 
 Before filing a new issue, please search the list of issues to make sure it does
 not already exist.
@@ -66,7 +66,7 @@ DON'Ts:
 - **DON'T** surprise us with big pull requests. Instead, file an issue and start
   a discussion so we can agree on a direction before you invest a large amount of time.
 - **DON'T** commit code that you didn't write. If you find code that you think is a good
-  fit to add to Semantic Kernel, file an issue and start a discussion before proceeding.
+  fit to add to Kernel Memory, file an issue and start a discussion before proceeding.
 - **DON'T** submit PRs that alter licensing related files or headers. If you believe
   there's a problem with them, file an issue and we'll be happy to discuss it.
 - **DON'T** make new APIs without filing an issue and discussing with us first.
