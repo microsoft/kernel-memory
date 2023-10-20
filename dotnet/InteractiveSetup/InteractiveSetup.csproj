@@ -8,12 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="ReadLine" />
+        <PackageReference Include="Newtonsoft.Json"/>
+        <PackageReference Include="ReadLine"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
+        <ProjectReference Include="..\CoreLib\CoreLib.csproj"/>
     </ItemGroup>
 
 </Project>

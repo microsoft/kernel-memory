@@ -10,11 +10,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
+        <PackageReference Include="Azure.Search.Documents"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="appsettings.json" />
+        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="appsettings.json"/>
         <Content Include="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
