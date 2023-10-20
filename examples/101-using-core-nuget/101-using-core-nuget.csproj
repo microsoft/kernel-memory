@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.3.231002.2-preview" />
+        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.3.231002.2-preview"/>
     </ItemGroup>
 
     <!--    <ItemGroup>-->
@@ -17,7 +17,7 @@
     <!--    </ItemGroup>-->
 
     <ItemGroup>
-        <None Remove="sample-SK-Readme.pdf" />
+        <None Remove="sample-SK-Readme.pdf"/>
         <Content Include="sample-SK-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

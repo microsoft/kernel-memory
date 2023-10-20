@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
-        <ProjectReference Include="..\InteractiveSetup\InteractiveSetup.csproj" />
+        <ProjectReference Include="..\CoreLib\CoreLib.csproj"/>
+        <ProjectReference Include="..\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -265,6 +265,7 @@ running the service locally with OpenAPI enabled.
 7. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
 8. [Integrating Memory with ASP.NET applications and controllers](examples/007-aspnet-mvc-integration)
 9. [Partioning/Chunking documents with custom settings](examples/008-dotnet-custom-partitioning-options)
+10. [Using Llama and other custom LLMs](009-dotnet-custom-LLM)
 
 ## Tools
 

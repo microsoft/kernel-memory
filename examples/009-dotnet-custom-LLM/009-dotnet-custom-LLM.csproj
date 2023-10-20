@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
+        <NoWarn>CA1050</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="LLamaSharp"/>
+        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.3.231009.6-preview"/>
+    </ItemGroup>
+
+</Project>
