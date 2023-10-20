@@ -15,6 +15,18 @@ Console.WriteLine("============================");
 Console.WriteLine("Press a Enter to continue...");
 Console.ReadLine();
 
+// MS Outlook example
+Console.WriteLine("===============================");
+Console.WriteLine("=== Text in msoutlookfile.msg ===");
+Console.WriteLine("===============================");
+
+text = new MsOutlookDecoder().DocToText("msoutlookfile.msg");
+Console.WriteLine(text);
+
+Console.WriteLine("============================");
+Console.WriteLine("Press a Enter to continue...");
+Console.ReadLine();
+
 // PDF example 1, short document
 Console.WriteLine("=========================");
 Console.WriteLine("=== Text in file1.pdf ===");

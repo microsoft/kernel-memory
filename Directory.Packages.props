@@ -13,6 +13,7 @@
         <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
         <PackageVersion Include="HtmlAgilityPack" Version="1.11.53" />
         <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+        <PackageVersion Include="MsgReader" Version="5.4.5" />
         <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageVersion Include="PdfPig" Version="0.1.8" />
         <PackageVersion Include="Polly" Version="7.2.4" />
