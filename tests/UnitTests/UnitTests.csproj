@@ -10,9 +10,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="xunit" />
-        <PackageReference Include="Xunit.DependencyInjection" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="Xunit.DependencyInjection"/>
         <PackageReference Include="xunit.runner.visualstudio">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -24,18 +24,18 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
+        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Fixtures\Doc1.txt" />
-      <Content Include="Fixtures\Doc1.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <None Remove="Fixtures\Documents\Doc1.txt" />
-      <Content Include="Fixtures\Documents\Doc1.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+        <None Remove="Fixtures\Doc1.txt"/>
+        <Content Include="Fixtures\Doc1.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Fixtures\Documents\Doc1.txt"/>
+        <Content Include="Fixtures\Documents\Doc1.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

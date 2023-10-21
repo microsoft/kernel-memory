@@ -228,7 +228,7 @@ if (config.Service.RunWebService)
 // ********************************************************
 
 app.Logger.LogInformation(
-    "Starting Semantic Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}",
+    "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}",
     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
     app.Logger.GetLogLevelName(),
     config.Service.RunWebService,

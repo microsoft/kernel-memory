@@ -19,21 +19,10 @@ namespace Microsoft.SemanticMemory;
 public class Document
 {
     /// <summary>
-    /// Regex to detect (and replace) all special chars that might cause problems when used
+    /// Regex to detect all special chars that might cause problems when used
     /// for file/folder names on local filesystems, cloud storage solutions, etc.
     /// </summary>
-    private static readonly Regex s_replaceSymbolsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|\-|=|_|^|@|#|$|%|&]");
-
-    /// <summary>
-    /// Replace special chars with an underscore, which is widely supported across multiple
-    /// storage solutions, and allows RAG to distinguish words separated by this symbol.
-    /// </summary>
-    private const char SpecialCharReplacement = '_';
-
-    /// <summary>
-    /// Regex to detect (and replace) repeated use of the underscore char.
-    /// </summary>
-    private static readonly Regex s_dupeSymbolsRegex = new($"{SpecialCharReplacement}+");
+    private static readonly Regex s_replaceSymbolsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
 
     /// <summary>
     /// Document ID, used also as Pipeline ID.
@@ -44,8 +33,8 @@ public class Document
         set
         {
             this._id = string.IsNullOrWhiteSpace(value)
-                ? FsNameToId(RandomId())
-                : FsNameToId(value);
+                ? ValidateId(RandomId())
+                : ValidateId(value);
         }
     }
 
@@ -134,15 +123,34 @@ public class Document
     }
 
     /// <summary>
-    /// Remove special chars and generate a string that can be used as a file identifier
-    /// across multiple storage solutions.
+    /// Check for special chars to ensure the identifier is valid across multiple storage solutions.
     /// </summary>
-    /// <param name="fileOrDirName">File name, File path, Directory name, etc.</param>
-    public static string FsNameToId(string? fileOrDirName)
+    public static string ValidateId(string? id)
     {
-        return s_dupeSymbolsRegex
-            .Replace(s_replaceSymbolsRegex.Replace(fileOrDirName ?? string.Empty, $"{SpecialCharReplacement}"), $"{SpecialCharReplacement}")
-            .Trim(SpecialCharReplacement);
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new ArgumentOutOfRangeException(nameof(id), "The document ID is empty");
+        }
+
+        if (s_replaceSymbolsRegex.IsMatch(id))
+        {
+            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid symbols");
+        }
+
+        return id!;
+    }
+
+    /// <summary>
+    /// Remove invalid chars from the input, replacing them with underscore. Chars are considered
+    /// invalid if they have special meaning or are prohibited by some storage engines, e.g. '/' and '~'.
+    /// </summary>
+    /// <param name="value">Value to sanitize</param>
+    /// <returns>Sanitized value</returns>
+    public static string ReplaceInvalidChars(string? value)
+    {
+        if (value == null) { return string.Empty; }
+
+        return s_replaceSymbolsRegex.Replace(value, "_");
     }
 
     #region private

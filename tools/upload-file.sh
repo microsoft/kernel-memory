@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script uploads a file to Semantic Memory web service
+# This script uploads a file to Kernel Memory web service
 # from the command line, using curl
 
 set -e
@@ -15,7 +15,7 @@ Usage:
 
     ./upload-file.sh -s <url> -f <file path> [-p <index name>] [-i <id>] [-t <tag1> -t <tag2> -t <tag3> (...)]
 
-    -s web service URL     (required) Semantic Memory web service URL.
+    -s web service URL     (required) Kernel Memory web service URL.
     -f file path           (required) Path to the document to upload.
 
     -p index               (optional) Index where to store memories.
@@ -30,7 +30,7 @@ Example:
     ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type:notes" -t "type:test" -i "bash test"
 
 
-For more information visit https://github.com/microsoft/semantic-memory
+For more information visit https://github.com/microsoft/kernel-memory
 _EOF_
 }
 

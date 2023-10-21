@@ -1,10 +1,10 @@
 ## Example: using the service with \<MemoryWebClient>
 
 This example shows how to import multiple files and ask questions, delegating
-the work to the Semantic Memory Service.
+the work to the Kernel Memory Service.
 
 The example points to `https://127.0.0.1:9001` so you should start the
-Semantic Memory Service locally before running this example.
+Kernel Memory Service locally before running this example.
 Start `dotnet/Service/Service.csproj`. See `dotnet/Service/README.md` for details.
 
 ```csharp

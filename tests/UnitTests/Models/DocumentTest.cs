@@ -9,63 +9,65 @@ public class DocumentTest
     [Fact]
     public void ItReplacesSpecialChars()
     {
+        // Assert - No exception occurs
+        Assert.Equal("a-b.txt", Document.ValidateId("a-b.txt"));
+        Assert.Equal("a_b.txt", Document.ValidateId("a_b.txt"));
+
         // Assert - special chars
-        Assert.Equal("a_b.txt", Document.FsNameToId("a b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a/b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a:b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a;b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a,b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a~b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a!b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a?b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a@b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a#b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a$b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a%b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a^b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a&b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a*b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a+b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a-b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a=b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a'b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a`b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a_b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId("a|b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a/b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a:b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a;b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a,b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a~b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a!b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a?b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a@b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a#b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a$b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a%b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a^b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a&b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a*b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a+b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a=b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a'b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a`b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a|b.txt"));
 
         // Assert - empty and escaped chars
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\nb.txt"));
-        Assert.Equal("a_nb.txt", Document.FsNameToId(@"a\nb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\nb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\nb.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\rb.txt"));
-        Assert.Equal("a_rb.txt", Document.FsNameToId(@"a\rb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\rb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\rb.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\tb.txt"));
-        Assert.Equal("a_tb.txt", Document.FsNameToId(@"a\tb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\tb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\tb.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\vb.txt"));
-        Assert.Equal("a_vb.txt", Document.FsNameToId(@"a\vb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\vb.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\vb.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\\b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId(@"a\\b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\\b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\\b.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\"b.txt"));
-        Assert.Equal("a_b.txt", Document.FsNameToId(@"a""b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\"b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a""b.txt"));
 
-        Assert.Equal("a_b.txt", Document.FsNameToId("a\0b.txt"));
-        Assert.Equal("a_0b.txt", Document.FsNameToId(@"a\0b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a\0b.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"a\0b.txt"));
 
         // Assert - Dirs
-        Assert.Equal("c_dir_file.txt", Document.FsNameToId(@"c:\dir\file.txt"));
-        Assert.Equal("c_dir_file.txt", Document.FsNameToId(@"c:/dir/file.txt"));
-        Assert.Equal("dir_file.txt", Document.FsNameToId(@"dir/file.txt"));
-        Assert.Equal("dir_file.txt", Document.FsNameToId(@"/dir/file.txt"));
-        Assert.Equal("dir_file.txt", Document.FsNameToId(@"/dir/file.txt/"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"c:\dir\file.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"c:/dir/file.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"dir/file.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"/dir/file.txt"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(@"/dir/file.txt/"));
 
         // Assert - Trimming
-        Assert.Equal("a_b.txt", Document.FsNameToId("-a\0b.txt-"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("-a\0b.txt-"));
 
         // Assert - Duplicates
-        Assert.Equal("a_a_.txt", Document.FsNameToId("-a-+-a-.txt=="));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("-a-+-a-.txt=="));
     }
 }

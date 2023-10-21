@@ -67,6 +67,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             var sourceFile = uploadedFile.Name;
             var destFile = $"{uploadedFile.Name}.extract.txt";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
+            this._log.LogDebug("File '{0}' size: {1} bytes", sourceFile, fileContent.ToArray().Length);
             string text = string.Empty;
             string extractType = MimeTypes.PlainText;
 
@@ -175,7 +176,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             if (!skipFile)
             {
                 this._log.LogDebug("Saving extracted text file {0}", destFile);
-                await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
+                await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
 
                 var destFileDetails = new DataPipeline.GeneratedFileDetails
                 {

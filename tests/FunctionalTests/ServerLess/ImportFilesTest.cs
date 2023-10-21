@@ -5,6 +5,8 @@
 using System.Reflection;
 using FunctionalTests.TestHelpers;
 using Microsoft.SemanticMemory;
+using Microsoft.SemanticMemory.ContentStorage.DevTools;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
@@ -27,9 +29,9 @@ public class ImportFilesTest : BaseTestCase
 
         this._memory = new MemoryClientBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .WithSimpleFileStorage(tmpPath)
-            // Store embeddings in memory
-            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = SimpleVectorDbConfig.StorageTypes.Volatile })
+            // Store data in memory
+            .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
+            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
             .BuildServerlessClient();
     }
 
@@ -44,7 +46,7 @@ public class ImportFilesTest : BaseTestCase
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
-            documentId: @"Documents\Doc1.txt",
+            documentId: "Documents-Doc1.txt",
             steps: new[] { "extract", "partition" });
     }
 

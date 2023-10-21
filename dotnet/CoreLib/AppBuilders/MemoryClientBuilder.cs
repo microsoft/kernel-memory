@@ -16,6 +16,7 @@ using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
 using Microsoft.SemanticMemory.ContentStorage.DevTools;
 using Microsoft.SemanticMemory.DataFormats.Image;
 using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.SemanticMemory.FileSystem.DevTools;
 using Microsoft.SemanticMemory.Handlers;
 using Microsoft.SemanticMemory.MemoryStorage;
 using Microsoft.SemanticMemory.MemoryStorage.DevTools;
@@ -72,7 +73,7 @@ public class MemoryClientBuilder
     /// Whether to register the default handlers. The list is hardcoded.
     /// Additional handlers can be configured as "default", see appsettings.json
     /// but they must be registered manually, including their dependencies
-    /// if they depend on third party components. 
+    /// if they depend on third party components.
     /// </summary>
     private bool _useDefaultHandlers = true;
 
@@ -109,8 +110,8 @@ public class MemoryClientBuilder
 
         // Default configuration for tests and demos
         this.WithDefaultMimeTypeDetection();
-        this.WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-memory-files" });
-        this.WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-memory-vectors" });
+        this.WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile });
+        this.WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile });
     }
 
     public MemoryClientBuilder WithoutDefaultHandlers()
@@ -515,7 +516,7 @@ public class MemoryClientBuilder
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
-            // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval 
+            // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
             this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
             this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
 
@@ -550,7 +551,7 @@ public class MemoryClientBuilder
         this.CompleteAsyncClient();
         var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
-        // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval 
+        // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
         this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
         this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
 

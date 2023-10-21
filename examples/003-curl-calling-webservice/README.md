@@ -1,6 +1,6 @@
 # Setup
 
-Before running the code, you should start Semantic Memory web service
+Before running the code, you should start Kernel Memory web service
 and pipeline service.
 
 The example points to http://127.0.0.1:9001 so by default you should
