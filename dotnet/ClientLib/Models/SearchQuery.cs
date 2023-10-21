@@ -20,4 +20,7 @@ public class SearchQuery
 
     [JsonPropertyName("limit")]
     public int Limit { get; set; } = -1;
+
+    [JsonPropertyName("minRelevanceScore")]
+    public double MinRelevanceScore { get; set; } = 0;
 }

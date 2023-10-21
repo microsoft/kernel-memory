@@ -237,6 +237,7 @@ public class MemoryWebClient : IKernelMemory
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         int limit = -1,
+        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -247,7 +248,14 @@ public class MemoryWebClient : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(), Limit = limit };
+        SearchQuery request = new()
+        {
+            Index = index,
+            Query = query,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            Limit = limit,
+            MinRelevanceScore = minRelevanceScore
+        };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -263,6 +271,7 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -273,7 +282,13 @@ public class MemoryWebClient : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        MemoryQuery request = new() { Index = index, Question = question, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new() };
+        MemoryQuery request = new()
+        {
+            Index = index,
+            Question = question,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevanceScore = minRelevanceScore
+        };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);

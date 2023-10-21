@@ -17,4 +17,7 @@ public class MemoryQuery
 
     [JsonPropertyName("filters")]
     public List<MemoryFilter> Filters { get; set; } = new();
+
+    [JsonPropertyName("minRelevanceScore")]
+    public double MinRelevanceScore { get; set; } = 0;
 }
