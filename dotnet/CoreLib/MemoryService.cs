@@ -164,6 +164,7 @@ public class MemoryService : IKernelMemory
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         int limit = -1,
+        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -174,7 +175,13 @@ public class MemoryService : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.SearchAsync(index, query: query, filters: filters, limit: limit, cancellationToken: cancellationToken);
+        return this._searchClient.SearchAsync(
+            index: index,
+            query: query,
+            filters: filters,
+            limit: limit,
+            minRelevanceScore: minRelevanceScore,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -183,6 +190,7 @@ public class MemoryService : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -193,6 +201,11 @@ public class MemoryService : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.AskAsync(index: index, question: question, filters: filters, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(
+            index: index,
+            question: question,
+            minRelevanceScore: minRelevanceScore,
+            filters: filters,
+            cancellationToken: cancellationToken);
     }
 }
