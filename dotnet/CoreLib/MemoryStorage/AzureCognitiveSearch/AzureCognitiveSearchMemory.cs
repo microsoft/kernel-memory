@@ -576,9 +576,13 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                 {
                     var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
                     return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
-                });
+                })
+                .ToList();
 
-            conditions.Add($"({string.Join(" and ", filterConditions)})");
+            if (filterConditions is { Count: > 0 })
+            {
+                conditions.Add($"({string.Join(" and ", filterConditions)})");
+            }
         }
 
         // Examples:
