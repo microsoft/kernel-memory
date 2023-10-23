@@ -46,7 +46,7 @@ appBuilder.Services.AddSingleton(memory);
 var app = appBuilder.Build();
 
 // Read the settings, needed below
-var config = app.Configuration.GetSection("SemanticMemory").Get<KernelMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
+var config = app.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************

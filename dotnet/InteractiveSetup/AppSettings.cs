@@ -26,7 +26,7 @@ public static class AppSettings
             throw new SetupException("Unable to parse file");
         }
 
-        data["SemanticMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
+        data["KernelMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
 
         json = JsonConvert.SerializeObject(data, Formatting.Indented);
         File.WriteAllText(SettingsFile, json);
@@ -47,15 +47,15 @@ public static class AppSettings
     public static KernelMemoryConfig GetCurrentConfig()
     {
         JObject data = GetGlobalConfig();
-        if (data["SemanticMemory"] == null)
+        if (data["KernelMemory"] == null)
         {
-            Console.WriteLine("SemanticMemory property missing, using an empty configuration.");
+            Console.WriteLine("KernelMemory property missing, using an empty configuration.");
             return new KernelMemoryConfig();
         }
 
         KernelMemoryConfig? config = JsonConvert
             .DeserializeObject<KernelMemoryConfig>(JsonConvert
-                .SerializeObject(data["SemanticMemory"]));
+                .SerializeObject(data["KernelMemory"]));
         if (config == null)
         {
             throw new SetupException("Unable to parse file");
@@ -83,7 +83,7 @@ public static class AppSettings
         File.Create(SettingsFile).Dispose();
         var data = new
         {
-            SemanticMemory = new
+            KernelMemory = new
             {
             },
             Logging = new

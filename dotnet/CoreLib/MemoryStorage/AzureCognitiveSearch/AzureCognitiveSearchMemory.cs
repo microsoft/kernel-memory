@@ -419,7 +419,7 @@ public class AzureCognitiveSearchMemory : IKernelMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchConfigName = "KernelMemoryDefaultCosine";
 
         var indexSchema = new SearchIndex(indexName)
         {

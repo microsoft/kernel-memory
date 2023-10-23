@@ -45,7 +45,7 @@ public static class Program
     {
         // Azure Cognitive Search service client
         s_adminClient = new SearchIndexClient(new Uri(s_endpoint), new AzureKeyCredential(s_apiKey),
-            new SearchClientOptions { Diagnostics = { IsTelemetryEnabled = true, ApplicationId = "SemanticMemory" } });
+            new SearchClientOptions { Diagnostics = { IsTelemetryEnabled = true, ApplicationId = "KernelMemory" } });
 
         // Create an index (if doesn't exist)
         await CreateIndexAsync(Index);
@@ -102,7 +102,7 @@ public static class Program
     {
         Console.WriteLine("\n== CREATE INDEX ==\n");
 
-        const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchConfigName = "KernelMemoryDefaultCosine";
 
         var indexSchema = new SearchIndex(name)
         {

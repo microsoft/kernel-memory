@@ -121,7 +121,7 @@ public class KernelMemoryConfig
     /// <param name="root">Root node name of the Kernel Memory config</param>
     /// <typeparam name="T">Type of configuration to retrieve</typeparam>
     /// <returns>Instance of T configuration class</returns>
-    public T GetServiceConfig<T>(IConfiguration cfg, string serviceName, string root = "SemanticMemory")
+    public T GetServiceConfig<T>(IConfiguration cfg, string serviceName, string root = "KernelMemory")
     {
         return cfg
             .GetSection(root)

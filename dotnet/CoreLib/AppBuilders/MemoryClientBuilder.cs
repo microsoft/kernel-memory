@@ -42,7 +42,7 @@ public class MemoryClientBuilder
     }
 
     // appsettings.json root node name
-    private const string ConfigRoot = "SemanticMemory";
+    private const string ConfigRoot = "KernelMemory";
 
     // ASP.NET env var
     private const string AspnetEnv = "ASPNETCORE_ENVIRONMENT";
