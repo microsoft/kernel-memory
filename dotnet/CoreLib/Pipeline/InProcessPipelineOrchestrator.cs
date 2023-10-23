@@ -21,7 +21,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IKernelMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
         KernelMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,

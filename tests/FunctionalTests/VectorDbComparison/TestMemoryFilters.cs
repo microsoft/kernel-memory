@@ -77,7 +77,7 @@ public class TestMemoryFilters
         await this.TestVectorDbFiltering(simpleVecDb);
     }
 
-    private async Task TestVectorDbFiltering(IKernelMemoryVectorDb vectorDb)
+    private async Task TestVectorDbFiltering(IVectorDb vectorDb)
     {
         // Single memory filter
         var singleFilter = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee") };

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.MemoryStorage;
 
-public interface IKernelMemoryVectorDb
+public interface IVectorDb
 {
     /// <summary>
     /// Create an index/collection

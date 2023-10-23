@@ -36,7 +36,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IKernelMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
         KernelMemoryConfig? config = null,
         ILogger<DistributedPipelineOrchestrator>? log = null)

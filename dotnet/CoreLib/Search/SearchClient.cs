@@ -21,14 +21,14 @@ public class SearchClient
     private const int MaxMatchesCount = 100;
     private const int AnswerTokens = 300;
 
-    private readonly IKernelMemoryVectorDb _vectorDb;
+    private readonly IVectorDb _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
     private readonly string _prompt = EmbeddedPrompt.ReadPrompt("answer-with-facts.txt");
 
     public SearchClient(
-        IKernelMemoryVectorDb vectorDb,
+        IVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
         ILogger<SearchClient>? log = null)

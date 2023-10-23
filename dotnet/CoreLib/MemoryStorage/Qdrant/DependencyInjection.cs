@@ -28,7 +28,7 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<QdrantConfig>(config)
-            .AddSingleton<IKernelMemoryVectorDb, QdrantMemory>();
+            .AddSingleton<IVectorDb, QdrantMemory>();
     }
 
     public static IServiceCollection AddQdrantAsVectorDb(this IServiceCollection services, string endpoint, string apiKey = "")
