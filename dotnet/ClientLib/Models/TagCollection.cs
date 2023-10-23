@@ -149,7 +149,7 @@ public class TagCollection : IDictionary<string, List<string?>>
     {
         if (key.Contains("="))
         {
-            throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
+            throw new KernelMemoryException("A tag name cannot contain the '=' symbol");
         }
     }
 }

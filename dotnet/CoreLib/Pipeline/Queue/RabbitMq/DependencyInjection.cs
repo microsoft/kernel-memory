@@ -24,7 +24,7 @@ public static partial class DependencyInjection
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<RabbitMqQueue>()
-                   ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(RabbitMqQueue));
+                   ?? throw new KernelMemoryException("Unable to instantiate " + typeof(RabbitMqQueue));
         }
 
         // The orchestrator uses multiple queue clients, each linked to a specific queue,

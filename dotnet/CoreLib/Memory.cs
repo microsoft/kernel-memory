@@ -20,7 +20,7 @@ namespace Microsoft.KernelMemory;
 /// <see cref="InProcessPipelineOrchestrator"/>, hence the name "Serverless".
 /// The class accesses directly storage, vectors and AI.
 /// </summary>
-public class Memory : ISemanticMemoryClient
+public class Memory : IKernelMemory
 {
     private readonly SearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;

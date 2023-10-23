@@ -10,7 +10,7 @@ namespace FunctionalTests.Service;
 
 public class DocumentUploadTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
 
     public DocumentUploadTest(ITestOutputHelper output) : base(output)
     {

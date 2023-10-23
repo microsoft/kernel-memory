@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.MemoryStorage;
 
-public interface ISemanticMemoryVectorDb
+public interface IKernelMemoryVectorDb
 {
     /// <summary>
     /// Create an index/collection

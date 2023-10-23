@@ -11,7 +11,7 @@ namespace FunctionalTests.Service;
 
 public class ImportFilesTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
     private readonly string? _fixturesPath;
 
     public ImportFilesTest(ITestOutputHelper output) : base(output)

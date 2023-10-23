@@ -131,7 +131,7 @@ public interface IPipelineOrchestrator
     /// Get list of Vector DBs where to store embeddings.
     /// TODO: remove and inject dependency to handlers who need this
     /// </summary>
-    List<ISemanticMemoryVectorDb> GetVectorDbs();
+    List<IKernelMemoryVectorDb> GetVectorDbs();
 
     /// <summary>
     /// Get the text generator used for prompts, synthetic data, answer generation, etc.

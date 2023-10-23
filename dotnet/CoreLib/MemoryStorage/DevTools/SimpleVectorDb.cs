@@ -14,7 +14,7 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 
 namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-public class SimpleVectorDb : ISemanticMemoryVectorDb
+public class SimpleVectorDb : IKernelMemoryVectorDb
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;

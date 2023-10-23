@@ -13,7 +13,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteIndexHandler : IPipelineStepHandler
 {
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IKernelMemoryVectorDb> _vectorDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteIndexHandler> _log;
 
@@ -22,7 +22,7 @@ public class DeleteIndexHandler : IPipelineStepHandler
     public DeleteIndexHandler(
         string stepName,
         IContentStorage contentStorage,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IKernelMemoryVectorDb> vectorDbs,
         ILogger<DeleteIndexHandler>? log = null)
     {
         this.StepName = stepName;
@@ -40,7 +40,7 @@ public class DeleteIndexHandler : IPipelineStepHandler
         this._log.LogDebug("Deleting index, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         // Delete index from vector storage
-        foreach (ISemanticMemoryVectorDb db in this._vectorDbs)
+        foreach (IKernelMemoryVectorDb db in this._vectorDbs)
         {
             await db.DeleteIndexAsync(indexName: pipeline.Index, cancellationToken: cancellationToken).ConfigureAwait(false);
         }

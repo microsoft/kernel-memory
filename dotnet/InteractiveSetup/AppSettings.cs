@@ -11,11 +11,11 @@ public static class AppSettings
 {
     private const string SettingsFile = "appsettings.Development.json";
 
-    public static void Change(Action<SemanticMemoryConfig> configChanges)
+    public static void Change(Action<KernelMemoryConfig> configChanges)
     {
         CreateFileIfNotExists();
 
-        SemanticMemoryConfig config = GetCurrentConfig();
+        KernelMemoryConfig config = GetCurrentConfig();
 
         configChanges.Invoke(config);
 
@@ -44,17 +44,17 @@ public static class AppSettings
         File.WriteAllText(SettingsFile, json);
     }
 
-    public static SemanticMemoryConfig GetCurrentConfig()
+    public static KernelMemoryConfig GetCurrentConfig()
     {
         JObject data = GetGlobalConfig();
         if (data["SemanticMemory"] == null)
         {
             Console.WriteLine("SemanticMemory property missing, using an empty configuration.");
-            return new SemanticMemoryConfig();
+            return new KernelMemoryConfig();
         }
 
-        SemanticMemoryConfig? config = JsonConvert
-            .DeserializeObject<SemanticMemoryConfig>(JsonConvert
+        KernelMemoryConfig? config = JsonConvert
+            .DeserializeObject<KernelMemoryConfig>(JsonConvert
                 .SerializeObject(data["SemanticMemory"]));
         if (config == null)
         {

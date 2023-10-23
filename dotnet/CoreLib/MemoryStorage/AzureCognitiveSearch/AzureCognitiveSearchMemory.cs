@@ -20,7 +20,7 @@ using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
-public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
+public class AzureCognitiveSearchMemory : IKernelMemoryVectorDb
 {
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 

@@ -14,7 +14,7 @@ using Microsoft.KernelMemory.Search;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public class MemoryService : ISemanticMemoryClient
+public class MemoryService : IKernelMemory
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly SearchClient _searchClient;

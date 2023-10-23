@@ -39,7 +39,7 @@ public class FileCollection
 
         if (!File.Exists(filePath))
         {
-            throw new SemanticMemoryException($"File not found: '{filePath}'");
+            throw new KernelMemoryException($"File not found: '{filePath}'");
         }
 
         var file = new FileInfo(filePath);
@@ -65,7 +65,7 @@ public class FileCollection
     {
         if (content == null)
         {
-            throw new SemanticMemoryException("The content stream is NULL");
+            throw new KernelMemoryException("The content stream is NULL");
         }
 
         fileName = Document.ValidateId(fileName);

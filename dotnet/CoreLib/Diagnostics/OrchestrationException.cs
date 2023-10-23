@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.Diagnostics;
 
-public class OrchestrationException : SemanticMemoryException
+public class OrchestrationException : KernelMemoryException
 {
     /// <inheritdoc />
     public OrchestrationException() { }

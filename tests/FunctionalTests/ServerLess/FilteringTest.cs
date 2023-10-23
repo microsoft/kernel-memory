@@ -13,7 +13,7 @@ namespace FunctionalTests.ServerLess;
 
 public class FilteringTest : BaseTestCase
 {
-    private ISemanticMemoryClient? _memory = null;
+    private IKernelMemory? _memory = null;
     private readonly IConfiguration _cfg;
 
     public FilteringTest(IConfiguration cfg, ITestOutputHelper output) : base(output)
@@ -166,7 +166,7 @@ public class FilteringTest : BaseTestCase
         await this._memory.DeleteDocumentAsync(Id, index: indexName);
     }
 
-    private ISemanticMemoryClient GetMemory(string memoryType)
+    private IKernelMemory GetMemory(string memoryType)
     {
         var openAIKey = Env.Var("OPENAI_API_KEY");
 

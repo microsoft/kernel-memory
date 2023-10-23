@@ -61,10 +61,10 @@ public class MemoryClientBuilder
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
 
     // List of all the vector DBs to use during ingestion
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs = new();
+    private readonly List<IKernelMemoryVectorDb> _vectorDbs = new();
 
     // Normalized configuration
-    private SemanticMemoryConfig? _memoryConfiguration = null;
+    private KernelMemoryConfig? _memoryConfiguration = null;
 
     // Content of appsettings.json, used to access dynamic data under "Services"
     private IConfiguration? _servicesConfiguration = null;
@@ -106,7 +106,7 @@ public class MemoryClientBuilder
         this._embeddingGenerators.Clear();
         this._vectorDbs.Clear();
         this.AddSingleton<List<ITextEmbeddingGeneration>>(this._embeddingGenerators);
-        this.AddSingleton<List<ISemanticMemoryVectorDb>>(this._vectorDbs);
+        this.AddSingleton<List<IKernelMemoryVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
         this.WithDefaultMimeTypeDetection();
@@ -165,13 +165,13 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public MemoryClientBuilder WithCustomVectorDb(ISemanticMemoryVectorDb service, bool useForIngestion = true, bool useForRetrieval = true)
+    public MemoryClientBuilder WithCustomVectorDb(IKernelMemoryVectorDb service, bool useForIngestion = true, bool useForRetrieval = true)
     {
         service = service ?? throw new ConfigurationException("The vector DB instance is NULL");
 
         if (useForRetrieval)
         {
-            this.AddSingleton<ISemanticMemoryVectorDb>(service);
+            this.AddSingleton<IKernelMemoryVectorDb>(service);
         }
 
         if (useForIngestion)
@@ -211,20 +211,20 @@ public class MemoryClientBuilder
     public MemoryClientBuilder FromAppSettings(string? settingsDirectory = null)
     {
         this._servicesConfiguration = this.ReadAppSettings(settingsDirectory);
-        this._memoryConfiguration = this._servicesConfiguration.GetSection(ConfigRoot).Get<SemanticMemoryConfig>()
+        this._memoryConfiguration = this._servicesConfiguration.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
                                     ?? throw new ConfigurationException($"Unable to parse configuration files. " +
                                                                         $"There should be a '{ConfigRoot}' root node, " +
-                                                                        $"with data mapping to '{nameof(SemanticMemoryConfig)}'");
+                                                                        $"with data mapping to '{nameof(KernelMemoryConfig)}'");
 
         return this.FromConfiguration(this._memoryConfiguration, this._servicesConfiguration);
     }
 
-    public MemoryClientBuilder FromConfiguration(SemanticMemoryConfig config, IConfiguration servicesConfiguration)
+    public MemoryClientBuilder FromConfiguration(KernelMemoryConfig config, IConfiguration servicesConfiguration)
     {
         this._memoryConfiguration = config ?? throw new ConfigurationException("The given memory configuration is NULL");
         this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
 
-        // Required by ctors expecting SemanticMemoryConfig via DI
+        // Required by ctors expecting KernelMemoryConfig via DI
         this.AddSingleton(this._memoryConfiguration);
 
         this.WithDefaultMimeTypeDetection();
@@ -355,7 +355,7 @@ public class MemoryClientBuilder
                 {
                     this._memoryServiceCollection.AddAzureCognitiveSearchAsVectorDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IKernelMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -364,7 +364,7 @@ public class MemoryClientBuilder
                 {
                     this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IKernelMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -373,7 +373,7 @@ public class MemoryClientBuilder
                 {
                     this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<ISemanticMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IKernelMemoryVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -437,7 +437,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public ISemanticMemoryClient Build()
+    public IKernelMemory Build()
     {
         switch (this.GetBuildType())
         {
@@ -448,9 +448,9 @@ public class MemoryClientBuilder
                 return this.BuildAsyncClient();
 
             case ClientTypes.Undefined:
-                throw new SemanticMemoryException("Missing dependencies or insufficient configuration provided. " +
-                                                  "Try using With...() methods " +
-                                                  $"and other configuration methods before calling {nameof(this.Build)}(...)");
+                throw new KernelMemoryException("Missing dependencies or insufficient configuration provided. " +
+                                                "Try using With...() methods " +
+                                                $"and other configuration methods before calling {nameof(this.Build)}(...)");
 
             default:
                 throw new ArgumentOutOfRangeException();
@@ -463,7 +463,7 @@ public class MemoryClientBuilder
         return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
     }
 
-    public static ISemanticMemoryClient BuildWebClient(string endpoint)
+    public static IKernelMemory BuildWebClient(string endpoint)
     {
         if (string.IsNullOrWhiteSpace(endpoint))
         {
@@ -620,7 +620,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    private T GetServiceConfig<T>(SemanticMemoryConfig cfg, string serviceName)
+    private T GetServiceConfig<T>(KernelMemoryConfig cfg, string serviceName)
     {
         if (this._servicesConfiguration == null)
         {
@@ -640,7 +640,7 @@ public class MemoryClientBuilder
 
     private void RequireOneVectorDb()
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(ISemanticMemoryVectorDb)))
+        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(IKernelMemoryVectorDb)))
         {
             throw new ConfigurationException("Vector DBs not defined");
         }
@@ -657,9 +657,9 @@ public class MemoryClientBuilder
 
     private void ReuseRetrievalVectorDbIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ISemanticMemoryVectorDb)))
+        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IKernelMemoryVectorDb)))
         {
-            this._vectorDbs.Add(serviceProvider.GetService<ISemanticMemoryVectorDb>()
+            this._vectorDbs.Add(serviceProvider.GetService<IKernelMemoryVectorDb>()
                                 ?? throw new ConfigurationException("Unable to build vector DB instance"));
         }
     }
@@ -670,7 +670,7 @@ public class MemoryClientBuilder
         var hasContentStorage = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IContentStorage)));
         var hasMimeDetector = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMimeTypeDetection)));
         var hasEmbeddingGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextEmbeddingGeneration)));
-        var hasVectorDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ISemanticMemoryVectorDb)));
+        var hasVectorDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IKernelMemoryVectorDb)));
         var hasTextGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextGeneration)));
 
         if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasVectorDb && hasTextGenerator)

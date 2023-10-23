@@ -18,7 +18,7 @@ namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IKernelMemoryVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
@@ -31,14 +31,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected BaseOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IKernelMemoryVectorDb> vectorDbs,
         ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
-        SemanticMemoryConfig? config = null,
+        KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
-        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
+        this._defaultIngestionSteps = (config ?? new KernelMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
         this._contentStorage = contentStorage;
         this._embeddingGenerators = embeddingGenerators;
         this._vectorDbs = vectorDbs;
@@ -197,7 +197,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public List<ISemanticMemoryVectorDb> GetVectorDbs()
+    public List<IKernelMemoryVectorDb> GetVectorDbs()
     {
         return this._vectorDbs;
     }
@@ -278,7 +278,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
-            throw new SemanticMemoryException("The document ID is empty");
+            throw new KernelMemoryException("The document ID is empty");
         }
 
         var pipeline = new DataPipeline

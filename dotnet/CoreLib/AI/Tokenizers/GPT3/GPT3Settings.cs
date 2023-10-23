@@ -40,7 +40,7 @@ internal static class GPT3Settings
         var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json, new JsonSerializerOptions());
 
         return encoder
-               ?? throw new SemanticMemoryException("Encoding table deserialization returned NULL");
+               ?? throw new KernelMemoryException("Encoding table deserialization returned NULL");
     }
 
     private static Dictionary<Tuple<string, string>, int> DictZip(List<Tuple<string, string>> x, List<int> y)

@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 
 // === Memory stuff begin ===
 // * builder.Services is passed to the builder, so memory dependencies like the OCR service can be used also in our ASP.NET controllers
-ISemanticMemoryClient memory = new MemoryClientBuilder(builder.Services)
+IKernelMemory memory = new MemoryClientBuilder(builder.Services)
     // .FromAppSettings()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .WithCustomImageOcr(new MyOcrEngine())

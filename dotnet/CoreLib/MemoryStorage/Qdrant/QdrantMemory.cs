@@ -12,7 +12,7 @@ using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
-public class QdrantMemory : ISemanticMemoryVectorDb
+public class QdrantMemory : IKernelMemoryVectorDb
 {
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;

@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Configuration;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class SemanticMemoryConfig
+public class KernelMemoryConfig
 {
     /// <summary>
     /// Settings for the upload of documents and memory creation/update.

@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.Diagnostics;
 
-public class ContentStorageException : SemanticMemoryException
+public class ContentStorageException : KernelMemoryException
 {
     /// <inheritdoc />
     public ContentStorageException() { }

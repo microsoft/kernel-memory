@@ -21,14 +21,14 @@ public class SearchClient
     private const int MaxMatchesCount = 100;
     private const int AnswerTokens = 300;
 
-    private readonly ISemanticMemoryVectorDb _vectorDb;
+    private readonly IKernelMemoryVectorDb _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
     private readonly string _prompt = EmbeddedPrompt.ReadPrompt("answer-with-facts.txt");
 
     public SearchClient(
-        ISemanticMemoryVectorDb vectorDb,
+        IKernelMemoryVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
         ILogger<SearchClient>? log = null)
@@ -38,11 +38,11 @@ public class SearchClient
         this._textGenerator = textGenerator;
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
-        if (this._embeddingGenerator == null) { throw new SemanticMemoryException("Embedding generator not configured"); }
+        if (this._embeddingGenerator == null) { throw new KernelMemoryException("Embedding generator not configured"); }
 
-        if (this._vectorDb == null) { throw new SemanticMemoryException("Search vector DB not configured"); }
+        if (this._vectorDb == null) { throw new KernelMemoryException("Search vector DB not configured"); }
 
-        if (this._textGenerator == null) { throw new SemanticMemoryException("Text generator not configured"); }
+        if (this._textGenerator == null) { throw new KernelMemoryException("Text generator not configured"); }
     }
 
     public async Task<SearchResult> SearchAsync(
@@ -294,7 +294,7 @@ public class SearchClient
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
         if (embeddings.Count == 0)
         {
-            throw new SemanticMemoryException("Failed to generate embedding for the given question");
+            throw new KernelMemoryException("Failed to generate embedding for the given question");
         }
 
         return embeddings.First();

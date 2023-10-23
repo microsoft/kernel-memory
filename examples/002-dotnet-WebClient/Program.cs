@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 
-/* Use SemanticMemoryWebClient to run the default import pipeline
+/* Use MemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".
  *
  * Note: start the Kernel Memory service before running this.

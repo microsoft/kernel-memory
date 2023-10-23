@@ -115,7 +115,7 @@ public class Document
     {
         if (content == null)
         {
-            throw new SemanticMemoryException("The content stream is NULL");
+            throw new KernelMemoryException("The content stream is NULL");
         }
 
         this.Files.AddStream(fileName, content);

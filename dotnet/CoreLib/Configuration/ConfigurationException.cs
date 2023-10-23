@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.Configuration;
 
-public class ConfigurationException : SemanticMemoryException
+public class ConfigurationException : KernelMemoryException
 {
     /// <inheritdoc />
     public ConfigurationException()
