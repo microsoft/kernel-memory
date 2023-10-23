@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.KernelMemory;
 
 /// <summary>
-/// Provides the base exception from which all Semantic Kernel exceptions derive.
+/// Provides the base exception from which all Kernel Memory exceptions derive.
 /// </summary>
 public class KernelMemoryException : Exception
 {
