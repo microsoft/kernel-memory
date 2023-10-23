@@ -13,7 +13,7 @@ namespace FunctionalTests.VectorDbComparison;
 
 public class TestMemoryFilters
 {
-    private const string IndexName = "tests";
+    private const string IndexName = "filterstests";
 
     private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _log;
