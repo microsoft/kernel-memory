@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+namespace Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 
 /// <summary>
 /// Port of GPT3 Javascript tokenizer recommended by OpenAI.

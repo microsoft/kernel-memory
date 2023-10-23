@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.InteractiveSetup.UI;
+namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 
 /// <summary>
 /// A boolean that can "change" to True only a limited number of times

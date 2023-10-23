@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal static class HttpRequest
 {

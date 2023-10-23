@@ -4,17 +4,17 @@
 
 using System.Reflection;
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
 public class ImportFilesTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
     private readonly string? _fixturesPath;
 
     public ImportFilesTest(ITestOutputHelper output) : base(output)
@@ -27,7 +27,7 @@ public class ImportFilesTest : BaseTestCase
         var tmpPath = Path.GetFullPath(Path.Join(this._fixturesPath, "..", "tmp"));
         Console.WriteLine($"Saving temp files in: {tmpPath}");
 
-        this._memory = new MemoryClientBuilder()
+        this._memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             // Store data in memory
             .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })

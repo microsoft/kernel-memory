@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Core;
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
 /// <summary>

@@ -2,18 +2,18 @@
 
 // ReSharper disable InconsistentNaming
 
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.VectorDbComparison;
 
 public class TestMemoryFilters
 {
-    private const string IndexName = "tests";
+    private const string IndexName = "filterstests";
 
     private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _log;
@@ -77,7 +77,7 @@ public class TestMemoryFilters
         await this.TestVectorDbFiltering(simpleVecDb);
     }
 
-    private async Task TestVectorDbFiltering(ISemanticMemoryVectorDb vectorDb)
+    private async Task TestVectorDbFiltering(IVectorDb vectorDb)
     {
         // Single memory filter
         var singleFilter = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee") };

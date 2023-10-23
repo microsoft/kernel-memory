@@ -10,10 +10,10 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 using Polly;
 
-namespace Microsoft.SemanticMemory.DataFormats.WebPages;
+namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
 public class WebScraper
 {

@@ -3,17 +3,17 @@
 // ReSharper disable InconsistentNaming
 
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
 public class FilteringTest : BaseTestCase
 {
-    private ISemanticMemoryClient? _memory = null;
+    private IKernelMemory? _memory = null;
     private readonly IConfiguration _cfg;
 
     public FilteringTest(IConfiguration cfg, ITestOutputHelper output) : base(output)
@@ -166,26 +166,26 @@ public class FilteringTest : BaseTestCase
         await this._memory.DeleteDocumentAsync(Id, index: indexName);
     }
 
-    private ISemanticMemoryClient GetMemory(string memoryType)
+    private IKernelMemory GetMemory(string memoryType)
     {
         var openAIKey = Env.Var("OPENAI_API_KEY");
 
         switch (memoryType)
         {
             case "default":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .BuildServerlessClient();
 
             case "simple_on_disk":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "_vectors", StorageType = FileSystemTypes.Disk })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "_files", StorageType = FileSystemTypes.Disk })
                     .BuildServerlessClient();
 
             case "simple_volatile":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
@@ -194,7 +194,7 @@ public class FilteringTest : BaseTestCase
             case "qdrant":
                 var qdrantEndpoint = this._cfg.GetSection("Services").GetSection("Qdrant").GetValue<string>("Endpoint");
                 Assert.False(string.IsNullOrEmpty(qdrantEndpoint));
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithQdrant(qdrantEndpoint)
                     .BuildServerlessClient();
@@ -204,7 +204,7 @@ public class FilteringTest : BaseTestCase
                 var acsKey = this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("APIKey");
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
                 Assert.False(string.IsNullOrEmpty(acsKey));
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithAzureCognitiveSearch(acsEndpoint, acsKey)
                     .BuildServerlessClient();

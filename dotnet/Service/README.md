@@ -11,7 +11,7 @@ The service is composed by two main components:
 If you need deploying and scaling the webservice and the pipeline handlers
 separately, you can configure the service to enable/disable them.
 
-Once the service is up and running, you can use the **Semantic Service web
+Once the service is up and running, you can use the **Kernel Memory web
 client** or simply interact with the Web API. The API schema is available
 at http://127.0.0.1:9001/swagger/index.html when running the service locally
 with **OpenAPI** enabled.

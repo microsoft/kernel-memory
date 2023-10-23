@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 /// <summary>
 /// DataPipeline representation.
@@ -322,7 +322,7 @@ public sealed class DataPipeline
     {
         if (this.RemainingSteps.Count == 0)
         {
-            throw new SemanticMemoryException("The list of remaining steps is empty");
+            throw new KernelMemoryException("The list of remaining steps is empty");
         }
 
         var stepName = this.RemainingSteps.First();
@@ -339,7 +339,7 @@ public sealed class DataPipeline
     {
         if (this.CompletedSteps.Count == 0)
         {
-            throw new SemanticMemoryException("The list of completed steps is empty");
+            throw new KernelMemoryException("The list of completed steps is empty");
         }
 
         var stepName = this.CompletedSteps.Last();

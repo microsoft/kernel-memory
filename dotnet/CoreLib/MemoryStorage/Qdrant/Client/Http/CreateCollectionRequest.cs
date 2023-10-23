@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal sealed class CreateCollectionRequest
 {

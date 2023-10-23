@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
         <NoWarn>CA1031,CA1303,CA1724</NoWarn>
     </PropertyGroup>
 

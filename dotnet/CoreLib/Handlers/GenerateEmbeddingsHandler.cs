@@ -7,12 +7,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.

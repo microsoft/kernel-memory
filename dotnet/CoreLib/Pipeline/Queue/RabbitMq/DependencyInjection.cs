@@ -2,15 +2,15 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithRabbitMQPipeline(this MemoryClientBuilder builder, RabbitMqConfig config)
+    public static KernelMemoryBuilder WithRabbitMQPipeline(this KernelMemoryBuilder builder, RabbitMqConfig config)
     {
         builder.Services.AddRabbitMq(config);
         return builder;
@@ -24,7 +24,7 @@ public static partial class DependencyInjection
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<RabbitMqQueue>()
-                   ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(RabbitMqQueue));
+                   ?? throw new KernelMemoryException("Unable to instantiate " + typeof(RabbitMqQueue));
         }
 
         // The orchestrator uses multiple queue clients, each linked to a specific queue,

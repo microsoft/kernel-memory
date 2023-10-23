@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.FileSystem.DevTools;
+namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
 internal interface IFileSystem
 {

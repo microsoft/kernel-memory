@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.Handlers;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Handlers;
 
 // Alternative approach using appsettings.json and appsettings.development.json
 //
@@ -11,12 +11,13 @@ using Microsoft.SemanticMemory.Handlers;
 //     Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
 // }
 //
-// var builder = new MemoryClientBuilder().FromAppSettings();
+// var memoryBuilder = new KernelMemoryBuilder().FromAppSettings();
 
-var memoryBuilder = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
-// To use Azure Cognitive Search => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-// To use Qdrant docker          => .WithQdrant("http://127.0.0.1:6333")
-// etc.
+var memoryBuilder = new KernelMemoryBuilder()
+    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
+    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY")) => To use Azure Cognitive Search
+    // .WithQdrant("http://127.0.0.1:6333") => To use Qdrant docker
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
 
 var _ = memoryBuilder.Build();
 var orchestrator = memoryBuilder.GetOrchestrator();

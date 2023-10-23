@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.ContentStorage.DevTools;
+namespace Microsoft.KernelMemory.ContentStorage.DevTools;
 
 public class SimpleFileStorageConfig
 {

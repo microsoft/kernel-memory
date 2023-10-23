@@ -2,11 +2,11 @@
 
 // ReSharper disable InconsistentNaming
 
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.VectorDbComparison;

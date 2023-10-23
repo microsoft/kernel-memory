@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.SemanticMemory.WebService;
+namespace Microsoft.KernelMemory.WebService;
 
 // Note: use multiform part serialization
 public class HttpDocumentUploadRequest
@@ -105,7 +105,7 @@ public class HttpDocumentUploadRequest
     {
         if (key.Contains('=', StringComparison.Ordinal))
         {
-            throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
+            throw new KernelMemoryException("A tag name cannot contain the '=' symbol");
         }
 
         if (key is
@@ -114,7 +114,7 @@ public class HttpDocumentUploadRequest
             or Constants.ReservedFilePartitionTag
             or Constants.ReservedFileTypeTag)
         {
-            throw new SemanticMemoryException($"The tag name '{key}' is reserved for internal use.");
+            throw new KernelMemoryException($"The tag name '{key}' is reserved for internal use.");
         }
     }
 }

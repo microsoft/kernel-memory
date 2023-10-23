@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+namespace Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
 
 public class AzureFormRecognizerConfig
 {

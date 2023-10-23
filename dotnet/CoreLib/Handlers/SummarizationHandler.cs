@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.Text;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
-using Microsoft.SemanticMemory.Prompts;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class SummarizationHandler : IPipelineStepHandler
 {

@@ -15,12 +15,12 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
-public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
+public class AzureCognitiveSearchMemory : IVectorDb
 {
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
@@ -419,7 +419,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchConfigName = "KernelMemoryDefaultCosine";
 
         var indexSchema = new SearchIndex(indexName)
         {

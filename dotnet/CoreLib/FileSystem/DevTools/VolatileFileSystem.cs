@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.FileSystem.DevTools;
+namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
 /// <summary>
 /// Simple file system abstraction that saves text files in memory.

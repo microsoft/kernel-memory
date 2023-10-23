@@ -3,13 +3,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public class SemanticMemoryConfig
+public class KernelMemoryConfig
 {
     /// <summary>
     /// Settings for the upload of documents and memory creation/update.
@@ -121,7 +121,7 @@ public class SemanticMemoryConfig
     /// <param name="root">Root node name of the Kernel Memory config</param>
     /// <typeparam name="T">Type of configuration to retrieve</typeparam>
     /// <returns>Instance of T configuration class</returns>
-    public T GetServiceConfig<T>(IConfiguration cfg, string serviceName, string root = "SemanticMemory")
+    public T GetServiceConfig<T>(IConfiguration cfg, string serviceName, string root = "KernelMemory")
     {
         return cfg
             .GetSection(root)

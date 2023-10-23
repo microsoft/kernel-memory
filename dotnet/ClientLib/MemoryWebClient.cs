@@ -10,12 +10,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Models;
+using Microsoft.KernelMemory.Models;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public class MemoryWebClient : ISemanticMemoryClient
+public class MemoryWebClient : IKernelMemory
 {
     private readonly HttpClient _client;
 
@@ -143,7 +143,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
         catch (Exception e)
         {
-            throw new SemanticMemoryException($"Index delete failed, status code: {response.StatusCode}", e);
+            throw new KernelMemoryException($"Index delete failed, status code: {response.StatusCode}", e);
         }
     }
 
@@ -152,7 +152,7 @@ public class MemoryWebClient : ISemanticMemoryClient
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
-            throw new SemanticMemoryException("The document ID is empty");
+            throw new KernelMemoryException("The document ID is empty");
         }
 
         index = IndexExtensions.CleanName(index);
@@ -173,7 +173,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
         catch (Exception e)
         {
-            throw new SemanticMemoryException($"Document deletion failed, status code: {response.StatusCode}", e);
+            throw new KernelMemoryException($"Document deletion failed, status code: {response.StatusCode}", e);
         }
     }
 
@@ -325,11 +325,11 @@ public class MemoryWebClient : ISemanticMemoryClient
             }
             catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
             {
-                throw new SemanticMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
+                throw new KernelMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
             }
             catch (Exception e)
             {
-                throw new SemanticMemoryWebException(e.Message, e);
+                throw new KernelMemoryWebException(e.Message, e);
             }
             finally
             {

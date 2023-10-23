@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzureBlobsStorage(this MemoryClientBuilder builder, AzureBlobsConfig config)
+    public static KernelMemoryBuilder WithAzureBlobsStorage(this KernelMemoryBuilder builder, AzureBlobsConfig config)
     {
         builder.Services.AddAzureBlobAsContentStorage(config);
         return builder;
