@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.SemanticMemory.AppBuilders;
+namespace Microsoft.KernelMemory.AppBuilders;
 
 /// <summary>
 /// Represents a collection of service collections, so that DI helpers
@@ -60,7 +60,7 @@ public class ServiceCollectionPool : IServiceCollection
 
     #region unnecessary - risky for collections that could be different
 
-#pragma warning disable CA1065 // these methods are not safe to implement because the internal state can vary 
+#pragma warning disable CA1065 // these methods are not safe to implement because the internal state can vary
     IEnumerator IEnumerable.GetEnumerator()
     {
         throw new NotImplementedException();

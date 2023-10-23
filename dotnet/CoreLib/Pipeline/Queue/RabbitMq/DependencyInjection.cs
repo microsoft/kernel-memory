@@ -2,11 +2,11 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

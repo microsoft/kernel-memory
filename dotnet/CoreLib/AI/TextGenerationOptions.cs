@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticMemory.AI;
+namespace Microsoft.KernelMemory.AI;
 
 /// <summary>
 /// Settings for a text completion request.

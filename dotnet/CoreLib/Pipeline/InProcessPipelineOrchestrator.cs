@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public class InProcessPipelineOrchestrator : BaseOrchestrator
 {

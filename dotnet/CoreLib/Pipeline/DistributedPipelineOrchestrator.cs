@@ -7,13 +7,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.Pipeline.Queue;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 /// <summary>
 /// Design notes:

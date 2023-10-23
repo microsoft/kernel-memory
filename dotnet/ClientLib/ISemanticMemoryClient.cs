@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public interface ISemanticMemoryClient
 {

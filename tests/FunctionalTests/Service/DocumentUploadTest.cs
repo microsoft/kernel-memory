@@ -3,7 +3,7 @@
 // ReSharper disable InconsistentNaming
 
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;

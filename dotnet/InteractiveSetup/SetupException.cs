@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.InteractiveSetup;
+namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public class SetupException : Exception
 {

@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.SemanticMemory.AI;
+namespace Microsoft.KernelMemory.AI;
 
 public interface ITextGeneration
 {

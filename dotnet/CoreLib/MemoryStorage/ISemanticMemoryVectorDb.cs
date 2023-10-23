@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.MemoryStorage;
+namespace Microsoft.KernelMemory.MemoryStorage;
 
 public interface ISemanticMemoryVectorDb
 {

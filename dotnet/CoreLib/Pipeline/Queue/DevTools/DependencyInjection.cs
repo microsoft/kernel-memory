@@ -3,12 +3,12 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

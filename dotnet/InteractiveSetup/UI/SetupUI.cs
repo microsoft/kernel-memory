@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticMemory.InteractiveSetup.UI;
+namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 
 public static class DictionaryExtensions
 {

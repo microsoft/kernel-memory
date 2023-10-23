@@ -6,13 +6,13 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
-using Microsoft.SemanticMemory.Search;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Search;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Memory client to upload files and search for answers, without depending

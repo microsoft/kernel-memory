@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.Configuration;
+namespace Microsoft.KernelMemory.Configuration;
 
 public class ServiceConfig
 {

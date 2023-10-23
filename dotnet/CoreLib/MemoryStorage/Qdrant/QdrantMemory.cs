@@ -7,10 +7,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
 public class QdrantMemory : ISemanticMemoryVectorDb
 {

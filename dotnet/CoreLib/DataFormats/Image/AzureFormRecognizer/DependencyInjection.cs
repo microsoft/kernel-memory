@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.DataFormats.Image;
-using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

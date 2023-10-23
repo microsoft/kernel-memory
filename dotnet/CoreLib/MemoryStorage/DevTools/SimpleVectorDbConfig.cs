@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
+namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
 public class SimpleVectorDbConfig
 {

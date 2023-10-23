@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 /* The following code shows how to create a custom handler, attached
  * to a queue and listening for work to do. You can also add multiple handlers

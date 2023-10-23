@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 using UnitTests.TestHelpers;
 using Xunit.Abstractions;
 
@@ -17,76 +17,76 @@ public class ScrollVectorsRequestTest : BaseTestCase
     public void FiltersAreRenderedToJson()
     {
         const string Expected = """
-{
-    "filter":
-    {
-        "must":
-        [
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "user:devis"
-                }
-            },
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "type:blog"
-                }
-            },
-            {
-                "should":
-                [
-                    {
-                        "must":
-                        [
-                            {
-                                "key": "tags",
-                                "match":
                                 {
-                                    "value": "month:january"
+                                    "filter":
+                                    {
+                                        "must":
+                                        [
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "user:devis"
+                                                }
+                                            },
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "type:blog"
+                                                }
+                                            },
+                                            {
+                                                "should":
+                                                [
+                                                    {
+                                                        "must":
+                                                        [
+                                                            {
+                                                                "key": "tags",
+                                                                "match":
+                                                                {
+                                                                    "value": "month:january"
+                                                                }
+                                                            },
+                                                            {
+                                                                "key": "tags",
+                                                                "match":
+                                                                {
+                                                                    "value": "year:2000"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "must":
+                                                        [
+                                                            {
+                                                                "key": "tags",
+                                                                "match":
+                                                                {
+                                                                    "value": "month:july"
+                                                                }
+                                                            },
+                                                            {
+                                                                "key": "tags",
+                                                                "match":
+                                                                {
+                                                                    "value": "year:2003"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "limit": 1,
+                                    "offset": 0,
+                                    "with_payload": false,
+                                    "with_vector": false
                                 }
-                            },
-                            {
-                                "key": "tags",
-                                "match":
-                                {
-                                    "value": "year:2000"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "must":
-                        [
-                            {
-                                "key": "tags",
-                                "match":
-                                {
-                                    "value": "month:july"
-                                }
-                            },
-                            {
-                                "key": "tags",
-                                "match":
-                                {
-                                    "value": "year:2003"
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    "limit": 1,
-    "offset": 0,
-    "with_payload": false,
-    "with_vector": false
-}
-""";
+                                """;
         // Arrange
         var request = ScrollVectorsRequest
             .Create("coll")
@@ -109,47 +109,47 @@ public class ScrollVectorsRequestTest : BaseTestCase
     public void ItRendersOptimizedConditions()
     {
         const string Expected = """
-{
-    "filter":
-    {
-        "must":
-        [
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "user:devis"
-                }
-            },
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "type:blog"
-                }
-            },
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "month:january"
-                }
-            },
-            {
-                "key": "tags",
-                "match":
-                {
-                    "value": "year:2000"
-                }
-            }
-        ]
-    },
-    "limit": 1,
-    "offset": 0,
-    "with_payload": false,
-    "with_vector": false
-}
-""";
+                                {
+                                    "filter":
+                                    {
+                                        "must":
+                                        [
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "user:devis"
+                                                }
+                                            },
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "type:blog"
+                                                }
+                                            },
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "month:january"
+                                                }
+                                            },
+                                            {
+                                                "key": "tags",
+                                                "match":
+                                                {
+                                                    "value": "year:2000"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "limit": 1,
+                                    "offset": 0,
+                                    "with_payload": false,
+                                    "with_vector": false
+                                }
+                                """;
         // Arrange
         var request = ScrollVectorsRequest
             .Create("coll")

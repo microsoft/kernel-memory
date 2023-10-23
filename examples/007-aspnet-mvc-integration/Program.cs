@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 var builder = WebApplication.CreateBuilder(args);
 

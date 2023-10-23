@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+namespace Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 
 internal static class GPT3Settings
 {

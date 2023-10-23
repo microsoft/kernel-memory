@@ -2,7 +2,7 @@
 
 using System.IO;
 
-namespace Microsoft.SemanticMemory.FileSystem.DevTools;
+namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
 public static class StreamExtensions
 {

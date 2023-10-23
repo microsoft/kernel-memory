@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.Handlers;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Handlers;
 
 var memory = new MemoryClientBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))

@@ -7,14 +7,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {

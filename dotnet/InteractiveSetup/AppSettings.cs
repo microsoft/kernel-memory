@@ -5,7 +5,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticMemory.InteractiveSetup;
+namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public static class AppSettings
 {

@@ -4,13 +4,13 @@ using System;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.AI.AzureOpenAI;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

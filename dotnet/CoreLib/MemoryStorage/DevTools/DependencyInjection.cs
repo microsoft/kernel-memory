@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

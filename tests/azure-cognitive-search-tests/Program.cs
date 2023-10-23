@@ -20,9 +20,9 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
 // ReSharper disable InconsistentNaming
 public static class Program

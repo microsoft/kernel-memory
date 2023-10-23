@@ -10,10 +10,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Models;
+using Microsoft.KernelMemory.Models;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public class MemoryWebClient : ISemanticMemoryClient
 {

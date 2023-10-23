@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 
 internal sealed class ListCollectionsRequest
 {

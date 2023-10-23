@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.Handlers;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Handlers;
 
 // Alternative approach using appsettings.json and appsettings.development.json
 //

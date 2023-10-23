@@ -2,13 +2,13 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.AI.OpenAI;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public static partial class MemoryClientBuilderExtensions
 {

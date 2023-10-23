@@ -7,7 +7,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.SemanticMemory.Models;
+namespace Microsoft.KernelMemory.Models;
 
 /// <summary>
 /// A list of files and streams, organized to guarantee a unique name, and ready for upload.

@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Provides the base exception from which all Semantic Kernel exceptions derive.

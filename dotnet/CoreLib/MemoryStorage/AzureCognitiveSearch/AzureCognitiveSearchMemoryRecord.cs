@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
 // TODO: support bring your own index schema
 public sealed class AzureCognitiveSearchMemoryRecord

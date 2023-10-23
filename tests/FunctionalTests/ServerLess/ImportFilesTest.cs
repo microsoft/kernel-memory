@@ -4,10 +4,10 @@
 
 using System.Reflection;
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;

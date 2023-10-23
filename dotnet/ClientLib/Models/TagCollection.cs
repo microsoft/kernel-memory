@@ -7,7 +7,7 @@ using System.Linq;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 // JSON serializable alternative to NameValueCollection
 public class TagCollection : IDictionary<string, List<string?>>

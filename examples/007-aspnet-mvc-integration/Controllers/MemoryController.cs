@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.DataFormats.Image;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.DataFormats.Image;
 
 namespace Controllers;
 

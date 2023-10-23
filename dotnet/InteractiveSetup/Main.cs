@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticMemory.InteractiveSetup.UI;
+using Microsoft.KernelMemory.InteractiveSetup.UI;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.SemanticMemory.InteractiveSetup;
+namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public static class Main
 {

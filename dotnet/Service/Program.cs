@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.InteractiveSetup;
-using Microsoft.SemanticMemory.WebService;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.InteractiveSetup;
+using Microsoft.KernelMemory.WebService;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************

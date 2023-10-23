@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Configuration;
+namespace Microsoft.KernelMemory.Configuration;
 
 public class ConfigurationException : SemanticMemoryException
 {

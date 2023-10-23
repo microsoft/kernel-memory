@@ -3,9 +3,9 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Diagnostics;
+namespace Microsoft.KernelMemory.Diagnostics;
 
 /// <summary>
 /// Create and cache a logger instance using the same

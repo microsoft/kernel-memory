@@ -7,30 +7,30 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AppBuilders;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.ContentStorage.AzureBlobs;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Handlers;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant;
+using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
+using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
+using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Search;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.AppBuilders;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
-using Microsoft.SemanticMemory.DataFormats.Image;
-using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.Handlers;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
-using Microsoft.SemanticMemory.Pipeline;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
-using Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
-using Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
-using Microsoft.SemanticMemory.Search;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 public class MemoryClientBuilder
 {

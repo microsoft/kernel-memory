@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -264,7 +264,7 @@ Taylor Answer: Yes, NASA has invited media to see the test version of the Orion 
 ====================================
 
 Question: What is Orion?
-warn: Microsoft.SemanticMemory.Search.SearchClient[0]
+warn: Microsoft.KernelMemory.Search.SearchClient[0]
       No memories available
 
 Articles: INFO NOT FOUND

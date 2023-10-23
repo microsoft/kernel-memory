@@ -9,10 +9,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
+namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
 public class SimpleVectorDb : ISemanticMemoryVectorDb
 {
