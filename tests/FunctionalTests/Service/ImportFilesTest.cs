@@ -20,7 +20,7 @@ public class ImportFilesTest : BaseTestCase
         Assert.NotNull(this._fixturesPath);
         Console.WriteLine($"\n# Fixtures directory found: {this._fixturesPath}");
 
-        this._memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+        this._memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }
 
     [Fact]

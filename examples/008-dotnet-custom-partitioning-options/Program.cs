@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Handlers;
 
-var memory = new MemoryClientBuilder()
+var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .With(new TextPartitioningOptions
     {

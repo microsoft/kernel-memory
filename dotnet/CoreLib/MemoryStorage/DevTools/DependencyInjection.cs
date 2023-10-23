@@ -8,15 +8,15 @@ using Microsoft.KernelMemory.MemoryStorage.DevTools;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithSimpleVectorDb(this MemoryClientBuilder builder, SimpleVectorDbConfig? config = null)
+    public static KernelMemoryBuilder WithSimpleVectorDb(this KernelMemoryBuilder builder, SimpleVectorDbConfig? config = null)
     {
         builder.Services.AddSimpleVectorDbAsVectorDb(config ?? new SimpleVectorDbConfig());
         return builder;
     }
 
-    public static MemoryClientBuilder WithSimpleVectorDb(this MemoryClientBuilder builder, string directory)
+    public static KernelMemoryBuilder WithSimpleVectorDb(this KernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleVectorDbAsVectorDb(directory);
         return builder;

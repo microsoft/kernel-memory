@@ -32,7 +32,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class MemoryClientBuilder
+public class KernelMemoryBuilder
 {
     private enum ClientTypes
     {
@@ -91,7 +91,7 @@ public class MemoryClientBuilder
     /// when hosting the pipeline handlers. The builder will register in this collection
     /// all the dependencies required by the handlers, such as storage, embedding generators,
     /// AI dependencies, orchestrator classes, etc.</param>
-    public MemoryClientBuilder(IServiceCollection? hostServiceCollection = null)
+    public KernelMemoryBuilder(IServiceCollection? hostServiceCollection = null)
     {
         this._memoryServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
@@ -114,41 +114,181 @@ public class MemoryClientBuilder
         this.WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile });
     }
 
-    public MemoryClientBuilder WithoutDefaultHandlers()
+    public IKernelMemory Build()
+    {
+        switch (this.GetBuildType())
+        {
+            case ClientTypes.SyncServerless:
+                return this.BuildServerlessClient();
+
+            case ClientTypes.AsyncService:
+                return this.BuildAsyncClient();
+
+            case ClientTypes.Undefined:
+                throw new KernelMemoryException("Missing dependencies or insufficient configuration provided. " +
+                                                "Try using With...() methods " +
+                                                $"and other configuration methods before calling {nameof(this.Build)}(...)");
+
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public Memory BuildServerlessClient()
+    {
+        try
+        {
+            this.CompleteServerlessClient();
+
+            // Add handlers to DI service collection
+            if (this._useDefaultHandlers)
+            {
+                this._memoryServiceCollection.AddTransient<TextExtractionHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<TextExtractionHandler>(serviceProvider, "extract"));
+
+                this._memoryServiceCollection.AddTransient<TextPartitioningHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<TextPartitioningHandler>(serviceProvider, "partition"));
+
+                this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
+
+                this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
+
+                this._memoryServiceCollection.AddTransient<SaveEmbeddingsHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<SaveEmbeddingsHandler>(serviceProvider, "save_embeddings"));
+
+                this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
+
+                this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
+            }
+
+            var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+
+            // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
+            this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
+            this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
+
+            var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
+            var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+
+            var memoryClientInstance = new Memory(orchestrator, searchClient);
+
+            // Load handlers in the memory client
+            if (this._useDefaultHandlers)
+            {
+                memoryClientInstance.AddHandler(serviceProvider.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
+            }
+
+            return memoryClientInstance;
+        }
+        catch (Exception e)
+        {
+            ShowException(e);
+            throw;
+        }
+    }
+
+    public MemoryService BuildAsyncClient()
+    {
+        this.CompleteAsyncClient();
+        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+
+        // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
+        this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
+        this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
+
+        var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
+        var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+
+        if (this._useDefaultHandlers)
+        {
+            if (this._hostServiceCollection == null)
+            {
+                const string ClassName = nameof(KernelMemoryBuilder);
+                const string MethodName = nameof(this.WithoutDefaultHandlers);
+                throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
+                                                 $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
+                                                 $"otherwise use `{ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
+            }
+
+            // Handlers - Register these handlers to run as hosted services in the caller app.
+            // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
+            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>("extract");
+            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
+            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
+            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
+            this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
+        }
+
+        return new MemoryService(orchestrator, searchClient);
+    }
+
+    public static IKernelMemory BuildWebClient(string endpoint)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new ConfigurationException("The endpoint provided is empty");
+        }
+
+        if (!endpoint.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConfigurationException("The endpoint is missing the protocol, specify either https:// or http://");
+        }
+
+        if (endpoint.Equals("http://", StringComparison.OrdinalIgnoreCase) || endpoint.Equals("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConfigurationException("The endpoint is incomplete");
+        }
+
+        return new MemoryWebClient(endpoint);
+    }
+
+    public KernelMemoryBuilder WithoutDefaultHandlers()
     {
         this._useDefaultHandlers = false;
         return this;
     }
 
-    public MemoryClientBuilder WithCustomIngestionQueueClientFactory(QueueClientFactory service)
+    public KernelMemoryBuilder WithCustomIngestionQueueClientFactory(QueueClientFactory service)
     {
         service = service ?? throw new ConfigurationException("The ingestion queue client factory instance is NULL");
         this.AddSingleton<QueueClientFactory>(service);
         return this;
     }
 
-    public MemoryClientBuilder WithCustomStorage(IContentStorage service)
+    public KernelMemoryBuilder WithCustomStorage(IContentStorage service)
     {
         service = service ?? throw new ConfigurationException("The content storage instance is NULL");
         this.AddSingleton<IContentStorage>(service);
         return this;
     }
 
-    public MemoryClientBuilder WithDefaultMimeTypeDetection()
+    public KernelMemoryBuilder WithDefaultMimeTypeDetection()
     {
         this.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
 
         return this;
     }
 
-    public MemoryClientBuilder WithCustomMimeTypeDetection(IMimeTypeDetection service)
+    public KernelMemoryBuilder WithCustomMimeTypeDetection(IMimeTypeDetection service)
     {
         service = service ?? throw new ConfigurationException("The MIME type detection instance is NULL");
         this.AddSingleton<IMimeTypeDetection>(service);
         return this;
     }
 
-    public MemoryClientBuilder WithCustomEmbeddingGeneration(ITextEmbeddingGeneration service, bool useForIngestion = true, bool useForRetrieval = true)
+    public KernelMemoryBuilder WithCustomEmbeddingGeneration(ITextEmbeddingGeneration service, bool useForIngestion = true, bool useForRetrieval = true)
     {
         service = service ?? throw new ConfigurationException("The embedding generator instance is NULL");
 
@@ -165,7 +305,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public MemoryClientBuilder WithCustomVectorDb(IKernelMemoryVectorDb service, bool useForIngestion = true, bool useForRetrieval = true)
+    public KernelMemoryBuilder WithCustomVectorDb(IKernelMemoryVectorDb service, bool useForIngestion = true, bool useForRetrieval = true)
     {
         service = service ?? throw new ConfigurationException("The vector DB instance is NULL");
 
@@ -182,14 +322,14 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public MemoryClientBuilder WithCustomTextGeneration(ITextGeneration service)
+    public KernelMemoryBuilder WithCustomTextGeneration(ITextGeneration service)
     {
         service = service ?? throw new ConfigurationException("The text generator instance is NULL");
         this.AddSingleton<ITextGeneration>(service);
         return this;
     }
 
-    public MemoryClientBuilder WithCustomImageOcr(IOcrEngine service)
+    public KernelMemoryBuilder WithCustomImageOcr(IOcrEngine service)
     {
         service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
         this.AddSingleton<IOcrEngine>(service);
@@ -202,13 +342,13 @@ public class MemoryClientBuilder
     /// </summary>
     /// <param name="dependency">Dependency. Can be NULL.</param>
     /// <typeparam name="T">Type of dependency</typeparam>
-    public MemoryClientBuilder With<T>(T dependency) where T : class, new()
+    public KernelMemoryBuilder With<T>(T dependency) where T : class, new()
     {
         this.AddSingleton(dependency);
         return this;
     }
 
-    public MemoryClientBuilder FromAppSettings(string? settingsDirectory = null)
+    public KernelMemoryBuilder FromAppSettings(string? settingsDirectory = null)
     {
         this._servicesConfiguration = this.ReadAppSettings(settingsDirectory);
         this._memoryConfiguration = this._servicesConfiguration.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
@@ -219,7 +359,7 @@ public class MemoryClientBuilder
         return this.FromConfiguration(this._memoryConfiguration, this._servicesConfiguration);
     }
 
-    public MemoryClientBuilder FromConfiguration(KernelMemoryConfig config, IConfiguration servicesConfiguration)
+    public KernelMemoryBuilder FromConfiguration(KernelMemoryConfig config, IConfiguration servicesConfiguration)
     {
         this._memoryConfiguration = config ?? throw new ConfigurationException("The given memory configuration is NULL");
         this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
@@ -423,7 +563,13 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public MemoryClientBuilder Complete()
+    public IPipelineOrchestrator GetOrchestrator()
+    {
+        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
+    }
+
+    public KernelMemoryBuilder Complete()
     {
         switch (this.GetBuildType())
         {
@@ -437,153 +583,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    public IKernelMemory Build()
-    {
-        switch (this.GetBuildType())
-        {
-            case ClientTypes.SyncServerless:
-                return this.BuildServerlessClient();
-
-            case ClientTypes.AsyncService:
-                return this.BuildAsyncClient();
-
-            case ClientTypes.Undefined:
-                throw new KernelMemoryException("Missing dependencies or insufficient configuration provided. " +
-                                                "Try using With...() methods " +
-                                                $"and other configuration methods before calling {nameof(this.Build)}(...)");
-
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    public IPipelineOrchestrator GetOrchestrator()
-    {
-        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-    }
-
-    public static IKernelMemory BuildWebClient(string endpoint)
-    {
-        if (string.IsNullOrWhiteSpace(endpoint))
-        {
-            throw new ConfigurationException("The endpoint provided is empty");
-        }
-
-        if (!endpoint.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConfigurationException("The endpoint is missing the protocol, specify either https:// or http://");
-        }
-
-        if (endpoint.Equals("http://", StringComparison.OrdinalIgnoreCase) || endpoint.Equals("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConfigurationException("The endpoint is incomplete");
-        }
-
-        return new MemoryWebClient(endpoint);
-    }
-
-    public Memory BuildServerlessClient()
-    {
-        try
-        {
-            this.CompleteServerlessClient();
-
-            // Add handlers to DI service collection
-            if (this._useDefaultHandlers)
-            {
-                this._memoryServiceCollection.AddTransient<TextExtractionHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<TextExtractionHandler>(serviceProvider, "extract"));
-
-                this._memoryServiceCollection.AddTransient<TextPartitioningHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<TextPartitioningHandler>(serviceProvider, "partition"));
-
-                this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
-
-                this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
-
-                this._memoryServiceCollection.AddTransient<SaveEmbeddingsHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SaveEmbeddingsHandler>(serviceProvider, "save_embeddings"));
-
-                this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
-
-                this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
-            }
-
-            var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
-            // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
-            this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
-            this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
-
-            var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-            var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-
-            var memoryClientInstance = new Memory(orchestrator, searchClient);
-
-            // Load handlers in the memory client
-            if (this._useDefaultHandlers)
-            {
-                memoryClientInstance.AddHandler(serviceProvider.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
-            }
-
-            return memoryClientInstance;
-        }
-        catch (Exception e)
-        {
-            ShowException(e);
-            throw;
-        }
-    }
-
-    public MemoryService BuildAsyncClient()
-    {
-        this.CompleteAsyncClient();
-        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
-        // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
-        this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
-        this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
-
-        var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-        var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-
-        if (this._useDefaultHandlers)
-        {
-            if (this._hostServiceCollection == null)
-            {
-                const string ClassName = nameof(MemoryClientBuilder);
-                const string MethodName = nameof(this.WithoutDefaultHandlers);
-                throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
-                                                 $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
-                                                 $"otherwise use `{ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
-            }
-
-            // Handlers - Register these handlers to run as hosted services in the caller app.
-            // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
-            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>("extract");
-            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
-            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
-            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-            this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
-        }
-
-        return new MemoryService(orchestrator, searchClient);
-    }
-
-    private MemoryClientBuilder CompleteServerlessClient()
+    private KernelMemoryBuilder CompleteServerlessClient()
     {
         this.RequireOneEmbeddingGenerator();
         this.RequireOneVectorDb();
@@ -593,7 +593,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    private MemoryClientBuilder CompleteAsyncClient()
+    private KernelMemoryBuilder CompleteAsyncClient()
     {
         this.RequireOneEmbeddingGenerator();
         this.RequireOneVectorDb();
@@ -603,7 +603,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    private MemoryClientBuilder AddSingleton<TService>(TService implementationInstance)
+    private KernelMemoryBuilder AddSingleton<TService>(TService implementationInstance)
         where TService : class
     {
         this._memoryServiceCollection.AddSingleton<TService>(implementationInstance);
@@ -611,7 +611,7 @@ public class MemoryClientBuilder
         return this;
     }
 
-    private MemoryClientBuilder AddSingleton<TService, TImplementation>()
+    private KernelMemoryBuilder AddSingleton<TService, TImplementation>()
         where TService : class
         where TImplementation : class, TService
     {

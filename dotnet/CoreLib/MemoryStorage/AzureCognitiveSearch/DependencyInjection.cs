@@ -7,15 +7,15 @@ using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzureCognitiveSearch(this MemoryClientBuilder builder, AzureCognitiveSearchConfig config)
+    public static KernelMemoryBuilder WithAzureCognitiveSearch(this KernelMemoryBuilder builder, AzureCognitiveSearchConfig config)
     {
         builder.Services.AddAzureCognitiveSearchAsVectorDb(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithAzureCognitiveSearch(this MemoryClientBuilder builder, string endpoint, string apiKey)
+    public static KernelMemoryBuilder WithAzureCognitiveSearch(this KernelMemoryBuilder builder, string endpoint, string apiKey)
     {
         builder.Services.AddAzureCognitiveSearchAsVectorDb(endpoint, apiKey);
         return builder;

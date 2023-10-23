@@ -10,9 +10,9 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithOpenAIDefaults(this MemoryClientBuilder builder, string apiKey, string? organization = null)
+    public static KernelMemoryBuilder WithOpenAIDefaults(this KernelMemoryBuilder builder, string apiKey, string? organization = null)
     {
         builder.Services.AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new OpenAITextEmbeddingGeneration(
             modelId: "text-embedding-ada-002",
@@ -29,20 +29,20 @@ public static partial class MemoryClientBuilderExtensions
         return builder;
     }
 
-    public static MemoryClientBuilder WithOpenAI(this MemoryClientBuilder builder, OpenAIConfig config)
+    public static KernelMemoryBuilder WithOpenAI(this KernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.WithOpenAITextEmbedding(config);
         builder.WithOpenAITextGeneration(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithOpenAITextEmbedding(this MemoryClientBuilder builder, OpenAIConfig config)
+    public static KernelMemoryBuilder WithOpenAITextEmbedding(this KernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithOpenAITextGeneration(this MemoryClientBuilder builder, OpenAIConfig config)
+    public static KernelMemoryBuilder WithOpenAITextGeneration(this KernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
         return builder;

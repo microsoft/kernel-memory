@@ -10,7 +10,7 @@ using Microsoft.KernelMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryClientBuilder()
+var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs

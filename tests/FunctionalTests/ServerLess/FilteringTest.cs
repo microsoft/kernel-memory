@@ -173,19 +173,19 @@ public class FilteringTest : BaseTestCase
         switch (memoryType)
         {
             case "default":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .BuildServerlessClient();
 
             case "simple_on_disk":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "_vectors", StorageType = FileSystemTypes.Disk })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "_files", StorageType = FileSystemTypes.Disk })
                     .BuildServerlessClient();
 
             case "simple_volatile":
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
@@ -194,7 +194,7 @@ public class FilteringTest : BaseTestCase
             case "qdrant":
                 var qdrantEndpoint = this._cfg.GetSection("Services").GetSection("Qdrant").GetValue<string>("Endpoint");
                 Assert.False(string.IsNullOrEmpty(qdrantEndpoint));
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithQdrant(qdrantEndpoint)
                     .BuildServerlessClient();
@@ -204,7 +204,7 @@ public class FilteringTest : BaseTestCase
                 var acsKey = this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("APIKey");
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
                 Assert.False(string.IsNullOrEmpty(acsKey));
-                return new MemoryClientBuilder()
+                return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithAzureCognitiveSearch(acsEndpoint, acsKey)
                     .BuildServerlessClient();

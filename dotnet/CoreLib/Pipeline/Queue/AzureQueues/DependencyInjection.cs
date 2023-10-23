@@ -8,9 +8,9 @@ using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzurequeuePipeline(this MemoryClientBuilder builder, AzureQueueConfig config)
+    public static KernelMemoryBuilder WithAzurequeuePipeline(this KernelMemoryBuilder builder, AzureQueueConfig config)
     {
         builder.Services.AddAzureQueue(config);
         return builder;

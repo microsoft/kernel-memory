@@ -7,15 +7,15 @@ using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithQdrant(this MemoryClientBuilder builder, QdrantConfig config)
+    public static KernelMemoryBuilder WithQdrant(this KernelMemoryBuilder builder, QdrantConfig config)
     {
         builder.Services.AddQdrantAsVectorDb(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithQdrant(this MemoryClientBuilder builder, string endpoint, string apiKey = "")
+    public static KernelMemoryBuilder WithQdrant(this KernelMemoryBuilder builder, string endpoint, string apiKey = "")
     {
         builder.Services.AddQdrantAsVectorDb(endpoint, apiKey);
         return builder;

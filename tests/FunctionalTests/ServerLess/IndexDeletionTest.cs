@@ -19,7 +19,7 @@ public class IndexDeletionTest : BaseTestCase
     public async Task ItDeletesSimpleVectorDbIndexes()
     {
         // Arrange
-        var memory = new MemoryClientBuilder()
+        var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-vectors", StorageType = FileSystemTypes.Disk })
@@ -59,7 +59,7 @@ public class IndexDeletionTest : BaseTestCase
     public async Task ItDeletesQdrantIndexes()
     {
         // Arrange
-        var memory = new MemoryClientBuilder()
+        var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithQdrant("http://127.0.0.1:6333")

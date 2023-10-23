@@ -8,9 +8,9 @@ using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithRabbitMQPipeline(this MemoryClientBuilder builder, RabbitMqConfig config)
+    public static KernelMemoryBuilder WithRabbitMQPipeline(this KernelMemoryBuilder builder, RabbitMqConfig config)
     {
         builder.Services.AddRabbitMq(config);
         return builder;

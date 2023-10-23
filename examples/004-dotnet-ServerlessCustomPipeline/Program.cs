@@ -11,9 +11,9 @@ using Microsoft.KernelMemory.Handlers;
 //     Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
 // }
 //
-// var memoryBuilder = new MemoryClientBuilder().FromAppSettings();
+// var memoryBuilder = new KernelMemoryBuilder().FromAppSettings();
 
-var memoryBuilder = new MemoryClientBuilder()
+var memoryBuilder = new KernelMemoryBuilder()
     // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
     // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY")) => To use Azure Cognitive Search
     // .WithQdrant("http://127.0.0.1:6333") => To use Qdrant docker

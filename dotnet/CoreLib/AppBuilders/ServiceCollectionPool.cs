@@ -11,7 +11,7 @@ namespace Microsoft.KernelMemory.AppBuilders;
 /// <summary>
 /// Represents a collection of service collections, so that DI helpers
 /// like `WithX` act on multiple service collections, e.g. the one used
-/// by MemoryClientBuilder and the one used by end user application.
+/// by KernelMemoryBuilder and the one used by end user application.
 /// </summary>
 public class ServiceCollectionPool : IServiceCollection
 {
@@ -53,7 +53,7 @@ public class ServiceCollectionPool : IServiceCollection
     }
 
     /**
-     * The methods below are not used by MemoryClientBuilder and could lead to
+     * The methods below are not used by KernelMemoryBuilder and could lead to
      * unexpected bugs/behavior considering that the memory builder service
      * collection is different from the end user application service collection.
      */

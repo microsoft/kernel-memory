@@ -12,15 +12,15 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzureOpenAITextGeneration(this MemoryClientBuilder builder, AzureOpenAIConfig config)
+    public static KernelMemoryBuilder WithAzureOpenAITextGeneration(this KernelMemoryBuilder builder, AzureOpenAIConfig config)
     {
         builder.Services.AddAzureOpenAITextGeneration(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithAzureOpenAIEmbeddingGeneration(this MemoryClientBuilder builder, AzureOpenAIConfig config)
+    public static KernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this KernelMemoryBuilder builder, AzureOpenAIConfig config)
     {
         builder.Services.AddAzureOpenAIEmbeddingGeneration(config);
         return builder;

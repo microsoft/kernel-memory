@@ -46,7 +46,7 @@ in your app.
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
 > ```csharp
-> var memory = new MemoryClientBuilder()
+> var memory = new KernelMemoryBuilder()
 >     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
 >     .Build();
 >
@@ -221,7 +221,7 @@ customize the steps, which will be handled by your custom business logic:
 
 ```csharp
 // Memory setup, e.g. how to calculate and where to store embeddings
-var memoryBuilder = new MemoryClientBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+var memoryBuilder = new KernelMemoryBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
 memoryBuilder.Build();
 var orchestrator = memoryBuilder.GetOrchestrator();
 

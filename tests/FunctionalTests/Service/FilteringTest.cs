@@ -14,7 +14,7 @@ public class FilteringTest : BaseTestCase
 
     public FilteringTest(ITestOutputHelper output) : base(output)
     {
-        this._memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+        this._memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }
 
     [Fact]

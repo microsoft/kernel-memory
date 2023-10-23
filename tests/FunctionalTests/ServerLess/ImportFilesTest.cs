@@ -27,7 +27,7 @@ public class ImportFilesTest : BaseTestCase
         var tmpPath = Path.GetFullPath(Path.Join(this._fixturesPath, "..", "tmp"));
         Console.WriteLine($"Saving temp files in: {tmpPath}");
 
-        this._memory = new MemoryClientBuilder()
+        this._memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             // Store data in memory
             .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })

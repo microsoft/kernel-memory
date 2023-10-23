@@ -10,15 +10,15 @@ using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, SimpleQueuesConfig? config = null)
+    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, SimpleQueuesConfig? config = null)
     {
         builder.Services.AddSimpleQueues(config ?? new SimpleQueuesConfig());
         return builder;
     }
 
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, string directory)
+    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleQueues(directory);
         return builder;
