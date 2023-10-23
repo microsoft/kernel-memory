@@ -11,11 +11,12 @@ using Microsoft.KernelMemory;
  * Note: no web service required, each file is processed in this process. */
 
 var memory = new MemoryClientBuilder()
-    // To use Azure Blobs               => .WithAzureBlobsStorage(new AzureBlobsConfig {...})
-    // To use Azure Cognitive Search    => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-    // To use Qdrant docker             => .WithQdrant("http://127.0.0.1:6333")
-    // To use Azure Form Recognizer OCR => .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY"))
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
+    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs
+    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))                      => use Azure Cognitive Search
+    // .WithQdrant("http://127.0.0.1:6333")                                                            => use Qdrant docker
+    // .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY")) => use Azure Form Recognizer OCR
     .BuildServerlessClient();
 
 // Use these boolean to enable/disable parts of the examples below

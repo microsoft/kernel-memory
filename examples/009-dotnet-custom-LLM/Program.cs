@@ -3,7 +3,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.SemanticMemory;
 using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant;
 
 public static class Program
 {
@@ -14,19 +13,10 @@ public static class Program
             // ...
         };
 
-        var openAIConfig = new OpenAIConfig
-        {
-            EmbeddingModel = "text-embedding-ada-002",
-            APIKey = Env.Var("OPENAI_API_KEY")
-        };
-
         var memory = new MemoryClientBuilder()
             .WithCustomTextGeneration(new LlamaTextGeneration(llamaConfig))
-            .WithOpenAITextEmbedding(openAIConfig)
-            .WithQdrant(new QdrantConfig
-            {
-                /* ... */
-            });
+            .FromAppSettings() // read "KernelMemory" settings from appsettings.json
+            .Build();
 
         // ...
     }
