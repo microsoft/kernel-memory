@@ -3,7 +3,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.ContentStorage;
+namespace Microsoft.KernelMemory.ContentStorage;
 
 public class EmbeddingFileContent
 {

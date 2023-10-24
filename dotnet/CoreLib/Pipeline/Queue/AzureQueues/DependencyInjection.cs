@@ -2,15 +2,15 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.AzureQueues;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzurequeuePipeline(this MemoryClientBuilder builder, AzureQueueConfig config)
+    public static KernelMemoryBuilder WithAzurequeuePipeline(this KernelMemoryBuilder builder, AzureQueueConfig config)
     {
         builder.Services.AddAzureQueue(config);
         return builder;
@@ -24,7 +24,7 @@ public static partial class DependencyInjection
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<AzureQueue>()
-                   ?? throw new SemanticMemoryException("Unable to instantiate " + typeof(AzureQueue));
+                   ?? throw new KernelMemoryException("Unable to instantiate " + typeof(AzureQueue));
         }
 
         // The orchestrator uses multiple queue clients, each linked to a specific queue,

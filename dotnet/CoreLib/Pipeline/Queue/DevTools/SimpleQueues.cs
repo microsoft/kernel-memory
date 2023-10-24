@@ -9,11 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
+namespace Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 
 /// <summary>
 /// Basic implementation of a file based queue for local testing.

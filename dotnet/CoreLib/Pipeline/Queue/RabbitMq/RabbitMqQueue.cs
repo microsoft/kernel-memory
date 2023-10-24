@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Microsoft.SemanticMemory.Pipeline.Queue.RabbitMq;
+namespace Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 
 public sealed class RabbitMqQueue : IQueue
 {

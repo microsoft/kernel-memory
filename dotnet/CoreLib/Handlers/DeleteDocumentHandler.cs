@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteDocumentHandler : IPipelineStepHandler
 {
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IVectorDb> _vectorDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteDocumentHandler> _log;
 
@@ -22,7 +22,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     public DeleteDocumentHandler(
         string stepName,
         IContentStorage contentStorage,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ILogger<DeleteDocumentHandler>? log = null)
     {
         this.StepName = stepName;
@@ -40,7 +40,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
         this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         // Delete embeddings
-        foreach (ISemanticMemoryVectorDb db in this._vectorDbs)
+        foreach (IVectorDb db in this._vectorDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 indexName: pipeline.Index,

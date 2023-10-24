@@ -3,7 +3,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Text.Json;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 using UnitTests.TestHelpers;
 using Xunit.Abstractions;
 

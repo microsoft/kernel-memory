@@ -5,10 +5,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.ContentStorage.DevTools;
+namespace Microsoft.KernelMemory.ContentStorage.DevTools;
 
 public class SimpleFileStorage : IContentStorage
 {

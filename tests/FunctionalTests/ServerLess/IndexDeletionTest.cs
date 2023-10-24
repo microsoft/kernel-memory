@@ -3,10 +3,10 @@
 // ReSharper disable InconsistentNaming
 
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
@@ -19,7 +19,7 @@ public class IndexDeletionTest : BaseTestCase
     public async Task ItDeletesSimpleVectorDbIndexes()
     {
         // Arrange
-        var memory = new MemoryClientBuilder()
+        var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-vectors", StorageType = FileSystemTypes.Disk })
@@ -59,7 +59,7 @@ public class IndexDeletionTest : BaseTestCase
     public async Task ItDeletesQdrantIndexes()
     {
         // Arrange
-        var memory = new MemoryClientBuilder()
+        var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithQdrant("http://127.0.0.1:6333")

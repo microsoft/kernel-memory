@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public interface ISemanticMemoryClient
+public interface IKernelMemory
 {
     /// <summary>
     /// Import a document into memory. The document can contain one or more files, can have tags and other details.

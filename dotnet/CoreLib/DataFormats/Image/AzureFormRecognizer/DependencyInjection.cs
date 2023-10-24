@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.DataFormats.Image;
-using Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithAzureFormRecognizer(this MemoryClientBuilder builder, AzureFormRecognizerConfig config)
+    public static KernelMemoryBuilder WithAzureFormRecognizer(this KernelMemoryBuilder builder, AzureFormRecognizerConfig config)
     {
         builder.Services.AddAzureFormRecognizer(config);
         return builder;
     }
 
-    public static MemoryClientBuilder WithAzureFormRecognizer(this MemoryClientBuilder builder, string endpoint, string apiKey)
+    public static KernelMemoryBuilder WithAzureFormRecognizer(this KernelMemoryBuilder builder, string endpoint, string apiKey)
     {
         return builder.WithAzureFormRecognizer(new AzureFormRecognizerConfig
         {

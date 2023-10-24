@@ -9,10 +9,10 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.AI.AzureOpenAI;
+namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
 public class AzureTextGeneration : ITextGeneration
 {

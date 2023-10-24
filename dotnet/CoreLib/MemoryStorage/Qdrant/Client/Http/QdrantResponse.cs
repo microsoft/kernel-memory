@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 
 /// <summary>
 /// Base class for Qdrant response schema.

@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticMemory.Diagnostics;
+namespace Microsoft.KernelMemory.Diagnostics;
 
 public static class LoggerExtensions
 {

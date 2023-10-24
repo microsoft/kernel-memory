@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
 /// <summary>
 /// A record structure used by Qdrant that contains an embedding and metadata.

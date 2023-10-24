@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.SemanticMemory.Core</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <NoWarn>CA1711,CA1724,CA1308,CA1812,CA1859</NoWarn>
         <IsPackable>true</IsPackable>
     </PropertyGroup>

@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.DataFormats.Image;
+namespace Microsoft.KernelMemory.DataFormats.Image;
 
 /// <summary>
 /// An OCR engine that can read in text from image files.
