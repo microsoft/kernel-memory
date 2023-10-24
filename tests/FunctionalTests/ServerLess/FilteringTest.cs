@@ -52,8 +52,13 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
+        // Simple filter: empty filter returns the memory
+        var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
         // Simple filter: unknown user cannot see the memory
-        var answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName);
+        answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName);
         this.Log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
@@ -117,8 +122,16 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        // Multiple filters: unknown users cannot see the memory
+        // Multiple filters: empty filters returns the memory
         var answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
+        {
+            new(),
+        }, index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Multiple filters: unknown users cannot see the memory
+        answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
         {
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "someone2"),
