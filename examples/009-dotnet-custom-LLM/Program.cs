@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.CompilerServices;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.AI;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 
 public static class Program
 {
@@ -13,7 +13,7 @@ public static class Program
             // ...
         };
 
-        var memory = new MemoryClientBuilder()
+        var memory = new KernelMemoryBuilder()
             .WithCustomTextGeneration(new LlamaTextGeneration(llamaConfig))
             .FromAppSettings() // read "KernelMemory" settings from appsettings.json
             .Build();

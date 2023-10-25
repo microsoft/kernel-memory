@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
-var memory = new MemoryClientBuilder()
+var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs
