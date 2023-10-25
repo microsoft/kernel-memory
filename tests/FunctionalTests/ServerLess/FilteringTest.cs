@@ -52,13 +52,8 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        // Simple filter: empty filter returns the memory
-        var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
-        this.Log(answer.Result);
-        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
-
         // Simple filter: unknown user cannot see the memory
-        answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName);
+        var answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName);
         this.Log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
@@ -172,6 +167,45 @@ public class FilteringTest : BaseTestCase
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "news"),
         }, index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        this.Log("Deleting memories extracted from the document");
+        await this._memory.DeleteDocumentAsync(Id, index: indexName);
+    }
+
+    [Theory]
+    [InlineData("default")]
+    [InlineData("simple_on_disk")]
+    [InlineData("simple_volatile")]
+    [InlineData("qdrant")]
+    [InlineData("acs")]
+    public async Task ItIgnoresEmptyFilters(string memoryType)
+    {
+        this._memory = this.GetMemory(memoryType);
+
+        string indexName = Guid.NewGuid().ToString("D");
+        const string Id = "file1-NASA-news.pdf";
+        const string Found = "spacecraft";
+
+        this.Log("Uploading document");
+        await this._memory.ImportDocumentAsync(
+            new Document(Id)
+                .AddFile("file1-NASA-news.pdf")
+                .AddTag("type", "news")
+                .AddTag("user", "admin")
+                .AddTag("user", "owner"),
+            index: indexName,
+            steps: Constants.PipelineWithoutSummary);
+
+        while (!await this._memory.IsDocumentReadyAsync(documentId: Id, index: indexName))
+        {
+            this.Log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        // Simple filter: empty filter returns the memory
+        var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
         this.Log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
