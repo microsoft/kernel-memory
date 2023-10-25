@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.FileSystem.DevTools;
+namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
 #pragma warning disable CA1031 // need to catch all exceptions
 

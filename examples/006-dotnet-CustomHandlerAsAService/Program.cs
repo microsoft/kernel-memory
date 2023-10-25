@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 /* The following code shows how to create a custom handler, attached
  * to a queue and listening for work to do. You can also add multiple handlers
@@ -21,7 +21,7 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 
 // Inject memory dependencies
 
-var _ = new MemoryClientBuilder(appBuilder.Services).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
+var _ = new KernelMemoryBuilder(appBuilder.Services).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
 
 // Build and run .NET web app as usual
 var app = appBuilder.Build();

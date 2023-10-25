@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Pipeline.Queue;
+namespace Microsoft.KernelMemory.Pipeline.Queue;
 
 public struct QueueOptions : IEquatable<QueueOptions>
 {

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +13,8 @@ builder.Services.AddSwaggerGen();
 
 // === Memory stuff begin ===
 // * builder.Services is passed to the builder, so memory dependencies like the OCR service can be used also in our ASP.NET controllers
-ISemanticMemoryClient memory = new MemoryClientBuilder(builder.Services)
-    // .FromAppSettings()
+IKernelMemory memory = new KernelMemoryBuilder(builder.Services)
+    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .WithCustomImageOcr(new MyOcrEngine())
     .Build();

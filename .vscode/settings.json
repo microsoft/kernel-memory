@@ -22,7 +22,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true
   },
-  "dotnet.defaultSolution": "SemanticMemory.sln",
+  "dotnet.defaultSolution": "KernelMemory.sln",
   "prettier.trailingComma": "es5",
   "appService.deploySubpath": "dotnet/Service/bin/Publish"
 }

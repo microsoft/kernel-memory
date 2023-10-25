@@ -7,18 +7,18 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
@@ -31,14 +31,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected BaseOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
-        SemanticMemoryConfig? config = null,
+        KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
-        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
+        this._defaultIngestionSteps = (config ?? new KernelMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
         this._contentStorage = contentStorage;
         this._embeddingGenerators = embeddingGenerators;
         this._vectorDbs = vectorDbs;
@@ -197,7 +197,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public List<ISemanticMemoryVectorDb> GetVectorDbs()
+    public List<IVectorDb> GetVectorDbs()
     {
         return this._vectorDbs;
     }
@@ -278,7 +278,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
-            throw new SemanticMemoryException("The document ID is empty");
+            throw new KernelMemoryException("The document ID is empty");
         }
 
         var pipeline = new DataPipeline

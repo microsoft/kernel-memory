@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.DataFormats.Office;
-using Microsoft.SemanticMemory.DataFormats.Pdf;
+using Microsoft.KernelMemory.DataFormats.Office;
+using Microsoft.KernelMemory.DataFormats.Pdf;
 
 // MS Word example
 Console.WriteLine("===============================");

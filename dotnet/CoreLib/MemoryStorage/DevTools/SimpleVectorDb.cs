@@ -9,12 +9,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
+namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-public class SimpleVectorDb : ISemanticMemoryVectorDb
+public class SimpleVectorDb : IVectorDb
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;
@@ -106,6 +106,9 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
         IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(indexName, "", cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)

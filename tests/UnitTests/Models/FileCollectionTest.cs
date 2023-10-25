@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Models;
+using Microsoft.KernelMemory.Models;
 
 namespace UnitTests.Models;
 

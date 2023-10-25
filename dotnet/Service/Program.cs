@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.InteractiveSetup;
-using Microsoft.SemanticMemory.WebService;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.InteractiveSetup;
+using Microsoft.KernelMemory.WebService;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -39,14 +39,14 @@ appBuilder.Services.AddSwaggerGen();
 
 // Inject memory client and its dependencies
 // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-ISemanticMemoryClient memory = new MemoryClientBuilder(appBuilder.Services).FromAppSettings().Build();
+IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings().Build();
 appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
 
 // Read the settings, needed below
-var config = app.Configuration.GetSection("SemanticMemory").Get<SemanticMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
+var config = app.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -73,7 +73,7 @@ if (config.Service.RunWebService)
     // File upload endpoint
     app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
             HttpRequest request,
-            ISemanticMemoryClient service,
+            IKernelMemory service,
             ILogger<Program> log,
             CancellationToken cancellationToken) =>
         {
@@ -115,7 +115,7 @@ if (config.Service.RunWebService)
             async Task<IResult> (
                 [FromQuery(Name = Constants.WebServiceIndexField)]
                 string? index,
-                ISemanticMemoryClient service,
+                IKernelMemory service,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -138,7 +138,7 @@ if (config.Service.RunWebService)
                 string? index,
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
-                ISemanticMemoryClient service,
+                IKernelMemory service,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -160,7 +160,7 @@ if (config.Service.RunWebService)
     app.MapPost(Constants.HttpAskEndpoint,
             async Task<IResult> (
                 MemoryQuery query,
-                ISemanticMemoryClient service,
+                IKernelMemory service,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -174,7 +174,7 @@ if (config.Service.RunWebService)
     app.MapPost(Constants.HttpSearchEndpoint,
             async Task<IResult> (
                 SearchQuery query,
-                ISemanticMemoryClient service,
+                IKernelMemory service,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {
@@ -191,7 +191,7 @@ if (config.Service.RunWebService)
                 string? index,
                 [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                 string documentId,
-                ISemanticMemoryClient memoryClient,
+                IKernelMemory memoryClient,
                 ILogger<Program> log,
                 CancellationToken cancellationToken) =>
             {

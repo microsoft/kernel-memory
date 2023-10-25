@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public interface IPipelineOrchestrator
 {
@@ -131,7 +131,7 @@ public interface IPipelineOrchestrator
     /// Get list of Vector DBs where to store embeddings.
     /// TODO: remove and inject dependency to handlers who need this
     /// </summary>
-    List<ISemanticMemoryVectorDb> GetVectorDbs();
+    List<IVectorDb> GetVectorDbs();
 
     /// <summary>
     /// Get the text generator used for prompts, synthetic data, answer generation, etc.

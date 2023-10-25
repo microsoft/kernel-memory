@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticMemory.MemoryStorage;
+namespace Microsoft.KernelMemory.MemoryStorage;
 
 public class MemoryRecord
 {

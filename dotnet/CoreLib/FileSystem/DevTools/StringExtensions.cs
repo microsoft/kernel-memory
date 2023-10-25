@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticMemory.FileSystem.DevTools;
+namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
 public static class StringExtensions
 {

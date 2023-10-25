@@ -3,22 +3,22 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.FileSystem.DevTools;
-using Microsoft.SemanticMemory.Pipeline.Queue;
-using Microsoft.SemanticMemory.Pipeline.Queue.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Pipeline.Queue;
+using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, SimpleQueuesConfig? config = null)
+    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, SimpleQueuesConfig? config = null)
     {
         builder.Services.AddSimpleQueues(config ?? new SimpleQueuesConfig());
         return builder;
     }
 
-    public static MemoryClientBuilder WithSimpleQueuesPipeline(this MemoryClientBuilder builder, string directory)
+    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleQueues(directory);
         return builder;

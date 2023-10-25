@@ -7,12 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
-public class QdrantMemory : ISemanticMemoryVectorDb
+public class QdrantMemory : IVectorDb
 {
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
@@ -102,8 +102,11 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         var requiredTags = new List<IEnumerable<string>>();
-        if (filters != null)
+        if (filters is { Count: > 0 })
         {
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
         }
@@ -134,8 +137,11 @@ public class QdrantMemory : ISemanticMemoryVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         var requiredTags = new List<IEnumerable<string>>();
-        if (filters != null)
+        if (filters is { Count: > 0 })
         {
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
         }

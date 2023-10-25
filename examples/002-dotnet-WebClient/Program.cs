@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
-// using Microsoft.SemanticMemory.Client.Models;
-
-/* Use SemanticMemoryWebClient to run the default import pipeline
+/* Use MemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".
  *
  * Note: start the Kernel Memory service before running this.
@@ -13,7 +11,7 @@ using Microsoft.SemanticMemory;
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+var memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // Use these boolean to enable/disable parts of the examples below
 bool ingestion = true;
