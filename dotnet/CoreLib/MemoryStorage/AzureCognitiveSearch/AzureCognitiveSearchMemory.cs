@@ -121,6 +121,9 @@ public class AzureCognitiveSearchMemory : IVectorDb
             Vectors = { vectorQuery }
         };
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         if (filters is { Count: > 0 })
         {
             // We need to fetch more vectors because filters are applied after the vector search
@@ -176,6 +179,9 @@ public class AzureCognitiveSearchMemory : IVectorDb
         if (limit <= 0) { limit = int.MaxValue; }
 
         var client = this.GetSearchClient(indexName);
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
         var options = new SearchOptions();
         if (filters is { Count: > 0 })
@@ -565,18 +571,21 @@ public class AzureCognitiveSearchMemory : IVectorDb
         return 1 / (2 - similarity);
     }
 
-    private static string BuildSearchFilter(ICollection<MemoryFilter> filters)
+    private static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
     {
         List<string> conditions = new();
 
-        foreach (var filter in filters)
+        // Note: empty filters would lead to a syntax error, so even if they are supposed
+        // to be removed upstream, we check again and remove them here too.
+        foreach (var filter in filters.Where(f => !f.IsEmpty()))
         {
             var filterConditions = filter.GetFilters()
                 .Select(keyValue =>
                 {
                     var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
                     return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
-                });
+                })
+                .ToList();
 
             conditions.Add($"({string.Join(" and ", filterConditions)})");
         }

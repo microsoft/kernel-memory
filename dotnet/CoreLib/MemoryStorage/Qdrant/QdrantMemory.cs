@@ -102,8 +102,11 @@ public class QdrantMemory : IVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         var requiredTags = new List<IEnumerable<string>>();
-        if (filters != null)
+        if (filters is { Count: > 0 })
         {
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
         }
@@ -134,8 +137,11 @@ public class QdrantMemory : IVectorDb
         indexName = this.NormalizeIndexName(indexName);
         if (limit <= 0) { limit = int.MaxValue; }
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         var requiredTags = new List<IEnumerable<string>>();
-        if (filters != null)
+        if (filters is { Count: > 0 })
         {
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsSymbol}{x.Value}")));
         }

@@ -107,6 +107,9 @@ public class SimpleVectorDb : IVectorDb
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
         IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(indexName, "", cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)
         {

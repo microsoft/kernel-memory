@@ -147,4 +147,41 @@ public class FilteringTest : BaseTestCase
         this.Log("Deleting memories extracted from the document");
         await this._memory.DeleteDocumentAsync(Id, index: indexName);
     }
+
+    [Fact]
+    public async Task ItIgnoresEmptyFilters()
+    {
+        string indexName = Guid.NewGuid().ToString("D");
+        const string Id = "file1-NASA-news.pdf";
+        const string Found = "spacecraft";
+
+        this.Log("Uploading document");
+        await this._memory.ImportDocumentAsync(
+            new Document(Id)
+                .AddFile("file1-NASA-news.pdf")
+                .AddTag("type", "news")
+                .AddTag("user", "admin")
+                .AddTag("user", "owner"),
+            index: indexName,
+            steps: Constants.PipelineWithoutSummary);
+
+        while (!await this._memory.IsDocumentReadyAsync(documentId: Id, index: indexName))
+        {
+            this.Log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        // Simple filter: empty filters have no impact
+        var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Multiple filters: empty filters have no impact
+        answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter> { new() }, index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        this.Log("Deleting memories extracted from the document");
+        await this._memory.DeleteDocumentAsync(Id, index: indexName);
+    }
 }
