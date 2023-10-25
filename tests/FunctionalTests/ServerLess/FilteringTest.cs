@@ -117,16 +117,8 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        // Multiple filters: empty filters returns the memory
-        var answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
-            new(),
-        }, index: indexName);
-        this.Log(answer.Result);
-        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
-
         // Multiple filters: unknown users cannot see the memory
-        answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
+        var answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
         {
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "someone2"),
@@ -204,8 +196,13 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        // Simple filter: empty filter returns the memory
+        // Simple filter: empty filters have no impact
         var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Multiple filters: empty filters have no impact
+        answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter> { new() }, index: indexName);
         this.Log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
