@@ -105,7 +105,7 @@ public class HttpDocumentUploadRequest
     {
         if (key.Contains('=', StringComparison.Ordinal))
         {
-            throw new KernelMemoryException("A tag name cannot contain the '=' symbol");
+            throw new KernelMemoryException("A tag name cannot contain the '=' char");
         }
 
         if (key is

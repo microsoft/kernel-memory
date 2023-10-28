@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.KernelMemory.Models;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -18,12 +17,6 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public class Document
 {
-    /// <summary>
-    /// Regex to detect all special chars that might cause problems when used
-    /// for file/folder names on local filesystems, cloud storage solutions, etc.
-    /// </summary>
-    private static readonly Regex s_replaceSymbolsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
-
     /// <summary>
     /// Document ID, used also as Pipeline ID.
     /// </summary>
@@ -132,17 +125,18 @@ public class Document
             throw new ArgumentOutOfRangeException(nameof(id), "The document ID is empty");
         }
 
-        if (s_replaceSymbolsRegex.IsMatch(id))
+        if (!IsValid(id))
         {
-            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid symbols");
+            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
         }
 
         return id!;
     }
 
     /// <summary>
-    /// Remove invalid chars from the input, replacing them with underscore. Chars are considered
-    /// invalid if they have special meaning or are prohibited by some storage engines, e.g. '/' and '~'.
+    /// Remove invalid chars from the input, replacing them with underscore.
+    /// For compatibility with most storage engines, only alphanumeric chars,
+    /// minus "-" and underscore "_" are considered valid.
     /// </summary>
     /// <param name="value">Value to sanitize</param>
     /// <returns>Sanitized value</returns>
@@ -150,12 +144,24 @@ public class Document
     {
         if (value == null) { return string.Empty; }
 
-        return s_replaceSymbolsRegex.Replace(value, "_");
+        return new string(value.Select(c => IsValidChar(c) ? c : '_').ToArray());
     }
 
     #region private
 
     private string _id = string.Empty;
+
+    private static bool IsValid(string? value)
+    {
+        if (value == null) { return false; }
+
+        return value.All(IsValidChar);
+    }
+
+    private static bool IsValidChar(char c)
+    {
+        return char.IsLetterOrDigit(c) || c == '_' || c == '-' || c == '.';
+    }
 
     private static string RandomId()
     {

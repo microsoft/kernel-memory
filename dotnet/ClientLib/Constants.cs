@@ -22,9 +22,11 @@ public static class Constants
     // Index name used when none is specified
     public const string DefaultIndex = "default";
 
-    // Tags reserved for internal logic
-    public const char ReservedEqualsSymbol = ':';
+    // Tags settings
+    public const char ReservedEqualsChar = ':';
     public const string ReservedTagsPrefix = "__";
+
+    // Tags reserved for internal logic
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";

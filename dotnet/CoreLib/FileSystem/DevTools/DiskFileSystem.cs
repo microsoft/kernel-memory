@@ -19,7 +19,7 @@ namespace Microsoft.KernelMemory.FileSystem.DevTools;
 internal sealed class DiskFileSystem : IFileSystem
 {
     private const string DefaultVolumeName = "__default__";
-    private static readonly Regex s_invalidSymbolsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
+    private static readonly Regex s_invalidCharsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
 
     private readonly ILogger _log;
     private readonly string _dataPath;
@@ -222,9 +222,9 @@ internal sealed class DiskFileSystem : IFileSystem
             return DefaultVolumeName;
         }
 
-        if (s_invalidSymbolsRegex.Match(volume).Success)
+        if (s_invalidCharsRegex.Match(volume).Success)
         {
-            throw new ArgumentException("The volume name contains some invalid symbols or empty spaces");
+            throw new ArgumentException("The volume name contains some invalid chars or empty spaces");
         }
 
         return volume;
@@ -232,9 +232,15 @@ internal sealed class DiskFileSystem : IFileSystem
 
     private static string ValidatePath(string path)
     {
-        if (path.Contains('\\', StringComparison.Ordinal) || path.Contains(':', StringComparison.Ordinal))
+        // Check invalid chars one at a time for better error messages
+        if (path.Contains('\\', StringComparison.Ordinal))
         {
-            throw new ArgumentException("The path contains some invalid symbols");
+            throw new ArgumentException("The path contains some invalid chars: backslash '\\' chars are not allowed");
+        }
+
+        if (path.Contains(':', StringComparison.Ordinal))
+        {
+            throw new ArgumentException("The path contains some invalid chars: colon ':' chars are not allowed");
         }
 
         return path;
@@ -242,9 +248,20 @@ internal sealed class DiskFileSystem : IFileSystem
 
     private static string ValidateFileName(string fileName)
     {
-        if (fileName.Contains('/', StringComparison.Ordinal) || fileName.Contains('\\', StringComparison.Ordinal) || fileName.Contains(':', StringComparison.Ordinal))
+        // Check invalid chars one at a time for better error messages
+        if (fileName.Contains('/', StringComparison.Ordinal))
         {
-            throw new ArgumentException("The file name contains some invalid symbols");
+            throw new ArgumentException($"The file name {fileName} contains some invalid chars: slash '/' chars are not allowed");
+        }
+
+        if (fileName.Contains('\\', StringComparison.Ordinal))
+        {
+            throw new ArgumentException($"The file name {fileName} contains some invalid chars: backslash '\\' chars are not allowed");
+        }
+
+        if (fileName.Contains(':', StringComparison.Ordinal))
+        {
+            throw new ArgumentException($"The file name {fileName} contains some invalid chars: colon ':' chars are not allowed");
         }
 
         return fileName;
