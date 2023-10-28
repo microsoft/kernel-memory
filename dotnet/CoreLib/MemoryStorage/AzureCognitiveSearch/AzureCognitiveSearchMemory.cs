@@ -322,7 +322,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
     /// - replacing chars introduces a small chance of conflicts, e.g. "the-user" and "the_user".
     /// - we should consider whether making this optional and leave it to the developer to handle.
     /// </summary>
-    private static readonly Regex s_replaceIndexNameSymbolsRegex = new(@"[\s|\\|/|.|_|:]");
+    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
 
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
@@ -408,7 +408,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         indexName = indexName.ToLowerInvariant();
 
-        indexName = s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+        indexName = s_replaceIndexNameCharsRegex.Replace(indexName.Trim(), "-");
 
         // Name cannot start with a dash
         if (indexName.StartsWith('-')) { indexName = $"z{indexName}"; }
@@ -583,7 +583,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
                 .Select(keyValue =>
                 {
                     var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
-                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
+                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsChar}{fieldValue}')";
                 })
                 .ToList();
 

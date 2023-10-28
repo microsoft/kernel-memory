@@ -12,6 +12,14 @@ public class DocumentTest
         // Assert - No exception occurs
         Assert.Equal("a-b.txt", Document.ValidateId("a-b.txt"));
         Assert.Equal("a_b.txt", Document.ValidateId("a_b.txt"));
+        Assert.Equal("abcdefghijklmnopqrstuvwxyz", Document.ValidateId("abcdefghijklmnopqrstuvwxyz"));
+        Assert.Equal("ABCDEFGHIJKLMNOPQRSTUVWXYZ", Document.ValidateId("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+        Assert.Equal("01234567890", Document.ValidateId("01234567890"));
+        Assert.Equal("-_.", Document.ValidateId("-_."));
+
+        // Assert - Empty strings
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(""));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(null));
 
         // Assert - special chars
         Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a b.txt"));
