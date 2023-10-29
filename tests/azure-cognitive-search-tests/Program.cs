@@ -37,15 +37,27 @@ public static class Program
     // Size of the vectors
     private const int EmbeddingSize = 3;
 
+    private const string VectorSearchProfileName = "KMDefaultProfile";
+    private const string VectorSearchConfigName = "KMDefaultAlgorithm";
+
     private static SearchIndexClient s_adminClient = null!;
-    private static readonly string s_endpoint = Environment.GetEnvironmentVariable("SEARCH_ENDPOINT")!;
-    private static readonly string s_apiKey = Environment.GetEnvironmentVariable("SEARCH_KEY")!;
+    private static readonly string s_endpoint = Env.Var("SEARCH_ENDPOINT")!;
+    private static readonly string s_apiKey = Env.Var("SEARCH_KEY")!;
 
     public static async Task Main(string[] args)
     {
         // Azure Cognitive Search service client
-        s_adminClient = new SearchIndexClient(new Uri(s_endpoint), new AzureKeyCredential(s_apiKey),
-            new SearchClientOptions { Diagnostics = { IsTelemetryEnabled = true, ApplicationId = "KernelMemory" } });
+        s_adminClient = new SearchIndexClient(
+            new Uri(s_endpoint),
+            new AzureKeyCredential(s_apiKey),
+            new SearchClientOptions
+            {
+                Diagnostics =
+                {
+                    IsTelemetryEnabled = true,
+                    ApplicationId = "Semantic-Kernel"
+                }
+            });
 
         // Create an index (if doesn't exist)
         await CreateIndexAsync(Index);
@@ -80,19 +92,34 @@ public static class Program
         // Search by tags
         var records = await SearchByFieldValueAsync(Index,
             fieldName: "tags",
-            fieldValue1: "category=pyt'hon",
-            fieldValue2: "year=2024",
+            fieldValue1: $"category{Constants.ReservedEqualsSymbol}pyt'hon",
+            fieldValue2: $"year{Constants.ReservedEqualsSymbol}2023",
             fieldIsCollection: true,
             limit: 5);
 
-        Console.WriteLine("Count: " + records.Count);
+        Console.WriteLine("Count: " + records.Count + $" ({(records.Count == 1 ? "OK" : "ERROR, should be 1")})");
         foreach (MemoryRecord rec in records)
         {
             Console.WriteLine(" - " + rec.Id);
             Console.WriteLine("   " + rec.Payload.FirstOrDefault().Value);
         }
 
-        // // Delete the record
+        // Search by tags
+        records = await SearchByFieldValueAsync(Index,
+            fieldName: "tags",
+            fieldValue1: $"category{Constants.ReservedEqualsSymbol}pyt'hon",
+            fieldValue2: $"year{Constants.ReservedEqualsSymbol}1999",
+            fieldIsCollection: true,
+            limit: 5);
+
+        Console.WriteLine("Count: " + records.Count + $" ({(records.Count == 0 ? "OK" : "ERROR, should be 0")})");
+        foreach (MemoryRecord rec in records)
+        {
+            Console.WriteLine(" - " + rec.Id);
+            Console.WriteLine("   " + rec.Payload.FirstOrDefault().Value);
+        }
+
+        // Delete the record
         await DeleteRecordAsync(Index, recordId1);
         await DeleteRecordAsync(Index, recordId2);
     }
@@ -102,18 +129,23 @@ public static class Program
     {
         Console.WriteLine("\n== CREATE INDEX ==\n");
 
-        const string VectorSearchConfigName = "KernelMemoryDefaultCosine";
-
         var indexSchema = new SearchIndex(name)
         {
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Profiles =
+                {
+                    new VectorSearchProfile(VectorSearchProfileName, VectorSearchConfigName)
+                },
+                Algorithms =
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
-                        Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
+                        Parameters = new HnswParameters
+                        {
+                            Metric = VectorSearchAlgorithmMetric.Cosine
+                        }
                     }
                 }
             }
@@ -153,7 +185,7 @@ public static class Program
             IsFacetable = false,
             IsSortable = false,
             VectorSearchDimensions = EmbeddingSize,
-            VectorSearchConfiguration = VectorSearchConfigName,
+            VectorSearchProfile = VectorSearchProfileName,
         });
 
         try

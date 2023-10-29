@@ -39,7 +39,10 @@ public class AzureCognitiveSearchMemory : IVectorDb
         switch (config.Auth)
         {
             case AzureCognitiveSearchConfig.AuthTypes.AzureIdentity:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new DefaultAzureCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new DefaultAzureCredential(),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.APIKey:
@@ -49,11 +52,17 @@ public class AzureCognitiveSearchMemory : IVectorDb
                     throw new ConfigurationException("Azure Cognitive Search API key is empty");
                 }
 
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new AzureKeyCredential(config.APIKey),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.ManualTokenCredential:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), config.GetTokenCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    config.GetTokenCredential(),
+                    GetClientOptions());
                 break;
 
             default:
@@ -109,16 +118,20 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         var client = this.GetSearchClient(indexName);
 
-        SearchQueryVector vectorQuery = new()
+        RawVectorQuery vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Value = embedding.Data.ToArray(),
-            Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
+            Vector = embedding.Data.ToArray(),
+            Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
+            // Exhaustive search is a brute force comparison across all vectors,
+            // ignoring the index, which can be much slower once the index contains a lot of data.
+            // TODO: allow clients to manage this value either at configuration or run time.
+            Exhaustive = false
         };
 
         SearchOptions options = new()
         {
-            Vectors = { vectorQuery }
+            VectorQueries = { vectorQuery }
         };
 
         // Remove empty filters
@@ -425,18 +438,26 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchConfigName = "KernelMemoryDefaultCosine";
+        const string VectorSearchProfileName = "KMDefaultProfile";
+        const string VectorSearchConfigName = "KMDefaultAlgorithm";
 
         var indexSchema = new SearchIndex(indexName)
         {
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Profiles =
+                {
+                    new VectorSearchProfile(VectorSearchProfileName, VectorSearchConfigName)
+                },
+                Algorithms =
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
-                        Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
+                        Parameters = new HnswParameters
+                        {
+                            Metric = VectorSearchAlgorithmMetric.Cosine
+                        }
                     }
                 }
             }
@@ -464,7 +485,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
                         IsFacetable = false,
                         IsSortable = false,
                         VectorSearchDimensions = field.VectorSize,
-                        VectorSearchConfiguration = VectorSearchConfigName,
+                        VectorSearchProfile = VectorSearchProfileName,
                     };
 
                     break;
