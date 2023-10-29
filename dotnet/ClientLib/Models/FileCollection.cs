@@ -68,20 +68,19 @@ public class FileCollection
             throw new KernelMemoryException("The content stream is NULL");
         }
 
-        fileName = Document.ValidateId(fileName);
         if (string.IsNullOrWhiteSpace(fileName))
         {
             fileName = "content.txt";
         }
 
         var count = 0;
-        while (this._fileNames.Contains(fileName))
+        while (this._fileNames.Contains(fileName!))
         {
             fileName = $"stream{count++}_{fileName}";
         }
 
-        this._streams.Add(fileName, content);
-        this._fileNames.Add(fileName);
+        this._streams.Add(fileName!, content);
+        this._fileNames.Add(fileName!);
     }
 
     public IEnumerable<(string name, Stream content)> GetStreams()

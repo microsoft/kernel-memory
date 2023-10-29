@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="LLamaSharp"/>
-        <PackageReference Include="Microsoft.SemanticMemory.Core" VersionOverride="0.3.231009.6-preview"/>
+        <PackageReference Include="Microsoft.KernelMemory.Core" VersionOverride="0.5.231025.2-preview"/>
     </ItemGroup>
 
 </Project>

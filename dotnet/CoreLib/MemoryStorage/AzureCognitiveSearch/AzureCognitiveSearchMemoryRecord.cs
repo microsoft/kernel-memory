@@ -69,7 +69,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
             result.Vector = this.Vector;
         }
 
-        foreach (string[] keyValue in this.Tags.Select(tag => tag.Split(Constants.ReservedEqualsSymbol, 2)))
+        foreach (string[] keyValue in this.Tags.Select(tag => tag.Split(Constants.ReservedEqualsChar, 2)))
         {
             string key = keyValue[0];
             string? value = keyValue.Length == 1 ? null : keyValue[1];
@@ -90,7 +90,7 @@ public sealed class AzureCognitiveSearchMemoryRecord
 
         foreach (var tag in record.Tags.Pairs)
         {
-            result.Tags.Add($"{tag.Key}{Constants.ReservedEqualsSymbol}{tag.Value}");
+            result.Tags.Add($"{tag.Key}{Constants.ReservedEqualsChar}{tag.Value}");
         }
 
         return result;
