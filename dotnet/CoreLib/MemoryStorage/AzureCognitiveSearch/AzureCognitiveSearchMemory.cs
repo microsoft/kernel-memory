@@ -39,7 +39,10 @@ public class AzureCognitiveSearchMemory : IVectorDb
         switch (config.Auth)
         {
             case AzureCognitiveSearchConfig.AuthTypes.AzureIdentity:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new DefaultAzureCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new DefaultAzureCredential(),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.APIKey:
@@ -49,11 +52,17 @@ public class AzureCognitiveSearchMemory : IVectorDb
                     throw new ConfigurationException("Azure Cognitive Search API key is empty");
                 }
 
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new AzureKeyCredential(config.APIKey),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.ManualTokenCredential:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), config.GetTokenCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    config.GetTokenCredential(),
+                    GetClientOptions());
                 break;
 
             default:
@@ -445,7 +454,10 @@ public class AzureCognitiveSearchMemory : IVectorDb
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
-                        Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
+                        Parameters = new HnswParameters
+                        {
+                            Metric = VectorSearchAlgorithmMetric.Cosine
+                        }
                     }
                 }
             }

@@ -27,6 +27,11 @@ public class TestMemoryFilters
     [Fact]
     public async Task TestFilters()
     {
+        // Booleans used for investigating test failures
+        const bool deleteIndex = true;
+        const bool createIndex = true;
+        const bool createRecords = true;
+
         var acs = new AzureCognitiveSearchMemory(
             this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
                 .Get<AzureCognitiveSearchConfig>()!);
@@ -39,35 +44,43 @@ public class TestMemoryFilters
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
                 .Get<SimpleVectorDbConfig>()!);
 
-        await acs.DeleteIndexAsync(IndexName);
-        await qdrant.DeleteIndexAsync(IndexName);
-        await simpleVecDb.DeleteIndexAsync(IndexName);
-
-        await Task.Delay(TimeSpan.FromSeconds(2));
-
-        await acs.CreateIndexAsync(IndexName, 3);
-        await qdrant.CreateIndexAsync(IndexName, 3);
-        await simpleVecDb.CreateIndexAsync(IndexName, 3);
-
-        var records = new Dictionary<string, MemoryRecord>
+        if (deleteIndex)
         {
-            ["1"] = new() { Id = "1", Vector = new[] { 0.25f, 0.33f, 0.29f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Work" } } },
-            ["2"] = new() { Id = "2", Vector = new[] { 0.25f, 0.25f, 0.35f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Personal" } } },
-            ["3"] = new() { Id = "3", Vector = new[] { 0.1f, 0.1f, 0.1f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-            ["4"] = new() { Id = "4", Vector = new[] { 0.05f, 0.91f, 0.03f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-            ["5"] = new() { Id = "5", Vector = new[] { 0.65f, 0.12f, 0.99f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-            ["6"] = new() { Id = "6", Vector = new[] { 0.81f, 0.12f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Personal" } } },
-            ["7"] = new() { Id = "7", Vector = new[] { 0.88f, 0.01f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Work" } } },
-        };
-
-        foreach (KeyValuePair<string, MemoryRecord> r in records)
-        {
-            await acs.UpsertAsync(IndexName, r.Value);
-            await qdrant.UpsertAsync(IndexName, r.Value);
-            await simpleVecDb.UpsertAsync(IndexName, r.Value);
+            await acs.DeleteIndexAsync(IndexName);
+            await qdrant.DeleteIndexAsync(IndexName);
+            await simpleVecDb.DeleteIndexAsync(IndexName);
+            await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(2));
+        if (createIndex)
+        {
+            await acs.CreateIndexAsync(IndexName, 3);
+            await qdrant.CreateIndexAsync(IndexName, 3);
+            await simpleVecDb.CreateIndexAsync(IndexName, 3);
+        }
+
+        if (createRecords)
+        {
+            var records = new Dictionary<string, MemoryRecord>
+            {
+                ["1"] = new() { Id = "1", Vector = new[] { 0.25f, 0.33f, 0.29f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Work" } } },
+                ["2"] = new() { Id = "2", Vector = new[] { 0.25f, 0.25f, 0.35f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Personal" } } },
+                ["3"] = new() { Id = "3", Vector = new[] { 0.1f, 0.1f, 0.1f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+                ["4"] = new() { Id = "4", Vector = new[] { 0.05f, 0.91f, 0.03f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+                ["5"] = new() { Id = "5", Vector = new[] { 0.65f, 0.12f, 0.99f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+                ["6"] = new() { Id = "6", Vector = new[] { 0.81f, 0.12f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Personal" } } },
+                ["7"] = new() { Id = "7", Vector = new[] { 0.88f, 0.01f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Work" } } },
+            };
+
+            foreach (KeyValuePair<string, MemoryRecord> r in records)
+            {
+                await acs.UpsertAsync(IndexName, r.Value);
+                await qdrant.UpsertAsync(IndexName, r.Value);
+                await simpleVecDb.UpsertAsync(IndexName, r.Value);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
 
         this._log.WriteLine($"\n\n\n----- Azure Cognitive Search -----");
         await this.TestVectorDbFiltering(acs);
