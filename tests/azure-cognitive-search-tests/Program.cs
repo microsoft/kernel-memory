@@ -92,8 +92,8 @@ public static class Program
         // Search by tags
         var records = await SearchByFieldValueAsync(Index,
             fieldName: "tags",
-            fieldValue1: $"category{Constants.ReservedEqualsSymbol}pyt'hon",
-            fieldValue2: $"year{Constants.ReservedEqualsSymbol}2023",
+            fieldValue1: $"category{Constants.ReservedEqualsChar}pyt'hon",
+            fieldValue2: $"year{Constants.ReservedEqualsChar}2023",
             fieldIsCollection: true,
             limit: 5);
 
@@ -107,8 +107,8 @@ public static class Program
         // Search by tags
         records = await SearchByFieldValueAsync(Index,
             fieldName: "tags",
-            fieldValue1: $"category{Constants.ReservedEqualsSymbol}pyt'hon",
-            fieldValue2: $"year{Constants.ReservedEqualsSymbol}1999",
+            fieldValue1: $"category{Constants.ReservedEqualsChar}pyt'hon",
+            fieldValue2: $"year{Constants.ReservedEqualsChar}1999",
             fieldIsCollection: true,
             limit: 5);
 
