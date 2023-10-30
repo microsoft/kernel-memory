@@ -46,6 +46,16 @@ public class SimpleVectorDb : IVectorDb
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        List<string> volumes = await this._fileSystem.ListVolumesAsync(cancellationToken);
+        foreach (string volume in volumes)
+        {
+            yield return volume;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         await this._fileSystem.WriteFileAsync(indexName, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);

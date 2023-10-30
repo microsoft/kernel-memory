@@ -70,6 +70,11 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    public Task<List<string>> ListVolumesAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._volumes.Keys.ToList());
+    }
+
     #endregion
 
     #region Directory API

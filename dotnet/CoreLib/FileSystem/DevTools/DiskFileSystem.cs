@@ -61,6 +61,17 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    public Task<List<string>> ListVolumesAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new List<string>();
+        if (Directory.Exists(this._dataPath))
+        {
+            result.AddRange(Directory.GetDirectories(this._dataPath));
+        }
+
+        return Task.FromResult(result);
+    }
+
     #endregion
 
     #region Directory API

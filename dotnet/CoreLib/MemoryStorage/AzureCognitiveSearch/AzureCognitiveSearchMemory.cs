@@ -78,6 +78,16 @@ public class AzureCognitiveSearchMemory : IVectorDb
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
+        await foreach (SearchIndex? index in indexesAsync)
+        {
+            yield return index.Name;
+        }
+    }
+
+    /// <inheritdoc />
     public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
     {
         indexName = this.NormalizeIndexName(indexName);
@@ -360,15 +370,6 @@ public class AzureCognitiveSearchMemory : IVectorDb
         }
 
         return client;
-    }
-
-    private async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (SearchIndex? index in indexesAsync)
-        {
-            yield return index.Name;
-        }
     }
 
     private static void ValidateSchema(VectorDbSchema schema)
