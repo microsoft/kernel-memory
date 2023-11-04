@@ -1,6 +1,6 @@
 # upload-file.sh
 
-Simple client for command line uploads to Semantic Memory.
+Simple client for command line uploads to Kernel Memory.
 
 Instructions:
 

@@ -4,14 +4,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.DataFormats.Image;
-using Microsoft.SemanticMemory.DataFormats.Office;
-using Microsoft.SemanticMemory.DataFormats.Pdf;
-using Microsoft.SemanticMemory.DataFormats.WebPages;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats.Office;
+using Microsoft.KernelMemory.DataFormats.Pdf;
+using Microsoft.KernelMemory.DataFormats.WebPages;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
 /// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
@@ -54,6 +54,8 @@ public class TextExtractionHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Extracting text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             if (uploadedFile.AlreadyProcessedBy(this))
@@ -65,6 +67,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             var sourceFile = uploadedFile.Name;
             var destFile = $"{uploadedFile.Name}.extract.txt";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
+            this._log.LogDebug("File '{0}' size: {1} bytes", sourceFile, fileContent.ToArray().Length);
             string text = string.Empty;
             string extractType = MimeTypes.PlainText;
 
@@ -182,7 +185,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             if (!skipFile)
             {
                 this._log.LogDebug("Saving extracted text file {0}", destFile);
-                await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
+                await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
 
                 var destFileDetails = new DataPipeline.GeneratedFileDetails
                 {

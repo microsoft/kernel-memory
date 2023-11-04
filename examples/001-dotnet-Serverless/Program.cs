@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -10,12 +10,13 @@ using Microsoft.SemanticMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
-var memory = new MemoryClientBuilder()
-    // To use Azure Blobs               => .WithAzureBlobsStorage(new AzureBlobsConfig {...})
-    // To use Azure Cognitive Search    => .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))
-    // To use Qdrant docker             => .WithQdrant("http://127.0.0.1:6333")
-    // To use Azure Form Recognizer OCR => .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY"))
+var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
+    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs
+    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))                      => use Azure Cognitive Search
+    // .WithQdrant("http://127.0.0.1:6333")                                                            => use Qdrant docker
+    // .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY")) => use Azure Form Recognizer OCR
     .BuildServerlessClient();
 
 // Use these boolean to enable/disable parts of the examples below
@@ -90,8 +91,8 @@ if (ingestion)
     toDelete.Add("webPage1");
     if (!await memory.IsDocumentReadyAsync("webPage1"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "webPage1");
     }
     else
     {
@@ -102,8 +103,8 @@ if (ingestion)
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md",
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md",
             documentId: "webPage2",
             steps: Constants.PipelineWithoutSummary);
     }
@@ -214,7 +215,7 @@ Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
-Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
 
 ====================================
 
@@ -264,7 +265,7 @@ Taylor Answer: Yes, NASA has invited media to see the test version of the Orion 
 ====================================
 
 Question: What is Orion?
-warn: Microsoft.SemanticMemory.Search.SearchClient[0]
+warn: Microsoft.KernelMemory.Search.SearchClient[0]
       No memories available
 
 Articles: INFO NOT FOUND

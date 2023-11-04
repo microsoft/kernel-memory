@@ -1,0 +1,4 @@
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in examples
+dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names

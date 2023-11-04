@@ -4,15 +4,17 @@
 
 using System.Reflection;
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
 public class ImportFilesTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
     private readonly string? _fixturesPath;
 
     public ImportFilesTest(ITestOutputHelper output) : base(output)
@@ -25,11 +27,11 @@ public class ImportFilesTest : BaseTestCase
         var tmpPath = Path.GetFullPath(Path.Join(this._fixturesPath, "..", "tmp"));
         Console.WriteLine($"Saving temp files in: {tmpPath}");
 
-        this._memory = new MemoryClientBuilder()
+        this._memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .WithSimpleFileStorage(tmpPath)
-            // Store embeddings in memory
-            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = SimpleVectorDbConfig.StorageTypes.Volatile })
+            // Store data in memory
+            .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
+            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
             .BuildServerlessClient();
     }
 
@@ -44,7 +46,7 @@ public class ImportFilesTest : BaseTestCase
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
-            documentId: @"Documents\Doc1.txt",
+            documentId: "Documents-Doc1.txt",
             steps: new[] { "extract", "partition" });
     }
 
@@ -57,6 +59,26 @@ public class ImportFilesTest : BaseTestCase
                 .AddFile(Path.Join(this._fixturesPath, "Doc1.txt"))
                 .AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt")),
             steps: new[] { "extract", "partition" });
+    }
+
+    [Fact]
+    public async Task ItImportsStreams()
+    {
+        // Arrange
+        var fileName = "Doc1.txt";
+        var filePath = Path.Join(this._fixturesPath, fileName);
+        using MemoryStream memoryStream = new();
+        using Stream fileStream = File.OpenRead(filePath);
+        await fileStream.CopyToAsync(memoryStream);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        // Act - Assert no exception occurs
+        await this._memory.ImportDocumentAsync(
+            content: memoryStream,
+            documentId: "487BC53B60CFBD42167A0488A78347929E0FE811FC705A94253E419CA5911360",
+            fileName: fileName,
+            steps: new[] { "extract", "partition" },
+            tags: new() { { "user", "user1" } });
     }
 
     // Find the "Fixtures" directory (inside the project)

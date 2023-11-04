@@ -10,11 +10,10 @@ using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 using Polly;
-using Polly.Retry;
 
-namespace Microsoft.SemanticMemory.DataFormats.WebPages;
+namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
 public class WebScraper
 {
@@ -47,7 +46,10 @@ public class WebScraper
 
         // TODO: perf/TCP ports/reuse client
         using var client = new HttpClient();
-        HttpResponseMessage? response = await RetryLogic().ExecuteAsync(() => client.GetAsync(url)).ConfigureAwait(false);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(Telemetry.HttpUserAgent);
+        HttpResponseMessage? response = await RetryLogic()
+            .ExecuteAsync(async cancellationToken => await client.GetAsync(url, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -89,7 +91,7 @@ public class WebScraper
         return new Result { Success = false, Error = $"Invalid content type: {contentType}" };
     }
 
-    private static AsyncRetryPolicy<HttpResponseMessage> RetryLogic()
+    private static ResiliencePipeline<HttpResponseMessage> RetryLogic()
     {
         var retriableErrors = new[]
         {
@@ -102,12 +104,18 @@ public class WebScraper
         const int MaxDelay = 5;
         var delays = new List<int> { 1, 1, 1, 2, 2, 3, 4, MaxDelay };
 
-        return Policy
-            .HandleResult<HttpResponseMessage>(resp => retriableErrors.Contains(resp.StatusCode))
-            .WaitAndRetryAsync(retryCount: 10, attempt =>
+        return new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
             {
-                double secs = (attempt < delays.Count) ? delays[attempt] : MaxDelay;
-                return TimeSpan.FromSeconds(secs);
-            });
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .HandleResult(resp => retriableErrors.Contains(resp.StatusCode)),
+                MaxRetryAttempts = 10,
+                DelayGenerator = args =>
+                {
+                    double secs = (args.AttemptNumber < delays.Count) ? delays[args.AttemptNumber] : MaxDelay;
+                    return ValueTask.FromResult<TimeSpan?>(TimeSpan.FromSeconds(secs));
+                }
+            })
+            .Build();
     }
 }

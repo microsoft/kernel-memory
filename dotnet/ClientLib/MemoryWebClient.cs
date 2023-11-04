@@ -10,12 +10,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Models;
+using Microsoft.KernelMemory.Models;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public class MemoryWebClient : ISemanticMemoryClient
+public class MemoryWebClient : IKernelMemory
 {
     private readonly HttpClient _client;
 
@@ -124,15 +124,39 @@ public class MemoryWebClient : ISemanticMemoryClient
     }
 
     /// <inheritdoc />
+    public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
+    {
+        index = IndexExtensions.CleanName(index);
+        var url = Constants.HttpDeleteIndexEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, index);
+        HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+
+        // No error if the index doesn't exist
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return;
+        }
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+            throw new KernelMemoryException($"Index delete failed, status code: {response.StatusCode}", e);
+        }
+    }
+
+    /// <inheritdoc />
     public async Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
-            throw new SemanticMemoryException("The document ID is empty");
+            throw new KernelMemoryException("The document ID is empty");
         }
 
         index = IndexExtensions.CleanName(index);
-        var url = Constants.HttpDeleteEndpointWithParams
+        var url = Constants.HttpDeleteDocumentEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
@@ -149,7 +173,7 @@ public class MemoryWebClient : ISemanticMemoryClient
         }
         catch (Exception e)
         {
-            throw new SemanticMemoryException($"Delete failed, status code: {response.StatusCode}", e);
+            throw new KernelMemoryException($"Document deletion failed, status code: {response.StatusCode}", e);
         }
     }
 
@@ -301,11 +325,11 @@ public class MemoryWebClient : ISemanticMemoryClient
             }
             catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
             {
-                throw new SemanticMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
+                throw new KernelMemoryWebException($"{e.Message} [StatusCode: {e.Data["StatusCode"]}]", e);
             }
             catch (Exception e)
             {
-                throw new SemanticMemoryWebException(e.Message, e);
+                throw new KernelMemoryWebException(e.Message, e);
             }
             finally
             {

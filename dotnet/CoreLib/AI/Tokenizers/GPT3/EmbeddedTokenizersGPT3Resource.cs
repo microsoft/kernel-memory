@@ -2,9 +2,9 @@
 
 using System.IO;
 using System.Reflection;
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
+namespace Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 
 /// <summary>
 /// Resource helper to load resources embedded in the assembly. By default we embed only

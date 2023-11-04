@@ -1,11 +1,11 @@
-# Welcome to the Semantic Kernel / Semantic Memory Community!
+# Welcome to the Semantic Kernel / Kernel Memory Community!
 
 Below are some ways that you can get involved.
 
 ## Engage on Github
 
 File issues, submit PRs, and provide feedback and ideas to what you'd like to
-see from the Semantic Memory. We do our best to respond to each submission.
+see from the Kernel Memory. We do our best to respond to each submission.
 
 ## Public Semantic Kernel Community Office Hours
 
@@ -22,7 +22,7 @@ If you are unable to make it live, all meetings will be recorded and posted onli
 ## Join the conversation on Discord
 
 We have a growing and active channel on Discord where you can get help, engage
-in lively discussion, and share what you've built with Semantic Memory and
+in lively discussion, and share what you've built with Kernel Memory and
 Semantic Kernel!
 
 Join our Discord:

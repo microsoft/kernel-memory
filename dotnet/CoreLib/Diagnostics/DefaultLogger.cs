@@ -3,13 +3,13 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Diagnostics;
+namespace Microsoft.KernelMemory.Diagnostics;
 
 /// <summary>
 /// Create and cache a logger instance using the same
-/// configuration sources supported by Semantic Memory config.
+/// configuration sources supported by Kernel Memory config.
 /// </summary>
 /// <typeparam name="T">Type of the class using the logger. The type name
 /// is used to decorate log entries, providing information about the log source.</typeparam>

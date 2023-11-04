@@ -9,10 +9,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
 /// <summary>
 /// An implementation of a client for the Qdrant Vector Database. This class is used to

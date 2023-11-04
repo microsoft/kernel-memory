@@ -4,11 +4,11 @@ This document provides some guidance about how to organize your documents in
 order to secure your data, e.g. making sure users can access only data
 meant to be accessible to them.
 
-Semantic Memory allows to organize memories with two main approaches, which
+Kernel Memory allows to organize memories with two main approaches, which
 can also be used together for maximum flexibility.
 
-1. Storing data in separate collections called "**Indexes**".
-2. Labeling data with custom keywords called "**Tags**".
+1. Storing information in separate collections called "**Indexes**".
+2. Labeling information with custom keywords called "**Tags**".
 
 ## Indexes
 
@@ -17,16 +17,16 @@ we recommend using indexes only to scale horizontally, using your application
 scalability metrics, such as the number of users, the number of projects,
 the number of chats, and so on.
 
-Currently, **indexes are completely isolated**, Semantic Memory doesn't allow
+Currently, **indexes are completely isolated**, Kernel Memory doesn't allow
 to search across indexes, so you should consider whether that's compatible
 with your scenarios.
 
-When uploading and searching, unless specified, Semantic Memory uses a
+When uploading and searching, unless specified, Kernel Memory uses a
 default index name, a single container for all the memories.
 
 ## Tags
 
-When designing for security, Semantic Memory recommends using Tags, applying
+When designing for security, Kernel Memory recommends using Tags, applying
 to each document a User ID tag that your application can filter by.
 
 **Vector DBs like Azure Cognitive Search, Qdrant, Pinecone, etc. don't offer
@@ -36,7 +36,7 @@ using embedding vectors, and to quickly find similar documents.
 Vector records stored in Vector DBs though can be decorated with metadata, and
 can be filtered when searching, applying some logical filters.
 
-Semantic Memory leverages this capability, and uses specific native filters
+Kernel Memory leverages this capability, and uses specific native filters
 on all the supported Vector DBs (Azure Cognitive Search, Qdrant, etc), removing
 the need to learn ad-hoc filtering syntax, allowing to **tag every memory
 during the ingestion**, and allowing to **filter by tag when searching**,
@@ -54,7 +54,7 @@ Here's some examples:
 * Use a "projectID" tag to assign records to a specific project.
 * Use a "year" and "month" tags to filter records by time.
 
-Semantic Memory uses the same Tagging feature to correlate memories to source
+Kernel Memory uses the same Tagging feature to correlate memories to source
 files, e.g. to generate citations, to handle document updates, and to apply
 cascade deletions, etc.
 
@@ -207,18 +207,18 @@ var answer = await memory.AskAsync("what's the project timeline?",
 
 # Security best practices
 
-Summarizing, we recommend these best practices to secure Semantic Memory usage:
+Summarizing, we recommend these best practices to secure Kernel Memory usage:
 
-* Use Semantic Memory as **a private backend component**, similar to a SQL
-  Server, without granting direct access. When using Semantic Memory as a
+* Use Kernel Memory as **a private backend component**, similar to a SQL
+  Server, without granting direct access. When using Kernel Memory as a
   service, consider assigning the service a reserved IP, accessible only to
   your services, and using HTTPS only.
 * Authenticate users in your backend using a secure solution like Azure
   Active Directory, extract the user ID from the signed credentials like JWT
-  tokens or client certs, and tag every interaction with Semantic Memory with
+  tokens or client certs, and tag every interaction with Kernel Memory with
   this User ID
-* **Use Semantic Memory Tags as Security Filters**. Make sure every API call
-  to Semantic Memory uses a User tag, both when reading and writing to memory.
+* **Use Kernel Memory Tags as Security Filters**. Make sure every API call
+  to Kernel Memory uses a User tag, both when reading and writing to memory.
 
 # Complex filters
 

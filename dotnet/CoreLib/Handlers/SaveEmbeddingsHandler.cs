@@ -7,17 +7,18 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IVectorDb> _vectorDbs;
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
     /// <inheritdoc />
@@ -48,8 +49,11 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+        DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Saving embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         await this.DeletePreviousEmbeddingsAsync(pipeline, cancellationToken).ConfigureAwait(false);
         pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
 
@@ -64,7 +68,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             }
 
             string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.Value.Name, cancellationToken).ConfigureAwait(false);
-            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson);
+            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson.RemoveBOM().Trim());
             if (embeddingData == null)
             {
                 throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.Value.Name}");
@@ -95,7 +99,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
             record.Payload.Add(Constants.ReservedPayloadTextField, partitionContent);
 
-            foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
+            foreach (IVectorDb client in this._vectorDbs)
             {
                 this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                 await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
@@ -133,7 +137,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 string recordId = GetEmbeddingRecordId(oldPipeline.DocumentId, embeddingFile.Id);
                 if (embeddingsToKeep.Contains(recordId)) { continue; }
 
-                foreach (ISemanticMemoryVectorDb client in this._vectorDbs)
+                foreach (IVectorDb client in this._vectorDbs)
                 {
                     this._log.LogTrace("Deleting old embedding {0}", recordId);
                     await client.DeleteAsync(pipeline.Index, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);

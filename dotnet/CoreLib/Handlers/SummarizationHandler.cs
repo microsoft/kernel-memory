@@ -7,14 +7,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.Text;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
-using Microsoft.SemanticMemory.Prompts;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class SummarizationHandler : IPipelineStepHandler
 {
@@ -59,6 +59,8 @@ public class SummarizationHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Generating summary, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -86,12 +88,12 @@ public class SummarizationHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogDebug("Summarizing text file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteTextFileAsync(pipeline, destFile, summary, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(summary), cancellationToken).ConfigureAwait(false);
 
                             summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {

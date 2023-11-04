@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Models;
+namespace Microsoft.KernelMemory.Models;
 
 internal static class Verify
 {

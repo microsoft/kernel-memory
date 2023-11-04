@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.SemanticMemory.Models;
+using Microsoft.KernelMemory.Models;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// A document is a collection of one or multiple files, with additional
@@ -18,23 +17,6 @@ namespace Microsoft.SemanticMemory;
 /// </summary>
 public class Document
 {
-    /// <summary>
-    /// Regex to detect (and replace) all special chars that might cause problems when used
-    /// for file/folder names on local filesystems, cloud storage solutions, etc.
-    /// </summary>
-    private static readonly Regex s_replaceSymbolsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|\-|=|_|^|@|#|$|%|&]");
-
-    /// <summary>
-    /// Replace special chars with an underscore, which is widely supported across multiple
-    /// storage solutions, and allows RAG to distinguish words separated by this symbol.
-    /// </summary>
-    private const char SpecialCharReplacement = '_';
-
-    /// <summary>
-    /// Regex to detect (and replace) repeated use of the underscore char.
-    /// </summary>
-    private static readonly Regex s_dupeSymbolsRegex = new($"{SpecialCharReplacement}+");
-
     /// <summary>
     /// Document ID, used also as Pipeline ID.
     /// </summary>
@@ -44,8 +26,8 @@ public class Document
         set
         {
             this._id = string.IsNullOrWhiteSpace(value)
-                ? FsNameToId(RandomId())
-                : FsNameToId(value);
+                ? ValidateId(RandomId())
+                : ValidateId(value);
         }
     }
 
@@ -126,7 +108,7 @@ public class Document
     {
         if (content == null)
         {
-            throw new SemanticMemoryException("The content stream is NULL");
+            throw new KernelMemoryException("The content stream is NULL");
         }
 
         this.Files.AddStream(fileName, content);
@@ -134,20 +116,52 @@ public class Document
     }
 
     /// <summary>
-    /// Remove special chars and generate a string that can be used as a file identifier
-    /// across multiple storage solutions.
+    /// Check for special chars to ensure the identifier is valid across multiple storage solutions.
     /// </summary>
-    /// <param name="fileOrDirName">File name, File path, Directory name, etc.</param>
-    public static string FsNameToId(string? fileOrDirName)
+    public static string ValidateId(string? id)
     {
-        return s_dupeSymbolsRegex
-            .Replace(s_replaceSymbolsRegex.Replace(fileOrDirName ?? string.Empty, $"{SpecialCharReplacement}"), $"{SpecialCharReplacement}")
-            .Trim(SpecialCharReplacement);
+        if (string.IsNullOrEmpty(id))
+        {
+            throw new ArgumentOutOfRangeException(nameof(id), "The document ID is empty");
+        }
+
+        if (!IsValid(id))
+        {
+            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
+        }
+
+        return id!;
+    }
+
+    /// <summary>
+    /// Remove invalid chars from the input, replacing them with underscore.
+    /// For compatibility with most storage engines, only alphanumeric chars,
+    /// minus "-" and underscore "_" are considered valid.
+    /// </summary>
+    /// <param name="value">Value to sanitize</param>
+    /// <returns>Sanitized value</returns>
+    public static string ReplaceInvalidChars(string? value)
+    {
+        if (value == null) { return string.Empty; }
+
+        return new string(value.Select(c => IsValidChar(c) ? c : '_').ToArray());
     }
 
     #region private
 
     private string _id = string.Empty;
+
+    private static bool IsValid(string? value)
+    {
+        if (value == null) { return false; }
+
+        return value.All(IsValidChar);
+    }
+
+    private static bool IsValidChar(char c)
+    {
+        return char.IsLetterOrDigit(c) || c == '_' || c == '-' || c == '.';
+    }
 
     private static string RandomId()
     {

@@ -9,12 +9,16 @@ indent_style = space
 end_of_line = lf
 
 # XML project files
-[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
+[*.{vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
 
 # XML config files
-[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
+[*.{targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
+
+# XML config files
+[*.{props,csproj}]
+indent_size = 4
 
 # YAML config files
 [*.{yml,yaml}]

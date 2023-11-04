@@ -7,17 +7,18 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
@@ -30,14 +31,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected BaseOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
-        SemanticMemoryConfig? config = null,
+        KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
-        this._defaultIngestionSteps = (config ?? new SemanticMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
+        this._defaultIngestionSteps = (config ?? new KernelMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
         this._contentStorage = contentStorage;
         this._embeddingGenerators = embeddingGenerators;
         this._vectorDbs = vectorDbs;
@@ -117,7 +118,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         var pipeline = new DataPipeline
         {
-            Index = IndexExtensions.CleanName(index),
+            Index = index,
             DocumentId = documentId,
             Tags = tags,
             FilesToUpload = filesToUpload.ToList(),
@@ -136,7 +137,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
                 .ConfigureAwait(false));
-            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString());
+            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString().RemoveBOM().Trim());
         }
         catch (ContentStorageFileNotFoundException)
         {
@@ -166,32 +167,27 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    {
+        return (await this.ReadFileAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false)).ToString();
+    }
+
+    ///<inheritdoc />
     public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
         return this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken);
     }
 
     ///<inheritdoc />
-    public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
     {
-        BinaryData content = await this.ReadFileAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
-        return content.ToString();
+        return this.WriteFileAsync(pipeline, fileName, new BinaryData(fileContent), cancellationToken);
     }
 
     ///<inheritdoc />
     public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
     {
-        return this._contentStorage.WriteStreamAsync(
-            pipeline.Index, pipeline.DocumentId,
-            fileName,
-            fileContent.ToStream(),
-            cancellationToken);
-    }
-
-    ///<inheritdoc />
-    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
-    {
-        return this.WriteFileAsync(pipeline, fileName, BinaryData.FromString(fileContent), cancellationToken);
+        return this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, fileName, fileContent.ToStream(), cancellationToken);
     }
 
     ///<inheritdoc />
@@ -201,7 +197,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public List<ISemanticMemoryVectorDb> GetVectorDbs()
+    public List<IVectorDb> GetVectorDbs()
     {
         return this._vectorDbs;
     }
@@ -210,6 +206,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public ITextGeneration GetTextGenerator()
     {
         return this._textGenerator;
+    }
+
+    ///<inheritdoc />
+    public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
+    {
+        DataPipeline pipeline = this.PrepareIndexDeletion(index: index);
+        return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
     ///<inheritdoc />
@@ -226,16 +229,61 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// If the pipeline asked to delete a document or an index, there might be some files
+    /// left over in the storage, such as the status file that we wish to delete to keep
+    /// the storage clean. We try to delete what is left, ignoring exceptions.
+    /// </summary>
+    protected async Task CleanUpAfterCompletionAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    {
+#pragma warning disable CA1031 // catch all by design
+        if (pipeline.IsDocumentDeletionPipeline())
+        {
+            try
+            {
+                await this._contentStorage.DeleteDocumentDirectoryAsync(index: pipeline.Index, documentId: pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.Log.LogError(e, "Error while trying to delete the document directory");
+            }
+        }
+
+        if (pipeline.IsIndexDeletionPipeline())
+        {
+            try
+            {
+                await this._contentStorage.DeleteIndexDirectoryAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                this.Log.LogError(e, "Error while trying to delete the index directory");
+            }
+        }
+#pragma warning restore CA1031
+    }
+
+    protected DataPipeline PrepareIndexDeletion(string? index)
+    {
+        var pipeline = new DataPipeline
+        {
+            Index = index!,
+            DocumentId = string.Empty,
+        };
+
+        return pipeline.Then(Constants.DeleteIndexPipelineStepName).Build();
+    }
+
     protected DataPipeline PrepareDocumentDeletion(string? index, string documentId)
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
-            throw new SemanticMemoryException("The document ID is empty");
+            throw new KernelMemoryException("The document ID is empty");
         }
 
         var pipeline = new DataPipeline
         {
-            Index = IndexExtensions.CleanName(index),
+            Index = index!,
             DocumentId = documentId,
         };
 
@@ -253,7 +301,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // If the folder contains the status of a previous execution,
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
-        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(
+            currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {
             var dedupe = new HashSet<string>();
@@ -289,14 +338,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     /// <param name="cancellationToken">Task cancellation token</param>
     protected async Task UpdatePipelineStatusAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        this.Log.LogDebug("Saving pipeline status to {0}/{1}", pipeline.DocumentId, Constants.PipelineStatusFilename);
+        this.Log.LogDebug("Saving pipeline status to '{0}/{1}/{2}'", pipeline.Index, pipeline.DocumentId, Constants.PipelineStatusFilename);
         try
         {
-            await this._contentStorage.WriteTextFileAsync(
+            await this._contentStorage.WriteFileAsync(
                     pipeline.Index,
                     pipeline.DocumentId,
                     Constants.PipelineStatusFilename,
-                    ToJson(pipeline, true),
+                    new BinaryData(ToJson(pipeline, true)).ToStream(),
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -314,7 +363,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     private async Task UploadFormFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken)
     {
-        this.Log.LogDebug("Uploading {0} files, pipeline {1}", pipeline.FilesToUpload.Count, pipeline.DocumentId);
+        this.Log.LogDebug("Uploading {0} files, pipeline '{1}/{2}'", pipeline.FilesToUpload.Count, pipeline.Index, pipeline.DocumentId);
 
         await this._contentStorage.CreateIndexDirectoryAsync(pipeline.Index, cancellationToken).ConfigureAwait(false);
         await this._contentStorage.CreateDocumentDirectoryAsync(pipeline.Index, pipeline.DocumentId, cancellationToken).ConfigureAwait(false);
@@ -327,8 +376,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 continue;
             }
 
-            this.Log.LogDebug("Uploading file: {0}", file.FileName);
-            var size = await this._contentStorage.WriteStreamAsync(pipeline.Index, pipeline.DocumentId, file.FileName, file.FileContent, cancellationToken).ConfigureAwait(false);
+            // Read the value before the stream is closed (would throw an exception otherwise)
+            var fileSize = file.FileContent.Length;
+
+            this.Log.LogDebug("Uploading file '{0}', size {1} bytes", file.FileName, fileSize);
+            await this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, file.FileName, file.FileContent, cancellationToken).ConfigureAwait(false);
 
             string mimeType = string.Empty;
             try
@@ -344,11 +396,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Name = file.FileName,
-                Size = size,
+                Size = fileSize,
                 MimeType = mimeType,
             });
 
-            this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, size);
+            this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, fileSize);
             pipeline.LastUpdate = DateTimeOffset.UtcNow;
         }
 

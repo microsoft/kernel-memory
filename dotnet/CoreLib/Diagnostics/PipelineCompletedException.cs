@@ -2,9 +2,9 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.Diagnostics;
+namespace Microsoft.KernelMemory.Diagnostics;
 
-public class PipelineCompletedException : SemanticMemoryException
+public class PipelineCompletedException : KernelMemoryException
 {
     /// <summary>
     /// Initializes a new instance.

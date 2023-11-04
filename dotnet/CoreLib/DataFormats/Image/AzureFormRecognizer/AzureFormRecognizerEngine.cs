@@ -8,10 +8,10 @@ using Azure;
 using Azure.AI.FormRecognizer.DocumentAnalysis;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.DataFormats.Image.AzureFormRecognizer;
+namespace Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
 
 /// <summary>
 /// OCR engine based on Azure.AI.FormRecognizer.

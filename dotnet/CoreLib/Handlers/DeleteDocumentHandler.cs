@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.Pipeline;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteDocumentHandler : IPipelineStepHandler
 {
-    private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<ISemanticMemoryVectorDb> _vectorDbs;
+    private readonly List<IVectorDb> _vectorDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteDocumentHandler> _log;
 
@@ -22,13 +21,11 @@ public class DeleteDocumentHandler : IPipelineStepHandler
 
     public DeleteDocumentHandler(
         string stepName,
-        IPipelineOrchestrator orchestrator,
         IContentStorage contentStorage,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ILogger<DeleteDocumentHandler>? log = null)
     {
         this.StepName = stepName;
-        this._orchestrator = orchestrator;
         this._contentStorage = contentStorage;
         this._vectorDbs = vectorDbs;
         this._log = log ?? DefaultLogger<DeleteDocumentHandler>.Instance;
@@ -37,15 +34,18 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+        DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         // Delete embeddings
-        foreach (ISemanticMemoryVectorDb db in this._vectorDbs)
+        foreach (IVectorDb db in this._vectorDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 indexName: pipeline.Index,
                 limit: -1,
-                filters: new List<MemoryFilter>() { MemoryFilters.ByDocument(pipeline.DocumentId) },
+                filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
                 cancellationToken: cancellationToken);
 
             await foreach (var record in records.WithCancellation(cancellationToken))
@@ -54,8 +54,8 @@ public class DeleteDocumentHandler : IPipelineStepHandler
             }
         }
 
-        // Delete files
-        await this._contentStorage.DeleteDocumentDirectoryAsync(
+        // Delete files, leaving the status file
+        await this._contentStorage.EmptyDocumentDirectoryAsync(
             index: pipeline.Index,
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);

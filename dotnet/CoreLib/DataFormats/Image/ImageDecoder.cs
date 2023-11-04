@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.DataFormats.Image;
+namespace Microsoft.KernelMemory.DataFormats.Image;
 
 public class ImageDecoder
 {

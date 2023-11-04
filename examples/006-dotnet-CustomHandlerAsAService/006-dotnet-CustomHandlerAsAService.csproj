@@ -4,14 +4,14 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AssemblyName />
-        <RootNamespace />
+        <AssemblyName/>
+        <RootNamespace/>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
         <NoWarn>CA1050,CA1303</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
+        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj"/>
     </ItemGroup>
 
 </Project>

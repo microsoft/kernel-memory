@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 #pragma warning disable CA2225 // no need for explicit methods
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Note: use Embedding.JsonConverter to serialize objects using this type.

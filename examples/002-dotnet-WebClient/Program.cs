@@ -1,19 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 
-// using Microsoft.SemanticMemory.Client.Models;
-
-/* Use SemanticMemoryWebClient to run the default import pipeline
+/* Use MemoryWebClient to run the default import pipeline
  * deployed as a web service at "http://127.0.0.1:9001/".
  *
- * Note: start the semantic memory service before running this.
+ * Note: start the Kernel Memory service before running this.
  * Note: if the web service uses distributed handlers, make sure
  *       handlers are running to get the pipeline to complete,
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
 
-var memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+var memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
 
 // Use these boolean to enable/disable parts of the examples below
 bool ingestion = true;
@@ -87,8 +85,8 @@ if (ingestion)
     toDelete.Add("webPage1");
     if (!await memory.IsDocumentReadyAsync("webPage1"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md", documentId: "webPage1");
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "webPage1");
     }
     else
     {
@@ -99,8 +97,8 @@ if (ingestion)
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/semantic-memory/main/docs/SECURITY_FILTERS.md",
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md",
             documentId: "webPage2",
             steps: Constants.PipelineWithoutSummary);
     }
@@ -224,7 +222,7 @@ Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
-Uploading https://raw.githubusercontent.com/microsoft/semantic-memory/main/README.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
 
 ====================================
 

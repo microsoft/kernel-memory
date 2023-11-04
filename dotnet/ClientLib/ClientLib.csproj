@@ -2,17 +2,17 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticMemory.Client</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.Client</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <IsPackable>true</IsPackable>
         <NoWarn>CA1711</NoWarn>
     </PropertyGroup>
 
-    <Import Project="../nuget/nuget-package.props" />
+    <Import Project="../nuget/nuget-package.props"/>
 
     <ItemGroup>
-        <PackageReference Include="System.Memory.Data" />
-        <PackageReference Include="System.Text.Json" />
+        <PackageReference Include="System.Memory.Data"/>
+        <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
 
 </Project>

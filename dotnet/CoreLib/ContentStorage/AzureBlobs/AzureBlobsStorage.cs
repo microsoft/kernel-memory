@@ -11,9 +11,9 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.ContentStorage.AzureBlobs;
+namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
 public class AzureBlobsStorage : IContentStorage
@@ -107,6 +107,10 @@ public class AzureBlobsStorage : IContentStorage
         string index,
         CancellationToken cancellationToken = default)
     {
+        // Note: Azure Blobs doesn't have an artifact for "directories", which are just a detail in a blob name
+        //       so there's no such thing as creating a directory. When creating a blob, the name must contain
+        //       the directory name, e.g. blob.Name = "dir1/subdir2/file.txt"
+
         this._log.LogTrace("Creating container '{0}' ...", this._containerName);
 
         await this._containerClient
@@ -114,6 +118,17 @@ public class AzureBlobsStorage : IContentStorage
             .ConfigureAwait(false);
 
         this._log.LogTrace("Container '{0}' ready", this._containerName);
+    }
+
+    /// <inherit />
+    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            throw new ContentStorageException("The index name is empty, stopping the process to prevent data loss");
+        }
+
+        return this.DeleteBlobsByPrefixAsync(index, cancellationToken);
     }
 
     /// <inherit />
@@ -122,6 +137,10 @@ public class AzureBlobsStorage : IContentStorage
         string documentId,
         CancellationToken cancellationToken = default)
     {
+        // Note: Azure Blobs doesn't have an artifact for "directories", which are just a detail in a blob name
+        //       so there's no such thing as creating a directory. When creating a blob, the name must contain
+        //       the directory name, e.g. blob.Name = "dir1/subdir2/file.txt"
+
         this._log.LogTrace("Creating container '{0}' ...", this._containerName);
 
         await this._containerClient
@@ -132,27 +151,42 @@ public class AzureBlobsStorage : IContentStorage
     }
 
     /// <inherit />
-    public Task WriteTextFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        string fileContent,
-        CancellationToken cancellationToken = default)
+    public Task EmptyDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, fileContent, cancellationToken);
+        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
+        {
+            throw new ContentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+        }
+
+        return this.DeleteBlobsByPrefixAsync(directoryName, cancellationToken);
     }
 
     /// <inherit />
-    public Task<long> WriteStreamAsync(
+    public Task DeleteDocumentDirectoryAsync(
         string index,
         string documentId,
-        string fileName,
-        Stream contentStream,
         CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, contentStream, cancellationToken);
+        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
+        {
+            throw new ContentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+        }
+
+        return this.DeleteBlobsByPrefixAsync(directoryName, cancellationToken);
+    }
+
+    /// <inherit />
+    public Task WriteFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream streamContent,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        return this.InternalWriteAsync(directoryName, fileName, streamContent, cancellationToken);
     }
 
     /// <inherit />
@@ -160,7 +194,7 @@ public class AzureBlobsStorage : IContentStorage
         string index,
         string documentId,
         string fileName,
-        bool errIfNotFound = true,
+        bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
@@ -176,7 +210,7 @@ public class AzureBlobsStorage : IContentStorage
                 return content.Value.Content;
             }
 
-            if (errIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
+            if (logErrIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
 
             throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
         }
@@ -187,45 +221,7 @@ public class AzureBlobsStorage : IContentStorage
         }
     }
 
-    /// <inherit />
-    public async Task DeleteDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
-    {
-        var directoryName = JoinPaths(index, documentId);
-        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
-        {
-            throw new ContentStorageException("The blob prefix is empty, stopping the process to prevent data loss");
-        }
-
-        this._log.LogInformation("Deleting blobs at {0}", directoryName);
-
-        AsyncPageable<BlobItem>? blobList = this._containerClient.GetBlobsAsync(prefix: directoryName, cancellationToken: cancellationToken);
-        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken))
-        {
-            foreach (BlobItem blob in page.Values)
-            {
-                // Skip root and empty names
-                if (string.IsNullOrWhiteSpace(blob.Name) || blob.Name == directoryName) { continue; }
-
-                // Remove the prefix, skip root and empty names
-                var fileName = blob.Name.Trim('/').Substring(directoryName.Trim('/').Length).Trim('/');
-                if (string.IsNullOrWhiteSpace(fileName)) { continue; }
-
-                // Don't delete the pipeline status file
-                if (fileName == Constants.PipelineStatusFilename) { continue; }
-
-                this._log.LogInformation("Deleting blob {0}", blob.Name);
-                Response? response = await this.GetBlobClient(blob.Name).DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (response.Status < 300)
-                {
-                    this._log.LogDebug("Delete response: {0}", response.Status);
-                }
-                else
-                {
-                    this._log.LogWarning("Unexpected delete response: {0}", response.Status);
-                }
-            }
-        }
-    }
+    #region private
 
     /// <summary>
     /// Join index name and document ID, using the platform specific logic, to calculate the directory name
@@ -238,7 +234,7 @@ public class AzureBlobsStorage : IContentStorage
         return $"{index}/{documentId}";
     }
 
-    private async Task<long> InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
+    private async Task InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
     {
         var blobName = $"{directoryName}/{fileName}";
 
@@ -281,8 +277,44 @@ public class AzureBlobsStorage : IContentStorage
         await this.ReleaseBlobAsync(blobLeaseClient, lease, cancellationToken).ConfigureAwait(false);
 
         this._log.LogTrace("Blob {0} ready, size {1}", blobName, size);
+    }
 
-        return size;
+    private async Task DeleteBlobsByPrefixAsync(string prefix, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            throw new ContentStorageException("The blob prefix is empty, stopping the process to prevent data loss");
+        }
+
+        this._log.LogInformation("Deleting blobs at {0}", prefix);
+
+        AsyncPageable<BlobItem>? blobList = this._containerClient.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken);
+        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken))
+        {
+            foreach (BlobItem blob in page.Values)
+            {
+                // Skip root and empty names
+                if (string.IsNullOrWhiteSpace(blob.Name) || blob.Name == prefix) { continue; }
+
+                // Remove the prefix, skip root and empty names
+                var fileName = blob.Name.Trim('/').Substring(prefix.Trim('/').Length).Trim('/');
+                if (string.IsNullOrWhiteSpace(fileName)) { continue; }
+
+                // Don't delete the pipeline status file
+                if (fileName == Constants.PipelineStatusFilename) { continue; }
+
+                this._log.LogInformation("Deleting blob {0}", blob.Name);
+                Response? response = await this.GetBlobClient(blob.Name).DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (response.Status < 300)
+                {
+                    this._log.LogDebug("Delete response: {0}", response.Status);
+                }
+                else
+                {
+                    this._log.LogWarning("Unexpected delete response: {0}", response.Status);
+                }
+            }
+        }
     }
 
     private BlobClient GetBlobClient(string blobName)
@@ -373,4 +405,6 @@ public class AzureBlobsStorage : IContentStorage
 
         return value;
     }
+
+    #endregion
 }

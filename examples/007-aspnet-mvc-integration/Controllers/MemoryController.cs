@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SemanticMemory;
-using Microsoft.SemanticMemory.DataFormats.Image;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.DataFormats.Image;
 
 namespace Controllers;
 
@@ -10,10 +10,10 @@ namespace Controllers;
 [Route("[controller]")]
 public class MemoryController : ControllerBase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
     private readonly IOcrEngine _ocr;
 
-    public MemoryController(ISemanticMemoryClient memory, IOcrEngine ocr)
+    public MemoryController(IKernelMemory memory, IOcrEngine ocr)
     {
         this._memory = memory;
         this._ocr = ocr;

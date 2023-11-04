@@ -7,12 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.SemanticKernel.Text;
-using Microsoft.SemanticMemory.AI.Tokenizers.GPT3;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 public class TextPartitioningHandler : IPipelineStepHandler
 {
@@ -47,6 +47,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -76,7 +78,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitPlainTextParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -86,7 +88,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     case MimeTypes.MarkDown:
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
-                        string content = await this._orchestrator.ReadTextFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
                         lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitMarkdownParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -113,7 +115,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);
-                    await this._orchestrator.WriteTextFileAsync(pipeline, destFile, text, cancellationToken).ConfigureAwait(false);
+                    await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
 
                     var destFileDetails = new DataPipeline.GeneratedFileDetails
                     {

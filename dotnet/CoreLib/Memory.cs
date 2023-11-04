@@ -6,13 +6,13 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.Pipeline;
-using Microsoft.SemanticMemory.Search;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Search;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Memory client to upload files and search for answers, without depending
@@ -20,7 +20,7 @@ namespace Microsoft.SemanticMemory;
 /// <see cref="InProcessPipelineOrchestrator"/>, hence the name "Serverless".
 /// The class accesses directly storage, vectors and AI.
 /// </summary>
-public class Memory : ISemanticMemoryClient
+public class Memory : IKernelMemory
 {
     private readonly SearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
@@ -131,6 +131,12 @@ public class Memory : ISemanticMemoryClient
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
         return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
+    {
+        return this._orchestrator.StartIndexDeletionAsync(index: index, cancellationToken);
     }
 
     /// <inheritdoc />

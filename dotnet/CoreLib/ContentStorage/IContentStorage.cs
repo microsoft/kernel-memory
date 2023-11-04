@@ -5,16 +5,25 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.ContentStorage;
+namespace Microsoft.KernelMemory.ContentStorage;
 
 public interface IContentStorage
 {
     /// <summary>
-    /// Create a new container, if it doesn't exist already
+    /// Create a new container (aka index), if it doesn't exist already
     /// </summary>
     /// <param name="index">Index name</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task CreateIndexDirectoryAsync(
+        string index,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete a container (aka index)
+    /// </summary>
+    /// <param name="index">Index name</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task DeleteIndexDirectoryAsync(
         string index,
         CancellationToken cancellationToken = default);
 
@@ -30,18 +39,25 @@ public interface IContentStorage
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Create/Overwrite a file
+    /// Delete all artifacts of a document, except for the status file
     /// </summary>
     /// <param name="index">Index name</param>
     /// <param name="documentId">Document ID</param>
-    /// <param name="fileName">Name of the file</param>
-    /// <param name="fileContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task WriteTextFileAsync(
+    Task EmptyDocumentDirectoryAsync(
         string index,
         string documentId,
-        string fileName,
-        string fileContent,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete all artifacts of a document, including status file and the containing folder
+    /// </summary>
+    /// <param name="index">Index name</param>
+    /// <param name="documentId">Document ID</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    Task DeleteDocumentDirectoryAsync(
+        string index,
+        string documentId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -50,13 +66,13 @@ public interface IContentStorage
     /// <param name="index">Index name</param>
     /// <param name="documentId">Document ID</param>
     /// <param name="fileName">Name of the file</param>
-    /// <param name="contentStream">File content</param>
+    /// <param name="streamContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task<long> WriteStreamAsync(
+    Task WriteFileAsync(
         string index,
         string documentId,
         string fileName,
-        Stream contentStream,
+        Stream streamContent,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -65,24 +81,13 @@ public interface IContentStorage
     /// <param name="index">Index name</param>
     /// <param name="documentId">Document ID</param>
     /// <param name="fileName"></param>
-    /// <param name="errIfNotFound">Whether to log an error if the file does not exist. An exception will be raised anyway.</param>
+    /// <param name="logErrIfNotFound">Whether to log an error if the file does not exist. An exception will be raised anyway.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>File content</returns>
     Task<BinaryData> ReadFileAsync(
         string index,
         string documentId,
         string fileName,
-        bool errIfNotFound = true,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Delete all artifacts of a document
-    /// </summary>
-    /// <param name="index">Index name</param>
-    /// <param name="documentId">Document ID</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
-    Task DeleteDocumentDirectoryAsync(
-        string index,
-        string documentId,
+        bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default);
 }

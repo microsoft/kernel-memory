@@ -3,18 +3,18 @@
 // ReSharper disable InconsistentNaming
 
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
 public class DocumentUploadTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
 
     public DocumentUploadTest(ITestOutputHelper output) : base(output)
     {
-        this._memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+        this._memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }
 
     [Fact]
