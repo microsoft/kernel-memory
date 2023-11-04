@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
 /// <summary>
-/// Responsible for loading the defined schemas into semantic memory.
+/// Responsible for loading the defined schemas into kernel memory.
 /// </summary>
 public static class SchemaProvider
 {

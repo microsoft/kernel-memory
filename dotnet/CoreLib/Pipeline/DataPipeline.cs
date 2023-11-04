@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 /// <summary>
 /// DataPipeline representation.
@@ -16,6 +16,8 @@ namespace Microsoft.SemanticMemory.Pipeline;
 /// </summary>
 public sealed class DataPipeline
 {
+    private string _index = string.Empty;
+
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ArtifactTypes
     {
@@ -179,10 +181,16 @@ public sealed class DataPipeline
     /// </summary>
     [JsonPropertyOrder(0)]
     [JsonPropertyName("index")]
-    public string Index { get; set; } = string.Empty;
+    public string Index
+    {
+        get { return this._index; }
+        set { this._index = IndexExtensions.CleanName(value); }
+    }
 
     /// <summary>
-    /// Id of the document and the pipeline instance. This value will persist throughout the execution and in the final data lineage used for citations.
+    /// Id of the document and the pipeline instance.
+    /// This value will persist throughout the execution and in the final data lineage used for citations.
+    /// The value can be empty, e.g. when the pipeline is used to act on an entire index.
     /// </summary>
     [JsonPropertyOrder(1)]
     [JsonPropertyName("document_id")]
@@ -314,7 +322,7 @@ public sealed class DataPipeline
     {
         if (this.RemainingSteps.Count == 0)
         {
-            throw new SemanticMemoryException("The list of remaining steps is empty");
+            throw new KernelMemoryException("The list of remaining steps is empty");
         }
 
         var stepName = this.RemainingSteps.First();
@@ -331,7 +339,7 @@ public sealed class DataPipeline
     {
         if (this.CompletedSteps.Count == 0)
         {
-            throw new SemanticMemoryException("The list of completed steps is empty");
+            throw new KernelMemoryException("The list of completed steps is empty");
         }
 
         var stepName = this.CompletedSteps.Last();
@@ -341,11 +349,25 @@ public sealed class DataPipeline
         return stepName;
     }
 
+    public bool IsDocumentDeletionPipeline()
+    {
+        return this.Steps.Count == 1 && this.Steps.First() == Constants.DeleteDocumentPipelineStepName;
+    }
+
+    public bool IsIndexDeletionPipeline()
+    {
+        return this.Steps.Count == 1 && this.Steps.First() == Constants.DeleteIndexPipelineStepName;
+    }
+
     public void Validate()
     {
         if (string.IsNullOrEmpty(this.DocumentId))
         {
-            throw new ArgumentException("The pipeline ID is empty", nameof(this.DocumentId));
+            // Rule exception: when deleting an index, the document ID is empty
+            if (!this.IsIndexDeletionPipeline())
+            {
+                throw new ArgumentException("The pipeline ID is empty", nameof(this.DocumentId));
+            }
         }
 
         if (string.IsNullOrEmpty(this.Index))

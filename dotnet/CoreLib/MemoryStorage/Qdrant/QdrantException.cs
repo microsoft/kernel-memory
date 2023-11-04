@@ -2,9 +2,9 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.Qdrant;
+namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
-public class QdrantException : SemanticMemoryException
+public class QdrantException : KernelMemoryException
 {
     /// <inheritdoc />
     public QdrantException() { }

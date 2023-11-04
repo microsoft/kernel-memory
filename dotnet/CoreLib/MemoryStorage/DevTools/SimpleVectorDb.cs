@@ -4,17 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.DevTools;
+namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-public class SimpleVectorDb : ISemanticMemoryVectorDb
+public class SimpleVectorDb : IVectorDb
 {
-    private readonly ISimpleStorage _storage;
+    private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;
 
     public SimpleVectorDb(
@@ -24,12 +26,12 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
         this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
         switch (config.StorageType)
         {
-            case SimpleVectorDbConfig.StorageTypes.TextFile:
-                this._storage = new TextFileStorage(config.Directory, this._log);
+            case FileSystemTypes.Disk:
+                this._fileSystem = new DiskFileSystem(config.Directory, this._log);
                 break;
 
-            case SimpleVectorDbConfig.StorageTypes.Volatile:
-                this._storage = new VolatileStorage(this._log);
+            case FileSystemTypes.Volatile:
+                this._fileSystem = VolatileFileSystem.GetInstance(this._log);
                 break;
 
             default:
@@ -40,25 +42,13 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     /// <inheritdoc />
     public Task CreateIndexAsync(string indexName, int vectorSize, CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public async Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
-    {
-        // Note: delete only vectors! If the folder contains other files
-        // the code will error out on purpose, to avoid data loss.
-        var list = this.GetListAsync(indexName, null, int.MaxValue, true, cancellationToken);
-        await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
-        {
-            await this.DeleteAsync(indexName, r, cancellationToken).ConfigureAwait(false);
-        }
+        return this._fileSystem.CreateVolumeAsync(indexName, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        await this._storage.WriteAsync(indexName, record.Id, JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
+        await this._fileSystem.WriteFileAsync(indexName, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
         return record.Id;
     }
 
@@ -117,7 +107,10 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        Dictionary<string, string> list = await this._storage.ReadAllAsync(indexName, cancellationToken).ConfigureAwait(false);
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
+        IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(indexName, "", cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)
         {
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
@@ -133,10 +126,18 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
     }
 
     /// <inheritdoc />
+    public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
+    {
+        return this._fileSystem.DeleteVolumeAsync(indexName, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return this._storage.DeleteAsync(indexName, record.Id, cancellationToken);
+        return this._fileSystem.DeleteFileAsync(indexName, "", EncodeId(record.Id), cancellationToken);
     }
+
+    #region private
 
     private static bool TagsMatchFilters(TagCollection tags, ICollection<MemoryFilter>? filters)
     {
@@ -162,4 +163,18 @@ public class SimpleVectorDb : ISemanticMemoryVectorDb
 
         return false;
     }
+
+    private static string EncodeId(string realId)
+    {
+        var bytes = Encoding.UTF8.GetBytes(realId);
+        return Convert.ToBase64String(bytes).Replace('=', '_');
+    }
+
+    private static string DecodeId(string encodedId)
+    {
+        var bytes = Convert.FromBase64String(encodedId.Replace('_', '='));
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    #endregion
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.SemanticMemory.MemoryStorage.Qdrant.Client.Http;
+using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
 using UnitTests.TestHelpers;
 using Xunit.Abstractions;
 
@@ -17,50 +17,50 @@ public class FilteringTest : BaseTestCase
     public void FiltersAreRenderedToJson()
     {
         const string Expected = """
-{
-    "should":
-    [
-        {
-            "must":
-            [
-                {
-                    "key": "tags",
-                    "match":
-                    {
-                        "value": "user:devis"
-                    }
-                },
-                {
-                    "key": "tags",
-                    "match":
-                    {
-                        "value": "type:chat"
-                    }
-                }
-            ]
-        },
-        {
-            "must":
-            [
-                {
-                    "key": "tags",
-                    "match":
-                    {
-                        "value": "user:taylor"
-                    }
-                },
-                {
-                    "key": "tags",
-                    "match":
-                    {
-                        "value": "type:blog"
-                    }
-                }
-            ]
-        }
-    ]
-}
-""";
+                                {
+                                    "should":
+                                    [
+                                        {
+                                            "must":
+                                            [
+                                                {
+                                                    "key": "tags",
+                                                    "match":
+                                                    {
+                                                        "value": "user:devis"
+                                                    }
+                                                },
+                                                {
+                                                    "key": "tags",
+                                                    "match":
+                                                    {
+                                                        "value": "type:chat"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "must":
+                                            [
+                                                {
+                                                    "key": "tags",
+                                                    "match":
+                                                    {
+                                                        "value": "user:taylor"
+                                                    }
+                                                },
+                                                {
+                                                    "key": "tags",
+                                                    "match":
+                                                    {
+                                                        "value": "type:blog"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                                """;
 
         // Arrange
         var filter1 = new Filter.AndClause().AndValue("tags", "user:devis").AndValue("tags", "type:chat");

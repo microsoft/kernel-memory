@@ -1,6 +1,6 @@
-# Semantic Memory as a Service
+# Kernel Memory as a Service
 
-This folder contains **Semantic Memory Service**, used to manage memory
+This folder contains **Kernel Memory Service**, used to manage memory
 settings, ingest data and query for answers.
 
 The service is composed by two main components:
@@ -11,7 +11,7 @@ The service is composed by two main components:
 If you need deploying and scaling the webservice and the pipeline handlers
 separately, you can configure the service to enable/disable them.
 
-Once the service is up and running, you can use the **Semantic Service web
+Once the service is up and running, you can use the **Kernel Memory web
 client** or simply interact with the Web API. The API schema is available
 at http://127.0.0.1:9001/swagger/index.html when running the service locally
 with **OpenAPI** enabled.
@@ -43,7 +43,7 @@ Configuration settings can be saved in four places:
 
 # ▶️ Start the service
 
-To run the Semantic Memory service:
+To run the Kernel Memory service:
 
 > ### On WSL / Linux / MacOS:
 >
@@ -67,8 +67,8 @@ env var, so the code will use the settings stored in `appsettings.Development.js
 The service depends on three main components:
 
 * **Content storage**: this is where content like files, chats, emails are
-  saved and transformed when uploaded. Currently, the solution supports local
-  filesystem and Azure Blobs.
+  saved and transformed when uploaded. Currently, the solution supports Azure Blobs,
+  local filesystem and in-memory volatile filesystem.
 
 
 * **Embedding generator**: all the documents uploaded are automatically
@@ -89,8 +89,9 @@ The service depends on three main components:
 
 
 * **Vector storage**: service used to persist embeddings. Currently, the
-  service supports **Azure Cognitive Search** and **Qdrant**. Soon we'll add
-  support for more vector DBs.
+  service supports **Azure Cognitive Search**, **Qdrant** and a very basic
+  in memory vector storage with support for persistence on disk.
+  Soon we'll add support for more vector DBs.
 
   > To use Qdrant locally, install docker and launch Qdrant with:
   >
@@ -101,10 +102,11 @@ The service depends on three main components:
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
   case it requires persistent queues like **Azure Queues** or **RabbitMQ**
-  (corelib includes also a basic file-based queue, that might be useful
-  for tests and demos).
-  When running a service, we recommend persistent queues for reliability and
-  horizontal scaling.
+  (corelib includes also a basic in memory queue, that might be useful
+  for tests and demos, with support for persistence on disk).
+
+  When running the service, we recommend persistent queues for reliability and
+  horizontal scaling, like Azure Queues and RabbitMQ.
 
   > To use RabbitMQ locally, install docker and launch RabbitMQ with:
   >

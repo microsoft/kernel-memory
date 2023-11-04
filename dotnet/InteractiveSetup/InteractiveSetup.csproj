@@ -2,18 +2,18 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <AssemblyName>Microsoft.SemanticMemory.InteractiveSetup</AssemblyName>
-        <RootNamespace>Microsoft.SemanticMemory.InteractiveSetup</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
         <NoWarn>CA1031,CA1303,CA1724</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="ReadLine" />
+        <PackageReference Include="Newtonsoft.Json"/>
+        <PackageReference Include="ReadLine"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CoreLib\CoreLib.csproj" />
+        <ProjectReference Include="..\CoreLib\CoreLib.csproj"/>
     </ItemGroup>
 
 </Project>

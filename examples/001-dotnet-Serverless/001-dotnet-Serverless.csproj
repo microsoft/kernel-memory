@@ -4,43 +4,43 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AssemblyName />
-        <RootNamespace />
+        <AssemblyName/>
+        <RootNamespace/>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
         <NoWarn>CA1050,CA2000,CA1707,CA1303,CA2007,CA1724</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj" />
-        <ProjectReference Include="..\..\dotnet\InteractiveSetup\InteractiveSetup.csproj" />
+        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj"/>
+        <ProjectReference Include="..\..\dotnet\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Memory.Data" />
+        <PackageReference Include="System.Memory.Data"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="file1-Wikipedia-Carbon.txt" />
+        <None Remove="file1-Wikipedia-Carbon.txt"/>
         <Content Include="file1-Wikipedia-Carbon.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file2-Wikipedia-Moon.txt" />
+        <None Remove="file2-Wikipedia-Moon.txt"/>
         <Content Include="file2-Wikipedia-Moon.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file3-lorem-ipsum.docx" />
+        <None Remove="file3-lorem-ipsum.docx"/>
         <Content Include="file3-lorem-ipsum.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file4-SK-Readme.pdf" />
+        <None Remove="file4-SK-Readme.pdf"/>
         <Content Include="file4-SK-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file5-NASA-news.pdf" />
+        <None Remove="file5-NASA-news.pdf"/>
         <Content Include="file5-NASA-news.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file6-ANWC-image.jpg" />
+        <None Remove="file6-ANWC-image.jpg"/>
         <Content Include="file6-ANWC-image.jpg">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

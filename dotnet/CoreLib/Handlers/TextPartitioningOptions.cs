@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticMemory.Configuration;
+using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.SemanticMemory.Handlers;
+namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
 /// Represents options for text partitioning.

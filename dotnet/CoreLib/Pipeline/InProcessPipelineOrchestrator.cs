@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.Diagnostics;
-using Microsoft.SemanticMemory.MemoryStorage;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 public class InProcessPipelineOrchestrator : BaseOrchestrator
 {
@@ -21,9 +21,9 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
-        SemanticMemoryConfig? config = null,
+        KernelMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
         : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
@@ -114,17 +114,19 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             {
                 pipeline = updatedPipeline;
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}' successfully", currentStepName, pipeline.DocumentId);
+                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}'", currentStepName, pipeline.DocumentId);
+                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                 throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
             }
         }
 
-        this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
+        await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+        this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
     }
 }

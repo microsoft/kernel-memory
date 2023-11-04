@@ -4,7 +4,7 @@ using System;
 using Azure;
 using Azure.Core;
 
-namespace Microsoft.SemanticMemory.AI;
+namespace Microsoft.KernelMemory.AI;
 
 public class SequentialDelayStrategy : DelayStrategy
 {

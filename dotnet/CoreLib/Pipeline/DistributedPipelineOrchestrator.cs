@@ -7,13 +7,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticMemory.AI;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.MemoryStorage;
-using Microsoft.SemanticMemory.Pipeline.Queue;
 
-namespace Microsoft.SemanticMemory.Pipeline;
+namespace Microsoft.KernelMemory.Pipeline;
 
 /// <summary>
 /// Design notes:
@@ -36,9 +36,9 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<ISemanticMemoryVectorDb> vectorDbs,
+        List<IVectorDb> vectorDbs,
         ITextGeneration textGenerator,
-        SemanticMemoryConfig? config = null,
+        KernelMemoryConfig? config = null,
         ILogger<DistributedPipelineOrchestrator>? log = null)
         : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
     {
@@ -137,7 +137,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline {0} complete", pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
             return;
         }
 
@@ -154,7 +154,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline {0} complete", pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
             // Note: returning True, the message is removed from the queue
             return true;
         }
@@ -186,15 +186,17 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     {
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline '{0}' complete", pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
 
             // Save the pipeline status. If this fails the system should retry the current step.
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+            await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             string nextStepName = pipeline.RemainingSteps.First();
-            this.Log.LogInformation("Enqueueing pipeline '{0}' step '{1}'", pipeline.DocumentId, nextStepName);
+            this.Log.LogInformation("Enqueueing pipeline '{0}/{1}' step '{2}'", pipeline.Index, pipeline.DocumentId, nextStepName);
 
             // Execute as much logic as possible before writing the new pipeline state to disk,
             // to reduce the chance of the persisted state to be out of sync.

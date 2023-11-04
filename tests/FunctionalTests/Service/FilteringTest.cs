@@ -3,18 +3,18 @@
 // ReSharper disable InconsistentNaming
 
 using FunctionalTests.TestHelpers;
-using Microsoft.SemanticMemory;
+using Microsoft.KernelMemory;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
 public class FilteringTest : BaseTestCase
 {
-    private readonly ISemanticMemoryClient _memory;
+    private readonly IKernelMemory _memory;
 
     public FilteringTest(ITestOutputHelper output) : base(output)
     {
-        this._memory = MemoryClientBuilder.BuildWebClient("http://127.0.0.1:9001/");
+        this._memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }
 
     [Fact]
@@ -141,6 +141,43 @@ public class FilteringTest : BaseTestCase
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "news"),
         }, index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        this.Log("Deleting memories extracted from the document");
+        await this._memory.DeleteDocumentAsync(Id, index: indexName);
+    }
+
+    [Fact]
+    public async Task ItIgnoresEmptyFilters()
+    {
+        string indexName = Guid.NewGuid().ToString("D");
+        const string Id = "file1-NASA-news.pdf";
+        const string Found = "spacecraft";
+
+        this.Log("Uploading document");
+        await this._memory.ImportDocumentAsync(
+            new Document(Id)
+                .AddFile("file1-NASA-news.pdf")
+                .AddTag("type", "news")
+                .AddTag("user", "admin")
+                .AddTag("user", "owner"),
+            index: indexName,
+            steps: Constants.PipelineWithoutSummary);
+
+        while (!await this._memory.IsDocumentReadyAsync(documentId: Id, index: indexName))
+        {
+            this.Log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        // Simple filter: empty filters have no impact
+        var answer = await this._memory.AskAsync("What is Orion?", filter: new(), index: indexName);
+        this.Log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Multiple filters: empty filters have no impact
+        answer = await this._memory.AskAsync("What is Orion?", filters: new List<MemoryFilter> { new() }, index: indexName);
         this.Log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 

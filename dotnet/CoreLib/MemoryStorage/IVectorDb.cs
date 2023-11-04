@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticMemory.MemoryStorage;
+namespace Microsoft.KernelMemory.MemoryStorage;
 
-public interface ISemanticMemoryVectorDb
+public interface IVectorDb
 {
     /// <summary>
     /// Create an index/collection
@@ -30,15 +30,6 @@ public interface ISemanticMemoryVectorDb
     //     string indexName,
     //     VectorDbSchema schema,
     //     CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Delete an index/collection
-    /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
-    Task DeleteIndexAsync(
-        string indexName,
-        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Insert/Update a vector + payload
@@ -87,6 +78,15 @@ public interface ISemanticMemoryVectorDb
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete an index/collection
+    /// </summary>
+    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    Task DeleteIndexAsync(
+        string indexName,
         CancellationToken cancellationToken = default);
 
     /// <summary>

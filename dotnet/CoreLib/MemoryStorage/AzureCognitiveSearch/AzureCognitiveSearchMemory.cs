@@ -15,12 +15,12 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticMemory.Configuration;
-using Microsoft.SemanticMemory.Diagnostics;
+using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.SemanticMemory.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
-public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
+public class AzureCognitiveSearchMemory : IVectorDb
 {
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
@@ -39,7 +39,10 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         switch (config.Auth)
         {
             case AzureCognitiveSearchConfig.AuthTypes.AzureIdentity:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new DefaultAzureCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new DefaultAzureCredential(),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.APIKey:
@@ -49,11 +52,17 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                     throw new ConfigurationException("Azure Cognitive Search API key is empty");
                 }
 
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    new AzureKeyCredential(config.APIKey),
+                    GetClientOptions());
                 break;
 
             case AzureCognitiveSearchConfig.AuthTypes.ManualTokenCredential:
-                this._adminClient = new SearchIndexClient(new Uri(config.Endpoint), config.GetTokenCredential(), GetClientOptions());
+                this._adminClient = new SearchIndexClient(
+                    new Uri(config.Endpoint),
+                    config.GetTokenCredential(),
+                    GetClientOptions());
                 break;
 
             default:
@@ -109,17 +118,24 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         var client = this.GetSearchClient(indexName);
 
-        SearchQueryVector vectorQuery = new()
+        RawVectorQuery vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Value = embedding.Data.ToArray(),
-            Fields = { AzureCognitiveSearchMemoryRecord.VectorField }
+            Vector = embedding.Data.ToArray(),
+            Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
+            // Exhaustive search is a brute force comparison across all vectors,
+            // ignoring the index, which can be much slower once the index contains a lot of data.
+            // TODO: allow clients to manage this value either at configuration or run time.
+            Exhaustive = false
         };
 
         SearchOptions options = new()
         {
-            Vectors = { vectorQuery }
+            VectorQueries = { vectorQuery }
         };
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
         if (filters is { Count: > 0 })
         {
@@ -176,6 +192,9 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         if (limit <= 0) { limit = int.MaxValue; }
 
         var client = this.GetSearchClient(indexName);
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
         var options = new SearchOptions();
         if (filters is { Count: > 0 })
@@ -316,7 +335,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
     /// - replacing chars introduces a small chance of conflicts, e.g. "the-user" and "the_user".
     /// - we should consider whether making this optional and leave it to the developer to handle.
     /// </summary>
-    private static readonly Regex s_replaceIndexNameSymbolsRegex = new(@"[\s|\\|/|.|_|:]");
+    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
 
     private readonly ConcurrentDictionary<string, SearchClient> _clientsByIndex = new();
 
@@ -402,7 +421,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = indexName.ToLowerInvariant();
 
-        indexName = s_replaceIndexNameSymbolsRegex.Replace(indexName.Trim(), "-");
+        indexName = s_replaceIndexNameCharsRegex.Replace(indexName.Trim(), "-");
 
         // Name cannot start with a dash
         if (indexName.StartsWith('-')) { indexName = $"z{indexName}"; }
@@ -419,18 +438,26 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
 
         indexName = this.NormalizeIndexName(indexName);
 
-        const string VectorSearchConfigName = "SemanticMemoryDefaultCosine";
+        const string VectorSearchProfileName = "KMDefaultProfile";
+        const string VectorSearchConfigName = "KMDefaultAlgorithm";
 
         var indexSchema = new SearchIndex(indexName)
         {
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Profiles =
+                {
+                    new VectorSearchProfile(VectorSearchProfileName, VectorSearchConfigName)
+                },
+                Algorithms =
                 {
                     new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
                     {
-                        Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
+                        Parameters = new HnswParameters
+                        {
+                            Metric = VectorSearchAlgorithmMetric.Cosine
+                        }
                     }
                 }
             }
@@ -458,7 +485,7 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
                         IsFacetable = false,
                         IsSortable = false,
                         VectorSearchDimensions = field.VectorSize,
-                        VectorSearchConfiguration = VectorSearchConfigName,
+                        VectorSearchProfile = VectorSearchProfileName,
                     };
 
                     break;
@@ -565,18 +592,21 @@ public class AzureCognitiveSearchMemory : ISemanticMemoryVectorDb
         return 1 / (2 - similarity);
     }
 
-    private static string BuildSearchFilter(ICollection<MemoryFilter> filters)
+    private static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
     {
         List<string> conditions = new();
 
-        foreach (var filter in filters)
+        // Note: empty filters would lead to a syntax error, so even if they are supposed
+        // to be removed upstream, we check again and remove them here too.
+        foreach (var filter in filters.Where(f => !f.IsEmpty()))
         {
             var filterConditions = filter.GetFilters()
                 .Select(keyValue =>
                 {
                     var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
-                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsSymbol}{fieldValue}')";
-                });
+                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsChar}{fieldValue}')";
+                })
+                .ToList();
 
             conditions.Add($"({string.Join(" and ", filterConditions)})");
         }

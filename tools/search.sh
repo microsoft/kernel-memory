@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script sends a query to Semantic Memory web service
+# This script sends a query to Kernel Memory web service
 # from the command line, using curl
 
 set -e
@@ -15,7 +15,7 @@ Usage:
 
     ./search.sh -s <url> -q "<query>" [-p <index name>] [-f "<filter>"] [-l <number of results>]
 
-    -s web service URL     (required) Semantic Memory web service URL.
+    -s web service URL     (required) Kernel Memory web service URL.
     -q query               (required) Text to search, using quotes.
 
     -p index               (optional) Index to search.
@@ -31,7 +31,7 @@ Example:
     ./search.sh -s http://127.0.0.1:9001 -p mydata -l 1 -q "Semantic Kernel"
 
 
-For more information visit https://github.com/microsoft/semantic-memory
+For more information visit https://github.com/microsoft/kernel-memory
 _EOF_
 }
 

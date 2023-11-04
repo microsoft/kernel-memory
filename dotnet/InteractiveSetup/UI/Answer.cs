@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.SemanticMemory.InteractiveSetup.UI;
+namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 
 public sealed class Answer
 {

@@ -7,7 +7,7 @@ using System.Linq;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
 // JSON serializable alternative to NameValueCollection
 public class TagCollection : IDictionary<string, List<string?>>
@@ -147,9 +147,15 @@ public class TagCollection : IDictionary<string, List<string?>>
 
     private static void ValidateKey(string key)
     {
-        if (key.Contains("="))
+        if (key.Contains(Constants.ReservedEqualsChar))
         {
-            throw new SemanticMemoryException("A tag name cannot contain the '=' symbol");
+            throw new KernelMemoryException($"A tag name cannot contain the '{Constants.ReservedEqualsChar}' char");
+        }
+
+        // '=' is reserved for backward/forward compatibility and to reduce URLs query params encoding complexity
+        if (key.Contains('='))
+        {
+            throw new KernelMemoryException("A tag name cannot contain the '=' char");
         }
     }
 }

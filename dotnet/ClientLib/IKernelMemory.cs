@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public interface ISemanticMemoryClient
+public interface IKernelMemory
 {
     /// <summary>
     /// Import a document into memory. The document can contain one or more files, can have tags and other details.
@@ -106,6 +106,15 @@ public interface ISemanticMemoryClient
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete an entire index.
+    /// </summary>
+    /// <param name="index">Optional index name, when empty the default index is deleted</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    public Task DeleteIndexAsync(
+        string? index = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

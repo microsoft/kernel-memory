@@ -1,21 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticMemory.ContentStorage;
-using Microsoft.SemanticMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticMemory;
+namespace Microsoft.KernelMemory;
 
-public static partial class MemoryClientBuilderExtensions
+public static partial class KernelMemoryBuilderExtensions
 {
-    public static MemoryClientBuilder WithSimpleFileStorage(this MemoryClientBuilder builder, SimpleFileStorageConfig config)
+    public static KernelMemoryBuilder WithSimpleFileStorage(this KernelMemoryBuilder builder, SimpleFileStorageConfig? config = null)
     {
-        builder.Services.AddSimpleFileStorageAsContentStorage(config);
+        builder.Services.AddSimpleFileStorageAsContentStorage(config ?? new SimpleFileStorageConfig());
         return builder;
     }
 
-    public static MemoryClientBuilder WithSimpleFileStorage(this MemoryClientBuilder builder, string directory)
+    public static KernelMemoryBuilder WithSimpleFileStorage(this KernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleFileStorageAsContentStorage(directory);
         return builder;
@@ -33,7 +34,7 @@ public static partial class DependencyInjection
 
     public static IServiceCollection AddSimpleFileStorageAsContentStorage(this IServiceCollection services, string directory)
     {
-        var config = new SimpleFileStorageConfig { Directory = directory };
+        var config = new SimpleFileStorageConfig { StorageType = FileSystemTypes.Disk, Directory = directory };
         return services.AddSimpleFileStorageAsContentStorage(config);
     }
 }
