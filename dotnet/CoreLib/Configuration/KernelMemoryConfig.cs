@@ -43,6 +43,8 @@ public class KernelMemoryConfig
         /// * partition: spit the text in small chunks
         /// * gen_embeddings: generate embeddings for each chunk
         /// * save_embeddings: save the embeddings
+        ///
+        /// Other steps not included by default:
         /// * summarize: use LLMs to summarize the document (this step can be slow, so it's meant to run after gen_embeddings/save_embeddings)
         /// * gen_embeddings: generate embeddings for new chunks (e.g. the summary)
         /// * save_embeddings: save new embeddings
