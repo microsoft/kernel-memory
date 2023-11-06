@@ -40,9 +40,9 @@ public class SimpleVectorDb : IVectorDb
     }
 
     /// <inheritdoc />
-    public Task CreateIndexAsync(string indexName, int vectorSize, CancellationToken cancellationToken = default)
+    public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
-        return this._fileSystem.CreateVolumeAsync(indexName, cancellationToken);
+        return this._fileSystem.CreateVolumeAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -52,25 +52,25 @@ public class SimpleVectorDb : IVectorDb
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        await this._fileSystem.WriteFileAsync(indexName, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
+        await this._fileSystem.WriteFileAsync(index, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
         return record.Id;
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
-        string indexName,
+        string index,
         Embedding embedding,
-        int limit,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var list = this.GetListAsync(indexName, filters, limit, withEmbeddings, cancellationToken);
+        var list = this.GetListAsync(index, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
         {
@@ -88,7 +88,7 @@ public class SimpleVectorDb : IVectorDb
         // Sort distances, from closest to most distant, and filter out irrelevant results
         IEnumerable<string> sorted =
             from entry in distances
-            where entry.Value >= minRelevanceScore
+            where entry.Value >= minRelevance
             orderby entry.Value descending
             select entry.Key;
 
@@ -105,7 +105,7 @@ public class SimpleVectorDb : IVectorDb
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
-        string indexName,
+        string index,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
@@ -116,7 +116,7 @@ public class SimpleVectorDb : IVectorDb
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(indexName, "", cancellationToken).ConfigureAwait(false);
+        IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(index, "", cancellationToken).ConfigureAwait(false);
         foreach (KeyValuePair<string, string> v in list)
         {
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
@@ -132,15 +132,15 @@ public class SimpleVectorDb : IVectorDb
     }
 
     /// <inheritdoc />
-    public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
+    public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
-        return this._fileSystem.DeleteVolumeAsync(indexName, cancellationToken);
+        return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return this._fileSystem.DeleteFileAsync(indexName, "", EncodeId(record.Id), cancellationToken);
+        return this._fileSystem.DeleteFileAsync(index, "", EncodeId(record.Id), cancellationToken);
     }
 
     #region private

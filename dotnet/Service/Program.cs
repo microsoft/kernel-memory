@@ -192,7 +192,12 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search request");
-                MemoryAnswer answer = await service.AskAsync(question: query.Question, index: query.Index, filters: query.Filters, cancellationToken: cancellationToken)
+                MemoryAnswer answer = await service.AskAsync(
+                        question: query.Question,
+                        index: query.Index,
+                        filters: query.Filters,
+                        minRelevance: query.MinRelevance,
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 return Results.Ok(answer);
             })
@@ -207,7 +212,13 @@ if (config.Service.RunWebService)
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New search HTTP request");
-                SearchResult answer = await service.SearchAsync(query: query.Query, index: query.Index, filters: query.Filters, limit: query.Limit, cancellationToken: cancellationToken)
+                SearchResult answer = await service.SearchAsync(
+                        query: query.Query,
+                        index: query.Index,
+                        filters: query.Filters,
+                        minRelevance: query.MinRelevance,
+                        limit: query.Limit,
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 return Results.Ok(answer);
             })

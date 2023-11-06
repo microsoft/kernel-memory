@@ -11,11 +11,11 @@ public interface IVectorDb
     /// <summary>
     /// Create an index/collection
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="vectorSize">Index/Collection vector size</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     Task CreateIndexAsync(
-        string indexName,
+        string index,
         int vectorSize,
         CancellationToken cancellationToken = default);
 
@@ -29,41 +29,41 @@ public interface IVectorDb
     /// <summary>
     /// Delete an index/collection
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     Task DeleteIndexAsync(
-        string indexName,
+        string index,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Insert/Update a vector + payload
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="record">Vector + payload to save</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>Record ID</returns>
     Task<string> UpsertAsync(
-        string indexName,
+        string index,
         MemoryRecord record,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get list of similar vectors (+payload)
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="embedding">Target vector to compare to</param>
     /// <param name="limit">Max number of results</param>
-    /// <param name="minRelevanceScore">Minimum Cosine Similarity required</param>
+    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
     /// <param name="filters">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of similar vectors, starting from the most similar</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
-        string indexName,
+        string index,
         Embedding embedding,
-        int limit,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        int limit = 1,
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default);
 
@@ -71,14 +71,14 @@ public interface IVectorDb
     /// Get list of records having a field matching a given value.
     /// E.g. searching vectors by tag, for deletions.
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="filters">Values to match in the field used for tagging records (the field must be a list of strings)</param>
     /// <param name="limit">Max number of records to return</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of records</returns>
     IAsyncEnumerable<MemoryRecord> GetListAsync(
-        string indexName,
+        string index,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
@@ -87,11 +87,11 @@ public interface IVectorDb
     /// <summary>
     /// Delete a record
     /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="index">Index/Collection name</param>
     /// <param name="record">Record to delete. Most Vector DB requires only the record ID to be set.</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     Task DeleteAsync(
-        string indexName,
+        string index,
         MemoryRecord record,
         CancellationToken cancellationToken = default);
 }

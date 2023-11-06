@@ -53,8 +53,8 @@ public class SearchClient
     public async Task<SearchResult> SearchAsync(
         string index,
         string query,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -76,7 +76,13 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, limit, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            index: index,
+            embedding: embedding,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: limit,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
@@ -154,8 +160,8 @@ public class SearchClient
     public async Task<MemoryAnswer> AskAsync(
         string index,
         string question,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
@@ -187,7 +193,13 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MaxMatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            index: index,
+            embedding: embedding,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: MaxMatchesCount,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
