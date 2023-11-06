@@ -221,8 +221,8 @@ public class Memory : IKernelMemory
         return this._searchClient.AskAsync(
             index: index,
             question: question,
-            minRelevance: minRelevance,
             filters: filters,
+            minRelevance: minRelevance,
             cancellationToken: cancellationToken);
     }
 }
