@@ -125,7 +125,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Size = text.Length,
                         MimeType = MimeTypes.PlainText,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
-                        ContentSHA256 = textData.ToSHA256(),
+                        ContentSHA256 = textData.CalculateSHA256(),
                     };
                     newFiles.Add(destFile, destFileDetails);
                     destFileDetails.MarkProcessedBy(this);
