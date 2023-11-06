@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,8 +94,11 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override async Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        var sw = Stopwatch.StartNew();
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
+        sw.Stop();
+        this.Log.LogTrace("Pipeline '{0}/{1}' UploadFiles Time:{2}", pipeline.Index, pipeline.DocumentId,sw.Elapsed);
 
         await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
@@ -106,10 +110,14 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
                 throw new OrchestrationException($"No handlers found for step '{currentStepName}'");
             }
 
+            sw.Restart();
             // Run handler
             (bool success, DataPipeline updatedPipeline) = await this._handlers[currentStepName]
                 .InvokeAsync(pipeline, this.CancellationTokenSource.Token)
                 .ConfigureAwait(false);
+            sw.Stop();
+            this.Log.LogTrace("Pipeline '{0}/{1}' Step:{2}; Time:{3}", pipeline.Index, pipeline.DocumentId, currentStepName,sw.Elapsed);
+
             if (success)
             {
                 pipeline = updatedPipeline;

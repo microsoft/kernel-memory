@@ -60,14 +60,17 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
+            var throttler = new SemaphoreSlim(initialCount: 4);
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
             {
+                await throttler.WaitAsync().ConfigureAwait(false);
+
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
-                    continue;
+                    return;
                 }
 
                 // Calc embeddings only for partitions (text chunks) and synthetic data
@@ -75,7 +78,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
                 {
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
-                    continue;
+                    return;
                 }
 
                 // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
@@ -138,18 +141,23 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
-                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+                            lock (newFiles)
+                            {
+                                newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+                            }
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
-                        continue;
+                        return;
                 }
 
                 partitionFile.MarkProcessedBy(this);
-            }
+            }).ToList();
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             // Add new files to pipeline status
             foreach (var file in newFiles)
