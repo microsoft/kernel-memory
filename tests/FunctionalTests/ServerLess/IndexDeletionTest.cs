@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
@@ -11,9 +9,14 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
+// ReSharper disable InconsistentNaming
 public class IndexDeletionTest : BaseTestCase
 {
-    public IndexDeletionTest(ITestOutputHelper output) : base(output) { }
+    public IndexDeletionTest(
+        IConfiguration cfg,
+        ITestOutputHelper output) : base(cfg, output)
+    {
+    }
 
     [Fact]
     public async Task ItDeletesSimpleVectorDbIndexes()

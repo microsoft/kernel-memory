@@ -109,6 +109,13 @@ public interface IKernelMemory
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns a list of the indexes available in memory.
+    /// </summary>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>List of indexes</returns>
+    public Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete an entire index.
     /// </summary>
     /// <param name="index">Optional index name, when empty the default index is deleted</param>

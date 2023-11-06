@@ -19,17 +19,21 @@ public interface IVectorDb
         int vectorSize,
         CancellationToken cancellationToken = default);
 
-    // TODO: revisit for custom schemas
-    // /// <summary>
-    // /// Create an index/collection
-    // /// </summary>
-    // /// <param name="indexName">Index/Collection name</param>
-    // /// <param name="schema">Index/Collection schema</param>
-    // /// <param name="cancellationToken">Task cancellation token</param>
-    // Task CreateIndexAsync(
-    //     string indexName,
-    //     VectorDbSchema schema,
-    //     CancellationToken cancellationToken = default);
+    /// <summary>
+    /// List indexes from the vector DB
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns>List of indexes</returns>
+    Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete an index/collection
+    /// </summary>
+    /// <param name="indexName">Index/Collection name</param>
+    /// <param name="cancellationToken">Task cancellation token</param>
+    Task DeleteIndexAsync(
+        string indexName,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Insert/Update a vector + payload
@@ -78,15 +82,6 @@ public interface IVectorDb
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Delete an index/collection
-    /// </summary>
-    /// <param name="indexName">Index/Collection name</param>
-    /// <param name="cancellationToken">Task cancellation token</param>
-    Task DeleteIndexAsync(
-        string indexName,
         CancellationToken cancellationToken = default);
 
     /// <summary>

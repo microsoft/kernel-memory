@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,6 +116,13 @@ public class MemoryService : IKernelMemory
                 steps: steps,
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return (from index in await this._searchClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false)
+                select new IndexDetails { Name = index });
     }
 
     /// <inheritdoc />

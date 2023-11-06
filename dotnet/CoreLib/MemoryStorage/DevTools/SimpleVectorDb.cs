@@ -31,7 +31,7 @@ public class SimpleVectorDb : IVectorDb
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
                 break;
 
             default:
@@ -43,6 +43,12 @@ public class SimpleVectorDb : IVectorDb
     public Task CreateIndexAsync(string indexName, int vectorSize, CancellationToken cancellationToken = default)
     {
         return this._fileSystem.CreateVolumeAsync(indexName, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return this._fileSystem.ListVolumesAsync(cancellationToken);
     }
 
     /// <inheritdoc />

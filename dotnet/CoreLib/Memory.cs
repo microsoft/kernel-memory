@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -131,6 +132,13 @@ public class Memory : IKernelMemory
         using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
         return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return (from index in await this._searchClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false)
+                select new IndexDetails { Name = index });
     }
 
     /// <inheritdoc />
