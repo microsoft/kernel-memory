@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.Text;
@@ -92,8 +92,9 @@ public class SummarizationHandler : IPipelineStepHandler
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
+                            var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(summary), cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
 
                             summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {
@@ -103,7 +104,7 @@ public class SummarizationHandler : IPipelineStepHandler
                                 Size = summary.Length,
                                 MimeType = MimeTypes.PlainText,
                                 ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
-                                ContentSHA256 = CalculateSHA256(summary),
+                                ContentSHA256 = summaryData.CalculateSHA256(),
                             });
                         }
 
@@ -195,11 +196,5 @@ public class SummarizationHandler : IPipelineStepHandler
         }
 
         return (content, true);
-    }
-
-    private static string CalculateSHA256(string value)
-    {
-        byte[] byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
 }
