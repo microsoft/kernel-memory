@@ -253,8 +253,8 @@ public class MemoryWebClient : IKernelMemory
             Index = index,
             Query = query,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance,
             Limit = limit,
-            MinRelevance = minRelevance
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
