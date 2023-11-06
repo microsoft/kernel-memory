@@ -297,11 +297,25 @@ internal sealed class RedirectConsole : TextWriter
     {
         if (string.IsNullOrEmpty(s)) { return; }
 
-        this._output.WriteLine(s);
+        try
+        {
+            this._output.WriteLine(s);
+        }
+        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test"))
+        {
+            // NOOP: Xunit thread out of scope
+        }
     }
 
     private void Line(string? s = null)
     {
-        this._output.WriteLine(s);
+        try
+        {
+            this._output.WriteLine(s);
+        }
+        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test"))
+        {
+            // NOOP: Xunit thread out of scope
+        }
     }
 }
