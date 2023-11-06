@@ -34,6 +34,15 @@ public class QdrantMemory : IVectorDb
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return await this._qdrantClient
+            .GetCollectionsAsync(cancellationToken)
+            .ToListAsync(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public Task DeleteIndexAsync(
         string indexName,
         CancellationToken cancellationToken = default)

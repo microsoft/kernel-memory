@@ -25,7 +25,7 @@ public class SimpleFileStorage : IContentStorage
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
                 break;
 
             default:

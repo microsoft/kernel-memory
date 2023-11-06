@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
+// ReSharper disable InconsistentNaming
 public class DocumentUploadTest : BaseTestCase
 {
     private readonly IKernelMemory _memory;
 
-    public DocumentUploadTest(ITestOutputHelper output) : base(output)
+    public DocumentUploadTest(
+        IConfiguration cfg,
+        ITestOutputHelper output) : base(cfg, output)
     {
         this._memory = KernelMemoryBuilder.BuildWebClient("http://127.0.0.1:9001/");
     }

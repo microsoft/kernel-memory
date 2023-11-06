@@ -24,7 +24,7 @@ public interface IVectorDb
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns>List of indexes</returns>
-    IAsyncEnumerable<string> GetIndexesAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete an index/collection

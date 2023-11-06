@@ -113,7 +113,7 @@ public interface IKernelMemory
     /// </summary>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>List of indexes</returns>
-    public IAsyncEnumerable<IndexDetails> ListIndexesAsync(CancellationToken cancellationToken = default);
+    public Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Delete an entire index.

@@ -86,7 +86,7 @@ public sealed class SimpleQueues : IQueue
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
                 break;
 
             default:

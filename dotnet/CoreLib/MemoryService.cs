@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,15 +119,10 @@ public class MemoryService : IKernelMemory
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<IndexDetails> ListIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
-        await foreach (string index in this._searchClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false))
-        {
-            yield return new IndexDetails
-            {
-                Name = index
-            };
-        }
+        return (from index in await this._searchClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false)
+                select new IndexDetails { Name = index });
     }
 
     /// <inheritdoc />

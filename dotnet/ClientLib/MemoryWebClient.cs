@@ -124,6 +124,20 @@ public class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        const string URL = Constants.HttpIndexesEndpoint;
+        HttpResponseMessage? response = await this._client.GetAsync(URL, cancellationToken).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = JsonSerializer.Deserialize<IndexCollection>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new IndexCollection();
+
+        return data.Results;
+    }
+
+    /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);

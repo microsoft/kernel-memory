@@ -45,7 +45,7 @@ public class SearchClient
         if (this._textGenerator == null) { throw new KernelMemoryException("Text generator not configured"); }
     }
 
-    public IAsyncEnumerable<string> ListIndexesAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<string>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
         return this._vectorDb.GetIndexesAsync(cancellationToken);
     }

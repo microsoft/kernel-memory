@@ -78,13 +78,16 @@ public class AzureCognitiveSearchMemory : IVectorDb
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
+        var result = new List<string>();
         await foreach (SearchIndex? index in indexesAsync)
         {
-            yield return index.Name;
+            result.Add(index.Name);
         }
+
+        return result;
     }
 
     /// <inheritdoc />
@@ -313,9 +316,13 @@ public class AzureCognitiveSearchMemory : IVectorDb
     {
         string normalizeIndexName = this.NormalizeIndexName(indexName);
 
-        return await this.GetIndexesAsync(cancellationToken)
-            .AnyAsync(index => string.Equals(index, normalizeIndexName, StringComparison.OrdinalIgnoreCase),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+        var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
+        await foreach (SearchIndex? index in indexesAsync)
+        {
+            if (index != null && string.Equals(index.Name, normalizeIndexName, StringComparison.OrdinalIgnoreCase)) { return true; }
+        }
+
+        return false;
     }
 
     private async IAsyncEnumerable<string> UpsertBatchAsync(
