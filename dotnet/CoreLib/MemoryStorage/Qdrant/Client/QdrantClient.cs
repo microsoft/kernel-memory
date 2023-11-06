@@ -304,7 +304,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     /// </summary>
     /// <param name="collectionName">Collection name</param>
     /// <param name="target">Vector to compare to</param>
-    /// <param name="minSimilarityScore">Minimum similarity required to be included in the results</param>
+    /// <param name="scoreThreshold">Minimum similarity required to be included in the results</param>
     /// <param name="limit">Max number of vectors to return</param>
     /// <param name="withVectors">Whether to include vectors</param>
     /// <param name="requiredTags">Optional filtering rules</param>
@@ -313,7 +313,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     public async Task<List<(QdrantPoint<T>, double)>> GetSimilarListAsync(
         string collectionName,
         Embedding target,
-        double minSimilarityScore,
+        double scoreThreshold,
         int limit = 1,
         bool withVectors = false,
         IEnumerable<IEnumerable<string>?>? requiredTags = null,
@@ -327,7 +327,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Create(collectionName)
             .SimilarTo(target)
             .HavingSomeTags(requiredTags)
-            .WithScoreThreshold(minSimilarityScore)
+            .WithScoreThreshold(scoreThreshold)
             .IncludePayLoad()
             .IncludeVectorData(withVectors)
             .Take(limit)

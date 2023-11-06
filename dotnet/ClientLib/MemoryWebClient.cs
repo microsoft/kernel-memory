@@ -236,8 +236,8 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
-        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -254,7 +254,7 @@ public class MemoryWebClient : IKernelMemory
             Query = query,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
             Limit = limit,
-            MinRelevanceScore = minRelevanceScore
+            MinRelevance = minRelevance
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
@@ -271,7 +271,7 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
-        double minRelevanceScore = 0,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -287,7 +287,7 @@ public class MemoryWebClient : IKernelMemory
             Index = index,
             Question = question,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
-            MinRelevanceScore = minRelevanceScore
+            MinRelevance = minRelevance
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 

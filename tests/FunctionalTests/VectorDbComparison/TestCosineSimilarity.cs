@@ -69,9 +69,9 @@ public class TestCosineSimilarity
 
         await Task.Delay(TimeSpan.FromSeconds(2));
         var target = new[] { 0.01f, 0.5f, 0.41f };
-        IAsyncEnumerable<(MemoryRecord, double)> acsList = acs.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
-        IAsyncEnumerable<(MemoryRecord, double)> qdrantList = qdrant.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
-        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
 
         var acsResults = await acsList.ToListAsync();
         var qdrantResults = await qdrantList.ToListAsync();

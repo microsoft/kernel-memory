@@ -72,9 +72,9 @@ public class AzureCognitiveSearchMemory : IVectorDb
     }
 
     /// <inheritdoc />
-    public Task CreateIndexAsync(string indexName, int vectorSize, CancellationToken cancellationToken = default)
+    public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
-        return this.CreateIndexAsync(indexName, AzureCognitiveSearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
+        return this.CreateIndexAsync(index, AzureCognitiveSearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -91,22 +91,22 @@ public class AzureCognitiveSearchMemory : IVectorDb
     }
 
     /// <inheritdoc />
-    public Task DeleteIndexAsync(string indexName, CancellationToken cancellationToken = default)
+    public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
-        if (string.Equals(indexName, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
+        index = this.NormalizeIndexName(index);
+        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
         {
             this._log.LogWarning("The default index cannot be deleted");
             return Task.CompletedTask;
         }
 
-        return this._adminClient.DeleteIndexAsync(indexName, cancellationToken);
+        return this._adminClient.DeleteIndexAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var client = this.GetSearchClient(indexName);
+        var client = this.GetSearchClient(index);
         AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
 
         await client.IndexDocumentsAsync(
@@ -119,17 +119,17 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
-        string indexName,
+        string index,
         Embedding embedding,
-        int limit,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var client = this.GetSearchClient(indexName);
+        var client = this.GetSearchClient(index);
 
         RawVectorQuery vectorQuery = new()
         {
@@ -175,7 +175,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         if (searchResult == null) { yield break; }
 
-        var minDistance = CosineSimilarityToScore(minRelevanceScore);
+        var minDistance = CosineSimilarityToScore(minRelevance);
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
             if (doc == null || doc.Score < minDistance) { continue; }
@@ -188,7 +188,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
-        string indexName,
+        string index,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
@@ -196,7 +196,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
-        var client = this.GetSearchClient(indexName);
+        var client = this.GetSearchClient(index);
 
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
@@ -245,14 +245,14 @@ public class AzureCognitiveSearchMemory : IVectorDb
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string indexName, MemoryRecord record, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         string id = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record).Id;
-        var client = this.GetSearchClient(indexName);
+        var client = this.GetSearchClient(index);
 
         try
         {
-            this._log.LogDebug("Deleting record {0} from index {1}", id, indexName);
+            this._log.LogDebug("Deleting record {0} from index {1}", id, index);
             Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync(
                     AzureCognitiveSearchMemoryRecord.IdField,
                     new List<string> { id },
@@ -262,7 +262,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
-            this._log.LogTrace("Index {0} record {1} not found, nothing to delete", indexName, id);
+            this._log.LogTrace("Index {0} record {1} not found, nothing to delete", index, id);
         }
     }
 
@@ -285,14 +285,14 @@ public class AzureCognitiveSearchMemory : IVectorDb
     //     }
     // }
 
-    private async Task CreateIndexAsync(string indexName, VectorDbSchema schema, CancellationToken cancellationToken = default)
+    private async Task CreateIndexAsync(string index, VectorDbSchema schema, CancellationToken cancellationToken = default)
     {
-        if (await this.DoesIndexExistAsync(indexName, cancellationToken).ConfigureAwait(false))
+        if (await this.DoesIndexExistAsync(index, cancellationToken).ConfigureAwait(false))
         {
             return;
         }
 
-        var indexSchema = this.PrepareIndexSchema(indexName, schema);
+        var indexSchema = this.PrepareIndexSchema(index, schema);
 
         try
         {
@@ -304,25 +304,25 @@ public class AzureCognitiveSearchMemory : IVectorDb
         }
     }
 
-    private async Task<bool> DoesIndexExistAsync(string indexName, CancellationToken cancellationToken = default)
+    private async Task<bool> DoesIndexExistAsync(string index, CancellationToken cancellationToken = default)
     {
-        string normalizeIndexName = this.NormalizeIndexName(indexName);
+        string normalizeIndexName = this.NormalizeIndexName(index);
 
         var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (SearchIndex? index in indexesAsync)
+        await foreach (SearchIndex? searchIndex in indexesAsync)
         {
-            if (index != null && string.Equals(index.Name, normalizeIndexName, StringComparison.OrdinalIgnoreCase)) { return true; }
+            if (searchIndex != null && string.Equals(searchIndex.Name, normalizeIndexName, StringComparison.OrdinalIgnoreCase)) { return true; }
         }
 
         return false;
     }
 
     private async IAsyncEnumerable<string> UpsertBatchAsync(
-        string indexName,
+        string index,
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var client = this.GetSearchClient(indexName);
+        var client = this.GetSearchClient(index);
 
         foreach (MemoryRecord record in records)
         {
@@ -354,12 +354,12 @@ public class AzureCognitiveSearchMemory : IVectorDb
     /// Get a search client for the index specified.
     /// Note: the index might not exist, but we avoid checking everytime and the extra latency.
     /// </summary>
-    /// <param name="indexName">Index name</param>
+    /// <param name="index">Index name</param>
     /// <returns>Search client ready to read/write</returns>
-    private SearchClient GetSearchClient(string indexName)
+    private SearchClient GetSearchClient(string index)
     {
-        var normalIndexName = this.NormalizeIndexName(indexName);
-        this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", indexName, normalIndexName);
+        var normalIndexName = this.NormalizeIndexName(index);
+        this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", index, normalIndexName);
 
         // Search an available client from the local cache
         if (!this._clientsByIndex.TryGetValue(normalIndexName, out SearchClient? client))
@@ -405,43 +405,43 @@ public class AzureCognitiveSearchMemory : IVectorDb
     /// The method doesn't handle all the error scenarios, leaving it to the service
     /// to throw an error for edge cases not handled locally.
     /// </summary>
-    /// <param name="indexName">Value to normalize</param>
+    /// <param name="index">Value to normalize</param>
     /// <returns>Normalized name</returns>
-    private string NormalizeIndexName(string indexName)
+    private string NormalizeIndexName(string index)
     {
-        if (string.IsNullOrWhiteSpace(indexName))
+        if (string.IsNullOrWhiteSpace(index))
         {
-            indexName = Constants.DefaultIndex;
+            index = Constants.DefaultIndex;
         }
 
-        if (indexName.Length > 128)
+        if (index.Length > 128)
         {
             throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");
         }
 
-        indexName = indexName.ToLowerInvariant();
+        index = index.ToLowerInvariant();
 
-        indexName = s_replaceIndexNameCharsRegex.Replace(indexName.Trim(), "-");
+        index = s_replaceIndexNameCharsRegex.Replace(index.Trim(), "-");
 
         // Name cannot start with a dash
-        if (indexName.StartsWith('-')) { indexName = $"z{indexName}"; }
+        if (index.StartsWith('-')) { index = $"z{index}"; }
 
         // Name cannot end with a dash
-        if (indexName.EndsWith('-')) { indexName = $"{indexName}z"; }
+        if (index.EndsWith('-')) { index = $"{index}z"; }
 
-        return indexName;
+        return index;
     }
 
-    private SearchIndex PrepareIndexSchema(string indexName, VectorDbSchema schema)
+    private SearchIndex PrepareIndexSchema(string index, VectorDbSchema schema)
     {
         ValidateSchema(schema);
 
-        indexName = this.NormalizeIndexName(indexName);
+        index = this.NormalizeIndexName(index);
 
         const string VectorSearchProfileName = "KMDefaultProfile";
         const string VectorSearchConfigName = "KMDefaultAlgorithm";
 
-        var indexSchema = new SearchIndex(indexName)
+        var indexSchema = new SearchIndex(index)
         {
             Fields = new List<SearchField>(),
             VectorSearch = new VectorSearch

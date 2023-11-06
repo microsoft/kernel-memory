@@ -163,8 +163,8 @@ public class MemoryService : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
-        double minRelevanceScore = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -179,8 +179,8 @@ public class MemoryService : IKernelMemory
             index: index,
             query: query,
             filters: filters,
+            minRelevance: minRelevance,
             limit: limit,
-            minRelevanceScore: minRelevanceScore,
             cancellationToken: cancellationToken);
     }
 
@@ -190,7 +190,7 @@ public class MemoryService : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
-        double minRelevanceScore = 0,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -204,7 +204,7 @@ public class MemoryService : IKernelMemory
         return this._searchClient.AskAsync(
             index: index,
             question: question,
-            minRelevanceScore: minRelevanceScore,
+            minRelevance: minRelevance,
             filters: filters,
             cancellationToken: cancellationToken);
     }
