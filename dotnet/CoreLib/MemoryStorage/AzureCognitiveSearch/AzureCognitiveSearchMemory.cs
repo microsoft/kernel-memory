@@ -144,7 +144,9 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         SearchOptions options = new()
         {
-            VectorQueries = { vectorQuery }
+            VectorQueries = { vectorQuery },
+            // Default, applies the vector query AFTER the search filter
+            VectorFilterMode = VectorFilterMode.PreFilter
         };
 
         // Remove empty filters
@@ -152,16 +154,6 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         if (filters is { Count: > 0 })
         {
-            // We need to fetch more vectors because filters are applied after the vector search
-            try
-            {
-                checked { vectorQuery.KNearestNeighborsCount = limit * 100; }
-            }
-            catch (OverflowException)
-            {
-                vectorQuery.KNearestNeighborsCount = int.MaxValue;
-            }
-
             options.Filter = BuildSearchFilter(filters);
             options.Size = limit;
 
@@ -245,7 +237,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
-            // stop after returning the amount requested, in case we fetched more to workaround the lack of pre-filtering
+            // stop after returning the amount requested
             if (limit-- <= 0) { yield break; }
 
             yield return doc.Document.ToMemoryRecord(withEmbeddings);
