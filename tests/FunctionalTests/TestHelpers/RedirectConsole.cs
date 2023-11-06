@@ -301,7 +301,7 @@ internal sealed class RedirectConsole : TextWriter
         {
             this._output.WriteLine(s);
         }
-        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test"))
+        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test", StringComparison.OrdinalIgnoreCase))
         {
             // NOOP: Xunit thread out of scope
         }
@@ -313,7 +313,7 @@ internal sealed class RedirectConsole : TextWriter
         {
             this._output.WriteLine(s);
         }
-        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test"))
+        catch (InvalidOperationException e) when (e.Message.Contains("no currently active test", StringComparison.OrdinalIgnoreCase))
         {
             // NOOP: Xunit thread out of scope
         }
