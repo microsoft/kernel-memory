@@ -160,6 +160,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-dotnet-custom-LLM", "examples\009-dotnet-custom-LLM\009-dotnet-custom-LLM.csproj", "{89D6F024-C4E1-4779-A7C6-117F32433E90}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-dotnet-custom-EmbeddingGenerator", "examples\010-dotnet-custom-EmbeddingGenerator\010-dotnet-custom-EmbeddingGenerator.csproj", "{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +197,7 @@ Global
 		{4A56D84B-1D8B-447B-9D9A-E36A2AE44806} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 		{8A90555B-C28B-401B-960A-619DE9A87C4C} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 		{89D6F024-C4E1-4779-A7C6-117F32433E90} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -281,5 +284,9 @@ Global
 		{89D6F024-C4E1-4779-A7C6-117F32433E90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89D6F024-C4E1-4779-A7C6-117F32433E90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89D6F024-C4E1-4779-A7C6-117F32433E90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
