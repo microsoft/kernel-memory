@@ -20,7 +20,7 @@ public class MemoryWebClient : IKernelMemory
     private readonly HttpClient _client;
 
     public MemoryWebClient(string endpoint, string apiKey = "", string apiKeyHeader = "Authorization")
-        : this(endpoint, new HttpClient(), apiKey, apiKeyHeader)
+        : this(endpoint, new HttpClient(), apiKey: apiKey, apiKeyHeader: apiKeyHeader)
     {
     }
 
@@ -311,6 +311,7 @@ public class MemoryWebClient : IKernelMemory
 
     #region private
 
+    /// <returns>Document ID</returns>
     private async Task<string> ImportInternalAsync(
         string index,
         DocumentUploadRequest uploadRequest,

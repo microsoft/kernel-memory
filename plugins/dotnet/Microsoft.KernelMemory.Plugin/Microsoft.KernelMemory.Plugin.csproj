@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Microsoft.KernelMemory.Plugin</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Plugin</RootNamespace>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\dotnet\ClientLib\ClientLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.SemanticKernel.Abstractions" VersionOverride="1.0.0-beta5" />
+    </ItemGroup>
+
+    <Import Project="../../../dotnet/nuget/nuget-package.props"/>
+
+</Project>
