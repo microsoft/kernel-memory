@@ -162,6 +162,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-dotnet-custom-LLM", "ex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-dotnet-custom-EmbeddingGenerator", "examples\010-dotnet-custom-EmbeddingGenerator\010-dotnet-custom-EmbeddingGenerator.csproj", "{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{06F36495-16F8-458A-A455-3F85C8C9B24F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.KernelMemory.Plugin", "plugins\dotnet\Microsoft.KernelMemory.Plugin\Microsoft.KernelMemory.Plugin.csproj", "{F7609330-E97E-422C-8983-EC501B2DDC52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "011-using-MemoryPlugin", "examples\011-using-MemoryPlugin\011-using-MemoryPlugin.csproj", "{89F72748-E8A4-4FDF-A02C-8B141E8EA433}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -198,6 +204,8 @@ Global
 		{8A90555B-C28B-401B-960A-619DE9A87C4C} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 		{89D6F024-C4E1-4779-A7C6-117F32433E90} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{F7609330-E97E-422C-8983-EC501B2DDC52} = {06F36495-16F8-458A-A455-3F85C8C9B24F}
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -288,5 +296,13 @@ Global
 		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

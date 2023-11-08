@@ -18,15 +18,17 @@ namespace Microsoft.KernelMemory;
 public class MemoryWebClient : IKernelMemory
 {
     private readonly HttpClient _client;
+    private readonly string _apiKey;
 
-    public MemoryWebClient(string endpoint) : this(endpoint, new HttpClient())
+    public MemoryWebClient(string endpoint, string apiKey = "") : this(endpoint, new HttpClient())
     {
     }
 
-    public MemoryWebClient(string endpoint, HttpClient client)
+    public MemoryWebClient(string endpoint, HttpClient client, string apiKey = "")
     {
         this._client = client;
         this._client.BaseAddress = new Uri(endpoint);
+        this._apiKey = apiKey;
     }
 
     /// <inheritdoc />
@@ -300,7 +302,11 @@ public class MemoryWebClient : IKernelMemory
 
     #region private
 
-    private async Task<string> ImportInternalAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
+    /// <returns>Document ID</returns>
+    private async Task<string> ImportInternalAsync(
+        string index,
+        DocumentUploadRequest uploadRequest,
+        CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
         using MultipartFormDataContent formData = new();
