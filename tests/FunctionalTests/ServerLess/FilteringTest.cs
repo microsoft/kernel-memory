@@ -78,6 +78,9 @@ public class FilteringTest : BaseTestCase
 
         this.Log("Deleting memories extracted from the document");
         await memory.DeleteDocumentAsync(Id, index: indexName);
+
+        this.Log("Deleting index");
+        await memory.DeleteIndexAsync(indexName);
     }
 
     [Theory]
@@ -158,6 +161,9 @@ public class FilteringTest : BaseTestCase
 
         this.Log("Deleting memories extracted from the document");
         await memory.DeleteDocumentAsync(Id, index: indexName);
+
+        this.Log("Deleting index");
+        await memory.DeleteIndexAsync(indexName);
     }
 
     [Theory]
@@ -202,5 +208,8 @@ public class FilteringTest : BaseTestCase
 
         this.Log("Deleting memories extracted from the document");
         await memory.DeleteDocumentAsync(Id, index: indexName);
+
+        this.Log("Deleting index");
+        await memory.DeleteIndexAsync(indexName);
     }
 }

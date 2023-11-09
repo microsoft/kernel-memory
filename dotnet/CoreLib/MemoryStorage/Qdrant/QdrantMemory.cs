@@ -27,10 +27,10 @@ public class QdrantMemory : IVectorDb
 
     /// <inheritdoc />
     public Task CreateIndexAsync(
-        string indexName, int vectorSize,
+        string index, int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        return this._qdrantClient.CreateCollectionAsync(indexName, vectorSize, cancellationToken);
+        return this._qdrantClient.CreateCollectionAsync(index, vectorSize, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -44,26 +44,26 @@ public class QdrantMemory : IVectorDb
 
     /// <inheritdoc />
     public Task DeleteIndexAsync(
-        string indexName,
+        string index,
         CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
-        if (string.Equals(indexName, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
+        index = this.NormalizeIndexName(index);
+        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
         {
             this._log.LogWarning("The default index cannot be deleted");
             return Task.CompletedTask;
         }
 
-        return this._qdrantClient.DeleteCollectionAsync(indexName, cancellationToken);
+        return this._qdrantClient.DeleteCollectionAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(
-        string indexName,
+        string index,
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
+        index = this.NormalizeIndexName(index);
 
         QdrantPoint<DefaultQdrantPayload> qdrantPoint;
 
@@ -79,7 +79,7 @@ public class QdrantMemory : IVectorDb
         {
             qdrantPoint = QdrantPoint<DefaultQdrantPayload>.FromMemoryRecord(record);
             QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
-                .GetVectorByPayloadIdAsync(indexName, record.Id, cancellationToken: cancellationToken)
+                .GetVectorByPayloadIdAsync(index, record.Id, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (existingPoint == null)
             {
@@ -93,22 +93,22 @@ public class QdrantMemory : IVectorDb
             }
         }
 
-        await this._qdrantClient.UpsertVectorsAsync(indexName, new[] { qdrantPoint }, cancellationToken).ConfigureAwait(false);
+        await this._qdrantClient.UpsertVectorsAsync(index, new[] { qdrantPoint }, cancellationToken).ConfigureAwait(false);
 
         return record.Id;
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
-        string indexName,
+        string index,
         Embedding embedding,
-        int limit,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
+        index = this.NormalizeIndexName(index);
         if (limit <= 0) { limit = int.MaxValue; }
 
         // Remove empty filters
@@ -121,9 +121,9 @@ public class QdrantMemory : IVectorDb
         }
 
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
-            collectionName: indexName,
+            collectionName: index,
             target: embedding,
-            minSimilarityScore: minRelevanceScore,
+            scoreThreshold: minRelevance,
             requiredTags: requiredTags,
             limit: limit,
             withVectors: withEmbeddings,
@@ -137,13 +137,13 @@ public class QdrantMemory : IVectorDb
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
-        string indexName,
+        string index,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
+        index = this.NormalizeIndexName(index);
         if (limit <= 0) { limit = int.MaxValue; }
 
         // Remove empty filters
@@ -156,7 +156,7 @@ public class QdrantMemory : IVectorDb
         }
 
         List<QdrantPoint<DefaultQdrantPayload>> results = await this._qdrantClient.GetListAsync(
-            collectionName: indexName,
+            collectionName: index,
             requiredTags: requiredTags,
             offset: 0,
             limit: limit,
@@ -171,14 +171,14 @@ public class QdrantMemory : IVectorDb
 
     /// <inheritdoc />
     public async Task DeleteAsync(
-        string indexName,
+        string index,
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        indexName = this.NormalizeIndexName(indexName);
+        index = this.NormalizeIndexName(index);
 
         QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
-            .GetVectorByPayloadIdAsync(indexName, record.Id, cancellationToken: cancellationToken)
+            .GetVectorByPayloadIdAsync(index, record.Id, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         if (existingPoint == null)
         {
@@ -187,16 +187,16 @@ public class QdrantMemory : IVectorDb
         }
 
         this._log.LogTrace("Point ID {0} found, deleting...", existingPoint.Id);
-        await this._qdrantClient.DeleteVectorsAsync(indexName, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
+        await this._qdrantClient.DeleteVectorsAsync(index, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
     }
 
-    private string NormalizeIndexName(string indexName)
+    private string NormalizeIndexName(string index)
     {
-        if (string.IsNullOrWhiteSpace(indexName))
+        if (string.IsNullOrWhiteSpace(index))
         {
-            indexName = Constants.DefaultIndex;
+            index = Constants.DefaultIndex;
         }
 
-        return indexName.Trim();
+        return index.Trim();
     }
 }

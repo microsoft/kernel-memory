@@ -58,6 +58,7 @@ public static class Constants
     public const string DeleteIndexPipelineStepName = "private_delete_index";
 
     // Pipeline steps
-    public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_embeddings", "summarize", "gen_embeddings", "save_embeddings" };
+    public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_embeddings" };
     public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_embeddings" };
+    public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_embeddings", "summarize", "gen_embeddings", "save_embeddings" };
 }

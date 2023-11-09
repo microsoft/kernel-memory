@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.Text;
@@ -66,23 +65,22 @@ public class SummarizationHandler : IPipelineStepHandler
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
-            var throttler = new SemaphoreSlim(initialCount: 4);
 
-            var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
                 var file = generatedFile.Value;
 
                 if (file.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", file.Name);
-                    return;
+                    continue;
                 }
 
                 // Summarize only the original content
                 if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
                 {
                     this._log.LogTrace("Skipping file {0}", file.Name);
-                    return;
+                    continue;
                 }
 
                 switch (file.MimeType)
@@ -94,36 +92,31 @@ public class SummarizationHandler : IPipelineStepHandler
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
+                            var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(summary), cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
 
-                            lock (summaryFiles)
+                            summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {
-                                summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
-                                {
-                                    Id = Guid.NewGuid().ToString("N"),
-                                    ParentId = uploadedFile.Id,
-                                    Name = destFile,
-                                    Size = summary.Length,
-                                    MimeType = MimeTypes.PlainText,
-                                    ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
-                                    ContentSHA256 = CalculateSHA256(summary),
-                                });
-                            }
+                                Id = Guid.NewGuid().ToString("N"),
+                                ParentId = uploadedFile.Id,
+                                Name = destFile,
+                                Size = summary.Length,
+                                MimeType = MimeTypes.PlainText,
+                                ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
+                                ContentSHA256 = summaryData.CalculateSHA256(),
+                            });
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be summarized, type not supported", file.Name);
-                        return;
+                        continue;
                 }
 
                 file.MarkProcessedBy(this);
-
-            }).ToList();
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
 
             // Add new files to pipeline status
             foreach (var file in summaryFiles)
@@ -203,11 +196,5 @@ public class SummarizationHandler : IPipelineStepHandler
         }
 
         return (content, true);
-    }
-
-    private static string CalculateSHA256(string value)
-    {
-        byte[] byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
 }
