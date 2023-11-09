@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,21 +67,21 @@ public class SummarizationHandler : IPipelineStepHandler
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
             {
                 var file = generatedFile.Value;
 
                 if (file.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", file.Name);
-                    continue;
+                    return;
                 }
 
                 // Summarize only the original content
                 if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
                 {
                     this._log.LogTrace("Skipping file {0}", file.Name);
-                    continue;
+                    return;
                 }
 
                 switch (file.MimeType)
@@ -96,27 +97,30 @@ public class SummarizationHandler : IPipelineStepHandler
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
                             await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
 
-                            summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+                            lock (summaryFiles)
                             {
-                                Id = Guid.NewGuid().ToString("N"),
-                                ParentId = uploadedFile.Id,
-                                Name = destFile,
-                                Size = summary.Length,
-                                MimeType = MimeTypes.PlainText,
-                                ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
-                                ContentSHA256 = summaryData.CalculateSHA256(),
-                            });
+                                summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+                                {
+                                    Id = Guid.NewGuid().ToString("N"),
+                                    ParentId = uploadedFile.Id,
+                                    Name = destFile,
+                                    Size = summary.Length,
+                                    MimeType = MimeTypes.PlainText,
+                                    ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
+                                    ContentSHA256 = summaryData.CalculateSHA256(),
+                                });
+                            }
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be summarized, type not supported", file.Name);
-                        continue;
+                        return;
                 }
 
                 file.MarkProcessedBy(this);
-            }
+            });
 
             // Add new files to pipeline status
             foreach (var file in summaryFiles)
