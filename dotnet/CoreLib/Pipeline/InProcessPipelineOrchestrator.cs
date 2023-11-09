@@ -98,7 +98,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
         sw.Stop();
-        this.Log.LogTrace("Pipeline '{0}/{1}' UploadFiles Time:{2}", pipeline.Index, pipeline.DocumentId,sw.Elapsed);
+        this.Log.LogInformation("Pipeline '{0}/{1}' UploadFiles Time:{2}", pipeline.Index, pipeline.DocumentId, sw.Elapsed);
 
         await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
@@ -116,7 +116,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
                 .InvokeAsync(pipeline, this.CancellationTokenSource.Token)
                 .ConfigureAwait(false);
             sw.Stop();
-            this.Log.LogTrace("Pipeline '{0}/{1}' Step:{2}; Time:{3}", pipeline.Index, pipeline.DocumentId, currentStepName,sw.Elapsed);
+            this.Log.LogInformation("Pipeline '{0}/{1}' Step:{2}; Time:{3}", pipeline.Index, pipeline.DocumentId, currentStepName, sw.Elapsed);
 
             if (success)
             {
