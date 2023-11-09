@@ -68,11 +68,13 @@ public class SummarizationHandler : IPipelineStepHandler
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
+            var throttler = new SemaphoreSlim(initialCount: Environment.ProcessorCount);
 
             var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
             {
-                var file = generatedFile.Value;
+                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+                var file = generatedFile.Value;
                 if (file.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", file.Name);
@@ -123,6 +125,8 @@ public class SummarizationHandler : IPipelineStepHandler
 
                 file.MarkProcessedBy(this);
             });
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             // Add new files to pipeline status
             foreach (var file in summaryFiles)

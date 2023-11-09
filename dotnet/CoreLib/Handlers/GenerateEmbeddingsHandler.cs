@@ -62,11 +62,11 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
-            var throttler = new SemaphoreSlim(initialCount: 4);
+            var throttler = new SemaphoreSlim(initialCount: Environment.ProcessorCount);
 
             var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
             {
-                await throttler.WaitAsync().ConfigureAwait(false);
+                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
@@ -157,7 +157,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                 }
 
                 partitionFile.MarkProcessedBy(this);
-            }).ToList();
+            });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
