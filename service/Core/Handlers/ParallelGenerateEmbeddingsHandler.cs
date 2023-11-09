@@ -17,47 +17,38 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.
 /// </summary>
-public class GenerateEmbeddingsHandler : IPipelineStepHandler
+public class ParallelGenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly ILogger<GenerateEmbeddingsHandler> _log;
     private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
-    private readonly bool _embeddingGenerationEnabled;
+    private readonly ILogger<ParallelGenerateEmbeddingsHandler> _log;
 
     /// <inheritdoc />
     public string StepName { get; }
 
+    private object _lock = new();
+
     /// <summary>
-    /// Handler responsible for generating embeddings and saving them to content storages (not memory db).
+    /// Handler responsible for generating embeddings and saving them to content storages.
     /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="log">Application logger</param>
-    public GenerateEmbeddingsHandler(
+    public ParallelGenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        ILogger<GenerateEmbeddingsHandler>? log = null)
+        ILogger<ParallelGenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
-        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
-        this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
-
         this._orchestrator = orchestrator;
+        this._log = log ?? DefaultLogger<ParallelGenerateEmbeddingsHandler>.Instance;
         this._embeddingGenerators = orchestrator.GetEmbeddingGenerators();
 
-        if (this._embeddingGenerationEnabled)
+        this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
+        if (this._embeddingGenerators.Count < 1)
         {
-            if (this._embeddingGenerators.Count < 1)
-            {
-                this._log.LogError("Handler '{0}' NOT ready, no embedding generators configured", stepName);
-            }
-
-            this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
-        }
-        else
-        {
-            this._log.LogInformation("Handler '{0}' ready, embedding generation DISABLED", stepName);
+            this._log.LogError("No embedding generators configured");
         }
     }
 
@@ -65,28 +56,23 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        if (!this._embeddingGenerationEnabled)
-        {
-            this._log.LogTrace("Embedding generation is disabled, skipping - pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
-            return (true, pipeline);
-        }
-
         this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
-        var partitionsFound = false;
         foreach (var uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
+            var throttler = new SemaphoreSlim(initialCount: Environment.ProcessorCount);
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
             {
+                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
+
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
                 {
-                    partitionsFound = true;
                     this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
-                    continue;
+                    return;
                 }
 
                 // Calc embeddings only for partitions (text chunks) and synthetic data
@@ -94,10 +80,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
                 {
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
-                    continue;
+                    return;
                 }
-
-                partitionsFound = true;
 
                 // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
                 switch (partitionFile.MimeType)
@@ -133,12 +117,6 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             // TODO: handle Azure.RequestFailedException - BlobNotFound
                             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
-                            var inputTokenCount = generator.CountTokens(partitionContent);
-                            if (inputTokenCount > generator.MaxTokens)
-                            {
-                                this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
-                            }
-
                             Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
@@ -152,39 +130,35 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             {
                                 Id = Guid.NewGuid().ToString("N"),
                                 ParentId = uploadedFile.Id,
-                                SourcePartitionId = partitionFile.Id,
                                 Name = embeddingFileName,
                                 Size = text.Length,
                                 MimeType = MimeTypes.TextEmbeddingVector,
-                                ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector,
-                                PartitionNumber = partitionFile.PartitionNumber,
-                                SectionNumber = partitionFile.SectionNumber,
-                                Tags = partitionFile.Tags,
+                                ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
-                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+                            lock (this._lock)
+                            {
+                                newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+                            }
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
-                        continue;
+                        return;
                 }
 
                 partitionFile.MarkProcessedBy(this);
-            }
+            });
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             // Add new files to pipeline status
             foreach (var file in newFiles)
             {
                 uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
             }
-        }
-
-        if (!partitionsFound)
-        {
-            this._log.LogWarning("Pipeline '{0}/{1}': text partitions not found, cannot generate embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
