@@ -34,6 +34,8 @@ public class SummarizationHandler : IPipelineStepHandler
     private readonly ILogger<SummarizationHandler> _log;
     private readonly string _prompt = EmbeddedPrompt.ReadPrompt("summarize.txt");
 
+    private object _lock = new();
+
     /// <inheritdoc />
     public string StepName { get; }
 
@@ -97,7 +99,7 @@ public class SummarizationHandler : IPipelineStepHandler
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
                             await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
 
-                            lock (summaryFiles)
+                            lock (this._lock)
                             {
                                 summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                                 {

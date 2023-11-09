@@ -26,6 +26,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// <inheritdoc />
     public string StepName { get; }
 
+    private object _lock = new();
+
     /// <summary>
     /// Handler responsible for generating embeddings and saving them to content storages.
     /// Note: stepName and other params are injected with DI
@@ -141,7 +143,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
-                            lock (newFiles)
+                            lock (this._lock)
                             {
                                 newFiles.Add(embeddingFileName, embeddingFileNameDetails);
                             }
