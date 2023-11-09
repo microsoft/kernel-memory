@@ -11,12 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\dotnet\CoreLib\CoreLib.csproj"/>
-        <ProjectReference Include="..\..\dotnet\InteractiveSetup\InteractiveSetup.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="System.Memory.Data"/>
+        <ProjectReference Include="..\..\dotnet\ClientLib\ClientLib.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
