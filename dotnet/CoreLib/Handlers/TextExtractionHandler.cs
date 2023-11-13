@@ -100,6 +100,18 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                     break;
 
+                case MimeTypes.MsPowerPoint:
+                    this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = new MsPowerPointDecoder().DocToText(fileContent,
+                            withSlideNumber: true,
+                            withEndOfSlideMarker: false,
+                            skipHiddenSlides: true);
+                    }
+
+                    break;
+
                 case MimeTypes.Pdf:
                     this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
                     if (fileContent.ToArray().Length > 0)

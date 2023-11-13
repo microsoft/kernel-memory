@@ -15,7 +15,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="mswordfile.docx"/>
+        <None Remove="mspowerpointfile.pptx" />
+        <Content Include="mspowerpointfile.pptx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="mswordfile.docx" />
         <Content Include="mswordfile.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
