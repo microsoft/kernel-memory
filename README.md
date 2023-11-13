@@ -1,5 +1,8 @@
 # Kernel Memory
 
+[![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
+
 **Kernel Memory** (KM) is an open-source [service](dotnet/Service/README.md) and
 [plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
 specialized in the efficient indexing of datasets through custom continuous data
@@ -18,6 +21,20 @@ Designed for seamless integration as a Plugin with
 [Semantic Kernel](https://github.com/microsoft/semantic-kernel), Microsoft
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
+
+### Packages
+
+Multiple variants are available on NuGet:
+
+* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom pipelines and handlers
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
+
+* **Microsoft.KernelMemory.Client:** The client library, can be used to call an already running instance of the service
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Client)](https://www.nuget.org/packages/Microsoft.KernelMemory.Client/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
 
 ### Supported backends
 
