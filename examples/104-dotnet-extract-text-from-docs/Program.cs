@@ -20,7 +20,10 @@ Console.WriteLine("===============================");
 Console.WriteLine("=== Text in mspowerpointfile.pptx ===");
 Console.WriteLine("===============================");
 
-text = new MsPowerPointDecoder().DocToText("mspowerpointfile.pptx");
+text = new MsPowerPointDecoder().DocToText("mspowerpointfile.pptx",
+    withSlideNumber: true,
+    withEndOfSlideMarker: false,
+    skipHiddenSlides: true);
 Console.WriteLine(text);
 
 Console.WriteLine("============================");

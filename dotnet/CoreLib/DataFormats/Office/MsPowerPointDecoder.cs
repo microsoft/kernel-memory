@@ -13,21 +13,70 @@ namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsPowerPointDecoder
 {
-    public string DocToText(string filename)
+    private readonly string _slideNumberTemplate;
+    private readonly string _endOfSlideMarkerTemplate;
+
+    /// <param name="slideNumberTemplate">Template used for the optional slide number added at the start of each slide</param>
+    /// <param name="endOfSlideMarkerTemplate">Template used for the optional text added at the end of each slide</param>
+    public MsPowerPointDecoder(
+        string slideNumberTemplate = "# Slide {number}",
+        string endOfSlideMarkerTemplate = "# End of slide {number}")
+    {
+        this._slideNumberTemplate = slideNumberTemplate;
+        this._endOfSlideMarkerTemplate = endOfSlideMarkerTemplate;
+    }
+
+    /// <summary>
+    /// Return the text contained by the powerpoint presentation
+    /// </summary>
+    /// <param name="filename">File name</param>
+    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
+    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
+    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
+    /// <returns>The text extracted from the presentation</returns>
+    public string DocToText(
+        string filename,
+        bool withSlideNumber = true,
+        bool withEndOfSlideMarker = false,
+        bool skipHiddenSlides = true)
     {
         using var stream = File.OpenRead(filename);
-        return this.DocToText(stream);
+        return this.DocToText(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
     }
 
-    public string DocToText(BinaryData data)
+    /// <summary>
+    /// Return the text contained by the powerpoint presentation
+    /// </summary>
+    /// <param name="data">File content in binary form</param>
+    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
+    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
+    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
+    /// <returns>The text extracted from the presentation</returns>
+    public string DocToText(
+        BinaryData data,
+        bool withSlideNumber = true,
+        bool withEndOfSlideMarker = false,
+        bool skipHiddenSlides = true)
     {
         using var stream = data.ToStream();
-        return this.DocToText(stream);
+        return this.DocToText(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
     }
 
-    public string DocToText(Stream data)
+    /// <summary>
+    /// Return the text contained by the powerpoint presentation
+    /// </summary>
+    /// <param name="data">File content in stream form</param>
+    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
+    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
+    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
+    /// <returns>The text extracted from the presentation</returns>
+    public string DocToText(
+        Stream data,
+        bool withSlideNumber = true,
+        bool withEndOfSlideMarker = false,
+        bool skipHiddenSlides = true)
     {
-        using var presentationDocument = PresentationDocument.Open(data, false);
+        using PresentationDocument presentationDocument = PresentationDocument.Open(data, false);
         var sb = new StringBuilder();
 
         if (presentationDocument.PresentationPart is PresentationPart presentationPart
@@ -35,25 +84,46 @@ public class MsPowerPointDecoder
             && presentation.SlideIdList is SlideIdList slideIdList
             && slideIdList.Elements<SlideId>().ToList() is List<SlideId> slideIds and { Count: > 0 })
         {
-            foreach (var slideId in slideIds)
+            var slideNumber = 0;
+            foreach (SlideId slideId in slideIds)
             {
+                slideNumber++;
                 if ((string?)slideId.RelationshipId is string relationshipId
                     && presentationPart.GetPartById(relationshipId) is SlidePart slidePart
-                    && slidePart.Slide.Descendants<Text>().ToList() is List<Text> texts and { Count: > 0 })
+                    && slidePart != null
+                    && slidePart.Slide?.Descendants<Text>().ToList() is List<Text> texts and { Count: > 0 })
                 {
+                    // Check if the slide is hidden and whether to skip it
+                    if (skipHiddenSlides && slidePart.Slide.Show != null) { continue; }
+
+                    var slideContent = new StringBuilder();
                     for (var i = 0; i < texts.Count; i++)
                     {
                         var text = texts[i];
-
-                        sb.Append(text.Text);
-
+                        slideContent.Append(text.Text);
                         if (i < texts.Count - 1)
                         {
-                            sb.Append(' ');
+                            slideContent.Append(' ');
                         }
                     }
 
+                    // Skip the slide if there is no text
+                    if (slideContent.Length < 1) { continue; }
+
+                    // Prepend slide number before the slide text
+                    if (withSlideNumber)
+                    {
+                        sb.AppendLine(this._slideNumberTemplate.Replace("{number}", slideNumber.ToString()));
+                    }
+
+                    sb.Append(slideContent);
                     sb.AppendLine();
+
+                    // Append the end of slide marker
+                    if (withEndOfSlideMarker)
+                    {
+                        sb.AppendLine(this._endOfSlideMarkerTemplate.Replace("{number}", slideNumber.ToString()));
+                    }
                 }
             }
         }

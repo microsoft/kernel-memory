@@ -36,6 +36,18 @@ Multiple variants are available on NuGet:
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Client)](https://www.nuget.org/packages/Microsoft.KernelMemory.Client/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
 
+### Supported data formats
+
+* MS Word documents
+* MS PowerPoint presentations
+* PDF documents
+* Web pages
+* JPG/PNG/TIFF Images with text via OCR
+* MarkDown
+* JSON
+* Raw plain text
+* [..] more coming :-)
+
 ### Supported backends
 
 * ↗️ Vector storage
