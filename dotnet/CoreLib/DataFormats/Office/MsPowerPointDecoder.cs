@@ -9,7 +9,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
 using Text = DocumentFormat.OpenXml.Drawing.Text;
 
-namespace Microsoft.SemanticMemory.DataFormats.Office;
+namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsPowerPointDecoder
 {
