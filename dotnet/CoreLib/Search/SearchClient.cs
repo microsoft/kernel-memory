@@ -24,20 +24,23 @@ public class SearchClient
     private readonly IVectorDb _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
-    private readonly string _prompt;
     private readonly ILogger<SearchClient> _log;
+    private readonly string _answerPrompt;
 
     public SearchClient(
         IVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
-        IPromptSupplier promptSupplier,
+        IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
         this._vectorDb = vectorDb;
         this._embeddingGenerator = embeddingGenerator;
         this._textGenerator = textGenerator;
-        this._prompt = promptSupplier.ReadPrompt("answer-with-facts");
+
+        promptProvider ??= new EmbeddedPromptProvider();
+        this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
+
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
         if (this._embeddingGenerator == null) { throw new KernelMemoryException("Embedding generator not configured"); }
@@ -178,7 +181,7 @@ public class SearchClient
 
         var facts = new StringBuilder();
         var tokensAvailable = 8000
-                              - GPT3Tokenizer.Encode(this._prompt).Count
+                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
                               - GPT3Tokenizer.Encode(question).Count
                               - AnswerTokens;
 
@@ -321,7 +324,7 @@ public class SearchClient
 
     private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
     {
-        var prompt = this._prompt;
+        var prompt = this._answerPrompt;
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
         question = question.Trim();

@@ -68,9 +68,6 @@ public class KernelMemoryBuilder
     // Content of appsettings.json, used to access dynamic data under "Services"
     private IConfiguration? _servicesConfiguration = null;
 
-    // Default prompt supplier
-    private IPromptSupplier _promptSupplier = null;
-
     /// <summary>
     /// Whether to register the default handlers. The list is hardcoded.
     /// Additional handlers can be configured as "default", see appsettings.json
@@ -111,17 +108,16 @@ public class KernelMemoryBuilder
         this.AddSingleton<List<IVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile });
         this.WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile });
+
+        // Default dependencies, can be overridden
+        this.WithDefaultMimeTypeDetection();
+        this.WithDefaultPromptProvider();
     }
 
     public IKernelMemory Build()
     {
-        this._promptSupplier = this._promptSupplier ?? new EmbeddedPromptSupplier();
-
-        this.AddSingleton<IPromptSupplier>(this._promptSupplier);
-
         switch (this.GetBuildType())
         {
             case ClientTypes.SyncServerless:
@@ -328,13 +324,6 @@ public class KernelMemoryBuilder
         return this;
     }
 
-    public KernelMemoryBuilder WithCustomPrompSupplier(IPromptSupplier service)
-    {
-        service = service ?? throw new ConfigurationException("The prompt supplier instance is NULL");
-        this._promptSupplier = service;
-        return this;
-    }
-
     public KernelMemoryBuilder WithCustomTextGeneration(ITextGeneration service)
     {
         service = service ?? throw new ConfigurationException("The text generator instance is NULL");
@@ -346,6 +335,19 @@ public class KernelMemoryBuilder
     {
         service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
         this.AddSingleton<IOcrEngine>(service);
+        return this;
+    }
+
+    public KernelMemoryBuilder WithDefaultPromptProvider()
+    {
+        this.AddSingleton<IPromptProvider, EmbeddedPromptProvider>();
+        return this;
+    }
+
+    public KernelMemoryBuilder WithCustomPromptProvider(IPromptProvider service)
+    {
+        service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
+        this.AddSingleton<IPromptProvider>(service);
         return this;
     }
 
@@ -574,12 +576,6 @@ public class KernelMemoryBuilder
         }
 
         return this;
-    }
-
-    public IPromptSupplier GetPromptSupplier()
-    {
-        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-        return serviceProvider.GetService<IPromptSupplier>() ?? throw new ConfigurationException("Unable to find prompt supplier");
     }
 
     public IPipelineOrchestrator GetOrchestrator()
