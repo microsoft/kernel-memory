@@ -24,18 +24,20 @@ public class SearchClient
     private readonly IVectorDb _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
+    private readonly string _prompt;
     private readonly ILogger<SearchClient> _log;
-    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("answer-with-facts.txt");
 
     public SearchClient(
         IVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
+        IPromptSupplier promptSupplier,
         ILogger<SearchClient>? log = null)
     {
         this._vectorDb = vectorDb;
         this._embeddingGenerator = embeddingGenerator;
         this._textGenerator = textGenerator;
+        this._prompt = promptSupplier.ReadPrompt("answer-with-facts");
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
         if (this._embeddingGenerator == null) { throw new KernelMemoryException("Embedding generator not configured"); }

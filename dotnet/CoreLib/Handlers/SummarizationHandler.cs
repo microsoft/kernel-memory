@@ -30,8 +30,8 @@ public class SummarizationHandler : IPipelineStepHandler
     private const int OverlappingTokens = 200;
 
     private readonly IPipelineOrchestrator _orchestrator;
+    private readonly string _prompt;
     private readonly ILogger<SummarizationHandler> _log;
-    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("summarize.txt");
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -47,10 +47,12 @@ public class SummarizationHandler : IPipelineStepHandler
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        IPromptSupplier promptSupplier,
         ILogger<SummarizationHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._prompt = promptSupplier.ReadPrompt("summarize");
         this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);

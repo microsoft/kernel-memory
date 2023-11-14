@@ -16,23 +16,23 @@ namespace Microsoft.KernelMemory.Prompts;
 ///
 /// To know which resources are embedded, check the csproj file.
 /// </summary>
-internal static class EmbeddedPrompt
+internal class EmbeddedPromptSupplier : IPromptSupplier
 {
-    private static readonly string? s_namespace = typeof(EmbeddedPrompt).Namespace;
+    private static readonly string? s_namespace = typeof(EmbeddedPromptSupplier).Namespace;
 
-    internal static string ReadPrompt(string filename)
+    public string ReadPrompt(string filename)
     {
-        return Read(filename);
+        return ReadFile(filename);
     }
 
-    private static string Read(string fileName)
+    private static string ReadFile(string fileName)
     {
         // Get the current assembly. Note: this class is in the same assembly where the embedded resources are stored.
-        Assembly? assembly = typeof(EmbeddedPrompt).GetTypeInfo().Assembly;
+        Assembly? assembly = typeof(EmbeddedPromptSupplier).GetTypeInfo().Assembly;
         if (assembly == null) { throw new ConfigurationException($"[{s_namespace}] {fileName} assembly not found"); }
 
         // Resources are mapped like types, using the namespace and appending "." (dot) and the file name
-        var resourceName = $"{s_namespace}." + fileName;
+        var resourceName = $"{s_namespace}." + fileName + ".txt";
         using Stream? resource = assembly.GetManifestResourceStream(resourceName);
         if (resource == null) { throw new ConfigurationException($"{resourceName} resource not found"); }
 

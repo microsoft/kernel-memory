@@ -25,6 +25,7 @@ using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Prompts;
 using Microsoft.KernelMemory.Search;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
@@ -66,6 +67,9 @@ public class KernelMemoryBuilder
 
     // Content of appsettings.json, used to access dynamic data under "Services"
     private IConfiguration? _servicesConfiguration = null;
+
+    // Default prompt supplier
+    private IPromptSupplier _promptSupplier = null;
 
     /// <summary>
     /// Whether to register the default handlers. The list is hardcoded.
@@ -114,6 +118,10 @@ public class KernelMemoryBuilder
 
     public IKernelMemory Build()
     {
+        this._promptSupplier = this._promptSupplier ?? new EmbeddedPromptSupplier();
+
+        this.AddSingleton<IPromptSupplier>(this._promptSupplier);
+
         switch (this.GetBuildType())
         {
             case ClientTypes.SyncServerless:
@@ -317,6 +325,13 @@ public class KernelMemoryBuilder
             this._vectorDbs.Add(service);
         }
 
+        return this;
+    }
+
+    public KernelMemoryBuilder WithCustomPrompSupplier(IPromptSupplier service)
+    {
+        service = service ?? throw new ConfigurationException("The prompt supplier instance is NULL");
+        this._promptSupplier = service;
         return this;
     }
 
@@ -559,6 +574,12 @@ public class KernelMemoryBuilder
         }
 
         return this;
+    }
+
+    public IPromptSupplier GetPromptSupplier()
+    {
+        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+        return serviceProvider.GetService<IPromptSupplier>() ?? throw new ConfigurationException("Unable to find prompt supplier");
     }
 
     public IPipelineOrchestrator GetOrchestrator()

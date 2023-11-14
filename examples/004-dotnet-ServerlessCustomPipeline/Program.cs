@@ -21,6 +21,7 @@ var memoryBuilder = new KernelMemoryBuilder()
 
 var _ = memoryBuilder.Build();
 var orchestrator = memoryBuilder.GetOrchestrator();
+var promptSupplier = memoryBuilder.GetPromptSupplier();
 
 // Add pipeline handlers
 Console.WriteLine("* Defining pipeline handlers...");
@@ -31,7 +32,7 @@ await orchestrator.AddHandlerAsync(textExtraction);
 TextPartitioningHandler textPartitioning = new("partition", orchestrator);
 await orchestrator.AddHandlerAsync(textPartitioning);
 
-SummarizationHandler summarizeEmbedding = new("summarize", orchestrator);
+SummarizationHandler summarizeEmbedding = new("summarize", orchestrator, promptSupplier);
 await orchestrator.AddHandlerAsync(summarizeEmbedding);
 
 GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator);
