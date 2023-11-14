@@ -25,6 +25,7 @@ using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Prompts;
 using Microsoft.KernelMemory.Search;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
@@ -107,9 +108,12 @@ public class KernelMemoryBuilder
         this.AddSingleton<List<IVectorDb>>(this._vectorDbs);
 
         // Default configuration for tests and demos
-        this.WithDefaultMimeTypeDetection();
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile });
         this.WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile });
+
+        // Default dependencies, can be overridden
+        this.WithDefaultMimeTypeDetection();
+        this.WithDefaultPromptProvider();
     }
 
     public IKernelMemory Build()
@@ -331,6 +335,19 @@ public class KernelMemoryBuilder
     {
         service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
         this.AddSingleton<IOcrEngine>(service);
+        return this;
+    }
+
+    public KernelMemoryBuilder WithDefaultPromptProvider()
+    {
+        this.AddSingleton<IPromptProvider, EmbeddedPromptProvider>();
+        return this;
+    }
+
+    public KernelMemoryBuilder WithCustomPromptProvider(IPromptProvider service)
+    {
+        service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
+        this.AddSingleton<IPromptProvider>(service);
         return this;
     }
 

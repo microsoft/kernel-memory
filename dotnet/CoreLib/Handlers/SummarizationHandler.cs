@@ -31,7 +31,7 @@ public class SummarizationHandler : IPipelineStepHandler
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
-    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("summarize.txt");
+    private readonly string _summarizationPrompt;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -43,14 +43,20 @@ public class SummarizationHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        IPromptProvider? promptProvider = null,
         ILogger<SummarizationHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+
+        promptProvider ??= new EmbeddedPromptProvider();
+        this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
+
         this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
@@ -170,7 +176,7 @@ public class SummarizationHandler : IPipelineStepHandler
                 string paragraph = paragraphs[index];
                 this._log.LogTrace("Summarizing paragraph {0}", index);
 
-                var filledPrompt = this._prompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
+                var filledPrompt = this._summarizationPrompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
                 await foreach (string token in textGenerator.GenerateTextAsync(filledPrompt, new TextGenerationOptions()))
                 {
                     newContent.Append(token);
