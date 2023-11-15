@@ -96,9 +96,7 @@ public class MsPowerPointDecoder
 #pragma warning restore CA1508
                 {
                     // Check if the slide is hidden and whether to skip it
-#pragma warning disable CS8625 // the property is null when the slide is visible
-                    if (skipHiddenSlides && slidePart.Slide.Show! != null) { continue; }
-#pragma warning restore CS8625
+                    if (skipHiddenSlides && ((bool)(slidePart.Slide.Show ?? true)) is false) { continue; }
 
                     var slideContent = new StringBuilder();
                     for (var i = 0; i < texts.Count; i++)
