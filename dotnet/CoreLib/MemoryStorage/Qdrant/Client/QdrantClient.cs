@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
@@ -101,6 +103,30 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         }
 
         this.ValidateResponse(response, content, nameof(this.CreateCollectionAsync));
+    }
+
+    public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using var request = ListCollectionsRequest.Create().Build();
+
+        string? responseContent = null;
+
+        try
+        {
+            (_, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException e)
+        {
+            this._log.LogError(e, "Collection listing failed: {Message}, {Response}", e.Message, e.ResponseContent);
+            throw;
+        }
+
+        var collections = JsonSerializer.Deserialize<ListCollectionsResponse>(responseContent);
+
+        foreach (var collection in collections?.Result?.Collections ?? Enumerable.Empty<ListCollectionsResponse.CollectionResult.CollectionDescription>())
+        {
+            yield return collection.Name;
+        }
     }
 
     /// <summary>
@@ -278,7 +304,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     /// </summary>
     /// <param name="collectionName">Collection name</param>
     /// <param name="target">Vector to compare to</param>
-    /// <param name="minSimilarityScore">Minimum similarity required to be included in the results</param>
+    /// <param name="scoreThreshold">Minimum similarity required to be included in the results</param>
     /// <param name="limit">Max number of vectors to return</param>
     /// <param name="withVectors">Whether to include vectors</param>
     /// <param name="requiredTags">Optional filtering rules</param>
@@ -287,7 +313,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     public async Task<List<(QdrantPoint<T>, double)>> GetSimilarListAsync(
         string collectionName,
         Embedding target,
-        double minSimilarityScore,
+        double scoreThreshold,
         int limit = 1,
         bool withVectors = false,
         IEnumerable<IEnumerable<string>?>? requiredTags = null,
@@ -301,7 +327,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Create(collectionName)
             .SimilarTo(target)
             .HavingSomeTags(requiredTags)
-            .WithScoreThreshold(minSimilarityScore)
+            .WithScoreThreshold(scoreThreshold)
             .IncludePayLoad()
             .IncludeVectorData(withVectors)
             .Take(limit)

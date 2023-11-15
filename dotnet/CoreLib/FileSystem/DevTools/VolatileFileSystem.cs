@@ -20,11 +20,15 @@ internal sealed class VolatileFileSystem : IFileSystem
 {
     private const string DefaultVolumeName = "__default__";
     private const char DirSeparator = '/';
+
     private static readonly Regex s_invalidCharsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
-    private static VolatileFileSystem? s_singleton;
+
+    /// <summary>
+    /// To avoid collisions, singletons are split by root directory
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, VolatileFileSystem> s_singletons = new();
 
     private readonly ILogger _log;
-
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, BinaryData>> _volumes = new();
 
     /// <summary>
@@ -36,16 +40,24 @@ internal sealed class VolatileFileSystem : IFileSystem
     }
 
     /// <summary>
-    /// Note: the volatile FS should be used as a singleton, in order to share state (directories and files)
-    /// across clients. E.g. the simple queue requires a shared instance to work properly.
+    /// Note: the volatile FS should be used as a singleton, in order to share state
+    /// (directories and files) across clients. E.g. the simple queue requires a shared
+    /// instance to work properly.
     /// </summary>
-    public static VolatileFileSystem GetInstance(ILogger? log = null)
+    public static VolatileFileSystem GetInstance(string directory, ILogger? log = null)
     {
-        return s_singleton ??= new VolatileFileSystem(log);
+        directory = directory.Trim('/').Trim('\\').ToLowerInvariant();
+        if (!s_singletons.ContainsKey(directory))
+        {
+            s_singletons[directory] = new VolatileFileSystem(log);
+        }
+
+        return s_singletons[directory];
     }
 
     #region Volume API
 
+    /// <inheritdoc />
     public Task CreateVolumeAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -57,12 +69,14 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task<bool> VolumeExistsAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
         return Task.FromResult(this._volumes.ContainsKey(volume));
     }
 
+    /// <inheritdoc />
     public Task DeleteVolumeAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -70,20 +84,31 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
+    public Task<IEnumerable<string>> ListVolumesAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._volumes.Keys.Select(x => x));
+    }
+
     #endregion
 
     #region Directory API
 
+    /// <inheritdoc />
     public async Task CreateDirectoryAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
+
         await this.CreateVolumeAsync(volume, cancellationToken).ConfigureAwait(false);
         relPath = ValidatePath(relPath);
-        // Note: the value has an / at the end
+
+        // Note: the value has a '/' at the end
         var path = JoinPaths(relPath, "");
+
         this._volumes[volume][path] = new(string.Empty);
     }
 
+    /// <inheritdoc />
     public async Task DeleteDirectoryAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -106,12 +131,14 @@ internal sealed class VolatileFileSystem : IFileSystem
 
     #region File API
 
+    /// <inheritdoc />
     public async Task WriteFileAsync(string volume, string relPath, string fileName, Stream streamContent, CancellationToken cancellationToken = default)
     {
+        volume = ValidateVolumeName(volume);
+
         await using (streamContent.ConfigureAwait(false))
         {
             var data = new BinaryData(streamContent.ReadAllBytes());
-            volume = ValidateVolumeName(volume);
             await this.ValidateVolumeExistsAsync(volume, cancellationToken).ConfigureAwait(false);
 
             if (!this._volumes.TryGetValue(volume, out ConcurrentDictionary<string, BinaryData>? volumeData))
@@ -127,6 +154,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         }
     }
 
+    /// <inheritdoc />
     public async Task WriteFileAsync(string volume, string relPath, string fileName, string data, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -144,6 +172,14 @@ internal sealed class VolatileFileSystem : IFileSystem
         volumeData[path] = new BinaryData(data);
     }
 
+    /// <inheritdoc />
+    public async Task<string> ReadFileAsTextAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        return (await this.ReadFileAsBinaryAsync(volume: volume, relPath: relPath, fileName: fileName, cancellationToken).ConfigureAwait(false))
+            .ToString();
+    }
+
+    /// <inheritdoc />
     public Task<BinaryData> ReadFileAsBinaryAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -174,12 +210,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.FromResult(result);
     }
 
-    public async Task<string> ReadFileAsTextAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
-    {
-        return (await this.ReadFileAsBinaryAsync(volume: volume, relPath: relPath, fileName: fileName, cancellationToken).ConfigureAwait(false))
-            .ToString();
-    }
-
+    /// <inheritdoc />
     public Task<IEnumerable<string>> GetAllFileNamesAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -205,6 +236,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.FromResult((IEnumerable<string>)result);
     }
 
+    /// <inheritdoc />
     public Task<bool> FileExistsAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -212,7 +244,9 @@ internal sealed class VolatileFileSystem : IFileSystem
         var path = JoinPaths(relPath, fileName);
         try
         {
-            return Task.FromResult(this._volumes.ContainsKey(volume) && this._volumes[volume].ContainsKey(path) && !path.EndsWith($"{DirSeparator}", StringComparison.Ordinal));
+            return Task.FromResult(this._volumes.ContainsKey(volume)
+                                   && this._volumes[volume].ContainsKey(path)
+                                   && !path.EndsWith($"{DirSeparator}", StringComparison.Ordinal));
         }
         catch (KeyNotFoundException)
         {
@@ -220,6 +254,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         }
     }
 
+    /// <inheritdoc />
     public Task DeleteFileAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -233,6 +268,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task<IDictionary<string, string>> ReadAllFilesAsTextAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         IDictionary<string, string> result = new Dictionary<string, string>();

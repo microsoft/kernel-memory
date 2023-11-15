@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using System.Reflection;
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
@@ -9,12 +7,15 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
+// ReSharper disable InconsistentNaming
 public class ImportFilesTest : BaseTestCase
 {
     private readonly IKernelMemory _memory;
     private readonly string? _fixturesPath;
 
-    public ImportFilesTest(ITestOutputHelper output) : base(output)
+    public ImportFilesTest(
+        IConfiguration cfg,
+        ITestOutputHelper output) : base(cfg, output)
     {
         this._fixturesPath = FindFixturesDir();
         Assert.NotNull(this._fixturesPath);

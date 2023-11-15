@@ -42,7 +42,7 @@ public class DeleteIndexHandler : IPipelineStepHandler
         // Delete index from vector storage
         foreach (IVectorDb db in this._vectorDbs)
         {
-            await db.DeleteIndexAsync(indexName: pipeline.Index, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await db.DeleteIndexAsync(index: pipeline.Index, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         // Delete index from file storage

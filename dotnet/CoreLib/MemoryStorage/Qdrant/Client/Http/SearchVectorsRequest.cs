@@ -103,9 +103,9 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
-    public SearchVectorsRequest WithScoreThreshold(double threshold)
+    public SearchVectorsRequest WithScoreThreshold(double scoreThreshold)
     {
-        this.ScoreThreshold = threshold;
+        this.ScoreThreshold = scoreThreshold;
         return this;
     }
 

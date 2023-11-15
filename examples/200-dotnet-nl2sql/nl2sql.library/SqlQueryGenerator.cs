@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Data.Nl2Sql.Library.Internal;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
@@ -38,15 +37,19 @@ public sealed class SqlQueryGenerator
     private readonly ISKFunction _promptGenerator;
     private readonly ISemanticTextMemory _memory;
 
-    public SqlQueryGenerator(IKernel kernel, string rootSkillFolder, double minRelevanceScore = DefaultMinRelevance)
+    public SqlQueryGenerator(
+        IKernel kernel,
+        ISemanticTextMemory memory,
+        string rootSkillFolder,
+        double minRelevanceScore = DefaultMinRelevance)
     {
-        var functions = kernel.ImportSemanticSkillFromDirectory(rootSkillFolder, SkillName);
+        var functions = kernel.ImportSemanticFunctionsFromDirectory(rootSkillFolder, SkillName);
         this._promptEval = functions["isquery"];
         this._promptGenerator = functions["generatequery"];
-        this._memory = kernel.Memory;
+        this._memory = memory;
         this._minRelevanceScore = minRelevanceScore;
 
-        kernel.ImportSkill(this, SkillName);
+        kernel.ImportFunctions(this, SkillName);
     }
 
     /// <summary>

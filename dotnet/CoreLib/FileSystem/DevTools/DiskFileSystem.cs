@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,6 +34,7 @@ internal sealed class DiskFileSystem : IFileSystem
 
     #region Volume API
 
+    /// <inheritdoc />
     public Task CreateVolumeAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -41,6 +43,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task<bool> VolumeExistsAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -48,6 +51,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.FromResult(Directory.Exists(path));
     }
 
+    /// <inheritdoc />
     public Task DeleteVolumeAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -61,10 +65,24 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
+    public Task<IEnumerable<string>> ListVolumesAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new List<string>();
+        if (Directory.Exists(this._dataPath))
+        {
+            var list = Directory.GetDirectories(this._dataPath);
+            result.AddRange(list.Select(Path.GetFileName)!);
+        }
+
+        return Task.FromResult((IEnumerable<string>)result);
+    }
+
     #endregion
 
     #region Directory API
 
+    /// <inheritdoc />
     public Task CreateDirectoryAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -74,6 +92,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public Task DeleteDirectoryAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -91,6 +110,7 @@ internal sealed class DiskFileSystem : IFileSystem
 
     #region File API
 
+    /// <inheritdoc />
     public Task WriteFileAsync(string volume, string relPath, string fileName, Stream streamContent, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -104,6 +124,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return File.WriteAllBytesAsync(path, BinaryData.FromStream(streamContent).ToArray(), cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task WriteFileAsync(string volume, string relPath, string fileName, string data, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -117,6 +138,7 @@ internal sealed class DiskFileSystem : IFileSystem
         await File.WriteAllBytesAsync(path, new BinaryData(data).ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<BinaryData> ReadFileAsBinaryAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -138,12 +160,14 @@ internal sealed class DiskFileSystem : IFileSystem
         return new BinaryData(await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false));
     }
 
+    /// <inheritdoc />
     public async Task<string> ReadFileAsTextAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         return (await this.ReadFileAsBinaryAsync(volume: volume, relPath: relPath, fileName: fileName, cancellationToken).ConfigureAwait(false))
             .ToString();
     }
 
+    /// <inheritdoc />
     public Task<IEnumerable<string>> GetAllFileNamesAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -172,6 +196,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.FromResult((IEnumerable<string>)result);
     }
 
+    /// <inheritdoc />
     public Task<bool> FileExistsAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -180,6 +205,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.FromResult(File.Exists(path));
     }
 
+    /// <inheritdoc />
     public Task DeleteFileAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
@@ -191,6 +217,7 @@ internal sealed class DiskFileSystem : IFileSystem
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task<IDictionary<string, string>> ReadAllFilesAsTextAsync(string volume, string relPath, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);

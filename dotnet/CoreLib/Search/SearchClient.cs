@@ -25,17 +25,22 @@ public class SearchClient
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
-    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("answer-with-facts.txt");
+    private readonly string _answerPrompt;
 
     public SearchClient(
         IVectorDb vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
+        IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
         this._vectorDb = vectorDb;
         this._embeddingGenerator = embeddingGenerator;
         this._textGenerator = textGenerator;
+
+        promptProvider ??= new EmbeddedPromptProvider();
+        this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
+
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
         if (this._embeddingGenerator == null) { throw new KernelMemoryException("Embedding generator not configured"); }
@@ -45,11 +50,16 @@ public class SearchClient
         if (this._textGenerator == null) { throw new KernelMemoryException("Text generator not configured"); }
     }
 
+    public Task<IEnumerable<string>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return this._vectorDb.GetIndexesAsync(cancellationToken);
+    }
+
     public async Task<SearchResult> SearchAsync(
         string index,
         string query,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -71,7 +81,13 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, limit, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            index: index,
+            embedding: embedding,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: limit,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
@@ -149,8 +165,8 @@ public class SearchClient
     public async Task<MemoryAnswer> AskAsync(
         string index,
         string question,
-        double minRelevanceScore = 0,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(question))
@@ -165,7 +181,7 @@ public class SearchClient
 
         var facts = new StringBuilder();
         var tokensAvailable = 8000
-                              - GPT3Tokenizer.Encode(this._prompt).Count
+                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
                               - GPT3Tokenizer.Encode(question).Count
                               - AnswerTokens;
 
@@ -182,7 +198,13 @@ public class SearchClient
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            indexName: index, embedding, MaxMatchesCount, minRelevanceScore, filters, false, cancellationToken: cancellationToken);
+            index: index,
+            embedding: embedding,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: MaxMatchesCount,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
@@ -302,7 +324,7 @@ public class SearchClient
 
     private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
     {
-        var prompt = this._prompt;
+        var prompt = this._answerPrompt;
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
         question = question.Trim();

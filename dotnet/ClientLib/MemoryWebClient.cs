@@ -124,6 +124,20 @@ public class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        const string URL = Constants.HttpIndexesEndpoint;
+        HttpResponseMessage? response = await this._client.GetAsync(URL, cancellationToken).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = JsonSerializer.Deserialize<IndexCollection>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new IndexCollection();
+
+        return data.Results;
+    }
+
+    /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
@@ -222,6 +236,7 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -233,7 +248,14 @@ public class MemoryWebClient : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        SearchQuery request = new() { Index = index, Query = query, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(), Limit = limit };
+        SearchQuery request = new()
+        {
+            Index = index,
+            Query = query,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance,
+            Limit = limit,
+        };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
@@ -249,6 +271,7 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -259,7 +282,13 @@ public class MemoryWebClient : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        MemoryQuery request = new() { Index = index, Question = question, Filters = (filters is { Count: > 0 }) ? filters.ToList() : new() };
+        MemoryQuery request = new()
+        {
+            Index = index,
+            Question = question,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance
+        };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);

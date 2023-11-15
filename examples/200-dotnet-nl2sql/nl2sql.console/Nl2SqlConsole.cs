@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.Data.Nl2Sql.Library;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
@@ -33,12 +34,14 @@ internal sealed class Nl2SqlConsole : BackgroundService
         };
 
     private readonly IKernel _kernel;
+    private readonly ISemanticTextMemory _memory;
     private readonly SqlConnectionProvider _sqlProvider;
     private readonly SqlQueryGenerator _queryGenerator;
     private readonly ILogger<Nl2SqlConsole> _logger;
 
     public Nl2SqlConsole(
         IKernel kernel,
+        ISemanticTextMemory memory,
         IConfiguration config,
         SqlConnectionProvider sqlProvider,
         ILogger<Nl2SqlConsole> logger)
@@ -46,9 +49,10 @@ internal sealed class Nl2SqlConsole : BackgroundService
         var minRelevance = config.GetValue<double>("MinSchemaRelevance", SqlQueryGenerator.DefaultMinRelevance);
 
         this._kernel = kernel;
+        this._memory = memory;
         this._sqlProvider = sqlProvider;
         this._logger = logger;
-        this._queryGenerator = new SqlQueryGenerator(this._kernel, Repo.RootConfigFolder, minRelevance);
+        this._queryGenerator = new SqlQueryGenerator(this._kernel, this._memory, Repo.RootConfigFolder, minRelevance);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -57,7 +61,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
 
         var schemaNames = SchemaDefinitions.GetNames().ToArray();
         await SchemaProvider.InitializeAsync(
-            this._kernel,
+            this._memory,
             schemaNames.Select(s => Path.Combine(Repo.RootConfigFolder, "schema", $"{s}.json"))).ConfigureAwait(false);
 
         this.WriteIntroduction(schemaNames);
@@ -70,9 +74,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 continue;
             }
 
-#pragma warning disable CA2016 // CancellationToken overload obsolete
             var context = this._kernel.CreateNewContext();
-#pragma warning restore CA2016
             var query =
                 await this._queryGenerator.SolveObjectiveAsync(
                     objective,

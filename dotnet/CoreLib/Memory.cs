@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -134,6 +135,13 @@ public class Memory : IKernelMemory
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
+    {
+        return (from index in await this._searchClient.ListIndexesAsync(cancellationToken).ConfigureAwait(false)
+                select new IndexDetails { Name = index });
+    }
+
+    /// <inheritdoc />
     public Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
         return this._orchestrator.StartIndexDeletionAsync(index: index, cancellationToken);
@@ -172,6 +180,7 @@ public class Memory : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
@@ -183,7 +192,13 @@ public class Memory : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.SearchAsync(index, query: query, filters: filters, limit: limit, cancellationToken: cancellationToken);
+        return this._searchClient.SearchAsync(
+            index: index,
+            query: query,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: limit,
+            cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -192,6 +207,7 @@ public class Memory : IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -202,6 +218,11 @@ public class Memory : IKernelMemory
         }
 
         index = IndexExtensions.CleanName(index);
-        return this._searchClient.AskAsync(index: index, question: question, filters: filters, cancellationToken: cancellationToken);
+        return this._searchClient.AskAsync(
+            index: index,
+            question: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            cancellationToken: cancellationToken);
     }
 }

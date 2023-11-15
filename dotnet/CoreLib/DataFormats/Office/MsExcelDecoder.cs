@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using ClosedXML.Excel;
 
-namespace Microsoft.SemanticMemory.DataFormats.Office;
+namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsExcelDecoder
 {

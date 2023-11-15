@@ -23,32 +23,77 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    public async Task ItIsolatesDirectories()
+    {
+        // Arrange
+        var instance1 = VolatileFileSystem.GetInstance("dir1");
+        var instance2 = VolatileFileSystem.GetInstance("dir2");
+
+        // Act
+        await instance1.CreateVolumeAsync("volume1");
+        await instance1.CreateDirectoryAsync("volume1", "path1");
+        await instance1.CreateDirectoryAsync("volume1", "path2");
+
+        await instance1.CreateVolumeAsync("volume2");
+        await instance1.CreateDirectoryAsync("volume2", "path3");
+
+        await instance2.CreateVolumeAsync("volume1");
+        await instance2.CreateDirectoryAsync("volume1", "path4");
+
+        await instance2.CreateVolumeAsync("volume3");
+        await instance2.CreateVolumeAsync("volume4");
+
+        // Assert
+        var instance1Volumes = (await instance1.ListVolumesAsync()).ToList();
+        var instance2Volumes = (await instance2.ListVolumesAsync()).ToList();
+
+        Assert.Equal(2, instance1Volumes.Count);
+        Assert.Equal(3, instance2Volumes.Count);
+
+        Assert.True(instance1Volumes.Contains("volume1"));
+        Assert.True(instance1Volumes.Contains("volume2"));
+        Assert.False(instance1Volumes.Contains("volume3"));
+        Assert.False(instance1Volumes.Contains("volume4"));
+
+        Assert.True(instance2Volumes.Contains("volume1"));
+        Assert.False(instance2Volumes.Contains("volume2"));
+        Assert.True(instance2Volumes.Contains("volume3"));
+        Assert.True(instance2Volumes.Contains("volume4"));
+    }
+
+    [Fact]
     public async Task ItCreatesAndDeletesVolumes()
     {
-        // Act
-        await this._target.CreateVolumeAsync("testVolume1");
-
-        // Assert
-        Assert.True(this._internalState.ContainsKey("testVolume1"));
+        // Arrange
+        var volume = "testVolume1";
 
         // Act
-        await this._target.DeleteVolumeAsync("testVolume1");
+        await this._target.CreateVolumeAsync(volume);
 
         // Assert
-        Assert.False(this._internalState.ContainsKey("testVolume1"));
+        Assert.True(this._internalState.ContainsKey(volume));
+
+        // Act
+        await this._target.DeleteVolumeAsync(volume);
+
+        // Assert
+        Assert.False(this._internalState.ContainsKey(volume));
     }
 
     [Fact]
     public async Task ItChecksIfVolumesExists()
     {
+        // Arrange
+        var volume = "testVolume2";
+
         // Act
-        await this._target.CreateVolumeAsync("testVolume2");
+        await this._target.CreateVolumeAsync(volume);
 
         // Assert
-        Assert.True(await this._target.VolumeExistsAsync("testVolume2"));
+        Assert.True(await this._target.VolumeExistsAsync(volume));
 
         // Cleanup
-        await this._target.DeleteVolumeAsync("testVolume2");
+        await this._target.DeleteVolumeAsync(volume);
     }
 
     [Fact]
@@ -74,6 +119,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     {
         // Arrange
         const string vol = "v3";
+
         await this._target.CreateVolumeAsync(vol);
         await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
         await this._target.WriteFileAsync(vol, "sub1/sub2", "file.txt", "some content");

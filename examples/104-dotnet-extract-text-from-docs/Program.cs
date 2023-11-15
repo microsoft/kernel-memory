@@ -15,6 +15,21 @@ Console.WriteLine("============================");
 Console.WriteLine("Press a Enter to continue...");
 Console.ReadLine();
 
+// MS PowerPoint example
+Console.WriteLine("===============================");
+Console.WriteLine("=== Text in mspowerpointfile.pptx ===");
+Console.WriteLine("===============================");
+
+text = new MsPowerPointDecoder().DocToText("mspowerpointfile.pptx",
+    withSlideNumber: true,
+    withEndOfSlideMarker: false,
+    skipHiddenSlides: true);
+Console.WriteLine(text);
+
+Console.WriteLine("============================");
+Console.WriteLine("Press a Enter to continue...");
+Console.ReadLine();
+
 // MS Excel example
 Console.WriteLine("===============================");
 Console.WriteLine("=== Text in msexcelfile.xlsx ===");

@@ -2,13 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.SemanticKernel.Text;
 
@@ -110,12 +109,13 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 for (int index = 0; index < paragraphs.Count; index++)
                 {
                     string text = paragraphs[index];
+                    BinaryData textData = new(text);
 
                     int gpt3TokenCount = GPT3Tokenizer.Encode(text).Count;
                     this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);
-                    await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
+                    await this._orchestrator.WriteFileAsync(pipeline, destFile, textData, cancellationToken).ConfigureAwait(false);
 
                     var destFileDetails = new DataPipeline.GeneratedFileDetails
                     {
@@ -125,7 +125,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Size = text.Length,
                         MimeType = MimeTypes.PlainText,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
-                        ContentSHA256 = CalculateSHA256(text),
+                        ContentSHA256 = textData.CalculateSHA256(),
                     };
                     newFiles.Add(destFile, destFileDetails);
                     destFileDetails.MarkProcessedBy(this);
@@ -142,11 +142,5 @@ public class TextPartitioningHandler : IPipelineStepHandler
         }
 
         return (true, pipeline);
-    }
-
-    private static string CalculateSHA256(string value)
-    {
-        byte[] byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
 }
