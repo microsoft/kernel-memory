@@ -39,6 +39,7 @@ Multiple variants are available on NuGet:
 ### Supported data formats
 
 * MS Word documents
+* MS Excel spreadsheets
 * MS PowerPoint presentations
 * PDF documents
 * Web pages
