@@ -109,6 +109,13 @@ public interface IKernelMemory
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns a list of the indexes available in memory.
+    /// </summary>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>List of indexes</returns>
+    public Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete an entire index.
     /// </summary>
     /// <param name="index">Optional index name, when empty the default index is deleted</param>
@@ -161,14 +168,16 @@ public interface IKernelMemory
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
-    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
     /// <param name="limit">Max number of results to return</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<SearchResult> SearchAsync(
         string query,
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default);
 
@@ -179,6 +188,7 @@ public interface IKernelMemory
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
+    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
     public Task<MemoryAnswer> AskAsync(
@@ -186,5 +196,6 @@ public interface IKernelMemory
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
         CancellationToken cancellationToken = default);
 }

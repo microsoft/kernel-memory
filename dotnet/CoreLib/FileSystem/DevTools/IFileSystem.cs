@@ -15,6 +15,7 @@ internal interface IFileSystem
     Task CreateVolumeAsync(string volume, CancellationToken cancellationToken = default);
     Task<bool> VolumeExistsAsync(string volume, CancellationToken cancellationToken = default);
     Task DeleteVolumeAsync(string volume, CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> ListVolumesAsync(CancellationToken cancellationToken = default);
 
     #endregion
 

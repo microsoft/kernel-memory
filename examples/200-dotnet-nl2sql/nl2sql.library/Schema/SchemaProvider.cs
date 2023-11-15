@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Memory;
 
 namespace SemanticKernel.Data.Nl2Sql.Library.Schema;
 
@@ -13,7 +13,7 @@ public static class SchemaProvider
 {
     public const string MemoryCollectionName = "data-schemas";
 
-    public static async Task InitializeAsync(IKernel kernel, IEnumerable<string> schemaPaths)
+    public static async Task InitializeAsync(ISemanticTextMemory memory, IEnumerable<string> schemaPaths)
     {
         foreach (var schemaPath in schemaPaths)
         {
@@ -21,7 +21,7 @@ public static class SchemaProvider
 
             var schemaText = await schema.FormatAsync(YamlSchemaFormatter.Instance).ConfigureAwait(false);
 
-            await kernel.Memory.SaveInformationAsync(MemoryCollectionName, schemaText, schema.Name, additionalMetadata: schema.Platform).ConfigureAwait(false);
+            await memory.SaveInformationAsync(MemoryCollectionName, schemaText, schema.Name, additionalMetadata: schema.Platform).ConfigureAwait(false);
         }
     }
 }

@@ -85,7 +85,7 @@ The service depends on three main components:
   [GPT3.5 and GPT4](https://platform.openai.com/docs/models/overview)
   which we recommend. The number of tokens available is also an important
   factor affecting summarization and answer generations, so you might
-  get better results with 16k and 32k models.
+  get better results with 16k, 32k and bigger models.
 
 
 * **Vector storage**: service used to persist embeddings. Currently, the

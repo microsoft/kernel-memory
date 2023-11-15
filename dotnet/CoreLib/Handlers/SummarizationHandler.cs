@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.Text;
@@ -31,7 +31,7 @@ public class SummarizationHandler : IPipelineStepHandler
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
-    private readonly string _prompt = EmbeddedPrompt.ReadPrompt("summarize.txt");
+    private readonly string _summarizationPrompt;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -43,14 +43,20 @@ public class SummarizationHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        IPromptProvider? promptProvider = null,
         ILogger<SummarizationHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+
+        promptProvider ??= new EmbeddedPromptProvider();
+        this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
+
         this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
@@ -92,8 +98,9 @@ public class SummarizationHandler : IPipelineStepHandler
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
+                            var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(summary), cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
 
                             summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {
@@ -103,7 +110,7 @@ public class SummarizationHandler : IPipelineStepHandler
                                 Size = summary.Length,
                                 MimeType = MimeTypes.PlainText,
                                 ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
-                                ContentSHA256 = CalculateSHA256(summary),
+                                ContentSHA256 = summaryData.CalculateSHA256(),
                             });
                         }
 
@@ -169,7 +176,7 @@ public class SummarizationHandler : IPipelineStepHandler
                 string paragraph = paragraphs[index];
                 this._log.LogTrace("Summarizing paragraph {0}", index);
 
-                var filledPrompt = this._prompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
+                var filledPrompt = this._summarizationPrompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
                 await foreach (string token in textGenerator.GenerateTextAsync(filledPrompt, new TextGenerationOptions()))
                 {
                     newContent.Append(token);
@@ -195,11 +202,5 @@ public class SummarizationHandler : IPipelineStepHandler
         }
 
         return (content, true);
-    }
-
-    private static string CalculateSHA256(string value)
-    {
-        byte[] byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(byteArray).ToLowerInvariant();
     }
 }

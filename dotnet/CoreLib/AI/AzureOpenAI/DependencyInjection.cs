@@ -35,7 +35,7 @@ public static partial class DependencyInjection
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
                 return services
-                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureTextEmbeddingGeneration(
+                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
                         modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         credential: new DefaultAzureCredential(),
@@ -43,7 +43,7 @@ public static partial class DependencyInjection
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 return services
-                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureTextEmbeddingGeneration(
+                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
                         modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         apiKey: config.APIKey,

@@ -46,7 +46,8 @@ internal static class Program
                     (context, services) =>
                     {
                         services
-                            .AddSingleton(KernelFactory.Create(context.Configuration))
+                            .AddSingleton(KernelFactory.CreateKernel(context.Configuration))
+                            .AddSingleton(KernelFactory.CreateMemory(context.Configuration))
                             .AddSingleton(SqlConnectionProvider.Create(context.Configuration))
                             .AddHostedService<Nl2SqlConsole>();
                     })

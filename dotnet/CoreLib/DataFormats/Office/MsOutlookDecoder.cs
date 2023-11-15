@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using MsgReader.Outlook;
 
-namespace Microsoft.SemanticMemory.DataFormats.Office;
+namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsOutlookDecoder
 {
