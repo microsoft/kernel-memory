@@ -21,7 +21,7 @@ public class OpenAITests : BaseTestCase
     }
 
     [Fact]
-    public async Task ItTest1()
+    public async Task TestExtensionMethod1()
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
@@ -29,15 +29,15 @@ public class OpenAITests : BaseTestCase
             .BuildServerlessClient();
 
         // Act
-        await memory.ImportTextAsync("Today is November 1 2099");
+        await memory.ImportTextAsync("Today is November 1st, 2099");
 
         // Assert
-        var answer = await memory.AskAsync("What's year is it?");
+        var answer = await memory.AskAsync("What year is it?");
         Assert.Contains("2099", answer.Result);
     }
 
     [Fact]
-    public async Task ItTest2()
+    public async Task TestExtensionMethod2()
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
@@ -50,15 +50,15 @@ public class OpenAITests : BaseTestCase
             .BuildServerlessClient();
 
         // Act
-        await memory.ImportTextAsync("Today is November 1 2099");
+        await memory.ImportTextAsync("Today is November 1st, 2099");
 
         // Assert
-        var answer = await memory.AskAsync("What's year is it?");
+        var answer = await memory.AskAsync("What year is it?");
         Assert.Contains("2099", answer.Result);
     }
 
     [Fact]
-    public async Task ItTest3()
+    public async Task TestExtensionMethod3()
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
@@ -75,10 +75,10 @@ public class OpenAITests : BaseTestCase
             .BuildServerlessClient();
 
         // Act
-        await memory.ImportTextAsync("Today is November 1 2099");
+        await memory.ImportTextAsync("Today is November 1st, 2099");
 
         // Assert
-        var answer = await memory.AskAsync("What's year is it?");
+        var answer = await memory.AskAsync("What year is it?");
         Assert.Contains("2099", answer.Result);
     }
 }
