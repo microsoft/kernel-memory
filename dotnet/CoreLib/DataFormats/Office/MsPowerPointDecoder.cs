@@ -96,7 +96,13 @@ public class MsPowerPointDecoder
 #pragma warning restore CA1508
                 {
                     // Check if the slide is hidden and whether to skip it
-                    if (skipHiddenSlides && ((bool)(slidePart.Slide.Show ?? true)) is false) { continue; }
+                    // PowerPoint does not set the value of this property, in general, unless the slide is to be hidden
+                    // The only way the Show property would exist and have a value of true would be if the slide had been hidden and then unhidden
+                    // - Show is null: default, slide is visible
+                    // - Show is false: the slide is hidden
+                    // - Show is true: the slide is visible
+                    bool isVisible = slidePart.Slide.Show ?? true;
+                    if (skipHiddenSlides && !isVisible) { continue; }
 
                     var slideContent = new StringBuilder();
                     for (var i = 0; i < texts.Count; i++)
