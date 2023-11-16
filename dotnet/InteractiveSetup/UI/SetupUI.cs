@@ -43,9 +43,6 @@ public static class SetupUI
         var done = false;
         while (!done)
         {
-            // Console.Clear();
-            // Console.WriteLine(question);
-            // var newAnswer = Console.ReadLine();
             string? newAnswer;
             if (isPassword)
             {
