@@ -13,6 +13,12 @@ public abstract class BaseTestCase : IDisposable
     private readonly IConfiguration _cfg;
     private readonly RedirectConsole _output;
 
+    protected IConfiguration Configuration => this._cfg;
+    protected IConfiguration ServiceConfiguration => this.Configuration.GetSection("Services");
+    protected IConfiguration OpenAIConfiguration => this.ServiceConfiguration.GetSection("OpenAI");
+    protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
+    protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureCognitiveSearch");
+
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
     {
         this._cfg = cfg;
@@ -46,7 +52,7 @@ public abstract class BaseTestCase : IDisposable
                     .BuildServerlessClient();
 
             case "qdrant":
-                var qdrantEndpoint = this._cfg.GetSection("Services").GetSection("Qdrant").GetValue<string>("Endpoint");
+                var qdrantEndpoint = this.QdrantConfiguration.GetValue<string>("Endpoint");
                 Assert.False(string.IsNullOrEmpty(qdrantEndpoint));
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
@@ -54,8 +60,8 @@ public abstract class BaseTestCase : IDisposable
                     .BuildServerlessClient();
 
             case "acs":
-                var acsEndpoint = this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("Endpoint");
-                var acsKey = this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch").GetValue<string>("APIKey");
+                var acsEndpoint = this.AzureAISearchConfiguration.GetValue<string>("Endpoint");
+                var acsKey = this.AzureAISearchConfiguration.GetValue<string>("APIKey");
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
                 Assert.False(string.IsNullOrEmpty(acsKey));
                 return new KernelMemoryBuilder()

@@ -7,7 +7,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>CA2201,IDE1006,CA1859,CA1303,CA2007</NoWarn>
+        <NoWarn>IDE1006,CA1303,CA1307,CA1859,CA2007,CA2201</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
