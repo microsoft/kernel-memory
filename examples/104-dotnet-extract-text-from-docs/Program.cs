@@ -30,6 +30,18 @@ Console.WriteLine("============================");
 Console.WriteLine("Press a Enter to continue...");
 Console.ReadLine();
 
+// MS Excel example
+Console.WriteLine("===============================");
+Console.WriteLine("=== Text in msexcelfile.xlsx ===");
+Console.WriteLine("===============================");
+
+text = new MsExcelDecoder().DocToText("msexcelfile.xlsx");
+Console.WriteLine(text);
+
+Console.WriteLine("============================");
+Console.WriteLine("Press a Enter to continue...");
+Console.ReadLine();
+
 // MS Outlook example
 Console.WriteLine("===============================");
 Console.WriteLine("=== Text in msoutlookfile.msg ===");

@@ -12,6 +12,7 @@ public static class MimeTypes
     public const string MarkDown = "text/plain-markdown";
     public const string MsWord = "application/msword";
     public const string MsPowerPoint = "application/mspowerpoint";
+    public const string MsExcel = "application/msexcel";
     public const string MsOutlook = "application/msoutlook";
     public const string Pdf = "application/pdf";
     public const string Json = "application/json";
@@ -32,6 +33,7 @@ public static class FileExtensions
     public const string MsWord = ".doc";
     public const string MsWordX = ".docx";
     public const string MsPowerPoint = ".pptx";
+    public const string MsExcel = ".xlsx";
     public const string MsOutlook = ".msg";
     public const string Pdf = ".pdf";
     public const string WebPageUrl = ".url";
@@ -66,6 +68,7 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.MsWord, MimeTypes.MsWord },
             { FileExtensions.MsWordX, MimeTypes.MsWord },
             { FileExtensions.MsPowerPoint, MimeTypes.MsPowerPoint },
+            { FileExtensions.MsExcel, MimeTypes.MsExcel },
             { FileExtensions.MsOutlook, MimeTypes.MsOutlook },
             { FileExtensions.PlainText, MimeTypes.PlainText },
             { FileExtensions.Pdf, MimeTypes.Pdf },

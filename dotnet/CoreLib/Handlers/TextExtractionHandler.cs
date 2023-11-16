@@ -112,6 +112,15 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                     break;
 
+                case MimeTypes.MsExcel:
+                    this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
+                    if (fileContent.ToArray().Length > 0)
+                    {
+                        text = new MsExcelDecoder().DocToText(fileContent);
+                    }
+
+                    break;
+
                 case MimeTypes.MsOutlook:
                     this._log.LogDebug("Extracting text from MS Outlook file {0}", uploadedFile.Name);
                     if (fileContent.ToArray().Length > 0)

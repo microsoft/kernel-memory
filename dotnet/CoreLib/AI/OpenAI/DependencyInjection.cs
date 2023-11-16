@@ -44,7 +44,7 @@ public static partial class KernelMemoryBuilderExtensions
 
     public static KernelMemoryBuilder WithOpenAITextGeneration(this KernelMemoryBuilder builder, OpenAIConfig config)
     {
-        builder.Services.AddOpenAITextEmbeddingGeneration(config);
+        builder.Services.AddOpenAITextGeneration(config);
         return builder;
     }
 }

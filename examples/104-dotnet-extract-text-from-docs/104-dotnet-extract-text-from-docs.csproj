@@ -19,6 +19,10 @@
         <Content Include="msoutlookfile.msg">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="msexcelfile.xlsx"/>
+        <Content Include="msexcelfile.xlsx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <None Remove="mspowerpointfile.pptx" />
         <Content Include="mspowerpointfile.pptx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>

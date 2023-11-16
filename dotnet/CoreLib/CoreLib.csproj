@@ -21,6 +21,7 @@
         <PackageReference Include="Azure.Search.Documents"/>
         <PackageReference Include="Azure.Storage.Blobs"/>
         <PackageReference Include="Azure.Storage.Queues"/>
+        <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>

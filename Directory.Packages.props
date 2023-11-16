@@ -8,6 +8,7 @@
         <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5"/>
         <PackageVersion Include="Azure.Storage.Blobs" Version="12.18.0"/>
         <PackageVersion Include="Azure.Storage.Queues" Version="12.16.0"/>
+        <PackageVersion Include="ClosedXML" Version="0.102.1"/>
         <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
         <PackageVersion Include="HtmlAgilityPack" Version="1.11.54"/>
         <PackageVersion Include="LLamaSharp" Version="0.6.0"/>
