@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.AI.Tokenizers.CL100KBase;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
@@ -181,8 +181,8 @@ public class SearchClient
 
         var facts = new StringBuilder();
         var tokensAvailable = 8000
-                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
-                              - GPT3Tokenizer.Encode(question).Count
+                              - CL100KBaseTokenizer.Encode(this._answerPrompt).Count
+                              - CL100KBaseTokenizer.Encode(question).Count
                               - AnswerTokens;
 
         var factsUsedCount = 0;
@@ -248,7 +248,7 @@ public class SearchClient
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
-            var size = GPT3Tokenizer.Encode(fact).Count;
+            var size = CL100KBaseTokenizer.Encode(fact).Count;
             if (size >= tokensAvailable)
             {
                 // Stop after reaching the max number of tokens

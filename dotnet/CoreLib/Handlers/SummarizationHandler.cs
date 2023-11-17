@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.AI.Tokenizers.CL100KBase;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
@@ -137,7 +137,7 @@ public class SummarizationHandler : IPipelineStepHandler
 
     private async Task<(string summary, bool skip)> SummarizeAsync(string content)
     {
-        int contentLength = GPT3Tokenizer.Encode(content).Count;
+        int contentLength = CL100KBaseTokenizer.Encode(content).Count;
         if (contentLength < MinLength)
         {
             this._log.LogDebug("Content too short to summarize, {0} tokens", contentLength);
@@ -186,7 +186,7 @@ public class SummarizationHandler : IPipelineStepHandler
             }
 
             content = newContent.ToString();
-            contentLength = GPT3Tokenizer.Encode(content).Count;
+            contentLength = CL100KBaseTokenizer.Encode(content).Count;
 
             if (!firstRun && contentLength >= previousLength)
             {
