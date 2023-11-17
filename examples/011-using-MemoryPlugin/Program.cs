@@ -19,10 +19,10 @@ public static class Program
         // You can use any LLM, replacing `WithAzureChatCompletionService` with other LLM options.
 
         var builder = new KernelBuilder();
-        builder.WithAzureChatCompletionService(
-            deploymentName: Environment.GetEnvironmentVariable("AOAI_DEPLOYMENT"),
-            endpoint: Environment.GetEnvironmentVariable("AOAI_ENDPOINT"),
-            apiKey: Environment.GetEnvironmentVariable("AOAI_API_KEY"));
+        builder.WithAzureOpenAIChatCompletionService(
+            deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
+            endpoint: EnvVar("AOAI_ENDPOINT"),
+            apiKey: EnvVar("AOAI_API_KEY"));
 
         var kernel = builder.Build();
 
@@ -32,28 +32,28 @@ public static class Program
         // answer provided by the memory service.
 
         var skPrompt = """
-Question to Kernel Memory: {{$input}}
+                       Question to Kernel Memory: {{$input}}
 
-Kernel Memory Answer: {{memory.ask $input}}
+                       Kernel Memory Answer: {{memory.ask $input}}
 
-If the answer is empty say 'I don't know' otherwise reply with a preview of the answer, truncated to 15 words.
-""";
+                       If the answer is empty say 'I don't know' otherwise reply with a preview of the answer, truncated to 15 words.
+                       """;
 
-        var doesItKnowFunction = kernel.CreateSemanticFunction(skPrompt);
+        var oracleFunction = kernel.CreateSemanticFunction(skPrompt);
 
         // === PREPARE MEMORY PLUGIN ===
         // Load the Kernel Memory plugin into Semantic Kernel.
         // We're using a local instance here, so remember to start the service locally first,
         // otherwise change the URL pointing to your KM endpoint.
 
-        var memory = new MemoryWebClient("http://127.0.0.1:9001/");
-        kernel.ImportFunctions(new MemoryPlugin(memory), "memory");
+        var memoryConnector = GetMemoryConnector();
+        var memoryPlugin = kernel.ImportFunctions(new MemoryPlugin(memoryConnector), "memory");
 
         // === LOAD DOCUMENT INTO MEMORY ===
         // Load some data in memory, in this case use a PDF file, though
         // you can also load web pages, Word docs, raw text, etc.
 
-        await memory.ImportDocumentAsync(Document, documentId: "NASA001");
+        await memoryConnector.ImportDocumentAsync(Document, documentId: "NASA001");
 
         // === RUN SEMANTIC FUNCTION ===
         // Run some example questions, showing how the answer is grounded on the document uploaded.
@@ -61,19 +61,52 @@ If the answer is empty say 'I don't know' otherwise reply with a preview of the 
         // information about Question2 and Question3.
 
         Console.WriteLine("---------");
-        KernelResult answer = await kernel.RunAsync(Question1, doesItKnowFunction);
         Console.WriteLine(Question1 + "\n");
+        FunctionResult answer = await oracleFunction.InvokeAsync(Question1, kernel);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        answer = await kernel.RunAsync(Question2, doesItKnowFunction);
         Console.WriteLine(Question2 + "\n");
+        answer = await oracleFunction.InvokeAsync(Question2, kernel);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        answer = await kernel.RunAsync(Question3, doesItKnowFunction);
         Console.WriteLine(Question3 + "\n");
+        answer = await oracleFunction.InvokeAsync(Question3, kernel);
         Console.WriteLine("Answer: " + answer);
+    }
+
+    private static IKernelMemory GetMemoryConnector(bool serverless = false)
+    {
+        // if (serverless)
+        // {
+        //     return new KernelMemoryBuilder()
+        //         .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
+        //         {
+        //             APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
+        //             Endpoint = EnvVar("AOAI_ENDPOINT"),
+        //             Deployment = EnvVar("AOAI_DEPLOYMENT_EMBEDDING"),
+        //             Auth = AzureOpenAIConfig.AuthTypes.APIKey,
+        //             APIKey = EnvVar("AOAI_API_KEY"),
+        //         })
+        //         .WithAzureOpenAITextGeneration(new AzureOpenAIConfig
+        //         {
+        //             APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
+        //             Endpoint = EnvVar("AOAI_ENDPOINT"),
+        //             Deployment = EnvVar("AOAI_DEPLOYMENT_TEXT"),
+        //             Auth = AzureOpenAIConfig.AuthTypes.APIKey,
+        //             APIKey = EnvVar("AOAI_API_KEY"),
+        //         })
+        //         .BuildServerlessClient();
+        // }
+
+        return new MemoryWebClient("http://127.0.0.1:9001/", Environment.GetEnvironmentVariable("MEMORY_API_KEY"));
+    }
+
+    private static string EnvVar(string name)
+    {
+        return Environment.GetEnvironmentVariable(name)
+               ?? throw new ArgumentException($"Env var {name} not set");
     }
 }
 

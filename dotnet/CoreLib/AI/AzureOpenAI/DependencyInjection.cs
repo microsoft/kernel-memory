@@ -57,7 +57,8 @@ public static partial class DependencyInjection
     public static IServiceCollection AddAzureOpenAITextGeneration(this IServiceCollection services, AzureOpenAIConfig config)
     {
         return services
-            .AddSingleton<AzureOpenAIConfig>(config)
-            .AddSingleton<ITextGeneration, AzureTextGeneration>();
+            .AddSingleton<ITextGeneration>(serviceProvider => new AzureTextGeneration(
+                config: config,
+                log: serviceProvider.GetService<ILogger<AzureTextGeneration>>()));
     }
 }

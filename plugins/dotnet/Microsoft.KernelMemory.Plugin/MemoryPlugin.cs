@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Plugin;
 using Microsoft.SemanticKernel;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace
 // ReSharper disable ArrangeAttributes
 namespace Microsoft.KernelMemory;
@@ -57,6 +58,11 @@ public class MemoryPlugin
     /// The list is usually: "extract", "partition", "gen_embeddings", "save_embeddings"
     /// </summary>
     public const string StepsParam = "steps";
+
+    /// <summary>
+    /// Name of the input variable used to specify custom minimum relevance for the memories to retrieve.
+    /// </summary>
+    public const string MinRelevanceParam = "minRelevance";
 
     /// <summary>
     /// Default document ID. When null, a new value is generated every time some information
@@ -208,20 +214,24 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        if (this._waitForIngestionToComplete)
+        Task<string> Do(CancellationToken token)
         {
-            var cs = new CancellationTokenSource(this._maxIngestionWait);
-            cancellationToken = cs.Token;
-        }
-
-        return await this._memory.ImportTextAsync(
+            return this._memory.ImportTextAsync(
                 text: input,
                 documentId: documentId,
                 index: index ?? this._defaultIndex,
                 tags: tags ?? this._defaultIngestionTags,
                 steps: steps ?? this._defaultIngestionSteps,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken: token);
+        }
+
+        if (this._waitForIngestionToComplete)
+        {
+            using var cs = new CancellationTokenSource(this._maxIngestionWait);
+            return await Do(cs.Token).ConfigureAwait(false);
+        }
+
+        return await Do(cancellationToken).ConfigureAwait(false);
     }
 
     [SKFunction, Description("Store in memory the information extracted from a file")]
@@ -239,31 +249,37 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        if (this._waitForIngestionToComplete)
+        Task<string> Do(CancellationToken token)
         {
-            var cs = new CancellationTokenSource(this._maxIngestionWait);
-            cancellationToken = cs.Token;
-        }
-
-        return await this._memory.ImportTextAsync(
-                text: input,
+            return this._memory.ImportDocumentAsync(
+                filePath: input,
                 documentId: documentId,
                 index: index ?? this._defaultIndex,
                 tags: tags ?? this._defaultIngestionTags,
                 steps: steps ?? this._defaultIngestionSteps,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+                cancellationToken: token);
+        }
+
+        if (this._waitForIngestionToComplete)
+        {
+            using var cs = new CancellationTokenSource(this._maxIngestionWait);
+            return await Do(cs.Token).ConfigureAwait(false);
+        }
+
+        return await Do(cancellationToken).ConfigureAwait(false);
     }
 
     [SKFunction, Description("Store in memory the information extracted from a web page")]
     public async Task<string> SaveWebPageAsync()
     {
+        await Task.Delay(0).ConfigureAwait(false);
         throw new NotImplementedException();
     }
 
     [SKFunction, Description("Return up to N memories related to the input text")]
     public async Task<string> SearchAsync()
     {
+        await Task.Delay(0).ConfigureAwait(false);
         throw new NotImplementedException();
     }
 
@@ -278,28 +294,37 @@ public class MemoryPlugin
     public async Task<string> AskAsync(
         [Description("The question to answer")]
         string input,
-        [SKName(IndexParam), Description("Memories index to search for answers"), DefaultValue(null)]
+        [SKName(IndexParam), Description("Memories index to search for answers"), DefaultValue("")]
         string? index = null,
-        [SKName(IndexParam), Description("Memories index to search for answers"), DefaultValue(null)]
+        [SKName(MinRelevanceParam), Description("Memories index to search for answers"), DefaultValue(0d)]
         double minRelevance = 0,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-
     {
-        if (this._waitForIngestionToComplete)
+        Task<MemoryAnswer> Do(CancellationToken token)
         {
-            // var cs = new CancellationTokenSource(this._maxIngestionWait);
-            var cs = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-            cancellationToken = cs.Token;
+            return this._memory.AskAsync(question: input, cancellationToken: token);
         }
 
-        MemoryAnswer? answer = await this._memory.AskAsync(question: input, cancellationToken: cancellationToken).ConfigureAwait(false);
+        MemoryAnswer? answer;
+        if (this._waitForIngestionToComplete)
+        {
+            // using var cs = new CancellationTokenSource(this._maxIngestionWait);
+            using var cs = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+            answer = await Do(cs.Token).ConfigureAwait(false);
+        }
+        else
+        {
+            answer = await Do(cancellationToken).ConfigureAwait(false);
+        }
+
         return answer?.Result ?? string.Empty;
     }
 
     [SKFunction, Description("Remobe from memory all the information extracted from the given document ID")]
     public async Task<string> DeleteAsync()
     {
+        await Task.Delay(0).ConfigureAwait(false);
         throw new NotImplementedException();
     }
 }

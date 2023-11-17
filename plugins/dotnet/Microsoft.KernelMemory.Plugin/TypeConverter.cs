@@ -18,6 +18,7 @@ public class ListOfStringsWrapper : List<string>
 {
 }
 
+#pragma warning disable CA1812 // required by SK
 internal sealed class TypeConverter : System.ComponentModel.TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
@@ -40,3 +41,4 @@ internal sealed class TypeConverter : System.ComponentModel.TypeConverter
         return JsonSerializer.Serialize(value);
     }
 }
+#pragma warning restore CA1812

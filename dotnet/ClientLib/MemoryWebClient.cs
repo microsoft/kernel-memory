@@ -19,12 +19,12 @@ public class MemoryWebClient : IKernelMemory
 {
     private readonly HttpClient _client;
 
-    public MemoryWebClient(string endpoint, string apiKey = "", string apiKeyHeader = "Authorization")
+    public MemoryWebClient(string endpoint, string? apiKey = "", string apiKeyHeader = "Authorization")
         : this(endpoint, new HttpClient(), apiKey: apiKey, apiKeyHeader: apiKeyHeader)
     {
     }
 
-    public MemoryWebClient(string endpoint, HttpClient client, string apiKey = "", string apiKeyHeader = "Authorization")
+    public MemoryWebClient(string endpoint, HttpClient client, string? apiKey = "", string apiKeyHeader = "Authorization")
     {
         this._client = client;
         this._client.BaseAddress = new Uri(endpoint);

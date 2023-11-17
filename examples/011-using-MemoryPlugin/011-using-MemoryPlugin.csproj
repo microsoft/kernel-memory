@@ -7,10 +7,11 @@
         <AssemblyName/>
         <RootNamespace/>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
+        <NoWarn>CA1050</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="1.0.0-beta5"/>
+        <PackageReference Include="Microsoft.SemanticKernel" VersionOverride="1.0.0-beta8"/>
     </ItemGroup>
 
     <ItemGroup>
