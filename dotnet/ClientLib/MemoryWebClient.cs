@@ -19,14 +19,25 @@ public class MemoryWebClient : IKernelMemory
 {
     private readonly HttpClient _client;
 
-    public MemoryWebClient(string endpoint) : this(endpoint, new HttpClient())
+    public MemoryWebClient(string endpoint, string apiKey = "", string apiKeyHeader = "Authorization")
+        : this(endpoint, new HttpClient(), apiKey, apiKeyHeader)
     {
     }
 
-    public MemoryWebClient(string endpoint, HttpClient client)
+    public MemoryWebClient(string endpoint, HttpClient client, string apiKey = "", string apiKeyHeader = "Authorization")
     {
         this._client = client;
         this._client.BaseAddress = new Uri(endpoint);
+
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            if (string.IsNullOrEmpty(apiKeyHeader))
+            {
+                throw new KernelMemoryException("The name of the HTTP header to pass the API Key is empty");
+            }
+
+            this._client.DefaultRequestHeaders.Add(apiKeyHeader, apiKey);
+        }
     }
 
     /// <inheritdoc />
@@ -300,7 +311,10 @@ public class MemoryWebClient : IKernelMemory
 
     #region private
 
-    private async Task<string> ImportInternalAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken)
+    private async Task<string> ImportInternalAsync(
+        string index,
+        DocumentUploadRequest uploadRequest,
+        CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
         using MultipartFormDataContent formData = new();

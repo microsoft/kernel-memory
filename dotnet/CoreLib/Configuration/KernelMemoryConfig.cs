@@ -101,6 +101,11 @@ public class KernelMemoryConfig
     public string ImageOcrType { get; set; } = string.Empty;
 
     /// <summary>
+    /// HTTP service authorization settings.
+    /// </summary>
+    public ServiceAuthorizationConfig ServiceAuthorization { get; set; } = new();
+
+    /// <summary>
     /// Settings for the upload of documents and memory creation/update.
     /// </summary>
     public DataIngestionConfig DataIngestion { get; set; } = new();

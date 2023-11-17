@@ -15,7 +15,9 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.InteractiveSetup;
+using Microsoft.KernelMemory.Service.Auth;
 using Microsoft.KernelMemory.WebService;
+using Microsoft.OpenApi.Models;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -34,9 +36,44 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 // Usual .NET web app builder
 var appBuilder = WebApplication.CreateBuilder();
 
+// Read the settings, needed below
+var config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
+             ?? throw new ConfigurationException("Unable to load configuration");
+config.ServiceAuthorization.Validate();
+
 // OpenAPI/swagger
 appBuilder.Services.AddEndpointsApiExplorer();
-appBuilder.Services.AddSwaggerGen();
+appBuilder.Services.AddSwaggerGen(c =>
+{
+    if (!config.ServiceAuthorization.Enabled) { return; }
+
+    const string ReqName = "auth";
+    c.AddSecurityDefinition(ReqName, new OpenApiSecurityScheme
+    {
+        Description = "The API key to access the API",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "ApiKeyScheme",
+        Name = config.ServiceAuthorization.HttpHeaderName,
+        In = ParameterLocation.Header,
+    });
+
+    var scheme = new OpenApiSecurityScheme
+    {
+        Reference = new OpenApiReference
+        {
+            Id = ReqName,
+            Type = ReferenceType.SecurityScheme,
+        },
+        In = ParameterLocation.Header
+    };
+
+    var requirement = new OpenApiSecurityRequirement
+    {
+        { scheme, new List<string>() }
+    };
+
+    c.AddSecurityRequirement(requirement);
+});
 
 // Inject memory client and its dependencies
 // Note: pass the current service collection to the builder, in order to start the pipeline handlers
@@ -45,9 +82,6 @@ appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
-
-// Read the settings, needed below
-var config = app.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>() ?? throw new ConfigurationException("Unable to load configuration");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -65,12 +99,18 @@ if (config.Service.RunWebService)
     }
 
     DateTimeOffset start = DateTimeOffset.UtcNow;
+    var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
 
     // Simple ping endpoint
     app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                      "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                                                    - start.ToUnixTimeSeconds()) + " secs " +
-                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"));
+                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+        .AddEndpointFilter(authFilter)
+        .Produces<string>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
     // File upload endpoint
     app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
             HttpRequest request,
@@ -88,7 +128,7 @@ if (config.Service.RunWebService)
             if (!isValid)
             {
                 log.LogError(errMsg);
-                return Results.BadRequest(errMsg);
+                return Results.Problem(detail: errMsg, statusCode: 400);
             }
 
             try
@@ -111,7 +151,12 @@ if (config.Service.RunWebService)
                 return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
             }
         })
-        .Produces<UploadAccepted>(StatusCodes.Status202Accepted);
+        .AddEndpointFilter(authFilter)
+        .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+        .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
     // List of indexes endpoint
     app.MapGet(Constants.HttpIndexesEndpoint,
@@ -133,7 +178,10 @@ if (config.Service.RunWebService)
 
                 return Results.Ok(result);
             })
-        .Produces<IndexCollection>(StatusCodes.Status200OK);
+        .AddEndpointFilter(authFilter)
+        .Produces<IndexCollection>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
     // Delete index endpoint
     app.MapDelete(Constants.HttpIndexesEndpoint,
@@ -155,7 +203,10 @@ if (config.Service.RunWebService)
                     Message = "Index deletion request received, pipeline started"
                 });
             })
-        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted);
+        .AddEndpointFilter(authFilter)
+        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
     // Delete document endpoint
     app.MapDelete(Constants.HttpDocumentsEndpoint,
@@ -181,7 +232,10 @@ if (config.Service.RunWebService)
                     Message = "Document deletion request received, pipeline started"
                 });
             })
-        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted);
+        .AddEndpointFilter(authFilter)
+        .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
     // Ask endpoint
     app.MapPost(Constants.HttpAskEndpoint,
@@ -201,7 +255,10 @@ if (config.Service.RunWebService)
                     .ConfigureAwait(false);
                 return Results.Ok(answer);
             })
-        .Produces<MemoryAnswer>(StatusCodes.Status200OK);
+        .AddEndpointFilter(authFilter)
+        .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
     // Search endpoint
     app.MapPost(Constants.HttpSearchEndpoint,
@@ -222,7 +279,10 @@ if (config.Service.RunWebService)
                     .ConfigureAwait(false);
                 return Results.Ok(answer);
             })
-        .Produces<SearchResult>(StatusCodes.Status200OK);
+        .AddEndpointFilter(authFilter)
+        .Produces<SearchResult>(StatusCodes.Status200OK)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
     // Document status endpoint
     app.MapGet(Constants.HttpUploadStatusEndpoint,
@@ -240,26 +300,29 @@ if (config.Service.RunWebService)
 
                 if (string.IsNullOrEmpty(documentId))
                 {
-                    return Results.BadRequest($"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value");
+                    return Results.Problem(detail: $"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value", statusCode: 400);
                 }
 
                 DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken)
                     .ConfigureAwait(false);
                 if (pipeline == null)
                 {
-                    return Results.NotFound("Document not found");
+                    return Results.Problem(detail: "Document not found", statusCode: 404);
                 }
 
                 if (pipeline.Empty)
                 {
-                    return Results.NotFound(pipeline);
+                    return Results.Problem(detail: "Empty pipeline", statusCode: 404);
                 }
 
                 return Results.Ok(pipeline);
             })
+        .AddEndpointFilter(authFilter)
         .Produces<MemoryAnswer>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+        .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 }
 #pragma warning restore CA1031
 #pragma warning restore CA2254

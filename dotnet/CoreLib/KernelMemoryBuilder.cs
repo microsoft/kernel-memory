@@ -236,7 +236,7 @@ public class KernelMemoryBuilder
         return new MemoryService(orchestrator, searchClient);
     }
 
-    public static IKernelMemory BuildWebClient(string endpoint)
+    public static IKernelMemory BuildWebClient(string endpoint, string apiKey = "", string apiKeyHeader = "Authorization")
     {
         if (string.IsNullOrWhiteSpace(endpoint))
         {
@@ -253,7 +253,7 @@ public class KernelMemoryBuilder
             throw new ConfigurationException("The endpoint is incomplete");
         }
 
-        return new MemoryWebClient(endpoint);
+        return new MemoryWebClient(endpoint: endpoint, apiKey: apiKey, apiKeyHeader: apiKeyHeader);
     }
 
     public KernelMemoryBuilder WithoutDefaultHandlers()
