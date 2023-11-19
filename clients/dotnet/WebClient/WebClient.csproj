@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../service/Directory.Build.props"/>
+    <Import Project="../../../service/Directory.Packages.props"/>
+    <Import Project="../../../service/nuget-package.props"/>
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Microsoft.KernelMemory.WebClient</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.WebClient</PackageId>
+        <NoWarn>CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
+    </ItemGroup>
+
+</Project>
