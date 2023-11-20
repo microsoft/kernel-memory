@@ -76,6 +76,9 @@ public class KernelMemoryBuilder
     /// </summary>
     private bool _useDefaultHandlers = true;
 
+    //Storage for the custom handlers
+    private Dictionary<string, Type> _customHandlers = new();
+
     // Proxy to the internal service collections, used to (optionally) inject
     // dependencies into the user application space
     public ServiceCollectionPool Services
@@ -167,6 +170,11 @@ public class KernelMemoryBuilder
                     => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
             }
 
+            foreach (var customHandler in this._customHandlers)
+            {
+                this._memoryServiceCollection.AddTransient(serviceProvider => ActivatorUtilities.CreateInstance(serviceProvider, customHandler.Value, customHandler.Key));
+            }
+
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
             // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
@@ -188,6 +196,11 @@ public class KernelMemoryBuilder
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
+            }
+
+            foreach (var customHandler in this._customHandlers)
+            {
+                memoryClientInstance.AddHandler((IPipelineStepHandler)serviceProvider.GetService(customHandler.Value) ?? throw new ConfigurationException("Unable to build " + customHandler.Value.Name));
             }
 
             return memoryClientInstance;
@@ -280,6 +293,12 @@ public class KernelMemoryBuilder
     {
         this.AddSingleton<IMimeTypeDetection, MimeTypesDetection>();
 
+        return this;
+    }
+
+    public KernelMemoryBuilder WithCustomHandler<T>(string stepName) where T : class, IPipelineStepHandler
+    {
+        this._customHandlers.Add(stepName, typeof(T));
         return this;
     }
 
