@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../nuget-package.props"/>
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Microsoft.KernelMemory.Abstractions</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
+        <NoWarn>CA1711,CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Memory.Data"/>
+        <PackageReference Include="System.Text.Json"/>
+    </ItemGroup>
+
+</Project>

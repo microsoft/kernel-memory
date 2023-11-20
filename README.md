@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-**Kernel Memory** (KM) is an open-source [service](dotnet/Service/README.md) and
+**Kernel Memory** (KM) is an open-source [service](service/Service/README.md) and
 [plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
 specialized in the efficient indexing of datasets through custom continuous data
 hybrid pipelines. For some scenarios KM is also available as a library, and soon
@@ -22,19 +22,40 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
-### Packages
 
-Multiple variants are available on NuGet:
+### Packages for Python, Java and other languages
 
-* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom pipelines and handlers
+A python package with a Web Client and Semantic Kernel plugin will soon be available.
+We also welcome PR contributions to support more languages.
+
+In the meantime you can easily connect to Kernel Memory web service following the
+existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
+
+### .NET packages
+
+* **Microsoft.KernelMemory.WebClient:** The web client library, can be used to call
+  a running instance of the Memory web service. .NET Standard 2.0 compatible.
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+
+* **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
+  replacing the original Semantic Memory available in SK. .NET Standard 2.0 compatible.
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/011-dotnet-using-MemoryPlugin)
+
+* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom
+  pipelines and handlers, and contains a serverless client to use memory in a
+  synchronous way, without the web service. .NET 6+.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
 
-* **Microsoft.KernelMemory.Client:** The client library, can be used to call an already running instance of the service
+* **Microsoft.KernelMemory.Abstractions:** The internal interfaces and models
+  shared by all packages. .NET Standard 2.0 compatible.
 
-  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Client)](https://www.nuget.org/packages/Microsoft.KernelMemory.Client/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Abstractions)](https://www.nuget.org/packages/Microsoft.KernelMemory.Abstractions/)
 
 ### Supported data formats
 
@@ -52,15 +73,18 @@ Multiple variants are available on NuGet:
 ### Supported backends
 
 * ↗️ Vector storage
-    * Azure Cognitive Search
+    * Azure AI Search
     * Qdrant
+    * In memory KNN vectors (volatile)
 * 📀 Content storage
     * Azure Blobs
     * Local file system
+    * In memory, volatile content
 * ⏳ Asynchronous ingestion queues
     * Azure Queues
     * RabbitMQ
     * Local file based queue
+    * In memory queues (volatile)
 
 > ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
 > as is not fully functional yet.
@@ -176,8 +200,8 @@ default handlers or your custom Python/TypeScript/Java/etc. handlers,
 and leveraging the asynchronous non-blocking memory encoding process,
 sending documents and asking questions using the **MemoryWebClient**.
 
-[Here](dotnet/Service/README.md) you can find a complete set of instruction
-about [how to run the Kernel Memory service](dotnet/Service/README.md).
+[Here](service/Service/README.md) you can find a complete set of instruction
+about [how to run the Kernel Memory service](service/Service/README.md).
 
 If you want to give the service a quick test, use the following command
 to **start the Kernel Memory Service**:
@@ -286,16 +310,22 @@ running the service locally with OpenAPI enabled.
 
 ## Examples
 
-1. [Collection of Jupyter notebooks with various tests](examples/000-notebooks)
-2. [Importing files and asking question without running the service (serverless mode)](examples/001-dotnet-Serverless)
-3. [Using the Kernel Memory web service](examples/002-dotnet-WebClient)
-4. [How to upload files from command line with curl](examples/003-curl-calling-webservice)
+1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
+2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
+3. [Using KM Plugin for Semantic Kernel](examples/002-dotnet-SemanticKernelPlugin)
+4. [Importing files and asking question without running the service (serverless mode)](examples/003-dotnet-Serverless)
 5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
-6. [Using a custom pipeline handler with serverless memory class](examples/005-dotnet-InProcessMemoryWithCustomHandler)
-7. [Writing a custom async pipeline handler](examples/006-dotnet-CustomHandlerAsAService)
-8. [Integrating Memory with ASP.NET applications and controllers](examples/007-aspnet-mvc-integration)
-9. [Partioning/Chunking documents with custom settings](examples/008-dotnet-custom-partitioning-options)
-10. [Using Llama and other custom LLMs](009-dotnet-custom-LLM)
+6. [Upload files and ask questions from command line using curl](examples/005-curl-calling-webservice)
+7. [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
+8. [Custom partitioning/text chunking options](examples/102-dotnet-custom-partitioning-options)
+9. [Using a custom embedding/vector generator](examples/103-dotnet-custom-EmbeddingGenerator)
+10. [Using Llama and other custom LLMs](examples/104-dotnet-custom-LLM)
+11. [Natural language to SQL examples](examples/200-dotnet-nl2sql)
+12. [Writing and using a custom ingestion handler](examples/201-dotnet-InProcessMemoryWithCustomHandler)
+13. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-CustomHandlerAsAService)
+14. [Test project linked to KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+15. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+16. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
 
 ## Tools
 
@@ -304,4 +334,5 @@ running the service locally with OpenAPI enabled.
 3. [Curl script to search documents](tools/search.sh)
 4. [Script to start Qdrant for development tasks](tools/run-qdrant.sh)
 5. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
+6. [.NET appsettings.json generator](tools/InteractiveSetup)
 

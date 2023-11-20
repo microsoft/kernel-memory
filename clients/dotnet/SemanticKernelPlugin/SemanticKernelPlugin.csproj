@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../../service/Directory.Build.props"/>
+    <Import Project="../../../service/Directory.Packages.props"/>
+    <Import Project="../../../service/nuget-package.props"/>
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Microsoft.KernelMemory.SemanticKernelPlugin</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.SemanticKernelPlugin</PackageId>
+        <NoWarn>CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj"/>
+        <ProjectReference Include="..\WebClient\WebClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
+    </ItemGroup>
+
+</Project>

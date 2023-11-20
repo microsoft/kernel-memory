@@ -1,6 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{371BB479-AA1C-41CB-BF07-24C363601289}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
+	ProjectSection(SolutionItems) = preProject
+		docs\FAQ.md = docs\FAQ.md
+		docs\SECURITY_FILTERS.md = docs\SECURITY_FILTERS.md
+		docs\network.png = docs\network.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
+	ProjectSection(SolutionItems) = preProject
+		examples\README.md = examples\README.md
+		examples\.editorconfig = examples\.editorconfig
+		examples\Directory.Build.props = examples\Directory.Build.props
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4C35-4370-8539-5DDF45357A50}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -9,37 +25,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		CONTRIBUTING.md = CONTRIBUTING.md
 		COMMUNITY.md = COMMUNITY.md
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
-		Directory.Build.props = Directory.Build.props
-																Directory.Packages.props = Directory.Packages.props
 		.gitignore = .gitignore
 		.gitattributes = .gitattributes
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
 	ProjectSection(SolutionItems) = preProject
-		examples\README.md = examples\README.md
-		examples\.editorconfig = examples\.editorconfig
+		service\Directory.Build.props = service\Directory.Build.props
+		service\Directory.Packages.props = service\Directory.Packages.props
+		service\icon.png = service\icon.png
+		service\nuget-package.props = service\nuget-package.props
+		service\NUGET.md = service\NUGET.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-Serverless", "examples\001-dotnet-Serverless\001-dotnet-Serverless.csproj", "{CF55CAED-81D1-4748-8172-AE678047B760}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-WebClient", "examples\002-dotnet-WebClient\002-dotnet-WebClient.csproj", "{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "003-curl-calling-webservice", "003-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D-B5E7-4827-B57D-447E5B428589}"
 	ProjectSection(SolutionItems) = preProject
-		examples\curl\test.pdf = examples\003-curl-calling-webservice\test.pdf
-		examples\curl\README.md = examples\003-curl-calling-webservice\README.md
-		examples\curl\ask-example.sh = examples\003-curl-calling-webservice\ask-example.sh
-		examples\curl\upload-example.sh = examples\003-curl-calling-webservice\upload-example.sh
-		examples\003-curl-calling-webservice\search-example.sh = examples\003-curl-calling-webservice\search-example.sh
+		service\tests\.editorconfig = service\tests\.editorconfig
+		service\tests\Directory.Build.props = service\tests\Directory.Build.props
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "examples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{795302A5-9006-46A6-886F-7932F6A1D8C1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "005-dotnet-InProcessMemoryWithCustomHandler", "examples\005-dotnet-InProcessMemoryWithCustomHandler\005-dotnet-InProcessMemoryWithCustomHandler.csproj", "{375A8841-9C49-46B1-8F26-2F80C70D3A32}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "006-dotnet-CustomHandlerAsAService", "examples\006-dotnet-CustomHandlerAsAService\006-dotnet-CustomHandlerAsAService.csproj", "{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
@@ -52,29 +56,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\create-azure-webapp-publish-artifacts.sh = tools\create-azure-webapp-publish-artifacts.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientLib", "dotnet\ClientLib\ClientLib.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreLib", "dotnet\CoreLib\CoreLib.csproj", "{27910ADC-5A28-4EB4-A16E-974B91940758}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "service\Core\Core.csproj", "{27910ADC-5A28-4EB4-A16E-974B91940758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "dotnet\Service\Service.csproj", "{1071A8B6-ED76-4E46-A291-E0563B9C4575}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "service\Service\Service.csproj", "{1071A8B6-ED76-4E46-A291-E0563B9C4575}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "dotnet\InteractiveSetup\InteractiveSetup.csproj", "{2C252647-50A5-49B9-9E5F-A32C3DB22218}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "service\tests\UnitTests\UnitTests.csproj", "{4AE9DB51-2A22-4FB3-A780-838738566D18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-cognitive-search-tests", "tests\azure-cognitive-search-tests\azure-cognitive-search-tests.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "service\tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "qdrant-tests", "tests\qdrant-tests\qdrant-tests.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-cognitive-search-tests", "service\tests\azure-cognitive-search-tests\azure-cognitive-search-tests.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "qdrant-tests", "service\tests\qdrant-tests\qdrant-tests.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{02B67859-5B16-46E3-9CB4-916887275649}"
-	ProjectSection(SolutionItems) = preProject
-		dotnet\nuget\icon.png = dotnet\nuget\icon.png
-		dotnet\nuget\nuget-package.props = dotnet\nuget\nuget-package.props
-		dotnet\nuget\NUGET.md = dotnet\nuget\NUGET.md
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "tools\InteractiveSetup\InteractiveSetup.csproj", "{C03BC9FE-5301-43EE-B912-1363F430DBA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101-using-core-nuget", "examples\101-using-core-nuget\101-using-core-nuget.csproj", "{17F42A38-46CB-4471-AF93-3AE6981B7278}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernelPlugin", "clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj", "{F7609330-E97E-422C-8983-EC501B2DDC52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebClient", "clients\dotnet\WebClient\WebClient.csproj", "{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}"
+EndProject
+
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebooks", "{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD}"
 	ProjectSection(SolutionItems) = preProject
 		examples\000-notebooks\001-upload-and-ask.ipynb = examples\000-notebooks\001-upload-and-ask.ipynb
@@ -82,7 +85,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebo
 		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-extract-text-from-docs", "examples\104-dotnet-extract-text-from-docs\104-dotnet-extract-text-from-docs.csproj", "{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "005-curl-calling-webservice", "005-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
+	ProjectSection(SolutionItems) = preProject
+		examples\005-curl-calling-webservice\test.pdf = examples\005-curl-calling-webservice\test.pdf
+		examples\005-curl-calling-webservice\README.md = examples\005-curl-calling-webservice\README.md
+		examples\005-curl-calling-webservice\ask-example.sh = examples\005-curl-calling-webservice\ask-example.sh
+		examples\005-curl-calling-webservice\upload-example.sh = examples\005-curl-calling-webservice\upload-example.sh
+		examples\005-curl-calling-webservice\search-example.sh = examples\005-curl-calling-webservice\search-example.sh
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
 	ProjectSection(SolutionItems) = preProject
@@ -141,28 +151,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DescriptionTest", "Descript
 		examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png = examples\200-dotnet-nl2sql\nl2sql.config\sql\DescriptionTest\Schema.png
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D-B5E7-4827-B57D-447E5B428589}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-WebClient", "examples\001-dotnet-WebClient\001-dotnet-WebClient.csproj", "{A77F639B-EA35-4519-9DBF-54687E5AC895}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-SemanticKernelPlugin", "examples\002-dotnet-SemanticKernelPlugin\002-dotnet-SemanticKernelPlugin.csproj", "{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
-	ProjectSection(SolutionItems) = preProject
-		docs\FAQ.md = docs\FAQ.md
-		docs\SECURITY_FILTERS.md = docs\SECURITY_FILTERS.md
-		docs\network.png = docs\network.png
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "003-dotnet-Serverless", "examples\003-dotnet-Serverless\003-dotnet-Serverless.csproj", "{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "008-dotnet-custom-partitioning-options", "examples\008-dotnet-custom-partitioning-options\008-dotnet-custom-partitioning-options.csproj", "{0F9A533C-C5DD-4FA9-9313-891F25834410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "examples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{158F5D5D-818B-4346-9A79-1C27C2F2144D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-aspnet-mvc-integration.csproj", "examples\007-aspnet-mvc-integration\007-aspnet-mvc-integration.csproj", "{490A0538-199D-46FF-A1C7-A309EAD698A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101-dotnet-custom-Prompts", "examples\101-dotnet-custom-Prompts\101-dotnet-custom-Prompts.csproj", "{6ABCC373-F472-4A34-9C78-4A324DDED207}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{4AE9DB51-2A22-4FB3-A780-838738566D18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "102-dotnet-custom-partitioning-options", "examples\102-dotnet-custom-partitioning-options\102-dotnet-custom-partitioning-options.csproj", "{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "009-dotnet-custom-LLM", "examples\009-dotnet-custom-LLM\009-dotnet-custom-LLM.csproj", "{89D6F024-C4E1-4779-A7C6-117F32433E90}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "103-dotnet-custom-EmbeddingGenerator", "examples\103-dotnet-custom-EmbeddingGenerator\103-dotnet-custom-EmbeddingGenerator.csproj", "{55082AEB-0DEF-41F2-9616-DBDC22360379}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "010-dotnet-custom-EmbeddingGenerator", "examples\010-dotnet-custom-EmbeddingGenerator\010-dotnet-custom-EmbeddingGenerator.csproj", "{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-custom-LLM", "examples\104-dotnet-custom-LLM\104-dotnet-custom-LLM.csproj", "{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "011-dotnet-custom-Prompts", "examples\011-dotnet-custom-Prompts\011-dotnet-custom-Prompts.csproj", "{D1C908CF-87E8-45B9-8C92-BC27FCB9A107}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "201-dotnet-InProcessMemoryWithCustomHandler", "examples\201-dotnet-InProcessMemoryWithCustomHandler\201-dotnet-InProcessMemoryWithCustomHandler.csproj", "{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "202-dotnet-CustomHandlerAsAService", "examples\202-dotnet-CustomHandlerAsAService\202-dotnet-CustomHandlerAsAService.csproj", "{DE115127-C77F-40FF-BA5A-E888A32F2289}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "203-dotnet-using-core-nuget", "examples\203-dotnet-using-core-nuget\203-dotnet-using-core-nuget.csproj", "{1B41A9A1-0B57-4297-B579-D04FC0BA3227}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "204-dotnet-ASP.NET-MVC-integration", "examples\204-dotnet-ASP.NET-MVC-integration\204-dotnet-ASP.NET-MVC-integration.csproj", "{10A6C940-AECC-4CEF-963E-9908DDA816B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "205-dotnet-extract-text-from-docs", "examples\205-dotnet-extract-text-from-docs\205-dotnet-extract-text-from-docs.csproj", "{9202380E-D793-4C3C-89B3-3BE790925029}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -171,13 +184,9 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BEFD2475-7B33-4D0E-B17D-2EFC796466EC} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
-		{925ADAF0-FB59-49AA-AB5C-97415EFD9D41} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{375A8841-9C49-46B1-8F26-2F80C70D3A32} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{CA1D9162-D4C5-490D-AAD5-7A9A23092C28} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
-		{CF55CAED-81D1-4748-8172-AE678047B760} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{795302A5-9006-46A6-886F-7932F6A1D8C1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
-		{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
-		{02B67859-5B16-46E3-9CB4-916887275649} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
 		{17F42A38-46CB-4471-AF93-3AE6981B7278} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{9EDC5872-E9F0-4D07-B0AA-EAB9862CE418} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
@@ -201,6 +210,26 @@ Global
 		{89D6F024-C4E1-4779-A7C6-117F32433E90} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{70ACEB4A-6820-4E67-BB15-98DC19CC7DB1} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{D1C908CF-87E8-45B9-8C92-BC27FCB9A107} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
+		{F7609330-E97E-422C-8983-EC501B2DDC52} = {371BB479-AA1C-41CB-BF07-24C363601289}
+		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{27910ADC-5A28-4EB4-A16E-974B91940758} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{1071A8B6-ED76-4E46-A291-E0563B9C4575} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A} = {371BB479-AA1C-41CB-BF07-24C363601289}
+		{A77F639B-EA35-4519-9DBF-54687E5AC895} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{6627ACE2-14FA-4A8E-A03C-0E4710B5411E} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{158F5D5D-818B-4346-9A79-1C27C2F2144D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{6ABCC373-F472-4A34-9C78-4A324DDED207} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{55082AEB-0DEF-41F2-9616-DBDC22360379} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{791E3E2E-133C-4EB5-AB5E-10D31F0A9807} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{DE115127-C77F-40FF-BA5A-E888A32F2289} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{1B41A9A1-0B57-4297-B579-D04FC0BA3227} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{10A6C940-AECC-4CEF-963E-9908DDA816B2} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{9202380E-D793-4C3C-89B3-3BE790925029} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -215,26 +244,14 @@ Global
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2C252647-50A5-49B9-9E5F-A32C3DB22218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C252647-50A5-49B9-9E5F-A32C3DB22218}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C252647-50A5-49B9-9E5F-A32C3DB22218}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C252647-50A5-49B9-9E5F-A32C3DB22218}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEFD2475-7B33-4D0E-B17D-2EFC796466EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{925ADAF0-FB59-49AA-AB5C-97415EFD9D41}.Release|Any CPU.Build.0 = Release|Any CPU
 		{375A8841-9C49-46B1-8F26-2F80C70D3A32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{375A8841-9C49-46B1-8F26-2F80C70D3A32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{375A8841-9C49-46B1-8F26-2F80C70D3A32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{375A8841-9C49-46B1-8F26-2F80C70D3A32}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF55CAED-81D1-4748-8172-AE678047B760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF55CAED-81D1-4748-8172-AE678047B760}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF55CAED-81D1-4748-8172-AE678047B760}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF55CAED-81D1-4748-8172-AE678047B760}.Release|Any CPU.Build.0 = Release|Any CPU
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{795302A5-9006-46A6-886F-7932F6A1D8C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -295,5 +312,73 @@ Global
 		{D1C908CF-87E8-45B9-8C92-BC27FCB9A107}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1C908CF-87E8-45B9-8C92-BC27FCB9A107}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1C908CF-87E8-45B9-8C92-BC27FCB9A107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7609330-E97E-422C-8983-EC501B2DDC52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89F72748-E8A4-4FDF-A02C-8B141E8EA433}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A77F639B-EA35-4519-9DBF-54687E5AC895}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A77F639B-EA35-4519-9DBF-54687E5AC895}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A77F639B-EA35-4519-9DBF-54687E5AC895}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A77F639B-EA35-4519-9DBF-54687E5AC895}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{158F5D5D-818B-4346-9A79-1C27C2F2144D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{158F5D5D-818B-4346-9A79-1C27C2F2144D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{158F5D5D-818B-4346-9A79-1C27C2F2144D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{158F5D5D-818B-4346-9A79-1C27C2F2144D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ABCC373-F472-4A34-9C78-4A324DDED207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ABCC373-F472-4A34-9C78-4A324DDED207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ABCC373-F472-4A34-9C78-4A324DDED207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ABCC373-F472-4A34-9C78-4A324DDED207}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E727FC9-ACE2-4028-AAA7-5BCECCE5010B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55082AEB-0DEF-41F2-9616-DBDC22360379}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55082AEB-0DEF-41F2-9616-DBDC22360379}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55082AEB-0DEF-41F2-9616-DBDC22360379}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55082AEB-0DEF-41F2-9616-DBDC22360379}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE115127-C77F-40FF-BA5A-E888A32F2289}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE115127-C77F-40FF-BA5A-E888A32F2289}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE115127-C77F-40FF-BA5A-E888A32F2289}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE115127-C77F-40FF-BA5A-E888A32F2289}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B41A9A1-0B57-4297-B579-D04FC0BA3227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B41A9A1-0B57-4297-B579-D04FC0BA3227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B41A9A1-0B57-4297-B579-D04FC0BA3227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B41A9A1-0B57-4297-B579-D04FC0BA3227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10A6C940-AECC-4CEF-963E-9908DDA816B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10A6C940-AECC-4CEF-963E-9908DDA816B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10A6C940-AECC-4CEF-963E-9908DDA816B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10A6C940-AECC-4CEF-963E-9908DDA816B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9202380E-D793-4C3C-89B3-3BE790925029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9202380E-D793-4C3C-89B3-3BE790925029}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9202380E-D793-4C3C-89B3-3BE790925029}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9202380E-D793-4C3C-89B3-3BE790925029}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
