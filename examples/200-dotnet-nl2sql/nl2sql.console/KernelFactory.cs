@@ -64,7 +64,7 @@ internal static class KernelFactory
                     configuration.GetValue<string>(SettingNameAzureModelEmbedding) ??
                     DefaultEmbedModel;
 
-                builder.WithAzureTextEmbeddingGenerationService(modelEmbedding, endpoint, apikey);
+                builder.WithAzureOpenAITextEmbeddingGenerationService(modelEmbedding, endpoint, apikey);
 
                 return builder.Build();
             }
@@ -117,7 +117,7 @@ internal static class KernelFactory
                     builder.WithAzureTextCompletionService(modelCompletion, endpoint, apikey);
                 }
 
-                builder.WithAzureChatCompletionService(modelCompletion, endpoint, apikey);
+                builder.WithAzureOpenAIChatCompletionService(modelCompletion, endpoint, apikey);
 
                 return builder.Build();
             }

@@ -21,6 +21,7 @@
         <PackageReference Include="Azure.Search.Documents"/>
         <PackageReference Include="Azure.Storage.Blobs"/>
         <PackageReference Include="Azure.Storage.Queues"/>
+        <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
@@ -34,11 +35,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel.Core" VersionOverride="1.0.0-beta5">
+        <PackageReference Include="Microsoft.SemanticKernel.Core" VersionOverride="1.0.0-beta7">
             <PrivateAssets>none</PrivateAssets>
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" VersionOverride="1.0.0-beta5">
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" VersionOverride="1.0.0-beta7">
             <PrivateAssets>none</PrivateAssets>
             <IncludeAssets>all</IncludeAssets>
         </PackageReference>
