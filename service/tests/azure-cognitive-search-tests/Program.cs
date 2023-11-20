@@ -140,7 +140,7 @@ public static class Program
                 },
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
+                    new HnswAlgorithmConfiguration(VectorSearchConfigName)
                     {
                         Parameters = new HnswParameters
                         {
@@ -185,7 +185,7 @@ public static class Program
             IsFacetable = false,
             IsSortable = false,
             VectorSearchDimensions = EmbeddingSize,
-            VectorSearchProfile = VectorSearchProfileName,
+            VectorSearchProfileName = VectorSearchProfileName,
         });
 
         try
@@ -253,7 +253,7 @@ public static class Program
 
         fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
         fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
-        var options = new SearchOptions
+        SearchOptions options = new()
         {
             Filter = fieldIsCollection
                 ? $"{fieldName}/any(s: s eq '{fieldValue1}') and {fieldName}/any(s: s eq '{fieldValue2}')"
