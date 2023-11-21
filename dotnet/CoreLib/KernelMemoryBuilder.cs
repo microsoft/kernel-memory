@@ -244,6 +244,11 @@ public class KernelMemoryBuilder
             this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
+
+            foreach (var customHandler in this._customHandlers)
+            {
+                this._hostServiceCollection.AddHandlerAsHostedService(customHandler.Value, customHandler.Key);
+            }
         }
 
         return new MemoryService(orchestrator, searchClient);
