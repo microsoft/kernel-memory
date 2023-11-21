@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,6 +28,8 @@ namespace Microsoft.KernelMemory;
 /// * memory.ask
 /// * memory.search
 /// * memory.delete
+///
+/// TODO / not supported: filters on tags
 /// </summary>
 public class MemoryPlugin
 {
@@ -33,6 +37,11 @@ public class MemoryPlugin
     /// Name of the input variable used to specify which memory index to use.
     /// </summary>
     public const string IndexParam = "index";
+
+    /// <summary>
+    /// Name of the input variable used to specify a file path.
+    /// </summary>
+    public const string FilePathParam = "filePath";
 
     /// <summary>
     /// Name of the input variable used to specify a unique id associated with stored information.
@@ -43,6 +52,21 @@ public class MemoryPlugin
     /// to ask questions about a specific text, to overwrite (update) the text, and to delete it.
     /// </summary>
     public const string DocumentIdParam = "documentId";
+
+    /// <summary>
+    /// Name of the input variable used to specify a web URL.
+    /// </summary>
+    public const string UrlParam = "url";
+
+    /// <summary>
+    /// Name of the input variable used to specify a search query.
+    /// </summary>
+    public const string QueryParam = "query";
+
+    /// <summary>
+    /// Name of the input variable used to specify a question to answer.
+    /// </summary>
+    public const string QuestionParam = "question";
 
     /// <summary>
     /// Name of the input variable used to specify optional tags associated with stored information.
@@ -113,6 +137,7 @@ public class MemoryPlugin
     /// </summary>
     /// <param name="endpoint">Memory Service endpoint</param>
     /// <param name="apiKey">Memory Service authentication API Key</param>
+    /// <param name="apiKeyHeader">Name of the HTTP header used to send the Memory API Key</param>
     /// <param name="defaultIndex">Default Memory Index to use when none is specified. Optional. Can be overridden on each call.</param>
     /// <param name="defaultIngestionTags">Default Tags to add to memories when importing data. Optional. Can be overridden on each call.</param>
     /// <param name="defaultRetrievalTags">Default Tags to require when searching memories. Optional. Can be overridden on each call.</param>
@@ -121,20 +146,20 @@ public class MemoryPlugin
     public MemoryPlugin(
         Uri endpoint,
         string apiKey = "",
+        string apiKeyHeader = "Authorization",
         string defaultIndex = "",
         TagCollection? defaultIngestionTags = null,
         TagCollection? defaultRetrievalTags = null,
         List<string>? defaultIngestionSteps = null,
         bool waitForIngestionToComplete = false)
         : this(
-            new MemoryWebClient(endpoint.AbsoluteUri, apiKey),
+            new MemoryWebClient(endpoint.AbsoluteUri, apiKey: apiKey, apiKeyHeader: apiKeyHeader),
             defaultIndex,
             defaultIngestionTags,
             defaultRetrievalTags,
             defaultIngestionSteps,
             waitForIngestionToComplete)
     {
-        // TODO: add api key header name
     }
 
     /// <summary>
@@ -201,7 +226,8 @@ public class MemoryPlugin
     /// <returns>Document ID</returns>
     [SKFunction, Description("Store in memory the given text")]
     public async Task<string> SaveAsync(
-        [Description("The text to save")] string input,
+        [Description("The text to save in memory")]
+        string input,
         [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
         [SKName(IndexParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
@@ -213,28 +239,18 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        // TODO: check if one has to use "input" or "documentId"
-
-        Task<string> Do(CancellationToken token)
-        {
-            return this._memory.ImportTextAsync(
+        string id = await this._memory.ImportTextAsync(
                 text: input,
                 documentId: documentId,
                 index: index ?? this._defaultIndex,
                 tags: tags ?? this._defaultIngestionTags,
                 steps: steps ?? this._defaultIngestionSteps,
-                cancellationToken: token);
-        }
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-        if (this._waitForIngestionToComplete)
-        {
-            using var cs = new CancellationTokenSource(this._maxIngestionWait);
-            string id = await Do(cs.Token).ConfigureAwait(false);
-            // TODO CHECK IF DOC HAS BEEN IMPORTED
-            return id;
-        }
+        await this.WaitForDocumentReadinessAsync(id, cancellationToken).ConfigureAwait(false);
 
-        return await Do(cancellationToken).ConfigureAwait(false);
+        return id;
     }
 
     /// <summary>
@@ -259,7 +275,7 @@ public class MemoryPlugin
     /// <returns>Document ID</returns>
     [SKFunction, Description("Store in memory the information extracted from a file")]
     public async Task<string> SaveFileAsync(
-        [Description("Path of the file to save in memory")]
+        [SKName(FilePathParam), Description("Path of the file to save in memory")]
         string filePath,
         [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
@@ -272,31 +288,23 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        Task<string> Do(CancellationToken token)
-        {
-            return this._memory.ImportDocumentAsync(
+        var id = await this._memory.ImportDocumentAsync(
                 filePath: filePath,
                 documentId: documentId,
                 tags: tags ?? this._defaultIngestionTags,
                 index: index ?? this._defaultIndex,
                 steps: steps ?? this._defaultIngestionSteps,
-                cancellationToken: token);
-        }
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-        if (this._waitForIngestionToComplete)
-        {
-            using var cs = new CancellationTokenSource(this._maxIngestionWait);
-            string id = await Do(cs.Token).ConfigureAwait(false);
-            // TODO CHECK IF DOC HAS BEEN IMPORTED
-            return id;
-        }
+        await this.WaitForDocumentReadinessAsync(id, cancellationToken).ConfigureAwait(false);
 
-        return await Do(cancellationToken).ConfigureAwait(false);
+        return id;
     }
 
     [SKFunction, Description("Store in memory the information extracted from a web page")]
     public async Task<string> SaveWebPageAsync(
-        [Description("Complete URL of the web page to save")]
+        [SKName(UrlParam), Description("Complete URL of the web page to save")]
         string url,
         [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
@@ -309,42 +317,49 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        Task<string> Do(CancellationToken token)
-        {
-            return this._memory.ImportWebPageAsync(
+        var id = await this._memory.ImportWebPageAsync(
                 url: url,
                 documentId: documentId,
                 tags: tags ?? this._defaultIngestionTags,
                 index: index ?? this._defaultIndex,
                 steps: steps ?? this._defaultIngestionSteps,
-                cancellationToken: token);
-        }
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
-        if (this._waitForIngestionToComplete)
-        {
-            using var cs = new CancellationTokenSource(this._maxIngestionWait);
-            string id = await Do(cs.Token).ConfigureAwait(false);
-            // TODO CHECK IF DOC HAS BEEN IMPORTED
-            return id;
-        }
+        await this.WaitForDocumentReadinessAsync(id, cancellationToken).ConfigureAwait(false);
 
-        return await Do(cancellationToken).ConfigureAwait(false);
+        return id;
     }
 
     [SKFunction, Description("Return up to N memories related to the input text")]
     public async Task<string> SearchAsync(
-        [Description("The text to search")] string query,
+        [SKName(QueryParam), Description("The text to search in memory")]
+        string query,
         [SKName(IndexParam), Description("Memories index to search for information"), DefaultValue("")]
         string? index = null,
         [SKName(MinRelevanceParam), Description("Minimum relevance of the memories to return"), DefaultValue(0d)]
         double minRelevance = 0,
-        [SKName(LimitParam), Description("Maximum number of memories to return"), DefaultValue(0d)]
-        int limit = 10,
+        [SKName(LimitParam), Description("Maximum number of memories to return"), DefaultValue(1)]
+        int limit = 1,
         CancellationToken cancellationToken = default)
     {
-        await Task.Delay(0, cancellationToken).ConfigureAwait(false);
-        // TODO check the old Semantic Memory
-        throw new NotImplementedException();
+        SearchResult result = await this._memory
+            .SearchAsync(
+                query: query,
+                index: index ?? this._defaultIndex,
+                minRelevance: minRelevance,
+                limit: limit,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (result.Results.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        // Return the first chunk(s) of the relevant documents
+        return limit == 1
+            ? result.Results.First().Partitions.First().Text
+            : JsonSerializer.Serialize(result.Results.Select(x => x.Partitions.First().Text));
     }
 
     /// <summary>
@@ -355,7 +370,7 @@ public class MemoryPlugin
     /// <returns>The answer returned by the memory.</returns>
     [SKFunction, Description("Use long term memory to answer a quesion")]
     public async Task<string> AskAsync(
-        [Description("The question to answer")]
+        [SKName(QuestionParam), Description("The question to answer")]
         string question,
         [SKName(IndexParam), Description("Memories index to search for answers"), DefaultValue("")]
         string? index = null,
@@ -364,7 +379,6 @@ public class MemoryPlugin
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        // TODO: support filters
         MemoryAnswer answer = await this._memory.AskAsync(
             question: question,
             index: index ?? this._defaultIndex,
@@ -380,7 +394,7 @@ public class MemoryPlugin
     /// </summary>
     [SKFunction, Description("Remove from memory all the information extracted from the given document ID")]
     public Task DeleteAsync(
-        [Description("The document to delete")]
+        [SKName(DocumentIdParam), Description("The document to delete")]
         string documentId,
         [SKName(IndexParam), Description("Memories index where the document is stored"), DefaultValue("")]
         string? index = null,
@@ -390,5 +404,28 @@ public class MemoryPlugin
             documentId: documentId,
             index: index ?? this._defaultIndex,
             cancellationToken: cancellationToken);
+    }
+
+    private async Task WaitForDocumentReadinessAsync(string documentId, CancellationToken cancellationToken = default)
+    {
+        if (!this._waitForIngestionToComplete)
+        {
+            return;
+        }
+
+        using var timedTokenSource = new CancellationTokenSource(this._maxIngestionWait);
+        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timedTokenSource.Token, cancellationToken);
+
+        try
+        {
+            while (!await this._memory.IsDocumentReadyAsync(documentId: documentId, cancellationToken: linkedTokenSource.Token).ConfigureAwait(false))
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(500), linkedTokenSource.Token).ConfigureAwait(false);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Nothing to do
+        }
     }
 }

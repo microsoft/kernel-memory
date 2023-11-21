@@ -9,7 +9,7 @@ public static class Program
     // ReSharper disable InconsistentNaming
     public static async Task Main()
     {
-        const string Document = "mydocs-NASA-news.pdf";
+        const string DocFilename = "mydocs-NASA-news.pdf";
         const string Question1 = "any news about Orion?";
         const string Question2 = "any news about Hubble telescope?";
         const string Question3 = "what is a solar eclipse?";
@@ -19,10 +19,14 @@ public static class Program
         // You can use any LLM, replacing `WithAzureChatCompletionService` with other LLM options.
 
         var builder = new KernelBuilder();
-        builder.WithAzureOpenAIChatCompletionService(
-            deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
-            endpoint: EnvVar("AOAI_ENDPOINT"),
-            apiKey: EnvVar("AOAI_API_KEY"));
+        builder
+            // .WithOpenAIChatCompletionService(
+            //     modelId: "gpt-3.5-turbo",
+            //     apiKey: EnvVar("OPENAI_API_KEY"))
+            .WithAzureOpenAIChatCompletionService(
+                deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
+                endpoint: EnvVar("AOAI_ENDPOINT"),
+                apiKey: EnvVar("AOAI_API_KEY"));
 
         var kernel = builder.Build();
 
@@ -47,13 +51,18 @@ public static class Program
         // otherwise change the URL pointing to your KM endpoint.
 
         var memoryConnector = GetMemoryConnector();
-        var memoryPlugin = kernel.ImportFunctions(new MemoryPlugin(memoryConnector), "memory");
+        var memoryPlugin = kernel.ImportFunctions(new MemoryPlugin(memoryConnector, waitForIngestionToComplete: true), "memory");
 
         // === LOAD DOCUMENT INTO MEMORY ===
         // Load some data in memory, in this case use a PDF file, though
         // you can also load web pages, Word docs, raw text, etc.
 
-        await memoryConnector.ImportDocumentAsync(Document, documentId: "NASA001");
+        // You can use either the plugin or the connector, the result is the same
+        // await memoryConnector.ImportDocumentAsync(filePath: DocFilename, documentId: "NASA001");
+        var context = kernel.CreateNewContext();
+        context.Variables[MemoryPlugin.FilePathParam] = DocFilename;
+        context.Variables[MemoryPlugin.DocumentIdParam] = "NASA001";
+        await memoryPlugin["SaveFile"].InvokeAsync(context);
 
         // === RUN SEMANTIC FUNCTION ===
         // Run some example questions, showing how the answer is grounded on the document uploaded.
