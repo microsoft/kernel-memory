@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using System.Reflection;
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
@@ -98,10 +99,14 @@ public class ImportFilesTest : BaseTestCase
             .WithCustomHandler<GenerateParallelEmbeddingsHandler>("embeddings_parallel")
             .BuildServerlessClient();
 
+        var sw = Stopwatch.StartNew();
         // Act - Assert no exception occurs
         var id = await memory.ImportDocumentAsync(filePath: filePath, documentId: fileName,
             steps: new[] { "extract", "partition", "embeddings_parallel" });
 
+        sw.Stop();
+
+        this.Log($"Processing time: {sw.Elapsed}");
         var status = await memory.GetDocumentStatusAsync(id);
     }
 
