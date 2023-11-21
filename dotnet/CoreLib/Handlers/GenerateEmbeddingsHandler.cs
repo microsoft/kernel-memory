@@ -26,8 +26,6 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// <inheritdoc />
     public string StepName { get; }
 
-    private object _lock = new();
-
     /// <summary>
     /// Handler responsible for generating embeddings and saving them to content storages.
     /// Note: stepName and other params are injected with DI
@@ -62,17 +60,14 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
-            var throttler = new SemaphoreSlim(initialCount: Environment.ProcessorCount);
 
-            var tasks = uploadedFile.GeneratedFiles.Select(async generatedFile =>
+            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
-                await throttler.WaitAsync(cancellationToken).ConfigureAwait(false);
-
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
-                    return;
+                    continue;
                 }
 
                 // Calc embeddings only for partitions (text chunks) and synthetic data
@@ -80,7 +75,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
                 {
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
-                    return;
+                    continue;
                 }
 
                 // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
@@ -143,23 +138,18 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
-                            lock (this._lock)
-                            {
-                                newFiles.Add(embeddingFileName, embeddingFileNameDetails);
-                            }
+                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
-                        return;
+                        continue;
                 }
 
                 partitionFile.MarkProcessedBy(this);
-            });
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
 
             // Add new files to pipeline status
             foreach (var file in newFiles)
