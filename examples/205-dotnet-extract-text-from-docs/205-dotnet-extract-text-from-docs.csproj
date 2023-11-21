@@ -8,36 +8,32 @@
         <RootNamespace/>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>CA1050,CA2000,CA1707,CA1303,CA2007,CA1724</NoWarn>
+        <NoWarn>CA1303</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj"/>
+        <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Memory.Data" Version="7.0.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="file1-Wikipedia-Carbon.txt"/>
-        <Content Include="file1-Wikipedia-Carbon.txt">
+        <None Remove="msexcelfile.xlsx"/>
+        <Content Include="msexcelfile.xlsx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file2-Wikipedia-Moon.txt"/>
-        <Content Include="file2-Wikipedia-Moon.txt">
+        <None Remove="mspowerpointfile.pptx" />
+        <Content Include="mspowerpointfile.pptx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file3-lorem-ipsum.docx"/>
-        <Content Include="file3-lorem-ipsum.docx">
+        <None Remove="mswordfile.docx" />
+        <Content Include="mswordfile.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file4-SK-Readme.pdf"/>
-        <Content Include="file4-SK-Readme.pdf">
+        <None Remove="file1.pdf"/>
+        <Content Include="file1.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file5-NASA-news.pdf"/>
-        <Content Include="file5-NASA-news.pdf">
+        <None Remove="file2.pdf"/>
+        <Content Include="file2.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

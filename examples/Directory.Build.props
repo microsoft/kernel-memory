@@ -1,4 +1,3 @@
-<!-- App Settings -->
 <Project>
     <PropertyGroup>
         <!-- Default properties inherited by all projects. Projects can override. -->
@@ -6,7 +5,7 @@
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <AnalysisLevel>latest</AnalysisLevel>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <LangVersion>11</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
