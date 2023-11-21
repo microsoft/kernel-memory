@@ -83,6 +83,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebo
 		examples\000-notebooks\001-upload-and-ask.ipynb = examples\000-notebooks\001-upload-and-ask.ipynb
 		examples\000-notebooks\appsettings.json = examples\000-notebooks\appsettings.json
 		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
+		examples\000-notebooks\002-semantic-kernel-plugin.ipynb = examples\000-notebooks\002-semantic-kernel-plugin.ipynb
+		examples\000-notebooks\NASA-news.pdf = examples\000-notebooks\NASA-news.pdf
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "005-curl-calling-webservice", "005-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"

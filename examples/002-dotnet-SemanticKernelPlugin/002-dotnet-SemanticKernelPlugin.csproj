@@ -12,11 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.0.0-beta8"/>
+        <PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.11.231121.1-preview"/>
     </ItemGroup>
 
     <ItemGroup>
