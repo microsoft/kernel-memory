@@ -17,11 +17,11 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.
 /// </summary>
-public class GenerateEmbeddingsHandler : IPipelineStepHandler
+public class GenerateParallelEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
-    private readonly ILogger<GenerateEmbeddingsHandler> _log;
+    private readonly ILogger<GenerateParallelEmbeddingsHandler> _log;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -35,14 +35,14 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="log">Application logger</param>
-    public GenerateEmbeddingsHandler(
+    public GenerateParallelEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        ILogger<GenerateEmbeddingsHandler>? log = null)
+        ILogger<GenerateParallelEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
+        this._log = log ?? DefaultLogger<GenerateParallelEmbeddingsHandler>.Instance;
         this._embeddingGenerators = orchestrator.GetEmbeddingGenerators();
 
         this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);

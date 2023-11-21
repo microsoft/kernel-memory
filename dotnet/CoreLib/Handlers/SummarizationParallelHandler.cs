@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class SummarizationHandler : IPipelineStepHandler
+public class SummarizationParallelHandler : IPipelineStepHandler
 {
     private const int MinLength = 50;
 
@@ -31,7 +31,7 @@ public class SummarizationHandler : IPipelineStepHandler
     private const int OverlappingTokens = 200;
 
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly ILogger<SummarizationHandler> _log;
+    private readonly ILogger<SummarizationParallelHandler> _log;
     private readonly string _summarizationPrompt;
 
     private object _lock = new();
@@ -48,11 +48,11 @@ public class SummarizationHandler : IPipelineStepHandler
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
-    public SummarizationHandler(
+    public SummarizationParallelHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         IPromptProvider? promptProvider = null,
-        ILogger<SummarizationHandler>? log = null)
+        ILogger<SummarizationParallelHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -60,7 +60,7 @@ public class SummarizationHandler : IPipelineStepHandler
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
 
-        this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
+        this._log = log ?? DefaultLogger<SummarizationParallelHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
