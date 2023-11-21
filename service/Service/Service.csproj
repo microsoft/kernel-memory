@@ -14,4 +14,6 @@
         <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
 
+    <Import Project="../code-analysis.props"/>
+
 </Project>

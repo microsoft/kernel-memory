@@ -34,16 +34,20 @@
     <ItemGroup>
         <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
         <!-- https://github.com/dotnet/sourcelink -->
-        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
     </ItemGroup>
 
     <ItemGroup>
         <!-- Include icon.png and NUGET.md in the project. -->
-        <None Include="$(RepoRoot)/dotnet/nuget/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false"/>
-        <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="$(RepoRoot)/service/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="$(RepoRoot)/service/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="." Visible="false"/>
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 </Project>

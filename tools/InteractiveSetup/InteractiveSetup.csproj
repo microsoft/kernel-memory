@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="..\..\service\Directory.Build.props"/>
-
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>

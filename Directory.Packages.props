@@ -21,6 +21,10 @@
     </ItemGroup>
     <!-- Semantic Kernel -->
     <ItemGroup>
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0"/>
+    </ItemGroup>
+    <!-- Semantic Kernel -->
+    <ItemGroup>
         <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.0.0-beta8"/>
         <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.0-beta8"/>
         <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="1.0.0-beta8"/>
@@ -31,50 +35,24 @@
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
         <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1"/>
     </ItemGroup>
+    <!-- Code Analysis -->
+    <ItemGroup>
+        <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.7.0"/>
+        <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.30"/>
+        <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.6.2"/>
+        <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.6.2"/>
+    </ItemGroup>
     <!-- Tests -->
     <ItemGroup>
-        <PackageVersion Include="coverlet.collector" Version="6.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
         <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.0"/>
         <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="8.1.0"/>
+        <PackageVersion Include="coverlet.collector" Version="6.0.0"/>
         <PackageVersion Include="xunit" Version="2.6.2"/>
         <PackageVersion Include="xunit.abstractions" Version="2.0.3"/>
         <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.4"/>
-    </ItemGroup>
-    <!-- Analyzers -->
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.7.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.30">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.6.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageVersion>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.6.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageVersion>
-        <PackageReference Include="Roslynator.Formatting.Analyzers">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 </Project>

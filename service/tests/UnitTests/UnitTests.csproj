@@ -4,6 +4,8 @@
         <TargetFramework>net7.0</TargetFramework>
         <IsTestProject>true</IsTestProject>
         <AssemblyName>Microsoft.UnitTests</AssemblyName>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 

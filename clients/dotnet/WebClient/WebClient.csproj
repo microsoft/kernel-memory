@@ -1,16 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../../../service/Directory.Build.props"/>
-    <Import Project="../../../service/Directory.Packages.props"/>
-    <Import Project="../../../service/nuget-package.props"/>
-
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.WebClient</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.WebClient</PackageId>
-        <NoWarn>CS1591</NoWarn>
+        <NoWarn>CS1591,NU5104</NoWarn>
+    </PropertyGroup>
+
+    <Import Project="../../../service/nuget-package.props"/>
+
+    <PropertyGroup>
+        <Product>Kernel Memory Web Client</Product>
+        <Description>Kernel Memory Web Client allows to connect to the Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,5 +24,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
     </ItemGroup>
+
+    <Import Project="../../../service/code-analysis.props"/>
 
 </Project>
