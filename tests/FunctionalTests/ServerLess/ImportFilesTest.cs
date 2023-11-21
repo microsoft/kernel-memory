@@ -5,6 +5,7 @@ using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Xunit.Abstractions;
 
@@ -80,6 +81,28 @@ public class ImportFilesTest : BaseTestCase
             fileName: fileName,
             steps: new[] { "extract", "partition" },
             tags: new() { { "user", "user1" } });
+    }
+
+    [Fact]
+    public async Task ItImportsBigPDFWithCustomHandler()
+    {
+        // Arrange
+        var fileName = "National-Planning-Policy-Framework.pdf";
+        var filePath = Path.Join(this._fixturesPath, fileName);
+
+        var memory = new KernelMemoryBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            // Store data in memory
+            .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
+            .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
+            .WithCustomHandler<SummarizationParallelHandler>("summarization_parallel")
+            .WithCustomHandler<GenerateParallelEmbeddingsHandler>("embeddings_parallel")
+            .BuildServerlessClient();
+
+        // Act - Assert no exception occurs
+        var id = await memory.ImportDocumentAsync(filePath: filePath, documentId: fileName,
+            steps: new[] { "extract", "partition", "embeddings_parallel" });
+
+        var status = await memory.GetDocumentStatusAsync(id);
     }
 
     // Find the "Fixtures" directory (inside the project)

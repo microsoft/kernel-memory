@@ -31,7 +31,11 @@
 
     <ItemGroup>
         <None Remove="file1-NASA-news.pdf"/>
+        <None Remove="National-Planning-Policy-Framework.pdf"/>
         <Content Include="file1-NASA-news.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="National-Planning-Policy-Framework.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
