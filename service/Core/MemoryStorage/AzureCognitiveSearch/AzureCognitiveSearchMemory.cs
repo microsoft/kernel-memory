@@ -131,10 +131,9 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         var client = this.GetSearchClient(index);
 
-        RawVectorQuery vectorQuery = new()
+        VectorizedQuery vectorQuery = new(embedding.Data)
         {
             KNearestNeighborsCount = limit,
-            Vector = embedding.Data.ToArray(),
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
             // Exhaustive search is a brute force comparison across all vectors,
             // ignoring the index, which can be much slower once the index contains a lot of data.
@@ -144,9 +143,12 @@ public class AzureCognitiveSearchMemory : IVectorDb
 
         SearchOptions options = new()
         {
-            VectorQueries = { vectorQuery },
-            // Default, applies the vector query AFTER the search filter
-            VectorFilterMode = VectorFilterMode.PreFilter
+            VectorSearch = new()
+            {
+                Queries = { vectorQuery },
+                // Default, applies the vector query AFTER the search filter
+                FilterMode = VectorFilterMode.PreFilter
+            }
         };
 
         // Remove empty filters
@@ -201,7 +203,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        var options = new SearchOptions();
+        SearchOptions options = new();
         if (filters is { Count: > 0 })
         {
             options.Filter = BuildSearchFilter(filters);
@@ -452,7 +454,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
                 },
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(VectorSearchConfigName)
+                    new HnswAlgorithmConfiguration(VectorSearchConfigName)
                     {
                         Parameters = new HnswParameters
                         {
@@ -485,7 +487,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
                         IsFacetable = false,
                         IsSortable = false,
                         VectorSearchDimensions = field.VectorSize,
-                        VectorSearchProfile = VectorSearchProfileName,
+                        VectorSearchProfileName = VectorSearchProfileName,
                     };
 
                     break;
