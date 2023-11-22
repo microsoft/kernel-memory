@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.AI.Tokenizers.CL100KBase;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
@@ -111,7 +111,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     string text = paragraphs[index];
                     BinaryData textData = new(text);
 
-                    int gpt3TokenCount = GPT3Tokenizer.Encode(text).Count;
+                    int gpt3TokenCount = CL100KBaseTokenizer.Encode(text).Count;
                     this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);

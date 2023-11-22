@@ -31,6 +31,7 @@
         <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="Microsoft.DeepDev.TokenizerLib"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="Microsoft.Extensions.Hosting"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
@@ -45,8 +46,7 @@
     <Import Project="../code-analysis.props"/>
 
     <ItemGroup>
-        <EmbeddedResource Include="AI\Tokenizers\GPT3\encoder.json"/>
-        <EmbeddedResource Include="AI\Tokenizers\GPT3\vocab.bpe"/>
+        <EmbeddedResource Include="AI\Tokenizers\CL100KBase\cl100k_base.tiktoken"/>
         <EmbeddedResource Include="Prompts\summarize.txt"/>
         <EmbeddedResource Include="Prompts\answer-with-facts.txt"/>
     </ItemGroup>
