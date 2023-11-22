@@ -9,13 +9,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithAzureFormRecognizer(this KernelMemoryBuilder builder, AzureFormRecognizerConfig config)
+    public static IKernelMemoryBuilder WithAzureFormRecognizer(this IKernelMemoryBuilder builder, AzureFormRecognizerConfig config)
     {
         builder.Services.AddAzureFormRecognizer(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithAzureFormRecognizer(this KernelMemoryBuilder builder, string endpoint, string apiKey)
+    public static IKernelMemoryBuilder WithAzureFormRecognizer(this IKernelMemoryBuilder builder, string endpoint, string apiKey)
     {
         return builder.WithAzureFormRecognizer(new AzureFormRecognizerConfig
         {

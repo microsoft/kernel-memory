@@ -9,7 +9,7 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithAzureBlobsStorage(this KernelMemoryBuilder builder, AzureBlobsConfig config)
+    public static IKernelMemoryBuilder WithAzureBlobsStorage(this IKernelMemoryBuilder builder, AzureBlobsConfig config)
     {
         builder.Services.AddAzureBlobAsContentStorage(config);
         return builder;

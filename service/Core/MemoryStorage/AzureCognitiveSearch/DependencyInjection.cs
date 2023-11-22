@@ -9,13 +9,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithAzureCognitiveSearch(this KernelMemoryBuilder builder, AzureCognitiveSearchConfig config)
+    public static IKernelMemoryBuilder WithAzureCognitiveSearch(this IKernelMemoryBuilder builder, AzureCognitiveSearchConfig config)
     {
         builder.Services.AddAzureCognitiveSearchAsVectorDb(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithAzureCognitiveSearch(this KernelMemoryBuilder builder, string endpoint, string apiKey)
+    public static IKernelMemoryBuilder WithAzureCognitiveSearch(this IKernelMemoryBuilder builder, string endpoint, string apiKey)
     {
         builder.Services.AddAzureCognitiveSearchAsVectorDb(endpoint, apiKey);
         return builder;

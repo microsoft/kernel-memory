@@ -19,10 +19,14 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 // builder.Services.AddHandlerAsHostedService<MyHandler2>("mypipelinestep-2");
 // builder.Services.AddHandlerAsHostedService<MyHandler3>("mypipelinestep-3");
 
-// Inject memory dependencies
-
-var _ = new KernelMemoryBuilder(appBuilder.Services).WithOpenAIDefaults(Env.Var("OPENAI_API_KEY")).Complete();
+// Build the memory instance injecting its dependencies into the current app
+var _ = new KernelMemoryBuilder(appBuilder.Services)
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .Build();
 
 // Build and run .NET web app as usual
+Console.WriteLine("Starting service...");
 var app = appBuilder.Build();
 app.Run();
+
+Console.WriteLine("Service stopped");

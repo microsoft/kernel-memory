@@ -37,21 +37,21 @@ public abstract class BaseTestCase : IDisposable
             case "default":
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
-                    .BuildServerlessClient();
+                    .Build<MemoryServerless>();
 
             case "simple_on_disk":
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "_vectors", StorageType = FileSystemTypes.Disk })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "_files", StorageType = FileSystemTypes.Disk })
-                    .BuildServerlessClient();
+                    .Build<MemoryServerless>();
 
             case "simple_volatile":
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
-                    .BuildServerlessClient();
+                    .Build<MemoryServerless>();
 
             case "qdrant":
                 var qdrantEndpoint = this.QdrantConfiguration.GetValue<string>("Endpoint");
@@ -59,7 +59,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithQdrant(qdrantEndpoint)
-                    .BuildServerlessClient();
+                    .Build<MemoryServerless>();
 
             case "acs":
                 var acsEndpoint = this.AzureAISearchConfiguration.GetValue<string>("Endpoint");
@@ -69,7 +69,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
                     .WithAzureCognitiveSearch(acsEndpoint, acsKey)
-                    .BuildServerlessClient();
+                    .Build<MemoryServerless>();
 
             default:
                 throw new ArgumentOutOfRangeException($"{memoryType} not supported");

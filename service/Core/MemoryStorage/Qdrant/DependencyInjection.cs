@@ -9,13 +9,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithQdrant(this KernelMemoryBuilder builder, QdrantConfig config)
+    public static IKernelMemoryBuilder WithQdrant(this IKernelMemoryBuilder builder, QdrantConfig config)
     {
         builder.Services.AddQdrantAsVectorDb(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithQdrant(this KernelMemoryBuilder builder, string endpoint, string apiKey = "")
+    public static IKernelMemoryBuilder WithQdrant(this IKernelMemoryBuilder builder, string endpoint, string apiKey = "")
     {
         builder.Services.AddQdrantAsVectorDb(endpoint, apiKey);
         return builder;

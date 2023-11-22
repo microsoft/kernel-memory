@@ -54,7 +54,7 @@ internal sealed class SqlSchemaProvider
             }
 
             var columnName = reader.GetString(Statements.Columns.ColumnName);
-            var columnDesc = reader.IsDBNull(Statements.Columns.ColumnDesc) ? null : reader.GetString(Statements.Columns.ColumnDesc);
+            var columnDesc = await reader.IsDBNullAsync(Statements.Columns.ColumnDesc) ? null : reader.GetString(Statements.Columns.ColumnDesc);
             var columnType = reader.GetString(Statements.Columns.ColumnType);
             var isPk = reader.GetBoolean(Statements.Columns.IsPk);
 
@@ -105,7 +105,7 @@ internal sealed class SqlSchemaProvider
         {
             var schemaName = reader.GetString(Statements.Columns.SchemaName);
             var tableName = reader.GetString(Statements.Columns.TableName);
-            var tableDesc = reader.IsDBNull(Statements.Columns.TableDesc) ? null : reader.GetString(Statements.Columns.TableDesc);
+            var tableDesc = await reader.IsDBNullAsync(Statements.Columns.TableDesc) ? null : reader.GetString(Statements.Columns.TableDesc);
 
             tableMap.Add(FormatName(schemaName, tableName), tableDesc);
         }

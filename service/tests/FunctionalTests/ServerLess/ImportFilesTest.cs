@@ -37,7 +37,7 @@ public class ImportFilesTest : BaseTestCase
             // Store data in memory
             .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
             .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
     }
 
     [Fact]

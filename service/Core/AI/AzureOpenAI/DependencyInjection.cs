@@ -14,13 +14,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithAzureOpenAITextGeneration(this KernelMemoryBuilder builder, AzureOpenAIConfig config)
+    public static IKernelMemoryBuilder WithAzureOpenAITextGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config)
     {
         builder.Services.AddAzureOpenAITextGeneration(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this KernelMemoryBuilder builder, AzureOpenAIConfig config)
+    public static IKernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config)
     {
         builder.Services.AddAzureOpenAIEmbeddingGeneration(config);
         return builder;

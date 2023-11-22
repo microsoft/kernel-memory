@@ -12,7 +12,7 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithOpenAIDefaults(this KernelMemoryBuilder builder, string apiKey, string? organization = null)
+    public static IKernelMemoryBuilder WithOpenAIDefaults(this IKernelMemoryBuilder builder, string apiKey, string? organization = null)
     {
         builder.Services.AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new OpenAITextEmbeddingGeneration(
             modelId: "text-embedding-ada-002",
@@ -29,20 +29,20 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static KernelMemoryBuilder WithOpenAI(this KernelMemoryBuilder builder, OpenAIConfig config)
+    public static IKernelMemoryBuilder WithOpenAI(this IKernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.WithOpenAITextEmbedding(config);
         builder.WithOpenAITextGeneration(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithOpenAITextEmbedding(this KernelMemoryBuilder builder, OpenAIConfig config)
+    public static IKernelMemoryBuilder WithOpenAITextEmbedding(this IKernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
         return builder;
     }
 
-    public static KernelMemoryBuilder WithOpenAITextGeneration(this KernelMemoryBuilder builder, OpenAIConfig config)
+    public static IKernelMemoryBuilder WithOpenAITextGeneration(this IKernelMemoryBuilder builder, OpenAIConfig config)
     {
         builder.Services.AddOpenAITextGeneration(config);
         return builder;

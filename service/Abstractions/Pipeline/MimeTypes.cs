@@ -51,8 +51,8 @@ public interface IMimeTypeDetection
 
 public class MimeTypesDetection : IMimeTypeDetection
 {
-    private static readonly IReadOnlyDictionary<string, string> s_extensionTypes =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> s_extensionTypes =
+        new(StringComparer.OrdinalIgnoreCase)
         {
             { FileExtensions.ImageBmp, MimeTypes.ImageBmp },
             { FileExtensions.ImageGif, MimeTypes.ImageGif },

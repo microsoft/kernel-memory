@@ -10,13 +10,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithSimpleVectorDb(this KernelMemoryBuilder builder, SimpleVectorDbConfig? config = null)
+    public static IKernelMemoryBuilder WithSimpleVectorDb(this IKernelMemoryBuilder builder, SimpleVectorDbConfig? config = null)
     {
         builder.Services.AddSimpleVectorDbAsVectorDb(config ?? new SimpleVectorDbConfig());
         return builder;
     }
 
-    public static KernelMemoryBuilder WithSimpleVectorDb(this KernelMemoryBuilder builder, string directory)
+    public static IKernelMemoryBuilder WithSimpleVectorDb(this IKernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleVectorDbAsVectorDb(directory);
         return builder;

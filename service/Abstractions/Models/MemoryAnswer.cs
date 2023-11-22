@@ -10,6 +10,10 @@ namespace Microsoft.KernelMemory;
 
 public class MemoryAnswer
 {
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
+    private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     /// <summary>
     /// Client question.
     /// </summary>
@@ -41,12 +45,12 @@ public class MemoryAnswer
     /// <returns>JSON serialization</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(this, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     public MemoryAnswer FromJson(string json)
     {
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions)
                ?? new MemoryAnswer();
     }
 }
