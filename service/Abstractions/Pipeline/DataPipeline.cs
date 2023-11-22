@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
