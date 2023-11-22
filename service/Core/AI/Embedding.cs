@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 #pragma warning disable IDE0130 // first class concept we want to have readily available
 #pragma warning disable CA2225 // no need for explicit methods
@@ -50,7 +50,7 @@ public struct Embedding : IEquatable<Embedding>
 
     public double CosineSimilarity(Embedding embedding)
     {
-        return this.Data.ToArray().CosineSimilarity(embedding.Data.ToArray());
+        return TensorPrimitives.CosineSimilarity(this.Data.ToArray(), embedding.Data.ToArray());
     }
 
     /// <summary>

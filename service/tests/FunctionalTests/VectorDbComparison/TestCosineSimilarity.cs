@@ -26,6 +26,10 @@ public class TestCosineSimilarity
     public async Task CompareCosineSimilarity()
     {
         const string indexName = "tests";
+        const bool acsEnabled = true;
+        const bool qdrantEnabled = true;
+
+        // == Ctors
 
         var acs = new AzureCognitiveSearchMemory(
             this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
@@ -39,15 +43,25 @@ public class TestCosineSimilarity
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
                 .Get<SimpleVectorDbConfig>()!);
 
-        await acs.DeleteIndexAsync(indexName);
-        await qdrant.DeleteIndexAsync(indexName);
+        // == Delete indexes left over
+
+        if (acsEnabled) { await acs.DeleteIndexAsync(indexName); }
+
+        if (qdrantEnabled) { await qdrant.DeleteIndexAsync(indexName); }
+
         await simpleVecDb.DeleteIndexAsync(indexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
 
-        await acs.CreateIndexAsync(indexName, 3);
-        await qdrant.CreateIndexAsync(indexName, 3);
+        // == Create indexes
+
+        if (acsEnabled) { await acs.CreateIndexAsync(indexName, 3); }
+
+        if (qdrantEnabled) { await qdrant.CreateIndexAsync(indexName, 3); }
+
         await simpleVecDb.CreateIndexAsync(indexName, 3);
+
+        // == Insert data
 
         var records = new Dictionary<string, MemoryRecord>
         {
@@ -62,37 +76,74 @@ public class TestCosineSimilarity
 
         foreach (KeyValuePair<string, MemoryRecord> r in records)
         {
-            await acs.UpsertAsync(indexName, r.Value);
-            await qdrant.UpsertAsync(indexName, r.Value);
+            if (acsEnabled) { await acs.UpsertAsync(indexName, r.Value); }
+
+            if (qdrantEnabled) { await qdrant.UpsertAsync(indexName, r.Value); }
+
             await simpleVecDb.UpsertAsync(indexName, r.Value);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(2));
+
+        // == Search by similarity
+
         var target = new[] { 0.01f, 0.5f, 0.41f };
-        IAsyncEnumerable<(MemoryRecord, double)> acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
-        IAsyncEnumerable<(MemoryRecord, double)> qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
-        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
-
-        var acsResults = await acsList.ToListAsync();
-        var qdrantResults = await qdrantList.ToListAsync();
-        var simpleVecDbResults = await simpleVecDbList.ToListAsync();
-
-        this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
-        foreach ((MemoryRecord, double) r in acsResults)
+        IAsyncEnumerable<(MemoryRecord, double)> acsList;
+        IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
+        if (acsEnabled)
         {
-            var actual = r.Item2;
-            var expected = CosineSim(target, records[r.Item1.Id].Vector);
-            var diff = expected - actual;
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+            acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
         }
 
-        this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
-        foreach ((MemoryRecord, double) r in qdrantResults)
+        if (qdrantEnabled)
         {
-            var actual = r.Item2;
-            var expected = CosineSim(target, records[r.Item1.Id].Vector);
-            var diff = expected - actual;
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+            qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        }
+
+        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+
+        List<(MemoryRecord, double)> acsResults;
+        List<(MemoryRecord, double)> qdrantResults;
+        if (acsEnabled)
+        {
+            acsResults = await acsList.ToListAsync();
+        }
+
+        if (qdrantEnabled)
+        {
+            qdrantResults = await qdrantList.ToListAsync();
+        }
+
+        var simpleVecDbResults = await simpleVecDbList.ToListAsync();
+
+        // == Test results
+
+        const double precision = 0.000001d;
+
+        if (acsEnabled)
+        {
+            this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
+            foreach ((MemoryRecord, double) r in acsResults)
+            {
+                var actual = r.Item2;
+                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var diff = expected - actual;
+                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < precision);
+            }
+        }
+
+        if (qdrantEnabled)
+        {
+            this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
+            foreach ((MemoryRecord, double) r in qdrantResults)
+            {
+                var actual = r.Item2;
+                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var diff = expected - actual;
+                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < precision);
+            }
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
@@ -102,6 +153,7 @@ public class TestCosineSimilarity
             var expected = CosineSim(target, records[r.Item1.Id].Vector);
             var diff = expected - actual;
             this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+            Assert.True(Math.Abs(diff) < precision);
         }
     }
 
