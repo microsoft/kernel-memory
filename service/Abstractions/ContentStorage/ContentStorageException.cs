@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.KernelMemory.Diagnostics;
+namespace Microsoft.KernelMemory.ContentStorage;
 
 public class ContentStorageException : KernelMemoryException
 {

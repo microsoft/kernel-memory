@@ -26,7 +26,7 @@ public class OpenAITests : BaseTestCase
         // Arrange
         var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(this._openAIKey)
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         // Act
         await memory.ImportTextAsync("Today is November 1st, 2099");
@@ -47,7 +47,7 @@ public class OpenAITests : BaseTestCase
                 EmbeddingModel = "text-embedding-ada-002",
                 TextModel = "gpt-3.5-turbo-16k"
             })
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         // Act
         await memory.ImportTextAsync("Today is November 1st, 2099");
@@ -72,7 +72,7 @@ public class OpenAITests : BaseTestCase
                 APIKey = this._openAIKey,
                 TextModel = "gpt-3.5-turbo-16k"
             })
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         // Act
         await memory.ImportTextAsync("Today is November 1st, 2099");

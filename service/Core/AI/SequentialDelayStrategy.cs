@@ -6,7 +6,7 @@ using Azure.Core;
 
 namespace Microsoft.KernelMemory.AI;
 
-public class SequentialDelayStrategy : DelayStrategy
+internal class SequentialDelayStrategy : DelayStrategy
 {
     private static readonly TimeSpan[] s_pollingSequence =
     {

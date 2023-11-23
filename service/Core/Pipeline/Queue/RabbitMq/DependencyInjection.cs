@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithRabbitMQPipeline(this KernelMemoryBuilder builder, RabbitMqConfig config)
+    public static IKernelMemoryBuilder WithRabbitMQPipeline(this IKernelMemoryBuilder builder, RabbitMqConfig config)
     {
         builder.Services.AddRabbitMq(config);
         return builder;

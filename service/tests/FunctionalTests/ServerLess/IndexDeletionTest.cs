@@ -29,7 +29,7 @@ public class IndexDeletionTest : BaseTestCase
             .WithOpenAIDefaults(openAIKey)
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "tmp-vectors", StorageType = FileSystemTypes.Disk })
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         // Act
         await memory.ImportTextAsync(
@@ -72,7 +72,7 @@ public class IndexDeletionTest : BaseTestCase
             .WithOpenAIDefaults(openAIKey)
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
             .WithQdrant("http://127.0.0.1:6333")
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         // Act
         await memory.ImportTextAsync(

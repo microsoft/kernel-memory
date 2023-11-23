@@ -37,7 +37,7 @@ internal static class GPT3Settings
     private static Dictionary<string, int> BuildEncoder()
     {
         string json = EmbeddedTokenizersGPT3Resource.ReadEncodingTable();
-        var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json, new JsonSerializerOptions());
+        var encoder = JsonSerializer.Deserialize<Dictionary<string, int>>(json);
 
         return encoder
                ?? throw new KernelMemoryException("Encoding table deserialization returned NULL");

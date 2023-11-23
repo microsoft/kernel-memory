@@ -11,7 +11,7 @@ public static class Program
         var memory = new KernelMemoryBuilder()
             .WithCustomPromptProvider(new MyPromptProvider())
             .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .BuildServerlessClient();
+            .Build<MemoryServerless>();
 
         await memory.ImportTextAsync("NASA space probe Lucy flies by asteroid 152830 Dinkinesh, the first of eight asteroids planned to be visited by the spacecraft.");
 

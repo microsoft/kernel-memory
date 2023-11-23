@@ -18,6 +18,9 @@ namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
+
     private readonly List<IVectorDb> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
@@ -358,7 +361,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected static string ToJson(object data, bool indented = false)
     {
-        return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(data, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     private async Task UploadFormFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken)

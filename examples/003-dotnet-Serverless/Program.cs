@@ -17,7 +17,7 @@ var memory = new KernelMemoryBuilder()
     // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))                      => use Azure Cognitive Search
     // .WithQdrant("http://127.0.0.1:6333")                                                            => use Qdrant docker
     // .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY")) => use Azure Form Recognizer OCR
-    .BuildServerlessClient();
+    .Build<MemoryServerless>();
 
 // Use these boolean to enable/disable parts of the examples below
 bool ingestion = true;

@@ -10,13 +10,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithSimpleFileStorage(this KernelMemoryBuilder builder, SimpleFileStorageConfig? config = null)
+    public static IKernelMemoryBuilder WithSimpleFileStorage(this IKernelMemoryBuilder builder, SimpleFileStorageConfig? config = null)
     {
         builder.Services.AddSimpleFileStorageAsContentStorage(config ?? new SimpleFileStorageConfig());
         return builder;
     }
 
-    public static KernelMemoryBuilder WithSimpleFileStorage(this KernelMemoryBuilder builder, string directory)
+    public static IKernelMemoryBuilder WithSimpleFileStorage(this IKernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleFileStorageAsContentStorage(directory);
         return builder;

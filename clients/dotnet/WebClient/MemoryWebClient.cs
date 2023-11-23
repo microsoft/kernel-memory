@@ -18,6 +18,8 @@ namespace Microsoft.KernelMemory;
 
 public class MemoryWebClient : IKernelMemory
 {
+    private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     private readonly HttpClient _client;
 
     public MemoryWebClient(string endpoint, string? apiKey = "", string apiKeyHeader = "Authorization")
@@ -144,7 +146,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var data = JsonSerializer.Deserialize<IndexCollection>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new IndexCollection();
+        var data = JsonSerializer.Deserialize<IndexCollection>(json, s_caseInsensitiveJsonOptions) ?? new IndexCollection();
 
         return data.Results;
     }
@@ -274,7 +276,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<SearchResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new SearchResult();
+        return JsonSerializer.Deserialize<SearchResult>(json, s_caseInsensitiveJsonOptions) ?? new SearchResult();
     }
 
     /// <inheritdoc />
@@ -307,7 +309,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new MemoryAnswer();
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
     }
 
     #region private

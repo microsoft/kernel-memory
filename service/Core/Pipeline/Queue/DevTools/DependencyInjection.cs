@@ -12,13 +12,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, SimpleQueuesConfig? config = null)
+    public static IKernelMemoryBuilder WithSimpleQueuesPipeline(this IKernelMemoryBuilder builder, SimpleQueuesConfig? config = null)
     {
         builder.Services.AddSimpleQueues(config ?? new SimpleQueuesConfig());
         return builder;
     }
 
-    public static KernelMemoryBuilder WithSimpleQueuesPipeline(this KernelMemoryBuilder builder, string directory)
+    public static IKernelMemoryBuilder WithSimpleQueuesPipeline(this IKernelMemoryBuilder builder, string directory)
     {
         builder.Services.AddSimpleQueues(directory);
         return builder;

@@ -6,7 +6,7 @@
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
-        <NoWarn>CA1711,CS1591</NoWarn>
+        <NoWarn>CA1711,CS1591,CS1574,NU5104</NoWarn>
     </PropertyGroup>
 
     <Import Project="../nuget-package.props"/>
@@ -18,7 +18,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Hosting"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
         <PackageReference Include="System.Memory.Data"/>
+        <PackageReference Include="System.Numerics.Tensors" />
         <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
 

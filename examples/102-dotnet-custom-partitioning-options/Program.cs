@@ -11,7 +11,7 @@ var memory = new KernelMemoryBuilder()
         MaxTokensPerLine = 99,
         OverlappingTokens = 47,
     })
-    .BuildServerlessClient();
+    .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync(new Document()
     .AddFile("mswordfile.docx"), steps: new[]

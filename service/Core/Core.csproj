@@ -32,8 +32,6 @@
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI"/>
         <PackageReference Include="PdfPig"/>
         <PackageReference Include="Polly.Core"/>

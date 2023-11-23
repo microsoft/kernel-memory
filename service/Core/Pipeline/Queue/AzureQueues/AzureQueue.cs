@@ -11,6 +11,7 @@ using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Timer = System.Timers.Timer;
 
@@ -19,6 +20,9 @@ namespace Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 public sealed class AzureQueue : IQueue
 {
     private const string DefaultEndpointSuffix = "core.windows.net";
+
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
 
     private sealed class MessageEventArgs : EventArgs
     {
@@ -385,7 +389,7 @@ public sealed class AzureQueue : IQueue
 
     private static string ToJson(object data, bool indented = false)
     {
-        return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(data, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     private static string CleanQueueName(string? name)

@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static KernelMemoryBuilder WithAzurequeuePipeline(this KernelMemoryBuilder builder, AzureQueueConfig config)
+    public static IKernelMemoryBuilder WithAzurequeuePipeline(this IKernelMemoryBuilder builder, AzureQueueConfig config)
     {
         builder.Services.AddAzureQueue(config);
         return builder;
