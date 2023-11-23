@@ -127,7 +127,7 @@ public class Document
 
         if (!IsValid(id))
         {
-            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
+            throw new ArgumentOutOfRangeException(nameof(id)+" OR fileName", "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
         }
 
         return id!;
