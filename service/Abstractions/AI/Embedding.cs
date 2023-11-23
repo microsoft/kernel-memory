@@ -50,7 +50,7 @@ public struct Embedding : IEquatable<Embedding>
 
     public double CosineSimilarity(Embedding embedding)
     {
-        return TensorPrimitives.CosineSimilarity(this.Data.ToArray(), embedding.Data.ToArray());
+        return TensorPrimitives.CosineSimilarity(this.Data.Span, embedding.Data.Span);
     }
 
     /// <summary>
