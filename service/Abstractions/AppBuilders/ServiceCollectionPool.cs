@@ -27,8 +27,10 @@ public class ServiceCollectionPool : IServiceCollection
         this._pool = new List<IServiceCollection> { sc };
     }
 
-    public void AddServiceCollection(IServiceCollection sc)
+    public void AddServiceCollection(IServiceCollection? sc)
     {
+        if (sc == null) { return; }
+
         if (this._locked)
         {
             throw new InvalidOperationException("The pool of service collections is already in use and cannot be extended");

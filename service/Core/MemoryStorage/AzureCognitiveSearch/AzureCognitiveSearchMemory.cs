@@ -18,23 +18,46 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
-public class AzureCognitiveSearchMemory : IMemoryStorage
+/// <summary>
+/// Azure AI Search connector for Kernel Memory
+/// TODO:
+/// * support semantic search
+/// * support hybrid search
+/// * support custom schema
+/// * support custom Azure AI Search logic
+/// </summary>
+public class AzureCognitiveSearchMemory : IMemoryDb
 {
+    private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
+    /// <summary>
+    /// Create a new instance
+    /// </summary>
+    /// <param name="config">Azure AI Search configuration</param>
+    /// <param name="embeddingGenerator">Text embedding generator</param>
+    /// <param name="log">Application logger</param>
     public AzureCognitiveSearchMemory(
         AzureCognitiveSearchConfig config,
+        ITextEmbeddingGeneration embeddingGenerator,
         ILogger<AzureCognitiveSearchMemory>? log = null)
     {
+        this._embeddingGenerator = embeddingGenerator;
         this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
             this._log.LogCritical("Azure Cognitive Search Endpoint is empty");
             throw new ConfigurationException("Azure Cognitive Search Endpoint is empty");
+        }
+
+        if (this._embeddingGenerator == null)
+        {
+            throw new AzureCognitiveSearchMemoryException("Embedding generator not configured");
         }
 
         switch (config.Auth)
@@ -83,7 +106,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
     {
         var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
         var result = new List<string>();
-        await foreach (SearchIndex? index in indexesAsync)
+        await foreach (SearchIndex? index in indexesAsync.ConfigureAwait(false))
         {
             result.Add(index.Name);
         }
@@ -121,7 +144,6 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
-        Embedding embedding,
         string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
@@ -133,7 +155,8 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
 
         var client = this.GetSearchClient(index);
 
-        VectorizedQuery vectorQuery = new(embedding.Data)
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        VectorizedQuery vectorQuery = new(textEmbedding.Data)
         {
             KNearestNeighborsCount = limit,
             Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
@@ -180,7 +203,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
         if (searchResult == null) { yield break; }
 
         var minDistance = CosineSimilarityToScore(minRelevance);
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             if (doc == null || doc.Score < minDistance) { continue; }
 
@@ -239,7 +262,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
 
         if (searchResult == null) { yield break; }
 
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             // stop after returning the amount requested
             if (limit-- <= 0) { yield break; }
@@ -289,7 +312,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
     //     }
     // }
 
-    private async Task CreateIndexAsync(string index, VectorDbSchema schema, CancellationToken cancellationToken = default)
+    private async Task CreateIndexAsync(string index, MemoryDbSchema schema, CancellationToken cancellationToken = default)
     {
         if (await this.DoesIndexExistAsync(index, cancellationToken).ConfigureAwait(false))
         {
@@ -313,7 +336,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
         string normalizeIndexName = this.NormalizeIndexName(index);
 
         var indexesAsync = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (SearchIndex? searchIndex in indexesAsync)
+        await foreach (SearchIndex? searchIndex in indexesAsync.ConfigureAwait(false))
         {
             if (searchIndex != null && string.Equals(searchIndex.Name, normalizeIndexName, StringComparison.OrdinalIgnoreCase)) { return true; }
         }
@@ -375,13 +398,13 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
         return client;
     }
 
-    private static void ValidateSchema(VectorDbSchema schema)
+    private static void ValidateSchema(MemoryDbSchema schema)
     {
         schema.Validate(vectorSizeRequired: true);
 
-        foreach (var f in schema.Fields.Where(x => x.Type == VectorDbField.FieldType.Vector))
+        foreach (var f in schema.Fields.Where(x => x.Type == MemoryDbField.FieldType.Vector))
         {
-            if (f.VectorMetric is not (VectorDbField.VectorMetricType.Cosine or VectorDbField.VectorMetricType.Euclidean or VectorDbField.VectorMetricType.DotProduct))
+            if (f.VectorMetric is not (MemoryDbField.VectorMetricType.Cosine or MemoryDbField.VectorMetricType.Euclidean or MemoryDbField.VectorMetricType.DotProduct))
             {
                 throw new AzureCognitiveSearchMemoryException($"Vector metric '{f.VectorMetric:G}' not supported");
             }
@@ -436,7 +459,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
         return index;
     }
 
-    private SearchIndex PrepareIndexSchema(string index, VectorDbSchema schema)
+    private SearchIndex PrepareIndexSchema(string index, MemoryDbSchema schema)
     {
         ValidateSchema(schema);
 
@@ -476,11 +499,11 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
         {
             switch (field.Type)
             {
-                case VectorDbField.FieldType.Unknown:
+                case MemoryDbField.FieldType.Unknown:
                 default:
                     throw new AzureCognitiveSearchMemoryException($"Unsupported field type {field.Type:G}");
 
-                case VectorDbField.FieldType.Vector:
+                case MemoryDbField.FieldType.Vector:
                     vectorField = new SearchField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                     {
                         IsKey = false,
@@ -493,7 +516,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
                     };
 
                     break;
-                case VectorDbField.FieldType.Text:
+                case MemoryDbField.FieldType.Text:
                     var useBugWorkAround = true;
                     if (useBugWorkAround)
                     {
@@ -537,7 +560,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
 
                     break;
 
-                case VectorDbField.FieldType.Integer:
+                case MemoryDbField.FieldType.Integer:
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Int64)
                     {
                         IsKey = field.IsKey,
@@ -547,7 +570,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
                     });
                     break;
 
-                case VectorDbField.FieldType.Decimal:
+                case MemoryDbField.FieldType.Decimal:
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Double)
                     {
                         IsKey = field.IsKey,
@@ -557,7 +580,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
                     });
                     break;
 
-                case VectorDbField.FieldType.Bool:
+                case MemoryDbField.FieldType.Bool:
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Boolean)
                     {
                         IsKey = false,
@@ -567,7 +590,7 @@ public class AzureCognitiveSearchMemory : IMemoryStorage
                     });
                     break;
 
-                case VectorDbField.FieldType.ListOfStrings:
+                case MemoryDbField.FieldType.ListOfStrings:
                     indexSchema.Fields.Add(new SimpleField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.String))
                     {
                         IsKey = false,

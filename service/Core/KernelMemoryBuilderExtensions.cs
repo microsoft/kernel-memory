@@ -83,22 +83,22 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithCustomVectorDb(
+    public static IKernelMemoryBuilder WithCustomMemoryDb(
         this IKernelMemoryBuilder builder,
-        IMemoryStorage service,
+        IMemoryDb service,
         bool useForIngestion = true,
         bool useForRetrieval = true)
     {
-        service = service ?? throw new ConfigurationException("The vector DB instance is NULL");
+        service = service ?? throw new ConfigurationException("The memory DB instance is NULL");
 
         if (useForRetrieval)
         {
-            builder.AddSingleton<IMemoryStorage>(service);
+            builder.AddSingleton<IMemoryDb>(service);
         }
 
         if (useForIngestion)
         {
-            builder.AddIngestionVectorDb(service);
+            builder.AddIngestionMemoryDb(service);
         }
 
         return builder;

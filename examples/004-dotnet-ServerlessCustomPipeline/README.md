@@ -18,7 +18,7 @@ var pipeline = orchestrator
     .Then("partition")
     .Then("summarize")
     .Then("gen_embeddings")
-    .Then("save_embeddings")
+    .Then("save_records")
     .Build();
 ```
 
