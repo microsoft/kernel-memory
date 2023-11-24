@@ -36,11 +36,11 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
+        List<IMemoryDb> memoryDbs,
         ITextGeneration textGenerator,
         KernelMemoryConfig? config = null,
         ILogger<DistributedPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
         this._queueClientFactory = queueClientFactory;
     }

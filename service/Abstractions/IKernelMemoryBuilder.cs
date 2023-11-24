@@ -76,11 +76,11 @@ public interface IKernelMemoryBuilder
     public IKernelMemoryBuilder WithoutDefaultHandlers();
 
     /// <summary>
-    /// Add a vector DB to the list of DBs used during the ingestion.
+    /// Add a memory DB to the list of DBs used during the ingestion.
     /// Note: it's possible writing to multiple DBs, all of them are used during the ingestion.
     /// </summary>
-    /// <param name="service">Vector DB instance</param>
-    public IKernelMemoryBuilder AddIngestionVectorDb(IVectorDb service);
+    /// <param name="service">Memory DB instance</param>
+    public IKernelMemoryBuilder AddIngestionMemoryDb(IMemoryDb service);
 
     /// <summary>
     /// Add an embedding generator to the list of generators used during the ingestion.

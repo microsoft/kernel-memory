@@ -26,6 +26,23 @@ public class KernelMemoryConfig
         public DistributedOrchestrationConfig DistributedOrchestration { get; set; } = new();
 
         /// <summary>
+        /// Whether the pipeline generates and saves the vectors/embeddings in the memory DBs.
+        /// When using a memory DB that automatically generates embeddings internally,
+        /// or performs semantic search internally anyway, this should be False,
+        /// and avoid generating embeddings that are not used.
+        /// Examples:
+        /// * you are using Azure AI Search "semantic search" without "vector search": in this
+        ///   case you don't need embeddings because Azure AI Search uses a more advanced approach
+        ///   internally.
+        /// * you are using a custom Memory DB connector that generates embeddings on the fly
+        ///   when writing records and when searching: in this case you don't need the pipeline
+        ///   to calculate embeddings, because your connector does all the work.
+        /// * you are using a basic "text search" and a DB without "vector search": in this case
+        ///   embeddings would be unused so it's better to disable them to save cost and latency.
+        /// </summary>
+        public bool EmbeddingGenerationEnabled { get; set; } = true;
+
+        /// <summary>
         /// List of embedding types to generate during document ingestion.
         /// Using multiple types can help with migration from two different models, or for comparing models performance.
         /// </summary>
@@ -35,19 +52,19 @@ public class KernelMemoryConfig
         /// List of vector storages where embeddings will be saved during ingestion.
         /// Multiple storages can help with data migrations and testing purposes.
         /// </summary>
-        public List<string> VectorDbTypes { get; set; } = new();
+        public List<string> MemoryDbTypes { get; set; } = new();
 
         /// <summary>
         /// Default document ingestion pipeline steps.
         /// * extract: extract text from files
         /// * partition: spit the text in small chunks
         /// * gen_embeddings: generate embeddings for each chunk
-        /// * save_embeddings: save the embeddings
+        /// * save_records: save records in the memory DBs
         ///
         /// Other steps not included by default:
-        /// * summarize: use LLMs to summarize the document (this step can be slow, so it's meant to run after gen_embeddings/save_embeddings)
+        /// * summarize: use LLMs to summarize the document (this step can be slow, so it's meant to run after gen_embeddings/save_records)
         /// * gen_embeddings: generate embeddings for new chunks (e.g. the summary)
-        /// * save_embeddings: save new embeddings
+        /// * save_records: save new records generated from the summary
         /// </summary>
         public List<string> DefaultSteps { get; set; } = new();
 
@@ -71,10 +88,10 @@ public class KernelMemoryConfig
         /// <summary>
         /// The vector storage to search for relevant data used to generate answers
         /// </summary>
-        public string VectorDbType { get; set; } = string.Empty;
+        public string MemoryDbType { get; set; } = string.Empty;
 
         /// <summary>
-        /// The embedding generator used for questions and searching for relevant data in the vector DB
+        /// The embedding generator used for questions and searching for relevant data in the memory DB
         /// </summary>
         public string EmbeddingGeneratorType { get; set; } = string.Empty;
     }

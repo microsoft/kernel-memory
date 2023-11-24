@@ -32,17 +32,19 @@ public class TestMemoryFilters
         const bool createIndex = true;
         const bool createRecords = true;
 
+        var embeddingGenerator = new FakeEmbeddingGenerator();
+
         var acs = new AzureCognitiveSearchMemory(
             this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!);
+                .Get<AzureCognitiveSearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!);
+                .Get<QdrantConfig>()!, embeddingGenerator);
 
         var simpleVecDb = new SimpleVectorDb(
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!);
+                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
 
         if (deleteIndex)
         {
@@ -90,7 +92,7 @@ public class TestMemoryFilters
         await this.TestVectorDbFiltering(simpleVecDb);
     }
 
-    private async Task TestVectorDbFiltering(IVectorDb vectorDb)
+    private async Task TestVectorDbFiltering(IMemoryDb vectorDb)
     {
         // Single memory filter
         var singleFilter = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee") };

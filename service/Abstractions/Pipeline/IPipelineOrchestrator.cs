@@ -121,17 +121,32 @@ public interface IPipelineOrchestrator
     Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Whether the pipeline generates and saves the vectors/embeddings in the memory DBs.
+    /// When using a memory DB that automatically generates embeddings internally,
+    /// or performs semantic search internally anyway, this should be False,
+    /// and avoid generating embeddings that are not used.
+    /// Examples:
+    /// * you are using Azure AI Search "semantic search" without "vector search": in this
+    ///   case you don't need embeddings because Azure AI Search uses a more advanced approach
+    ///   internally.
+    /// * you are using a custom Memory DB connector that generates embeddings on the fly
+    ///   when writing records and when searching: in this case you don't need the pipeline
+    ///   to calculate embeddings, because your connector does all the work.
+    /// * you are using a basic "text search" and a DB without "vector search": in this case
+    ///   embeddings would be unused so it's better to disable them to save cost and latency.
+    /// </summary>
+    bool EmbeddingGenerationEnabled { get; }
+
+    /// <summary>
     /// Get list of embedding generators to use during the ingestion, e.g. to create
     /// multiple vectors.
-    /// TODO: remove and inject dependency to handlers who need this
     /// </summary>
     List<ITextEmbeddingGeneration> GetEmbeddingGenerators();
 
     /// <summary>
-    /// Get list of Vector DBs where to store embeddings.
-    /// TODO: remove and inject dependency to handlers who need this
+    /// Get list of memory DBs where to store embeddings.
     /// </summary>
-    List<IVectorDb> GetVectorDbs();
+    List<IMemoryDb> GetMemoryDbs();
 
     /// <summary>
     /// Get the text generator used for prompts, synthetic data, answer generation, etc.

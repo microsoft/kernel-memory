@@ -90,7 +90,7 @@ public static class Main
             OpenAISetup();
 
             // Embedding storage
-            VectorDbTypeSetup();
+            MemoryDbTypeSetup();
             AzureCognitiveSearchSetup();
             QdrantSetup();
             SimpleVectorDbSetup();
@@ -579,19 +579,19 @@ public static class Main
         });
     }
 
-    private static void VectorDbTypeSetup()
+    private static void MemoryDbTypeSetup()
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "When searching for answers, which vector DB service contains embeddings to search?",
+            Title = "When searching for answers, which memory DB service contains embeddings to search?",
             Options = new List<Answer>
             {
                 new("Azure Cognitive Search", () =>
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "AzureCognitiveSearch";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                        x.Retrieval.MemoryDbType = "AzureCognitiveSearch";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
                     s_cfgAzureCognitiveSearch.Value = true;
                 }),
@@ -599,8 +599,8 @@ public static class Main
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "Qdrant";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                        x.Retrieval.MemoryDbType = "Qdrant";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
                     s_cfgQdrant.Value = true;
                 }),
@@ -608,7 +608,7 @@ public static class Main
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "SimpleVectorDb";
+                        x.Retrieval.MemoryDbType = "SimpleVectorDb";
                     });
                     s_cfgSimpleVectorDb.Value = true;
                 }),

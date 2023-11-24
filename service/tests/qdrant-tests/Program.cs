@@ -4,13 +4,15 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
+var embeddingGenerator = new FakeEmbeddingGenerator();
+
 var config = new QdrantConfig
 {
     Endpoint = "http://127.0.0.1:6333",
     APIKey = ""
 };
 
-var memory = new QdrantMemory(config);
+var memory = new QdrantMemory(config, embeddingGenerator);
 
 Console.WriteLine("===== DELETE INDEX =====");
 
@@ -22,10 +24,14 @@ await memory.CreateIndexAsync("test", 5);
 
 Console.WriteLine("===== INSERT RECORD 1 =====");
 
+const string Text = "test1";
+var embedding = new[] { 0f, 0, 1, 0, 1 };
+embeddingGenerator.Mock(Text, embedding);
+
 var memoryRecord1 = new MemoryRecord
 {
     Id = "memory 1",
-    Vector = new[] { 0f, 0, 1, 0, 1 },
+    Vector = embedding,
     Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
     Payload = new Dictionary<string, object>()
 };
@@ -53,7 +59,7 @@ Console.WriteLine($"Update 2: {id2} {memoryRecord2.Id}");
 
 Console.WriteLine("===== SEARCH 1 =====");
 
-var similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 },
+var similarList = memory.GetSimilarListAsync("test", text: Text,
     limit: 10, withEmbeddings: true);
 await foreach ((MemoryRecord, double) record in similarList)
 {
@@ -64,8 +70,8 @@ await foreach ((MemoryRecord, double) record in similarList)
 
 Console.WriteLine("===== SEARCH 2 =====");
 
-similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 },
-    limit: 10, withEmbeddings: true, filters: new List<MemoryFilter>() { MemoryFilters.ByTag("type", "email") });
+similarList = memory.GetSimilarListAsync("test", text: Text,
+    limit: 10, withEmbeddings: true, filters: new List<MemoryFilter> { MemoryFilters.ByTag("type", "email") });
 await foreach ((MemoryRecord, double) record in similarList)
 {
     Console.WriteLine(record.Item1.Id);

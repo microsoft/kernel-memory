@@ -289,7 +289,7 @@ public class AzureBlobsStorage : IContentStorage
         this._log.LogInformation("Deleting blobs at {0}", prefix);
 
         AsyncPageable<BlobItem>? blobList = this._containerClient.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken);
-        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken))
+        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             foreach (BlobItem blob in page.Values)
             {

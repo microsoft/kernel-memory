@@ -37,8 +37,8 @@ await orchestrator.AddHandlerAsync(summarizeEmbedding);
 GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator);
 await orchestrator.AddHandlerAsync(textEmbedding);
 
-SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator);
-await orchestrator.AddHandlerAsync(saveEmbedding);
+SaveRecordsHandler saveRecords = new("save_records", orchestrator);
+await orchestrator.AddHandlerAsync(saveRecords);
 
 // orchestrator.AddHandlerAsync(...);
 // orchestrator.AddHandlerAsync(...);
@@ -56,7 +56,7 @@ var pipeline = orchestrator
     .Then("partition")
     .Then("summarize")
     .Then("gen_embeddings")
-    .Then("save_embeddings")
+    .Then("save_records")
     .Build();
 
 // Execute pipeline

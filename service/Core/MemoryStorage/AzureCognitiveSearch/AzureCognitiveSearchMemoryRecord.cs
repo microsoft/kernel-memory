@@ -41,16 +41,16 @@ public sealed class AzureCognitiveSearchMemoryRecord
     [JsonPropertyName(PayloadField)]
     public string Payload { get; set; } = string.Empty;
 
-    public static VectorDbSchema GetSchema(int vectorSize)
+    public static MemoryDbSchema GetSchema(int vectorSize)
     {
-        return new VectorDbSchema
+        return new MemoryDbSchema
         {
-            Fields = new List<VectorDbField>
+            Fields = new List<MemoryDbField>
             {
-                new() { Name = IdField, Type = VectorDbField.FieldType.Text, IsKey = true },
-                new() { Name = VectorField, Type = VectorDbField.FieldType.Vector, VectorSize = vectorSize },
-                new() { Name = TagsField, Type = VectorDbField.FieldType.ListOfStrings, IsFilterable = true },
-                new() { Name = PayloadField, Type = VectorDbField.FieldType.Text, IsFilterable = false },
+                new() { Name = IdField, Type = MemoryDbField.FieldType.Text, IsKey = true },
+                new() { Name = VectorField, Type = MemoryDbField.FieldType.Vector, VectorSize = vectorSize },
+                new() { Name = TagsField, Type = MemoryDbField.FieldType.ListOfStrings, IsFilterable = true },
+                new() { Name = PayloadField, Type = MemoryDbField.FieldType.Text, IsFilterable = false },
             }
         };
     }

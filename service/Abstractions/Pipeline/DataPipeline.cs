@@ -148,6 +148,14 @@ public sealed class DataPipeline
         public string ParentId { get; set; } = string.Empty;
 
         /// <summary>
+        /// ID of the partition used to generate this file (if the file is derived from a partition)
+        /// </summary>
+        [JsonPropertyOrder(15)]
+        [JsonPropertyName("source_partition_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string SourcePartitionId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Deduplication hash used for consolidation tasks
         /// </summary>
         [JsonPropertyOrder(16)]

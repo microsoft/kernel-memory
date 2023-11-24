@@ -91,7 +91,7 @@ The service depends on three main components:
 * **Vector storage**: service used to persist embeddings. Currently, the
   service supports **Azure Cognitive Search**, **Qdrant** and a very basic
   in memory vector storage with support for persistence on disk.
-  Soon we'll add support for more vector DBs.
+  Soon we'll add support for more DBs.
 
   > To use Qdrant locally, install docker and launch Qdrant with:
   >
