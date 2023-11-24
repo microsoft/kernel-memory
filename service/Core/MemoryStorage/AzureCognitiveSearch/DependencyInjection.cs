@@ -28,7 +28,7 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<AzureCognitiveSearchConfig>(config)
-            .AddSingleton<IVectorDb, AzureCognitiveSearchMemory>();
+            .AddSingleton<IMemoryStorage, AzureCognitiveSearchMemory>();
     }
 
     public static IServiceCollection AddAzureCognitiveSearchAsVectorDb(this IServiceCollection services, string endpoint, string apiKey)

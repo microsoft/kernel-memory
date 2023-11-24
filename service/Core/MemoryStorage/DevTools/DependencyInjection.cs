@@ -29,7 +29,7 @@ public static partial class DependencyInjection
     {
         return services
             .AddSingleton<SimpleVectorDbConfig>(config ?? new SimpleVectorDbConfig())
-            .AddSingleton<IVectorDb, SimpleVectorDb>();
+            .AddSingleton<IMemoryStorage, SimpleVectorDb>();
     }
 
     public static IServiceCollection AddSimpleVectorDbAsVectorDb(this IServiceCollection services, string directory)

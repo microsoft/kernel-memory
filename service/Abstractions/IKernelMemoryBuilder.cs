@@ -80,7 +80,7 @@ public interface IKernelMemoryBuilder
     /// Note: it's possible writing to multiple DBs, all of them are used during the ingestion.
     /// </summary>
     /// <param name="service">Vector DB instance</param>
-    public IKernelMemoryBuilder AddIngestionVectorDb(IVectorDb service);
+    public IKernelMemoryBuilder AddIngestionVectorDb(IMemoryStorage service);
 
     /// <summary>
     /// Add an embedding generator to the list of generators used during the ingestion.

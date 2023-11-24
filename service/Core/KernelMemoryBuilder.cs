@@ -61,7 +61,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
 
     // List of all the vector DBs to use during ingestion
-    private readonly List<IVectorDb> _vectorDbs = new();
+    private readonly List<IMemoryStorage> _vectorDbs = new();
 
     // Normalized configuration
     private KernelMemoryConfig? _memoryConfiguration = null;
@@ -106,7 +106,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this._embeddingGenerators.Clear();
         this._vectorDbs.Clear();
         this.AddSingleton<List<ITextEmbeddingGeneration>>(this._embeddingGenerators);
-        this.AddSingleton<List<IVectorDb>>(this._vectorDbs);
+        this.AddSingleton<List<IMemoryStorage>>(this._vectorDbs);
 
         // Default configuration for tests and demos
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile });
@@ -335,7 +335,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 {
                     this._memoryServiceCollection.AddAzureCognitiveSearchAsVectorDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IMemoryStorage>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -344,7 +344,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 {
                     this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IMemoryStorage>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -353,7 +353,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 {
                     this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
                     var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
+                    var service = serviceProvider.GetService<IMemoryStorage>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
                     this._vectorDbs.Add(service);
                     break;
                 }
@@ -411,7 +411,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public IKernelMemoryBuilder AddIngestionVectorDb(IVectorDb service)
+    public IKernelMemoryBuilder AddIngestionVectorDb(IMemoryStorage service)
     {
         this._vectorDbs.Add(service);
         return this;
@@ -573,7 +573,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void RequireOneVectorDb()
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(IVectorDb)))
+        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(IMemoryStorage)))
         {
             throw new ConfigurationException("Vector DBs not defined");
         }
@@ -590,9 +590,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void ReuseRetrievalVectorDbIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IVectorDb)))
+        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryStorage)))
         {
-            this._vectorDbs.Add(serviceProvider.GetService<IVectorDb>()
+            this._vectorDbs.Add(serviceProvider.GetService<IMemoryStorage>()
                                 ?? throw new ConfigurationException("Unable to build vector DB instance"));
         }
     }
@@ -603,7 +603,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var hasContentStorage = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IContentStorage)));
         var hasMimeDetector = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMimeTypeDetection)));
         var hasEmbeddingGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextEmbeddingGeneration)));
-        var hasVectorDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IVectorDb)));
+        var hasVectorDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryStorage)));
         var hasTextGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextGeneration)));
 
         if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasVectorDb && hasTextGenerator)

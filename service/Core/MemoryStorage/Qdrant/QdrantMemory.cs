@@ -12,7 +12,7 @@ using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
-public class QdrantMemory : IVectorDb
+public class QdrantMemory : IMemoryStorage
 {
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
@@ -102,6 +102,7 @@ public class QdrantMemory : IVectorDb
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
         Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,

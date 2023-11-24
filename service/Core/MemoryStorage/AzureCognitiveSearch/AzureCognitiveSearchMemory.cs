@@ -21,7 +21,7 @@ using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 
-public class AzureCognitiveSearchMemory : IVectorDb
+public class AzureCognitiveSearchMemory : IMemoryStorage
 {
     private readonly ILogger<AzureCognitiveSearchMemory> _log;
 
@@ -122,6 +122,7 @@ public class AzureCognitiveSearchMemory : IVectorDb
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
         Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,

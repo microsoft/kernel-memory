@@ -18,7 +18,7 @@ namespace Microsoft.KernelMemory.Handlers;
 public class SaveEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<IVectorDb> _vectorDbs;
+    private readonly List<IMemoryStorage> _vectorDbs;
     private readonly ILogger<SaveEmbeddingsHandler> _log;
 
     /// <inheritdoc />
@@ -99,7 +99,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
             record.Payload.Add(Constants.ReservedPayloadTextField, partitionContent);
 
-            foreach (IVectorDb client in this._vectorDbs)
+            foreach (IMemoryStorage client in this._vectorDbs)
             {
                 this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                 await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
@@ -137,7 +137,7 @@ public class SaveEmbeddingsHandler : IPipelineStepHandler
                 string recordId = GetEmbeddingRecordId(oldPipeline.DocumentId, embeddingFile.Id);
                 if (embeddingsToKeep.Contains(recordId)) { continue; }
 
-                foreach (IVectorDb client in this._vectorDbs)
+                foreach (IMemoryStorage client in this._vectorDbs)
                 {
                     this._log.LogTrace("Deleting old embedding {0}", recordId);
                     await client.DeleteAsync(pipeline.Index, new MemoryRecord { Id = recordId }, cancellationToken).ConfigureAwait(false);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.MemoryStorage;
 
-public interface IVectorDb
+public interface IMemoryStorage
 {
     /// <summary>
     /// Create an index/collection
@@ -52,15 +52,17 @@ public interface IVectorDb
     /// </summary>
     /// <param name="index">Index/Collection name</param>
     /// <param name="embedding">Target vector to compare to</param>
-    /// <param name="limit">Max number of results</param>
-    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
+    /// <param name="text">Text being searched</param>
     /// <param name="filters">Values to match in the field used for tagging records (the field must be a list of strings)</param>
+    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
+    /// <param name="limit">Max number of results</param>
     /// <param name="withEmbeddings">Whether to include vector in the result</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>List of similar vectors, starting from the most similar</returns>
     IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
         Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,

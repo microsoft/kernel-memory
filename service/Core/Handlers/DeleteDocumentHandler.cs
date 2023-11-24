@@ -13,7 +13,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteDocumentHandler : IPipelineStepHandler
 {
-    private readonly List<IVectorDb> _vectorDbs;
+    private readonly List<IMemoryStorage> _vectorDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteDocumentHandler> _log;
 
@@ -22,7 +22,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     public DeleteDocumentHandler(
         string stepName,
         IContentStorage contentStorage,
-        List<IVectorDb> vectorDbs,
+        List<IMemoryStorage> vectorDbs,
         ILogger<DeleteDocumentHandler>? log = null)
     {
         this.StepName = stepName;
@@ -40,7 +40,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
         this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         // Delete embeddings
-        foreach (IVectorDb db in this._vectorDbs)
+        foreach (IMemoryStorage db in this._vectorDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 index: pipeline.Index,

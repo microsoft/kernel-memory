@@ -21,14 +21,14 @@ public class SearchClient
     private const int MaxMatchesCount = 100;
     private const int AnswerTokens = 300;
 
-    private readonly IVectorDb _vectorDb;
+    private readonly IMemoryStorage _vectorDb;
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly ITextGeneration _textGenerator;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
 
     public SearchClient(
-        IVectorDb vectorDb,
+        IMemoryStorage vectorDb,
         ITextEmbeddingGeneration embeddingGenerator,
         ITextGeneration textGenerator,
         IPromptProvider? promptProvider = null,
@@ -83,6 +83,7 @@ public class SearchClient
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
             index: index,
             embedding: embedding,
+            text: query,
             filters: filters,
             minRelevance: minRelevance,
             limit: limit,
@@ -200,6 +201,7 @@ public class SearchClient
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
             index: index,
             embedding: embedding,
+            text: question,
             filters: filters,
             minRelevance: minRelevance,
             limit: MaxMatchesCount,

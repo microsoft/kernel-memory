@@ -85,7 +85,7 @@ public static partial class KernelMemoryBuilderExtensions
 
     public static IKernelMemoryBuilder WithCustomVectorDb(
         this IKernelMemoryBuilder builder,
-        IVectorDb service,
+        IMemoryStorage service,
         bool useForIngestion = true,
         bool useForRetrieval = true)
     {
@@ -93,7 +93,7 @@ public static partial class KernelMemoryBuilderExtensions
 
         if (useForRetrieval)
         {
-            builder.AddSingleton<IVectorDb>(service);
+            builder.AddSingleton<IMemoryStorage>(service);
         }
 
         if (useForIngestion)

@@ -14,7 +14,7 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 
 namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-public class SimpleVectorDb : IVectorDb
+public class SimpleVectorDb : IMemoryStorage
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;
@@ -62,6 +62,7 @@ public class SimpleVectorDb : IVectorDb
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
         Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,

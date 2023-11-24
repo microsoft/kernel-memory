@@ -92,15 +92,18 @@ public class TestCosineSimilarity
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
         if (acsEnabled)
         {
-            acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            acsList = acs.GetSimilarListAsync(
+                index: indexName, embedding: target, text: "", limit: 10, withEmbeddings: true);
         }
 
         if (qdrantEnabled)
         {
-            qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            qdrantList = qdrant.GetSimilarListAsync(
+                index: indexName, embedding: target, text: "", limit: 10, withEmbeddings: true);
         }
 
-        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
+            index: indexName, embedding: target, text: "", limit: 10, withEmbeddings: true);
 
         List<(MemoryRecord, double)> acsResults;
         List<(MemoryRecord, double)> qdrantResults;

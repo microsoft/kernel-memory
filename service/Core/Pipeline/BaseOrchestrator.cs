@@ -21,7 +21,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
     private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
 
-    private readonly List<IVectorDb> _vectorDbs;
+    private readonly List<IMemoryStorage> _vectorDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
@@ -34,7 +34,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected BaseOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
+        List<IMemoryStorage> vectorDbs,
         ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
@@ -200,7 +200,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public List<IVectorDb> GetVectorDbs()
+    public List<IMemoryStorage> GetVectorDbs()
     {
         return this._vectorDbs;
     }

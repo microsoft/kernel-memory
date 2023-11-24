@@ -53,7 +53,7 @@ Console.WriteLine($"Update 2: {id2} {memoryRecord2.Id}");
 
 Console.WriteLine("===== SEARCH 1 =====");
 
-var similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 },
+var similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 }, text: "",
     limit: 10, withEmbeddings: true);
 await foreach ((MemoryRecord, double) record in similarList)
 {
@@ -64,7 +64,7 @@ await foreach ((MemoryRecord, double) record in similarList)
 
 Console.WriteLine("===== SEARCH 2 =====");
 
-similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 },
+similarList = memory.GetSimilarListAsync("test", new[] { 0f, 0, 1, 0, 1 }, text: "",
     limit: 10, withEmbeddings: true, filters: new List<MemoryFilter>() { MemoryFilters.ByTag("type", "email") });
 await foreach ((MemoryRecord, double) record in similarList)
 {
