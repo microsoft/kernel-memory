@@ -14,5 +14,5 @@ public class SimpleTextDbConfig
     /// <summary>
     /// Directory of the text file storage.
     /// </summary>
-    public string Directory { get; set; } = "tmp-memory-vectors";
+    public string Directory { get; set; } = "tmp-memory-text";
 }

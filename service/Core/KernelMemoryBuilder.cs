@@ -101,6 +101,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this._memoryServiceCollection = new ServiceCollection();
         this._auxServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+        this.CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection, this._auxServiceCollection);
 
         this._serviceCollections = new ServiceCollectionPool(this._memoryServiceCollection);
         this._serviceCollections.AddServiceCollection(this._auxServiceCollection);
@@ -463,6 +464,20 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         foreach (ServiceDescriptor d in this._memoryServiceCollection)
         {
             this._auxServiceCollection.Add(d);
+        }
+    }
+
+    private void CopyServiceCollection(
+        IServiceCollection? source,
+        IServiceCollection destination1,
+        IServiceCollection? destination2 = null)
+    {
+        if (source == null) { return; }
+
+        foreach (ServiceDescriptor d in source)
+        {
+            destination1.Add(d);
+            destination2?.Add(d);
         }
     }
 

@@ -21,7 +21,16 @@ public class OpenAITextGeneration : ITextGeneration
     private readonly bool _isTextModel;
     private readonly string _model;
 
-    public OpenAITextGeneration(OpenAIConfig config, ILogger<OpenAITextGeneration>? log = null)
+    public OpenAITextGeneration(
+        OpenAIConfig config,
+        ILoggerFactory? loggerFactory = null)
+        : this(config, loggerFactory?.CreateLogger<OpenAITextGeneration>())
+    {
+    }
+
+    public OpenAITextGeneration(
+        OpenAIConfig config,
+        ILogger<OpenAITextGeneration>? log = null)
     {
         var textModels = new List<string>
         {
