@@ -15,7 +15,7 @@ var memory = new MemoryWebClient("http://127.0.0.1:9001/");
 
 // Use these boolean to enable/disable parts of the examples below
 bool ingestion = true;
-bool useImages = true; // Enable Azure Form Recognizer OCR to use this
+bool useImages = true; // Deploy Azure AI Document Intelligence to use this
 bool retrieval = true;
 bool purge = true;
 

@@ -33,7 +33,7 @@ Instructions:
 Script to start Qdrant using Docker, for local development/debugging.
 
 Qdrant is used to store and search vectors, as an alternative to
-[Azure Cognitive Search](https://azure.microsoft.com/products/ai-services/cognitive-search).
+[Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search/).
 
 # run-rabbitmq.sh
 

@@ -26,11 +26,11 @@ public static class Main
     private static BoundedBoolean s_cfgAzureOpenAIText = new();
     private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
     private static BoundedBoolean s_cfgOpenAI = new();
-    private static BoundedBoolean s_cfgAzureOCR = new();
+    private static BoundedBoolean s_cfgAzureAIDocIntel = new();
 
     // Vectors
     private static BoundedBoolean s_cfgEmbeddingGenerationEnabled = new();
-    private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
+    private static BoundedBoolean s_cfgAzureAISearch = new();
     private static BoundedBoolean s_cfgQdrant = new();
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
@@ -55,11 +55,11 @@ public static class Main
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
         s_cfgOpenAI = new();
-        s_cfgAzureOCR = new();
+        s_cfgAzureAIDocIntel = new();
 
         // Vectors
         s_cfgEmbeddingGenerationEnabled = new(initialState: true);
-        s_cfgAzureCognitiveSearch = new();
+        s_cfgAzureAISearch = new();
         s_cfgQdrant = new();
         s_cfgSimpleVectorDb = new();
 
@@ -84,7 +84,7 @@ public static class Main
 
             // Image support
             OCRSetup();
-            AzureCognitiveFormSetup();
+            AzureAIDocIntelSetup();
 
             // Embedding generation
             EmbeddingGeneratorTypeSetup();
@@ -93,7 +93,7 @@ public static class Main
 
             // Memory DB
             MemoryDbTypeSetup();
-            AzureCognitiveSearchSetup();
+            AzureAISearchSetup();
             QdrantSetup();
             SimpleVectorDbSetup();
 
@@ -417,22 +417,22 @@ public static class Main
                 {
                     AppSettings.Change(x => { x.ImageOcrType = "None"; });
                 }),
-                new("Azure Form Recognizer", () =>
+                new("Azure AI Document Intelligence", () =>
                 {
-                    AppSettings.Change(x => { x.ImageOcrType = "AzureFormRecognizer"; });
-                    s_cfgAzureOCR.Value = true;
+                    AppSettings.Change(x => { x.ImageOcrType = "AzureAIDocIntel"; });
+                    s_cfgAzureAIDocIntel.Value = true;
                 }),
                 new("-exit-", SetupUI.Exit),
             }
         });
     }
 
-    private static void AzureCognitiveFormSetup()
+    private static void AzureAIDocIntelSetup()
     {
-        if (!s_cfgAzureOCR.Value) { return; }
+        if (!s_cfgAzureAIDocIntel.Value) { return; }
 
-        s_cfgAzureOCR.Value = false;
-        const string ServiceName = "AzureFormRecognizer";
+        s_cfgAzureAIDocIntel.Value = false;
+        const string ServiceName = "AzureAIDocIntel";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -447,8 +447,8 @@ public static class Main
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Services <endpoint>", config["Endpoint"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure Cognitive Services <API Key>", config["APIKey"].ToString()) },
+            { "Endpoint", SetupUI.AskOpenQuestion("Azure AI <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Azure AI <API Key>", config["APIKey"].ToString()) },
         });
     }
 
@@ -659,14 +659,14 @@ public static class Main
             Title = "When searching for answers, which memory DB service contains the records to search?",
             Options = new List<Answer>
             {
-                new("Azure Cognitive Search", () =>
+                new("Azure AI Search", () =>
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.MemoryDbType = "AzureCognitiveSearch";
+                        x.Retrieval.MemoryDbType = "AzureAISearch";
                         x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
-                    s_cfgAzureCognitiveSearch.Value = true;
+                    s_cfgAzureAISearch.Value = true;
                 }),
                 new("Qdrant", () =>
                 {
@@ -721,12 +721,12 @@ public static class Main
         });
     }
 
-    private static void AzureCognitiveSearchSetup()
+    private static void AzureAISearchSetup()
     {
-        if (!s_cfgAzureCognitiveSearch.Value) { return; }
+        if (!s_cfgAzureAISearch.Value) { return; }
 
-        s_cfgAzureCognitiveSearch.Value = false;
-        const string ServiceName = "AzureCognitiveSearch";
+        s_cfgAzureAISearch.Value = false;
+        const string ServiceName = "AzureAISearch";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -741,8 +741,8 @@ public static class Main
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Search <endpoint>", config["Endpoint"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure Cognitive Search <API Key>", config["APIKey"].ToString()) },
+            { "Endpoint", SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Azure AI Search <API Key>", config["APIKey"].ToString()) },
         });
     }
 

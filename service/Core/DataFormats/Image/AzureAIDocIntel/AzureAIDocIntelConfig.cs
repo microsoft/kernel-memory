@@ -2,9 +2,9 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
+namespace Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 
-public class AzureFormRecognizerConfig
+public class AzureAIDocIntelConfig
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AuthTypes

@@ -4,7 +4,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
@@ -33,9 +33,9 @@ public class TestCosineSimilarity
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
-        var acs = new AzureCognitiveSearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!, embeddingGenerator);
+        var acs = new AzureAISearchMemory(
+            this._cfg.GetSection("Services").GetSection("AzureAISearch")
+                .Get<AzureAISearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
@@ -129,7 +129,7 @@ public class TestCosineSimilarity
 
         if (acsEnabled)
         {
-            this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
+            this._log.WriteLine($"Azure AI Search: {acsResults.Count} results");
             foreach ((MemoryRecord, double) r in acsResults)
             {
                 var actual = r.Item2;

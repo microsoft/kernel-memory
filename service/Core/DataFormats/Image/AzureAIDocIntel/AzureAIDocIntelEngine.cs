@@ -11,46 +11,46 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
+namespace Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 
 /// <summary>
-/// OCR engine based on Azure.AI.FormRecognizer.
+/// OCR engine based on Azure AI Document Intelligence
 /// </summary>
-public class AzureFormRecognizerEngine : IOcrEngine
+public class AzureAIDocIntelEngine : IOcrEngine
 {
     private readonly DocumentAnalysisClient _recognizerClient;
-    private readonly ILogger<AzureFormRecognizerEngine> _log;
+    private readonly ILogger<AzureAIDocIntelEngine> _log;
 
     /// <summary>
-    /// Creates a new instance of the Azure Form Recognizer.
+    /// Creates a new instance of the Azure AI Document Intelligence.
     /// </summary>
-    /// <param name="config">The AzureFormRecognizerConfig config for this service</param>
+    /// <param name="config">Azure AI Document Intelligence settings</param>
     /// <param name="log">Application logger</param>
-    public AzureFormRecognizerEngine(
-        AzureFormRecognizerConfig config,
-        ILogger<AzureFormRecognizerEngine>? log = null)
+    public AzureAIDocIntelEngine(
+        AzureAIDocIntelConfig config,
+        ILogger<AzureAIDocIntelEngine>? log = null)
     {
-        this._log = log ?? DefaultLogger<AzureFormRecognizerEngine>.Instance;
+        this._log = log ?? DefaultLogger<AzureAIDocIntelEngine>.Instance;
 
         switch (config.Auth)
         {
-            case AzureFormRecognizerConfig.AuthTypes.AzureIdentity:
+            case AzureAIDocIntelConfig.AuthTypes.AzureIdentity:
                 this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new DefaultAzureCredential());
                 break;
 
-            case AzureFormRecognizerConfig.AuthTypes.APIKey:
+            case AzureAIDocIntelConfig.AuthTypes.APIKey:
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
-                    this._log.LogCritical("Azure Form Recognizer API key is empty");
-                    throw new ConfigurationException("Azure Form Recognizer API key is empty");
+                    this._log.LogCritical("Azure AI Document Intelligence API key is empty");
+                    throw new ConfigurationException("Azure AI Document Intelligence API key is empty");
                 }
 
                 this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
                 break;
 
             default:
-                this._log.LogCritical("Azure Form Recognizer authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ConfigurationException($"Azure Form Recognizer authentication type '{config.Auth}' undefined or not supported");
+                this._log.LogCritical("Azure AI Document Intelligence authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ConfigurationException($"Azure AI Document Intelligence authentication type '{config.Auth}' undefined or not supported");
         }
     }
 

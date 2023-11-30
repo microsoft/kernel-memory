@@ -22,9 +22,11 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 
 // ReSharper disable InconsistentNaming
+namespace AzureAISearchTests;
+
 public static class Program
 {
     // Azure Search Index name
@@ -46,7 +48,7 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
-        // Azure Cognitive Search service client
+        // Azure AI Search service client
         s_adminClient = new SearchIndexClient(
             new Uri(s_endpoint),
             new AzureKeyCredential(s_apiKey),
@@ -219,7 +221,7 @@ public static class Program
             Payload = payload
         };
 
-        AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
+        AzureAISearchMemoryRecord localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
 
         Console.WriteLine($"CREATING {localRecord.Id}\n");
 
@@ -261,10 +263,10 @@ public static class Program
             Size = limit
         };
 
-        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
-            searchResult = await client.SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options);
+            searchResult = await client.SearchAsync<AzureAISearchMemoryRecord>(null, options);
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
@@ -275,7 +277,7 @@ public static class Program
 
         if (searchResult == null) { return results; }
 
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
+        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
             results.Add(doc.Document.ToMemoryRecord());
         }
