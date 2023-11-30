@@ -22,7 +22,7 @@ public class DocumentUploadTest : BaseTestCase
     [Fact]
     public async Task ItUploadsPDFDocsAndDeletes()
     {
-        const string Id = "file1-NASA-news.pdf";
+        const string Id = "ItUploadsPDFDocsAndDeletes-file1-NASA-news.pdf";
 
         this.Log("Uploading document");
         await this._memory.ImportDocumentAsync(

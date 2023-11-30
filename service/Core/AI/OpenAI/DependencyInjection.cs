@@ -53,25 +53,17 @@ public static partial class KernelMemoryBuilderExtensions
         OpenAIConfig config,
         bool onlyForRetrieval = false)
     {
-        builder.WithOpenAITextEmbedding(config);
-        builder.WithOpenAITextGeneration(config, onlyForRetrieval);
+        builder.WithOpenAITextEmbedding(config, onlyForRetrieval);
+        builder.WithOpenAITextGeneration(config);
         return builder;
     }
 
     public static IKernelMemoryBuilder WithOpenAITextEmbedding(
         this IKernelMemoryBuilder builder,
-        OpenAIConfig config)
-    {
-        builder.Services.AddOpenAITextEmbeddingGeneration(config);
-        return builder;
-    }
-
-    public static IKernelMemoryBuilder WithOpenAITextGeneration(
-        this IKernelMemoryBuilder builder,
         OpenAIConfig config,
         bool onlyForRetrieval = false)
     {
-        builder.Services.AddOpenAITextGeneration(config);
+        builder.Services.AddOpenAITextEmbeddingGeneration(config);
         if (!onlyForRetrieval)
         {
             builder.AddIngestionEmbeddingGenerator(new OpenAITextEmbeddingGeneration(
@@ -80,6 +72,14 @@ public static partial class KernelMemoryBuilderExtensions
                 organization: config.OrgId));
         }
 
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithOpenAITextGeneration(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config)
+    {
+        builder.Services.AddOpenAITextGeneration(config);
         return builder;
     }
 }

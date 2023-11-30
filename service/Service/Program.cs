@@ -12,12 +12,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.InteractiveSetup;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Service.Auth;
 using Microsoft.KernelMemory.WebService;
 using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -82,6 +86,13 @@ appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
+
+Console.WriteLine("***************************************************************************************************************************");
+Console.WriteLine($"* Memory Db           : {app.Services.GetService<IMemoryDb>()?.GetType().FullName}");
+Console.WriteLine($"* Content storage     : {app.Services.GetService<IContentStorage>()?.GetType().FullName}");
+Console.WriteLine($"* Embedding generation: {app.Services.GetService<ITextEmbeddingGeneration>()?.GetType().FullName}");
+Console.WriteLine($"* Text generation     : {app.Services.GetService<ITextGeneration>()?.GetType().FullName}");
+Console.WriteLine("***************************************************************************************************************************");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************

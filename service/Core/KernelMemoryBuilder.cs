@@ -521,6 +521,8 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
 
+            this.CheckForMissingDependencies();
+
             var memoryClientInstance = new MemoryServerless(orchestrator, searchClient);
 
             // Load handlers in the memory client
@@ -578,14 +580,13 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
         }
 
+        this.CheckForMissingDependencies();
+
         return new MemoryService(orchestrator, searchClient);
     }
 
     private KernelMemoryBuilder CompleteServerlessClient()
     {
-        this.RequireEmbeddingGenerator();
-        this.RequireOneMemoryDbForIngestion();
-        this.RequireOneMemoryDbForRetrieval();
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
         this.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
@@ -594,13 +595,17 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private KernelMemoryBuilder CompleteAsyncClient()
     {
-        this.RequireEmbeddingGenerator();
-        this.RequireOneMemoryDbForIngestion();
-        this.RequireOneMemoryDbForRetrieval();
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
         return this;
+    }
+
+    private void CheckForMissingDependencies()
+    {
+        this.RequireEmbeddingGenerator();
+        this.RequireOneMemoryDbForIngestion();
+        this.RequireOneMemoryDbForRetrieval();
     }
 
     private T GetServiceConfig<T>(KernelMemoryConfig cfg, string serviceName)

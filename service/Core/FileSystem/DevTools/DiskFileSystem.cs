@@ -162,7 +162,10 @@ internal sealed class DiskFileSystem : IFileSystem
             throw new FileNotFoundException($"File not found: {path}");
         }
 
-        return new BinaryData(await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false));
+        this._log.LogTrace("File exists, reading {0}", path);
+        byte[] content = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        this._log.LogTrace("File {0} size: {1} bytes", path, content.Length);
+        return new BinaryData(content);
     }
 
     /// <inheritdoc />

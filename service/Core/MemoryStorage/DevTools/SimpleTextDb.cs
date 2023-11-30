@@ -78,7 +78,7 @@ public class SimpleTextDb : IMemoryDb
         double minRelevance = 0,
         int limit = 1,
         bool withEmbeddings = false,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
@@ -90,13 +90,15 @@ public class SimpleTextDb : IMemoryDb
         }
 
         var words = Regex.Replace(text, "[^a-zA-Z0-9_]+", " ")
-            .Split(' ').Select(x => x.Trim()).Where(x => x != string.Empty).ToList();
+            .Split(' ').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
 
         var similarity = new Dictionary<string, int>();
         foreach (var record in records)
         {
             similarity[record.Value.Id] = 0;
             var storedText = record.Value.Payload[Constants.ReservedPayloadTextField].ToString();
+            if (string.IsNullOrEmpty(storedText)) { continue; }
+
             foreach (var word in words)
             {
                 if (storedText.Contains(word, StringComparison.OrdinalIgnoreCase))

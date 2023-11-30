@@ -45,7 +45,7 @@ public class ImportFilesTest : BaseTestCase
     {
         // Act - Assert no exception occurs
         await this._memory.ImportDocumentAsync(
-            document: new Document("Doc2.txt")
+            document: new Document(id: "Doc2.txt")
                 .AddFile(Path.Join(this._fixturesPath, "Doc1.txt"))
                 .AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt")),
             steps: new[] { "extract", "partition" });

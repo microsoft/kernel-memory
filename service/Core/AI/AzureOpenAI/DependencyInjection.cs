@@ -20,9 +20,33 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config)
+    public static IKernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config, bool onlyForRetrieval = false)
     {
         builder.Services.AddAzureOpenAIEmbeddingGeneration(config);
+
+        if (!onlyForRetrieval)
+        {
+            switch (config.Auth)
+            {
+                case AzureOpenAIConfig.AuthTypes.AzureIdentity:
+                    builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
+                        deploymentName: config.Deployment,
+                        endpoint: config.Endpoint,
+                        credential: new DefaultAzureCredential()));
+                    break;
+
+                case AzureOpenAIConfig.AuthTypes.APIKey:
+                    builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
+                        deploymentName: config.Deployment,
+                        endpoint: config.Endpoint,
+                        apiKey: config.APIKey));
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
+            }
+        }
+
         return builder;
     }
 }
