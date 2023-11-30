@@ -331,7 +331,7 @@ if (config.Service.RunWebService)
                 return Results.Ok(pipeline);
             })
         .AddEndpointFilter(authFilter)
-        .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+        .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
         .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
         .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
