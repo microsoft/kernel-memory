@@ -8,11 +8,11 @@ using Xunit.Abstractions;
 namespace FunctionalTests.ServerLess;
 
 // ReSharper disable InconsistentNaming
-public class OpenAITests : BaseTestCase
+public class OpenAITest : BaseTestCase
 {
     private readonly string _openAIKey;
 
-    public OpenAITests(
+    public OpenAITest(
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {

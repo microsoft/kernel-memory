@@ -146,6 +146,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         // Deletion is idempotent, ignore error
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
+            this._log.LogDebug("HTTP 404: {0}", content);
             return;
         }
 
@@ -201,6 +202,12 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Build();
 
         var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            this._log.LogDebug("HTTP 404: {0}", content);
+            return null;
+        }
+
         this.ValidateResponse(response, content, nameof(this.GetVectorByPayloadIdAsync));
 
         var data = JsonSerializer.Deserialize<ScrollVectorsResponse<T>>(content);
@@ -241,6 +248,13 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Build();
 
         var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        // Deletion is idempotent, ignore error
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            this._log.LogDebug("HTTP 404: {0}", content);
+            return;
+        }
+
         this.ValidateResponse(response, content, nameof(this.DeleteVectorsAsync));
     }
 
@@ -274,13 +288,13 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Build();
 
         var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        this.ValidateResponse(response, content, nameof(this.GetListAsync));
-
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            this._log.LogDebug("No vectors found");
+            this._log.LogDebug("HTTP 404: {0}", content);
             return new List<QdrantPoint<T>>();
         }
+
+        this.ValidateResponse(response, content, nameof(this.GetListAsync));
 
         var data = JsonSerializer.Deserialize<ScrollVectorsResponse<T>>(content);
         if (data == null)
@@ -333,16 +347,15 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             .Take(limit)
             .Build();
 
-        var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
-        this.ValidateResponse(response, content, nameof(this.GetSimilarListAsync));
-
         var result = new List<(QdrantPoint<T>, double)>();
-
+        var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            this._log.LogDebug("No vectors found");
+            this._log.LogDebug("HTTP 404: {0}", content);
             return result;
         }
+
+        this.ValidateResponse(response, content, nameof(this.GetSimilarListAsync));
 
         var data = JsonSerializer.Deserialize<SearchVectorsResponse<T>>(content);
         if (data == null)
@@ -370,6 +383,11 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         return result;
     }
 
+    #region private ================================================================================
+
+    private readonly ILogger<QdrantClient<T>> _log;
+    private readonly HttpClient _httpClient;
+
     private void ValidateResponse(HttpResponseMessage response, string content, string methodName)
     {
         try
@@ -382,11 +400,6 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             throw;
         }
     }
-
-    #region private ================================================================================
-
-    private readonly ILogger<QdrantClient<T>> _log;
-    private readonly HttpClient _httpClient;
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,

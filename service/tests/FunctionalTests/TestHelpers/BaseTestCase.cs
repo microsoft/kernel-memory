@@ -27,7 +27,7 @@ public abstract class BaseTestCase : IDisposable
         Console.SetOut(this._output);
     }
 
-    protected IKernelMemory GetMemory(string memoryType)
+    protected IKernelMemory GetServerlessMemory(string memoryType)
     {
         var openAIKey = this.OpenAIConfiguration.GetValue<string>("APIKey")
                         ?? throw new TestCanceledException("OpenAI API key is missing");
@@ -61,7 +61,7 @@ public abstract class BaseTestCase : IDisposable
                     .WithQdrant(qdrantEndpoint)
                     .Build<MemoryServerless>();
 
-            case "acs":
+            case "az_ai_search":
                 var acsEndpoint = this.AzureAISearchConfiguration.GetValue<string>("Endpoint");
                 var acsKey = this.AzureAISearchConfiguration.GetValue<string>("APIKey");
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
