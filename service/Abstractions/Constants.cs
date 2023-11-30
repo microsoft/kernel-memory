@@ -60,6 +60,7 @@ public static class Constants
     // Handlers
     public const string DeleteDocumentPipelineStepName = "private_delete_document";
     public const string DeleteIndexPipelineStepName = "private_delete_index";
+    public const string DeleteDocumentGeneratedFilesPipelineStepName = "delete_document_generated_files";
 
     // Pipeline steps
     public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_records" };

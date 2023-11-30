@@ -514,6 +514,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
                 this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
+
+                this._memoryServiceCollection.AddTransient<DeleteDocumentGeneratedFiles>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteDocumentGeneratedFiles>(serviceProvider, Constants.DeleteDocumentGeneratedFilesPipelineStepName));
             }
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
@@ -544,6 +547,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SaveRecordsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveRecordsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentGeneratedFiles>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentGeneratedFiles)));
             }
 
             return memoryClientInstance;
@@ -590,6 +594,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>("save_records");
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentGeneratedFiles>(Constants.DeleteDocumentGeneratedFilesPipelineStepName);
         }
 
         this.CheckForMissingDependencies();
