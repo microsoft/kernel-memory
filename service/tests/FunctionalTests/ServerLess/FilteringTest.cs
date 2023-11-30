@@ -20,10 +20,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItSupportsASingleFilter(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
@@ -88,10 +88,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItSupportsMultipleFilters(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
@@ -171,10 +171,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItIgnoresEmptyFilters(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";

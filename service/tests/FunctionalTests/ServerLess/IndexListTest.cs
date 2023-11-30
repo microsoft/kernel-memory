@@ -20,11 +20,11 @@ public class IndexListTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItListsIndexes(string memoryType)
     {
         // Arrange
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
         string indexName1 = Guid.NewGuid().ToString("D");
         string indexName2 = Guid.NewGuid().ToString("D");
         Console.WriteLine("Index 1:" + indexName1);
