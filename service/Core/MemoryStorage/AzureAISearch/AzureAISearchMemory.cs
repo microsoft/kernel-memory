@@ -20,7 +20,7 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
-namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 
 /// <summary>
 /// Azure AI Search connector for Kernel Memory
@@ -30,10 +30,10 @@ namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
 /// * support custom schema
 /// * support custom Azure AI Search logic
 /// </summary>
-public class AzureCognitiveSearchMemory : IMemoryDb
+public class AzureAISearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
-    private readonly ILogger<AzureCognitiveSearchMemory> _log;
+    private readonly ILogger<AzureAISearchMemory> _log;
 
     /// <summary>
     /// Create a new instance
@@ -41,39 +41,39 @@ public class AzureCognitiveSearchMemory : IMemoryDb
     /// <param name="config">Azure AI Search configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
     /// <param name="log">Application logger</param>
-    public AzureCognitiveSearchMemory(
-        AzureCognitiveSearchConfig config,
+    public AzureAISearchMemory(
+        AzureAISearchConfig config,
         ITextEmbeddingGeneration embeddingGenerator,
-        ILogger<AzureCognitiveSearchMemory>? log = null)
+        ILogger<AzureAISearchMemory>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator;
-        this._log = log ?? DefaultLogger<AzureCognitiveSearchMemory>.Instance;
+        this._log = log ?? DefaultLogger<AzureAISearchMemory>.Instance;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
-            this._log.LogCritical("Azure Cognitive Search Endpoint is empty");
-            throw new ConfigurationException("Azure Cognitive Search Endpoint is empty");
+            this._log.LogCritical("Azure AI Search Endpoint is empty");
+            throw new ConfigurationException("Azure AI Search Endpoint is empty");
         }
 
         if (this._embeddingGenerator == null)
         {
-            throw new AzureCognitiveSearchMemoryException("Embedding generator not configured");
+            throw new AzureAISearchMemoryException("Embedding generator not configured");
         }
 
         switch (config.Auth)
         {
-            case AzureCognitiveSearchConfig.AuthTypes.AzureIdentity:
+            case AzureAISearchConfig.AuthTypes.AzureIdentity:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     new DefaultAzureCredential(),
                     GetClientOptions());
                 break;
 
-            case AzureCognitiveSearchConfig.AuthTypes.APIKey:
+            case AzureAISearchConfig.AuthTypes.APIKey:
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
-                    this._log.LogCritical("Azure Cognitive Search API key is empty");
-                    throw new ConfigurationException("Azure Cognitive Search API key is empty");
+                    this._log.LogCritical("Azure AI Search API key is empty");
+                    throw new ConfigurationException("Azure AI Search API key is empty");
                 }
 
                 this._adminClient = new SearchIndexClient(
@@ -82,7 +82,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
                     GetClientOptions());
                 break;
 
-            case AzureCognitiveSearchConfig.AuthTypes.ManualTokenCredential:
+            case AzureAISearchConfig.AuthTypes.ManualTokenCredential:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     config.GetTokenCredential(),
@@ -90,15 +90,15 @@ public class AzureCognitiveSearchMemory : IMemoryDb
                 break;
 
             default:
-                this._log.LogCritical("Azure Cognitive Search authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ContentStorageException($"Azure Cognitive Search authentication type '{config.Auth}' undefined or not supported");
+                this._log.LogCritical("Azure AI Search authentication type '{0}' undefined or not supported", config.Auth);
+                throw new ContentStorageException($"Azure AI Search authentication type '{config.Auth}' undefined or not supported");
         }
     }
 
     /// <inheritdoc />
     public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
-        return this.CreateIndexAsync(index, AzureCognitiveSearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
+        return this.CreateIndexAsync(index, AzureAISearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -131,7 +131,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var client = this.GetSearchClient(index);
-        AzureCognitiveSearchMemoryRecord localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
+        AzureAISearchMemoryRecord localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
 
         await client.IndexDocumentsAsync(
             IndexDocumentsBatch.Upload(new[] { localRecord }),
@@ -159,7 +159,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
         VectorizedQuery vectorQuery = new(textEmbedding.Data)
         {
             KNearestNeighborsCount = limit,
-            Fields = { AzureCognitiveSearchMemoryRecord.VectorField },
+            Fields = { AzureAISearchMemoryRecord.VectorField },
             // Exhaustive search is a brute force comparison across all vectors,
             // ignoring the index, which can be much slower once the index contains a lot of data.
             // TODO: allow clients to manage this value either at configuration or run time.
@@ -187,11 +187,11 @@ public class AzureCognitiveSearchMemory : IMemoryDb
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
         }
 
-        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
             searchResult = await client
-                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
@@ -203,7 +203,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
         if (searchResult == null) { yield break; }
 
         var minDistance = CosineSimilarityToScore(minRelevance);
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
+        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             if (doc == null || doc.Score < minDistance) { continue; }
 
@@ -247,11 +247,11 @@ public class AzureCognitiveSearchMemory : IMemoryDb
         //     Size = limit
         // };
 
-        Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
+        Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
             searchResult = await client
-                .SearchAsync<AzureCognitiveSearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
@@ -262,7 +262,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
 
         if (searchResult == null) { yield break; }
 
-        await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
+        await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             // stop after returning the amount requested
             if (limit-- <= 0) { yield break; }
@@ -274,14 +274,14 @@ public class AzureCognitiveSearchMemory : IMemoryDb
     /// <inheritdoc />
     public async Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        string id = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record).Id;
+        string id = AzureAISearchMemoryRecord.FromMemoryRecord(record).Id;
         var client = this.GetSearchClient(index);
 
         try
         {
             this._log.LogDebug("Deleting record {0} from index {1}", id, index);
             Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync(
-                    AzureCognitiveSearchMemoryRecord.IdField,
+                    AzureAISearchMemoryRecord.IdField,
                     new List<string> { id },
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -295,12 +295,12 @@ public class AzureCognitiveSearchMemory : IMemoryDb
 
     #region private
 
-    // private async Task<AzureCognitiveSearchMemoryRecord?> GetAsync(string indexName, string id, CancellationToken cancellationToken = default)
+    // private async Task<AzureAISearchMemoryRecord?> GetAsync(string indexName, string id, CancellationToken cancellationToken = default)
     // {
     //     try
     //     {
-    //         Response<AzureCognitiveSearchMemoryRecord>? result = await this.GetSearchClient(indexName)
-    //             .GetDocumentAsync<AzureCognitiveSearchMemoryRecord>(id, cancellationToken: cancellationToken)
+    //         Response<AzureAISearchMemoryRecord>? result = await this.GetSearchClient(indexName)
+    //             .GetDocumentAsync<AzureAISearchMemoryRecord>(id, cancellationToken: cancellationToken)
     //             .ConfigureAwait(false);
     //
     //         return result?.Value;
@@ -353,7 +353,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
 
         foreach (MemoryRecord record in records)
         {
-            var localRecord = AzureCognitiveSearchMemoryRecord.FromMemoryRecord(record);
+            var localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
             await client.IndexDocumentsAsync(
                 IndexDocumentsBatch.Upload(new[] { localRecord }),
                 new IndexDocumentsOptions { ThrowOnAnyError = true },
@@ -406,13 +406,13 @@ public class AzureCognitiveSearchMemory : IMemoryDb
         {
             if (f.VectorMetric is not (MemoryDbField.VectorMetricType.Cosine or MemoryDbField.VectorMetricType.Euclidean or MemoryDbField.VectorMetricType.DotProduct))
             {
-                throw new AzureCognitiveSearchMemoryException($"Vector metric '{f.VectorMetric:G}' not supported");
+                throw new AzureAISearchMemoryException($"Vector metric '{f.VectorMetric:G}' not supported");
             }
         }
     }
 
     /// <summary>
-    /// Options used by the Azure Cognitive Search client, e.g. User Agent.
+    /// Options used by the Azure AI Search client, e.g. User Agent.
     /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// </summary>
     private static SearchClientOptions GetClientOptions()
@@ -428,7 +428,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
     }
 
     /// <summary>
-    /// Normalize index name to match ACS rules.
+    /// Normalize index name to match Azure AI Search rules.
     /// The method doesn't handle all the error scenarios, leaving it to the service
     /// to throw an error for edge cases not handled locally.
     /// </summary>
@@ -443,7 +443,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
 
         if (index.Length > 128)
         {
-            throw new AzureCognitiveSearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");
+            throw new AzureAISearchMemoryException("The index name (prefix included) is too long, it cannot exceed 128 chars.");
         }
 
         index = index.ToLowerInvariant();
@@ -501,7 +501,7 @@ public class AzureCognitiveSearchMemory : IMemoryDb
             {
                 case MemoryDbField.FieldType.Unknown:
                 default:
-                    throw new AzureCognitiveSearchMemoryException($"Unsupported field type {field.Type:G}");
+                    throw new AzureAISearchMemoryException($"Unsupported field type {field.Type:G}");
 
                 case MemoryDbField.FieldType.Vector:
                     vectorField = new SearchField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.Single))

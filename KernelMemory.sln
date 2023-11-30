@@ -67,7 +67,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "service\tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests", "service\tests\FunctionalTests\FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-cognitive-search-tests", "service\tests\azure-cognitive-search-tests\azure-cognitive-search-tests.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-ai-search-tests", "service\tests\azure-ai-search-tests\azure-ai-search-tests.csproj", "{4A56D84B-1D8B-447B-9D9A-E36A2AE44806}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "qdrant-tests", "service\tests\qdrant-tests\qdrant-tests.csproj", "{8A90555B-C28B-401B-960A-619DE9A87C4C}"
 EndProject

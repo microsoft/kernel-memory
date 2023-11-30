@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Configuration;
 namespace Microsoft.KernelMemory;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
-public class AzureCognitiveSearchConfig
+public class AzureAISearchConfig
 {
     private TokenCredential? _tokenCredential;
 

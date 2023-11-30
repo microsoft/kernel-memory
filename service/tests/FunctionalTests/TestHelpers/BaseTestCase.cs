@@ -18,7 +18,7 @@ public abstract class BaseTestCase : IDisposable
     protected IConfiguration ServiceConfiguration => this.Configuration.GetSection("Services");
     protected IConfiguration OpenAIConfiguration => this.ServiceConfiguration.GetSection("OpenAI");
     protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
-    protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureCognitiveSearch");
+    protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureAISearch");
 
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
     {
@@ -68,7 +68,7 @@ public abstract class BaseTestCase : IDisposable
                 Assert.False(string.IsNullOrEmpty(acsKey));
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
-                    .WithAzureCognitiveSearch(acsEndpoint, acsKey)
+                    .WithAzureAISearch(acsEndpoint, acsKey)
                     .Build<MemoryServerless>();
 
             default:

@@ -29,7 +29,7 @@ default index name, a single container for all the memories.
 When designing for security, Kernel Memory recommends using Tags, applying
 to each document a User ID tag that your application can filter by.
 
-**Vector DBs like Azure Cognitive Search, Qdrant, Pinecone, etc. don't offer
+**Vector DBs like Azure AI Search, Qdrant, Pinecone, etc. don't offer
 record-level permissions** and search results can't vary by user.
 Vector storages are optimized to store large quantity of documents indexed
 using embedding vectors, and to quickly find similar documents.
@@ -37,7 +37,7 @@ Memory records stored in Vector DBs though can be decorated with metadata, and
 can be filtered when searching, applying some logical filters.
 
 Kernel Memory leverages this capability, and uses specific native filters
-on all the supported Vector DBs (Azure Cognitive Search, Qdrant, etc), removing
+on all the supported Vector DBs (Azure AI Search, Qdrant, etc), removing
 the need to learn ad-hoc filtering syntax, allowing to **tag every memory
 during the ingestion**, and allowing to **filter by tag when searching**,
 during the retrieval process.
