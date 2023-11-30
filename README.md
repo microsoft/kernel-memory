@@ -131,7 +131,7 @@ The code leverages the default documents ingestion pipeline:
 2. Partition the text in small chunks, to optimize search
 3. Extract embedding using an LLM embedding generator
 4. Save embedding into a vector index such as
-   [Azure Cognitive Search](https://learn.microsoft.com/en-us/azure/search/vector-search-overview),
+   [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
    [Qdrant](https://qdrant.tech/) or other DBs.
 
 Documents are organized by users, safeguarding their private information.
@@ -225,7 +225,7 @@ to **start the Kernel Memory Service**:
 > ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
 >
 > ```csharp
-> #reference dotnet/ClientLib/ClientLib.csproj
+> #reference clients/WebClient/WebClient.csproj
 >
 > var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 >

@@ -4,7 +4,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
@@ -34,9 +34,9 @@ public class TestMemoryFilters
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
-        var acs = new AzureCognitiveSearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!, embeddingGenerator);
+        var acs = new AzureAISearchMemory(
+            this._cfg.GetSection("Services").GetSection("AzureAISearch")
+                .Get<AzureAISearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
@@ -84,7 +84,7 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        this._log.WriteLine($"\n\n\n----- Azure Cognitive Search -----");
+        this._log.WriteLine($"\n\n\n----- Azure AI Search -----");
         await this.TestVectorDbFiltering(acs);
         this._log.WriteLine($"\n\n\n----- Qdrant vector DB -----");
         await this.TestVectorDbFiltering(qdrant);

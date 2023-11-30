@@ -28,15 +28,15 @@ var memory = new KernelMemoryBuilder()
         Deployment = Env.Var("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
         APIKey = Env.Var("AZURE_OPENAI_EMBEDDING_API_KEY")
     })
-    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs
-    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))                      => use Azure Cognitive Search
-    // .WithQdrant("http://127.0.0.1:6333")                                                            => use Qdrant docker
-    // .WithAzureFormRecognizer(Env.Var("AZURE_COG_SVCS_ENDPOINT"), Env.Var("AZURE_COG_SVCS_API_KEY")) => use Azure Form Recognizer OCR
+    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                      => use Azure Blobs
+    // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))           => use Azure AI Search
+    // .WithQdrant("http://127.0.0.1:6333")                                                    => use Qdrant docker
+    // .WithAzureAIDocIntel(Env.Var("AZDOCINTEL_ENDPOINT"), Env.Var("AZDOCINTEL_API_KEY"))     => use Azure AI Document Intelligence OCR
     .Build<MemoryServerless>();
 
 // Use these boolean to enable/disable parts of the examples below
 bool ingestion = true;
-bool useImages = false; // Enable Azure Form Recognizer OCR to use this
+bool useImages = false; // Deploy Azure AI Document Intelligence to use this
 bool retrieval = true;
 bool purge = true;
 

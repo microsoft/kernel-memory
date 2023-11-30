@@ -7,10 +7,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+namespace Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 
 // TODO: support bring your own index schema
-public sealed class AzureCognitiveSearchMemoryRecord
+public sealed class AzureAISearchMemoryRecord
 {
     internal const string IdField = "id";
     internal const string VectorField = "embedding";
@@ -79,9 +79,9 @@ public sealed class AzureCognitiveSearchMemoryRecord
         return result;
     }
 
-    public static AzureCognitiveSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
+    public static AzureAISearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
-        AzureCognitiveSearchMemoryRecord result = new()
+        AzureAISearchMemoryRecord result = new()
         {
             Id = EncodeId(record.Id),
             Vector = record.Vector,

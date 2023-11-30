@@ -13,7 +13,7 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.DataFormats.Image.AzureFormRecognizer;
+using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -322,9 +322,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         {
             switch (type)
             {
-                case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
+                case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._auxServiceCollection.AddAzureCognitiveSearchAsMemoryDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
+                    this._auxServiceCollection.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>(config, "AzureAISearch"));
                     var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
                     var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
                     this._memoryDbs.Add(service);
@@ -371,8 +371,8 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         // Retrieval Memory DB - IMemoryDb interface
         switch (config.Retrieval.MemoryDbType)
         {
-            case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureCognitiveSearchAsMemoryDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
+            case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>(config, "AzureAISearch"));
                 break;
 
             case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
@@ -416,8 +416,8 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             case string x when x.Equals("None", StringComparison.OrdinalIgnoreCase):
                 break;
 
-            case string x when x.Equals("AzureFormRecognizer", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+            case string x when x.Equals("AzureAIDocIntel", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddAzureAIDocIntel(this.GetServiceConfig<AzureAIDocIntelConfig>(config, "AzureAIDocIntel"));
                 break;
 
             default:
