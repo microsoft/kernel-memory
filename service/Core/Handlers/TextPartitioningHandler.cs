@@ -72,12 +72,17 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 // Use a different partitioning strategy depending on the file type
                 List<string> paragraphs;
                 List<string> lines;
+                BinaryData partitionContent = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+
+                // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
+                if (partitionContent.ToArray().Length == 0) { continue; }
+
                 switch (file.MimeType)
                 {
                     case MimeTypes.PlainText:
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
-                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
+                        string content = partitionContent.ToString();
                         lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitPlainTextParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -87,7 +92,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     case MimeTypes.MarkDown:
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
-                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
+                        string content = partitionContent.ToString();
                         lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
                         paragraphs = TextChunker.SplitMarkdownParagraphs(
                             lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
@@ -98,7 +103,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     // TODO: see https://learn.microsoft.com/en-us/windows/win32/search/-search-ifilter-about
 
                     default:
-                        this._log.LogWarning("File {0} cannot be partitioned, type not supported", file.Name);
+                        this._log.LogWarning("File {0} cannot be partitioned, type '{1}' not supported", file.Name, file.MimeType);
                         // Don't partition other files
                         continue;
                 }

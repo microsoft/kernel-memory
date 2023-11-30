@@ -35,7 +35,6 @@ public static class Constants
     // Properties stored inside the payload
     public const string ReservedPayloadTextField = "text";
     public const string ReservedPayloadFileNameField = "file";
-    public const string ReservedPayloadEmbeddingSrcFileNameField = "emb_src_file";
     public const string ReservedPayloadLastUpdateField = "last_update";
     public const string ReservedPayloadVectorProviderField = "vector_provider";
     public const string ReservedPayloadVectorGeneratorField = "vector_generator";
@@ -58,9 +57,9 @@ public static class Constants
     public const string DeleteIndexPipelineStepName = "private_delete_index";
 
     // Pipeline steps
-    public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_embeddings" };
-    public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_embeddings" };
-    public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_embeddings", "summarize", "gen_embeddings", "save_embeddings" };
+    public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_records" };
+    public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_records" };
+    public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_records", "summarize", "gen_embeddings", "save_records" };
 
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";

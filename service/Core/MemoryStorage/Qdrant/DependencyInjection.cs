@@ -11,29 +11,29 @@ public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithQdrant(this IKernelMemoryBuilder builder, QdrantConfig config)
     {
-        builder.Services.AddQdrantAsVectorDb(config);
+        builder.Services.AddQdrantAsMemoryDb(config);
         return builder;
     }
 
     public static IKernelMemoryBuilder WithQdrant(this IKernelMemoryBuilder builder, string endpoint, string apiKey = "")
     {
-        builder.Services.AddQdrantAsVectorDb(endpoint, apiKey);
+        builder.Services.AddQdrantAsMemoryDb(endpoint, apiKey);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddQdrantAsVectorDb(this IServiceCollection services, QdrantConfig config)
+    public static IServiceCollection AddQdrantAsMemoryDb(this IServiceCollection services, QdrantConfig config)
     {
         return services
             .AddSingleton<QdrantConfig>(config)
-            .AddSingleton<IVectorDb, QdrantMemory>();
+            .AddSingleton<IMemoryDb, QdrantMemory>();
     }
 
-    public static IServiceCollection AddQdrantAsVectorDb(this IServiceCollection services, string endpoint, string apiKey = "")
+    public static IServiceCollection AddQdrantAsMemoryDb(this IServiceCollection services, string endpoint, string apiKey = "")
     {
         var config = new QdrantConfig { Endpoint = endpoint, APIKey = apiKey };
-        return services.AddQdrantAsVectorDb(config);
+        return services.AddQdrantAsMemoryDb(config);
     }
 }

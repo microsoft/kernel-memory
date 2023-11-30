@@ -20,14 +20,15 @@ namespace Microsoft.KernelMemory.Handlers;
 public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
+    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
+    private readonly bool _embeddingGenerationEnabled;
 
     /// <inheritdoc />
     public string StepName { get; }
 
     /// <summary>
-    /// Handler responsible for generating embeddings and saving them to content storages.
+    /// Handler responsible for generating embeddings and saving them to content storages (not memory db).
     /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
@@ -39,14 +40,24 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
-        this._orchestrator = orchestrator;
         this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
+        this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
+
+        this._orchestrator = orchestrator;
         this._embeddingGenerators = orchestrator.GetEmbeddingGenerators();
 
-        this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
-        if (this._embeddingGenerators.Count < 1)
+        if (this._embeddingGenerationEnabled)
         {
-            this._log.LogError("No embedding generators configured");
+            if (this._embeddingGenerators.Count < 1)
+            {
+                this._log.LogError("Handler '{0}' NOT ready, no embedding generators configured", stepName);
+            }
+
+            this._log.LogInformation("Handler '{0}' ready, {1} embedding generators", stepName, this._embeddingGenerators.Count);
+        }
+        else
+        {
+            this._log.LogInformation("Handler '{0}' ready, embedding generation DISABLED", stepName);
         }
     }
 
@@ -54,6 +65,12 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        if (!this._embeddingGenerationEnabled)
+        {
+            this._log.LogTrace("Embedding generation is disabled, skipping - pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+            return (true, pipeline);
+        }
+
         this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         foreach (var uploadedFile in pipeline.Files)
@@ -132,6 +149,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             {
                                 Id = Guid.NewGuid().ToString("N"),
                                 ParentId = uploadedFile.Id,
+                                SourcePartitionId = partitionFile.Id,
                                 Name = embeddingFileName,
                                 Size = text.Length,
                                 MimeType = MimeTypes.TextEmbeddingVector,

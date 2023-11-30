@@ -21,7 +21,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
     private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
 
-    private readonly List<IVectorDb> _vectorDbs;
+    private readonly List<IMemoryDb> _memoryDbs;
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
     private readonly ITextGeneration _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
@@ -34,28 +34,31 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     protected BaseOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
+        List<IMemoryDb> memoryDbs,
         ITextGeneration textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
+        config ??= new KernelMemoryConfig();
+
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
-        this._defaultIngestionSteps = (config ?? new KernelMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
+        this._defaultIngestionSteps = config.DataIngestion.GetDefaultStepsOrDefaults();
+        this.EmbeddingGenerationEnabled = config.DataIngestion.EmbeddingGenerationEnabled;
         this._contentStorage = contentStorage;
         this._embeddingGenerators = embeddingGenerators;
-        this._vectorDbs = vectorDbs;
+        this._memoryDbs = memoryDbs;
         this._textGenerator = textGenerator;
 
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this.CancellationTokenSource = new CancellationTokenSource();
 
-        if (embeddingGenerators.Count == 0)
+        if (this.EmbeddingGenerationEnabled && embeddingGenerators.Count == 0)
         {
             this.Log.LogWarning("No embedding generators available");
         }
 
-        if (vectorDbs.Count == 0)
+        if (memoryDbs.Count == 0)
         {
             this.Log.LogWarning("No vector DBs available");
         }
@@ -194,15 +197,18 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public bool EmbeddingGenerationEnabled { get; }
+
+    ///<inheritdoc />
     public List<ITextEmbeddingGeneration> GetEmbeddingGenerators()
     {
         return this._embeddingGenerators;
     }
 
     ///<inheritdoc />
-    public List<IVectorDb> GetVectorDbs()
+    public List<IMemoryDb> GetMemoryDbs()
     {
-        return this._vectorDbs;
+        return this._memoryDbs;
     }
 
     ///<inheritdoc />

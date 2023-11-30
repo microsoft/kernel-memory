@@ -79,7 +79,7 @@ public class MemoryPlugin
 
     /// <summary>
     /// Name of the input variable used to specify custom memory ingestion steps.
-    /// The list is usually: "extract", "partition", "gen_embeddings", "save_embeddings"
+    /// The list is usually: "extract", "partition", "gen_embeddings", "save_records"
     /// </summary>
     public const string StepsParam = "steps";
 

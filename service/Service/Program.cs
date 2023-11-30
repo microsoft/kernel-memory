@@ -12,12 +12,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.InteractiveSetup;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Service.Auth;
 using Microsoft.KernelMemory.WebService;
 using Microsoft.OpenApi.Models;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 // ********************************************************
 // ************** APP SETTINGS ****************************
@@ -40,6 +44,8 @@ var appBuilder = WebApplication.CreateBuilder();
 var config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
              ?? throw new ConfigurationException("Unable to load configuration");
 config.ServiceAuthorization.Validate();
+
+CheckConfiguration();
 
 // OpenAPI/swagger
 appBuilder.Services.AddEndpointsApiExplorer();
@@ -82,6 +88,13 @@ appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
+
+Console.WriteLine("***************************************************************************************************************************");
+Console.WriteLine($"* Memory Db           : {app.Services.GetService<IMemoryDb>()?.GetType().FullName}");
+Console.WriteLine($"* Content storage     : {app.Services.GetService<IContentStorage>()?.GetType().FullName}");
+Console.WriteLine($"* Embedding generation: {app.Services.GetService<ITextEmbeddingGeneration>()?.GetType().FullName}");
+Console.WriteLine($"* Text generation     : {app.Services.GetService<ITextGeneration>()?.GetType().FullName}");
+Console.WriteLine("***************************************************************************************************************************");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -339,3 +352,39 @@ app.Logger.LogInformation(
     config.Service.RunHandlers);
 
 app.Run();
+
+void CheckConfiguration()
+{
+    const string Help = """
+                        You can set your configuration in appsettings.json or appsettings.<current environment>.json.
+                        The value of <current environment> depends on ASPNETCORE_ENVIRONMENT environment variable, and
+                        is usually either "Development" or "Production".
+
+                        You can also run `dotnet run setup` to launch a wizard that will guide through the creation
+                        of a basic working version of "appsettings.Development.json".
+
+                        If you would like to setup the service to use custom dependencies, e.g. a custom storage or
+                        a custom LLM, you should edit Program.cs accordingly, setting up your dependencies with the
+                        usual .NET dependency injection approach.
+                        """;
+
+    if (config.DataIngestion.EmbeddingGenerationEnabled && config.DataIngestion.EmbeddingGeneratorTypes.Count == 0)
+    {
+        Console.WriteLine("\n******\nData ingestion embedding generation (DataIngestion.EmbeddingGeneratorTypes) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+        Environment.Exit(-1);
+    }
+
+    if (string.IsNullOrEmpty(config.TextGeneratorType))
+    {
+        Console.WriteLine("\n******\nText generation (TextGeneratorType) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+    }
+
+    if (string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType))
+    {
+        Console.WriteLine("\n******\nRetrieval embedding generation (Retrieval.EmbeddingGeneratorType) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+        Environment.Exit(-1);
+    }
+}

@@ -11,8 +11,23 @@ using Microsoft.KernelMemory;
  * Note: no web service required, each file is processed in this process. */
 
 var memory = new KernelMemoryBuilder()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
+    // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithAzureOpenAITextGeneration(new AzureOpenAIConfig
+    {
+        APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
+        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
+        Endpoint = Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
+        Deployment = Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        APIKey = Env.Var("AZURE_OPENAI_CHAT_API_KEY")
+    })
+    .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
+    {
+        APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
+        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
+        Endpoint = Env.Var("AZURE_OPENAI_EMBEDDING_ENDPOINT"),
+        Deployment = Env.Var("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        APIKey = Env.Var("AZURE_OPENAI_EMBEDDING_API_KEY")
+    })
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                              => use Azure Blobs
     // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY"))                      => use Azure Cognitive Search
     // .WithQdrant("http://127.0.0.1:6333")                                                            => use Qdrant docker

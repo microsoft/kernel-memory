@@ -31,17 +31,19 @@ public class TestCosineSimilarity
 
         // == Ctors
 
+        var embeddingGenerator = new FakeEmbeddingGenerator();
+
         var acs = new AzureCognitiveSearchMemory(
             this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!);
+                .Get<AzureCognitiveSearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!);
+                .Get<QdrantConfig>()!, embeddingGenerator);
 
         var simpleVecDb = new SimpleVectorDb(
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!);
+                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
 
         // == Delete indexes left over
 
@@ -88,19 +90,24 @@ public class TestCosineSimilarity
         // == Search by similarity
 
         var target = new[] { 0.01f, 0.5f, 0.41f };
+        embeddingGenerator.Mock("text01", target);
+
         IAsyncEnumerable<(MemoryRecord, double)> acsList;
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
         if (acsEnabled)
         {
-            acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            acsList = acs.GetSimilarListAsync(
+                index: indexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
         if (qdrantEnabled)
         {
-            qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            qdrantList = qdrant.GetSimilarListAsync(
+                index: indexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
-        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
+            index: indexName, text: "text01", limit: 10, withEmbeddings: true);
 
         List<(MemoryRecord, double)> acsResults;
         List<(MemoryRecord, double)> qdrantResults;

@@ -57,11 +57,14 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     // Services of the host application, when hosting pipeline handlers, e.g. in service mode
     private readonly IServiceCollection? _hostServiceCollection;
 
+    // Auxiliary collection used internally
+    private readonly IServiceCollection _auxServiceCollection;
+
     // List of all the embedding generators to use during ingestion
     private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
 
-    // List of all the vector DBs to use during ingestion
-    private readonly List<IVectorDb> _vectorDbs = new();
+    // List of all the memory DBs to use during ingestion
+    private readonly List<IMemoryDb> _memoryDbs = new();
 
     // Normalized configuration
     private KernelMemoryConfig? _memoryConfiguration = null;
@@ -77,8 +80,10 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     /// </summary>
     private bool _useDefaultHandlers = true;
 
-    // Proxy to the internal service collections, used to (optionally) inject
-    // dependencies into the user application space
+    /// <summary>
+    /// Proxy to the internal service collections, used to (optionally) inject
+    /// dependencies into the user application space
+    /// </summary>
     public ServiceCollectionPool Services
     {
         get => this._serviceCollections;
@@ -94,19 +99,19 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     public KernelMemoryBuilder(IServiceCollection? hostServiceCollection = null)
     {
         this._memoryServiceCollection = new ServiceCollection();
+        this._auxServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+        this.CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection, this._auxServiceCollection);
 
         this._serviceCollections = new ServiceCollectionPool(this._memoryServiceCollection);
-        if (this._hostServiceCollection != null)
-        {
-            this._serviceCollections.AddServiceCollection(this._hostServiceCollection);
-        }
+        this._serviceCollections.AddServiceCollection(this._auxServiceCollection);
+        this._serviceCollections.AddServiceCollection(this._hostServiceCollection);
 
-        // List of embedding generators and vector DBs used during the ingestion
+        // List of embedding generators and memory DBs used during the ingestion
         this._embeddingGenerators.Clear();
-        this._vectorDbs.Clear();
+        this._memoryDbs.Clear();
         this.AddSingleton<List<ITextEmbeddingGeneration>>(this._embeddingGenerators);
-        this.AddSingleton<List<IVectorDb>>(this._vectorDbs);
+        this.AddSingleton<List<IMemoryDb>>(this._memoryDbs);
 
         // Default configuration for tests and demos
         this.WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile });
@@ -171,8 +176,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     public IKernelMemoryBuilder AddSingleton<TService>(TService implementationInstance)
         where TService : class
     {
-        this._memoryServiceCollection.AddSingleton<TService>(implementationInstance);
-        this._hostServiceCollection?.AddSingleton<TService>(implementationInstance);
+        this.Services.AddSingleton<TService>(implementationInstance);
         return this;
     }
 
@@ -181,8 +185,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         where TService : class
         where TImplementation : class, TService
     {
-        this._memoryServiceCollection.AddSingleton<TService, TImplementation>();
-        this._hostServiceCollection?.AddSingleton<TService, TImplementation>();
+        this.Services.AddSingleton<TService, TImplementation>();
         return this;
     }
 
@@ -215,18 +218,15 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             switch (config.DataIngestion.DistributedOrchestration.QueueType)
             {
                 case string y when y.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
-                    this._memoryServiceCollection.AddAzureQueue(this.GetServiceConfig<AzureQueueConfig>(config, "AzureQueue"));
-                    this._hostServiceCollection?.AddAzureQueue(this.GetServiceConfig<AzureQueueConfig>(config, "AzureQueue"));
+                    this.Services.AddAzureQueue(this.GetServiceConfig<AzureQueueConfig>(config, "AzureQueue"));
                     break;
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    this._memoryServiceCollection.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>(config, "RabbitMq"));
-                    this._hostServiceCollection?.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>(config, "RabbitMq"));
+                    this.Services.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>(config, "RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
-                    this._memoryServiceCollection.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
-                    this._hostServiceCollection?.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
+                    this.Services.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
                     break;
 
                 default:
@@ -239,13 +239,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         switch (config.ContentStorageType)
         {
             case string x when x.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>(config, "AzureBlobs"));
-                this._hostServiceCollection?.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>(config, "AzureBlobs"));
+                this.Services.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>(config, "AzureBlobs"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
-                this._hostServiceCollection?.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
+                this.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
                 break;
 
             default:
@@ -253,26 +251,21 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 break;
         }
 
-        // Retrieval embeddings
-        switch (config.Retrieval.EmbeddingGeneratorType)
+        // The ingestion embedding generators is a list of generators that the "gen_embeddings" handler uses,
+        // to generate embeddings for each partition. While it's possible to use multiple generators (e.g. to compare embedding quality)
+        // only one generator is used when searching by similarity, and the generator used for search is not in this list.
+        // - config.DataIngestion.EmbeddingGeneratorTypes => list of generators, embeddings to generate and store in memory DB
+        // - config.Retrieval.EmbeddingGeneratorType      => one embedding generator, used to search, and usually injected into Memory DB constructor
+        // Note: use the aux service collection to avoid mixing ingestion and retrieval dependencies.
+
+        // Note: using multiple embeddings is not fully supported yet and could cause write errors or incorrect search results
+        if (config.DataIngestion.EmbeddingGeneratorTypes.Count > 1)
         {
-            case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
-            case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                this._hostServiceCollection?.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                break;
-
-            case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                this._hostServiceCollection?.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
-                break;
+            throw new NotSupportedException("Using multiple embedding generators is currently unsupported. " +
+                                            "You may contact the team if this feature is required, or workaround this exception" +
+                                            "using KernelMemoryBuilder methods explicitly.");
         }
 
-        // Ingestion embeddings
         foreach (var type in config.DataIngestion.EmbeddingGeneratorTypes)
         {
             switch (type)
@@ -280,20 +273,21 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._memoryServiceCollection.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<ITextEmbeddingGeneration>() ?? throw new ConfigurationException("Unable to build embedding generator");
-                    this._embeddingGenerators.Add(service);
-
+                    this._auxServiceCollection.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
+                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGeneration>()
+                                             ?? throw new ConfigurationException("Unable to build embedding generator");
+                    this._embeddingGenerators.Add(embeddingGenerator);
+                    this.ResetAuxServiceCollection();
                     break;
                 }
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._memoryServiceCollection.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<ITextEmbeddingGeneration>() ?? throw new ConfigurationException("Unable to build embedding generator");
-                    this._embeddingGenerators.Add(service);
+                    this._auxServiceCollection.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
+                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGeneration>()
+                                             ?? throw new ConfigurationException("Unable to build embedding generator");
+                    this._embeddingGenerators.Add(embeddingGenerator);
+                    this.ResetAuxServiceCollection();
                     break;
                 }
 
@@ -303,65 +297,99 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             }
         }
 
-        // Retrieval Vector DB
-        switch (config.Retrieval.VectorDbType)
+        // Retrieval embeddings - ITextEmbeddingGeneration interface
+        switch (config.Retrieval.EmbeddingGeneratorType)
         {
-            case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddAzureCognitiveSearchAsVectorDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
-                this._hostServiceCollection?.AddAzureCognitiveSearchAsVectorDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
+            case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
+            case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
                 break;
 
-            case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
-                this._hostServiceCollection?.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
-                break;
-
-            case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
-                this._hostServiceCollection?.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+            case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
                 break;
 
             default:
-                // NOOP - allow custom implementations, via WithCustomVectorDb()
+                // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
                 break;
         }
 
-        // Ingestion Vector DB
-        foreach (var type in config.DataIngestion.VectorDbTypes)
+        // The ingestion Memory DBs is a list of DBs where handlers write records to. While it's possible
+        // to write to multiple DBs, e.g. for replication purpose, there is only one Memory DB used to
+        // read/search, and it doesn't come from this list. See "config.Retrieval.MemoryDbType".
+        // Note: use the aux service collection to avoid mixing ingestion and retrieval dependencies.
+        foreach (var type in config.DataIngestion.MemoryDbTypes)
         {
             switch (type)
             {
                 case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._memoryServiceCollection.AddAzureCognitiveSearchAsVectorDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
-                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
-                    this._vectorDbs.Add(service);
+                    this._auxServiceCollection.AddAzureCognitiveSearchAsMemoryDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
+                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
+                    this._memoryDbs.Add(service);
+                    this.ResetAuxServiceCollection();
                     break;
                 }
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._memoryServiceCollection.AddQdrantAsVectorDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
-                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
-                    this._vectorDbs.Add(service);
+                    this._auxServiceCollection.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
+                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
+                    this._memoryDbs.Add(service);
+                    this.ResetAuxServiceCollection();
                     break;
                 }
 
                 case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
                 {
-                    this._memoryServiceCollection.AddSimpleVectorDbAsVectorDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
-                    var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IVectorDb>() ?? throw new ConfigurationException("Unable to build ingestion vector DB");
-                    this._vectorDbs.Add(service);
+                    this._auxServiceCollection.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
+                    this._memoryDbs.Add(service);
+                    this.ResetAuxServiceCollection();
+                    break;
+                }
+
+                case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
+                {
+                    this._auxServiceCollection.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>(config, "SimpleTextDb"));
+                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
+                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
+                    this._memoryDbs.Add(service);
+                    this.ResetAuxServiceCollection();
                     break;
                 }
 
                 default:
-                    // NOOP - allow custom implementations, via WithCustomVectorDb()
+                    // NOOP - allow custom implementations, via WithCustomMemoryDb()
                     break;
             }
+        }
+
+        // Retrieval Memory DB - IMemoryDb interface
+        switch (config.Retrieval.MemoryDbType)
+        {
+            case string x when x.Equals("AzureCognitiveSearch", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddAzureCognitiveSearchAsMemoryDb(this.GetServiceConfig<AzureCognitiveSearchConfig>(config, "AzureCognitiveSearch"));
+                break;
+
+            case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
+                break;
+
+            case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
+                break;
+
+            case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>(config, "SimpleTextDb"));
+                break;
+
+            default:
+                // NOOP - allow custom implementations, via WithCustomMemoryDb()
+                break;
         }
 
         // Text generation
@@ -369,13 +397,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddAzureOpenAITextGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIText"));
-                this._hostServiceCollection?.AddAzureOpenAITextGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIText"));
+                this.Services.AddAzureOpenAITextGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIText"));
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                this._hostServiceCollection?.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
+                this.Services.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
                 break;
 
             default:
@@ -391,8 +417,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 break;
 
             case string x when x.Equals("AzureFormRecognizer", StringComparison.OrdinalIgnoreCase):
-                this._memoryServiceCollection.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
-                this._hostServiceCollection?.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
+                this.Services.AddAzureFormRecognizer(this.GetServiceConfig<AzureFormRecognizerConfig>(config, "AzureFormRecognizer"));
                 break;
 
             default:
@@ -411,9 +436,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public IKernelMemoryBuilder AddIngestionVectorDb(IVectorDb service)
+    public IKernelMemoryBuilder AddIngestionMemoryDb(IMemoryDb service)
     {
-        this._vectorDbs.Add(service);
+        this._memoryDbs.Add(service);
         return this;
     }
 
@@ -432,6 +457,29 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     #region internals
+
+    private void ResetAuxServiceCollection()
+    {
+        this._auxServiceCollection.Clear();
+        foreach (ServiceDescriptor d in this._memoryServiceCollection)
+        {
+            this._auxServiceCollection.Add(d);
+        }
+    }
+
+    private void CopyServiceCollection(
+        IServiceCollection? source,
+        IServiceCollection destination1,
+        IServiceCollection? destination2 = null)
+    {
+        if (source == null) { return; }
+
+        foreach (ServiceDescriptor d in source)
+        {
+            destination1.Add(d);
+            destination2?.Add(d);
+        }
+    }
 
     private MemoryServerless BuildServerlessClient()
     {
@@ -454,8 +502,8 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
 
-                this._memoryServiceCollection.AddTransient<SaveEmbeddingsHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SaveEmbeddingsHandler>(serviceProvider, "save_embeddings"));
+                this._memoryServiceCollection.AddTransient<SaveRecordsHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<SaveRecordsHandler>(serviceProvider, "save_records"));
 
                 this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
                     => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
@@ -466,12 +514,14 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
-            // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
+            // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
             this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
-            this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
+            this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
 
             var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+
+            this.CheckForMissingDependencies();
 
             var memoryClientInstance = new MemoryServerless(orchestrator, searchClient);
 
@@ -482,7 +532,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 memoryClientInstance.AddHandler(serviceProvider.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SaveEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveEmbeddingsHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<SaveRecordsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveRecordsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
             }
@@ -501,9 +551,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this.CompleteAsyncClient();
         var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
-        // In case the user didn't set the embedding generator and vector DB to use for ingestion, use the values set for retrieval
+        // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
         this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
-        this.ReuseRetrievalVectorDbIfNecessary(serviceProvider);
+        this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
 
         var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
         var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
@@ -525,18 +575,18 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
             this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
             this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-            this._hostServiceCollection.AddHandlerAsHostedService<SaveEmbeddingsHandler>("save_embeddings");
+            this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>("save_records");
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
             this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
         }
+
+        this.CheckForMissingDependencies();
 
         return new MemoryService(orchestrator, searchClient);
     }
 
     private KernelMemoryBuilder CompleteServerlessClient()
     {
-        this.RequireOneEmbeddingGenerator();
-        this.RequireOneVectorDb();
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
         this.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
@@ -545,12 +595,17 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private KernelMemoryBuilder CompleteAsyncClient()
     {
-        this.RequireOneEmbeddingGenerator();
-        this.RequireOneVectorDb();
         this.AddSingleton<SearchClient, SearchClient>();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
         return this;
+    }
+
+    private void CheckForMissingDependencies()
+    {
+        this.RequireEmbeddingGenerator();
+        this.RequireOneMemoryDbForIngestion();
+        this.RequireOneMemoryDbForRetrieval();
     }
 
     private T GetServiceConfig<T>(KernelMemoryConfig cfg, string serviceName)
@@ -563,19 +618,27 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         return cfg.GetServiceConfig<T>(this._servicesConfiguration, serviceName);
     }
 
-    private void RequireOneEmbeddingGenerator()
+    private void RequireEmbeddingGenerator()
     {
-        if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(ITextEmbeddingGeneration)))
+        if (this.IsEmbeddingGeneratorEnabled() && this._embeddingGenerators.Count == 0)
         {
-            throw new ConfigurationException("Embedding generators not defined");
+            throw new ConfigurationException("No embedding generators configured for memory ingestion. Check 'EmbeddingGeneratorTypes' setting.");
         }
     }
 
-    private void RequireOneVectorDb()
+    private void RequireOneMemoryDbForIngestion()
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.All(x => x.ServiceType != typeof(IVectorDb)))
+        if (this._memoryDbs.Count == 0)
         {
-            throw new ConfigurationException("Vector DBs not defined");
+            throw new ConfigurationException("Memory DBs for ingestion not configured");
+        }
+    }
+
+    private void RequireOneMemoryDbForRetrieval()
+    {
+        if (this._memoryServiceCollection.All(x => x.ServiceType != typeof(IMemoryDb)))
+        {
+            throw new ConfigurationException("Memory DBs for retrieval not configured");
         }
     }
 
@@ -588,13 +651,18 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         }
     }
 
-    private void ReuseRetrievalVectorDbIfNecessary(IServiceProvider serviceProvider)
+    private void ReuseRetrievalMemoryDbIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._vectorDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IVectorDb)))
+        if (this._memoryDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryDb)))
         {
-            this._vectorDbs.Add(serviceProvider.GetService<IVectorDb>()
-                                ?? throw new ConfigurationException("Unable to build vector DB instance"));
+            this._memoryDbs.Add(serviceProvider.GetService<IMemoryDb>()
+                                ?? throw new ConfigurationException("Unable to build memory DB instance"));
         }
+    }
+
+    private bool IsEmbeddingGeneratorEnabled()
+    {
+        return this._memoryConfiguration is null or { DataIngestion.EmbeddingGenerationEnabled: true };
     }
 
     private ClientTypes GetBuildType()
@@ -603,10 +671,10 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var hasContentStorage = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IContentStorage)));
         var hasMimeDetector = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMimeTypeDetection)));
         var hasEmbeddingGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextEmbeddingGeneration)));
-        var hasVectorDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IVectorDb)));
+        var hasMemoryDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryDb)));
         var hasTextGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextGeneration)));
 
-        if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasVectorDb && hasTextGenerator)
+        if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
         {
             return hasQueueFactory ? ClientTypes.AsyncService : ClientTypes.SyncServerless;
         }
@@ -618,7 +686,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
         if (!hasEmbeddingGenerator) { missing.Add("Embedding generator"); }
 
-        if (!hasVectorDb) { missing.Add("Vector DB"); }
+        if (!hasMemoryDb) { missing.Add("Memory DB"); }
 
         if (!hasTextGenerator) { missing.Add("Text generator"); }
 

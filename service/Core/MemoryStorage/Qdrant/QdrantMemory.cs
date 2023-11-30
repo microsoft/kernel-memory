@@ -9,18 +9,39 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant;
 
-public class QdrantMemory : IVectorDb
+/// <summary>
+/// Qdrant connector for Kernel Memory
+/// TODO:
+/// * allow using more Qdrant specific filtering logic
+/// </summary>
+public class QdrantMemory : IMemoryDb
 {
+    private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
 
+    /// <summary>
+    /// Create new instance
+    /// </summary>
+    /// <param name="config">Qdrant connector configuration</param>
+    /// <param name="embeddingGenerator">Text embedding generator</param>
+    /// <param name="log">Application logger</param>
     public QdrantMemory(
         QdrantConfig config,
+        ITextEmbeddingGeneration embeddingGenerator,
         ILogger<QdrantMemory>? log = null)
     {
+        this._embeddingGenerator = embeddingGenerator;
+
+        if (this._embeddingGenerator == null)
+        {
+            throw new QdrantException("Embedding generator not configured");
+        }
+
         this._log = log ?? DefaultLogger<QdrantMemory>.Instance;
         this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey);
     }
@@ -101,7 +122,7 @@ public class QdrantMemory : IVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
-        Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,
@@ -120,9 +141,10 @@ public class QdrantMemory : IVectorDb
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}")));
         }
 
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: index,
-            target: embedding,
+            target: textEmbedding,
             scoreThreshold: minRelevance,
             requiredTags: requiredTags,
             limit: limit,

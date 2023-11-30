@@ -1,14 +1,14 @@
 ﻿<Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.12.0</Version>
+        <Version>0.13.0</Version>
 
         <!-- Default description and tags. Packages can override. -->
         <Authors>Microsoft</Authors>
         <Company>Microsoft</Company>
         <Product>Kernel Memory</Product>
         <Description>Copilot Memory Plugin and Memory Service to index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
-        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
         <PackageId>$(AssemblyName)</PackageId>
 
         <!-- Required license, copyright, and repo information. Packages can override. -->

@@ -6,44 +6,30 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
 /// <summary>
-/// Basic vector db implementation, designed for tests and demos only.
-/// When searching, uses brute force comparing against all stored records.
+/// Development only implementation of IMemoryDb, used to test KM
+/// without dependencies on embedding generators.
+/// This is NOT meant for real scenarios, only for code development.
 /// </summary>
-public class SimpleVectorDb : IMemoryDb
+public class SimpleTextDb : IMemoryDb
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly IFileSystem _fileSystem;
-    private readonly ILogger<SimpleVectorDb> _log;
+    private readonly ILogger<SimpleTextDb> _log;
 
-    /// <summary>
-    /// Create new instance
-    /// </summary>
-    /// <param name="config">Simple vector db settings</param>
-    /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="log">Application logger</param>
-    public SimpleVectorDb(
-        SimpleVectorDbConfig config,
-        ITextEmbeddingGeneration embeddingGenerator,
-        ILogger<SimpleVectorDb>? log = null)
+    public SimpleTextDb(
+        SimpleTextDbConfig config,
+        ILogger<SimpleTextDb>? log = null)
     {
-        this._embeddingGenerator = embeddingGenerator;
-
-        if (this._embeddingGenerator == null)
-        {
-            throw new SimpleVectorDbException("Embedding generator not configured");
-        }
-
-        this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
+        this._log = log ?? DefaultLogger<SimpleTextDb>.Instance;
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
@@ -103,13 +89,23 @@ public class SimpleVectorDb : IMemoryDb
             records[r.Id] = r;
         }
 
-        // Calculate all the distances from the given vector
-        // Note: this is a brute force search, very slow, not meant for production use cases
-        var similarity = new Dictionary<string, double>();
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        var words = Regex.Replace(text, "[^a-zA-Z0-9_]+", " ")
+            .Split(' ').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+
+        var similarity = new Dictionary<string, int>();
         foreach (var record in records)
         {
-            similarity[record.Value.Id] = textEmbedding.CosineSimilarity(record.Value.Vector);
+            similarity[record.Value.Id] = 0;
+            var storedText = record.Value.Payload[Constants.ReservedPayloadTextField].ToString();
+            if (string.IsNullOrEmpty(storedText)) { continue; }
+
+            foreach (var word in words)
+            {
+                if (storedText.Contains(word, StringComparison.OrdinalIgnoreCase))
+                {
+                    similarity[record.Value.Id] += 1;
+                }
+            }
         }
 
         // Sort distances, from closest to most distant, and filter out irrelevant results
@@ -119,7 +115,7 @@ public class SimpleVectorDb : IMemoryDb
             orderby entry.Value descending
             select entry.Key;
 
-        // Return <count> vectors, including the calculated distance
+        // Return <count> records, including the calculated distance
         var count = 0;
         foreach (string id in sorted)
         {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
@@ -20,7 +21,16 @@ public class OpenAITextGeneration : ITextGeneration
     private readonly bool _isTextModel;
     private readonly string _model;
 
-    public OpenAITextGeneration(OpenAIConfig config, ILogger<OpenAITextGeneration>? log = null)
+    public OpenAITextGeneration(
+        OpenAIConfig config,
+        ILoggerFactory? loggerFactory = null)
+        : this(config, loggerFactory?.CreateLogger<OpenAITextGeneration>())
+    {
+    }
+
+    public OpenAITextGeneration(
+        OpenAIConfig config,
+        ILogger<OpenAITextGeneration>? log = null)
     {
         var textModels = new List<string>
         {
@@ -78,9 +88,9 @@ public class OpenAITextGeneration : ITextGeneration
             }
 
             Response<StreamingCompletions>? response = await this._client.GetCompletionsStreamingAsync(this._model, openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChoice? choice in response.Value.GetChoicesStreaming(cancellationToken))
+            await foreach (StreamingChoice? choice in response.Value.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (string? x in choice.GetTextStreaming(cancellationToken))
+                await foreach (string? x in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
                 {
                     yield return x;
                 }
@@ -107,9 +117,9 @@ public class OpenAITextGeneration : ITextGeneration
 
             Response<StreamingChatCompletions>? response = await this._client.GetChatCompletionsStreamingAsync(this._model, openaiOptions, cancellationToken).ConfigureAwait(false);
 
-            await foreach (StreamingChatChoice? choice in response.Value.GetChoicesStreaming(cancellationToken))
+            await foreach (StreamingChatChoice? choice in response.Value.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (ChatMessage? x in choice.GetMessageStreaming(cancellationToken))
+                await foreach (ChatMessage? x in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
                 {
                     yield return x.Content;
                 }
