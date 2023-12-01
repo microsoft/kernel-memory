@@ -4,6 +4,7 @@ tmp-*/
 out/
 _files/
 _vectors/
+_queues/
 _textdb/
 
 ## Ignore Visual Studio temporary files, build results, and
