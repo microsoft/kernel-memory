@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
@@ -25,9 +23,9 @@ public class TestCosineSimilarity
     [Fact]
     public async Task CompareCosineSimilarity()
     {
-        const string indexName = "tests";
-        const bool acsEnabled = true;
-        const bool qdrantEnabled = true;
+        const string IndexName = "tests";
+        const bool AzSearchEnabled = true;
+        const bool QdrantEnabled = true;
 
         // == Ctors
 
@@ -47,21 +45,21 @@ public class TestCosineSimilarity
 
         // == Delete indexes left over
 
-        if (acsEnabled) { await acs.DeleteIndexAsync(indexName); }
+        if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
 
-        if (qdrantEnabled) { await qdrant.DeleteIndexAsync(indexName); }
+        if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
 
-        await simpleVecDb.DeleteIndexAsync(indexName);
+        await simpleVecDb.DeleteIndexAsync(IndexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
 
         // == Create indexes
 
-        if (acsEnabled) { await acs.CreateIndexAsync(indexName, 3); }
+        if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
 
-        if (qdrantEnabled) { await qdrant.CreateIndexAsync(indexName, 3); }
+        if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
 
-        await simpleVecDb.CreateIndexAsync(indexName, 3);
+        await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
         // == Insert data
 
@@ -78,11 +76,11 @@ public class TestCosineSimilarity
 
         foreach (KeyValuePair<string, MemoryRecord> r in records)
         {
-            if (acsEnabled) { await acs.UpsertAsync(indexName, r.Value); }
+            if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
 
-            if (qdrantEnabled) { await qdrant.UpsertAsync(indexName, r.Value); }
+            if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
 
-            await simpleVecDb.UpsertAsync(indexName, r.Value);
+            await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(2));
@@ -94,29 +92,29 @@ public class TestCosineSimilarity
 
         IAsyncEnumerable<(MemoryRecord, double)> acsList;
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
             acsList = acs.GetSimilarListAsync(
-                index: indexName, text: "text01", limit: 10, withEmbeddings: true);
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
             qdrantList = qdrant.GetSimilarListAsync(
-                index: indexName, text: "text01", limit: 10, withEmbeddings: true);
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
         IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
-            index: indexName, text: "text01", limit: 10, withEmbeddings: true);
+            index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
 
         List<(MemoryRecord, double)> acsResults;
         List<(MemoryRecord, double)> qdrantResults;
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
             acsResults = await acsList.ToListAsync();
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
             qdrantResults = await qdrantList.ToListAsync();
         }
@@ -125,9 +123,9 @@ public class TestCosineSimilarity
 
         // == Test results
 
-        const double precision = 0.000001d;
+        const double Precision = 0.000001d;
 
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
             this._log.WriteLine($"Azure AI Search: {acsResults.Count} results");
             foreach ((MemoryRecord, double) r in acsResults)
@@ -136,11 +134,11 @@ public class TestCosineSimilarity
                 var expected = CosineSim(target, records[r.Item1.Id].Vector);
                 var diff = expected - actual;
                 this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-                Assert.True(Math.Abs(diff) < precision);
+                Assert.True(Math.Abs(diff) < Precision);
             }
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
             this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
             foreach ((MemoryRecord, double) r in qdrantResults)
@@ -149,7 +147,7 @@ public class TestCosineSimilarity
                 var expected = CosineSim(target, records[r.Item1.Id].Vector);
                 var diff = expected - actual;
                 this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-                Assert.True(Math.Abs(diff) < precision);
+                Assert.True(Math.Abs(diff) < Precision);
             }
         }
 
@@ -160,7 +158,7 @@ public class TestCosineSimilarity
             var expected = CosineSim(target, records[r.Item1.Id].Vector);
             var diff = expected - actual;
             this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-            Assert.True(Math.Abs(diff) < precision);
+            Assert.True(Math.Abs(diff) < Precision);
         }
     }
 

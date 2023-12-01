@@ -7,8 +7,6 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 using UnitTests.TestHelpers;
 using Xunit.Abstractions;
 
-// ReSharper disable InconsistentNaming
-
 namespace UnitTests.FileSystem.DevTools;
 
 public class InMemoryFileSystemTest : BaseTestCase
@@ -118,102 +116,102 @@ public class InMemoryFileSystemTest : BaseTestCase
     public async Task ItDeletesDirectories()
     {
         // Arrange
-        const string vol = "v3";
+        const string Vol = "v3";
 
-        await this._target.CreateVolumeAsync(vol);
-        await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
-        await this._target.WriteFileAsync(vol, "sub1/sub2", "file.txt", "some content");
-        Assert.True(this._internalState[vol].ContainsKey("sub1/sub2/"));
-
-        // Act
-        await this._target.DeleteDirectoryAsync(vol, "sub1/sub2");
-
-        // Assert
-        Assert.False(this._internalState[vol].ContainsKey("sub1/sub2/"));
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file.txt", "some content");
+        Assert.True(this._internalState[Vol].ContainsKey("sub1/sub2/"));
 
         // Act
-        await this._target.DeleteDirectoryAsync(vol, "sub1");
+        await this._target.DeleteDirectoryAsync(Vol, "sub1/sub2");
 
         // Assert
-        Assert.False(this._internalState[vol].ContainsKey("sub1/sub2/"));
+        Assert.False(this._internalState[Vol].ContainsKey("sub1/sub2/"));
+
+        // Act
+        await this._target.DeleteDirectoryAsync(Vol, "sub1");
+
+        // Assert
+        Assert.False(this._internalState[Vol].ContainsKey("sub1/sub2/"));
 
         // Cleanup
-        await this._target.DeleteVolumeAsync(vol);
-        Assert.False(this._internalState.ContainsKey(vol));
+        await this._target.DeleteVolumeAsync(Vol);
+        Assert.False(this._internalState.ContainsKey(Vol));
     }
 
     [Fact]
     public async Task ItChecksIfFileExists()
     {
         // Arrange
-        const string vol = "v4";
-        await this._target.CreateVolumeAsync(vol);
-        await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
-        await this._target.WriteFileAsync(vol, "sub1/sub2", "file.txt", "some content");
+        const string Vol = "v4";
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file.txt", "some content");
 
         // Act - Assert
-        Assert.False(await this._target.FileExistsAsync(vol, "sub1", ""));
-        Assert.False(await this._target.FileExistsAsync(vol, "sub1", "file"));
-        Assert.False(await this._target.FileExistsAsync(vol, "sub1/sub2", ""));
-        Assert.False(await this._target.FileExistsAsync(vol, "sub1/sub2", "file"));
-        Assert.True(await this._target.FileExistsAsync(vol, "sub1/sub2", "file.txt"));
+        Assert.False(await this._target.FileExistsAsync(Vol, "sub1", ""));
+        Assert.False(await this._target.FileExistsAsync(Vol, "sub1", "file"));
+        Assert.False(await this._target.FileExistsAsync(Vol, "sub1/sub2", ""));
+        Assert.False(await this._target.FileExistsAsync(Vol, "sub1/sub2", "file"));
+        Assert.True(await this._target.FileExistsAsync(Vol, "sub1/sub2", "file.txt"));
 
         // Cleanup
-        await this._target.DeleteVolumeAsync(vol);
+        await this._target.DeleteVolumeAsync(Vol);
     }
 
     [Fact]
     public async Task ItReadsFilesThatExist()
     {
         // Arrange
-        const string vol = "v5";
-        await this._target.CreateVolumeAsync(vol);
-        await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
-        await this._target.WriteFileAsync(vol, "sub1/sub2", "file.txt", "some content");
+        const string Vol = "v5";
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file.txt", "some content");
 
         // Act
-        var content = await this._target.ReadFileAsTextAsync(vol, "sub1/sub2", "file.txt");
+        var content = await this._target.ReadFileAsTextAsync(Vol, "sub1/sub2", "file.txt");
 
         // Assert
         Assert.Equal("some content", content);
 
         // Cleanup
-        await this._target.DeleteVolumeAsync(vol);
+        await this._target.DeleteVolumeAsync(Vol);
     }
 
     [Fact]
     public async Task ItThrowsIfAFileOrDirDoesntExist()
     {
         // Arrange
-        const string vol = "v6";
-        await this._target.CreateVolumeAsync(vol);
-        await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
+        const string Vol = "v6";
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
 
         // Act - Assert
         await Assert.ThrowsAsync<DirectoryNotFoundException>(
-            async () => await this._target.ReadFileAsTextAsync(vol, "foo/bar", "file.txt"));
+            async () => await this._target.ReadFileAsTextAsync(Vol, "foo/bar", "file.txt"));
         await Assert.ThrowsAsync<FileNotFoundException>(
-            async () => await this._target.ReadFileAsTextAsync(vol, "sub1/sub2", "file.txt"));
+            async () => await this._target.ReadFileAsTextAsync(Vol, "sub1/sub2", "file.txt"));
 
         // Cleanup
-        await this._target.DeleteVolumeAsync(vol);
+        await this._target.DeleteVolumeAsync(Vol);
     }
 
     [Fact]
     public async Task ItCanListFiles()
     {
         // Arrange
-        const string vol = "v7";
-        await this._target.CreateVolumeAsync(vol);
-        await this._target.CreateDirectoryAsync(vol, "sub1/sub2");
-        await this._target.WriteFileAsync(vol, "sub1", "file1.txt", "some content 1");
-        await this._target.WriteFileAsync(vol, "sub1/sub2", "file2.txt", "some content 2");
-        await this._target.WriteFileAsync(vol, "sub1/sub2", "file3.txt", "some content 3");
+        const string Vol = "v7";
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
+        await this._target.WriteFileAsync(Vol, "sub1", "file1.txt", "some content 1");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file2.txt", "some content 2");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file3.txt", "some content 3");
 
         // Act (sort where needed to avoid false negatives)
-        var list1 = await this._target.GetAllFileNamesAsync(vol, "");
-        var list2 = await this._target.GetAllFileNamesAsync(vol, "sub1");
-        var list3 = (await this._target.GetAllFileNamesAsync(vol, "sub1/sub2")).ToImmutableSortedSet();
+        var list1 = await this._target.GetAllFileNamesAsync(Vol, "");
+        var list2 = await this._target.GetAllFileNamesAsync(Vol, "sub1");
+        var list3 = (await this._target.GetAllFileNamesAsync(Vol, "sub1/sub2")).ToImmutableSortedSet();
 
         // Assert (note: if these fails, there's a chance your OS is injecting temp files like .DS_Store on disk)
         Assert.Equal(0, list1.Count());
@@ -226,7 +224,7 @@ public class InMemoryFileSystemTest : BaseTestCase
         Assert.Equal("file3.txt", list3.ElementAt(1));
 
         // Cleanup
-        await this._target.DeleteVolumeAsync(vol);
+        await this._target.DeleteVolumeAsync(Vol);
     }
 
 #pragma warning disable CA5394
@@ -235,8 +233,8 @@ public class InMemoryFileSystemTest : BaseTestCase
     public async Task ItDoesntCorruptBinaryFiles()
     {
         // Arrange
-        const string vol = "v8";
-        await this._target.CreateVolumeAsync(vol);
+        const string Vol = "v8";
+        await this._target.CreateVolumeAsync(Vol);
         var originalContent = new byte[100];
         Random rnd = new();
         int originalHash = 0;
@@ -248,8 +246,8 @@ public class InMemoryFileSystemTest : BaseTestCase
         }
 
         // Act
-        await this._target.WriteFileAsync(vol, "", "file.bin", new BinaryData(originalContent).ToStream());
-        var savedContent = (await this._target.ReadFileAsBinaryAsync(vol, "", "file.bin")).ToArray();
+        await this._target.WriteFileAsync(Vol, "", "file.bin", new BinaryData(originalContent).ToStream());
+        var savedContent = (await this._target.ReadFileAsBinaryAsync(Vol, "", "file.bin")).ToArray();
 
         // Assert
         Console.WriteLine($"File sizes: {savedContent.Length} == {originalContent.Length}");
@@ -270,13 +268,13 @@ public class InMemoryFileSystemTest : BaseTestCase
     public async Task ItDoesntCorruptTextFiles()
     {
         // Arrange
-        const string vol = "v9";
-        await this._target.CreateVolumeAsync(vol);
+        const string Vol = "v9";
+        await this._target.CreateVolumeAsync(Vol);
         string originalContent = JsonSerializer.Serialize(new { foo = "bar", bar = new { baz = "♣︎♣︎♣︎♣︎" } });
 
         // Act
-        await this._target.WriteFileAsync(vol, "", "file.json", new BinaryData(originalContent).ToStream());
-        char[] savedContent = (await this._target.ReadFileAsTextAsync(vol, "", "file.json")).ToArray();
+        await this._target.WriteFileAsync(Vol, "", "file.json", new BinaryData(originalContent).ToStream());
+        char[] savedContent = (await this._target.ReadFileAsTextAsync(Vol, "", "file.json")).ToArray();
         var saveContentStr = new string(savedContent);
 
         // Assert

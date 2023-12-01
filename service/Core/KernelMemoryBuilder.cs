@@ -410,7 +410,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         }
 
         // Image OCR
-        switch (config.ImageOcrType)
+        switch (config.DataIngestion.ImageOcrType)
         {
             case string y when string.IsNullOrWhiteSpace(y):
             case string x when x.Equals("None", StringComparison.OrdinalIgnoreCase):

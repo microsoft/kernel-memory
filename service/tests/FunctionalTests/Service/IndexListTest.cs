@@ -6,7 +6,6 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
-// ReSharper disable InconsistentNaming
 public class IndexListTest : BaseTestCase
 {
     private readonly IKernelMemory _memory;
@@ -15,8 +14,7 @@ public class IndexListTest : BaseTestCase
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {
-        var apiKey = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("AccessKey");
-        this._memory = new MemoryWebClient("http://127.0.0.1:9001/", apiKey: apiKey);
+        this._memory = this.GetMemoryWebClient();
     }
 
     [Fact]

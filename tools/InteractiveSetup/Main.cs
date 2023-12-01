@@ -415,11 +415,11 @@ public static class Main
             {
                 new("None", () =>
                 {
-                    AppSettings.Change(x => { x.ImageOcrType = "None"; });
+                    AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "None"; });
                 }),
                 new("Azure AI Document Intelligence", () =>
                 {
-                    AppSettings.Change(x => { x.ImageOcrType = "AzureAIDocIntel"; });
+                    AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "AzureAIDocIntel"; });
                     s_cfgAzureAIDocIntel.Value = true;
                 }),
                 new("-exit-", SetupUI.Exit),

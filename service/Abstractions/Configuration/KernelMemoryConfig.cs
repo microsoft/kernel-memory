@@ -55,6 +55,11 @@ public class KernelMemoryConfig
         public List<string> MemoryDbTypes { get; set; } = new();
 
         /// <summary>
+        /// The OCR service used to recognize text in images.
+        /// </summary>
+        public string ImageOcrType { get; set; } = string.Empty;
+
+        /// <summary>
         /// Default document ingestion pipeline steps.
         /// * extract: extract text from files
         /// * partition: spit the text in small chunks
@@ -111,11 +116,6 @@ public class KernelMemoryConfig
     /// and to generate answers during retrieval.
     /// </summary>
     public string TextGeneratorType { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The OCR generator used to recognize text in images.
-    /// </summary>
-    public string ImageOcrType { get; set; } = string.Empty;
 
     /// <summary>
     /// HTTP service authorization settings.

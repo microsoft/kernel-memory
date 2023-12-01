@@ -6,7 +6,6 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.Service;
 
-// ReSharper disable InconsistentNaming
 public class DocumentUploadTest : BaseTestCase
 {
     private readonly IKernelMemory _memory;
@@ -15,15 +14,14 @@ public class DocumentUploadTest : BaseTestCase
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {
-        var apiKey = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("AccessKey");
-        this._memory = new MemoryWebClient("http://127.0.0.1:9001/", apiKey: apiKey);
+        this._memory = this.GetMemoryWebClient();
     }
 
     [Fact]
     public async Task ItUploadsPDFDocsAndDeletes()
     {
+        // Arrange
         const string Id = "ItUploadsPDFDocsAndDeletes-file1-NASA-news.pdf";
-
         this.Log("Uploading document");
         await this._memory.ImportDocumentAsync(
             "file1-NASA-news.pdf",
@@ -36,10 +34,14 @@ public class DocumentUploadTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
+        // Act
         var answer = await this._memory.AskAsync("What is Orion?");
         this.Log(answer.Result);
+
+        // Assert
         Assert.Contains("spacecraft", answer.Result, StringComparison.OrdinalIgnoreCase);
 
+        // Cleanup
         this.Log("Deleting memories extracted from the document");
         await this._memory.DeleteDocumentAsync(Id);
     }

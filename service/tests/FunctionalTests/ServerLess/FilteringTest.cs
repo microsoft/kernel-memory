@@ -6,7 +6,6 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-// ReSharper disable InconsistentNaming
 public class FilteringTest : BaseTestCase
 {
     public FilteringTest(
