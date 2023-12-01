@@ -24,7 +24,6 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 
-// ReSharper disable InconsistentNaming
 namespace AzureAISearchTests;
 
 public static class Program

@@ -34,7 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="file1-NASA-news.pdf"/>
         <Content Include="file1-NASA-news.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

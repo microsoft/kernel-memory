@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
@@ -28,9 +26,9 @@ public class TestMemoryFilters
     public async Task TestFilters()
     {
         // Booleans used for investigating test failures
-        const bool deleteIndex = true;
-        const bool createIndex = true;
-        const bool createRecords = true;
+        const bool DeleteIndex = true;
+        const bool CreateIndex = true;
+        const bool CreateRecords = true;
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
@@ -46,7 +44,7 @@ public class TestMemoryFilters
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
                 .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
 
-        if (deleteIndex)
+        if (DeleteIndex)
         {
             await acs.DeleteIndexAsync(IndexName);
             await qdrant.DeleteIndexAsync(IndexName);
@@ -54,14 +52,14 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        if (createIndex)
+        if (CreateIndex)
         {
             await acs.CreateIndexAsync(IndexName, 3);
             await qdrant.CreateIndexAsync(IndexName, 3);
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
 
-        if (createRecords)
+        if (CreateRecords)
         {
             var records = new Dictionary<string, MemoryRecord>
             {

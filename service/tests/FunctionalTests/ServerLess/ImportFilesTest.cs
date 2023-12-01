@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Reflection;
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
@@ -11,7 +10,6 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-// ReSharper disable InconsistentNaming
 public class ImportFilesTest : BaseTestCase
 {
     private readonly IKernelMemory _memory;
@@ -21,13 +19,9 @@ public class ImportFilesTest : BaseTestCase
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {
-        this._fixturesPath = FindFixturesDir();
+        this._fixturesPath = this.FindFixturesDir();
         Assert.NotNull(this._fixturesPath);
         Console.WriteLine($"\n# Fixtures directory found: {this._fixturesPath}");
-
-        // Save uploaded docs inside this project, under /tmp
-        var tmpPath = Path.GetFullPath(Path.Join(this._fixturesPath, "..", "tmp"));
-        Console.WriteLine($"Saving temp files in: {tmpPath}");
 
         var openAIKey = this.OpenAIConfiguration.GetValue<string>("APIKey")
                         ?? throw new TestCanceledException("OpenAI API key is missing");
@@ -84,23 +78,5 @@ public class ImportFilesTest : BaseTestCase
             fileName: fileName,
             steps: new[] { "extract", "partition" },
             tags: new() { { "user", "user1" } });
-    }
-
-    // Find the "Fixtures" directory (inside the project)
-    private static string? FindFixturesDir()
-    {
-        // start from the location of the executing assembly, and traverse up max 5 levels
-        var path = Path.GetDirectoryName(Path.GetFullPath(Assembly.GetExecutingAssembly().Location));
-        for (var i = 0; i < 5; i++)
-        {
-            Console.WriteLine($"Checking '{path}'");
-            var test = Path.Join(path, "Fixtures");
-            if (Directory.Exists(test)) { return test; }
-
-            // up one level
-            path = Path.GetDirectoryName(path);
-        }
-
-        return null;
     }
 }
