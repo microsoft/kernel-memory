@@ -48,14 +48,14 @@ To run the Kernel Memory service:
 > ### On WSL / Linux / MacOS:
 >
 > ```shell
-> cd dotnet/Service
+> cd service/Service
 > ./run.sh
 > ```
 
 > ### On Windows:
 >
 > ```shell
-> cd dotnet\Service
+> cd service\Service
 > run.cmd
 > ```
 
