@@ -70,17 +70,17 @@ public static class Program
         // information about Question2 and Question3.
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question1 + "\n");
+        Console.WriteLine(Question1 + " (expected: some answer using the PDF provided)\n");
         FunctionResult answer = await oracleFunction.InvokeAsync(Question1, kernel);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question2 + "\n");
+        Console.WriteLine(Question2 + " (expected answer: \"I don't know\")\n");
         answer = await oracleFunction.InvokeAsync(Question2, kernel);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question3 + "\n");
+        Console.WriteLine(Question3 + " (expected answer: \"I don't know\")\n");
         answer = await oracleFunction.InvokeAsync(Question3, kernel);
         Console.WriteLine("Answer: " + answer);
     }

@@ -94,15 +94,15 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 Kernel Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Kernel Memory also serverless, embedding the `MemoryServerlessClient`
-in your app.
+However, you can use Kernel Memory also serverless, embedding the `MemoryServerless`
+class in your app.
 
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
 > ```csharp
 > var memory = new KernelMemoryBuilder()
 >     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
->     .Build();
+>     .Build<MemoryServerless>();
 >
 > // Import a file
 > await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });

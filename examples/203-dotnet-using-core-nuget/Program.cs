@@ -23,7 +23,7 @@ var memory = new KernelMemoryBuilder()
     //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
     //     Deployment = Env.Var("AZURE_OPENAI_CHAT_MODEL")
     // })
-    .BuildServerlessClient();
+    .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");
 

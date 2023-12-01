@@ -18,6 +18,8 @@ public static class Program
 
 public class MyCustomEmbeddingGenerator : ITextEmbeddingGeneration
 {
+    public IReadOnlyDictionary<string, string> Attributes { get; } = new Dictionary<string, string>();
+
     /// <summary>
     /// Generates embeddings for the given data.
     /// </summary>
