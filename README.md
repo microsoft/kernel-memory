@@ -209,7 +209,7 @@ to **start the Kernel Memory Service**:
 > ### On WSL / Linux / MacOS:
 >
 > ```shell
-> cd dotnet/Service
+> cd service/Service
 > ./setup.sh
 > ./run.sh
 > ```
@@ -217,7 +217,7 @@ to **start the Kernel Memory Service**:
 > ### On Windows:
 >
 > ```shell
-> cd dotnet\Service
+> cd service\Service
 > setup.cmd
 > run.cmd
 > ```
