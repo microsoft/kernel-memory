@@ -10,16 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="sample-SK-Readme.pdf" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="sample-SK-Readme.pdf">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 

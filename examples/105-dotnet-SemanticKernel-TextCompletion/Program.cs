@@ -14,6 +14,8 @@ var memory = new KernelMemoryBuilder()
     .WithCustomEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(embeddingDeployment, endpoint, apiKey))
     .Build<MemoryServerless>();
 
+// using document form 203-dotnet-using-core-nuget
+
 await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");
 
 var question = "What's Semantic Kernel?";
