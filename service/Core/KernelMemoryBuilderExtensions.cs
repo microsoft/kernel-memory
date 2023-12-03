@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KernelMemory.Prompts;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.KernelMemory;
 
@@ -134,6 +135,15 @@ public static partial class KernelMemoryBuilderExtensions
     {
         service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
         builder.AddSingleton<IPromptProvider>(service);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithSemanticKernelTextCompletion(
+        this IKernelMemoryBuilder builder,
+        ITextCompletion service)
+    {
+        service = service ?? throw new ConfigurationException("The semantic kernel text completion instance is NULL");
+        builder.AddSingleton<ITextGeneration>(new SemanticKernelTextGeneration(service));
         return builder;
     }
 }
