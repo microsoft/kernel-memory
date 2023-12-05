@@ -11,13 +11,13 @@
         <PackageVersion Include="ClosedXML" Version="0.102.1"/>
         <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
         <PackageVersion Include="HtmlAgilityPack" Version="1.11.54"/>
-        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0"/>
+        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1"/>
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0"/>
         <PackageVersion Include="PdfPig" Version="0.1.8"/>
         <PackageVersion Include="Polly.Core" Version="8.2.0"/>
         <PackageVersion Include="RabbitMQ.Client" Version="6.7.0"/>
@@ -25,7 +25,7 @@
         <PackageVersion Include="System.Linq.Async" Version="6.0.1"/>
         <PackageVersion Include="System.Memory.Data" Version="6.0.0"/>
         <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0"/>
-        <PackageVersion Include="System.Text.Json" Version="6.0.9"/>
+        <PackageVersion Include="System.Text.Json" Version="8.0.0"/>
     </ItemGroup>
     <!-- Semantic Kernel -->
     <ItemGroup>
