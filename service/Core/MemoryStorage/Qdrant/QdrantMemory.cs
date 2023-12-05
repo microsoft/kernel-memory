@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -141,7 +142,7 @@ public class QdrantMemory : IMemoryDb
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}")));
         }
 
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        Embedding textEmbedding = await this._embeddingGenerator.GenEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
         List<(QdrantPoint<DefaultQdrantPayload>, double)> results = await this._qdrantClient.GetSimilarListAsync(
             collectionName: index,
             target: textEmbedding,
