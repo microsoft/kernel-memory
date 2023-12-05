@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
