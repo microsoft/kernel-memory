@@ -10,7 +10,7 @@ var chatDeployment = Env.Var("AOAI_DEPLOYMENT_CHAT");
 var embeddingDeployment = Env.Var("AOAI_DEPLOYMENT_EMBEDDING");
 
 var memory = new KernelMemoryBuilder()
-    .WithSemanticKernelTextCompletion(new AzureOpenAIChatCompletionService(chatDeployment, "", endpoint, apiKey))
+    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, "", endpoint, apiKey))
     .WithCustomEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(embeddingDeployment, "", endpoint, apiKey))
     .Build<MemoryServerless>();
 

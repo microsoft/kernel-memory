@@ -138,7 +138,7 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithSemanticKernelTextCompletion(
+    public static IKernelMemoryBuilder WithSemanticKernelTextGenerationService(
         this IKernelMemoryBuilder builder,
         ITextGenerationService service)
     {
