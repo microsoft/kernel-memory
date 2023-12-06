@@ -12,39 +12,39 @@ public static partial class KernelMemoryBuilderExtensions
         var collection = TextTokenizerCollection.Singleton();
         collection.Set(Constants.TokenizerForTextGenerator, tokenizer);
         collection.Set(Constants.TokenizerForEmbeddingGenerator, tokenizer);
-        builder.Services.AddTextTokenizersCollection(collection);
+        builder.Services.AddTextTokenizerCollection(collection);
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithTextTokenizerForText(
+    public static IKernelMemoryBuilder WithTextTokenizers(
+        this IKernelMemoryBuilder builder, TextTokenizerCollection instance)
+    {
+        builder.Services.AddTextTokenizerCollection(instance);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithTextTokenizerForTextGeneration(
         this IKernelMemoryBuilder builder, ITextTokenizer tokenizer)
     {
         var collection = TextTokenizerCollection.Singleton();
         collection.Set(Constants.TokenizerForTextGenerator, tokenizer);
-        builder.Services.AddTextTokenizersCollection(collection);
+        builder.Services.AddTextTokenizerCollection(collection);
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithTextTokenizerForEmbeddings(
+    public static IKernelMemoryBuilder WithTextTokenizerForEmbeddingGeneration(
         this IKernelMemoryBuilder builder, ITextTokenizer tokenizer)
     {
         var collection = TextTokenizerCollection.Singleton();
         collection.Set(Constants.TokenizerForEmbeddingGenerator, tokenizer);
-        builder.Services.AddTextTokenizersCollection(collection);
-        return builder;
-    }
-
-    public static IKernelMemoryBuilder WithTextTokenizersCollection(
-        this IKernelMemoryBuilder builder, TextTokenizerCollection instance)
-    {
-        builder.Services.AddTextTokenizersCollection(instance);
+        builder.Services.AddTextTokenizerCollection(collection);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddTextTokenizersCollection(
+    public static IServiceCollection AddTextTokenizerCollection(
         this IServiceCollection services, TextTokenizerCollection? instance = null)
     {
         if (instance == null)

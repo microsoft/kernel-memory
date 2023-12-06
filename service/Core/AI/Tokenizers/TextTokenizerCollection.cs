@@ -46,4 +46,9 @@ public sealed class TextTokenizerCollection
 
         throw new KeyNotFoundException($"TextTokenizer '{name}' not defined");
     }
+
+    public bool Has(string name)
+    {
+        return this._instances.ContainsKey(name);
+    }
 }

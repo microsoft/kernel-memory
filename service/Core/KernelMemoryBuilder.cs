@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
@@ -587,6 +588,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private KernelMemoryBuilder CompleteServerlessClient()
     {
         this.UseDefaultSearchClientIfNecessary();
+        this.CompleteTextTokenizers();
         this.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
         this.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
         return this;
@@ -595,9 +597,36 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private KernelMemoryBuilder CompleteAsyncClient()
     {
         this.UseDefaultSearchClientIfNecessary();
+        this.CompleteTextTokenizers();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
         return this;
+    }
+
+    private void CompleteTextTokenizers()
+    {
+        if (!this.Services.HasService<TextTokenizerCollection>())
+        {
+            this.Services.AddTextTokenizerCollection();
+        }
+        else
+        {
+            var tokenizers = this._memoryServiceCollection.BuildServiceProvider().GetService<TextTokenizerCollection>();
+            if (tokenizers == null)
+            {
+                throw new ConfigurationException("The tokenizer collection is NULL");
+            }
+
+            if (!tokenizers.Has(Constants.TokenizerForTextGenerator))
+            {
+                tokenizers.Set(Constants.TokenizerForTextGenerator, new DefaultGPTTokenizer());
+            }
+
+            if (!tokenizers.Has(Constants.TokenizerForEmbeddingGenerator))
+            {
+                tokenizers.Set(Constants.TokenizerForEmbeddingGenerator, new DefaultGPTTokenizer());
+            }
+        }
     }
 
     private void CheckForMissingDependencies()

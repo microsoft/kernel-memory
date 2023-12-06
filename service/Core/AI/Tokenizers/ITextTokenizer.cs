@@ -1,19 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.KernelMemory.AI.Tokenizers;
 
+/// <summary>
+/// Text tokenization interface.
+/// </summary>
 public interface ITextTokenizer
 {
+    /// <summary>
+    /// Count the number of tokens contained in the given text.
+    /// </summary>
+    /// <param name="text">Text to analyze</param>
+    /// <returns>Number of tokens</returns>
     public int CountTokens(string text);
-    public int CountTokens(StringBuilder? stringBuilder);
-    public int CountTokens(char[]? chars);
-    public int CountTokens(IEnumerable<char>? chars);
 
-    public List<int> Encode(string text);
-    public List<int> Encode(StringBuilder? stringBuilder);
-    public List<int> Encode(char[]? chars);
-    public List<int> Encode(IEnumerable<char>? chars);
+    /// <summary>
+    /// Count the number of tokens contained in the given text.
+    /// </summary>
+    /// <param name="stringBuilder">Text to analyze</param>
+    /// <returns>Number of tokens</returns>
+    public int CountTokens(StringBuilder? stringBuilder);
 }
