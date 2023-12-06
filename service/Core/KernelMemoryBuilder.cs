@@ -643,7 +643,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void UseDefaultSearchClientIfNecessary()
     {
-        if (!this.Services.HasService<ISearchClient>())
+        if (!this._memoryServiceCollection.HasService<ISearchClient>())
         {
             this.WithDefaultSearchClient();
         }
