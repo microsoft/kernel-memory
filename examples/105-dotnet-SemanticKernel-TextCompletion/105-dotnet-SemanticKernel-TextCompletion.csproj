@@ -11,6 +11,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Include="..\203-dotnet-using-core-nuget\sample-SK-Readme.pdf" Link="sample-SK-Readme.pdf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
