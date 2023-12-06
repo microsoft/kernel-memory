@@ -1,92 +1,69 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static IKernelMemoryBuilder WithAzureOpenAITextGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config)
+    public static IKernelMemoryBuilder WithAzureOpenAITextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null,
+        bool onlyForRetrieval = false)
     {
-        builder.Services.AddAzureOpenAITextGeneration(config);
-        return builder;
-    }
-
-    public static IKernelMemoryBuilder WithAzureOpenAIEmbeddingGeneration(this IKernelMemoryBuilder builder, AzureOpenAIConfig config, bool onlyForRetrieval = false)
-    {
-        builder.Services.AddAzureOpenAIEmbeddingGeneration(config);
+        builder.Services.AddAzureOpenAIEmbeddingGeneration(config, textTokenizer);
 
         if (!onlyForRetrieval)
         {
-            switch (config.Auth)
-            {
-                case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                    builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
-                        deploymentName: config.Deployment,
-                        modelId: config.Deployment,
-                        endpoint: config.Endpoint,
-                        credential: new DefaultAzureCredential()));
-                    break;
-
-                case AzureOpenAIConfig.AuthTypes.APIKey:
-                    builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
-                        deploymentName: config.Deployment,
-                        modelId: config.Deployment,
-                        endpoint: config.Endpoint,
-                        apiKey: config.APIKey));
-                    break;
-
-                default:
-                    throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-            }
+            builder.AddIngestionEmbeddingGenerator(
+                new AzureOpenAITextEmbeddingGenerator(
+                    config: config,
+                    textTokenizer: textTokenizer,
+                    loggerFactory: loggerFactory));
         }
 
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithAzureOpenAITextGeneration(
+        this IKernelMemoryBuilder builder,
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        builder.Services.AddAzureOpenAITextGeneration(config, textTokenizer);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddAzureOpenAIEmbeddingGeneration(this IServiceCollection services, AzureOpenAIConfig config)
-    {
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                return services
-                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
-                        deploymentName: config.Deployment,
-                        modelId: config.Deployment,
-                        endpoint: config.Endpoint,
-                        credential: new DefaultAzureCredential(),
-                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                return services
-                    .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
-                        deploymentName: config.Deployment,
-                        modelId: config.Deployment,
-                        endpoint: config.Endpoint,
-                        apiKey: config.APIKey,
-                        loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
-
-            default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
-        }
-    }
-
-    public static IServiceCollection AddAzureOpenAITextGeneration(this IServiceCollection services, AzureOpenAIConfig config)
+    public static IServiceCollection AddAzureOpenAIEmbeddingGeneration(
+        this IServiceCollection services,
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
     {
         return services
-            .AddSingleton<ITextGeneration>(serviceProvider => new AzureTextGeneration(
+            .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new AzureOpenAITextEmbeddingGenerator(
+                config,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    public static IServiceCollection AddAzureOpenAITextGeneration(
+        this IServiceCollection services,
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        return services
+            .AddSingleton<ITextGenerator>(serviceProvider => new AzureOpenAITextGenerator(
                 config: config,
-                log: serviceProvider.GetService<ILogger<AzureTextGeneration>>()));
+                textTokenizer: textTokenizer,
+                log: serviceProvider.GetService<ILogger<AzureOpenAITextGenerator>>()));
     }
 }

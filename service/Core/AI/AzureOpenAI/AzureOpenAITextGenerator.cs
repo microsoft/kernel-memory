@@ -10,21 +10,27 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
-public class AzureTextGeneration : ITextGeneration
+public class AzureOpenAITextGenerator : ITextGenerator
 {
-    private readonly ILogger<AzureTextGeneration> _log;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;
+    private readonly ILogger<AzureOpenAITextGenerator> _log;
     private readonly bool _isTextModel;
     private readonly string _deployment;
 
-    public AzureTextGeneration(AzureOpenAIConfig config, ILogger<AzureTextGeneration>? log = null)
+    public AzureOpenAITextGenerator(
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILogger<AzureOpenAITextGenerator>? log = null)
     {
-        this._log = log ?? DefaultLogger<AzureTextGeneration>.Instance;
+        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
+        this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -38,6 +44,7 @@ public class AzureTextGeneration : ITextGeneration
 
         this._isTextModel = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
         this._deployment = config.Deployment;
+        this.MaxTokenTotal = config.MaxTokenTotal;
 
         OpenAIClientOptions options = new()
         {
@@ -73,6 +80,16 @@ public class AzureTextGeneration : ITextGeneration
         }
     }
 
+    /// <inheritdoc/>
+    public int MaxTokenTotal { get; }
+
+    /// <inheritdoc/>
+    public int CountTokens(string text)
+    {
+        return this._textTokenizer.CountTokens(text);
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,

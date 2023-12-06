@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Semantic Kernel function extensions.
 /// </summary>
-public static class KernelFunctionKMExtensions
+public static partial class KernelFunctionExtensions
 {
     private const string SemanticFunctionFirstParamName = "input";
 

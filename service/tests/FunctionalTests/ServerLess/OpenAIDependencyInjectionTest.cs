@@ -61,7 +61,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
-            .WithOpenAITextEmbedding(new OpenAIConfig
+            .WithOpenAITextEmbeddingGeneration(new OpenAIConfig
             {
                 APIKey = this._openAIKey,
                 EmbeddingModel = "text-embedding-ada-002",

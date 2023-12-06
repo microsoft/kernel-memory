@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// <summary>
 /// Extension methods for ITextEmbeddingGeneration
 /// </summary>
-public static class TextEmbeddingGenerationKMExtensions
+public static partial class TextEmbeddingGenerationExtensions
 {
     /// <summary>
     /// Generate the embedding vector for a single string
@@ -21,7 +21,7 @@ public static class TextEmbeddingGenerationKMExtensions
     /// <param name="text">Text to calculate the embedding for</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Embedding vector</returns>
-    public static async Task<Embedding> GenerateEmbeddingsAsync(
+    public static async Task<Embedding> GenerateEmbeddingAsync(
         this ITextEmbeddingGeneration generator, string text, CancellationToken cancellationToken = default)
     {
         IList<ReadOnlyMemory<float>>? embeddings = await generator
