@@ -35,7 +35,7 @@ public class SearchClientConfig
     /// </summary>
     public string EmptyAnswer { get; set; } = "INFO NOT FOUND";
 
-    internal void Validate()
+    public void Validate()
     {
         if (this.MaxAskPromptSize < 1024)
         {

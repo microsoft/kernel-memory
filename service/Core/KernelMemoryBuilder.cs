@@ -296,6 +296,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             }
         }
 
+        // Search settings
+        this.WithSearchClientConfig(config.Retrieval.SearchClient);
+
         // Retrieval embeddings - ITextEmbeddingGeneration interface
         switch (config.Retrieval.EmbeddingGeneratorType)
         {
@@ -484,8 +487,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         try
         {
-            this.CompleteServerlessClient();
-
             // Add handlers to DI service collection
             if (this._useDefaultHandlers)
             {
@@ -513,9 +514,14 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
+            this.CompleteServerlessClient(serviceProvider);
+
             // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
             this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
             this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
+
+            // Recreate the service provider, in order to have the latest dependencies just configured
+            serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
             var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
             var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
@@ -547,12 +553,15 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private MemoryService BuildAsyncClient()
     {
-        this.CompleteAsyncClient();
         var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+        this.CompleteAsyncClient(serviceProvider);
 
         // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
         this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
         this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
+
+        // Recreate the service provider, in order to have the latest dependencies just configured
+        serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
         var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
         var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
@@ -584,17 +593,17 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         return new MemoryService(orchestrator, searchClient);
     }
 
-    private KernelMemoryBuilder CompleteServerlessClient()
+    private KernelMemoryBuilder CompleteServerlessClient(ServiceProvider serviceProvider)
     {
-        this.UseDefaultSearchClientIfNecessary();
+        this.UseDefaultSearchClientIfNecessary(serviceProvider);
         this.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
         this.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
         return this;
     }
 
-    private KernelMemoryBuilder CompleteAsyncClient()
+    private KernelMemoryBuilder CompleteAsyncClient(ServiceProvider serviceProvider)
     {
-        this.UseDefaultSearchClientIfNecessary();
+        this.UseDefaultSearchClientIfNecessary(serviceProvider);
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
         return this;
@@ -641,11 +650,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         }
     }
 
-    private void UseDefaultSearchClientIfNecessary()
+    private void UseDefaultSearchClientIfNecessary(ServiceProvider serviceProvider)
     {
         if (!this._memoryServiceCollection.HasService<ISearchClient>())
         {
-            this.WithDefaultSearchClient();
+            this.WithDefaultSearchClient(serviceProvider.GetService<SearchClientConfig>());
         }
     }
 

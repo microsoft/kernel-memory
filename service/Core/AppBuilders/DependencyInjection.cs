@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.Pipeline;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public static partial class DependencyInjection
@@ -21,16 +19,5 @@ public static partial class DependencyInjection
 
         services.AddHostedService<HandlerAsAHostedService<THandler>>(
             serviceProvider => ActivatorUtilities.CreateInstance<HandlerAsAHostedService<THandler>>(serviceProvider, stepName));
-    }
-
-    /// <summary>
-    /// Check if the service collection contains a descriptor for the given type
-    /// </summary>
-    /// <param name="services">Service Collection</param>
-    /// <typeparam name="T">Type required</typeparam>
-    /// <returns>True when the service collection contains T</returns>
-    public static bool HasService<T>(this IServiceCollection services)
-    {
-        return (services.Any(x => x.ServiceType == typeof(T)));
     }
 }
