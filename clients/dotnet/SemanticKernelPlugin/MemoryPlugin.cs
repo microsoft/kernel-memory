@@ -365,7 +365,7 @@ public class MemoryPlugin
     /// Usage from prompts: '{{memory.ask ...}}'
     /// </summary>
     /// <returns>The answer returned by the memory.</returns>
-    [KernelFunction, Description("Use long term memory to answer a quesion")]
+    [KernelFunction, Description("Use long term memory to answer a question")]
     public async Task<string> AskAsync(
         [ /*SKName(QuestionParam),*/ Description("The question to answer")]
         string question,

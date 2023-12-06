@@ -21,11 +21,11 @@ public static class Program
         var builder = new KernelBuilder();
         builder
             // For OpenAI:
-            // .WithOpenAIChatCompletion(
+            // .AddOpenAIChatCompletion(
             //     modelId: "gpt-3.5-turbo",
             //     apiKey: EnvVar("OPENAI_API_KEY"))
             // Azure OpenAI:
-            .WithAzureOpenAIChatCompletion(
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
                 modelId: EnvVar("AOAI_DEPLOYMENT_TEXT"),
                 endpoint: EnvVar("AOAI_ENDPOINT"),
