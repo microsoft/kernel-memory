@@ -1,28 +1,36 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI.TextGeneration;
 
 namespace Microsoft.KernelMemory.AI;
 internal class SemanticKernelTextGeneration : ITextGeneration
 {
-    private readonly ITextCompletion _completion;
+    private readonly ITextGenerationService _completion;
 
-    public SemanticKernelTextGeneration(ITextCompletion completion)
+    public SemanticKernelTextGeneration(ITextGenerationService completion)
     {
         this._completion = completion;
     }
 
-    public IAsyncEnumerable<string> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GenerateTextAsync(string prompt, TextGenerationOptions options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return this._completion.CompleteStreamAsync(prompt, this.ToAIRequestSettings(options), cancellationToken);
+        var contents = this._completion.GetStreamingTextContentsAsync(prompt, this.ToAIRequestSettings(options), null, cancellationToken);
+        await foreach (var content in contents)
+        {
+            if (content != null)
+            {
+                yield return content.ToString();
+            }
+        }
     }
 
-    private AIRequestSettings ToAIRequestSettings(TextGenerationOptions options)
+    private PromptExecutionSettings ToAIRequestSettings(TextGenerationOptions options)
     {
-        var settings = new AIRequestSettings();
+        var settings = new PromptExecutionSettings();
         settings.ExtensionData[nameof(options.Temperature)] = options.Temperature;
         settings.ExtensionData[nameof(options.TopP)] = options.TopP;
         settings.ExtensionData[nameof(options.PresencePenalty)] = options.PresencePenalty;
