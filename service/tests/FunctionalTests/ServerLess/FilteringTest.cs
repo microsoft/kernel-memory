@@ -195,6 +195,12 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
+        // Extra delay for Azure AI Search, to let the index populate
+        if (memoryType == "az_ai_search")
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
         // Simple filter: empty filters have no impact
         var answer = await memory.AskAsync("What is Orion?", filter: new(), index: indexName);
         this.Log(answer.Result);
