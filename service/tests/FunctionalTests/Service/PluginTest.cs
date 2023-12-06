@@ -18,7 +18,7 @@ public class PluginTest : BaseTestCase
     {
         // Arrange
         var config = this.Configuration.GetSection("Services").GetSection("AzureOpenAIText");
-        var kernel = new KernelBuilder().WithAzureOpenAIChatCompletion(
+        var kernel = new KernelBuilder().AddAzureOpenAIChatCompletion(
             deploymentName: config.GetValue<string>("Deployment") ?? "",
             modelId: config.GetValue<string>("Deployment") ?? "",
             endpoint: config.GetValue<string>("Endpoint") ?? "",
@@ -47,6 +47,7 @@ public class PluginTest : BaseTestCase
         var answer = await myFunction.InvokeAsync(kernel, "any news about Orion?");
 
         // Assert
+        Console.WriteLine(answer);
         Assert.DoesNotContain("I don't know", answer.GetValue<string>());
     }
 }
