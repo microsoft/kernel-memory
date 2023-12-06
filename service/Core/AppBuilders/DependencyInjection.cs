@@ -3,7 +3,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.Pipeline;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public static partial class DependencyInjection

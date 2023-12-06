@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
-using TextChunker = Microsoft.KernelMemory.DataFormats.Text.TextChunker;
 
 namespace Microsoft.KernelMemory.Handlers;
 

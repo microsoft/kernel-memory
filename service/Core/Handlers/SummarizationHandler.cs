@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
-using TextChunker = Microsoft.KernelMemory.DataFormats.Text.TextChunker;
 
 namespace Microsoft.KernelMemory.Handlers;
 

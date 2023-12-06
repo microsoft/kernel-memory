@@ -99,6 +99,11 @@ public class KernelMemoryConfig
         /// The embedding generator used for questions and searching for relevant data in the memory DB
         /// </summary>
         public string EmbeddingGeneratorType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Settings for the default search client
+        /// </summary>
+        public SearchClientConfig SearchClient { get; set; } = new();
     }
 
     /// <summary>
