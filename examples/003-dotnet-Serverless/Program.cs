@@ -20,7 +20,7 @@ var memory = new KernelMemoryBuilder()
         Deployment = Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT"),
         APIKey = Env.Var("AZURE_OPENAI_CHAT_API_KEY")
     })
-    .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
+    .WithAzureOpenAITextEmbeddingGeneration(new AzureOpenAIConfig
     {
         APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
         Auth = AzureOpenAIConfig.AuthTypes.APIKey,

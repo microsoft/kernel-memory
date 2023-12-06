@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -19,15 +18,6 @@ namespace Microsoft.KernelMemory.Handlers;
 public class SummarizationHandler : IPipelineStepHandler
 {
     private const int MinLength = 50;
-
-    // OpenAI ADA:
-    // * v1 max tokens is 2046 (GPT-2/GPT-3 tokenizer)
-    // * v2 is 8191 (cl100k_base tokenizer)
-    private const int SummaryMaxTokens = 2040;
-
-    private const int MaxTokensPerParagraph = SummaryMaxTokens / 2;
-    private const int MaxTokensPerLine = 300;
-    private const int OverlappingTokens = 200;
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
@@ -62,6 +52,7 @@ public class SummarizationHandler : IPipelineStepHandler
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
 
+    /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
@@ -137,20 +128,25 @@ public class SummarizationHandler : IPipelineStepHandler
 
     private async Task<(string summary, bool skip)> SummarizeAsync(string content)
     {
-        int contentLength = GPT3Tokenizer.Encode(content).Count;
+        ITextGenerator textGenerator = this._orchestrator.GetTextGenerator();
+
+        int summaryMaxTokens = textGenerator.MaxTokenTotal / 2; // 50% of model capacity
+        int maxTokensPerParagraph = summaryMaxTokens / 2; // 25% of model capacity
+        int maxTokensPerLine = Math.Min(Math.Max(200, maxTokensPerParagraph / 2), 500); // 200...500
+        int overlappingTokens = maxTokensPerLine / 2;
+
+        int contentLength = textGenerator.CountTokens(content);
         if (contentLength < MinLength)
         {
             this._log.LogDebug("Content too short to summarize, {0} tokens", contentLength);
             return (content, false);
         }
 
-        ITextGeneration textGenerator = this._orchestrator.GetTextGenerator();
-
         // Summarize at least once
         var done = false;
 
         // If paragraphs overlap, we need to dedupe the content, e.g. run at least one summarization call on the entire content
-        var overlapToRemove = OverlappingTokens > 0;
+        var overlapToRemove = overlappingTokens > 0;
 
         // After the first run (after overlaps have been introduced), check if the summarization is causing the content to grow
         bool firstRun = overlapToRemove;
@@ -158,15 +154,15 @@ public class SummarizationHandler : IPipelineStepHandler
         while (!done)
         {
             var paragraphs = new List<string>();
-            if (contentLength <= SummaryMaxTokens)
+            if (contentLength <= summaryMaxTokens)
             {
                 overlapToRemove = false;
                 paragraphs.Add(content);
             }
             else
             {
-                List<string> lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: MaxTokensPerLine);
-                paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: MaxTokensPerParagraph, overlapTokens: OverlappingTokens);
+                List<string> lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: maxTokensPerLine);
+                paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens);
             }
 
             this._log.LogTrace("Paragraphs to summarize: {0}", paragraphs.Count);
@@ -186,7 +182,7 @@ public class SummarizationHandler : IPipelineStepHandler
             }
 
             content = newContent.ToString();
-            contentLength = GPT3Tokenizer.Encode(content).Count;
+            contentLength = textGenerator.CountTokens(content);
 
             if (!firstRun && contentLength >= previousLength)
             {
@@ -198,7 +194,7 @@ public class SummarizationHandler : IPipelineStepHandler
             previousLength = contentLength;
 
             firstRun = false;
-            done = !overlapToRemove && (contentLength <= SummaryMaxTokens);
+            done = !overlapToRemove && (contentLength <= summaryMaxTokens);
         }
 
         return (content, true);

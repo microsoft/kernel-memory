@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.KernelMemory.AI.Tokenizers;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
@@ -113,13 +114,13 @@ public static class TextChunker
                 int currentCount = GetTokenCount(line, tokenCounter) + 1;
                 if (currentCount < maxTokensPerParagraph)
                 {
-                    currentCount += tokenCounter is null ? GetDefaultTokenCount(paragraphBuilder.Length) : tokenCounter(paragraph = paragraphBuilder.ToString());
+                    currentCount += GetTokenCount(paragraphBuilder.ToString(), tokenCounter);
                 }
 
                 if (currentCount >= maxTokensPerParagraph)
                 {
                     // Complete the paragraph and prepare for the next
-                    paragraph ??= paragraphBuilder.ToString();
+                    paragraph = paragraphBuilder.ToString();
                     paragraphs.Add(paragraph.Trim());
                     paragraphBuilder.Clear();
                 }
@@ -243,7 +244,8 @@ public static class TextChunker
         List<string> result = new();
         var inputWasSplit = false;
 
-        int inputTokenCount = tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(inputString ??= input.ToString());
+        // int inputTokenCount = tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(inputString ??= input.ToString());
+        int inputTokenCount = GetTokenCount(inputString ??= input.ToString(), tokenCounter);
 
         if (inputTokenCount > maxTokens)
         {
@@ -310,11 +312,9 @@ public static class TextChunker
         return (result, inputWasSplit);
     }
 
-    private static int GetTokenCount(string input, TokenCounter? tokenCounter) => tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(input);
-
-    private static int GetDefaultTokenCount(int length)
+    private static int GetTokenCount(string input, TokenCounter? tokenCounter)
     {
-        Debug.Assert(length >= 0);
-        return length >> 2;
+        // Fall back to GPT tokenizer if none configured
+        return tokenCounter?.Invoke(input) ?? DefaultGPTTokenizer.InternalCountTokens(input);
     }
 }

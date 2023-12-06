@@ -53,6 +53,11 @@ public class AzureOpenAIConfig
     public string Deployment { get; set; } = string.Empty;
 
     /// <summary>
+    /// The max number of tokens supported by model deployed.
+    /// </summary>
+    public int MaxTokenTotal { get; set; } = 8191;
+
+    /// <summary>
     /// API key, required if Auth == APIKey
     /// </summary>
     public string APIKey { get; set; } = string.Empty;

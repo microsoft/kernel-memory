@@ -8,28 +8,35 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
-public class OpenAITextGeneration : ITextGeneration
+public class OpenAITextGenerator : ITextGenerator
 {
-    private readonly ILogger<OpenAITextGeneration> _log;
+    private readonly ILogger<OpenAITextGenerator> _log;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;
     private readonly bool _isTextModel;
     private readonly string _model;
 
-    public OpenAITextGeneration(
+    /// <inheritdoc/>
+    public int MaxTokenTotal { get; }
+
+    public OpenAITextGenerator(
         OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
-        : this(config, loggerFactory?.CreateLogger<OpenAITextGeneration>())
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextGenerator>())
     {
     }
 
-    public OpenAITextGeneration(
+    public OpenAITextGenerator(
         OpenAIConfig config,
-        ILogger<OpenAITextGeneration>? log = null)
+        ITextTokenizer? textTokenizer = null,
+        ILogger<OpenAITextGenerator>? log = null)
     {
         var textModels = new List<string>
         {
@@ -41,7 +48,8 @@ public class OpenAITextGeneration : ITextGeneration
             "text-davinci-003",
         };
 
-        this._log = log ?? DefaultLogger<OpenAITextGeneration>.Instance;
+        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
+        this._log = log ?? DefaultLogger<OpenAITextGenerator>.Instance;
 
         if (string.IsNullOrEmpty(config.TextModel))
         {
@@ -50,6 +58,7 @@ public class OpenAITextGeneration : ITextGeneration
 
         this._isTextModel = (textModels.Contains(config.TextModel.ToLowerInvariant()));
         this._model = config.TextModel;
+        this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
         OpenAIClientOptions options = new()
         {
@@ -62,6 +71,12 @@ public class OpenAITextGeneration : ITextGeneration
         };
 
         this._client = new OpenAIClient(config.APIKey, options);
+    }
+
+    /// <inheritdoc/>
+    public int CountTokens(string text)
+    {
+        return this._textTokenizer.CountTokens(text);
     }
 
     public async IAsyncEnumerable<string> GenerateTextAsync(

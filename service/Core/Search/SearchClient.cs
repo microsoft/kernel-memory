@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
@@ -18,14 +17,14 @@ namespace Microsoft.KernelMemory.Search;
 public class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
-    private readonly ITextGeneration _textGenerator;
+    private readonly ITextGenerator _textGenerator;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
 
     public SearchClient(
         IMemoryDb memoryDb,
-        ITextGeneration textGenerator,
+        ITextGenerator textGenerator,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
@@ -183,8 +182,8 @@ public class SearchClient : ISearchClient
 
         var facts = new StringBuilder();
         var tokensAvailable = this._config.MaxAskPromptSize
-                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
-                              - GPT3Tokenizer.Encode(question).Count
+                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(question)
                               - this._config.AnswerTokens;
 
         var factsUsedCount = 0;
@@ -248,7 +247,7 @@ public class SearchClient : ISearchClient
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
-            var size = GPT3Tokenizer.Encode(fact).Count;
+            var size = this._textGenerator.CountTokens(fact);
             if (size >= tokensAvailable)
             {
                 // Stop after reaching the max number of tokens

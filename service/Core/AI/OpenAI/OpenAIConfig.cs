@@ -15,9 +15,20 @@ public class OpenAIConfig
     public string TextModel { get; set; } = string.Empty;
 
     /// <summary>
+    /// The max number of tokens supported by the text model.
+    /// </summary>
+    public int TextModelMaxTokenTotal { get; set; } = 8192;
+
+    /// <summary>
     /// Model used to embedding generation/
     /// </summary>
     public string EmbeddingModel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The max number of tokens supported by the embedding model.
+    /// Default to OpenAI ADA2 settings.
+    /// </summary>
+    public int EmbeddingModelMaxTokenTotal { get; set; } = 8191;
 
     /// <summary>
     /// OpenAI API key.

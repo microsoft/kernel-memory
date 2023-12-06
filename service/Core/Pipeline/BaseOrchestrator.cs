@@ -12,7 +12,6 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -22,8 +21,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
 
     private readonly List<IMemoryDb> _memoryDbs;
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
-    private readonly ITextGeneration _textGenerator;
+    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
+    private readonly ITextGenerator _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
     private readonly IContentStorage _contentStorage;
     private readonly IMimeTypeDetection _mimeTypeDetection;
@@ -33,9 +32,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,
-        List<ITextEmbeddingGeneration> embeddingGenerators,
+        List<ITextEmbeddingGenerator> embeddingGenerators,
         List<IMemoryDb> memoryDbs,
-        ITextGeneration textGenerator,
+        ITextGenerator textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
@@ -200,7 +199,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public bool EmbeddingGenerationEnabled { get; }
 
     ///<inheritdoc />
-    public List<ITextEmbeddingGeneration> GetEmbeddingGenerators()
+    public List<ITextEmbeddingGenerator> GetEmbeddingGenerators()
     {
         return this._embeddingGenerators;
     }
@@ -212,7 +211,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public ITextGeneration GetTextGenerator()
+    public ITextGenerator GetTextGenerator()
     {
         return this._textGenerator;
     }
