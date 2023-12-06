@@ -35,7 +35,7 @@ public static class KernelFunctionExtensions
         }
         else
         {
-            // Semantic function, this works as long as they follow
+            // Semantic functions. This works as long as functions follow
             // the convention of using "input" as the first param name.
             args[SemanticFunctionFirstParamName] = text;
         }
