@@ -7,11 +7,11 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-public class OpenAITest : BaseTestCase
+public class OpenAIDependencyInjectionTest : BaseTestCase
 {
     private readonly string _openAIKey;
 
-    public OpenAITest(
+    public OpenAIDependencyInjectionTest(
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {

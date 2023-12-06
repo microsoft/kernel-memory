@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -106,7 +107,8 @@ public class SimpleVectorDb : IMemoryDb
         // Calculate all the distances from the given vector
         // Note: this is a brute force search, very slow, not meant for production use cases
         var similarity = new Dictionary<string, double>();
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingsAsync
+            (text, cancellationToken).ConfigureAwait(false);
         foreach (var record in records)
         {
             similarity[record.Value.Id] = textEmbedding.CosineSimilarity(record.Value.Vector);
@@ -148,7 +150,7 @@ public class SimpleVectorDb : IMemoryDb
         {
             list = await this._fileSystem.ReadAllFilesAsTextAsync(index, "", cancellationToken).ConfigureAwait(false);
         }
-        catch (System.IO.DirectoryNotFoundException)
+        catch (DirectoryNotFoundException)
         {
             // Index doesn't exist
             list = new Dictionary<string, string>();

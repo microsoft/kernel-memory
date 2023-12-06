@@ -7,7 +7,7 @@
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Core</PackageId>
-        <NoWarn>CA1711,CA1724,CA1308,CA1812,CA1859,CA2208,CS1591,NU5104</NoWarn>
+        <NoWarn>CA1711,CA1724,CA1308,CA1812,CA1859,CA2208,CS1591,NU5104,SKEXP0001,SKEXP0011</NoWarn>
     </PropertyGroup>
 
     <Import Project="../nuget-package.props"/>

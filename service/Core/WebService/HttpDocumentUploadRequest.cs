@@ -29,9 +29,9 @@ public class HttpDocumentUploadRequest
     public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(
         HttpRequest httpRequest, CancellationToken cancellationToken = default)
     {
-        string indexField = Constants.WebServiceIndexField;
-        string documentIdField = Constants.WebServiceDocumentIdField;
-        string stepsField = Constants.WebServiceStepsField;
+        const string IndexField = Constants.WebServiceIndexField;
+        const string DocumentIdField = Constants.WebServiceDocumentIdField;
+        const string StepsField = Constants.WebServiceStepsField;
 
         var result = new HttpDocumentUploadRequest();
 
@@ -50,14 +50,14 @@ public class HttpDocumentUploadRequest
             return (result, false, "No file was uploaded");
         }
 
-        if (form.TryGetValue(indexField, out StringValues indexes) && indexes.Count > 1)
+        if (form.TryGetValue(IndexField, out StringValues indexes) && indexes.Count > 1)
         {
-            return (result, false, $"Invalid index name, '{indexField}', multiple values provided");
+            return (result, false, $"Invalid index name, '{IndexField}', multiple values provided");
         }
 
-        if (form.TryGetValue(documentIdField, out StringValues documentIds) && documentIds.Count > 1)
+        if (form.TryGetValue(DocumentIdField, out StringValues documentIds) && documentIds.Count > 1)
         {
-            return (result, false, $"Invalid document ID, '{documentIdField}' must be a single value, not a list");
+            return (result, false, $"Invalid document ID, '{DocumentIdField}' must be a single value, not a list");
         }
 
         // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
@@ -68,7 +68,7 @@ public class HttpDocumentUploadRequest
         }
 
         // Optional pipeline steps. The user can pass a custom list or leave it to the system to use the default.
-        if (form.TryGetValue(stepsField, out StringValues steps))
+        if (form.TryGetValue(StepsField, out StringValues steps))
         {
             foreach (string? step in steps)
             {
@@ -86,9 +86,9 @@ public class HttpDocumentUploadRequest
         // Store any extra field as a tag
         foreach (string key in form.Keys)
         {
-            if (key == documentIdField
-                || key == indexField
-                || key == stepsField
+            if (key == DocumentIdField
+                || key == IndexField
+                || key == StepsField
                 || !form.TryGetValue(key, out StringValues values)) { continue; }
 
             ValidateTagName(key);

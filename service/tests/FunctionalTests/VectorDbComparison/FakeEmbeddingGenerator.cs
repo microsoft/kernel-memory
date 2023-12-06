@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace FunctionalTests.VectorDbComparison;
@@ -8,10 +9,16 @@ internal sealed class FakeEmbeddingGenerator : ITextEmbeddingGeneration
 {
     private readonly Dictionary<string, float[]> _mocks = new();
 
-    public IReadOnlyDictionary<string, string> Attributes { get; } = new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
 
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data, CancellationToken cancellationToken = new())
+    {
+        return this.GenerateEmbeddingsAsync(data, null, cancellationToken);
+    }
+
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
+        IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = new())
     {
         var result = new List<ReadOnlyMemory<float>>();
         foreach (var text in data)

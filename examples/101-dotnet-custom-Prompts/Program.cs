@@ -27,7 +27,7 @@ public static class Program
         verification = await memory.AskAsync(statement);
         Console.WriteLine($"{statement} => {verification.Result}");
 
-        /** OUTPUT **
+        /* OUTPUT *
 
         Lucy flied by an asteroid => TRUE
         Lucy landed on an asteroid => FALSE

@@ -155,7 +155,7 @@ public class AzureAISearchMemory : IMemoryDb
 
         var client = this.GetSearchClient(index);
 
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingsAsync(text, cancellationToken).ConfigureAwait(false);
         VectorizedQuery vectorQuery = new(textEmbedding.Data)
         {
             KNearestNeighborsCount = limit,

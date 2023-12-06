@@ -5,27 +5,29 @@
     <ItemGroup>
         <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0"/>
         <PackageVersion Include="Azure.Identity" Version="1.10.4"/>
-        <PackageVersion Include="Azure.Search.Documents" Version="11.5.0"/>
+        <PackageVersion Include="Azure.Search.Documents" Version="11.5.1"/>
         <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1"/>
         <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1"/>
         <PackageVersion Include="ClosedXML" Version="0.102.1"/>
         <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
         <PackageVersion Include="HtmlAgilityPack" Version="1.11.54"/>
-        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1"/>
-        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>
+        <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0"/>
-        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.1"/>
-        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0"/>
+        <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0"/>
         <PackageVersion Include="PdfPig" Version="0.1.8"/>
         <PackageVersion Include="Polly.Core" Version="8.2.0"/>
         <PackageVersion Include="RabbitMQ.Client" Version="6.7.0"/>
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
         <PackageVersion Include="System.Linq.Async" Version="6.0.1"/>
-        <PackageVersion Include="System.Memory.Data" Version="6.0.0"/>
+        <PackageVersion Include="System.Memory.Data" Version="8.0.0"/>
         <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0"/>
-        <PackageVersion Include="System.Text.Json" Version="6.0.9"/>
+        <PackageVersion Include="System.Text.Json" Version="8.0.0"/>
     </ItemGroup>
     <!-- Semantic Kernel -->
     <ItemGroup>
@@ -33,8 +35,8 @@
     </ItemGroup>
     <!-- Semantic Kernel -->
     <ItemGroup>
-        <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.0-beta8"/>
-        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="1.0.0-beta8"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.0-rc2"/>
+        <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="1.0.0-rc2"/>
     </ItemGroup>
     <!-- Code Analysis -->
     <ItemGroup>
@@ -42,8 +44,8 @@
         <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0"/>
         <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14"/>
-        <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.6.2"/>
-        <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.6.2"/>
+        <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.7.0"/>
+        <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.7.0"/>
     </ItemGroup>
     <!-- Tests -->
     <ItemGroup>

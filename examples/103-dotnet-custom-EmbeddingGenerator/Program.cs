@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 public static class Program
@@ -18,16 +19,18 @@ public static class Program
 
 public class MyCustomEmbeddingGenerator : ITextEmbeddingGeneration
 {
-    public IReadOnlyDictionary<string, string> Attributes { get; } = new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
 
     /// <summary>
     /// Generates embeddings for the given data.
     /// </summary>
     /// <param name="data">List of strings to generate embeddings for</param>
+    /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     /// <returns>List of embeddings</returns>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = new())
     {
         // Your code here: loop through the list of strings in `data`,

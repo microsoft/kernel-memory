@@ -129,15 +129,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             // TODO: handle Azure.RequestFailedException - BlobNotFound
                             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
-                            IList<ReadOnlyMemory<float>> embedding = await generator.GenerateEmbeddingsAsync(
-                                new List<string> { partitionContent }, cancellationToken).ConfigureAwait(false);
-
-                            if (embedding.Count == 0)
-                            {
-                                throw new OrchestrationException("Embeddings not generated");
-                            }
-
-                            embeddingData.Vector = embedding.First();
+                            Embedding embedding = await generator.GenerateEmbeddingsAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                            embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
 
