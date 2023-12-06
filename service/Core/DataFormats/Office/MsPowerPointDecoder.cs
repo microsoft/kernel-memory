@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
-using Text = DocumentFormat.OpenXml.Drawing.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
@@ -92,7 +91,7 @@ public class MsPowerPointDecoder
                 if ((string?)slideId.RelationshipId is string relationshipId
                     && presentationPart.GetPartById(relationshipId) is SlidePart slidePart
                     && slidePart != null
-                    && slidePart.Slide?.Descendants<Text>().ToList() is List<Text> texts and { Count: > 0 })
+                    && slidePart.Slide?.Descendants<DocumentFormat.OpenXml.Drawing.Text>().ToList() is List<DocumentFormat.OpenXml.Drawing.Text> texts and { Count: > 0 })
 #pragma warning restore CA1508
                 {
                     // Check if the slide is hidden and whether to skip it

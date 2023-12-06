@@ -224,17 +224,17 @@ public class MemoryPlugin
     /// {{memory.save $input }}
     /// </example>
     /// <returns>Document ID</returns>
-    [SKFunction, Description("Store in memory the given text")]
+    [KernelFunction, Description("Store in memory the given text")]
     public async Task<string> SaveAsync(
         [Description("The text to save in memory")]
         string input,
-        [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(DocumentIdParam),*/ Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
-        [SKName(IndexParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(IndexParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         string? index = null,
-        [SKName(TagsParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(TagsParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         TagCollectionWrapper? tags = null,
-        [SKName(StepsParam), Description("Steps to parse the information and store in memory"), DefaultValue(null)]
+        [ /*SKName(StepsParam),*/ Description("Steps to parse the information and store in memory"), DefaultValue(null)]
         ListOfStringsWrapper? steps = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
@@ -273,17 +273,17 @@ public class MemoryPlugin
     /// {{memory.saveFile $input }}
     /// </example>
     /// <returns>Document ID</returns>
-    [SKFunction, Description("Store in memory the information extracted from a file")]
+    [KernelFunction, Description("Store in memory the information extracted from a file")]
     public async Task<string> SaveFileAsync(
-        [SKName(FilePathParam), Description("Path of the file to save in memory")]
+        [ /*SKName(FilePathParam),*/ Description("Path of the file to save in memory")]
         string filePath,
-        [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(DocumentIdParam),*/ Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
-        [SKName(IndexParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(IndexParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         string? index = null,
-        [SKName(TagsParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(TagsParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         TagCollectionWrapper? tags = null,
-        [SKName(StepsParam), Description("Steps to parse the information and store in memory"), DefaultValue(null)]
+        [ /*SKName(StepsParam),*/ Description("Steps to parse the information and store in memory"), DefaultValue(null)]
         ListOfStringsWrapper? steps = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
@@ -302,17 +302,17 @@ public class MemoryPlugin
         return id;
     }
 
-    [SKFunction, Description("Store in memory the information extracted from a web page")]
+    [KernelFunction, Description("Store in memory the information extracted from a web page")]
     public async Task<string> SaveWebPageAsync(
-        [SKName(UrlParam), Description("Complete URL of the web page to save")]
+        [ /*SKName(UrlParam),*/ Description("Complete URL of the web page to save")]
         string url,
-        [SKName(DocumentIdParam), Description("The document ID associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(DocumentIdParam),*/ Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
-        [SKName(IndexParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(IndexParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         string? index = null,
-        [SKName(TagsParam), Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(TagsParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
         TagCollectionWrapper? tags = null,
-        [SKName(StepsParam), Description("Steps to parse the information and store in memory"), DefaultValue(null)]
+        [ /*SKName(StepsParam),*/ Description("Steps to parse the information and store in memory"), DefaultValue(null)]
         ListOfStringsWrapper? steps = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
@@ -331,15 +331,15 @@ public class MemoryPlugin
         return id;
     }
 
-    [SKFunction, Description("Return up to N memories related to the input text")]
+    [KernelFunction, Description("Return up to N memories related to the input text")]
     public async Task<string> SearchAsync(
-        [SKName(QueryParam), Description("The text to search in memory")]
+        [ /*SKName(QueryParam),*/ Description("The text to search in memory")]
         string query,
-        [SKName(IndexParam), Description("Memories index to search for information"), DefaultValue("")]
+        [ /*SKName(IndexParam),*/ Description("Memories index to search for information"), DefaultValue("")]
         string? index = null,
-        [SKName(MinRelevanceParam), Description("Minimum relevance of the memories to return"), DefaultValue(0d)]
+        [ /*SKName(MinRelevanceParam),*/ Description("Minimum relevance of the memories to return"), DefaultValue(0d)]
         double minRelevance = 0,
-        [SKName(LimitParam), Description("Maximum number of memories to return"), DefaultValue(1)]
+        [ /*SKName(LimitParam),*/ Description("Maximum number of memories to return"), DefaultValue(1)]
         int limit = 1,
         CancellationToken cancellationToken = default)
     {
@@ -368,13 +368,13 @@ public class MemoryPlugin
     /// Usage from prompts: '{{memory.ask ...}}'
     /// </summary>
     /// <returns>The answer returned by the memory.</returns>
-    [SKFunction, Description("Use long term memory to answer a quesion")]
+    [KernelFunction, Description("Use long term memory to answer a quesion")]
     public async Task<string> AskAsync(
-        [SKName(QuestionParam), Description("The question to answer")]
+        [ /*SKName(QuestionParam),*/ Description("The question to answer")]
         string question,
-        [SKName(IndexParam), Description("Memories index to search for answers"), DefaultValue("")]
+        [ /*SKName(IndexParam),*/ Description("Memories index to search for answers"), DefaultValue("")]
         string? index = null,
-        [SKName(MinRelevanceParam), Description("Minimum relevance of the sources to consider"), DefaultValue(0d)]
+        [ /*SKName(MinRelevanceParam),*/ Description("Minimum relevance of the sources to consider"), DefaultValue(0d)]
         double minRelevance = 0,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
@@ -392,11 +392,11 @@ public class MemoryPlugin
     ///
     /// Usage from prompts: '{{memory.delete ...}}'
     /// </summary>
-    [SKFunction, Description("Remove from memory all the information extracted from the given document ID")]
+    [KernelFunction, Description("Remove from memory all the information extracted from the given document ID")]
     public Task DeleteAsync(
-        [SKName(DocumentIdParam), Description("The document to delete")]
+        [ /*SKName(DocumentIdParam),*/ Description("The document to delete")]
         string documentId,
-        [SKName(IndexParam), Description("Memories index where the document is stored"), DefaultValue("")]
+        [ /*SKName(IndexParam),*/ Description("Memories index where the document is stored"), DefaultValue("")]
         string? index = null,
         CancellationToken cancellationToken = default)
     {

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
@@ -74,6 +73,7 @@ public class OpenAITextGeneration : ITextGeneration
         {
             var openaiOptions = new CompletionsOptions
             {
+                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
                 NucleusSamplingFactor = (float)options.TopP,
@@ -87,12 +87,12 @@ public class OpenAITextGeneration : ITextGeneration
                 foreach (var s in openaiOptions.StopSequences) { options.StopSequences.Add(s); }
             }
 
-            Response<StreamingCompletions>? response = await this._client.GetCompletionsStreamingAsync(this._model, openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChoice? choice in response.Value.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+            StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
+            await foreach (Completions? completions in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (string? x in choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+                foreach (Choice? choice in completions.Choices)
                 {
-                    yield return x;
+                    yield return choice.Text;
                 }
             }
         }
@@ -100,6 +100,7 @@ public class OpenAITextGeneration : ITextGeneration
         {
             var openaiOptions = new ChatCompletionsOptions
             {
+                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
                 NucleusSamplingFactor = (float)options.TopP,
@@ -115,14 +116,10 @@ public class OpenAITextGeneration : ITextGeneration
 
             openaiOptions.Messages.Add(new ChatMessage(ChatRole.System, prompt));
 
-            Response<StreamingChatCompletions>? response = await this._client.GetChatCompletionsStreamingAsync(this._model, openaiOptions, cancellationToken).ConfigureAwait(false);
-
-            await foreach (StreamingChatChoice? choice in response.Value.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
+            StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
+            await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (ChatMessage? x in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
-                {
-                    yield return x.Content;
-                }
+                yield return update.ContentUpdate;
             }
         }
     }

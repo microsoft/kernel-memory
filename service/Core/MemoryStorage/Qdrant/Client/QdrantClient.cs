@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryStorage.Qdrant.Client;
 
@@ -115,9 +114,14 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         {
             (_, responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpOperationException e)
+        catch (JsonException e)
         {
-            this._log.LogError(e, "Collection listing failed: {Message}, {Response}", e.Message, e.ResponseContent);
+            this._log.LogError(e, "Collection listing failed: {Message}", e.Message);
+            throw;
+        }
+        catch (HttpRequestException e)
+        {
+            this._log.LogError(e, "Collection listing failed: {Message}, {Response}", e.StatusCode, e.Message);
             throw;
         }
 

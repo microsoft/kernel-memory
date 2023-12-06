@@ -64,5 +64,8 @@ public class MissingIndexTest : BaseTestCase
         // Assert: verify the index has been created
         list = await memory.ListIndexesAsync();
         Assert.True(list.Any(x => x.Name == indexName));
+
+        // clean up
+        await memory.DeleteIndexAsync(indexName);
     }
 }

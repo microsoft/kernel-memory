@@ -31,6 +31,7 @@ public static partial class KernelMemoryBuilderExtensions
                 case AzureOpenAIConfig.AuthTypes.AzureIdentity:
                     builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
                         deploymentName: config.Deployment,
+                        modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         credential: new DefaultAzureCredential()));
                     break;
@@ -38,6 +39,7 @@ public static partial class KernelMemoryBuilderExtensions
                 case AzureOpenAIConfig.AuthTypes.APIKey:
                     builder.AddIngestionEmbeddingGenerator(new AzureOpenAITextEmbeddingGeneration(
                         deploymentName: config.Deployment,
+                        modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         apiKey: config.APIKey));
                     break;
@@ -61,6 +63,7 @@ public static partial class DependencyInjection
                 return services
                     .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
                         deploymentName: config.Deployment,
+                        modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         credential: new DefaultAzureCredential(),
                         loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
@@ -69,6 +72,7 @@ public static partial class DependencyInjection
                 return services
                     .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new AzureOpenAITextEmbeddingGeneration(
                         deploymentName: config.Deployment,
+                        modelId: config.Deployment,
                         endpoint: config.Endpoint,
                         apiKey: config.APIKey,
                         loggerFactory: serviceProvider.GetService<ILoggerFactory>()));

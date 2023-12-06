@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.SemanticKernel.Text;
+using TextChunker = Microsoft.KernelMemory.DataFormats.Text.TextChunker;
 
 namespace Microsoft.KernelMemory.Handlers;
 

@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -106,7 +107,8 @@ public class SimpleVectorDb : IMemoryDb
         // Calculate all the distances from the given vector
         // Note: this is a brute force search, very slow, not meant for production use cases
         var similarity = new Dictionary<string, double>();
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        Embedding textEmbedding = await this._embeddingGenerator.GenEmbeddingAsync
+            (text, cancellationToken).ConfigureAwait(false);
         foreach (var record in records)
         {
             similarity[record.Value.Id] = textEmbedding.CosineSimilarity(record.Value.Vector);
