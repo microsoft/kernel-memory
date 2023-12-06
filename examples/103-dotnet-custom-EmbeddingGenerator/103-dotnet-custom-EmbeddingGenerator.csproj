@@ -6,11 +6,11 @@
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>CA1050</NoWarn>
+        <NoWarn>CA1050,SKEXP0001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.15.231204.1-preview" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.16.231205.1-preview" />
     </ItemGroup>
 
 </Project>

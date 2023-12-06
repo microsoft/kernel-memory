@@ -70,8 +70,11 @@ public class WebScraper
         {
             var html = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var doc = new HtmlDocument();
-            using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(html));
-            doc.Load(content);
+            Stream content = new MemoryStream(Encoding.UTF8.GetBytes(html));
+            await using (content.ConfigureAwait(false))
+            {
+                doc.Load(content);
+            }
 
             return new Result { Success = true, Text = doc.DocumentNode.InnerText.Trim() };
         }

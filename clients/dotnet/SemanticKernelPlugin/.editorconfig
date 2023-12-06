@@ -1,0 +1,5 @@
+[*.cs]
+dotnet_diagnostic.IDE0130.severity = none # using same ns of KM, easier to find and consume extension methods
+resharper_check_namespace_highlighting = none
+resharper_arrange_attributes_highlighting = none
+resharper_unused_member_global_highlighting = none

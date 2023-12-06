@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // Must be in the root of the namespace
-// ReSharper disable once CheckNamespace
+// IMPORTANT: this file must be at the root of the namespace
+
 namespace FunctionalTests;
 
+/// <summary>
+/// IMPORTANT: this file must be at the root of the namespace
+/// </summary>
 public class Startup
 {
     public void ConfigureHost(IHostBuilder hostBuilder)

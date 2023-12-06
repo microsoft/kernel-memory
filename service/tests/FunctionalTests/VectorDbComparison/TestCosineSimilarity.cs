@@ -128,12 +128,11 @@ public class TestCosineSimilarity
         if (AzSearchEnabled)
         {
             this._log.WriteLine($"Azure AI Search: {acsResults.Count} results");
-            foreach ((MemoryRecord, double) r in acsResults)
+            foreach ((MemoryRecord? memoryRecord, double actual) in acsResults)
             {
-                var actual = r.Item2;
-                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
                 var diff = expected - actual;
-                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
                 Assert.True(Math.Abs(diff) < Precision);
             }
         }
@@ -141,23 +140,21 @@ public class TestCosineSimilarity
         if (QdrantEnabled)
         {
             this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
-            foreach ((MemoryRecord, double) r in qdrantResults)
+            foreach ((MemoryRecord memoryRecord, double actual) in qdrantResults)
             {
-                var actual = r.Item2;
-                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
                 var diff = expected - actual;
-                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
                 Assert.True(Math.Abs(diff) < Precision);
             }
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
-        foreach ((MemoryRecord, double) r in simpleVecDbResults)
+        foreach ((MemoryRecord memoryRecord, double actual) in simpleVecDbResults)
         {
-            var actual = r.Item2;
-            var expected = CosineSim(target, records[r.Item1.Id].Vector);
+            var expected = CosineSim(target, records[memoryRecord.Id].Vector);
             var diff = expected - actual;
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+            this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
             Assert.True(Math.Abs(diff) < Precision);
         }
     }

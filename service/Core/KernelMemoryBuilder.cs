@@ -101,7 +101,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this._memoryServiceCollection = new ServiceCollection();
         this._auxServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
-        this.CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection, this._auxServiceCollection);
+        CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection, this._auxServiceCollection);
 
         this._serviceCollections = new ServiceCollectionPool(this._memoryServiceCollection);
         this._serviceCollections.AddServiceCollection(this._auxServiceCollection);
@@ -192,7 +192,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     ///<inheritdoc />
     public IKernelMemoryBuilder FromAppSettings(string? settingsDirectory = null)
     {
-        this._servicesConfiguration = this.ReadAppSettings(settingsDirectory);
+        this._servicesConfiguration = ReadAppSettings(settingsDirectory);
         this._memoryConfiguration = this._servicesConfiguration.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
                                     ?? throw new ConfigurationException($"Unable to parse configuration files. " +
                                                                         $"There should be a '{ConfigRoot}' root node, " +
@@ -467,7 +467,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         }
     }
 
-    private void CopyServiceCollection(
+    private static void CopyServiceCollection(
         IServiceCollection? source,
         IServiceCollection destination1,
         IServiceCollection? destination2 = null)
@@ -709,7 +709,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         Console.Write($"## Error ##\n* Message:  {e.Message}\n* Type:     {e.GetType().Name} [{e.GetType().FullName}]\n* Location: {location}\n## ");
     }
 
-    private IConfiguration ReadAppSettings(string? settingsDirectory)
+    private static IConfiguration ReadAppSettings(string? settingsDirectory)
     {
         if (settingsDirectory == null)
         {

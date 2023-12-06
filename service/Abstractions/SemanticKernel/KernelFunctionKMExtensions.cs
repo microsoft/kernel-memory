@@ -2,14 +2,13 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 
-namespace Microsoft.KernelMemory.SKExtensions;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic Kernel function extensions.
 /// </summary>
-public static class KernelFunctionExtensions
+public static class KernelFunctionKMExtensions
 {
     private const string SemanticFunctionFirstParamName = "input";
 

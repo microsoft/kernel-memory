@@ -108,7 +108,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     {
         using var request = ListCollectionsRequest.Create().Build();
 
-        string? responseContent = null;
+        string? responseContent;
 
         try
         {

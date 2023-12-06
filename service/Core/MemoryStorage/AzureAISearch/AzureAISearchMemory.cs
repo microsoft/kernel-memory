@@ -15,7 +15,6 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
@@ -156,7 +155,7 @@ public class AzureAISearchMemory : IMemoryDb
 
         var client = this.GetSearchClient(index);
 
-        Embedding textEmbedding = await this._embeddingGenerator.GenEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingsAsync(text, cancellationToken).ConfigureAwait(false);
         VectorizedQuery vectorQuery = new(textEmbedding.Data)
         {
             KNearestNeighborsCount = limit,

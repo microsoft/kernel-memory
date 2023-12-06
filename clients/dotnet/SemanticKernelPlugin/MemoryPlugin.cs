@@ -11,9 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.SemanticKernelPlugin.Internals;
 using Microsoft.SemanticKernel;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
-// ReSharper disable ArrangeAttributes
 namespace Microsoft.KernelMemory;
 
 /// <summary>

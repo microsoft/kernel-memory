@@ -220,14 +220,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        DataPipeline pipeline = this.PrepareIndexDeletion(index: index);
+        DataPipeline pipeline = PrepareIndexDeletion(index: index);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
     ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        DataPipeline pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
+        DataPipeline pipeline = PrepareDocumentDeletion(index: index, documentId: documentId);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
@@ -272,7 +272,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 #pragma warning restore CA1031
     }
 
-    protected DataPipeline PrepareIndexDeletion(string? index)
+    protected static DataPipeline PrepareIndexDeletion(string? index)
     {
         var pipeline = new DataPipeline
         {
@@ -283,7 +283,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         return pipeline.Then(Constants.DeleteIndexPipelineStepName).Build();
     }
 
-    protected DataPipeline PrepareDocumentDeletion(string? index, string documentId)
+    protected static DataPipeline PrepareDocumentDeletion(string? index, string documentId)
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
