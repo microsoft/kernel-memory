@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -519,7 +518,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
 
             var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-            var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+            var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
 
             this.CheckForMissingDependencies();
 
@@ -556,7 +555,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
 
         var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-        var searchClient = serviceProvider.GetService<SearchClient>() ?? throw new ConfigurationException("Unable to build search client");
+        var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
 
         if (this._useDefaultHandlers)
         {
@@ -587,7 +586,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private KernelMemoryBuilder CompleteServerlessClient()
     {
-        this.AddSingleton<SearchClient, SearchClient>();
+        this.UseDefaultSearchClientIfNecessary();
         this.AddSingleton<IPipelineOrchestrator, InProcessPipelineOrchestrator>();
         this.AddSingleton<InProcessPipelineOrchestrator, InProcessPipelineOrchestrator>();
         return this;
@@ -595,7 +594,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private KernelMemoryBuilder CompleteAsyncClient()
     {
-        this.AddSingleton<SearchClient, SearchClient>();
+        this.UseDefaultSearchClientIfNecessary();
         this.AddSingleton<IPipelineOrchestrator, DistributedPipelineOrchestrator>();
         this.AddSingleton<DistributedPipelineOrchestrator, DistributedPipelineOrchestrator>();
         return this;
@@ -636,15 +635,23 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void RequireOneMemoryDbForRetrieval()
     {
-        if (this._memoryServiceCollection.All(x => x.ServiceType != typeof(IMemoryDb)))
+        if (!this._memoryServiceCollection.HasService<IMemoryDb>())
         {
             throw new ConfigurationException("Memory DBs for retrieval not configured");
         }
     }
 
+    private void UseDefaultSearchClientIfNecessary()
+    {
+        if (!this.Services.HasService<ISearchClient>())
+        {
+            this.WithDefaultSearchClient();
+        }
+    }
+
     private void ReuseRetrievalEmbeddingGeneratorIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextEmbeddingGeneration)))
+        if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.HasService<ITextEmbeddingGeneration>())
         {
             this._embeddingGenerators.Add(serviceProvider.GetService<ITextEmbeddingGeneration>()
                                           ?? throw new ConfigurationException("Unable to build embedding generator"));
@@ -653,7 +660,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void ReuseRetrievalMemoryDbIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._memoryDbs.Count == 0 && this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryDb)))
+        if (this._memoryDbs.Count == 0 && this._memoryServiceCollection.HasService<IMemoryDb>())
         {
             this._memoryDbs.Add(serviceProvider.GetService<IMemoryDb>()
                                 ?? throw new ConfigurationException("Unable to build memory DB instance"));
@@ -667,12 +674,12 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private ClientTypes GetBuildType()
     {
-        var hasQueueFactory = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(QueueClientFactory)));
-        var hasContentStorage = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IContentStorage)));
-        var hasMimeDetector = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMimeTypeDetection)));
-        var hasEmbeddingGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextEmbeddingGeneration)));
-        var hasMemoryDb = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(IMemoryDb)));
-        var hasTextGenerator = (this._memoryServiceCollection.Any(x => x.ServiceType == typeof(ITextGeneration)));
+        var hasQueueFactory = (this._memoryServiceCollection.HasService<QueueClientFactory>());
+        var hasContentStorage = (this._memoryServiceCollection.HasService<IContentStorage>());
+        var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
+        var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
+        var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
+        var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGeneration>());
 
         if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
         {

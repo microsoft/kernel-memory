@@ -61,6 +61,10 @@ public static class Constants
     public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_records" };
     public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_records", "summarize", "gen_embeddings", "save_records" };
 
+    // Partitioning, Chunking, Token count
+    public const string TokenizerForTextGenerator = "ForTextGenerator";
+    public const string TokenizerForEmbeddingGenerator = "ForEmbeddingGenerator";
+
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";
     public const string PromptNamesAnswerWithFacts = "answer-with-facts";
