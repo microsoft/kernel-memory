@@ -12,7 +12,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
-using Microsoft.SemanticKernel.Text;
+using TextChunker = Microsoft.KernelMemory.DataFormats.Text.TextChunker;
 
 namespace Microsoft.KernelMemory.Handlers;
 
