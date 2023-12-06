@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="LLamaSharp" Version="0.6.0"/>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.15.231204.1-preview" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.16.231205.1-preview" />
     </ItemGroup>
 
 </Project>

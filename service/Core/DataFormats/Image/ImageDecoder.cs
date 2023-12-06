@@ -11,14 +11,20 @@ public class ImageDecoder
 {
     public async Task<string> ImageToTextAsync(IOcrEngine engine, string filename, CancellationToken cancellationToken = default)
     {
-        using var stream = File.OpenRead(filename);
-        return await this.ImageToTextAsync(engine, stream, cancellationToken).ConfigureAwait(false);
+        var content = File.OpenRead(filename);
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImageToTextAsync(engine, content, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task<string> ImageToTextAsync(IOcrEngine engine, BinaryData data, CancellationToken cancellationToken = default)
     {
-        using var stream = data.ToStream();
-        return await this.ImageToTextAsync(engine, stream, cancellationToken).ConfigureAwait(false);
+        var content = data.ToStream();
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImageToTextAsync(engine, content, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public Task<string> ImageToTextAsync(IOcrEngine engine, Stream data, CancellationToken cancellationToken = default)

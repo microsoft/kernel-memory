@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public interface IKernelMemory

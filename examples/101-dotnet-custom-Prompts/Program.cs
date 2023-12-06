@@ -27,7 +27,7 @@ public static class Program
         verification = await memory.AskAsync(statement);
         Console.WriteLine($"{statement} => {verification.Result}");
 
-        /** OUTPUT **
+        /* OUTPUT *
 
         Lucy flied by an asteroid => TRUE
         Lucy landed on an asteroid => FALSE
@@ -49,7 +49,7 @@ public class MyPromptProvider : IPromptProvider
                                               If you have sufficient information to deny, reply only with 'FALSE', nothing else.
                                               If you don't have sufficient information, reply with 'NEED MORE INFO'.
                                               User: {{$input}}
-                                              Verification: 
+                                              Verification:
                                               """;
 
     private readonly EmbeddedPromptProvider _fallbackProvider = new();

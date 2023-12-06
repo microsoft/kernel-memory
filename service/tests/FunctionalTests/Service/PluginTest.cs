@@ -2,7 +2,6 @@
 
 using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.SKExtensions;
 using Microsoft.SemanticKernel;
 using Xunit.Abstractions;
 

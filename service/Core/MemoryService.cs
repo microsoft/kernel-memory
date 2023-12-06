@@ -106,16 +106,19 @@ public class MemoryService : IKernelMemory
         var uri = new Uri(url);
         Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
 
-        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
-        return await this.ImportDocumentAsync(
-                content,
-                fileName: "content.url",
-                documentId: documentId,
-                tags,
-                index: index,
-                steps: steps,
-                cancellationToken)
-            .ConfigureAwait(false);
+        Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImportDocumentAsync(
+                    content,
+                    fileName: "content.url",
+                    documentId: documentId,
+                    tags,
+                    index: index,
+                    steps: steps,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
