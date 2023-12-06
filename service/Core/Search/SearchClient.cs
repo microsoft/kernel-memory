@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
@@ -18,7 +18,6 @@ namespace Microsoft.KernelMemory.Search;
 public class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
-    private readonly ITextTokenizer _textTokenizer;
     private readonly ITextGeneration _textGenerator;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
@@ -27,14 +26,12 @@ public class SearchClient : ISearchClient
     public SearchClient(
         IMemoryDb memoryDb,
         ITextGeneration textGenerator,
-        TextTokenizerCollection? tokenizers = null,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
-        this._textTokenizer = tokenizers == null ? new DefaultGPTTokenizer() : tokenizers.Get(Constants.TokenizerForTextGenerator);
         this._config = config ?? new SearchClientConfig();
         this._config.Validate();
 
@@ -186,8 +183,8 @@ public class SearchClient : ISearchClient
 
         var facts = new StringBuilder();
         var tokensAvailable = this._config.MaxAskPromptSize
-                              - this._textTokenizer.CountTokens(this._answerPrompt)
-                              - this._textTokenizer.CountTokens(question)
+                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
+                              - GPT3Tokenizer.Encode(question).Count
                               - this._config.AnswerTokens;
 
         var factsUsedCount = 0;
@@ -251,7 +248,7 @@ public class SearchClient : ISearchClient
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
-            var size = this._textTokenizer.CountTokens(fact);
+            var size = GPT3Tokenizer.Encode(fact).Count;
             if (size >= tokensAvailable)
             {
                 // Stop after reaching the max number of tokens

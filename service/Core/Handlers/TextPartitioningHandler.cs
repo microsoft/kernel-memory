@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -16,7 +16,6 @@ namespace Microsoft.KernelMemory.Handlers;
 public class TextPartitioningHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly ITextTokenizer _tokenizer;
     private readonly TextPartitioningOptions _options;
     private readonly ILogger<TextPartitioningHandler> _log;
 
@@ -29,19 +28,16 @@ public class TextPartitioningHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="tokenizers">Tokenizers collection</param>
     /// <param name="options">The customize text partitioning option</param>
     /// <param name="log">Application logger</param>
     public TextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        TextTokenizerCollection? tokenizers = null,
         TextPartitioningOptions? options = null,
         ILogger<TextPartitioningHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._tokenizer = tokenizers == null ? new DefaultGPTTokenizer() : tokenizers.Get(Constants.TokenizerForEmbeddingGenerator);
 
         this._options = options ?? new TextPartitioningOptions();
         this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
@@ -121,7 +117,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     string text = paragraphs[index];
                     BinaryData textData = new(text);
 
-                    int gpt3TokenCount = this._tokenizer.CountTokens(text);
+                    int gpt3TokenCount = GPT3Tokenizer.Encode(text).Count;
                     this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);

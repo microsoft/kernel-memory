@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -30,7 +30,6 @@ public class SummarizationHandler : IPipelineStepHandler
     private const int OverlappingTokens = 200;
 
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly ITextTokenizer _tokenizer;
     private readonly ILogger<SummarizationHandler> _log;
     private readonly string _summarizationPrompt;
 
@@ -44,19 +43,16 @@ public class SummarizationHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="tokenizers">Tokenizers collection</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        TextTokenizerCollection? tokenizers = null,
         IPromptProvider? promptProvider = null,
         ILogger<SummarizationHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._tokenizer = tokenizers == null ? new DefaultGPTTokenizer() : tokenizers.Get(Constants.TokenizerForTextGenerator);
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
@@ -141,7 +137,7 @@ public class SummarizationHandler : IPipelineStepHandler
 
     private async Task<(string summary, bool skip)> SummarizeAsync(string content)
     {
-        int contentLength = this._tokenizer.CountTokens(content);
+        int contentLength = GPT3Tokenizer.Encode(content).Count;
         if (contentLength < MinLength)
         {
             this._log.LogDebug("Content too short to summarize, {0} tokens", contentLength);
@@ -190,7 +186,7 @@ public class SummarizationHandler : IPipelineStepHandler
             }
 
             content = newContent.ToString();
-            contentLength = this._tokenizer.CountTokens(content);
+            contentLength = GPT3Tokenizer.Encode(content).Count;
 
             if (!firstRun && contentLength >= previousLength)
             {
