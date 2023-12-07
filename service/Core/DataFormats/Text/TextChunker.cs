@@ -244,7 +244,6 @@ public static class TextChunker
         List<string> result = new();
         var inputWasSplit = false;
 
-        // int inputTokenCount = tokenCounter is null ? GetDefaultTokenCount(input.Length) : tokenCounter(inputString ??= input.ToString());
         int inputTokenCount = GetTokenCount(inputString ??= input.ToString(), tokenCounter);
 
         if (inputTokenCount > maxTokens)
