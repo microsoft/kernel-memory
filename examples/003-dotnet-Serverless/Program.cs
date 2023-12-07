@@ -10,24 +10,30 @@ using Microsoft.KernelMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
+var openAIConfig = new OpenAIConfig();
+var azureOpenAITextConfig = new AzureOpenAIConfig();
+var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+var searchClientConfig = new SearchClientConfig();
+
+new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .Build()
+    .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+    .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+
+// openAIConfig.Validate();
+// azureOpenAITextConfig.Validate();
+// azureOpenAIEmbeddingConfig.Validate();
+// searchClientConfig.Validate();
+
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .WithAzureOpenAITextGeneration(new AzureOpenAIConfig
-    {
-        APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
-        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
-        Endpoint = Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-        Deployment = Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        APIKey = Env.Var("AZURE_OPENAI_CHAT_API_KEY")
-    })
-    .WithAzureOpenAITextEmbeddingGeneration(new AzureOpenAIConfig
-    {
-        APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
-        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
-        Endpoint = Env.Var("AZURE_OPENAI_EMBEDDING_ENDPOINT"),
-        Deployment = Env.Var("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
-        APIKey = Env.Var("AZURE_OPENAI_EMBEDDING_API_KEY")
-    })
+    // .WithOpenAI(openAICfg)
+    .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                      => use Azure Blobs
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))           => use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333")                                                    => use Qdrant docker
