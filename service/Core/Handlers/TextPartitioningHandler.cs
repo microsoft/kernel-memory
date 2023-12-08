@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -18,6 +19,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly TextPartitioningOptions _options;
     private readonly ILogger<TextPartitioningHandler> _log;
+    private readonly TextChunker.TokenCounter _tokenCounter;
+    private readonly int _maxTokensPerPartition = int.MaxValue;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -38,11 +41,34 @@ public class TextPartitioningHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+
         this._options = options ?? new TextPartitioningOptions();
         this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
         this._log.LogInformation("Handler '{0}' ready", stepName);
+
+        this._tokenCounter = DefaultGPTTokenizer.InternalCountTokens;
+        if (orchestrator.EmbeddingGenerationEnabled)
+        {
+            foreach (var gen in orchestrator.GetEmbeddingGenerators())
+            {
+                // Use the last tokenizer (TODO: revisit)
+                this._tokenCounter = s => gen.CountTokens(s);
+                this._maxTokensPerPartition = Math.Min(gen.MaxTokens, this._maxTokensPerPartition);
+            }
+
+            if (this._options.MaxTokensPerParagraph > this._maxTokensPerPartition)
+            {
+#pragma warning disable CA2254 // the msg is always used
+                var errMsg = $"The configured partition size ({this._options.MaxTokensPerParagraph} tokens) is too big for one " +
+                             $"of the embedding generators in use. The max value allowed is {this._maxTokensPerPartition} tokens";
+                this._log.LogError(errMsg);
+                throw new ConfigurationException(errMsg);
+#pragma warning restore CA2254
+            }
+        }
     }
 
+    /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
@@ -83,9 +109,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
                         string content = partitionContent.ToString();
-                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
+                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         paragraphs = TextChunker.SplitPlainTextParagraphs(
-                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
+                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -93,9 +119,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = partitionContent.ToString();
-                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine);
+                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         paragraphs = TextChunker.SplitMarkdownParagraphs(
-                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens);
+                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -116,8 +142,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     string text = paragraphs[index];
                     BinaryData textData = new(text);
 
-                    int gpt3TokenCount = GPT3Tokenizer.Encode(text).Count;
-                    this._log.LogDebug("Partition size: {0} tokens", gpt3TokenCount);
+                    int tokenCount = this._tokenCounter(text);
+                    this._log.LogDebug("Partition size: {0} tokens", tokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(index);
                     await this._orchestrator.WriteFileAsync(pipeline, destFile, textData, cancellationToken).ConfigureAwait(false);

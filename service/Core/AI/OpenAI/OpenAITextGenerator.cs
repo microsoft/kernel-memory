@@ -5,39 +5,69 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
-using Azure.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.KernelMemory.AI.AzureOpenAI;
+namespace Microsoft.KernelMemory.AI.OpenAI;
 
-public class AzureTextGeneration : ITextGeneration
+public class OpenAITextGenerator : ITextGenerator
 {
-    private readonly ILogger<AzureTextGeneration> _log;
+    private readonly ILogger<OpenAITextGenerator> _log;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;
     private readonly bool _isTextModel;
-    private readonly string _deployment;
+    private readonly string _model;
 
-    public AzureTextGeneration(AzureOpenAIConfig config, ILogger<AzureTextGeneration>? log = null)
+    /// <inheritdoc/>
+    public int MaxTokenTotal { get; }
+
+    public OpenAITextGenerator(
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextGenerator>())
     {
-        this._log = log ?? DefaultLogger<AzureTextGeneration>.Instance;
+    }
 
-        if (string.IsNullOrEmpty(config.Endpoint))
+    public OpenAITextGenerator(
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILogger<OpenAITextGenerator>? log = null)
+    {
+        var textModels = new List<string>
         {
-            throw new ConfigurationException("The Azure OpenAI endpoint is empty");
+            "text-ada-001",
+            "text-babbage-001",
+            "text-curie-001",
+            "text-davinci-001",
+            "text-davinci-002",
+            "text-davinci-003",
+        };
+
+        this._log = log ?? DefaultLogger<OpenAITextGenerator>.Instance;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(DefaultGPTTokenizer));
+            textTokenizer = new DefaultGPTTokenizer();
         }
 
-        if (string.IsNullOrEmpty(config.Deployment))
+        this._textTokenizer = textTokenizer;
+
+        if (string.IsNullOrEmpty(config.TextModel))
         {
-            throw new ConfigurationException("The Azure OpenAI deployment name is empty");
+            throw new ConfigurationException("The OpenAI model name is empty");
         }
 
-        this._isTextModel = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
-        this._deployment = config.Deployment;
+        this._isTextModel = (textModels.Contains(config.TextModel.ToLowerInvariant()));
+        this._model = config.TextModel;
+        this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
         OpenAIClientOptions options = new()
         {
@@ -49,28 +79,13 @@ public class AzureTextGeneration : ITextGeneration
             }
         };
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential(), options);
-                break;
+        this._client = new OpenAIClient(config.APIKey, options);
+    }
 
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                if (string.IsNullOrEmpty(config.APIKey))
-                {
-                    throw new ConfigurationException("The Azure OpenAI API key is empty");
-                }
-
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
-                break;
-
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
-                break;
-
-            default:
-                throw new ConfigurationException($"Azure OpenAI authentication type not supported: {config.Auth:G}");
-        }
+    /// <inheritdoc/>
+    public int CountTokens(string text)
+    {
+        return this._textTokenizer.CountTokens(text);
     }
 
     public async IAsyncEnumerable<string> GenerateTextAsync(
@@ -82,7 +97,7 @@ public class AzureTextGeneration : ITextGeneration
         {
             var openaiOptions = new CompletionsOptions
             {
-                DeploymentName = this._deployment,
+                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
                 NucleusSamplingFactor = (float)options.TopP,
@@ -109,7 +124,7 @@ public class AzureTextGeneration : ITextGeneration
         {
             var openaiOptions = new ChatCompletionsOptions
             {
-                DeploymentName = this._deployment,
+                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
                 NucleusSamplingFactor = (float)options.TopP,

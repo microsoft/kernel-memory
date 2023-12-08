@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -10,28 +12,31 @@ using Microsoft.KernelMemory;
  *
  * Note: no web service required, each file is processed in this process. */
 
+var openAIConfig = new OpenAIConfig();
+var azureOpenAITextConfig = new AzureOpenAIConfig();
+var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+var searchClientConfig = new SearchClientConfig();
+var azDocIntelConfig = new AzureAIDocIntelConfig();
+
+new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .Build()
+    .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+    .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
+    .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .WithAzureOpenAITextGeneration(new AzureOpenAIConfig
-    {
-        APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
-        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
-        Endpoint = Env.Var("AZURE_OPENAI_CHAT_ENDPOINT"),
-        Deployment = Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT"),
-        APIKey = Env.Var("AZURE_OPENAI_CHAT_API_KEY")
-    })
-    .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
-    {
-        APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
-        Auth = AzureOpenAIConfig.AuthTypes.APIKey,
-        Endpoint = Env.Var("AZURE_OPENAI_EMBEDDING_ENDPOINT"),
-        Deployment = Env.Var("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
-        APIKey = Env.Var("AZURE_OPENAI_EMBEDDING_API_KEY")
-    })
-    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                      => use Azure Blobs
-    // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))           => use Azure AI Search
-    // .WithQdrant("http://127.0.0.1:6333")                                                    => use Qdrant docker
-    // .WithAzureAIDocIntel(Env.Var("AZDOCINTEL_ENDPOINT"), Env.Var("AZDOCINTEL_API_KEY"))     => use Azure AI Document Intelligence OCR
+    // .WithOpenAI(openAICfg)
+    .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
+    // .WithAzureAIDocIntel(azDocIntelConfig)                                         // => use Azure AI Document Intelligence OCR
+    // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                             // => use Azure Blobs
+    // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))  // => use Azure AI Search
+    // .WithQdrant("http://127.0.0.1:6333")                                           // => use Qdrant to store memories
     .Build<MemoryServerless>();
 
 // Use these boolean to enable/disable parts of the examples below
@@ -181,7 +186,7 @@ if (retrieval)
 
     // Blake doesn't know
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Blake"));
-    Console.WriteLine($"\nBlake Answer: {answer.Result}");
+    Console.WriteLine($"\nBlake Answer (none expected): {answer.Result}");
 
     // Taylor knows
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Taylor"));
@@ -199,7 +204,7 @@ if (retrieval)
     Console.WriteLine($"Question: {question}");
 
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "article"));
-    Console.WriteLine($"\nArticles: {answer.Result}");
+    Console.WriteLine($"\nArticles (none expected): {answer.Result}");
 
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "news"));
     Console.WriteLine($"\nNews: {answer.Result}");
@@ -231,67 +236,68 @@ Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md
 
 ====================================
 
 Question: What's E = m*c^2?
 
-Answer: E = m*c^2 is the formula that represents the mass-energy equivalence principle in physics. It was proposed by Albert Einstein and states that the energy (E) of an object is equal to its mass (m) multiplied by the speed of light (c) squared. This equation shows that mass and energy are interchangeable and that a small amount of mass can be converted into a large amount of energy. It is a fundamental concept in understanding the relationship between mass and energy in the universe.
+Answer: E = m*c^2 is a formula in physics that describes the mass–energy equivalence. This principle, proposed by Albert Einstein, states that the energy of an object (E) is equal to the mass (m) of that object times the speed of light (c) squared. This relationship is observed in a system's rest frame, where mass and energy differ only by a multiplicative constant and the units of measurement.
 
 ====================================
 
 Question: What's Semantic Kernel?
 
-Answer: Semantic Kernel is a lightweight SDK (Software Development Kit) that allows integration of AI Large Language Models (LLMs) with conventional programming languages. It combines natural language semantic functions, traditional code native functions, and embeddings-based memory to enhance applications with AI. SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities. It encapsulates several design patterns from AI research, such as prompt chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory, and more. SK is open-source and developers are invited to contribute to its development.
+Answer: Semantic Kernel (SK) is a lightweight Software Development Kit (SDK) that enables the integration of AI Large Language Models (LLMs) with conventional programming languages. It combines natural language semantic functions, traditional code native functions, and embeddings-based memory to unlock new potential and add value to applications with AI.
 
-  Sources:
+SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities. It encapsulates several design patterns from the latest AI research, allowing developers to infuse their applications with plugins like prompt chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory, long-term memory, embeddings, semantic indexing, planning, retrieval-augmented generation, and accessing external knowledge stores as well as your own data.
 
-  - file4-SK-Readme.pdf  - doc002/f26cfdda742d4cfd99d614055552e11a [Tuesday, August 29, 2023]
-  - content.url  - webPage1/ed0b16e24ec74dbb924a113f9a9e254a [Tuesday, August 29, 2023]
-  - file3-lorem-ipsum.docx  - doc002/cac17ef53fa6423980f0961aa007ec51 [Tuesday, August 29, 2023]
-  - content.txt  - c8f87691264d4f3abd0f90948b7f6021202308280656304478730/dd2ecc0d4228468c870f41dc4dfb0a27 [Tuesday, August 29, 2023]
-  - content.txt  - 49bac5d2ea50432cb67b784253818e40202308280658336581710/9f97247b66f84298a643da398b1097f7 [Tuesday, August 29, 2023]
+Semantic Kernel is available for use with C# and Python and can be explored and used to build AI-first apps. It is an open-source project, inviting developers to contribute and join in its development.
+
+Sources:
+
+- file4-SK-Readme.pdf  - doc002/a166fd04b91a44cd919a300e84931bdf [Friday, December 8, 2023]
+- content.url  - webPage1/fbcb60da9d5a4ba1a390e108941fc7ad [Friday, December 8, 2023]
+- content.url  - webPage2/79a67b4f470b43549fce1b9a3de21c95 [Friday, December 8, 2023]
 
 ====================================
 
 Question: Which conference is Microsoft sponsoring?
 
-Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event in Detroit.
+Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event, which is taking place in Detroit, Michigan on September 12, 2023.
 
-  Sources:
+Sources:
 
-  - file6-ANWC-image.jpg  - img001/efdb3a0f2aca4035b840aaa3898c1892 [Tuesday, August 29, 2023]
-  - file5-NASA-news.pdf  - doc003/acc1767a64974c3480a323d488dd4acc [Tuesday, August 29, 2023]
-  - file4-SK-Readme.pdf  - doc002/f26cfdda742d4cfd99d614055552e11a [Tuesday, August 29, 2023]
-  - content.url  - webPage1/ed0b16e24ec74dbb924a113f9a9e254a [Tuesday, August 29, 2023]
-  - file3-lorem-ipsum.docx  - doc002/cac17ef53fa6423980f0961aa007ec51 [Tuesday, August 29, 2023]
+- file6-ANWC-image.jpg  - img001/ac7d8bc0051945a689aa23d1fa9092b2 [Friday, December 8, 2023]
+- file5-NASA-news.pdf  - doc003/be2411fdc3e84c5995a7753beb927ecd [Friday, December 8, 2023]
+- content.url  - webPage1/fbcb60da9d5a4ba1a390e108941fc7ad [Friday, December 8, 2023]
+- file4-SK-Readme.pdf  - doc002/a166fd04b91a44cd919a300e84931bdf [Friday, December 8, 2023]
+- file3-lorem-ipsum.docx  - doc002/a1269887842d4748980cbdd7e1aabc12 [Friday, December 8, 2023]
 
 ====================================
 
 Question: Any news from NASA about Orion?
 
-Blake Answer: INFO NOT FOUND
+Blake Answer (none expected): INFO NOT FOUND
 
-Taylor Answer: Yes, NASA has invited media to see the test version of the Orion spacecraft and the recovery hardware that will be used for the Artemis II mission. The event will take place at Naval Base San Diego on August 2nd. Personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available for interviews. The recovery operations team is currently conducting tests in the Pacific Ocean to prepare for the Artemis II mission, which will send four astronauts around the Moon. The crew of Artemis II will participate in recovery testing at sea next year.
-  Sources:
+Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event is scheduled to take place at 11 a.m. PDT on Wednesday, Aug. 2, at Naval Base San Diego. Teams are currently conducting the first in a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. The tests will help prepare the team for Artemis II, NASA’s first crewed mission under Artemis that will send four astronauts in Orion around the Moon to checkout systems ahead of future lunar missions. The Artemis II crew – NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA (Canadian Space Agency) astronaut Jeremy Hansen – will participate in recovery testing at sea next year.
+Sources:
 
-  - file5-NASA-news.pdf  - doc003/acc1767a64974c3480a323d488dd4acc [Tuesday, August 29, 2023]
+- file5-NASA-news.pdf  - doc003/be2411fdc3e84c5995a7753beb927ecd [Friday, December 8, 2023]
 
 ====================================
 
 Question: What is Orion?
-warn: Microsoft.KernelMemory.Search.SearchClient[0]
-      No memories available
 
-Articles: INFO NOT FOUND
+Articles (none expected): INFO NOT FOUND
 
-News: Orion is a spacecraft developed by NASA for human space exploration. It is designed to carry astronauts beyond low Earth orbit, including missions to the Moon and potentially Mars. The spacecraft is part of NASA's Artemis program, which aims to return humans to the Moon by 2024. The Artemis II mission will be the first crewed mission under the Artemis program and will send four astronauts around the Moon to test systems for future lunar missions. The recovery operations team is currently conducting tests in the Pacific Ocean to prepare for the Artemis II mission, and the crew of Artemis II will participate in recovery testing at sea next year.
-
+News: Orion is a spacecraft developed by NASA. It is being used in the Artemis II mission, which is NASA's first crewed mission under the Artemis program. The mission will send four astronauts in the Orion spacecraft around the Moon to check out systems ahead of future lunar missions.
 ====================================
-
-Deleting memories derived from 15af4991c22d4728bd2f515e7617c5ee202901120542397729100
+Deleting memories derived from d421ecd8e79747ec8ed5f1db49baba2c202312070451357022920
 Deleting memories derived from doc001
+Deleting memories derived from img001
 Deleting memories derived from doc002
 Deleting memories derived from doc003
 Deleting memories derived from webPage1
+Deleting memories derived from webPage2
 */

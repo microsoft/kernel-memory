@@ -29,7 +29,7 @@ public class AzureOpenAIClientTest : BaseTestCase
     {
         // Arrange
         this._config.APIType = AzureOpenAIConfig.APITypes.ChatCompletion;
-        var client = new AzureTextGeneration(this._config);
+        var client = new AzureOpenAITextGenerator(this._config);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(

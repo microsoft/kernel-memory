@@ -24,7 +24,6 @@ using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 using Microsoft.KernelMemory.Search;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory;
 
@@ -60,7 +59,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private readonly IServiceCollection _auxServiceCollection;
 
     // List of all the embedding generators to use during ingestion
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators = new();
+    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators = new();
 
     // List of all the memory DBs to use during ingestion
     private readonly List<IMemoryDb> _memoryDbs = new();
@@ -109,7 +108,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         // List of embedding generators and memory DBs used during the ingestion
         this._embeddingGenerators.Clear();
         this._memoryDbs.Clear();
-        this.AddSingleton<List<ITextEmbeddingGeneration>>(this._embeddingGenerators);
+        this.AddSingleton<List<ITextEmbeddingGenerator>>(this._embeddingGenerators);
         this.AddSingleton<List<IMemoryDb>>(this._memoryDbs);
 
         // Default configuration for tests and demos
@@ -273,7 +272,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 {
                     this._auxServiceCollection.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGeneration>()
+                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGenerator>()
                                              ?? throw new ConfigurationException("Unable to build embedding generator");
                     this._embeddingGenerators.Add(embeddingGenerator);
                     this.ResetAuxServiceCollection();
@@ -283,7 +282,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 {
                     this._auxServiceCollection.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGeneration>()
+                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGenerator>()
                                              ?? throw new ConfigurationException("Unable to build embedding generator");
                     this._embeddingGenerators.Add(embeddingGenerator);
                     this.ResetAuxServiceCollection();
@@ -445,7 +444,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGeneration service)
+    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGenerator service)
     {
         this._embeddingGenerators.Add(service);
         return this;
@@ -660,9 +659,9 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private void ReuseRetrievalEmbeddingGeneratorIfNecessary(IServiceProvider serviceProvider)
     {
-        if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.HasService<ITextEmbeddingGeneration>())
+        if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>())
         {
-            this._embeddingGenerators.Add(serviceProvider.GetService<ITextEmbeddingGeneration>()
+            this._embeddingGenerators.Add(serviceProvider.GetService<ITextEmbeddingGenerator>()
                                           ?? throw new ConfigurationException("Unable to build embedding generator"));
         }
     }
@@ -688,7 +687,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
         var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
         var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
-        var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGeneration>());
+        var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGenerator>());
 
         if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
         {

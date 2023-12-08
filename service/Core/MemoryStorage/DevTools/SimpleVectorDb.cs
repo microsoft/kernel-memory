@@ -10,9 +10,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
@@ -22,7 +22,7 @@ namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 /// </summary>
 public class SimpleVectorDb : IMemoryDb
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;
 
@@ -34,7 +34,7 @@ public class SimpleVectorDb : IMemoryDb
     /// <param name="log">Application logger</param>
     public SimpleVectorDb(
         SimpleVectorDbConfig config,
-        ITextEmbeddingGeneration embeddingGenerator,
+        ITextEmbeddingGenerator embeddingGenerator,
         ILogger<SimpleVectorDb>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator;
@@ -107,7 +107,7 @@ public class SimpleVectorDb : IMemoryDb
         // Calculate all the distances from the given vector
         // Note: this is a brute force search, very slow, not meant for production use cases
         var similarity = new Dictionary<string, double>();
-        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingsAsync
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync
             (text, cancellationToken).ConfigureAwait(false);
         foreach (var record in records)
         {

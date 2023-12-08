@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -141,7 +140,7 @@ public interface IPipelineOrchestrator
     /// Get list of embedding generators to use during the ingestion, e.g. to create
     /// multiple vectors.
     /// </summary>
-    List<ITextEmbeddingGeneration> GetEmbeddingGenerators();
+    List<ITextEmbeddingGenerator> GetEmbeddingGenerators();
 
     /// <summary>
     /// Get list of memory DBs where to store embeddings.
@@ -154,7 +153,7 @@ public interface IPipelineOrchestrator
     /// TODO: support multiple generators, for different tasks, with different cost/quality.
     /// </summary>
     /// <returns>Instance of the text generator</returns>
-    ITextGeneration GetTextGenerator();
+    ITextGenerator GetTextGenerator();
 
     /// <summary>
     /// Start an asynchronous job, via handlers, to delete a specified index

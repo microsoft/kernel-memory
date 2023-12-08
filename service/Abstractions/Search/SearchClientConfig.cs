@@ -6,6 +6,9 @@ using System;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Settings used by the default SearchClient
+/// </summary>
 public class SearchClientConfig
 {
     /// <summary>
@@ -35,6 +38,9 @@ public class SearchClientConfig
     /// </summary>
     public string EmptyAnswer { get; set; } = "INFO NOT FOUND";
 
+    /// <summary>
+    /// Verify that the current state is valid.
+    /// </summary>
     public void Validate()
     {
         if (this.MaxAskPromptSize < 1024)

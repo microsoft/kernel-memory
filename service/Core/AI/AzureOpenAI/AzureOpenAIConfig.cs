@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Azure.Core;
 using Microsoft.KernelMemory.Configuration;
 
@@ -53,6 +54,11 @@ public class AzureOpenAIConfig
     public string Deployment { get; set; } = string.Empty;
 
     /// <summary>
+    /// The max number of tokens supported by model deployed.
+    /// </summary>
+    public int MaxTokenTotal { get; set; } = 8191;
+
+    /// <summary>
     /// API key, required if Auth == APIKey
     /// </summary>
     public string APIKey { get; set; } = string.Empty;
@@ -79,5 +85,42 @@ public class AzureOpenAIConfig
     {
         return this._tokenCredential
                ?? throw new ConfigurationException("TokenCredential not defined");
+    }
+
+    /// <summary>
+    /// Verify that the current state is valid.
+    /// </summary>
+    public void Validate()
+    {
+        if (this.Auth == AuthTypes.Unknown)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.Auth), "The authentication type is not defined");
+        }
+
+        if (this.Auth == AuthTypes.APIKey && string.IsNullOrWhiteSpace(this.APIKey))
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The API Key is empty");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.Endpoint))
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value is empty");
+        }
+
+        if (!this.Endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value must start with https://");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.Deployment))
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.Deployment), "The deployment value is empty");
+        }
+
+        if (this.MaxTokenTotal < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.MaxTokenTotal),
+                $"{nameof(this.MaxTokenTotal)} cannot be less than 1");
+        }
     }
 }

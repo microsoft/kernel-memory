@@ -28,7 +28,7 @@ public class OpenAIClientTest : BaseTestCase
     {
         // Arrange
         this._config.TextModel = "gpt-4";
-        var client = new OpenAITextGeneration(this._config, DefaultLogger<OpenAITextGeneration>.Instance);
+        var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(
@@ -46,7 +46,7 @@ public class OpenAIClientTest : BaseTestCase
     {
         // Arrange
         this._config.TextModel = "text-davinci-003";
-        var client = new OpenAITextGeneration(this._config, DefaultLogger<OpenAITextGeneration>.Instance);
+        var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(

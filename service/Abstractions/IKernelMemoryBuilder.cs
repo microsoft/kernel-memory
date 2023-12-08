@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory;
 
@@ -87,7 +87,7 @@ public interface IKernelMemoryBuilder
     /// Note: it's possible using multiple generators, all of them are used during the ingestion.
     /// </summary>
     /// <param name="service">Embedding generator instance</param>
-    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGeneration service);
+    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGenerator service);
 
     /// <summary>
     /// Return an instance of the pipeline orchestrator, usually required by custom handlers.

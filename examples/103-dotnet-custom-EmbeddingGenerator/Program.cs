@@ -1,40 +1,62 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.KernelMemory.AI;
 
 public static class Program
 {
     public static void Main()
     {
+        var myConfig = new MyEmbeddingGeneratorConfig
+        {
+            MaxToken = 4096
+        };
+
+        var azureOpenAITextConfig = new AzureOpenAIConfig();
+
+        new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .Build()
+            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig);
+
         var memory = new KernelMemoryBuilder()
-            .WithCustomEmbeddingGeneration(new MyCustomEmbeddingGenerator())
-            .FromAppSettings() // read "KernelMemory" settings from appsettings.json
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithCustomEmbeddingGenerator(new MyEmbeddingGenerator(myConfig))
             .Build();
 
         // ...
     }
 }
 
-public class MyCustomEmbeddingGenerator : ITextEmbeddingGeneration
+public class MyEmbeddingGeneratorConfig
 {
-    public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();
+    public int MaxToken { get; set; } = 4096;
+}
 
-    /// <summary>
-    /// Generates embeddings for the given data.
-    /// </summary>
-    /// <param name="data">List of strings to generate embeddings for</param>
-    /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    /// <returns>List of embeddings</returns>
-    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
-        IList<string> data,
-        Kernel? kernel = null,
-        CancellationToken cancellationToken = new())
+public class MyEmbeddingGenerator : ITextEmbeddingGenerator
+{
+    public MyEmbeddingGenerator(MyEmbeddingGeneratorConfig embeddingGeneratorConfig)
     {
-        // Your code here: loop through the list of strings in `data`,
-        // generate embedding vectors, collect and return the list of embeddings.
+        this.MaxTokens = embeddingGeneratorConfig.MaxToken;
+    }
+
+    /// <inheritdoc />
+    public int MaxTokens { get; }
+
+    /// <inheritdoc />
+    public int CountTokens(string text)
+    {
+        // ... calculate and return the number of tokens ...
+
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public Task<Embedding> GenerateEmbeddingAsync(
+        string text, CancellationToken cancellationToken = default)
+    {
+        // ... generate and return the embedding for the given text ...
 
         throw new NotImplementedException();
     }

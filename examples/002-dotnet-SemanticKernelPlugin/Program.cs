@@ -2,7 +2,6 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
-using Microsoft.KernelMemory.SKExtensions;
 
 public static class Program
 {

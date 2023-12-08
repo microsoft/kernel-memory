@@ -7,10 +7,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Handlers;
 
@@ -21,7 +21,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
+    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
     private readonly bool _embeddingGenerationEnabled;
 
     /// <inheritdoc />
@@ -101,7 +101,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogTrace("Processing file {0}", partitionFile.Name);
-                        foreach (ITextEmbeddingGeneration generator in this._embeddingGenerators)
+                        foreach (ITextEmbeddingGenerator generator in this._embeddingGenerators)
                         {
                             EmbeddingFileContent embeddingData = new()
                             {
@@ -129,7 +129,13 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             // TODO: handle Azure.RequestFailedException - BlobNotFound
                             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
-                            Embedding embedding = await generator.GenerateEmbeddingsAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                            var inputTokenCount = generator.CountTokens(partitionContent);
+                            if (inputTokenCount > generator.MaxTokens)
+                            {
+                                this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
+                            }
+
+                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
