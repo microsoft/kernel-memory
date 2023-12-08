@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -19,9 +20,9 @@ internal class SemanticKernelTextGenerator : ITextGenerator
 
     public SemanticKernelTextGenerator(ITextGenerationService service, SemanticKernelConfig config, ITextTokenizer tokenizer)
     {
-        this._service = service;
+        this._service = service ?? throw new ArgumentNullException(nameof(service));
+        this._tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer), "Tokenizer not specified. The token count might be incorrect, causing unexpected errors");
         this._config = config;
-        this._tokenizer = tokenizer;
         this.MaxTokenTotal = config.MaxTokenTotal;
     }
 
