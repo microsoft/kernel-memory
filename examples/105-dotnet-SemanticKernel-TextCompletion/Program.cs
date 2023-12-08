@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -9,9 +10,16 @@ var apiKey = Env.Var("AOAI_API_KEY");
 var chatDeployment = Env.Var("AOAI_DEPLOYMENT_CHAT");
 var embeddingDeployment = Env.Var("AOAI_DEPLOYMENT_EMBEDDING");
 
+var config = new SemanticKernelConfig();
+var tokenizer = new DefaultGPTTokenizer();
+
 var memory = new KernelMemoryBuilder()
-    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, "", endpoint, apiKey))
-    .WithCustomEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(embeddingDeployment, "", endpoint, apiKey))
+    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, "", endpoint, apiKey)
+                                            , config
+                                            , tokenizer)
+    .WithSemanticKernelTextEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(embeddingDeployment, "", endpoint, apiKey)
+                                            , config
+                                            , tokenizer)
     .Build<MemoryServerless>();
 
 // using document form 203-dotnet-using-core-nuget

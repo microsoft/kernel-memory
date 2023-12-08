@@ -9,13 +9,20 @@ using Microsoft.SemanticKernel.AI.TextGeneration;
 
 namespace Microsoft.KernelMemory.AI;
 
-internal class SemanticKernelTextGeneration : ITextGeneration
+internal class SemanticKernelTextGenerator : ITextGenerator
 {
     private readonly ITextGenerationService _service;
+    private readonly ITextTokenizer _tokenizer;
+    private readonly SemanticKernelConfig _config;
 
-    public SemanticKernelTextGeneration(ITextGenerationService service)
+    public int MaxTokenTotal { get; }
+
+    public SemanticKernelTextGenerator(ITextGenerationService service, SemanticKernelConfig config, ITextTokenizer tokenizer)
     {
         this._service = service;
+        this._config = config;
+        this._tokenizer = tokenizer;
+        this.MaxTokenTotal = config.MaxTokenTotal;
     }
 
     /// <inheritdoc />
@@ -46,7 +53,9 @@ internal class SemanticKernelTextGeneration : ITextGeneration
                 [nameof(options.TopP)] = options.TopP,
                 [nameof(options.PresencePenalty)] = options.PresencePenalty,
                 [nameof(options.FrequencyPenalty)] = options.FrequencyPenalty,
-                [nameof(options.StopSequences)] = options.StopSequences
+                [nameof(options.StopSequences)] = options.StopSequences,
+                [nameof(options.ResultsPerPrompt)] = options.ResultsPerPrompt,
+                [nameof(options.TokenSelectionBiases)] = options.TokenSelectionBiases
             }
         };
 
@@ -55,9 +64,9 @@ internal class SemanticKernelTextGeneration : ITextGeneration
             settings.ExtensionData[nameof(options.MaxTokens)] = options.MaxTokens;
         }
 
-        settings.ExtensionData[nameof(options.ResultsPerPrompt)] = options.ResultsPerPrompt;
-        settings.ExtensionData[nameof(options.TokenSelectionBiases)] = options.TokenSelectionBiases;
-
         return settings;
     }
+
+    /// <inheritdoc />
+    public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 }
