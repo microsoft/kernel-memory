@@ -2,7 +2,6 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
-using Microsoft.KernelMemory.SKExtensions;
 
 public static class Program
 {
@@ -21,10 +20,10 @@ public static class Program
         var builder = new KernelBuilder();
         builder
             // For OpenAI:
-            // .WithOpenAIChatCompletion(
+            //.WithOpenAIChatCompletion(
             //     modelId: "gpt-3.5-turbo",
             //     apiKey: EnvVar("OPENAI_API_KEY"))
-            // Azure OpenAI:
+            // Azure OpenAI:            
             .WithAzureOpenAIChatCompletion(
                 deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
                 modelId: EnvVar("AOAI_DEPLOYMENT_TEXT"),

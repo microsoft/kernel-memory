@@ -7,6 +7,9 @@ namespace UnitTests.DataFormats.Text;
 
 public sealed class TextChunkerTests
 {
+    // Use this as the default chunker, to decouple the test from GPT3 tokenizer
+    private static readonly TextChunker.TokenCounter s_tokenCounter = s => (s.Length >> 2);
+
     [Fact]
     public void CanSplitPlainTextLines()
     {
@@ -17,7 +20,7 @@ public sealed class TextChunkerTests
             "This is only a test."
         };
 
-        var result = TextChunker.SplitPlainTextLines(Input, 15);
+        var result = TextChunker.SplitPlainTextLines(Input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -37,7 +40,7 @@ public sealed class TextChunkerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 13);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 13, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -60,7 +63,7 @@ public sealed class TextChunkerTests
             "A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 15, 8);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 15, 8, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -81,7 +84,7 @@ public sealed class TextChunkerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 13);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 13, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -104,7 +107,7 @@ public sealed class TextChunkerTests
             "A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15, 8);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, 8, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -119,7 +122,7 @@ public sealed class TextChunkerTests
             "This is only a test."
         };
 
-        var result = TextChunker.SplitMarkDownLines(Input, 15);
+        var result = TextChunker.SplitMarkDownLines(Input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -131,7 +134,7 @@ public sealed class TextChunkerTests
 
         var expected = new List<string>();
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 13);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 13, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -143,7 +146,7 @@ public sealed class TextChunkerTests
 
         var expected = new List<string>();
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 13);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 13, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -168,7 +171,7 @@ public sealed class TextChunkerTests
             "Seriously, this is the end. We're finished. All set. Bye. Done."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -194,7 +197,7 @@ public sealed class TextChunkerTests
             "Seriously this is the end\nWe're finished\nAll set\nBye Done",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -221,7 +224,7 @@ public sealed class TextChunkerTests
             $"We're finished. All set. Bye.{Environment.NewLine}Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -247,7 +250,7 @@ public sealed class TextChunkerTests
             "Seriously, this is the end; We're finished; All set; Bye. Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -273,7 +276,7 @@ public sealed class TextChunkerTests
             "Seriously, this is the end: We're finished: All set: Bye. Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -299,7 +302,7 @@ public sealed class TextChunkerTests
             $"this is the end, We're finished, All set, Bye.{Environment.NewLine}Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -325,7 +328,7 @@ public sealed class TextChunkerTests
             "Seriously this is the end} We're finished} All set} Bye. Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -351,7 +354,7 @@ public sealed class TextChunkerTests
             $"this is the end We're finished All set Bye.{Environment.NewLine}Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -377,7 +380,7 @@ public sealed class TextChunkerTests
             $"this is the end-We're finished-All set-Bye.{Environment.NewLine}Done.",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -404,7 +407,7 @@ public sealed class TextChunkerTests
             "tByeDoneThisOneWillBeSplitToMeetTheLimit",
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 15);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -446,7 +449,7 @@ public sealed class TextChunkerTests
             "Seriously_this_is_the_end\nWe're_finished\nAll_set\nBye Done",
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 15);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 15, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -471,8 +474,8 @@ public sealed class TextChunkerTests
         }
 
         string text = sb.ToString();
-        List<string> lines = TextChunker.SplitPlainTextLines(text, 20);
-        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 200);
+        List<string> lines = TextChunker.SplitPlainTextLines(text, 20, tokenCounter: s_tokenCounter);
+        List<string> paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 200, tokenCounter: s_tokenCounter);
         Assert.NotEmpty(paragraphs);
 #pragma warning restore CA5394
     }
@@ -487,7 +490,7 @@ public sealed class TextChunkerTests
             "This is only a test."
         };
 
-        var result = TextChunker.SplitPlainTextLines(Input, 60, (input) => input.Length);
+        var result = TextChunker.SplitPlainTextLines(Input, 60, s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -507,7 +510,7 @@ public sealed class TextChunkerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 52, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 52, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -530,7 +533,7 @@ public sealed class TextChunkerTests
             "A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 75, 40, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 75, 40, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -551,7 +554,7 @@ public sealed class TextChunkerTests
             "We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 52, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 52, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -574,7 +577,7 @@ public sealed class TextChunkerTests
             "A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 75, 40, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 75, 40, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -589,7 +592,7 @@ public sealed class TextChunkerTests
             "This is only a test."
         };
 
-        var result = TextChunker.SplitMarkDownLines(Input, 60, (input) => input.Length);
+        var result = TextChunker.SplitMarkDownLines(Input, 60, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -610,7 +613,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 20, chunkHeader: ChunkHeader);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 20, chunkHeader: ChunkHeader, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -634,7 +637,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 22, 8, chunkHeader: ChunkHeader);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 22, 8, chunkHeader: ChunkHeader, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -656,7 +659,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 20, chunkHeader: ChunkHeader);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 20, chunkHeader: ChunkHeader, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -680,7 +683,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 22, 8, chunkHeader: ChunkHeader);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 22, 8, chunkHeader: ChunkHeader, tokenCounter: s_tokenCounter);
 
         Assert.Equal(expected, result);
     }
@@ -701,7 +704,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 77, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 77, chunkHeader: ChunkHeader, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -725,7 +728,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitMarkdownParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitMarkdownParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -747,7 +750,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}We repeat, this is only a test. A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 77, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 77, chunkHeader: ChunkHeader, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }
@@ -771,7 +774,7 @@ public sealed class TextChunkerTests
             $"{ChunkHeader}A unit test."
         };
 
-        var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: (input) => input.Length);
+        var result = TextChunker.SplitPlainTextParagraphs(input, 100, 40, chunkHeader: ChunkHeader, tokenCounter: s => s.Length);
 
         Assert.Equal(expected, result);
     }

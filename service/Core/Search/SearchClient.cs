@@ -8,31 +8,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-public class SearchClient
+public class SearchClient : ISearchClient
 {
-    private const int MaxMatchesCount = 100;
-    private const int AnswerTokens = 300;
-
     private readonly IMemoryDb _memoryDb;
-    private readonly ITextGeneration _textGenerator;
+    private readonly ITextGenerator _textGenerator;
+    private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
 
     public SearchClient(
         IMemoryDb memoryDb,
-        ITextGeneration textGenerator,
+        ITextGenerator textGenerator,
+        SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
+        this._config = config ?? new SearchClientConfig();
+        this._config.Validate();
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
@@ -50,11 +50,13 @@ public class SearchClient
         }
     }
 
+    /// <inheritdoc />
     public Task<IEnumerable<string>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
         return this._memoryDb.GetIndexesAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string index,
         string query,
@@ -63,7 +65,7 @@ public class SearchClient
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
-        if (limit <= 0) { limit = MaxMatchesCount; }
+        if (limit <= 0) { limit = this._config.MaxMatchesCount; }
 
         var result = new SearchResult
         {
@@ -160,6 +162,7 @@ public class SearchClient
         return result;
     }
 
+    /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(
         string index,
         string question,
@@ -173,15 +176,15 @@ public class SearchClient
             return new MemoryAnswer
             {
                 Question = question,
-                Result = "INFO NOT FOUND",
+                Result = this._config.EmptyAnswer,
             };
         }
 
         var facts = new StringBuilder();
-        var tokensAvailable = 8000
-                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
-                              - GPT3Tokenizer.Encode(question).Count
-                              - AnswerTokens;
+        var tokensAvailable = this._config.MaxAskPromptSize
+                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(question)
+                              - this._config.AnswerTokens;
 
         var factsUsedCount = 0;
         var factsAvailableCount = 0;
@@ -189,7 +192,7 @@ public class SearchClient
         var answer = new MemoryAnswer
         {
             Question = question,
-            Result = "INFO NOT FOUND",
+            Result = this._config.EmptyAnswer,
         };
 
         this._log.LogTrace("Fetching relevant memories");
@@ -198,7 +201,7 @@ public class SearchClient
             text: question,
             filters: filters,
             minRelevance: minRelevance,
-            limit: MaxMatchesCount,
+            limit: this._config.MaxMatchesCount,
             withEmbeddings: false,
             cancellationToken: cancellationToken);
 
@@ -244,7 +247,7 @@ public class SearchClient
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
-            var size = GPT3Tokenizer.Encode(fact).Count;
+            var size = this._textGenerator.CountTokens(fact);
             if (size >= tokensAvailable)
             {
                 // Stop after reaching the max number of tokens

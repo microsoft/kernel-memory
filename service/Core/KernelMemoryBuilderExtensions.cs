@@ -8,7 +8,6 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KernelMemory.Prompts;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory;
 
@@ -62,9 +61,9 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithCustomEmbeddingGeneration(
+    public static IKernelMemoryBuilder WithCustomEmbeddingGenerator(
         this IKernelMemoryBuilder builder,
-        ITextEmbeddingGeneration service,
+        ITextEmbeddingGenerator service,
         bool useForIngestion = true,
         bool useForRetrieval = true)
     {
@@ -72,7 +71,7 @@ public static partial class KernelMemoryBuilderExtensions
 
         if (useForRetrieval)
         {
-            builder.AddSingleton<ITextEmbeddingGeneration>(service);
+            builder.AddSingleton<ITextEmbeddingGenerator>(service);
         }
 
         if (useForIngestion)
@@ -104,12 +103,12 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithCustomTextGeneration(
+    public static IKernelMemoryBuilder WithCustomTextGenerator(
         this IKernelMemoryBuilder builder,
-        ITextGeneration service)
+        ITextGenerator service)
     {
         service = service ?? throw new ConfigurationException("The text generator instance is NULL");
-        builder.AddSingleton<ITextGeneration>(service);
+        builder.AddSingleton<ITextGenerator>(service);
         return builder;
     }
 
