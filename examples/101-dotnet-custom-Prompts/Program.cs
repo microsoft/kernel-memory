@@ -22,11 +22,6 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
-        // openAIConfig.Validate();
-        // azureOpenAITextConfig.Validate();
-        // azureOpenAIEmbeddingConfig.Validate();
-        // searchClientConfig.Validate();
-
         var memory = new KernelMemoryBuilder()
             .WithCustomPromptProvider(new MyPromptProvider())
             // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))

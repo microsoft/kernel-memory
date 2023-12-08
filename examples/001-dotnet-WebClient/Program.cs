@@ -175,7 +175,7 @@ if (retrieval)
 
     // Blake doesn't know
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Blake"));
-    Console.WriteLine($"\nBlake Answer: {answer.Result}");
+    Console.WriteLine($"\nBlake Answer (none expected): {answer.Result}");
 
     // Taylor knows
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Taylor"));
@@ -193,7 +193,7 @@ if (retrieval)
     Console.WriteLine($"Question: {question}");
 
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "article"));
-    Console.WriteLine($"\nArticles: {answer.Result}");
+    Console.WriteLine($"\nArticles (none expected): {answer.Result}");
 
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "news"));
     Console.WriteLine($"\nNews: {answer.Result}");
@@ -217,18 +217,18 @@ if (purge)
 // ReSharper disable CommentTypo
 /* ==== OUTPUT ====
 
+====================================
+
 Uploading text about E=mc^2
 Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md
 
 ====================================
 
-Waiting for memory ingestion to complete...
-Waiting for memory ingestion to complete...
-Waiting for memory ingestion to complete...
 Waiting for memory ingestion to complete...
 Waiting for memory ingestion to complete...
 Waiting for memory ingestion to complete...
@@ -237,60 +237,62 @@ Waiting for memory ingestion to complete...
 
 Question: What's E = m*c^2?
 
-Answer: E = m*c^2 is the formula for mass-energy equivalence in physics, where mass and energy are equivalent in a system's rest frame, differing only by a multiplicative constant and the units of measurement.
+Answer: In physics, E = m*c^2 is the formula for mass-energy equivalence, which describes the relationship between mass and energy in a system's rest frame, where the two quantities differ only by a multiplicative constant and the units of measurement.
 
 ====================================
 
 Question: What's Semantic Kernel?
 
-Answer: Semantic Kernel is a lightweight SDK that allows integration of AI Large Language Models with conventional programming languages. It combines natural language semantic functions, traditional code native functions, and embeddings-based memory to add value to applications with AI. The SK community is invited to contribute to the development of the SDK through GitHub Discussions, opening GitHub Issues, sending PRs, and joining the Discord community. SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities out of the box. The SDK supports several design patterns from the latest in AI research, such as prompt chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory, long-term memory, embeddings, semantic indexing, planning, retrieval-augmented generation, and accessing external knowledge stores as well as your own data.
+Answer: Semantic Kernel (SK) is a lightweight SDK that enables integration of AI Large Language Models (LLMs) with conventional programming languages. The SK extensible programming model combines natural language semantic functions, traditional code native functions, and embeddings-based memory unlocking new potential and adding value to applications with AI. SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities out of the box. By joining the SK community, developers can build AI-first apps faster and have a front-row peek at how the SDK is being built.
 
-  Sources:
+Sources:
 
-  - file4-SK-Readme.pdf  - doc002/136dec405e694b199bd62bb3b2195453 [Tuesday, August 29, 2023]
-  - content.url  - webPage1/acca787af5bc4294b103bb583b31d3da [Tuesday, August 29, 2023]
-  - file3-lorem-ipsum.docx  - doc002/78590246af224918a0a96e96d34c8f38 [Tuesday, August 29, 2023]
-  - content.txt  - 988f0db29c114ed38267980f1af4bb26202308280750056313730/d9c41b08e22547dfa66899b48b75b2b8 [Tuesday, August 29, 2023]
+- file4-SK-Readme.pdf  - doc002/d5fe4f03416b43479429b90b63cedd79 [Friday, December 8, 2023]
+- content.url  - webPage1/bab2145e40a240eda3e0a24f24f10703 [Friday, December 8, 2023]
+- content.url  - webPage2/2724f84d7298495585fcedf94327ca30 [Friday, December 8, 2023]
 
 ====================================
 
 Question: Which conference is Microsoft sponsoring?
 
-Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event in Detroit on September 12, 2023.
+Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event in Detroit, Michigan on September 12, 2023.
 
-  Sources:
+Sources:
 
-  - file6-ANWC-image.jpg  - img001/a4c04abf11344c9790640b00714c3177 [Tuesday, August 29, 2023]
-  - content.url  - webPage1/701ca43b9bbd40a3b4500c31c60fc6bc [Tuesday, August 29, 2023]
-  - file5-NASA-news.pdf  - doc003/8e8ee6081255407da573fdd297f0719a [Tuesday, August 29, 2023]
-  - file4-SK-Readme.pdf  - doc002/5f529a9d13d24f2faa9c8941f46a9169 [Tuesday, August 29, 2023]
-  - file3-lorem-ipsum.docx  - doc002/75d848ced15749699b65fefc8a888400 [Tuesday, August 29, 2023]
+- file6-ANWC-image.jpg  - img001/9e1c3829e4364617a898abf1a4641535 [Friday, December 8, 2023]
+- ANWC-image-for-OCR.jpg  - ItParsesTextFromImages/2a3a933c23a740399a532aae44025f4c [Friday, December 1, 2023]
+- ANWC-image-for-OCR.jpg  - ItUsesTextFoundInsideImages/7cb72bfb686e449b8dbbd6967b90a493 [Wednesday, December 6, 2023]
+- file5-NASA-news.pdf  - doc003/1f9ce815e60b4c2eafe99ddf289f5609 [Friday, December 8, 2023]
+- NASA-news.pdf  - NASA001/ede5c76987e74e5a8fc81e3549e5763f [Thursday, December 7, 2023]
+- content.url  - webPage1/bab2145e40a240eda3e0a24f24f10703 [Friday, December 8, 2023]
+- file4-SK-Readme.pdf  - doc002/d5fe4f03416b43479429b90b63cedd79 [Friday, December 8, 2023]
+- file3-lorem-ipsum.docx  - doc002/efeb64b6aa2a4a418026447e5397d367 [Friday, December 8, 2023]
 
 ====================================
 
 Question: Any news from NASA about Orion?
 
-Blake Answer: INFO NOT FOUND.
+Blake Answer (none expected): INFO NOT FOUND.
 
-Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event will take place at Naval Base San Diego and personnel involved in recovery operations from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with media. The Artemis II crew will participate in recovery testing at sea next year.
-  Sources:
+Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. Recovery operations personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with media. Teams are currently conducting the first in a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. The tests will help prepare the team for Artemis II, NASA’s first crewed mission under Artemis that will send four astronauts in Orion around the Moon to checkout systems ahead of future lunar missions. The Artemis II crew will participate in recovery testing at sea next year.
+Sources:
 
-  - file5-NASA-news.pdf  - doc003/3cc5eefb83ac40cc80b445a1d70b71f0 [Tuesday, August 29, 2023]
+- file5-NASA-news.pdf  - doc003/1f9ce815e60b4c2eafe99ddf289f5609 [Friday, December 8, 2023]
 
 ====================================
 
 Question: What is Orion?
 
-Articles: INFO NOT FOUND
+Articles (none expected): INFO NOT FOUND
 
-News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis II mission which will send four astronauts around the Moon to checkout systems ahead of future lunar missions. NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission.
-
+News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis program which aims to send astronauts to the Moon. NASA is currently conducting tests to evaluate the recovery operations and hardware for crewed Artemis missions, including the recovery of the Orion spacecraft and astronauts upon their return from space. The Artemis II crew, which includes NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA astronaut Jeremy Hansen, will participate in recovery testing at sea next year.
 ====================================
-Deleting memories derived from 9e1ecae343cb4134a7ec955625d51aa6202901120755348131790
+Deleting memories derived from cbcc6f3019e04fab8d08a2029501e508202312070437150015410
 Deleting memories derived from doc001
 Deleting memories derived from img001
 Deleting memories derived from doc002
 Deleting memories derived from doc003
 Deleting memories derived from webPage1
+Deleting memories derived from webPage2
 
 */
