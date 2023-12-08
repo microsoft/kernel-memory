@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
+using Microsoft.KernelMemory.AI.Tokenizers;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
@@ -17,6 +18,7 @@ public static partial class KernelMemoryBuilderExtensions
         ILoggerFactory? loggerFactory = null,
         bool onlyForRetrieval = false)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
         builder.Services.AddAzureOpenAIEmbeddingGeneration(config, textTokenizer);
 
         if (!onlyForRetrieval)
@@ -36,6 +38,7 @@ public static partial class KernelMemoryBuilderExtensions
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
         builder.Services.AddAzureOpenAITextGeneration(config, textTokenizer);
         return builder;
     }
@@ -48,6 +51,7 @@ public static partial class DependencyInjection
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
         return services
             .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new AzureOpenAITextEmbeddingGenerator(
                 config,
@@ -60,6 +64,7 @@ public static partial class DependencyInjection
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
         return services
             .AddSingleton<ITextGenerator>(serviceProvider => new AzureOpenAITextGenerator(
                 config: config,

@@ -48,8 +48,17 @@ public class OpenAITextGenerator : ITextGenerator
             "text-davinci-003",
         };
 
-        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
         this._log = log ?? DefaultLogger<OpenAITextGenerator>.Instance;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(DefaultGPTTokenizer));
+            textTokenizer = new DefaultGPTTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
 
         if (string.IsNullOrEmpty(config.TextModel))
         {

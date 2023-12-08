@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI.Tokenizers;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -32,8 +33,8 @@ new ConfigurationBuilder()
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithOpenAI(openAICfg)
-    .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
-    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
+    .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                      => use Azure Blobs
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))           => use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333")                                                    => use Qdrant docker

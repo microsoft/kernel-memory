@@ -129,6 +129,12 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             // TODO: handle Azure.RequestFailedException - BlobNotFound
                             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
 
+                            var inputTokenCount = generator.CountTokens(partitionContent);
+                            if (inputTokenCount > generator.MaxTokens)
+                            {
+                                this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
+                            }
+
                             Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;

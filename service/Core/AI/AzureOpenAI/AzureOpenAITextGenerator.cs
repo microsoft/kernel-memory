@@ -29,8 +29,17 @@ public class AzureOpenAITextGenerator : ITextGenerator
         ITextTokenizer? textTokenizer = null,
         ILogger<AzureOpenAITextGenerator>? log = null)
     {
-        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
         this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(DefaultGPTTokenizer));
+            textTokenizer = new DefaultGPTTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {

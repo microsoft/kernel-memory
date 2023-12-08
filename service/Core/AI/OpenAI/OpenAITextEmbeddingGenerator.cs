@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
@@ -13,6 +14,7 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAITextEmbeddingGeneration _client;
+    private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
 
     public OpenAITextEmbeddingGenerator(
         OpenAIConfig config,
@@ -27,8 +29,19 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         ITextTokenizer? textTokenizer = null,
         ILogger<OpenAITextEmbeddingGenerator>? log = null)
     {
+        this._log = log ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(DefaultGPTTokenizer));
+            textTokenizer = new DefaultGPTTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
+
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
-        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
 
         this._client = new OpenAITextEmbeddingGeneration(
             modelId: config.EmbeddingModel,

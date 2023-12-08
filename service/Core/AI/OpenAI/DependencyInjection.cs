@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI.Tokenizers;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
@@ -24,6 +25,9 @@ public static partial class KernelMemoryBuilderExtensions
         ILoggerFactory? loggerFactory = null,
         bool onlyForRetrieval = false)
     {
+        textGenerationTokenizer ??= new DefaultGPTTokenizer();
+        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
+
         var openAIConfig = new OpenAIConfig
         {
             TextModel = DefaultTextModel,
@@ -55,6 +59,9 @@ public static partial class KernelMemoryBuilderExtensions
         ITextTokenizer? textEmbeddingTokenizer = null,
         bool onlyForRetrieval = false)
     {
+        textGenerationTokenizer ??= new DefaultGPTTokenizer();
+        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
+
         builder.WithOpenAITextEmbeddingGeneration(config, textEmbeddingTokenizer, onlyForRetrieval);
         builder.WithOpenAITextGeneration(config, textGenerationTokenizer);
         return builder;
@@ -66,6 +73,8 @@ public static partial class KernelMemoryBuilderExtensions
         ITextTokenizer? textTokenizer = null,
         bool onlyForRetrieval = false)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
         if (!onlyForRetrieval)
         {
@@ -81,6 +90,8 @@ public static partial class KernelMemoryBuilderExtensions
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         builder.Services.AddOpenAITextGeneration(config, textTokenizer);
         return builder;
     }
@@ -93,6 +104,8 @@ public static partial class DependencyInjection
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         return services
             .AddSingleton<ITextEmbeddingGenerator>(
                 serviceProvider => new OpenAITextEmbeddingGenerator(
@@ -106,6 +119,8 @@ public static partial class DependencyInjection
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null)
     {
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         return services
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,

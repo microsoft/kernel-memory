@@ -51,9 +51,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
         {
             foreach (var gen in orchestrator.GetEmbeddingGenerators())
             {
-                this._maxTokensPerPartition = Math.Min(gen.MaxTokens, this._maxTokensPerPartition);
                 // Use the last tokenizer (TODO: revisit)
                 this._tokenCounter = s => gen.CountTokens(s);
+                this._maxTokensPerPartition = Math.Min(gen.MaxTokens, this._maxTokensPerPartition);
             }
 
             if (this._options.MaxTokensPerParagraph > this._maxTokensPerPartition)

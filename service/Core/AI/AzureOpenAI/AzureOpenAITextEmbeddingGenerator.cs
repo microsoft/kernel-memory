@@ -31,8 +31,18 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         ITextTokenizer? textTokenizer = null,
         ILogger<AzureOpenAITextEmbeddingGenerator>? log = null)
     {
-        this._textTokenizer = textTokenizer ?? new DefaultGPTTokenizer();
         this._log = log ?? DefaultLogger<AzureOpenAITextEmbeddingGenerator>.Instance;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(DefaultGPTTokenizer));
+            textTokenizer = new DefaultGPTTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
+
         this.MaxTokens = config.MaxTokenTotal;
 
         switch (config.Auth)
