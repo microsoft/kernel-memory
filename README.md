@@ -22,6 +22,14 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
+## Repository Guidance
+
+This repository is a public resource designed to showcase best practices and efficient architecture
+for specific programming scenarios. Although bug fixes and secure, scalable enhancements are part
+of our focus, rigorous reviews and strategic considerations of the code are recommended before
+production use. Similar to the nature of AI development, the project will rapidly evolve. We warmly
+welcome you to participate in the development of Kernel Memoryu. Feel free to contribute opening
+GitHub Issues, sending us PRs, and joining our Discord community. Thank you and happy coding!
 
 ### Packages for Python, Java and other languages
 
