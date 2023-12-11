@@ -27,6 +27,14 @@ public class AzureOpenAITextGenerator : ITextGenerator
     public AzureOpenAITextGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>())
+    {
+    }
+
+    public AzureOpenAITextGenerator(
+        AzureOpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
         ILogger<AzureOpenAITextGenerator>? log = null)
     {
         this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
@@ -119,7 +127,7 @@ public class AzureOpenAITextGenerator : ITextGenerator
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in openaiOptions.StopSequences) { options.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
             }
 
             StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
@@ -146,7 +154,7 @@ public class AzureOpenAITextGenerator : ITextGenerator
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in openaiOptions.StopSequences) { options.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
             }
 
             openaiOptions.Messages.Add(new ChatMessage(ChatRole.System, prompt));

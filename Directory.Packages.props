@@ -11,6 +11,9 @@
         <PackageVersion Include="ClosedXML" Version="0.102.1"/>
         <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
         <PackageVersion Include="HtmlAgilityPack" Version="1.11.54"/>
+        <PackageVersion Include="LLamaSharp" Version="0.8.1"/>
+        <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.8.1"/>
+        <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.8.1"/>
         <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
         <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>

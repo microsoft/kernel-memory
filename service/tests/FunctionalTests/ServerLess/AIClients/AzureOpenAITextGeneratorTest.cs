@@ -8,11 +8,11 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess.AIClients;
 
-public class AzureOpenAIClientTest : BaseTestCase
+public class AzureOpenAITextGeneratorTest : BaseTestCase
 {
     private readonly AzureOpenAIConfig _config;
 
-    public AzureOpenAIClientTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    public AzureOpenAITextGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         var config = this.Configuration.GetSection("Services").GetSection("AzureOpenAIText");
         this._config = new AzureOpenAIConfig
@@ -29,7 +29,7 @@ public class AzureOpenAIClientTest : BaseTestCase
     {
         // Arrange
         this._config.APIType = AzureOpenAIConfig.APITypes.ChatCompletion;
-        var client = new AzureOpenAITextGenerator(this._config);
+        var client = new AzureOpenAITextGenerator(this._config, loggerFactory: null);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(

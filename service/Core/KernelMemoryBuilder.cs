@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Llama;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
@@ -403,6 +404,10 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 this.Services.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
+                break;
+
+            case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
+                this.Services.AddLlamaTextGeneration(this.GetServiceConfig<LlamaSharpConfig>(config, "LlamaSharp"));
                 break;
 
             default:

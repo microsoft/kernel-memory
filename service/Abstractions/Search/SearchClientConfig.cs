@@ -15,8 +15,10 @@ public class SearchClientConfig
     /// Maximum number of tokens accepted by the LLM used to generate answers.
     /// The number includes the tokens used for the answer, e.g. when using
     /// GPT4-32k, set this number to 32768.
+    /// If the value is not set or less than one, SearchClient will use the
+    /// max amount of tokens supported by the model in use.
     /// </summary>
-    public int MaxAskPromptSize { get; set; } = 8000;
+    public int MaxAskPromptSize { get; set; } = -1;
 
     /// <summary>
     /// Maximum number of relevant sources to consider when generating an answer.
@@ -43,7 +45,7 @@ public class SearchClientConfig
     /// </summary>
     public void Validate()
     {
-        if (this.MaxAskPromptSize < 1024)
+        if (this.MaxAskPromptSize is > 0 and < 1024)
         {
             throw new ArgumentOutOfRangeException(nameof(this.MaxAskPromptSize),
                 $"{nameof(this.MaxAskPromptSize)} cannot be less than 1024");

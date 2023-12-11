@@ -7,7 +7,7 @@
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Core</PackageId>
-        <NoWarn>CA1711,CA1724,CA1308,CA1812,CA1859,CA2208,CS1591,NU5104,SKEXP0001,SKEXP0011</NoWarn>
+        <NoWarn>$(NoWarn);CA1711,CA1724,CA1308,CA1812,CA1859,CA2208,CS1591,NU5104,SKEXP0001,SKEXP0011</NoWarn>
     </PropertyGroup>
 
     <Import Project="../nuget-package.props"/>
@@ -31,6 +31,9 @@
         <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
+        <PackageReference Include="LLamaSharp" />
+        <PackageReference Include="LLamaSharp.Backend.Cpu" />
+        <PackageReference Include="LLamaSharp.Backend.Cuda12" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI"/>
         <PackageReference Include="PdfPig"/>

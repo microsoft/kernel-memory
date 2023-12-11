@@ -184,6 +184,7 @@ public class TextExtractionHandler : IPipelineStepHandler
                 }
 
                 text = result.Text;
+                this._log.LogDebug("Web page {0} downloaded, text length: {1}", url, text.Length);
                 break;
 
             case "":
