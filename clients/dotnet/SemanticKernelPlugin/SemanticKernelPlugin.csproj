@@ -6,7 +6,7 @@
         <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.SemanticKernelPlugin</PackageId>
-        <NoWarn>CS1591,NU5104</NoWarn>
+        <NoWarn>$(NoWarn);CS1591,NU5104</NoWarn>
     </PropertyGroup>
 
     <Import Project="../../../service/nuget-package.props"/>

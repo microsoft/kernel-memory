@@ -8,19 +8,10 @@
         <RootNamespace/>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>$(NoWarn);CA1050,CA1859</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.0.0-rc3" />
-        <PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.18.231207.1-preview" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="mydocs-NASA-news.pdf"/>
-        <Content Include="mydocs-NASA-news.pdf">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
+        <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
 </Project>

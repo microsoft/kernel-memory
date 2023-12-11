@@ -8,11 +8,11 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess.AIClients;
 
-public class AzureOpenAIClientTest : BaseTestCase
+public class AzureOpenAITextGeneratorTest : BaseTestCase
 {
     private readonly AzureOpenAIConfig _config;
 
-    public AzureOpenAIClientTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    public AzureOpenAITextGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         var config = this.Configuration.GetSection("Services").GetSection("AzureOpenAIText");
         this._config = new AzureOpenAIConfig

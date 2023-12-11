@@ -69,7 +69,8 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             parameters.Seed = config.Seed.Value;
         }
 
-        this._log.LogDebug("Loading LLama model: {1}", config.ModelPath);
+        var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
+        this._log.LogDebug("Loading LLama model: {1}", modelFilename);
         this._model = LLamaWeights.LoadFromFile(parameters);
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
@@ -126,11 +127,10 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 
     private void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            this._model.Dispose();
-            this._context.Dispose();
-        }
+        if (!disposing) { return; }
+
+        this._context.Dispose();
+        this._model.Dispose();
     }
 
     ~LlamaSharpTextGenerator()

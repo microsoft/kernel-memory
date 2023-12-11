@@ -26,6 +26,7 @@ public static class Main
     private static BoundedBoolean s_cfgAzureOpenAIText = new();
     private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
     private static BoundedBoolean s_cfgOpenAI = new();
+    private static BoundedBoolean s_cfgLlamaSharp = new();
     private static BoundedBoolean s_cfgAzureAIDocIntel = new();
 
     // Vectors
@@ -55,6 +56,7 @@ public static class Main
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
         s_cfgOpenAI = new();
+        s_cfgLlamaSharp = new();
         s_cfgAzureAIDocIntel = new();
 
         // Vectors
@@ -101,6 +103,7 @@ public static class Main
             TextGeneratorTypeSetup();
             AzureOpenAITextSetup();
             OpenAISetup();
+            LlamaSharpSetup();
 
             LoggerSetup();
         }
@@ -309,6 +312,11 @@ public static class Main
                     AppSettings.Change(x => { x.TextGeneratorType = "OpenAI"; });
                     s_cfgOpenAI.Value = true;
                 }),
+                new("LLama model", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
+                    s_cfgLlamaSharp.Value = true;
+                }),
                 new("None/Custom (manually set with code)", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = ""; });
@@ -403,6 +411,29 @@ public static class Main
             { "APIKey", SetupUI.AskPassword("OpenAI <API Key>", config.TryGet("APIKey")) },
             { "OrgId", SetupUI.AskOptionalOpenQuestion("Optional OpenAI <Organization Id>", config.TryGet("OrgId")) },
             { "MaxRetries", 10 },
+        });
+    }
+
+    private static void LlamaSharpSetup()
+    {
+        if (!s_cfgLlamaSharp.Value) { return; }
+
+        s_cfgLlamaSharp.Value = false;
+        const string ServiceName = "LlamaSharp";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "ModelPath", "" },
+                { "MaxTokenTotal", 4096 },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "ModelPath", SetupUI.AskOpenQuestion("Path to model .gguf file", config.TryGet("ModelPath")) },
+            { "MaxTokenTotal", SetupUI.AskOpenQuestion("Max tokens supported by the model", config.TryGet("MaxTokenTotal")) },
         });
     }
 

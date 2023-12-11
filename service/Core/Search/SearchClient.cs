@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -302,11 +303,23 @@ public class SearchClient : ISearchClient
         }
 
         var text = new StringBuilder();
+        var charsGenerated = 0;
+        var watch = new Stopwatch();
+        watch.Restart();
         await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
                            .WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
+
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
         }
+
+        watch.Stop();
+        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
 
@@ -333,6 +346,13 @@ public class SearchClient : ISearchClient
             // StopSequences = null,
             // TokenSelectionBiases = null
         };
+
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
+                this._textGenerator.CountTokens(prompt),
+                this._config.AnswerTokens);
+        }
 
         return this._textGenerator.GenerateTextAsync(prompt, options);
     }

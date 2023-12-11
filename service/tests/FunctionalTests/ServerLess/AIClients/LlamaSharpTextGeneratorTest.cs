@@ -12,7 +12,7 @@ namespace FunctionalTests.AI;
 
 public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
 {
-    private readonly LlamaSharpTextGenerator _textGenerator;
+    private readonly LlamaSharpTextGenerator _target;
     private readonly Stopwatch _timer;
 
     public LlamaSharpTextGeneratorTest(
@@ -21,8 +21,10 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
     {
         var config = new LlamaSharpConfig();
         this.Configuration.BindSection("Services:LlamaSharp", config);
-        this._textGenerator = new LlamaSharpTextGenerator(config, loggerFactory: null);
+        this._target = new LlamaSharpTextGenerator(config, loggerFactory: null);
         this._timer = new Stopwatch();
+        var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
+        Console.WriteLine($"Model in use: {modelFilename}");
     }
 
     [Fact]
@@ -33,7 +35,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
 
         // Act
         this._timer.Restart();
-        var tokenCount = this._textGenerator.CountTokens(text);
+        var tokenCount = this._target.CountTokens(text);
         this._timer.Stop();
 
         // Assert
@@ -45,7 +47,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
     }
 
     [Fact]
-    public async Task ItProcessesText()
+    public async Task ItGeneratesText()
     {
         // Arrange
         var prompt = """
@@ -66,7 +68,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
 
         // Act
         this._timer.Restart();
-        var tokens = this._textGenerator.GenerateTextAsync(prompt, options);
+        var tokens = this._target.GenerateTextAsync(prompt, options);
         var result = new StringBuilder();
         await foreach (string token in tokens)
         {
@@ -86,6 +88,6 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        this._textGenerator.Dispose();
+        this._target.Dispose();
     }
 }
