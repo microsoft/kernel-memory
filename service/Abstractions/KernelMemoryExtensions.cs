@@ -32,7 +32,7 @@ public static class KernelMemoryExtensions
         if (filters == null)
         {
             filters = new List<MemoryFilter>();
-            filters.Add(new MemoryFilter());
+            if (filter == null) { filters.Add(new MemoryFilter()); }
         }
 
         if (filter != null)
