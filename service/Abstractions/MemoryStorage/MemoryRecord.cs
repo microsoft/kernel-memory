@@ -11,12 +11,14 @@ public class MemoryRecord
     /// Unique record ID
     /// </summary>
     [JsonPropertyName("id")]
+    [JsonPropertyOrder(1)]
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Embedding vector
     /// </summary>
     [JsonPropertyName("vector")]
+    [JsonPropertyOrder(100)]
     [JsonConverter(typeof(Embedding.JsonConverter))]
     public Embedding Vector { get; set; } = new();
 
@@ -34,6 +36,7 @@ public class MemoryRecord
     ///  * etc.
     /// </summary>
     [JsonPropertyName("tags")]
+    [JsonPropertyOrder(2)]
     public TagCollection Tags { get; set; } = new();
 
     /// <summary>
@@ -50,5 +53,6 @@ public class MemoryRecord
     ///  * etc.
     /// </summary>
     [JsonPropertyName("payload")]
+    [JsonPropertyOrder(3)]
     public Dictionary<string, object> Payload { get; set; } = new();
 }

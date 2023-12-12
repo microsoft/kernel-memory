@@ -164,7 +164,7 @@ public interface IKernelMemory
     /// Search the given index for a list of relevant documents for the given query.
     /// </summary>
     /// <param name="query">Query to filter memories</param>
-    /// <param name="index">Optional index name</param>
+    /// <param name="index">Optional name of the index where to search</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="minRelevance">Minimum Cosine Similarity required</param>

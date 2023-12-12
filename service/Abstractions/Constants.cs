@@ -31,6 +31,10 @@ public static class Constants
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
+    public const string ReservedSyntheticTypeTag = $"{ReservedTagsPrefix}synth";
+
+    // Known tags
+    public const string TagsSyntheticSummary = "summary";
 
     // Properties stored inside the payload
     public const string ReservedPayloadTextField = "text";
@@ -60,6 +64,7 @@ public static class Constants
     public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_records" };
     public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_records" };
     public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_records", "summarize", "gen_embeddings", "save_records" };
+    public static readonly string[] PipelineOnlySummary = { "extract", "summarize", "gen_embeddings", "save_records" };
 
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";
