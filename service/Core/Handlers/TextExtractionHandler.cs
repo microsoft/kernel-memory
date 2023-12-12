@@ -92,7 +92,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     Name = destFile,
                     Size = text.Length,
                     MimeType = extractType,
-                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedText
+                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedText,
+                    Tags = pipeline.Tags,
                 };
                 destFileDetails.MarkProcessedBy(this);
 

@@ -181,6 +181,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "205-dotnet-extract-text-fro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "105-dotnet-serverless-llamasharp", "examples\105-dotnet-serverless-llamasharp\105-dotnet-serverless-llamasharp.csproj", "{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "106-dotnet-retrieve-synthetics", "examples\106-dotnet-retrieve-synthetics\106-dotnet-retrieve-synthetics.csproj", "{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -224,6 +226,7 @@ Global
 		{10A6C940-AECC-4CEF-963E-9908DDA816B2} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{9202380E-D793-4C3C-89B3-3BE790925029} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -334,5 +337,9 @@ Global
 		{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
