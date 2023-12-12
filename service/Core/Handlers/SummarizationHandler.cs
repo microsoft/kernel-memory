@@ -101,6 +101,7 @@ public class SummarizationHandler : IPipelineStepHandler
                                 Size = summary.Length,
                                 MimeType = MimeTypes.PlainText,
                                 ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
+                                Tags = pipeline.Tags.Clone().AddSyntheticTag(Constants.TagsSyntheticSummary),
                                 ContentSHA256 = summaryData.CalculateSHA256(),
                             });
                         }

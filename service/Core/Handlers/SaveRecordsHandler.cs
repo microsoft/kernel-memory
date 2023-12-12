@@ -127,7 +127,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 partitionContent: partitionContent,
                 partitionEmbedding: embeddingData.Vector,
                 embeddingGeneratorProvider: embeddingData.GeneratorProvider,
-                embeddingGeneratorName: embeddingData.GeneratorName);
+                embeddingGeneratorName: embeddingData.GeneratorName,
+                file.File.Tags);
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
@@ -175,7 +176,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
                         partitionContent: partitionContent,
                         partitionEmbedding: new Embedding(),
                         embeddingGeneratorProvider: "",
-                        embeddingGeneratorName: "");
+                        embeddingGeneratorName: "",
+                        file.File.Tags);
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
@@ -250,7 +252,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
         string partitionContent,
         Embedding partitionEmbedding,
         string embeddingGeneratorProvider,
-        string embeddingGeneratorName)
+        string embeddingGeneratorName,
+        TagCollection tags)
     {
         var record = new MemoryRecord { Id = recordId };
 
@@ -293,7 +296,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
         record.Payload.Add(Constants.ReservedPayloadLastUpdateField, DateTimeOffset.UtcNow.ToString("s"));
 
-        pipeline.Tags.CopyTo(record.Tags);
+        tags.CopyTo(record.Tags);
 
         return record;
     }

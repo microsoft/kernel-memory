@@ -74,24 +74,49 @@ public class SearchClient : ISearchClient
             Results = new List<Citation>()
         };
 
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrWhiteSpace(query) && (filters == null || filters.Count == 0))
         {
-            this._log.LogWarning("No query provided");
+            this._log.LogWarning("No query or filters provided");
             return result;
         }
 
-        this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
-            index: index,
-            text: query,
-            filters: filters,
-            minRelevance: minRelevance,
-            limit: limit,
-            withEmbeddings: false,
-            cancellationToken: cancellationToken);
+        var list = new List<(MemoryRecord memory, double relevance)>();
+        if (!string.IsNullOrEmpty(query))
+        {
+            this._log.LogTrace("Fetching relevant memories by similarity, min relevance {0}", minRelevance);
+            IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+                index: index,
+                text: query,
+                filters: filters,
+                minRelevance: minRelevance,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
+
+            // Memories are sorted by relevance, starting from the most relevant
+            await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, relevance));
+            }
+        }
+        else
+        {
+            this._log.LogTrace("Fetching relevant memories by filtering");
+            IAsyncEnumerable<MemoryRecord> matches = this._memoryDb.GetListAsync(
+                index: index,
+                filters: filters,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
+
+            await foreach (MemoryRecord memory in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, float.MinValue));
+            }
+        }
 
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
+        foreach ((MemoryRecord memory, double relevance) in list)
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
@@ -127,7 +152,10 @@ public class SearchClient : ISearchClient
                 continue;
             }
 
-            this._log.LogTrace("Adding result with relevance {0}", relevance);
+            if (relevance > float.MinValue)
+            {
+                this._log.LogTrace("Adding result with relevance {0}", relevance);
+            }
 
             // If the file is already in the list of citations, only add the partition
             var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
