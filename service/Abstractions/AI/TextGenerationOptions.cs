@@ -56,5 +56,5 @@ public class TextGenerationOptions
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
-    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
 }

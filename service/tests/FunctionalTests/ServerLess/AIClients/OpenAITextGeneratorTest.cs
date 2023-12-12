@@ -9,11 +9,11 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess.AIClients;
 
-public class OpenAIClientTest : BaseTestCase
+public sealed class OpenAITextGeneratorTest : BaseTestCase
 {
     private readonly OpenAIConfig _config;
 
-    public OpenAIClientTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    public OpenAITextGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         this._config = new OpenAIConfig
         {

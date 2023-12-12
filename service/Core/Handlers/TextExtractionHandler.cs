@@ -92,7 +92,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     Name = destFile,
                     Size = text.Length,
                     MimeType = extractType,
-                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedText
+                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedText,
+                    Tags = pipeline.Tags,
                 };
                 destFileDetails.MarkProcessedBy(this);
 
@@ -184,6 +185,7 @@ public class TextExtractionHandler : IPipelineStepHandler
                 }
 
                 text = result.Text;
+                this._log.LogDebug("Web page {0} downloaded, text length: {1}", url, text.Length);
                 break;
 
             case "":

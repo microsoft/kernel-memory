@@ -8,7 +8,7 @@ public static class Program
 {
     public static void Main()
     {
-        var llamaConfig = new LlamaConfig
+        var customModelConfig = new CustomModelConfig
         {
             MaxToken = 4096,
             ModelPath = "...",
@@ -23,7 +23,7 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig);
 
         var memory = new KernelMemoryBuilder()
-            .WithCustomTextGenerator(new LlamaTextGeneration(llamaConfig))
+            .WithCustomTextGenerator(new CustomModelTextGeneration(customModelConfig))
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .Build();
 
@@ -31,17 +31,17 @@ public static class Program
     }
 }
 
-public class LlamaConfig
+public class CustomModelConfig
 {
     public string ModelPath { get; set; } = "";
     public int MaxToken { get; set; } = 4096;
 }
 
-public class LlamaTextGeneration : ITextGenerator
+public class CustomModelTextGeneration : ITextGenerator
 {
-    private readonly LlamaConfig _config;
+    private readonly CustomModelConfig _config;
 
-    public LlamaTextGeneration(LlamaConfig config)
+    public CustomModelTextGeneration(CustomModelConfig config)
     {
         this._config = config;
         this.MaxTokenTotal = config.MaxToken;

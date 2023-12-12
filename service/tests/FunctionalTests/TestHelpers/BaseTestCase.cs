@@ -108,16 +108,16 @@ public abstract class BaseTestCase : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected void Log(string text)
-    {
-        this._output.WriteLine(text);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
             this._output.Dispose();
         }
+    }
+
+    protected void Log(string text)
+    {
+        this._output.WriteLine(text);
     }
 }

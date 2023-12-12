@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI.Llama;
 using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 
@@ -15,6 +16,7 @@ using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 var openAIConfig = new OpenAIConfig();
 var azureOpenAITextConfig = new AzureOpenAIConfig();
 var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+var llamaConfig = new LlamaSharpConfig();
 var searchClientConfig = new SearchClientConfig();
 var azDocIntelConfig = new AzureAIDocIntelConfig();
 
@@ -23,6 +25,7 @@ new ConfigurationBuilder()
     .AddJsonFile("appsettings.Development.json", optional: true)
     .Build()
     .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+    .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
     .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
     .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
     .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
@@ -31,6 +34,7 @@ new ConfigurationBuilder()
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithOpenAI(openAICfg)
+    // .WithLlamaTextGeneration(llamaConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
     // .WithAzureAIDocIntel(azDocIntelConfig)                                         // => use Azure AI Document Intelligence OCR
@@ -146,7 +150,7 @@ if (retrieval)
     var question = "What's E = m*c^2?";
     Console.WriteLine($"Question: {question}");
 
-    var answer = await memory.AskAsync(question);
+    var answer = await memory.AskAsync(question, minRelevance: 0.76);
     Console.WriteLine($"\nAnswer: {answer.Result}");
 
     Console.WriteLine("\n====================================\n");
@@ -155,7 +159,7 @@ if (retrieval)
     question = "What's Semantic Kernel?";
     Console.WriteLine($"Question: {question}");
 
-    answer = await memory.AskAsync(question);
+    answer = await memory.AskAsync(question, minRelevance: 0.76);
     Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
     foreach (var x in answer.RelevantSources)
@@ -169,7 +173,7 @@ if (retrieval)
         question = "Which conference is Microsoft sponsoring?";
         Console.WriteLine($"Question: {question}");
 
-        answer = await memory.AskAsync(question);
+        answer = await memory.AskAsync(question, minRelevance: 0.76);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         foreach (var x in answer.RelevantSources)

@@ -406,6 +406,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 Name = file.FileName,
                 Size = fileSize,
                 MimeType = mimeType,
+                Tags = pipeline.Tags,
             });
 
             this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, fileSize);

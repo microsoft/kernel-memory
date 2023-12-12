@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -73,24 +74,49 @@ public class SearchClient : ISearchClient
             Results = new List<Citation>()
         };
 
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrWhiteSpace(query) && (filters == null || filters.Count == 0))
         {
-            this._log.LogWarning("No query provided");
+            this._log.LogWarning("No query or filters provided");
             return result;
         }
 
-        this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
-            index: index,
-            text: query,
-            filters: filters,
-            minRelevance: minRelevance,
-            limit: limit,
-            withEmbeddings: false,
-            cancellationToken: cancellationToken);
+        var list = new List<(MemoryRecord memory, double relevance)>();
+        if (!string.IsNullOrEmpty(query))
+        {
+            this._log.LogTrace("Fetching relevant memories by similarity, min relevance {0}", minRelevance);
+            IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+                index: index,
+                text: query,
+                filters: filters,
+                minRelevance: minRelevance,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
+
+            // Memories are sorted by relevance, starting from the most relevant
+            await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, relevance));
+            }
+        }
+        else
+        {
+            this._log.LogTrace("Fetching relevant memories by filtering");
+            IAsyncEnumerable<MemoryRecord> matches = this._memoryDb.GetListAsync(
+                index: index,
+                filters: filters,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
+
+            await foreach (MemoryRecord memory in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, float.MinValue));
+            }
+        }
 
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
+        foreach ((MemoryRecord memory, double relevance) in list)
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
@@ -126,7 +152,10 @@ public class SearchClient : ISearchClient
                 continue;
             }
 
-            this._log.LogTrace("Adding result with relevance {0}", relevance);
+            if (relevance > float.MinValue)
+            {
+                this._log.LogTrace("Adding result with relevance {0}", relevance);
+            }
 
             // If the file is already in the list of citations, only add the partition
             var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
@@ -181,7 +210,10 @@ public class SearchClient : ISearchClient
         }
 
         var facts = new StringBuilder();
-        var tokensAvailable = this._config.MaxAskPromptSize
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
+        var tokensAvailable = maxTokens
                               - this._textGenerator.CountTokens(this._answerPrompt)
                               - this._textGenerator.CountTokens(question)
                               - this._config.AnswerTokens;
@@ -206,7 +238,7 @@ public class SearchClient : ISearchClient
             cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
@@ -299,11 +331,23 @@ public class SearchClient : ISearchClient
         }
 
         var text = new StringBuilder();
+        var charsGenerated = 0;
+        var watch = new Stopwatch();
+        watch.Restart();
         await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
                            .WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
+
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
         }
+
+        watch.Stop();
+        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
 
@@ -319,6 +363,25 @@ public class SearchClient : ISearchClient
         question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
 
-        return this._textGenerator.GenerateTextAsync(prompt, new TextGenerationOptions());
+        // TODO: receive options from API: https://github.com/microsoft/kernel-memory/issues/137
+        var options = new TextGenerationOptions
+        {
+            // Temperature = 0,
+            // TopP = 0,
+            // PresencePenalty = 0,
+            // FrequencyPenalty = 0,
+            MaxTokens = this._config.AnswerTokens,
+            // StopSequences = null,
+            // TokenSelectionBiases = null
+        };
+
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
+                this._textGenerator.CountTokens(prompt),
+                this._config.AnswerTokens);
+        }
+
+        return this._textGenerator.GenerateTextAsync(prompt, options);
     }
 }
