@@ -27,19 +27,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Schema", "Schema", "{294D74
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Prompts", "Prompts", "{02339A5B-7A5D-49FB-B747-D9166987284F}"
 	ProjectSection(SolutionItems) = preProject
+		nl2sql.config\nl2sql\generateQuery.xml = nl2sql.config\nl2sql\generateQuery.xml
 		nl2sql.config\nl2sql\Readme.md = nl2sql.config\nl2sql\Readme.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GenerateQuery", "GenerateQuery", "{92D979F2-2DC5-4E97-A8D5-2BEB003DA964}"
-	ProjectSection(SolutionItems) = preProject
-		nl2sql.config\nl2sql\generatequery\config.json = nl2sql.config\nl2sql\generatequery\config.json
-		nl2sql.config\nl2sql\generatequery\skprompt.txt = nl2sql.config\nl2sql\generatequery\skprompt.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IsQuery", "IsQuery", "{F7B883B7-4F83-40C4-A9CB-6DD8BACBEEF9}"
-	ProjectSection(SolutionItems) = preProject
-		nl2sql.config\nl2sql\isquery\config.json = nl2sql.config\nl2sql\isquery\config.json
-		nl2sql.config\nl2sql\isquery\skprompt.txt = nl2sql.config\nl2sql\isquery\skprompt.txt
+		nl2sql.config\nl2sql\isQuery.xml = nl2sql.config\nl2sql\isQuery.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{311FDB83-EF38-4A0D-871D-F8D291FA9C8C}"
@@ -73,8 +63,6 @@ Global
 		{453CA8B3-AEA0-4474-A3D5-6394327E1740} = {311FDB83-EF38-4A0D-871D-F8D291FA9C8C}
 		{294D746F-5ADD-4257-8346-318A00ACD74F} = {453CA8B3-AEA0-4474-A3D5-6394327E1740}
 		{02339A5B-7A5D-49FB-B747-D9166987284F} = {453CA8B3-AEA0-4474-A3D5-6394327E1740}
-		{92D979F2-2DC5-4E97-A8D5-2BEB003DA964} = {02339A5B-7A5D-49FB-B747-D9166987284F}
-		{F7B883B7-4F83-40C4-A9CB-6DD8BACBEEF9} = {02339A5B-7A5D-49FB-B747-D9166987284F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {84F52C18-2101-48AD-AB80-5024533C88A3}

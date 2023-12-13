@@ -11,7 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Services;
 using SemanticKernel.Data.Nl2Sql.Library;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
@@ -19,6 +21,7 @@ namespace SemanticKernel.Data.Nl2Sql;
 
 internal sealed class Nl2SqlConsole : BackgroundService
 {
+    private const ConsoleColor ErrorColor = ConsoleColor.Magenta;
     private const ConsoleColor FocusColor = ConsoleColor.Yellow;
     private const ConsoleColor QueryColor = ConsoleColor.Green;
     private const ConsoleColor SystemColor = ConsoleColor.Cyan;
@@ -33,14 +36,14 @@ internal sealed class Nl2SqlConsole : BackgroundService
             { typeof(Guid), 8 },
         };
 
-    private readonly IKernel _kernel;
+    private readonly Kernel _kernel;
     private readonly ISemanticTextMemory _memory;
     private readonly SqlConnectionProvider _sqlProvider;
     private readonly SqlQueryGenerator _queryGenerator;
     private readonly ILogger<Nl2SqlConsole> _logger;
 
     public Nl2SqlConsole(
-        IKernel kernel,
+        Kernel kernel,
         ISemanticTextMemory memory,
         IConfiguration config,
         SqlConnectionProvider sqlProvider,
@@ -59,6 +62,19 @@ internal sealed class Nl2SqlConsole : BackgroundService
     {
         await Task.Yield(); // Yield to hosting framework prior to blocking on console input
 
+        try
+        {
+            await this.ExecuteConsoleAsync(stoppingToken); // Process console UX
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            this.WriteLine(ErrorColor, "Unexpected failure!");
+            this.WriteLine(ErrorColor, exception.ToString());
+        }
+    }
+
+    private async Task ExecuteConsoleAsync(CancellationToken stoppingToken)
+    {
         var schemaNames = SchemaDefinitions.GetNames().ToArray();
         await SchemaProvider.InitializeAsync(
             this._memory,
@@ -74,15 +90,10 @@ internal sealed class Nl2SqlConsole : BackgroundService
                 continue;
             }
 
-            var context = this._kernel.CreateNewContext();
-            var query =
-                await this._queryGenerator.SolveObjectiveAsync(
-                    objective,
-                    context).ConfigureAwait(false);
+            var result =
+                await this._queryGenerator.SolveObjectiveAsync(objective).ConfigureAwait(false);
 
-            context.Variables.TryGetValue(SqlQueryGenerator.ContextParamSchemaId, out var schemaId);
-
-            await ProcessQueryAsync(schemaId, query).ConfigureAwait(false);
+            await ProcessQueryAsync(result).ConfigureAwait(false);
         }
 
         this.WriteLine();
@@ -118,18 +129,18 @@ internal sealed class Nl2SqlConsole : BackgroundService
         }
 
         // Display query result and (optionally) execute.
-        async Task ProcessQueryAsync(string? schema, string? query)
+        async Task ProcessQueryAsync(SqlQueryResult? result)
         {
-            if (string.IsNullOrWhiteSpace(schema) || string.IsNullOrWhiteSpace(query))
+            if (result == null)
             {
                 this.WriteLine(FocusColor, $"Unable to translate request into a query.{Environment.NewLine}");
                 return;
             }
 
             this.WriteLine(SystemColor, $"{Environment.NewLine}SCHEMA:");
-            this.WriteLine(QueryColor, schema);
+            this.WriteLine(QueryColor, result.Schema);
             this.WriteLine(SystemColor, $"{Environment.NewLine}QUERY:");
-            this.WriteLine(QueryColor, query);
+            this.WriteLine(QueryColor, result.Query);
 
             if (!this.Confirm($"{Environment.NewLine}Execute?"))
             {
@@ -144,8 +155,8 @@ internal sealed class Nl2SqlConsole : BackgroundService
             this.Write(SystemColor, "Executing...");
 
             await ProcessDataAsync(
-                schema,
-                query,
+                result.Schema,
+                result.Query,
                 reader =>
                 {
                     this.ClearLine();
@@ -365,6 +376,7 @@ internal sealed class Nl2SqlConsole : BackgroundService
     private void WriteIntroduction(IList<string> schemaNames)
     {
         this.WriteLine(SystemColor, $"I can translate your question into a SQL query for the following data schemas:{Environment.NewLine}");
+        this.WriteLine(SystemColor, $"Model: {this._kernel.GetRequiredService<IChatCompletionService>().GetModelId()}{Environment.NewLine}");
 
         foreach (var schemaName in schemaNames)
         {
@@ -390,7 +402,14 @@ internal sealed class Nl2SqlConsole : BackgroundService
         try
         {
             Console.ForegroundColor = color;
-            Console.Write(message, args);
+            if (args.Length == 0)
+            {
+                Console.Write(message);
+            }
+            else
+            {
+                Console.Write(message, args);
+            }
         }
         finally
         {
