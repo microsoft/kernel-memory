@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
@@ -64,7 +64,7 @@ internal static class KernelFactory
                     configuration.GetValue<string>(SettingNameAzureModelEmbedding) ??
                     DefaultEmbedModel;
 
-                builder.WithAzureOpenAITextEmbeddingGenerationService(modelEmbedding, endpoint, apikey);
+                builder.WithTextEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(modelEmbedding, modelEmbedding, endpoint, apikey));
 
                 return builder.Build();
             }
@@ -76,7 +76,7 @@ internal static class KernelFactory
                     configuration.GetValue<string>(SettingNameOpenAIModelEmbedding) ??
                     DefaultEmbedModel;
 
-                builder.WithOpenAITextEmbeddingGenerationService(modelEmbedding, apikey);
+                builder.WithTextEmbeddingGeneration(new OpenAITextEmbeddingGeneration(modelEmbedding, apikey));
 
                 return builder.Build();
             }
@@ -88,19 +88,15 @@ internal static class KernelFactory
     /// <summary>
     /// Factory method for <see cref="IServiceCollection"/>
     /// </summary>
-    public static Func<IServiceProvider, IKernel> CreateKernel(IConfiguration configuration)
+    public static Func<IServiceProvider, Kernel> CreateKernel(IConfiguration configuration)
     {
         return CreateKernel;
 
-        IKernel CreateKernel(IServiceProvider provider)
+        Kernel CreateKernel(IServiceProvider provider)
         {
             var builder = new KernelBuilder();
 
-            var loggerFactory = provider.GetService<ILoggerFactory>();
-            if (loggerFactory != null)
-            {
-                builder.WithLoggerFactory(loggerFactory);
-            }
+            builder.Services.AddLogging();
 
             var apikey = configuration.GetValue<string>(SettingNameAzureApiKey);
             if (!string.IsNullOrWhiteSpace(apikey))
@@ -112,14 +108,9 @@ internal static class KernelFactory
                     configuration.GetValue<string>(SettingNameAzureModelCompletion) ??
                     DefaultChatModel;
 
-                if (!modelCompletion.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
-                {
-                    builder.WithAzureTextCompletionService(modelCompletion, endpoint, apikey);
-                }
+                builder.AddAzureOpenAIChatCompletion(modelCompletion, modelCompletion, endpoint, apikey);
 
-                builder.WithAzureOpenAIChatCompletionService(modelCompletion, endpoint, apikey);
-
-                return builder.Build();
+                return (Kernel)builder.Build();
             }
 
             apikey = configuration.GetValue<string>(SettingNameOpenAIApiKey);
@@ -129,14 +120,9 @@ internal static class KernelFactory
                     configuration.GetValue<string>(SettingNameOpenAIModelCompletion) ??
                     DefaultChatModel;
 
-                if (!modelCompletion.StartsWith("gpt", StringComparison.OrdinalIgnoreCase))
-                {
-                    builder.WithOpenAITextCompletionService(modelCompletion, apikey);
-                }
+                builder.AddOpenAIChatCompletion(modelCompletion, apikey);
 
-                builder.WithOpenAIChatCompletionService(modelCompletion, apikey);
-
-                return builder.Build();
+                return (Kernel)builder.Build();
             }
 
             throw new InvalidDataException($"No api-key configured in {SettingNameAzureApiKey} or {SettingNameOpenAIApiKey}.");
