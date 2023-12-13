@@ -12,8 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.Internals;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public class MemoryWebClient : IKernelMemory
@@ -235,11 +233,6 @@ public class MemoryWebClient : IKernelMemory
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
-
-        if (status == null)
-        {
-            return null;
-        }
 
         return status;
     }

@@ -279,12 +279,23 @@ public sealed class SimpleQueues : IQueue
 
     private async Task DeleteMessageAsync(string messageId)
     {
-        this._log.LogTrace("Deleting message from queue {0}", messageId);
-        this._messages.Remove(messageId);
-        this.UnlockMessage(messageId);
+        try
+        {
+            await s_lock.WaitAsync().ConfigureAwait(false);
+            this._busy = true;
 
-        var fileName = $"{messageId}{FileExt}";
-        this._log.LogTrace("Deleting file from disk {0}", fileName);
-        await this._fileSystem.DeleteFileAsync(this._queueName, "", fileName).ConfigureAwait(false);
+            this._log.LogTrace("Deleting message from queue {0}", messageId);
+            this._messages.Remove(messageId);
+            this.UnlockMessage(messageId);
+
+            var fileName = $"{messageId}{FileExt}";
+            this._log.LogTrace("Deleting file from disk {0}", fileName);
+            await this._fileSystem.DeleteFileAsync(this._queueName, "", fileName).ConfigureAwait(false);
+        }
+        finally
+        {
+            this._busy = false;
+            s_lock.Release();
+        }
     }
 }

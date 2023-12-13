@@ -8,7 +8,7 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <NoWarn>CA1869</NoWarn>
+        <NoWarn>$(NoWarn);CA1869</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

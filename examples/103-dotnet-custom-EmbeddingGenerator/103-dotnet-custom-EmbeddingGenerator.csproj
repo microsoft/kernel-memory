@@ -6,11 +6,12 @@
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>CA1050</NoWarn>
+        <NoWarn>$(NoWarn);CA1050,SKEXP0001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.7.231106.1-preview" />
+      <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
 </Project>

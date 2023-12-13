@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,20 +10,40 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
 namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-public class SimpleVectorDb : IVectorDb
+/// <summary>
+/// Basic vector db implementation, designed for tests and demos only.
+/// When searching, uses brute force comparing against all stored records.
+/// </summary>
+public class SimpleVectorDb : IMemoryDb
 {
+    private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<SimpleVectorDb> _log;
 
+    /// <summary>
+    /// Create new instance
+    /// </summary>
+    /// <param name="config">Simple vector db settings</param>
+    /// <param name="embeddingGenerator">Text embedding generator</param>
+    /// <param name="log">Application logger</param>
     public SimpleVectorDb(
         SimpleVectorDbConfig config,
+        ITextEmbeddingGenerator embeddingGenerator,
         ILogger<SimpleVectorDb>? log = null)
     {
+        this._embeddingGenerator = embeddingGenerator;
+
+        if (this._embeddingGenerator == null)
+        {
+            throw new SimpleVectorDbException("Embedding generator not configured");
+        }
+
         this._log = log ?? DefaultLogger<SimpleVectorDb>.Instance;
         switch (config.StorageType)
         {
@@ -52,6 +73,12 @@ public class SimpleVectorDb : IVectorDb
     }
 
     /// <inheritdoc />
+    public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
+    {
+        return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         await this._fileSystem.WriteFileAsync(index, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
@@ -61,7 +88,7 @@ public class SimpleVectorDb : IVectorDb
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
-        Embedding embedding,
+        string text,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = 1,
@@ -72,22 +99,24 @@ public class SimpleVectorDb : IVectorDb
 
         var list = this.GetListAsync(index, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
-        await foreach (MemoryRecord r in list.WithCancellation(cancellationToken))
+        await foreach (MemoryRecord r in list.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             records[r.Id] = r;
         }
 
         // Calculate all the distances from the given vector
         // Note: this is a brute force search, very slow, not meant for production use cases
-        var distances = new Dictionary<string, double>();
+        var similarity = new Dictionary<string, double>();
+        Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync
+            (text, cancellationToken).ConfigureAwait(false);
         foreach (var record in records)
         {
-            distances[record.Value.Id] = embedding.CosineSimilarity(record.Value.Vector);
+            similarity[record.Value.Id] = textEmbedding.CosineSimilarity(record.Value.Vector);
         }
 
         // Sort distances, from closest to most distant, and filter out irrelevant results
         IEnumerable<string> sorted =
-            from entry in distances
+            from entry in similarity
             where entry.Value >= minRelevance
             orderby entry.Value descending
             select entry.Key;
@@ -98,7 +127,7 @@ public class SimpleVectorDb : IVectorDb
         {
             if (count++ < limit)
             {
-                yield return (records[id], distances[id]);
+                yield return (records[id], similarity[id]);
             }
         }
     }
@@ -116,7 +145,17 @@ public class SimpleVectorDb : IVectorDb
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        IDictionary<string, string> list = await this._fileSystem.ReadAllFilesAsTextAsync(index, "", cancellationToken).ConfigureAwait(false);
+        IDictionary<string, string> list;
+        try
+        {
+            list = await this._fileSystem.ReadAllFilesAsTextAsync(index, "", cancellationToken).ConfigureAwait(false);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Index doesn't exist
+            list = new Dictionary<string, string>();
+        }
+
         foreach (KeyValuePair<string, string> v in list)
         {
             var record = JsonSerializer.Deserialize<MemoryRecord>(v.Value);
@@ -129,12 +168,6 @@ public class SimpleVectorDb : IVectorDb
                 yield return record;
             }
         }
-    }
-
-    /// <inheritdoc />
-    public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
-    {
-        return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />

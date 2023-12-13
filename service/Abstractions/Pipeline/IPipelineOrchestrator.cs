@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -121,17 +120,32 @@ public interface IPipelineOrchestrator
     Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get list of embedding generators to use during the ingestion, e.g. to create
-    /// multiple vectors.
-    /// TODO: remove and inject dependency to handlers who need this
+    /// Whether the pipeline generates and saves the vectors/embeddings in the memory DBs.
+    /// When using a memory DB that automatically generates embeddings internally,
+    /// or performs semantic search internally anyway, this should be False,
+    /// and avoid generating embeddings that are not used.
+    /// Examples:
+    /// * you are using Azure AI Search "semantic search" without "vector search": in this
+    ///   case you don't need embeddings because Azure AI Search uses a more advanced approach
+    ///   internally.
+    /// * you are using a custom Memory DB connector that generates embeddings on the fly
+    ///   when writing records and when searching: in this case you don't need the pipeline
+    ///   to calculate embeddings, because your connector does all the work.
+    /// * you are using a basic "text search" and a DB without "vector search": in this case
+    ///   embeddings would be unused so it's better to disable them to save cost and latency.
     /// </summary>
-    List<ITextEmbeddingGeneration> GetEmbeddingGenerators();
+    bool EmbeddingGenerationEnabled { get; }
 
     /// <summary>
-    /// Get list of Vector DBs where to store embeddings.
-    /// TODO: remove and inject dependency to handlers who need this
+    /// Get list of embedding generators to use during the ingestion, e.g. to create
+    /// multiple vectors.
     /// </summary>
-    List<IVectorDb> GetVectorDbs();
+    List<ITextEmbeddingGenerator> GetEmbeddingGenerators();
+
+    /// <summary>
+    /// Get list of memory DBs where to store embeddings.
+    /// </summary>
+    List<IMemoryDb> GetMemoryDbs();
 
     /// <summary>
     /// Get the text generator used for prompts, synthetic data, answer generation, etc.
@@ -139,7 +153,7 @@ public interface IPipelineOrchestrator
     /// TODO: support multiple generators, for different tasks, with different cost/quality.
     /// </summary>
     /// <returns>Instance of the text generator</returns>
-    ITextGeneration GetTextGenerator();
+    ITextGenerator GetTextGenerator();
 
     /// <summary>
     /// Start an asynchronous job, via handlers, to delete a specified index

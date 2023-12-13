@@ -22,6 +22,14 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
+## Repository Guidance
+
+This repository is a public resource designed to showcase best practices and efficient architecture
+for specific programming scenarios. Although bug fixes and secure, scalable enhancements are part
+of our focus, rigorous reviews and strategic considerations of the code are recommended before
+production use. Similar to the nature of AI development, the project will rapidly evolve. We warmly
+welcome you to participate in the development of Kernel Memory. Feel free to contribute opening
+GitHub Issues, sending us PRs, and joining our Discord community. Thank you and happy coding!
 
 ### Packages for Python, Java and other languages
 
@@ -57,7 +65,7 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Abstractions)](https://www.nuget.org/packages/Microsoft.KernelMemory.Abstractions/)
 
-### Supported data formats
+### Data formats
 
 * MS Word documents
 * MS Excel spreadsheets
@@ -70,19 +78,27 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 * Raw plain text
 * [..] more coming :-)
 
-### Supported backends
+### Backends
+
+* 🧠 AI
+    * [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models)
+    * [OpenAI](https://platform.openai.com/docs/models)
+    * LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp)
+    * [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
 
 * ↗️ Vector storage
-    * Azure AI Search
-    * Qdrant
+    * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
+    * [Qdrant](https://qdrant.tech)
     * In memory KNN vectors (volatile)
+
 * 📀 Content storage
-    * Azure Blobs
+    * [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction)
     * Local file system
     * In memory, volatile content
+
 * ⏳ Asynchronous ingestion queues
-    * Azure Queues
-    * RabbitMQ
+    * [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction)
+    * [RabbitMQ](https://www.rabbitmq.com)
     * Local file based queue
     * In memory queues (volatile)
 
@@ -94,15 +110,15 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 Kernel Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Kernel Memory also serverless, embedding the `MemoryServerlessClient`
-in your app.
+However, you can use Kernel Memory also serverless, embedding the `MemoryServerless`
+class in your app.
 
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
 > ```csharp
 > var memory = new KernelMemoryBuilder()
 >     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
->     .Build();
+>     .Build<MemoryServerless>();
 >
 > // Import a file
 > await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
@@ -131,7 +147,7 @@ The code leverages the default documents ingestion pipeline:
 2. Partition the text in small chunks, to optimize search
 3. Extract embedding using an LLM embedding generator
 4. Save embedding into a vector index such as
-   [Azure Cognitive Search](https://learn.microsoft.com/en-us/azure/search/vector-search-overview),
+   [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
    [Qdrant](https://qdrant.tech/) or other DBs.
 
 Documents are organized by users, safeguarding their private information.
@@ -209,7 +225,7 @@ to **start the Kernel Memory Service**:
 > ### On WSL / Linux / MacOS:
 >
 > ```shell
-> cd dotnet/Service
+> cd service/Service
 > ./setup.sh
 > ./run.sh
 > ```
@@ -217,7 +233,7 @@ to **start the Kernel Memory Service**:
 > ### On Windows:
 >
 > ```shell
-> cd dotnet\Service
+> cd service\Service
 > setup.cmd
 > run.cmd
 > ```
@@ -225,7 +241,7 @@ to **start the Kernel Memory Service**:
 > ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
 >
 > ```csharp
-> #reference dotnet/ClientLib/ClientLib.csproj
+> #reference clients/WebClient/WebClient.csproj
 >
 > var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 >
@@ -319,7 +335,9 @@ running the service locally with OpenAPI enabled.
 7. [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
 8. [Custom partitioning/text chunking options](examples/102-dotnet-custom-partitioning-options)
 9. [Using a custom embedding/vector generator](examples/103-dotnet-custom-EmbeddingGenerator)
-10. [Using Llama and other custom LLMs](examples/104-dotnet-custom-LLM)
+10. [Using custom LLMs](examples/104-dotnet-custom-LLM)
+11. [Using LLama](examples/105-dotnet-serverless-llamasharp)
+12. [Summarizing documents](examples/106-dotnet-retrieve-synthetics)
 11. [Natural language to SQL examples](examples/200-dotnet-nl2sql)
 12. [Writing and using a custom ingestion handler](examples/201-dotnet-InProcessMemoryWithCustomHandler)
 13. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-CustomHandlerAsAService)

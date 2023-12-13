@@ -26,10 +26,12 @@ public static class Main
     private static BoundedBoolean s_cfgAzureOpenAIText = new();
     private static BoundedBoolean s_cfgAzureOpenAIEmbedding = new();
     private static BoundedBoolean s_cfgOpenAI = new();
-    private static BoundedBoolean s_cfgAzureOCR = new();
+    private static BoundedBoolean s_cfgLlamaSharp = new();
+    private static BoundedBoolean s_cfgAzureAIDocIntel = new();
 
     // Vectors
-    private static BoundedBoolean s_cfgAzureCognitiveSearch = new();
+    private static BoundedBoolean s_cfgEmbeddingGenerationEnabled = new();
+    private static BoundedBoolean s_cfgAzureAISearch = new();
     private static BoundedBoolean s_cfgQdrant = new();
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
@@ -54,10 +56,12 @@ public static class Main
         s_cfgAzureOpenAIText = new();
         s_cfgAzureOpenAIEmbedding = new();
         s_cfgOpenAI = new();
-        s_cfgAzureOCR = new();
+        s_cfgLlamaSharp = new();
+        s_cfgAzureAIDocIntel = new();
 
         // Vectors
-        s_cfgAzureCognitiveSearch = new();
+        s_cfgEmbeddingGenerationEnabled = new(initialState: true);
+        s_cfgAzureAISearch = new();
         s_cfgQdrant = new();
         s_cfgSimpleVectorDb = new();
 
@@ -82,16 +86,16 @@ public static class Main
 
             // Image support
             OCRSetup();
-            AzureCognitiveFormSetup();
+            AzureAIDocIntelSetup();
 
             // Embedding generation
             EmbeddingGeneratorTypeSetup();
             AzureOpenAIEmbeddingSetup();
             OpenAISetup();
 
-            // Embedding storage
-            VectorDbTypeSetup();
-            AzureCognitiveSearchSetup();
+            // Memory DB
+            MemoryDbTypeSetup();
+            AzureAISearchSetup();
             QdrantSetup();
             SimpleVectorDbSetup();
 
@@ -99,6 +103,7 @@ public static class Main
             TextGeneratorTypeSetup();
             AzureOpenAITextSetup();
             OpenAISetup();
+            LlamaSharpSetup();
 
             LoggerSetup();
         }
@@ -127,6 +132,35 @@ public static class Main
                 {
                     AppSettings.Change(x => { x.Service.RunWebService = false; });
                     s_cfgOpenAPI.Value = false;
+                }),
+                new("-exit-", SetupUI.Exit),
+            }
+        });
+
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "Protect the web service with API Keys?",
+            Options = new List<Answer>
+            {
+                new("Yes", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.ServiceAuthorization.Enabled = true;
+                        x.ServiceAuthorization.HttpHeaderName = "Authorization";
+                        x.ServiceAuthorization.AccessKey1 = SetupUI.AskPassword("API Key 1 (min 32 chars, alphanumeric ('- . _' allowed))", x.ServiceAuthorization.AccessKey1);
+                        x.ServiceAuthorization.AccessKey2 = SetupUI.AskPassword("API Key 2 (min 32 chars, alphanumeric ('- . _' allowed))", x.ServiceAuthorization.AccessKey2);
+                    });
+                }),
+                new("No", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.ServiceAuthorization.Enabled = false;
+                        x.ServiceAuthorization.HttpHeaderName = "Authorization";
+                        x.ServiceAuthorization.AccessKey1 = "";
+                        x.ServiceAuthorization.AccessKey2 = "";
+                    });
                 }),
                 new("-exit-", SetupUI.Exit),
             }
@@ -205,7 +239,25 @@ public static class Main
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "When searching for answers, which embedding generator should be used for the question?",
+            Title = "When importing data, generate embeddings, or let the memory Db class take care of it?",
+            Options = new List<Answer>
+            {
+                new("Yes, generate embeddings", () =>
+                {
+                    AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = true);
+                    s_cfgEmbeddingGenerationEnabled.Value = true;
+                }),
+                new("No, my memory Db class/engine takes care of it", () =>
+                {
+                    AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = false);
+                    s_cfgEmbeddingGenerationEnabled.Value = false;
+                })
+            }
+        });
+
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+        {
+            Title = "When searching for text and/or answers, which embedding generator should be used for vector search?",
             Options = new List<Answer>
             {
                 new("Azure OpenAI embedding model", () =>
@@ -213,7 +265,9 @@ public static class Main
                     AppSettings.Change(x =>
                     {
                         x.Retrieval.EmbeddingGeneratorType = "AzureOpenAIEmbedding";
-                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string> { x.Retrieval.EmbeddingGeneratorType };
+                        x.DataIngestion.EmbeddingGeneratorTypes = s_cfgEmbeddingGenerationEnabled.Value
+                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
+                            : new List<string> { };
                     });
                     s_cfgAzureOpenAIEmbedding.Value = true;
                 }),
@@ -222,9 +276,19 @@ public static class Main
                     AppSettings.Change(x =>
                     {
                         x.Retrieval.EmbeddingGeneratorType = "OpenAI";
-                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string> { x.Retrieval.EmbeddingGeneratorType };
+                        x.DataIngestion.EmbeddingGeneratorTypes = s_cfgEmbeddingGenerationEnabled.Value
+                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
+                            : new List<string> { };
                     });
                     s_cfgOpenAI.Value = true;
+                }),
+                new("None/Custom (manually set with code)", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "";
+                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string> { };
+                    });
                 }),
                 new("-exit-", SetupUI.Exit),
             }
@@ -235,7 +299,7 @@ public static class Main
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "When generating synthetic data and answers, which LLM text generator should be used?",
+            Title = "When generating answers and synthetic data, which LLM text generator should be used?",
             Options = new List<Answer>
             {
                 new("Azure OpenAI text/chat model", () =>
@@ -247,6 +311,15 @@ public static class Main
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "OpenAI"; });
                     s_cfgOpenAI.Value = true;
+                }),
+                new("LLama model", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
+                    s_cfgLlamaSharp.Value = true;
+                }),
+                new("None/Custom (manually set with code)", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = ""; });
                 }),
                 new("-exit-", SetupUI.Exit),
             }
@@ -341,6 +414,29 @@ public static class Main
         });
     }
 
+    private static void LlamaSharpSetup()
+    {
+        if (!s_cfgLlamaSharp.Value) { return; }
+
+        s_cfgLlamaSharp.Value = false;
+        const string ServiceName = "LlamaSharp";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "ModelPath", "" },
+                { "MaxTokenTotal", 4096 },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "ModelPath", SetupUI.AskOpenQuestion("Path to model .gguf file", config.TryGet("ModelPath")) },
+            { "MaxTokenTotal", SetupUI.AskOpenQuestion("Max tokens supported by the model", config.TryGet("MaxTokenTotal")) },
+        });
+    }
+
     private static void OCRSetup()
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
@@ -350,24 +446,24 @@ public static class Main
             {
                 new("None", () =>
                 {
-                    AppSettings.Change(x => { x.ImageOcrType = "None"; });
+                    AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "None"; });
                 }),
-                new("Azure Form Recognizer", () =>
+                new("Azure AI Document Intelligence", () =>
                 {
-                    AppSettings.Change(x => { x.ImageOcrType = "AzureFormRecognizer"; });
-                    s_cfgAzureOCR.Value = true;
+                    AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "AzureAIDocIntel"; });
+                    s_cfgAzureAIDocIntel.Value = true;
                 }),
                 new("-exit-", SetupUI.Exit),
             }
         });
     }
 
-    private static void AzureCognitiveFormSetup()
+    private static void AzureAIDocIntelSetup()
     {
-        if (!s_cfgAzureOCR.Value) { return; }
+        if (!s_cfgAzureAIDocIntel.Value) { return; }
 
-        s_cfgAzureOCR.Value = false;
-        const string ServiceName = "AzureFormRecognizer";
+        s_cfgAzureAIDocIntel.Value = false;
+        const string ServiceName = "AzureAIDocIntel";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -382,8 +478,8 @@ public static class Main
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Services <endpoint>", config["Endpoint"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure Cognitive Services <API Key>", config["APIKey"].ToString()) },
+            { "Endpoint", SetupUI.AskOpenQuestion("Azure AI <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Azure AI <API Key>", config["APIKey"].ToString()) },
         });
     }
 
@@ -429,7 +525,7 @@ public static class Main
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "RabbitMQ"; });
                         s_cfgRabbitMq.Value = true;
                     }),
-                new("SimpleQueues (local file system, only for tests)",
+                new("SimpleQueues (only for tests, data stored in memory or disk, see config file)",
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
@@ -449,7 +545,11 @@ public static class Main
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
-            config = new Dictionary<string, object> { { "Directory", "" } };
+            config = new Dictionary<string, object>
+            {
+                { "Directory", "" },
+                { "StorageType", "Volatile" }
+            };
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
@@ -524,7 +624,7 @@ public static class Main
                     AppSettings.Change(x => { x.ContentStorageType = "AzureBlobs"; });
                     s_cfgAzureBlobs.Value = true;
                 }),
-                new("SimpleFileStorage (local file system)", () =>
+                new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)", () =>
                 {
                     AppSettings.Change(x => { x.ContentStorageType = "SimpleFileStorage"; });
                     s_cfgSimpleFileStorage.Value = true;
@@ -543,7 +643,11 @@ public static class Main
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
-            config = new Dictionary<string, object> { { "Directory", "" } };
+            config = new Dictionary<string, object>
+            {
+                { "Directory", "" },
+                { "StorageType", "Volatile" }
+            };
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
@@ -579,38 +683,47 @@ public static class Main
         });
     }
 
-    private static void VectorDbTypeSetup()
+    private static void MemoryDbTypeSetup()
     {
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "When searching for answers, which vector DB service contains embeddings to search?",
+            Title = "When searching for answers, which memory DB service contains the records to search?",
             Options = new List<Answer>
             {
-                new("Azure Cognitive Search", () =>
+                new("Azure AI Search", () =>
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "AzureCognitiveSearch";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                        x.Retrieval.MemoryDbType = "AzureAISearch";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
-                    s_cfgAzureCognitiveSearch.Value = true;
+                    s_cfgAzureAISearch.Value = true;
                 }),
                 new("Qdrant", () =>
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "Qdrant";
-                        x.DataIngestion.VectorDbTypes = new List<string> { x.Retrieval.VectorDbType };
+                        x.Retrieval.MemoryDbType = "Qdrant";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
                     s_cfgQdrant.Value = true;
                 }),
-                new("SimpleVectorDb (file based vector DB, only for tests)", () =>
+                new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)", () =>
                 {
                     AppSettings.Change(x =>
                     {
-                        x.Retrieval.VectorDbType = "SimpleVectorDb";
+                        x.Retrieval.MemoryDbType = "SimpleVectorDb";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
                     });
                     s_cfgSimpleVectorDb.Value = true;
+                }),
+                new("None/Custom (manually set in code)", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.MemoryDbType = "";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { };
+                    });
                 }),
                 new("-exit-", SetupUI.Exit),
             }
@@ -626,7 +739,11 @@ public static class Main
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
-            config = new Dictionary<string, object> { { "Directory", "" } };
+            config = new Dictionary<string, object>
+            {
+                { "Directory", "" },
+                { "StorageType", "Volatile" }
+            };
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
@@ -635,12 +752,12 @@ public static class Main
         });
     }
 
-    private static void AzureCognitiveSearchSetup()
+    private static void AzureAISearchSetup()
     {
-        if (!s_cfgAzureCognitiveSearch.Value) { return; }
+        if (!s_cfgAzureAISearch.Value) { return; }
 
-        s_cfgAzureCognitiveSearch.Value = false;
-        const string ServiceName = "AzureCognitiveSearch";
+        s_cfgAzureAISearch.Value = false;
+        const string ServiceName = "AzureAISearch";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -655,8 +772,8 @@ public static class Main
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure Cognitive Search <endpoint>", config["Endpoint"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure Cognitive Search <API Key>", config["APIKey"].ToString()) },
+            { "Endpoint", SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()) },
+            { "APIKey", SetupUI.AskPassword("Azure AI Search <API Key>", config["APIKey"].ToString()) },
         });
     }
 

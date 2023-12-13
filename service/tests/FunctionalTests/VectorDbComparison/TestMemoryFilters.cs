@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
@@ -28,23 +26,25 @@ public class TestMemoryFilters
     public async Task TestFilters()
     {
         // Booleans used for investigating test failures
-        const bool deleteIndex = true;
-        const bool createIndex = true;
-        const bool createRecords = true;
+        const bool DeleteIndex = true;
+        const bool CreateIndex = true;
+        const bool CreateRecords = true;
 
-        var acs = new AzureCognitiveSearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!);
+        var embeddingGenerator = new FakeEmbeddingGenerator();
+
+        var acs = new AzureAISearchMemory(
+            this._cfg.GetSection("Services").GetSection("AzureAISearch")
+                .Get<AzureAISearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!);
+                .Get<QdrantConfig>()!, embeddingGenerator);
 
         var simpleVecDb = new SimpleVectorDb(
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!);
+                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
 
-        if (deleteIndex)
+        if (DeleteIndex)
         {
             await acs.DeleteIndexAsync(IndexName);
             await qdrant.DeleteIndexAsync(IndexName);
@@ -52,14 +52,14 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        if (createIndex)
+        if (CreateIndex)
         {
             await acs.CreateIndexAsync(IndexName, 3);
             await qdrant.CreateIndexAsync(IndexName, 3);
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
 
-        if (createRecords)
+        if (CreateRecords)
         {
             var records = new Dictionary<string, MemoryRecord>
             {
@@ -82,7 +82,7 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        this._log.WriteLine($"\n\n\n----- Azure Cognitive Search -----");
+        this._log.WriteLine($"\n\n\n----- Azure AI Search -----");
         await this.TestVectorDbFiltering(acs);
         this._log.WriteLine($"\n\n\n----- Qdrant vector DB -----");
         await this.TestVectorDbFiltering(qdrant);
@@ -90,7 +90,7 @@ public class TestMemoryFilters
         await this.TestVectorDbFiltering(simpleVecDb);
     }
 
-    private async Task TestVectorDbFiltering(IVectorDb vectorDb)
+    private async Task TestVectorDbFiltering(IMemoryDb vectorDb)
     {
         // Single memory filter
         var singleFilter = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee") };

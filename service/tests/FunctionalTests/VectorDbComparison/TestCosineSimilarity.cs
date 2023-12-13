@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureCognitiveSearch;
+using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
@@ -25,41 +23,43 @@ public class TestCosineSimilarity
     [Fact]
     public async Task CompareCosineSimilarity()
     {
-        const string indexName = "tests";
-        const bool acsEnabled = true;
-        const bool qdrantEnabled = true;
+        const string IndexName = "tests";
+        const bool AzSearchEnabled = true;
+        const bool QdrantEnabled = true;
 
         // == Ctors
 
-        var acs = new AzureCognitiveSearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureCognitiveSearch")
-                .Get<AzureCognitiveSearchConfig>()!);
+        var embeddingGenerator = new FakeEmbeddingGenerator();
+
+        var acs = new AzureAISearchMemory(
+            this._cfg.GetSection("Services").GetSection("AzureAISearch")
+                .Get<AzureAISearchConfig>()!, embeddingGenerator);
 
         var qdrant = new QdrantMemory(
             this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!);
+                .Get<QdrantConfig>()!, embeddingGenerator);
 
         var simpleVecDb = new SimpleVectorDb(
             this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!);
+                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
 
         // == Delete indexes left over
 
-        if (acsEnabled) { await acs.DeleteIndexAsync(indexName); }
+        if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
 
-        if (qdrantEnabled) { await qdrant.DeleteIndexAsync(indexName); }
+        if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
 
-        await simpleVecDb.DeleteIndexAsync(indexName);
+        await simpleVecDb.DeleteIndexAsync(IndexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
 
         // == Create indexes
 
-        if (acsEnabled) { await acs.CreateIndexAsync(indexName, 3); }
+        if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
 
-        if (qdrantEnabled) { await qdrant.CreateIndexAsync(indexName, 3); }
+        if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
 
-        await simpleVecDb.CreateIndexAsync(indexName, 3);
+        await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
         // == Insert data
 
@@ -76,11 +76,11 @@ public class TestCosineSimilarity
 
         foreach (KeyValuePair<string, MemoryRecord> r in records)
         {
-            if (acsEnabled) { await acs.UpsertAsync(indexName, r.Value); }
+            if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
 
-            if (qdrantEnabled) { await qdrant.UpsertAsync(indexName, r.Value); }
+            if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
 
-            await simpleVecDb.UpsertAsync(indexName, r.Value);
+            await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(2));
@@ -88,28 +88,33 @@ public class TestCosineSimilarity
         // == Search by similarity
 
         var target = new[] { 0.01f, 0.5f, 0.41f };
+        embeddingGenerator.Mock("text01", target);
+
         IAsyncEnumerable<(MemoryRecord, double)> acsList;
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
-            acsList = acs.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            acsList = acs.GetSimilarListAsync(
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
-            qdrantList = qdrant.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+            qdrantList = qdrant.GetSimilarListAsync(
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
-        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(indexName, target, limit: 10, withEmbeddings: true);
+        IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
+            index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
 
         List<(MemoryRecord, double)> acsResults;
         List<(MemoryRecord, double)> qdrantResults;
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
             acsResults = await acsList.ToListAsync();
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
             qdrantResults = await qdrantList.ToListAsync();
         }
@@ -118,42 +123,39 @@ public class TestCosineSimilarity
 
         // == Test results
 
-        const double precision = 0.000001d;
+        const double Precision = 0.000001d;
 
-        if (acsEnabled)
+        if (AzSearchEnabled)
         {
-            this._log.WriteLine($"Azure Cognitive Search: {acsResults.Count} results");
-            foreach ((MemoryRecord, double) r in acsResults)
+            this._log.WriteLine($"Azure AI Search: {acsResults.Count} results");
+            foreach ((MemoryRecord? memoryRecord, double actual) in acsResults)
             {
-                var actual = r.Item2;
-                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
                 var diff = expected - actual;
-                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-                Assert.True(Math.Abs(diff) < precision);
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < Precision);
             }
         }
 
-        if (qdrantEnabled)
+        if (QdrantEnabled)
         {
             this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
-            foreach ((MemoryRecord, double) r in qdrantResults)
+            foreach ((MemoryRecord memoryRecord, double actual) in qdrantResults)
             {
-                var actual = r.Item2;
-                var expected = CosineSim(target, records[r.Item1.Id].Vector);
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
                 var diff = expected - actual;
-                this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-                Assert.True(Math.Abs(diff) < precision);
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < Precision);
             }
         }
 
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
-        foreach ((MemoryRecord, double) r in simpleVecDbResults)
+        foreach ((MemoryRecord memoryRecord, double actual) in simpleVecDbResults)
         {
-            var actual = r.Item2;
-            var expected = CosineSim(target, records[r.Item1.Id].Vector);
+            var expected = CosineSim(target, records[memoryRecord.Id].Vector);
             var diff = expected - actual;
-            this._log.WriteLine($" - ID: {r.Item1.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-            Assert.True(Math.Abs(diff) < precision);
+            this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+            Assert.True(Math.Abs(diff) < Precision);
         }
     }
 

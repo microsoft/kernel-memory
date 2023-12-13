@@ -6,7 +6,6 @@ using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-// ReSharper disable InconsistentNaming
 public class FilteringTest : BaseTestCase
 {
     public FilteringTest(
@@ -20,10 +19,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItSupportsASingleFilter(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
@@ -88,10 +87,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItSupportsMultipleFilters(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
@@ -171,10 +170,10 @@ public class FilteringTest : BaseTestCase
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]
     [InlineData("qdrant")]
-    [InlineData("acs")]
+    [InlineData("az_ai_search")]
     public async Task ItIgnoresEmptyFilters(string memoryType)
     {
-        var memory = this.GetMemory(memoryType);
+        var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
@@ -193,6 +192,12 @@ public class FilteringTest : BaseTestCase
         while (!await memory.IsDocumentReadyAsync(documentId: Id, index: indexName))
         {
             this.Log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        // Extra delay for Azure AI Search, to let the index populate
+        if (memoryType == "az_ai_search")
+        {
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 

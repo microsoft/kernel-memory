@@ -12,29 +12,54 @@ public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithSimpleVectorDb(this IKernelMemoryBuilder builder, SimpleVectorDbConfig? config = null)
     {
-        builder.Services.AddSimpleVectorDbAsVectorDb(config ?? new SimpleVectorDbConfig());
+        builder.Services.AddSimpleVectorDbAsMemoryDb(config ?? new SimpleVectorDbConfig());
         return builder;
     }
 
     public static IKernelMemoryBuilder WithSimpleVectorDb(this IKernelMemoryBuilder builder, string directory)
     {
-        builder.Services.AddSimpleVectorDbAsVectorDb(directory);
+        builder.Services.AddSimpleVectorDbAsMemoryDb(directory);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithSimpleTextDb(this IKernelMemoryBuilder builder, SimpleTextDbConfig? config = null)
+    {
+        builder.Services.AddSimpleTextDbAsMemoryDb(config ?? new SimpleTextDbConfig());
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithSimpleTextDb(this IKernelMemoryBuilder builder, string directory)
+    {
+        builder.Services.AddSimpleTextDbAsMemoryDb(directory);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddSimpleVectorDbAsVectorDb(this IServiceCollection services, SimpleVectorDbConfig? config = null)
+    public static IServiceCollection AddSimpleVectorDbAsMemoryDb(this IServiceCollection services, SimpleVectorDbConfig? config = null)
     {
         return services
             .AddSingleton<SimpleVectorDbConfig>(config ?? new SimpleVectorDbConfig())
-            .AddSingleton<IVectorDb, SimpleVectorDb>();
+            .AddSingleton<IMemoryDb, SimpleVectorDb>();
     }
 
-    public static IServiceCollection AddSimpleVectorDbAsVectorDb(this IServiceCollection services, string directory)
+    public static IServiceCollection AddSimpleVectorDbAsMemoryDb(this IServiceCollection services, string directory)
     {
         var config = new SimpleVectorDbConfig { StorageType = FileSystemTypes.Disk, Directory = directory };
-        return services.AddSimpleVectorDbAsVectorDb(config);
+        return services.AddSimpleVectorDbAsMemoryDb(config);
+    }
+
+    public static IServiceCollection AddSimpleTextDbAsMemoryDb(this IServiceCollection services, SimpleTextDbConfig? config = null)
+    {
+        return services
+            .AddSingleton<SimpleTextDbConfig>(config ?? new SimpleTextDbConfig())
+            .AddSingleton<IMemoryDb, SimpleTextDb>();
+    }
+
+    public static IServiceCollection AddSimpleTextDbAsMemoryDb(this IServiceCollection services, string directory)
+    {
+        var config = new SimpleTextDbConfig { StorageType = FileSystemTypes.Disk, Directory = directory };
+        return services.AddSimpleTextDbAsMemoryDb(config);
     }
 }

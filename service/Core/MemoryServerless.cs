@@ -23,14 +23,14 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public class MemoryServerless : IKernelMemory
 {
-    private readonly SearchClient _searchClient;
+    private readonly ISearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
 
     public InProcessPipelineOrchestrator Orchestrator => this._orchestrator;
 
     public MemoryServerless(
         InProcessPipelineOrchestrator orchestrator,
-        SearchClient searchClient)
+        ISearchClient searchClient)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
@@ -129,9 +129,12 @@ public class MemoryServerless : IKernelMemory
         var uri = new Uri(url);
         Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
 
-        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
-        return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />

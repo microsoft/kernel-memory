@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -19,13 +18,13 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
 
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
-        List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
-        ITextGeneration textGenerator,
+        List<ITextEmbeddingGenerator> embeddingGenerators,
+        List<IMemoryDb> memoryDbs,
+        ITextGenerator textGenerator,
         KernelMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
     }
 

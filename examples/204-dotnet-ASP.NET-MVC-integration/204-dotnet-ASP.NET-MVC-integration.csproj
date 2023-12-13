@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <NoWarn>CS8625,CA1050</NoWarn>
+        <NoWarn>$(NoWarn);CS8625,CA1050</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

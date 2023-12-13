@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Handlers;
 
 var memoryBuilder = new KernelMemoryBuilder()
     // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
-    // .WithAzureCognitiveSearch(Env.Var("ACS_ENDPOINT"), Env.Var("ACS_API_KEY")) => To use Azure Cognitive Search
+    // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY")) => To use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333") => To use Qdrant docker
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
 
@@ -37,8 +37,8 @@ await orchestrator.AddHandlerAsync(summarizeEmbedding);
 GenerateEmbeddingsHandler textEmbedding = new("gen_embeddings", orchestrator);
 await orchestrator.AddHandlerAsync(textEmbedding);
 
-SaveEmbeddingsHandler saveEmbedding = new("save_embeddings", orchestrator);
-await orchestrator.AddHandlerAsync(saveEmbedding);
+SaveRecordsHandler saveRecords = new("save_records", orchestrator);
+await orchestrator.AddHandlerAsync(saveRecords);
 
 // orchestrator.AddHandlerAsync(...);
 // orchestrator.AddHandlerAsync(...);
@@ -56,7 +56,7 @@ var pipeline = orchestrator
     .Then("partition")
     .Then("summarize")
     .Then("gen_embeddings")
-    .Then("save_embeddings")
+    .Then("save_records")
     .Build();
 
 // Execute pipeline

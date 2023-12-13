@@ -86,6 +86,13 @@ public sealed class DataPipeline
         public ArtifactTypes ArtifactType { get; set; } = ArtifactTypes.Undefined;
 
         /// <summary>
+        /// File tags. Note, the data structure allows file tags to differ from the document tags.
+        /// </summary>
+        [JsonPropertyOrder(5)]
+        [JsonPropertyName("tags")]
+        public TagCollection Tags { get; set; } = new();
+
+        /// <summary>
         /// List of handlers who have already processed this file
         /// </summary>
         [JsonPropertyOrder(17)]
@@ -146,6 +153,14 @@ public sealed class DataPipeline
         [JsonPropertyOrder(14)]
         [JsonPropertyName("parent_id")]
         public string ParentId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// ID of the partition used to generate this file (if the file is derived from a partition)
+        /// </summary>
+        [JsonPropertyOrder(15)]
+        [JsonPropertyName("source_partition_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string SourcePartitionId { get; set; } = string.Empty;
 
         /// <summary>
         /// Deduplication hash used for consolidation tasks
@@ -225,6 +240,9 @@ public sealed class DataPipeline
     [JsonPropertyName("completed_steps")]
     public List<string> CompletedSteps { get; set; } = new();
 
+    /// <summary>
+    /// Document tags
+    /// </summary>
     [JsonPropertyOrder(7)]
     [JsonPropertyName("tags")]
     public TagCollection Tags { get; set; } = new();

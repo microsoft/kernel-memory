@@ -13,7 +13,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteDocumentHandler : IPipelineStepHandler
 {
-    private readonly List<IVectorDb> _vectorDbs;
+    private readonly List<IMemoryDb> _memoryDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteDocumentHandler> _log;
 
@@ -22,12 +22,12 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     public DeleteDocumentHandler(
         string stepName,
         IContentStorage contentStorage,
-        List<IVectorDb> vectorDbs,
+        List<IMemoryDb> memoryDbs,
         ILogger<DeleteDocumentHandler>? log = null)
     {
         this.StepName = stepName;
         this._contentStorage = contentStorage;
-        this._vectorDbs = vectorDbs;
+        this._memoryDbs = memoryDbs;
         this._log = log ?? DefaultLogger<DeleteDocumentHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
@@ -40,7 +40,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
         this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         // Delete embeddings
-        foreach (IVectorDb db in this._vectorDbs)
+        foreach (IMemoryDb db in this._memoryDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 index: pipeline.Index,
@@ -48,7 +48,7 @@ public class DeleteDocumentHandler : IPipelineStepHandler
                 filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
                 cancellationToken: cancellationToken);
 
-            await foreach (var record in records.WithCancellation(cancellationToken))
+            await foreach (var record in records.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 await db.DeleteAsync(index: pipeline.Index, record, cancellationToken: cancellationToken).ConfigureAwait(false);
             }

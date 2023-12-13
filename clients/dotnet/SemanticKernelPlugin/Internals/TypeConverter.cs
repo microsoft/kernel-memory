@@ -27,9 +27,9 @@ internal sealed class TypeConverter : System.ComponentModel.TypeConverter
     /// This method is used to convert object from string to actual type. This will allow to pass object to
     /// native function which requires it.
     /// </summary>
-    public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+    public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
     {
-        return JsonSerializer.Deserialize<TagCollectionWrapper>((string)value);
+        return value == null ? null : JsonSerializer.Deserialize<TagCollectionWrapper>((string)value);
     }
 
     /// <summary>

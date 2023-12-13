@@ -4,67 +4,168 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.KernelMemory.AI.Tokenizers;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static IKernelMemoryBuilder WithOpenAIDefaults(this IKernelMemoryBuilder builder, string apiKey, string? organization = null)
-    {
-        builder.Services.AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new OpenAITextEmbeddingGeneration(
-            modelId: "text-embedding-ada-002",
-            apiKey: apiKey,
-            organization: organization,
-            loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+    private const string DefaultEmbeddingModel = "text-embedding-ada-002";
+    private const int DefaultEmbeddingModelMaxToken = 8_191;
+    private const string DefaultTextModel = "gpt-3.5-turbo-16k";
+    private const int DefaultTextModelMaxToken = 16_384;
 
-        builder.Services.AddSingleton<ITextGeneration>(serviceProvider =>
-            new OpenAITextGeneration(new OpenAIConfig
-            {
-                TextModel = "gpt-3.5-turbo-16k", EmbeddingModel = "text-embedding-ada-002", APIKey = apiKey, OrgId = organization
-            }));
+    /// <summary>
+    /// Use default OpenAI models (3.5-Turbo and Ada-002) and settings for ingestion and retrieval.
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="apiKey">OpenAI API Key</param>
+    /// <param name="organization">OpenAI Organization ID (usually not required)</param>
+    /// <param name="textGenerationTokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <param name="textEmbeddingTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    /// <param name="loggerFactory">.NET Logger factory</param>
+    /// <param name="onlyForRetrieval">Whether to use OpenAI defaults only for ingestion, and not for retrieval (search and ask API)</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAIDefaults(
+        this IKernelMemoryBuilder builder,
+        string apiKey,
+        string? organization = null,
+        ITextTokenizer? textGenerationTokenizer = null,
+        ITextTokenizer? textEmbeddingTokenizer = null,
+        ILoggerFactory? loggerFactory = null,
+        bool onlyForRetrieval = false)
+    {
+        textGenerationTokenizer ??= new DefaultGPTTokenizer();
+        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
+
+        var openAIConfig = new OpenAIConfig
+        {
+            TextModel = DefaultTextModel,
+            TextModelMaxTokenTotal = DefaultEmbeddingModelMaxToken,
+            EmbeddingModel = DefaultEmbeddingModel,
+            EmbeddingModelMaxTokenTotal = DefaultTextModelMaxToken,
+            APIKey = apiKey,
+            OrgId = organization
+        };
+        openAIConfig.Validate();
+
+        builder.Services.AddOpenAITextEmbeddingGeneration(openAIConfig, textEmbeddingTokenizer);
+        builder.Services.AddOpenAITextGeneration(openAIConfig, textGenerationTokenizer);
+
+        if (!onlyForRetrieval)
+        {
+            builder.AddIngestionEmbeddingGenerator(new OpenAITextEmbeddingGenerator(
+                config: openAIConfig,
+                textTokenizer: textEmbeddingTokenizer,
+                loggerFactory: loggerFactory));
+        }
 
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithOpenAI(this IKernelMemoryBuilder builder, OpenAIConfig config)
+    /// <summary>
+    /// Use OpenAI models for ingestion and retrieval
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="textGenerationTokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <param name="textEmbeddingTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    /// <param name="onlyForRetrieval">Whether to use OpenAI only for ingestion, not for retrieval (search and ask API)</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAI(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        ITextTokenizer? textGenerationTokenizer = null,
+        ITextTokenizer? textEmbeddingTokenizer = null,
+        bool onlyForRetrieval = false)
     {
-        builder.WithOpenAITextEmbedding(config);
-        builder.WithOpenAITextGeneration(config);
+        config.Validate();
+        textGenerationTokenizer ??= new DefaultGPTTokenizer();
+        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
+
+        builder.WithOpenAITextEmbeddingGeneration(config, textEmbeddingTokenizer, onlyForRetrieval);
+        builder.WithOpenAITextGeneration(config, textGenerationTokenizer);
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithOpenAITextEmbedding(this IKernelMemoryBuilder builder, OpenAIConfig config)
+    /// <summary>
+    /// Use OpenAI to generate text embedding.
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="textTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    /// <param name="onlyForRetrieval">Whether to use OpenAI only for ingestion, not for retrieval (search and ask API)</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAITextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        bool onlyForRetrieval = false)
     {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         builder.Services.AddOpenAITextEmbeddingGeneration(config);
+        if (!onlyForRetrieval)
+        {
+            builder.AddIngestionEmbeddingGenerator(
+                new OpenAITextEmbeddingGenerator(config, textTokenizer, loggerFactory: null));
+        }
+
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithOpenAITextGeneration(this IKernelMemoryBuilder builder, OpenAIConfig config)
+    /// <summary>
+    /// Use OpenAI to generate text, e.g. answers and summaries.
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="textTokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAITextGeneration(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
     {
-        builder.Services.AddOpenAITextGeneration(config);
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
+        builder.Services.AddOpenAITextGeneration(config, textTokenizer);
         return builder;
     }
 }
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddOpenAITextEmbeddingGeneration(this IServiceCollection services, OpenAIConfig config)
+    public static IServiceCollection AddOpenAITextEmbeddingGeneration(
+        this IServiceCollection services,
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
     {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         return services
-            .AddSingleton<ITextEmbeddingGeneration>(serviceProvider => new OpenAITextEmbeddingGeneration(
-                modelId: config.EmbeddingModel,
-                apiKey: config.APIKey,
-                organization: config.OrgId,
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+            .AddSingleton<ITextEmbeddingGenerator>(
+                serviceProvider => new OpenAITextEmbeddingGenerator(
+                    config: config,
+                    textTokenizer: textTokenizer,
+                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
-    public static IServiceCollection AddOpenAITextGeneration(this IServiceCollection services, OpenAIConfig config)
+    public static IServiceCollection AddOpenAITextGeneration(
+        this IServiceCollection services,
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null)
     {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
         return services
-            .AddSingleton<OpenAIConfig>(config)
-            .AddSingleton<ITextGeneration, OpenAITextGeneration>();
+            .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
+                config: config,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 }

@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>CA1050</NoWarn>
+        <NoWarn>$(NoWarn);CA1050</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

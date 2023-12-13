@@ -253,20 +253,19 @@ public class AzureBlobsStorage : IContentStorage
         this._log.LogTrace("Writing blob {0} ...", blobName);
 
         long size;
-        if (content is string fileContent)
+        switch (content)
         {
-            await blobClient.UploadAsync(BinaryData.FromString(fileContent), options, cancellationToken).ConfigureAwait(false);
-            size = fileContent.Length;
-        }
-        else if (content is Stream stream)
-        {
-            stream.Seek(0, SeekOrigin.Begin);
-            await blobClient.UploadAsync(stream, options, cancellationToken).ConfigureAwait(false);
-            size = stream.Length;
-        }
-        else
-        {
-            throw new ContentStorageException($"Unexpected object type {content.GetType().FullName}");
+            case string fileContent:
+                await blobClient.UploadAsync(BinaryData.FromString(fileContent), options, cancellationToken).ConfigureAwait(false);
+                size = fileContent.Length;
+                break;
+            case Stream stream:
+                stream.Seek(0, SeekOrigin.Begin);
+                await blobClient.UploadAsync(stream, options, cancellationToken).ConfigureAwait(false);
+                size = stream.Length;
+                break;
+            default:
+                throw new ContentStorageException($"Unexpected object type {content.GetType().FullName}");
         }
 
         if (size == 0)
@@ -289,7 +288,7 @@ public class AzureBlobsStorage : IContentStorage
         this._log.LogInformation("Deleting blobs at {0}", prefix);
 
         AsyncPageable<BlobItem>? blobList = this._containerClient.GetBlobsAsync(prefix: prefix, cancellationToken: cancellationToken);
-        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken))
+        await foreach (Page<BlobItem> page in blobList.AsPages().WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             foreach (BlobItem blob in page.Values)
             {

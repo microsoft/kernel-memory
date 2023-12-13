@@ -2,59 +2,62 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Search;
 
-public class SearchClient
+public class SearchClient : ISearchClient
 {
-    private const int MaxMatchesCount = 100;
-    private const int AnswerTokens = 300;
-
-    private readonly IVectorDb _vectorDb;
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
-    private readonly ITextGeneration _textGenerator;
+    private readonly IMemoryDb _memoryDb;
+    private readonly ITextGenerator _textGenerator;
+    private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
 
     public SearchClient(
-        IVectorDb vectorDb,
-        ITextEmbeddingGeneration embeddingGenerator,
-        ITextGeneration textGenerator,
+        IMemoryDb memoryDb,
+        ITextGenerator textGenerator,
+        SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
-        this._vectorDb = vectorDb;
-        this._embeddingGenerator = embeddingGenerator;
+        this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
+        this._config = config ?? new SearchClientConfig();
+        this._config.Validate();
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
 
         this._log = log ?? DefaultLogger<SearchClient>.Instance;
 
-        if (this._embeddingGenerator == null) { throw new KernelMemoryException("Embedding generator not configured"); }
+        if (this._memoryDb == null)
+        {
+            throw new KernelMemoryException("Search memory DB not configured");
+        }
 
-        if (this._vectorDb == null) { throw new KernelMemoryException("Search vector DB not configured"); }
-
-        if (this._textGenerator == null) { throw new KernelMemoryException("Text generator not configured"); }
+        if (this._textGenerator == null)
+        {
+            throw new KernelMemoryException("Text generator not configured");
+        }
     }
 
+    /// <inheritdoc />
     public Task<IEnumerable<string>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
-        return this._vectorDb.GetIndexesAsync(cancellationToken);
+        return this._memoryDb.GetIndexesAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string index,
         string query,
@@ -63,7 +66,7 @@ public class SearchClient
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
-        if (limit <= 0) { limit = MaxMatchesCount; }
+        if (limit <= 0) { limit = this._config.MaxMatchesCount; }
 
         var result = new SearchResult
         {
@@ -71,26 +74,49 @@ public class SearchClient
             Results = new List<Citation>()
         };
 
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrWhiteSpace(query) && (filters == null || filters.Count == 0))
         {
-            this._log.LogWarning("No query provided");
+            this._log.LogWarning("No query or filters provided");
             return result;
         }
 
-        var embedding = await this.GenerateEmbeddingAsync(query).ConfigureAwait(false);
+        var list = new List<(MemoryRecord memory, double relevance)>();
+        if (!string.IsNullOrEmpty(query))
+        {
+            this._log.LogTrace("Fetching relevant memories by similarity, min relevance {0}", minRelevance);
+            IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+                index: index,
+                text: query,
+                filters: filters,
+                minRelevance: minRelevance,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
 
-        this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
-            index: index,
-            embedding: embedding,
-            filters: filters,
-            minRelevance: minRelevance,
-            limit: limit,
-            withEmbeddings: false,
-            cancellationToken: cancellationToken);
+            // Memories are sorted by relevance, starting from the most relevant
+            await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, relevance));
+            }
+        }
+        else
+        {
+            this._log.LogTrace("Fetching relevant memories by filtering");
+            IAsyncEnumerable<MemoryRecord> matches = this._memoryDb.GetListAsync(
+                index: index,
+                filters: filters,
+                limit: limit,
+                withEmbeddings: false,
+                cancellationToken: cancellationToken);
+
+            await foreach (MemoryRecord memory in matches.ConfigureAwait(false))
+            {
+                list.Add((memory, float.MinValue));
+            }
+        }
 
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
+        foreach ((MemoryRecord memory, double relevance) in list)
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
@@ -126,7 +152,10 @@ public class SearchClient
                 continue;
             }
 
-            this._log.LogTrace("Adding result with relevance {0}", relevance);
+            if (relevance > float.MinValue)
+            {
+                this._log.LogTrace("Adding result with relevance {0}", relevance);
+            }
 
             // If the file is already in the list of citations, only add the partition
             var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
@@ -162,6 +191,7 @@ public class SearchClient
         return result;
     }
 
+    /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(
         string index,
         string question,
@@ -175,15 +205,18 @@ public class SearchClient
             return new MemoryAnswer
             {
                 Question = question,
-                Result = "INFO NOT FOUND",
+                Result = this._config.EmptyAnswer,
             };
         }
 
         var facts = new StringBuilder();
-        var tokensAvailable = 8000
-                              - GPT3Tokenizer.Encode(this._answerPrompt).Count
-                              - GPT3Tokenizer.Encode(question).Count
-                              - AnswerTokens;
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
+        var tokensAvailable = maxTokens
+                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(question)
+                              - this._config.AnswerTokens;
 
         var factsUsedCount = 0;
         var factsAvailableCount = 0;
@@ -191,23 +224,21 @@ public class SearchClient
         var answer = new MemoryAnswer
         {
             Question = question,
-            Result = "INFO NOT FOUND",
+            Result = this._config.EmptyAnswer,
         };
 
-        var embedding = await this.GenerateEmbeddingAsync(question).ConfigureAwait(false);
-
         this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._vectorDb.GetSimilarListAsync(
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
             index: index,
-            embedding: embedding,
+            text: question,
             filters: filters,
             minRelevance: minRelevance,
-            limit: MaxMatchesCount,
+            limit: this._config.MaxMatchesCount,
             withEmbeddings: false,
             cancellationToken: cancellationToken);
 
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.WithCancellation(cancellationToken))
+        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
             if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
             {
@@ -248,7 +279,7 @@ public class SearchClient
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
-            var size = GPT3Tokenizer.Encode(fact).Count;
+            var size = this._textGenerator.CountTokens(fact);
             if (size >= tokensAvailable)
             {
                 // Stop after reaching the max number of tokens
@@ -300,26 +331,27 @@ public class SearchClient
         }
 
         var text = new StringBuilder();
-        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString()).ConfigureAwait(false))
+        var charsGenerated = 0;
+        var watch = new Stopwatch();
+        watch.Restart();
+        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
+                           .WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
+
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
         }
+
+        watch.Stop();
+        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
 
         return answer;
-    }
-
-    private async Task<Embedding> GenerateEmbeddingAsync(string text)
-    {
-        this._log.LogTrace("Generating embedding for the query");
-        var embeddings = await this._embeddingGenerator.GenerateEmbeddingsAsync(new List<string> { text }).ConfigureAwait(false);
-        if (embeddings.Count == 0)
-        {
-            throw new KernelMemoryException("Failed to generate embedding for the given question");
-        }
-
-        return embeddings.First();
     }
 
     private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
@@ -331,6 +363,25 @@ public class SearchClient
         question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
 
-        return this._textGenerator.GenerateTextAsync(prompt, new TextGenerationOptions());
+        // TODO: receive options from API: https://github.com/microsoft/kernel-memory/issues/137
+        var options = new TextGenerationOptions
+        {
+            // Temperature = 0,
+            // TopP = 0,
+            // PresencePenalty = 0,
+            // FrequencyPenalty = 0,
+            MaxTokens = this._config.AnswerTokens,
+            // StopSequences = null,
+            // TokenSelectionBiases = null
+        };
+
+        if (this._log.IsEnabled(LogLevel.Debug))
+        {
+            this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
+                this._textGenerator.CountTokens(prompt),
+                this._config.AnswerTokens);
+        }
+
+        return this._textGenerator.GenerateTextAsync(prompt, options);
     }
 }

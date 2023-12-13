@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory;
 
@@ -76,18 +76,18 @@ public interface IKernelMemoryBuilder
     public IKernelMemoryBuilder WithoutDefaultHandlers();
 
     /// <summary>
-    /// Add a vector DB to the list of DBs used during the ingestion.
+    /// Add a memory DB to the list of DBs used during the ingestion.
     /// Note: it's possible writing to multiple DBs, all of them are used during the ingestion.
     /// </summary>
-    /// <param name="service">Vector DB instance</param>
-    public IKernelMemoryBuilder AddIngestionVectorDb(IVectorDb service);
+    /// <param name="service">Memory DB instance</param>
+    public IKernelMemoryBuilder AddIngestionMemoryDb(IMemoryDb service);
 
     /// <summary>
     /// Add an embedding generator to the list of generators used during the ingestion.
     /// Note: it's possible using multiple generators, all of them are used during the ingestion.
     /// </summary>
     /// <param name="service">Embedding generator instance</param>
-    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGeneration service);
+    public IKernelMemoryBuilder AddIngestionEmbeddingGenerator(ITextEmbeddingGenerator service);
 
     /// <summary>
     /// Return an instance of the pipeline orchestrator, usually required by custom handlers.

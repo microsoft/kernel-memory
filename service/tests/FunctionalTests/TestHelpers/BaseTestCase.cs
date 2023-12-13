@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -18,7 +19,7 @@ public abstract class BaseTestCase : IDisposable
     protected IConfiguration ServiceConfiguration => this.Configuration.GetSection("Services");
     protected IConfiguration OpenAIConfiguration => this.ServiceConfiguration.GetSection("OpenAI");
     protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
-    protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureCognitiveSearch");
+    protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureAISearch");
 
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
     {
@@ -27,7 +28,14 @@ public abstract class BaseTestCase : IDisposable
         Console.SetOut(this._output);
     }
 
-    protected IKernelMemory GetMemory(string memoryType)
+    protected IKernelMemory GetMemoryWebClient()
+    {
+        string endpoint = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("Endpoint", "http://127.0.0.1:9001/")!;
+        string? apiKey = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("AccessKey");
+        return new MemoryWebClient(endpoint, apiKey: apiKey);
+    }
+
+    protected IKernelMemory GetServerlessMemory(string memoryType)
     {
         var openAIKey = this.OpenAIConfiguration.GetValue<string>("APIKey")
                         ?? throw new TestCanceledException("OpenAI API key is missing");
@@ -61,19 +69,37 @@ public abstract class BaseTestCase : IDisposable
                     .WithQdrant(qdrantEndpoint)
                     .Build<MemoryServerless>();
 
-            case "acs":
+            case "az_ai_search":
                 var acsEndpoint = this.AzureAISearchConfiguration.GetValue<string>("Endpoint");
                 var acsKey = this.AzureAISearchConfiguration.GetValue<string>("APIKey");
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
                 Assert.False(string.IsNullOrEmpty(acsKey));
                 return new KernelMemoryBuilder()
                     .WithOpenAIDefaults(openAIKey)
-                    .WithAzureCognitiveSearch(acsEndpoint, acsKey)
+                    .WithAzureAISearch(acsEndpoint, acsKey)
                     .Build<MemoryServerless>();
 
             default:
                 throw new ArgumentOutOfRangeException($"{memoryType} not supported");
         }
+    }
+
+    // Find the "Fixtures" directory (inside the project, requires source code)
+    protected string? FindFixturesDir()
+    {
+        // start from the location of the executing assembly, and traverse up max 5 levels
+        var path = Path.GetDirectoryName(Path.GetFullPath(Assembly.GetExecutingAssembly().Location));
+        for (var i = 0; i < 5; i++)
+        {
+            Console.WriteLine($"Checking '{path}'");
+            var test = Path.Join(path, "Fixtures");
+            if (Directory.Exists(test)) { return test; }
+
+            // up one level
+            path = Path.GetDirectoryName(path);
+        }
+
+        return null;
     }
 
     public void Dispose()
@@ -82,16 +108,16 @@ public abstract class BaseTestCase : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected void Log(string text)
-    {
-        this._output.WriteLine(text);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
             this._output.Dispose();
         }
+    }
+
+    protected void Log(string text)
+    {
+        this._output.WriteLine(text);
     }
 }
