@@ -140,10 +140,13 @@ public class SearchClient : ISearchClient
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             // TODO: URL to access the file
-            string linkToFile = $"{documentId}/{fileId}";
+            string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
             string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+
+            // URL the source, used for web pages and external data
+            string sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString() ?? string.Empty;
 
             var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
@@ -166,10 +169,13 @@ public class SearchClient : ISearchClient
             }
 
             // Add the partition to the list of citations
+            citation.Index = index;
+            citation.DocumentId = documentId;
+            citation.FileId = fileId;
             citation.Link = linkToFile;
             citation.SourceContentType = fileContentType;
             citation.SourceName = fileName;
-            citation.Tags = memory.Tags;
+            citation.SourceUrl = sourceUrl;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
             DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
@@ -180,6 +186,7 @@ public class SearchClient : ISearchClient
                 Text = partitionText,
                 Relevance = (float)relevance,
                 LastUpdate = lastUpdate,
+                Tags = memory.Tags,
             });
         }
 
@@ -262,10 +269,13 @@ public class SearchClient : ISearchClient
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             // TODO: URL to access the file
-            string linkToFile = $"{documentId}/{fileId}";
+            string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
             string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+
+            // URL the source, used for web pages and external data
+            string sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString() ?? string.Empty;
 
             factsAvailableCount++;
             var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
@@ -301,10 +311,13 @@ public class SearchClient : ISearchClient
             }
 
             // Add the partition to the list of citations
+            citation.Index = index;
+            citation.DocumentId = documentId;
+            citation.FileId = fileId;
             citation.Link = linkToFile;
             citation.SourceContentType = fileContentType;
             citation.SourceName = fileName;
-            citation.Tags = memory.Tags;
+            citation.SourceUrl = sourceUrl;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
             DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
@@ -315,6 +328,7 @@ public class SearchClient : ISearchClient
                 Text = partitionText,
                 Relevance = (float)relevance,
                 LastUpdate = lastUpdate,
+                Tags = memory.Tags,
             });
         }
 

@@ -117,11 +117,13 @@ public class SaveRecordsHandler : IPipelineStepHandler
             }
 
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
+            string url = await this.GetSourceUrlAsync(pipeline, pipeline.GetFile(file.File.ParentId), cancellationToken).ConfigureAwait(false);
 
             var record = PrepareRecord(
                 pipeline: pipeline,
                 recordId: file.RecordId,
                 fileName: pipeline.GetFile(file.File.ParentId).Name,
+                url: url,
                 fileId: file.File.ParentId,
                 partitionFileId: file.File.SourcePartitionId,
                 partitionContent: partitionContent,
@@ -166,11 +168,13 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 case MimeTypes.MarkDown:
 
                     string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, file.File.Name, cancellationToken).ConfigureAwait(false);
+                    string url = await this.GetSourceUrlAsync(pipeline, pipeline.GetFile(file.File.ParentId), cancellationToken).ConfigureAwait(false);
 
                     var record = PrepareRecord(
                         pipeline: pipeline,
                         recordId: file.RecordId,
                         fileName: pipeline.GetFile(file.File.ParentId).Name,
+                        url: url,
                         fileId: file.File.ParentId,
                         partitionFileId: file.File.Id,
                         partitionContent: partitionContent,
@@ -243,10 +247,26 @@ public class SaveRecordsHandler : IPipelineStepHandler
             .Select(x => new FileDetailsWithRecordId(pipeline, x.Value)));
     }
 
+    private async Task<string> GetSourceUrlAsync(
+        DataPipeline pipeline,
+        DataPipeline.FileDetails file,
+        CancellationToken cancellationToken)
+    {
+        if (file.MimeType != MimeTypes.WebPageUrl)
+        {
+            return string.Empty;
+        }
+
+        BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken)
+            .ConfigureAwait(false);
+        return fileContent.ToString();
+    }
+
     private static MemoryRecord PrepareRecord(
         DataPipeline pipeline,
         string recordId,
         string fileName,
+        string url,
         string fileId,
         string partitionFileId,
         string partitionContent,
@@ -270,6 +290,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
         // Original file name, useful for context, e.g. "NASA-August-2043.pdf"
         record.Payload.Add(Constants.ReservedPayloadFileNameField, fileName);
+
+        // Web page URL, used when importing from a URL (the file name is not useful in that case)
+        record.Payload.Add(Constants.ReservedPayloadUrlField, url);
 
         // File type, e.g. "application/pdf" - Can be used for filtering by file type
         record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(fileId).MimeType);
