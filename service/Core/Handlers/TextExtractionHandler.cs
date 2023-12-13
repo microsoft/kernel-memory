@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -153,7 +154,19 @@ public class TextExtractionHandler : IPipelineStepHandler
 
             case MimeTypes.Pdf:
                 this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
-                text = new PdfDecoder().DocToText(fileContent);
+
+                // TODO: carry over page numbers, e.g. using special tokens
+                var pages = new PdfDecoder().DocToText(fileContent);
+                var textBuilder = new StringBuilder();
+                foreach (var page in pages)
+                {
+                    textBuilder.Append(page.Text.Trim());
+                    textBuilder.AppendLine();
+                    textBuilder.AppendLine();
+                }
+
+                text = textBuilder.ToString().Trim();
+
                 break;
 
             case MimeTypes.WebPageUrl:

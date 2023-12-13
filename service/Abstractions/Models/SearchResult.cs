@@ -20,6 +20,20 @@ public class SearchResult
     public string Query { get; set; } = string.Empty;
 
     /// <summary>
+    /// Whether the search didn't return any result
+    /// </summary>
+    [JsonPropertyName("noResult")]
+    [JsonPropertyOrder(2)]
+    public bool NoResult
+    {
+        get
+        {
+            return this.Results.Count == 0;
+        }
+        private set { }
+    }
+
+    /// <summary>
     /// List of the relevant sources used to produce the answer.
     /// Key = Document ID
     /// Value = List of partitions used from the document.

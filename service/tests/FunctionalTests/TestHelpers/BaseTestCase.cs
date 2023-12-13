@@ -12,6 +12,8 @@ namespace FunctionalTests.TestHelpers;
 
 public abstract class BaseTestCase : IDisposable
 {
+    protected const string NotFound = "INFO NOT FOUND";
+
     private readonly IConfiguration _cfg;
     private readonly RedirectConsole _output;
 
@@ -44,11 +46,13 @@ public abstract class BaseTestCase : IDisposable
         {
             case "default":
                 return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .Build<MemoryServerless>();
 
             case "simple_on_disk":
                 return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "_vectors", StorageType = FileSystemTypes.Disk })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "_files", StorageType = FileSystemTypes.Disk })
@@ -56,6 +60,7 @@ public abstract class BaseTestCase : IDisposable
 
             case "simple_volatile":
                 return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
@@ -65,6 +70,7 @@ public abstract class BaseTestCase : IDisposable
                 var qdrantEndpoint = this.QdrantConfiguration.GetValue<string>("Endpoint");
                 Assert.False(string.IsNullOrEmpty(qdrantEndpoint));
                 return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .WithQdrant(qdrantEndpoint)
                     .Build<MemoryServerless>();
@@ -75,6 +81,7 @@ public abstract class BaseTestCase : IDisposable
                 Assert.False(string.IsNullOrEmpty(acsEndpoint));
                 Assert.False(string.IsNullOrEmpty(acsKey));
                 return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .WithAzureAISearch(acsEndpoint, acsKey)
                     .Build<MemoryServerless>();

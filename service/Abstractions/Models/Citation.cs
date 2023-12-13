@@ -8,60 +8,69 @@ namespace Microsoft.KernelMemory;
 
 public class Citation
 {
-    private TagCollection _tags = new();
-
     /// <summary>
     /// Link to the source, if available.
     /// </summary>
     [JsonPropertyName("link")]
     [JsonPropertyOrder(1)]
-
     public string Link { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Link to the source, if available.
+    /// </summary>
+    [JsonPropertyName("index")]
+    [JsonPropertyOrder(2)]
+    public string Index { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Link to the source, if available.
+    /// </summary>
+    [JsonPropertyName("documentId")]
+    [JsonPropertyOrder(3)]
+    public string DocumentId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Link to the source, if available.
+    /// </summary>
+    [JsonPropertyName("fileId")]
+    [JsonPropertyOrder(4)]
+    public string FileId { get; set; } = string.Empty;
 
     /// <summary>
     /// Type of source, e.g. PDF, Word, Chat, etc.
     /// </summary>
     [JsonPropertyName("sourceContentType")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(5)]
     public string SourceContentType { get; set; } = string.Empty;
 
     /// <summary>
     /// Name of the source, e.g. file name.
     /// </summary>
     [JsonPropertyName("sourceName")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(6)]
     public string SourceName { get; set; } = string.Empty;
+
+#pragma warning disable CA1056
+    /// <summary>
+    /// URL of the source, used for web pages and external data
+    /// </summary>
+    [JsonPropertyName("sourceUrl")]
+    [JsonPropertyOrder(7)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceUrl { get; set; } = null;
+#pragma warning restore CA1056
 
     /// <summary>
     /// List of chunks/blocks of text used.
     /// </summary>
     [JsonPropertyName("partitions")]
-    [JsonPropertyOrder(4)]
+    [JsonPropertyOrder(8)]
     public List<Partition> Partitions { get; set; } = new();
-
-    /// <summary>
-    /// List of document tags
-    /// </summary>
-    [JsonPropertyName("tags")]
-    [JsonPropertyOrder(5)]
-    public TagCollection Tags
-    {
-        get { return this._tags; }
-        set
-        {
-            this._tags = new();
-            foreach (KeyValuePair<string, List<string?>> tag in value)
-            {
-                // Exclude internal tags
-                if (tag.Key.StartsWith(Constants.ReservedTagsPrefix, StringComparison.OrdinalIgnoreCase)) { continue; }
-
-                this._tags[tag.Key] = tag.Value;
-            }
-        }
-    }
 
     public class Partition
     {
+        private TagCollection _tags = new();
+
         /// <summary>
         /// Content of the document partition, aka chunk/block of text.
         /// </summary>
@@ -81,7 +90,27 @@ public class Citation
         /// Timestamp about the file/text partition.
         /// </summary>
         [JsonPropertyName("lastUpdate")]
-        [JsonPropertyOrder(4)]
+        [JsonPropertyOrder(10)]
         public DateTimeOffset LastUpdate { get; set; } = DateTimeOffset.MinValue;
+
+        /// <summary>
+        /// List of document tags
+        /// </summary>
+        [JsonPropertyName("tags")]
+        [JsonPropertyOrder(100)]
+        public TagCollection Tags
+        {
+            get { return this._tags; }
+            set
+            {
+                this._tags = new();
+                foreach (KeyValuePair<string, List<string?>> tag in value)
+                {
+                    // Exclude internal tags
+                    // if (tag.Key.StartsWith(Constants.ReservedTagsPrefix, StringComparison.OrdinalIgnoreCase)) { continue; }
+                    this._tags[tag.Key] = tag.Value;
+                }
+            }
+        }
     }
 }
