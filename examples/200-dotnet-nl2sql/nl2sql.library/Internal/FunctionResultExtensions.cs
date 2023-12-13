@@ -8,7 +8,7 @@ namespace SemanticKernel.Data.Nl2Sql.Library.Internal;
 
 internal static class FunctionResultExtensions
 {
-    private static readonly HashSet<char> s_delimetersResult = new() { '\'', '"', '`' };
+    private static readonly HashSet<char> s_delimitersResult = new() { '\'', '"', '`' };
 
     public static string ParseValue(this FunctionResult result, string? label = null)
     {
@@ -17,7 +17,7 @@ internal static class FunctionResultExtensions
             return string.Empty;
         }
 
-        var resultText = TrimDelimeters(result.GetValue<string>() ?? string.Empty);
+        var resultText = TrimDelimiters(result.GetValue<string>() ?? string.Empty);
 
         if (!string.IsNullOrWhiteSpace(label))
         {
@@ -32,12 +32,12 @@ internal static class FunctionResultExtensions
         return resultText;
     }
 
-    private static string TrimDelimeters(string expression)
+    private static string TrimDelimiters(string expression)
     {
         for (var index = 0; index < expression.Length; ++index)
         {
-            if (s_delimetersResult.Contains(expression[index]) &&
-                s_delimetersResult.Contains(expression[expression.Length - index - 1]))
+            if (s_delimitersResult.Contains(expression[index]) &&
+                s_delimitersResult.Contains(expression[expression.Length - index - 1]))
             {
                 continue;
             }
