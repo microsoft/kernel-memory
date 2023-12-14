@@ -510,10 +510,13 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                     => ActivatorUtilities.CreateInstance<SaveRecordsHandler>(serviceProvider, "save_records"));
 
                 this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.DeleteDocumentPipelineStepName));
+                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.PipelineStepsDeleteDocument));
 
                 this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.DeleteIndexPipelineStepName));
+                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.PipelineStepsDeleteIndex));
+
+                this._memoryServiceCollection.AddTransient<DeleteGeneratedFilesHandler>(serviceProvider
+                    => ActivatorUtilities.CreateInstance<DeleteGeneratedFilesHandler>(serviceProvider, Constants.PipelineStepsDeleteGeneratedFiles));
             }
 
             var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
@@ -544,6 +547,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 memoryClientInstance.AddHandler(serviceProvider.GetService<SaveRecordsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveRecordsHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
                 memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
+                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteGeneratedFilesHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteGeneratedFilesHandler)));
             }
 
             return memoryClientInstance;
@@ -583,13 +587,14 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
             // Handlers - Register these handlers to run as hosted services in the caller app.
             // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
-            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>("extract");
-            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>("summarize");
-            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
-            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-            this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>("save_records");
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.DeleteDocumentPipelineStepName);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.DeleteIndexPipelineStepName);
+            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>(Constants.PipelineStepsExtract);
+            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>(Constants.PipelineStepsPartition);
+            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>(Constants.PipelineStepsGenEmbeddings);
+            this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>(Constants.PipelineStepsSaveRecords);
+            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>(Constants.PipelineStepsSummarize);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.PipelineStepsDeleteDocument);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
+            this._hostServiceCollection.AddHandlerAsHostedService<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
         }
 
         this.CheckForMissingDependencies();
