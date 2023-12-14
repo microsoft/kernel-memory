@@ -147,9 +147,12 @@ if (retrieval)
     answer = await memory.AskAsync(question);
     Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
+    // Show sources / citations
     foreach (var x in answer.RelevantSources)
     {
-        Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+        Console.WriteLine(x.SourceUrl != null
+            ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"
+            : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
     }
 
     if (useImages)
@@ -161,9 +164,12 @@ if (retrieval)
         answer = await memory.AskAsync(question);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
+        // Show sources / citations
         foreach (var x in answer.RelevantSources)
         {
-            Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+            Console.WriteLine(x.SourceUrl != null
+                ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"
+                : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
         }
     }
 
@@ -181,9 +187,12 @@ if (retrieval)
     answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Taylor"));
     Console.WriteLine($"\nTaylor Answer: {answer.Result}\n  Sources:\n");
 
+    // Show sources / citations
     foreach (var x in answer.RelevantSources)
     {
-        Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+        Console.WriteLine(x.SourceUrl != null
+            ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"
+            : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
     }
 
     Console.WriteLine("\n====================================\n");

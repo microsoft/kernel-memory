@@ -3,6 +3,6 @@ Facts:
 ======
 Given only the facts above, provide a comprehensive/detailed answer.
 You don't know where the knowledge comes from, just answer.
-If you don't have sufficient information, reply with 'INFO NOT FOUND'.
+If you don't have sufficient information, reply with '{{$notFound}}'.
 Question: {{$input}}
 Answer: 

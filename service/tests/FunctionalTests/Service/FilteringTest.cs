@@ -22,7 +22,6 @@ public class FilteringTest : BaseTestCase
     {
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "ItSupportsASingleFilter-file1-NASA-news.pdf";
-        const string NotFound = "INFO NOT FOUND";
         const string Found = "spacecraft";
 
         this.Log("Uploading document");
@@ -44,16 +43,19 @@ public class FilteringTest : BaseTestCase
         // Simple filter: unknown user cannot see the memory
         var answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName);
         this.Log(answer.Result);
+        Assert.True(answer.NoResult);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Simple filter: test AND logic: valid type + invalid user
         answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news").ByTag("user", "someone"), index: indexName);
         this.Log(answer.Result);
+        Assert.True(answer.NoResult);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Simple filter: test AND logic: invalid type + valid user
         answer = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "fact").ByTag("user", "owner"), index: indexName);
         this.Log(answer.Result);
+        Assert.True(answer.NoResult);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Simple filter: known user can see the memory

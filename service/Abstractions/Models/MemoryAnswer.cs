@@ -19,11 +19,23 @@ public class MemoryAnswer
     [JsonPropertyOrder(1)]
     public string Question { get; set; } = string.Empty;
 
+    [JsonPropertyName("noResult")]
+    [JsonPropertyOrder(2)]
+    public bool NoResult { get; set; } = true;
+
+    /// <summary>
+    /// Content of the answer.
+    /// </summary>
+    [JsonPropertyName("noResultReason")]
+    [JsonPropertyOrder(3)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? NoResultReason { get; set; }
+
     /// <summary>
     /// Content of the answer.
     /// </summary>
     [JsonPropertyName("text")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(10)]
     public string Result { get; set; } = string.Empty;
 
     /// <summary>
@@ -32,7 +44,7 @@ public class MemoryAnswer
     /// Value = List of partitions used from the document.
     /// </summary>
     [JsonPropertyName("relevantSources")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(20)]
     public List<Citation> RelevantSources { get; set; } = new();
 
     /// <summary>

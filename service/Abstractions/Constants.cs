@@ -39,6 +39,7 @@ public static class Constants
     // Properties stored inside the payload
     public const string ReservedPayloadTextField = "text";
     public const string ReservedPayloadFileNameField = "file";
+    public const string ReservedPayloadUrlField = "url";
     public const string ReservedPayloadLastUpdateField = "last_update";
     public const string ReservedPayloadVectorProviderField = "vector_provider";
     public const string ReservedPayloadVectorGeneratorField = "vector_generator";

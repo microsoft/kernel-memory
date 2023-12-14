@@ -47,8 +47,11 @@ Console.WriteLine("=========================");
 Console.WriteLine("=== Text in file1.pdf ===");
 Console.WriteLine("=========================");
 
-text = new PdfDecoder().DocToText("file1.pdf");
-Console.WriteLine(text);
+var pages = new PdfDecoder().DocToText("file1.pdf");
+foreach (var page in pages)
+{
+    Console.WriteLine(page.Text);
+}
 
 Console.WriteLine("============================");
 Console.WriteLine("Press a Enter to continue...");
@@ -59,5 +62,8 @@ Console.WriteLine("=========================");
 Console.WriteLine("=== Text in file2.pdf ===");
 Console.WriteLine("=========================");
 
-text = new PdfDecoder().DocToText("file2.pdf");
-Console.WriteLine(text);
+pages = new PdfDecoder().DocToText("file2.pdf");
+foreach (var page in pages)
+{
+    Console.WriteLine(page.Text);
+}
