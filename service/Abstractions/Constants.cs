@@ -68,14 +68,25 @@ public static class Constants
     public const string PipelineStepsDeleteIndex = "private_delete_index";
 
     // Pipeline steps
-    public static readonly string[] DefaultPipeline = PipelineWithoutSummary;
-    public static readonly string[] PipelineOnlySummary = { PipelineStepsExtract, PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords };
-    public static readonly string[] PipelineWithoutSummary = { PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords };
+    public static readonly string[] DefaultPipeline =
+    {
+        PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
+
+    public static readonly string[] PipelineWithoutSummary =
+    {
+        PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
 
     public static readonly string[] PipelineWithSummary =
     {
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords,
         PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
+
+    public static readonly string[] PipelineOnlySummary =
+    {
+        PipelineStepsExtract, PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
     };
 
     // Standard prompt names
