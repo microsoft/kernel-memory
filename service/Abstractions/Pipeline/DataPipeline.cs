@@ -368,12 +368,12 @@ public sealed class DataPipeline
 
     public bool IsDocumentDeletionPipeline()
     {
-        return this.Steps.Count == 1 && this.Steps.First() == Constants.DeleteDocumentPipelineStepName;
+        return this.Steps.Count == 1 && this.Steps.First() == Constants.PipelineStepsDeleteDocument;
     }
 
     public bool IsIndexDeletionPipeline()
     {
-        return this.Steps.Count == 1 && this.Steps.First() == Constants.DeleteIndexPipelineStepName;
+        return this.Steps.Count == 1 && this.Steps.First() == Constants.PipelineStepsDeleteIndex;
     }
 
     public void Validate()
