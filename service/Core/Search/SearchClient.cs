@@ -365,7 +365,7 @@ public class SearchClient : ISearchClient
         this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
-        answer.NoResult = string.Equals(answer.Result.Trim(), this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
+        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
         {
             answer.NoResultReason = "No relevant memories found";
@@ -405,5 +405,12 @@ public class SearchClient : ISearchClient
         }
 
         return this._textGenerator.GenerateTextAsync(prompt, options);
+    }
+
+    private static bool ValueIsEquivalentTo(string value, string target)
+    {
+        value = value.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
+        target = target.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
+        return string.Equals(value, target, StringComparison.OrdinalIgnoreCase);
     }
 }
