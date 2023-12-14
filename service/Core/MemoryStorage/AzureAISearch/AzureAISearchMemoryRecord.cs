@@ -96,13 +96,13 @@ public sealed class AzureAISearchMemoryRecord
         return result;
     }
 
-    private static string EncodeId(string realId)
+    internal static string EncodeId(string realId)
     {
         var bytes = Encoding.UTF8.GetBytes(realId);
         return Convert.ToBase64String(bytes).Replace('=', '_');
     }
 
-    private static string DecodeId(string encodedId)
+    internal static string DecodeId(string encodedId)
     {
         var bytes = Convert.FromBase64String(encodedId.Replace('_', '='));
         return Encoding.UTF8.GetString(bytes);
