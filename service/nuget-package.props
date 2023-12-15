@@ -1,7 +1,7 @@
 ﻿<Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.21.0</Version>
+        <Version>0.22.0</Version>
 
         <!-- Default description and tags. Packages can override. -->
         <Authors>Microsoft</Authors>
