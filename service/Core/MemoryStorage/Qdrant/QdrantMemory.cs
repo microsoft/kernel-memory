@@ -212,6 +212,25 @@ public class QdrantMemory : IMemoryDb
         await this._qdrantClient.DeleteVectorsAsync(index, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<MemoryRecord?> GetByDocumentIdAsync(
+        string index,
+        string id,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
+    {
+        index = this.NormalizeIndexName(index);
+
+        QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
+            .GetVectorByPayloadIdAsync(index, id, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        if (existingPoint == null)
+        {
+            return null;
+        }
+
+        return existingPoint.ToMemoryRecord();
+    }
+
     private string NormalizeIndexName(string index)
     {
         if (string.IsNullOrWhiteSpace(index))

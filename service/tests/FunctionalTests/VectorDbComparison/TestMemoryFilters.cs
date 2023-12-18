@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -74,15 +74,15 @@ public class TestMemoryFilters
 
             foreach (KeyValuePair<string, MemoryRecord> r in records)
             {
-                await acs.UpsertAsync(IndexName, r.Value);
-                await qdrant.UpsertAsync(IndexName, r.Value);
+                //await acs.UpsertAsync(IndexName, r.Value);
+                //await qdrant.UpsertAsync(IndexName, r.Value);
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        for (int i = 1; i <= 3; i++)
+        for (int i = 1; i <= 4; i++)
         {
             this._log.WriteLine("----- Azure AI Search -----");
             await this.TestVectorDbFiltering(acs, i);
@@ -141,6 +141,14 @@ public class TestMemoryFilters
             }
 
             Assert.Equal(4, multipleFiltersResults.Count);
+        }
+
+        // Test search by documentId
+        if (test == 4)
+        {
+            var documentId = "3";
+            var record = await vectorDb.GetByDocumentIdAsync(IndexName, documentId);
+            Assert.Equal(documentId, record?.Id);
         }
     }
 }

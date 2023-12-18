@@ -94,4 +94,19 @@ public interface IMemoryDb
         string index,
         MemoryRecord record,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a memory record from the data store. Does not guarantee that the collection exists.
+    /// </summary>
+    /// <param name="index">Index/Collection name</param>
+    /// <param name="id">The unique id associated with the memory record to get.</param>
+    /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The memory record if found, otherwise null.</returns>
+    Task<MemoryRecord?> GetByDocumentIdAsync(
+        string index,
+        string id,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default);
+
 }
