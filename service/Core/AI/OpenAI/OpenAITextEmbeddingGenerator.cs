@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
 public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly OpenAITextEmbeddingGeneration _client;
+    private readonly OpenAITextEmbeddingGenerationService _client;
     private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
 
     public OpenAITextEmbeddingGenerator(
@@ -43,7 +43,7 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
 
-        this._client = new OpenAITextEmbeddingGeneration(
+        this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             apiKey: config.APIKey,
             organization: config.OrgId);
