@@ -43,6 +43,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
         Console.WriteLine("GPT3 token count: " + GPT3Tokenizer.Encode(text).Count);
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
 
+        // Note: value for llama-2-13b.Q2_K.gguf
         Assert.Equal(8, tokenCount);
     }
 
@@ -64,6 +65,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
         {
             MaxTokens = 30,
             Temperature = 0,
+            StopSequences = new List<string> { "Question" }
         };
 
         // Act

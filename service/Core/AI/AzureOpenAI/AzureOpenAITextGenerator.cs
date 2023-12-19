@@ -157,7 +157,7 @@ public class AzureOpenAITextGenerator : ITextGenerator
                 foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
             }
 
-            openaiOptions.Messages.Add(new ChatMessage(ChatRole.System, prompt));
+            openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));
 
             StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
             await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))

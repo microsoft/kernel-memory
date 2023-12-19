@@ -279,7 +279,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             DocumentId = string.Empty,
         };
 
-        return pipeline.Then(Constants.DeleteIndexPipelineStepName).Build();
+        return pipeline.Then(Constants.PipelineStepsDeleteIndex).Build();
     }
 
     protected static DataPipeline PrepareDocumentDeletion(string? index, string documentId)
@@ -295,7 +295,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             DocumentId = documentId,
         };
 
-        return pipeline.Then(Constants.DeleteDocumentPipelineStepName).Build();
+        return pipeline.Then(Constants.PipelineStepsDeleteDocument).Build();
     }
 
     protected async Task UploadFilesAsync(DataPipeline currentPipeline, CancellationToken cancellationToken = default)

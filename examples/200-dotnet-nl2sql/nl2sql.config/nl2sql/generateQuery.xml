@@ -1,0 +1,58 @@
+<message role="system">
+Generate a SQL SELECT query that is compatible with {{$data_platform}} and achieves the OBJECTIVE exclusively using only the tables and views described in "SCHEMA:".
+
+Only generate SQL if the OBJECTIVE can be answered by querying a database with tables described in SCHEMA.
+</message>
+<message role="system">
+Respond with only with valid SQL
+</message>
+<message role="user">
+SCHEMA:
+  description: historical record of concerts, stadiums and singers
+  tables:
+    - stadium:
+      columns:
+        Stadium_ID:
+        Location:
+        Name:
+        Capacity:
+        Highest:
+        Lowest:
+        Average:
+    - singer:
+      columns:
+        Singer_ID:
+        Name:
+        Country:
+        Song_Name:
+        Song_release_year:
+        Age:
+        Is_male:
+    - concert:
+      columns:
+        concert_ID:
+        concert_Name:
+        Theme:
+        Stadium_ID:
+        Year:
+    - singer_in_concert:
+      columns:
+        concert_ID:
+        Singer_ID:
+        references:
+  concert.Stadium_ID: stadium.Stadium_ID
+    references:
+    singer_in_concert.concert_ID: concert.concert_ID
+    singer_in_concert.Singer_ID: singer.Singer_ID
+
+OBJECTIVE: How many heads of the departments are older than 56 ?
+</message>
+<message role="assistant">
+select count(*) department_head_count from head where age > 56
+</message>
+<message role="user">
+SCHEMA:
+{{$data_schema}}
+
+OBJECTIVE: {{$data_objective}}
+</message>

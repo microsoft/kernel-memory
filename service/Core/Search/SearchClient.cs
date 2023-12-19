@@ -140,10 +140,13 @@ public class SearchClient : ISearchClient
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             // TODO: URL to access the file
-            string linkToFile = $"{documentId}/{fileId}";
+            string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
             string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+
+            // URL the source, used for web pages and external data. Null when empty.
+            string? sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString();
 
             var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
             if (string.IsNullOrEmpty(partitionText))
@@ -166,10 +169,13 @@ public class SearchClient : ISearchClient
             }
 
             // Add the partition to the list of citations
+            citation.Index = index;
+            citation.DocumentId = documentId;
+            citation.FileId = fileId;
             citation.Link = linkToFile;
             citation.SourceContentType = fileContentType;
             citation.SourceName = fileName;
-            citation.Tags = memory.Tags;
+            citation.SourceUrl = string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
             DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
@@ -180,6 +186,7 @@ public class SearchClient : ISearchClient
                 Text = partitionText,
                 Relevance = (float)relevance,
                 LastUpdate = lastUpdate,
+                Tags = memory.Tags,
             });
         }
 
@@ -199,14 +206,18 @@ public class SearchClient : ISearchClient
         double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
+        var noAnswerFound = new MemoryAnswer
+        {
+            Question = question,
+            NoResult = true,
+            Result = this._config.EmptyAnswer,
+        };
+
         if (string.IsNullOrEmpty(question))
         {
             this._log.LogWarning("No question provided");
-            return new MemoryAnswer
-            {
-                Question = question,
-                Result = this._config.EmptyAnswer,
-            };
+            noAnswerFound.NoResultReason = "No question provided";
+            return noAnswerFound;
         }
 
         var facts = new StringBuilder();
@@ -220,12 +231,7 @@ public class SearchClient : ISearchClient
 
         var factsUsedCount = 0;
         var factsAvailableCount = 0;
-
-        var answer = new MemoryAnswer
-        {
-            Question = question,
-            Result = this._config.EmptyAnswer,
-        };
+        var answer = noAnswerFound;
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
@@ -262,10 +268,13 @@ public class SearchClient : ISearchClient
             string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
 
             // TODO: URL to access the file
-            string linkToFile = $"{documentId}/{fileId}";
+            string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
             string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+
+            // URL the source, used for web pages and external data. Null when empty.
+            string? sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString();
 
             factsAvailableCount++;
             var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
@@ -301,10 +310,13 @@ public class SearchClient : ISearchClient
             }
 
             // Add the partition to the list of citations
+            citation.Index = index;
+            citation.DocumentId = documentId;
+            citation.FileId = fileId;
             citation.Link = linkToFile;
             citation.SourceContentType = fileContentType;
             citation.SourceName = fileName;
-            citation.Tags = memory.Tags;
+            citation.SourceUrl = string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl;
 
 #pragma warning disable CA1806 // it's ok if parsing fails
             DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
@@ -315,19 +327,22 @@ public class SearchClient : ISearchClient
                 Text = partitionText,
                 Relevance = (float)relevance,
                 LastUpdate = lastUpdate,
+                Tags = memory.Tags,
             });
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)
         {
             this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            return new MemoryAnswer { Question = question, Result = "INFO NOT FOUND" };
+            noAnswerFound.NoResultReason = "Unable to use memories";
+            return noAnswerFound;
         }
 
         if (factsUsedCount == 0)
         {
             this._log.LogWarning("No memories available");
-            return new MemoryAnswer { Question = question, Result = "INFO NOT FOUND" };
+            noAnswerFound.NoResultReason = "No memories available";
+            return noAnswerFound;
         }
 
         var text = new StringBuilder();
@@ -350,6 +365,11 @@ public class SearchClient : ISearchClient
         this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
+        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
+        if (answer.NoResult)
+        {
+            answer.NoResultReason = "No relevant memories found";
+        }
 
         return answer;
     }
@@ -362,6 +382,8 @@ public class SearchClient : ISearchClient
         question = question.Trim();
         question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
+
+        prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
         // TODO: receive options from API: https://github.com/microsoft/kernel-memory/issues/137
         var options = new TextGenerationOptions
@@ -383,5 +405,12 @@ public class SearchClient : ISearchClient
         }
 
         return this._textGenerator.GenerateTextAsync(prompt, options);
+    }
+
+    private static bool ValueIsEquivalentTo(string value, string target)
+    {
+        value = value.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
+        target = target.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
+        return string.Equals(value, target, StringComparison.OrdinalIgnoreCase);
     }
 }

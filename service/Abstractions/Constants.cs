@@ -39,6 +39,7 @@ public static class Constants
     // Properties stored inside the payload
     public const string ReservedPayloadTextField = "text";
     public const string ReservedPayloadFileNameField = "file";
+    public const string ReservedPayloadUrlField = "url";
     public const string ReservedPayloadLastUpdateField = "last_update";
     public const string ReservedPayloadVectorProviderField = "vector_provider";
     public const string ReservedPayloadVectorGeneratorField = "vector_generator";
@@ -56,15 +57,37 @@ public static class Constants
     public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
 
-    // Handlers
-    public const string DeleteDocumentPipelineStepName = "private_delete_document";
-    public const string DeleteIndexPipelineStepName = "private_delete_index";
+    // Pipeline Handlers, Step names
+    public const string PipelineStepsExtract = "extract";
+    public const string PipelineStepsPartition = "partition";
+    public const string PipelineStepsGenEmbeddings = "gen_embeddings";
+    public const string PipelineStepsSaveRecords = "save_records";
+    public const string PipelineStepsSummarize = "summarize";
+    public const string PipelineStepsDeleteGeneratedFiles = "delete_generated_files";
+    public const string PipelineStepsDeleteDocument = "private_delete_document";
+    public const string PipelineStepsDeleteIndex = "private_delete_index";
 
     // Pipeline steps
-    public static readonly string[] DefaultPipeline = { "extract", "partition", "gen_embeddings", "save_records" };
-    public static readonly string[] PipelineWithoutSummary = { "extract", "partition", "gen_embeddings", "save_records" };
-    public static readonly string[] PipelineWithSummary = { "extract", "partition", "gen_embeddings", "save_records", "summarize", "gen_embeddings", "save_records" };
-    public static readonly string[] PipelineOnlySummary = { "extract", "summarize", "gen_embeddings", "save_records" };
+    public static readonly string[] DefaultPipeline =
+    {
+        PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
+
+    public static readonly string[] PipelineWithoutSummary =
+    {
+        PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
+
+    public static readonly string[] PipelineWithSummary =
+    {
+        PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords,
+        PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
+
+    public static readonly string[] PipelineOnlySummary =
+    {
+        PipelineStepsExtract, PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
+    };
 
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";

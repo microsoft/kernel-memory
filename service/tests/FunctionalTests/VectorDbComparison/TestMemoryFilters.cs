@@ -82,45 +82,65 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        this._log.WriteLine($"\n\n\n----- Azure AI Search -----");
-        await this.TestVectorDbFiltering(acs);
-        this._log.WriteLine($"\n\n\n----- Qdrant vector DB -----");
-        await this.TestVectorDbFiltering(qdrant);
-        this._log.WriteLine($"\n\n\n----- Simple vector DB -----");
-        await this.TestVectorDbFiltering(simpleVecDb);
+        for (int i = 1; i <= 3; i++)
+        {
+            this._log.WriteLine("----- Azure AI Search -----");
+            await this.TestVectorDbFiltering(acs, i);
+            this._log.WriteLine("\n----- Qdrant vector DB -----");
+            await this.TestVectorDbFiltering(qdrant, i);
+            this._log.WriteLine("\n----- Simple vector DB -----");
+            await this.TestVectorDbFiltering(simpleVecDb, i);
+            this._log.WriteLine("\n\n");
+        }
     }
 
-    private async Task TestVectorDbFiltering(IMemoryDb vectorDb)
+    // NOTE: result order does not matter, checking result count only
+    private async Task TestVectorDbFiltering(IMemoryDb vectorDb, int test)
     {
         // Single memory filter
-        var singleFilter = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee") };
-        var singleFilterResults = await vectorDb.GetListAsync(IndexName, filters: singleFilter, limit: int.MaxValue).ToListAsync();
-        this._log.WriteLine($"\n\nSingle memory filter: {singleFilterResults.Count} results");
-        foreach (MemoryRecord r in singleFilterResults)
+        if (test == 1)
         {
-            this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            var singleFilter = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee") };
+            var singleFilterResults = await vectorDb.GetListAsync(IndexName, filters: singleFilter, limit: int.MaxValue).ToListAsync();
+            this._log.WriteLine($"\nSingle memory filter: {singleFilterResults.Count} results");
+            foreach (MemoryRecord r in singleFilterResults)
+            {
+                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            }
+
+            Assert.Equal(5, singleFilterResults.Count);
         }
 
         // Single memory filter with multiple tags
-        var singleFilterMultipleTags = new List<MemoryFilter>() { MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Work") };
-        var singleFilterMultipleTagsResults = await vectorDb.GetListAsync(IndexName, filters: singleFilterMultipleTags, limit: int.MaxValue).ToListAsync();
-        this._log.WriteLine($"\n\nSingle memory filter with multiple tags: {singleFilterMultipleTagsResults.Count} results");
-        foreach (MemoryRecord r in singleFilterMultipleTagsResults)
+        if (test == 2)
         {
-            this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            var singleFilterMultipleTags = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Work") };
+            var singleFilterMultipleTagsResults = await vectorDb.GetListAsync(IndexName, filters: singleFilterMultipleTags, limit: int.MaxValue).ToListAsync();
+            this._log.WriteLine($"\nSingle memory filter with multiple tags: {singleFilterMultipleTagsResults.Count} results");
+            foreach (MemoryRecord r in singleFilterMultipleTagsResults)
+            {
+                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            }
+
+            Assert.Equal(1, singleFilterMultipleTagsResults.Count);
         }
 
         // Multiple memory filters with multiple tags
-        var multipleFilters = new List<MemoryFilter>()
+        if (test == 3)
         {
-            MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Family"),
-            MemoryFilters.ByTag("user", "Madelynn").ByTag("collection", "Personal")
-        };
-        var multipleFiltersResults = await vectorDb.GetListAsync(IndexName, filters: multipleFilters, limit: int.MaxValue).ToListAsync();
-        this._log.WriteLine($"\n\nMultiple memory filters with multiple tags: {multipleFiltersResults.Count} results");
-        foreach (MemoryRecord r in multipleFiltersResults)
-        {
-            this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            var multipleFilters = new List<MemoryFilter>
+            {
+                MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Family"),
+                MemoryFilters.ByTag("user", "Madelynn").ByTag("collection", "Personal")
+            };
+            var multipleFiltersResults = await vectorDb.GetListAsync(IndexName, filters: multipleFilters, limit: int.MaxValue).ToListAsync();
+            this._log.WriteLine($"\nMultiple memory filters with multiple tags: {multipleFiltersResults.Count} results");
+            foreach (MemoryRecord r in multipleFiltersResults)
+            {
+                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+            }
+
+            Assert.Equal(4, multipleFiltersResults.Count);
         }
     }
 }

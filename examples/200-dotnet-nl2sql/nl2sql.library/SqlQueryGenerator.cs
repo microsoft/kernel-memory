@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
 using SemanticKernel.Data.Nl2Sql.Library.Internal;
 using SemanticKernel.Data.Nl2Sql.Library.Schema;
 
@@ -30,26 +29,23 @@ public sealed class SqlQueryGenerator
     private const string ContentLabelAnswer = "answer";
     private const string ContentAffirmative = "yes";
 
-    private const string SkillName = "nl2sql";
-
     private readonly double _minRelevanceScore;
-    private readonly ISKFunction _promptEval;
-    private readonly ISKFunction _promptGenerator;
+    private readonly KernelFunction _promptEval;
+    private readonly KernelFunction _promptGenerator;
+    private readonly Kernel _kernel;
     private readonly ISemanticTextMemory _memory;
 
     public SqlQueryGenerator(
-        IKernel kernel,
+        Kernel kernel,
         ISemanticTextMemory memory,
         string rootSkillFolder,
         double minRelevanceScore = DefaultMinRelevance)
     {
-        var functions = kernel.ImportSemanticFunctionsFromDirectory(rootSkillFolder, SkillName);
-        this._promptEval = functions["isquery"];
-        this._promptGenerator = functions["generatequery"];
+        this._promptEval = KernelFunctionFactory.CreateFromPrompt(File.ReadAllText(Path.Combine(rootSkillFolder, "nl2sql", "isQuery.xml")));
+        this._promptGenerator = KernelFunctionFactory.CreateFromPrompt(File.ReadAllText(Path.Combine(rootSkillFolder, "nl2sql", "generateQuery.xml")));
+        this._kernel = kernel;
         this._memory = memory;
         this._minRelevanceScore = minRelevanceScore;
-
-        kernel.ImportFunctions(this, SkillName);
     }
 
     /// <summary>
@@ -58,9 +54,7 @@ public sealed class SqlQueryGenerator
     /// <param name="objective">A natural language objective</param>
     /// <param name="context">A <see cref="SKContext"/> object</param>
     /// <returns>A SQL query (or null if not able)</returns>
-    [SKFunction, Description("Generate a data query for a given objective and schema")]
-    [SKName("GenerateQueryFromObjective")]
-    public async Task<string?> SolveObjectiveAsync(string objective, SKContext context)
+    public async Task<SqlQueryResult?> SolveObjectiveAsync(string objective)
     {
         // Search for schema with best similarity match to the objective
         var recall =
@@ -81,30 +75,32 @@ public sealed class SqlQueryGenerator
         var schemaText = best.Metadata.Text;
         var sqlPlatform = best.Metadata.AdditionalMetadata;
 
-        context.Variables[ContextParamObjective] = objective;
-        context.Variables[ContextParamSchema] = schemaText;
-        context.Variables[ContextParamSchemaId] = schemaName;
-        context.Variables[ContextParamPlatform] = sqlPlatform;
+        var arguments = new KernelArguments();
+        arguments[ContextParamObjective] = objective;
+        arguments[ContextParamSchema] = schemaText;
+        arguments[ContextParamSchemaId] = schemaName;
+        arguments[ContextParamPlatform] = sqlPlatform;
 
         // Screen objective to determine if it can be solved with the selected schema.
-        if (!await this.ScreenObjectiveAsync(context).ConfigureAwait(false))
+        if (!await this.ScreenObjectiveAsync(arguments).ConfigureAwait(false))
         {
-            return null; // Objective doesn't pass screen
+            //return null; // Objective doesn't pass screen
         }
 
         // Generate query
-        await this._promptGenerator.InvokeAsync(context).ConfigureAwait(false);
+        var result = await this._promptGenerator.InvokeAsync(this._kernel, arguments).ConfigureAwait(false);
 
         // Parse result to handle 
-        return context.GetResult(ContentLabelQuery);
+        string query = result.ParseValue(ContentLabelQuery);
+
+        return new SqlQueryResult(schemaName, query);
     }
 
-    private async Task<bool> ScreenObjectiveAsync(SKContext context)
+    private async Task<bool> ScreenObjectiveAsync(KernelArguments context)
     {
-        await this._promptEval.InvokeAsync(context).ConfigureAwait(false);
+        var result = await this._promptEval.InvokeAsync(this._kernel, context).ConfigureAwait(false);
 
-        var answer = context.GetResult(ContentLabelAnswer);
-
+        var answer = result.ParseValue(ContentLabelAnswer);
         return answer.Equals(ContentAffirmative, StringComparison.OrdinalIgnoreCase);
     }
 }

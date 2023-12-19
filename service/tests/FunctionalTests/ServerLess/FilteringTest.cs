@@ -26,7 +26,6 @@ public class FilteringTest : BaseTestCase
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
-        const string NotFound = "INFO NOT FOUND";
         const string Found = "spacecraft";
 
         this.Log("Uploading document");
@@ -94,7 +93,6 @@ public class FilteringTest : BaseTestCase
 
         string indexName = Guid.NewGuid().ToString("D");
         const string Id = "file1-NASA-news.pdf";
-        const string NotFound = "INFO NOT FOUND";
         const string Found = "spacecraft";
 
         this.Log("Uploading document");
@@ -173,6 +171,7 @@ public class FilteringTest : BaseTestCase
     [InlineData("az_ai_search")]
     public async Task ItIgnoresEmptyFilters(string memoryType)
     {
+        // Arrange
         var memory = this.GetServerlessMemory(memoryType);
 
         string indexName = Guid.NewGuid().ToString("D");
@@ -195,22 +194,36 @@ public class FilteringTest : BaseTestCase
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        // Extra delay for Azure AI Search, to let the index populate
-        if (memoryType == "az_ai_search")
+        const string Question = "What is Orion?";
+
+        // Act
+        // Simple filter: empty filters have no impact
+        var answer = await memory.AskAsync(Question, filter: new(), index: indexName);
+
+        // Retry for Azure AI Search, to let the index populate
+        for (int i = 0; i < 4; i++)
         {
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            if (memoryType == "az_ai_search" && !answer.Result.Contains(Found, StringComparison.OrdinalIgnoreCase))
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                answer = await memory.AskAsync(Question, filter: new(), index: indexName);
+            }
         }
 
-        // Simple filter: empty filters have no impact
-        var answer = await memory.AskAsync("What is Orion?", filter: new(), index: indexName);
+        // Assert
         this.Log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
+        // Act
         // Multiple filters: empty filters have no impact
-        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter> { new() }, index: indexName);
+        answer = await memory.AskAsync(Question,
+            filters: new List<MemoryFilter> { new() }, index: indexName);
         this.Log(answer.Result);
+
+        // Assert
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
+        // Clean up
         this.Log("Deleting memories extracted from the document");
         await memory.DeleteDocumentAsync(Id, index: indexName);
 

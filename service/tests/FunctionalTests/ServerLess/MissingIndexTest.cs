@@ -36,7 +36,7 @@ public class MissingIndexTest : BaseTestCase
 
         // Act: Search a non-existing index
         var answer = await memory.AskAsync("What's the number after 9?", index: indexName);
-        Assert.Equal("INFO NOT FOUND", answer.Result);
+        Assert.Equal(NotFound, answer.Result);
 
         // Act: Search a non-existing index
         var searchResult = await memory.SearchAsync("some query", index: indexName);
