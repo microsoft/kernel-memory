@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextGeneration;
-
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TextGeneration;
 namespace Microsoft.KernelMemory.AI;
 
 internal class SemanticKernelTextGenerator : ITextGenerator
@@ -48,7 +47,7 @@ internal class SemanticKernelTextGenerator : ITextGenerator
     {
         var settings = new PromptExecutionSettings
         {
-            ExtensionData =
+            ExtensionData = new()
             {
                 [nameof(options.Temperature)] = options.Temperature,
                 [nameof(options.TopP)] = options.TopP,

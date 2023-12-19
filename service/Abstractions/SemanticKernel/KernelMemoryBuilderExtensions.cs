@@ -2,8 +2,9 @@
 
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.SemanticKernel.TextGeneration;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.AI.TextGeneration;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.KernelMemory;
 
@@ -34,7 +35,7 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
-    ///Inject an implementation of<see cref="ITextEmbeddingGeneration">SK text embedding generation</see>
+    ///Inject an implementation of<see cref="ITextEmbeddingGenerationService">SK text embedding generation service</see>
     /// for local dependencies on <see cref="ITextEmbeddingGenerator"/>
     /// </summary>
     /// <param name="builder">KM builder</param>
@@ -43,9 +44,9 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="tokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
     /// <param name="onlyForRetrieval">Whether to use this embedding generator only during data ingestion, and not for retrieval (search and ask API)</param>
     /// <returns>KM builder</returns>
-    public static IKernelMemoryBuilder WithSemanticKernelTextEmbeddingGeneration(
+    public static IKernelMemoryBuilder WithSemanticKernelTextEmbeddingGenerationService(
         this IKernelMemoryBuilder builder,
-        ITextEmbeddingGeneration service,
+        ITextEmbeddingGenerationService service,
         SemanticKernelConfig config,
         ITextTokenizer tokenizer,
         bool onlyForRetrieval = false)

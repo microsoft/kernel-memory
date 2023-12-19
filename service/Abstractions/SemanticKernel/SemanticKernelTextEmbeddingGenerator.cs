@@ -5,17 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.KernelMemory;
 internal class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextTokenizer _tokenizer;
-    private readonly ITextEmbeddingGeneration _generation;
+    private readonly ITextEmbeddingGenerationService _generation;
     private readonly SemanticKernelConfig _config;
 
     public int MaxTokens { get; }
 
-    public SemanticKernelTextEmbeddingGenerator(ITextEmbeddingGeneration generation,
+    public SemanticKernelTextEmbeddingGenerator(ITextEmbeddingGenerationService generation,
                                                 SemanticKernelConfig config,
                                                 ITextTokenizer tokenizer)
     {

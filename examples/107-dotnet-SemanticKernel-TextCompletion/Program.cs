@@ -2,8 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.Tokenizers;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var endpoint = Env.Var("AOAI_ENDPOINT");
 var apiKey = Env.Var("AOAI_API_KEY");
@@ -14,10 +13,10 @@ var config = new SemanticKernelConfig();
 var tokenizer = new DefaultGPTTokenizer();
 
 var memory = new KernelMemoryBuilder()
-    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, "", endpoint, apiKey)
+    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, endpoint, apiKey)
                                             , config
                                             , tokenizer)
-    .WithSemanticKernelTextEmbeddingGeneration(new AzureOpenAITextEmbeddingGeneration(embeddingDeployment, "", endpoint, apiKey)
+    .WithSemanticKernelTextEmbeddingGenerationService(new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey)
                                             , config
                                             , tokenizer)
     .Build<MemoryServerless>();
