@@ -89,6 +89,7 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 * ↗️ Vector storage
     * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
     * [Qdrant](https://qdrant.tech)
+    * [Postgres+pgvector](https://github.com/microsoft/kernel-memory-postgres)
     * In memory KNN vectors (volatile)
 
 * 📀 Content storage

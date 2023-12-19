@@ -18,7 +18,7 @@ public class PluginTest : BaseTestCase
     {
         // Arrange
         var config = this.Configuration.GetSection("Services").GetSection("AzureOpenAIText");
-        var kernel = new KernelBuilder().AddAzureOpenAIChatCompletion(
+        var kernel = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(
             deploymentName: config.GetValue<string>("Deployment") ?? "",
             modelId: config.GetValue<string>("Deployment") ?? "",
             endpoint: config.GetValue<string>("Endpoint") ?? "",

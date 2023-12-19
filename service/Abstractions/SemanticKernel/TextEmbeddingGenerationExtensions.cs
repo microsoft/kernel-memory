@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings;
 
@@ -22,7 +23,7 @@ public static partial class TextEmbeddingGenerationExtensions
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Embedding vector</returns>
     public static async Task<Embedding> GenerateEmbeddingAsync(
-        this ITextEmbeddingGeneration generator, string text, CancellationToken cancellationToken = default)
+        this ITextEmbeddingGenerationService generator, string text, CancellationToken cancellationToken = default)
     {
         IList<ReadOnlyMemory<float>>? embeddings = await generator
             .GenerateEmbeddingsAsync(new List<string> { text }, null, cancellationToken)
