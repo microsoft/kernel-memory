@@ -197,9 +197,9 @@ foreach (var x in answer.RelevantSources)
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
 
-If you're importing small files, and need only C# or only Python, and can block
+If you're importing small files, and need only C# and can block
 the process during the import, local-in-process execution can be fine, using
-the **MemoryServerlessClient** seen above.
+the **MemoryServerless** seen above.
 
 However, if you are in one of these scenarios:
 
