@@ -37,6 +37,7 @@ public static class Constants
     public const string TagsSyntheticSummary = "summary";
 
     // Properties stored inside the payload
+    public const string ReservedPayloadSchemaVersionField = "schema";
     public const string ReservedPayloadTextField = "text";
     public const string ReservedPayloadFileNameField = "file";
     public const string ReservedPayloadUrlField = "url";

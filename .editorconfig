@@ -17,8 +17,15 @@ indent_size = 2
 indent_size = 2
 
 # XML config files
-[*.{props,csproj}]
+[*.{csproj}]
 indent_size = 4
+
+# XML config files
+[*.props]
+indent_size = 4
+
+[Directory.Packages.props]
+indent_size = 2
 
 # YAML config files
 [*.{yml,yaml}]
