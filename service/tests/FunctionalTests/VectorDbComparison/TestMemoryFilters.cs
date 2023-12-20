@@ -74,8 +74,8 @@ public class TestMemoryFilters
 
             foreach (KeyValuePair<string, MemoryRecord> r in records)
             {
-                //await acs.UpsertAsync(IndexName, r.Value);
-                //await qdrant.UpsertAsync(IndexName, r.Value);
+                await acs.UpsertAsync(IndexName, r.Value);
+                await qdrant.UpsertAsync(IndexName, r.Value);
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
 
