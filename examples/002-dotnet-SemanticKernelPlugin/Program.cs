@@ -17,7 +17,7 @@ public static class Program
         // Usual code to create an instance of SK, using Azure OpenAI.
         // You can use any LLM, replacing `WithAzureChatCompletionService` with other LLM options.
 
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
         builder
             // For OpenAI:
             //.AddOpenAIChatCompletion(

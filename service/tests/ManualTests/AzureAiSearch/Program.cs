@@ -24,7 +24,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 
-namespace AzureAISearchTests;
+namespace AzureAISearch;
 
 public static class Program
 {
@@ -45,7 +45,7 @@ public static class Program
     private static readonly string s_endpoint = Env.Var("SEARCH_ENDPOINT")!;
     private static readonly string s_apiKey = Env.Var("SEARCH_KEY")!;
 
-    public static async Task Main(string[] args)
+    public static async Task RunAsync()
     {
         // Azure AI Search service client
         s_adminClient = new SearchIndexClient(

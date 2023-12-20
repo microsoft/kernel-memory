@@ -35,7 +35,7 @@
         <PackageReference Include="LLamaSharp.Backend.Cpu" />
         <PackageReference Include="LLamaSharp.Backend.Cuda12" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI"/>
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI"/>
         <PackageReference Include="PdfPig"/>
         <PackageReference Include="Polly.Core"/>
         <PackageReference Include="RabbitMQ.Client"/>

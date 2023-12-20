@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Tokenizers;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
@@ -16,7 +16,7 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
-    private readonly AzureOpenAITextEmbeddingGeneration _client;
+    private readonly AzureOpenAITextEmbeddingGenerationService _client;
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
@@ -48,7 +48,7 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         switch (config.Auth)
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                this._client = new AzureOpenAITextEmbeddingGeneration(
+                this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
@@ -56,7 +56,7 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
-                this._client = new AzureOpenAITextEmbeddingGeneration(
+                this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,

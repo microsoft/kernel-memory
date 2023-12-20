@@ -89,6 +89,7 @@ existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
 * ↗️ Vector storage
     * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
     * [Qdrant](https://qdrant.tech)
+    * [Postgres+pgvector](https://github.com/microsoft/kernel-memory-postgres)
     * In memory KNN vectors (volatile)
 
 * 📀 Content storage
@@ -196,9 +197,9 @@ foreach (var x in answer.RelevantSources)
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
 
-If you're importing small files, and need only C# or only Python, and can block
+If you're importing small files, and need only C# and can block
 the process during the import, local-in-process execution can be fine, using
-the **MemoryServerlessClient** seen above.
+the **MemoryServerless** seen above.
 
 However, if you are in one of these scenarios:
 

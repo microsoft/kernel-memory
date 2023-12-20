@@ -30,13 +30,6 @@ public abstract class BaseTestCase : IDisposable
         Console.SetOut(this._output);
     }
 
-    protected IKernelMemory GetMemoryWebClient()
-    {
-        string endpoint = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("Endpoint", "http://127.0.0.1:9001/")!;
-        string? apiKey = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("AccessKey");
-        return new MemoryWebClient(endpoint, apiKey: apiKey);
-    }
-
     protected IKernelMemory GetServerlessMemory(string memoryType)
     {
         var openAIKey = this.OpenAIConfiguration.GetValue<string>("APIKey")

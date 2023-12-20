@@ -288,12 +288,6 @@ public class SaveRecordsHandler : IPipelineStepHandler
          * FILE DETAILS
          */
 
-        // Original file name, useful for context, e.g. "NASA-August-2043.pdf"
-        record.Payload.Add(Constants.ReservedPayloadFileNameField, fileName);
-
-        // Web page URL, used when importing from a URL (the file name is not useful in that case)
-        record.Payload.Add(Constants.ReservedPayloadUrlField, url);
-
         // File type, e.g. "application/pdf" - Can be used for filtering by file type
         record.Tags.Add(Constants.ReservedFileTypeTag, pipeline.GetFile(fileId).MimeType);
 
@@ -301,14 +295,20 @@ public class SaveRecordsHandler : IPipelineStepHandler
         // Can be used for filtering and deletions/purge
         record.Tags.Add(Constants.ReservedFileIdTag, fileId);
 
+        // Original file name, useful for context, e.g. "NASA-August-2043.pdf"
+        record.Payload[Constants.ReservedPayloadFileNameField] = fileName;
+
+        // Web page URL, used when importing from a URL (the file name is not useful in that case)
+        record.Payload[Constants.ReservedPayloadUrlField] = url;
+
         /*
          * PARTITION DETAILS
          */
 
         record.Vector = partitionEmbedding;
-        record.Payload.Add(Constants.ReservedPayloadTextField, partitionContent);
-        record.Payload.Add(Constants.ReservedPayloadVectorProviderField, embeddingGeneratorProvider);
-        record.Payload.Add(Constants.ReservedPayloadVectorGeneratorField, embeddingGeneratorName);
+        record.Payload[Constants.ReservedPayloadTextField] = partitionContent;
+        record.Payload[Constants.ReservedPayloadVectorProviderField] = embeddingGeneratorProvider;
+        record.Payload[Constants.ReservedPayloadVectorGeneratorField] = embeddingGeneratorName;
 
         // Partition ID. Filtering used for purge.
         record.Tags.Add(Constants.ReservedFilePartitionTag, partitionFileId);
@@ -317,7 +317,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
          * TIMESTAMP and USER TAGS
          */
 
-        record.Payload.Add(Constants.ReservedPayloadLastUpdateField, DateTimeOffset.UtcNow.ToString("s"));
+        record.Payload[Constants.ReservedPayloadLastUpdateField] = DateTimeOffset.UtcNow.ToString("s");
 
         tags.CopyTo(record.Tags);
 
