@@ -65,8 +65,15 @@ app.MapPost("/ingestion", async ([FromServices] MemoryServerless memory, IFormFi
     {
         document.AddStream(file.FileName, file.OpenReadStream());
     }
-    await memory.ImportDocumentAsync(document, steps: new[] { Constants.PipelineStepsDeleteGeneratedFiles });
-    return Results.Ok();
+    await memory.ImportDocumentAsync(document,
+        steps: new[] {
+            Constants.PipelineStepsExtract,
+            Constants.PipelineStepsPartition,
+            Constants.PipelineStepsGenEmbeddings,
+            Constants.PipelineStepsSaveRecords,
+            Constants.PipelineStepsDeleteGeneratedFiles
+        });
+    return Results.Ok("Files ingested successfully!!");
 })
 .DisableAntiforgery()
 .WithName("Document Ingestion")
