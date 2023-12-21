@@ -147,7 +147,7 @@ public class TestMemoryFilters
         if (test == 4)
         {
             var documentId = "3";
-            var record = await vectorDb.GetByDocumentIdAsync(IndexName, documentId);
+            var record = await vectorDb.GetByMemoryRecordIdAsync(IndexName, documentId);
             Assert.Equal(documentId, record?.Id);
         }
     }

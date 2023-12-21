@@ -170,7 +170,7 @@ public class SimpleTextDb : IMemoryDb
         return this._fileSystem.DeleteFileAsync(index, "", EncodeId(record.Id), cancellationToken);
     }
 
-    public async Task<MemoryRecord?> GetByDocumentIdAsync(string index, string id, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetByMemoryRecordIdAsync(string index, string id, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var memory = await this._fileSystem.ReadFileAsTextAsync(index, "", EncodeId(id), cancellationToken).ConfigureAwait(false);
         if (memory == null)

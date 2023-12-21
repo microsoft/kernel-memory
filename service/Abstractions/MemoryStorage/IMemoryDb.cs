@@ -103,7 +103,7 @@ public interface IMemoryDb
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The memory record if found, otherwise null.</returns>
-    Task<MemoryRecord?> GetByDocumentIdAsync(
+    Task<MemoryRecord?> GetByMemoryRecordIdAsync(
         string index,
         string id,
         bool withEmbedding = false,

@@ -212,7 +212,7 @@ public class QdrantMemory : IMemoryDb
         await this._qdrantClient.DeleteVectorsAsync(index, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<MemoryRecord?> GetByDocumentIdAsync(
+    public async Task<MemoryRecord?> GetByMemoryRecordIdAsync(
         string index,
         string id,
         bool withEmbedding = false,

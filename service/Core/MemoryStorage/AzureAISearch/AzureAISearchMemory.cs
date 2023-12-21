@@ -272,7 +272,7 @@ public class AzureAISearchMemory : IMemoryDb
     }
 
     /// <inheritdoc />
-    public async Task<MemoryRecord?> GetByDocumentIdAsync(string index, string id, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<MemoryRecord?> GetByMemoryRecordIdAsync(string index, string id, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var client = this.GetSearchClient(index);
         var encodedId = AzureAISearchMemoryRecord.EncodeId(id);
