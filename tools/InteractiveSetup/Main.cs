@@ -106,6 +106,9 @@ public static class Main
             LlamaSharpSetup();
 
             LoggerSetup();
+
+            Console.WriteLine("== Done! :-)\n");
+            Console.WriteLine("== You can start the service with: dotnet run\n");
         }
         catch (Exception e)
         {
@@ -396,8 +399,8 @@ public static class Main
         {
             config = new Dictionary<string, object>
             {
-                { "TextModel", "" },
-                { "EmbeddingModel", "" },
+                { "TextModel", "gpt-3.5-turbo-16k" },
+                { "EmbeddingModel", "text-embedding-ada-002" },
                 { "APIKey", "" },
                 { "OrgId", "" },
                 { "MaxRetries", 10 },

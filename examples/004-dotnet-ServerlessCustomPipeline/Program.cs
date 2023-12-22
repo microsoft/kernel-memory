@@ -3,18 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Handlers;
 
-// Alternative approach using appsettings.json and appsettings.development.json
-//
-// Run `dotnet run setup` to create appsettings.development.json
-// if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
-// {
-//     Main.InteractiveSetup(cfgService: false, cfgOrchestration: false);
-// }
-//
-// var memoryBuilder = new KernelMemoryBuilder().FromAppSettings();
-
 var memoryBuilder = new KernelMemoryBuilder()
-    // .FromAppSettings() => read "KernelMemory" settings from appsettings.json (if available), see https://github.com/microsoft/kernel-memory/blob/main/dotnet/Service/appsettings.json as an example
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY")) => To use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333") => To use Qdrant docker
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
