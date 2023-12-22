@@ -2,3 +2,5 @@
 [*.cs]
 dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool)
+dotnet_diagnostic.IDE0130.severity = none # exact NS not an issue in a service, aiming for less code
+resharper_check_namespace_highlighting = none

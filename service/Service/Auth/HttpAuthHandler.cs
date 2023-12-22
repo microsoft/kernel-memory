@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.KernelMemory.Service.Auth;
+namespace Microsoft.KernelMemory.Service;
 
 public class HttpAuthEndpointFilter : IEndpointFilter
 {

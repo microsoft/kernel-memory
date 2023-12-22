@@ -2,28 +2,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Llama;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
-using Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
-using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
-using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
-using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 using Microsoft.KernelMemory.Search;
 
 namespace Microsoft.KernelMemory;
@@ -40,12 +30,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         AsyncService,
     }
 
-    // appsettings.json root node name
-    private const string ConfigRoot = "KernelMemory";
-
-    // ASP.NET env var
-    private const string AspnetEnv = "ASPNETCORE_ENVIRONMENT";
-
     // Proxy to the internal service collections, used to (optionally) inject dependencies
     // into the user application space
     private readonly ServiceCollectionPool _serviceCollections;
@@ -56,9 +40,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     // Services of the host application, when hosting pipeline handlers, e.g. in service mode
     private readonly IServiceCollection? _hostServiceCollection;
 
-    // Auxiliary collection used internally
-    private readonly IServiceCollection _auxServiceCollection;
-
     // List of all the embedding generators to use during ingestion
     private readonly List<ITextEmbeddingGenerator> _embeddingGenerators = new();
 
@@ -66,10 +47,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private readonly List<IMemoryDb> _memoryDbs = new();
 
     // Normalized configuration
-    private KernelMemoryConfig? _memoryConfiguration = null;
-
-    // Content of appsettings.json, used to access dynamic data under "Services"
-    private IConfiguration? _servicesConfiguration = null;
+    private readonly KernelMemoryConfig? _memoryConfiguration = null;
 
     /// <summary>
     /// Whether to register the default handlers. The list is hardcoded.
@@ -98,12 +76,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     public KernelMemoryBuilder(IServiceCollection? hostServiceCollection = null)
     {
         this._memoryServiceCollection = new ServiceCollection();
-        this._auxServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
-        CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection, this._auxServiceCollection);
+        CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection);
 
+        // Important: this._memoryServiceCollection is the primary service collection
         this._serviceCollections = new ServiceCollectionPool(this._memoryServiceCollection);
-        this._serviceCollections.AddServiceCollection(this._auxServiceCollection);
         this._serviceCollections.AddServiceCollection(this._hostServiceCollection);
 
         // List of embedding generators and memory DBs used during the ingestion
@@ -189,252 +166,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public IKernelMemoryBuilder FromAppSettings(string? settingsDirectory = null)
-    {
-        this._servicesConfiguration = ReadAppSettings(settingsDirectory);
-        this._memoryConfiguration = this._servicesConfiguration.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
-                                    ?? throw new ConfigurationException($"Unable to parse configuration files. " +
-                                                                        $"There should be a '{ConfigRoot}' root node, " +
-                                                                        $"with data mapping to '{nameof(KernelMemoryConfig)}'");
-
-        return this.FromConfiguration(this._memoryConfiguration, this._servicesConfiguration);
-    }
-
-    ///<inheritdoc />
-    public IKernelMemoryBuilder FromConfiguration(KernelMemoryConfig config, IConfiguration servicesConfiguration)
-    {
-        this._memoryConfiguration = config ?? throw new ConfigurationException("The given memory configuration is NULL");
-        this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
-
-        // Required by ctors expecting KernelMemoryConfig via DI
-        this.AddSingleton(this._memoryConfiguration);
-
-        this.WithDefaultMimeTypeDetection();
-
-        // Ingestion queue
-        if (string.Equals(config.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
-        {
-            switch (config.DataIngestion.DistributedOrchestration.QueueType)
-            {
-                case string y when y.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
-                    this.Services.AddAzureQueue(this.GetServiceConfig<AzureQueueConfig>(config, "AzureQueue"));
-                    break;
-
-                case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    this.Services.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>(config, "RabbitMq"));
-                    break;
-
-                case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
-                    this.Services.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>(config, "SimpleQueues"));
-                    break;
-
-                default:
-                    // NOOP - allow custom implementations, via WithCustomIngestionQueueClientFactory()
-                    break;
-            }
-        }
-
-        // Storage
-        switch (config.ContentStorageType)
-        {
-            case string x when x.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>(config, "AzureBlobs"));
-                break;
-
-            case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>(config, "SimpleFileStorage"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomStorage()
-                break;
-        }
-
-        // The ingestion embedding generators is a list of generators that the "gen_embeddings" handler uses,
-        // to generate embeddings for each partition. While it's possible to use multiple generators (e.g. to compare embedding quality)
-        // only one generator is used when searching by similarity, and the generator used for search is not in this list.
-        // - config.DataIngestion.EmbeddingGeneratorTypes => list of generators, embeddings to generate and store in memory DB
-        // - config.Retrieval.EmbeddingGeneratorType      => one embedding generator, used to search, and usually injected into Memory DB constructor
-        // Note: use the aux service collection to avoid mixing ingestion and retrieval dependencies.
-
-        // Note: using multiple embeddings is not fully supported yet and could cause write errors or incorrect search results
-        if (config.DataIngestion.EmbeddingGeneratorTypes.Count > 1)
-        {
-            throw new NotSupportedException("Using multiple embedding generators is currently unsupported. " +
-                                            "You may contact the team if this feature is required, or workaround this exception" +
-                                            "using KernelMemoryBuilder methods explicitly.");
-        }
-
-        foreach (var type in config.DataIngestion.EmbeddingGeneratorTypes)
-        {
-            switch (type)
-            {
-                case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
-                case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGenerator>()
-                                             ?? throw new ConfigurationException("Unable to build embedding generator");
-                    this._embeddingGenerators.Add(embeddingGenerator);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                    var embeddingGenerator = this._auxServiceCollection.BuildServiceProvider().GetService<ITextEmbeddingGenerator>()
-                                             ?? throw new ConfigurationException("Unable to build embedding generator");
-                    this._embeddingGenerators.Add(embeddingGenerator);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                default:
-                    // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
-                    break;
-            }
-        }
-
-        // Search settings
-        this.WithSearchClientConfig(config.Retrieval.SearchClient);
-
-        // Retrieval embeddings - ITextEmbeddingGeneration interface
-        switch (config.Retrieval.EmbeddingGeneratorType)
-        {
-            case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
-            case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIEmbedding"));
-                break;
-
-            case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
-                break;
-        }
-
-        // The ingestion Memory DBs is a list of DBs where handlers write records to. While it's possible
-        // to write to multiple DBs, e.g. for replication purpose, there is only one Memory DB used to
-        // read/search, and it doesn't come from this list. See "config.Retrieval.MemoryDbType".
-        // Note: use the aux service collection to avoid mixing ingestion and retrieval dependencies.
-        foreach (var type in config.DataIngestion.MemoryDbTypes)
-        {
-            switch (type)
-            {
-                case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>(config, "AzureAISearch"));
-                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
-                    this._memoryDbs.Add(service);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
-                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
-                    this._memoryDbs.Add(service);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
-                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
-                    this._memoryDbs.Add(service);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
-                {
-                    this._auxServiceCollection.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>(config, "SimpleTextDb"));
-                    var serviceProvider = this._auxServiceCollection.BuildServiceProvider();
-                    var service = serviceProvider.GetService<IMemoryDb>() ?? throw new ConfigurationException("Unable to build ingestion memory DB");
-                    this._memoryDbs.Add(service);
-                    this.ResetAuxServiceCollection();
-                    break;
-                }
-
-                default:
-                    // NOOP - allow custom implementations, via WithCustomMemoryDb()
-                    break;
-            }
-        }
-
-        // Retrieval Memory DB - IMemoryDb interface
-        switch (config.Retrieval.MemoryDbType)
-        {
-            case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>(config, "AzureAISearch"));
-                break;
-
-            case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>(config, "Qdrant"));
-                break;
-
-            case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>(config, "SimpleVectorDb"));
-                break;
-
-            case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>(config, "SimpleTextDb"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomMemoryDb()
-                break;
-        }
-
-        // Text generation
-        switch (config.TextGeneratorType)
-        {
-            case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
-            case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureOpenAITextGeneration(this.GetServiceConfig<AzureOpenAIConfig>(config, "AzureOpenAIText"));
-                break;
-
-            case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>(config, "OpenAI"));
-                break;
-
-            case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddLlamaTextGeneration(this.GetServiceConfig<LlamaSharpConfig>(config, "LlamaSharp"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomTextGeneration()
-                break;
-        }
-
-        // Image OCR
-        switch (config.DataIngestion.ImageOcrType)
-        {
-            case string y when string.IsNullOrWhiteSpace(y):
-            case string x when x.Equals("None", StringComparison.OrdinalIgnoreCase):
-                break;
-
-            case string x when x.Equals("AzureAIDocIntel", StringComparison.OrdinalIgnoreCase):
-                this.Services.AddAzureAIDocIntel(this.GetServiceConfig<AzureAIDocIntelConfig>(config, "AzureAIDocIntel"));
-                break;
-
-            default:
-                // NOOP - allow custom implementations, via WithCustomImageOCR()
-                break;
-        }
-
-        return this;
-    }
-
-    ///<inheritdoc />
     public IKernelMemoryBuilder WithoutDefaultHandlers()
     {
         this._useDefaultHandlers = false;
@@ -463,15 +194,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     #region internals
-
-    private void ResetAuxServiceCollection()
-    {
-        this._auxServiceCollection.Clear();
-        foreach (ServiceDescriptor d in this._memoryServiceCollection)
-        {
-            this._auxServiceCollection.Add(d);
-        }
-    }
 
     private static void CopyServiceCollection(
         IServiceCollection? source,
@@ -561,7 +283,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private MemoryService BuildAsyncClient()
     {
-        var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+        ServiceProvider serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
         this.CompleteAsyncClient(serviceProvider);
 
         // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
@@ -582,7 +304,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                 const string MethodName = nameof(this.WithoutDefaultHandlers);
                 throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
                                                  $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
-                                                 $"otherwise use `{ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
+                                                 $"otherwise use `new {ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
             }
 
             // Handlers - Register these handlers to run as hosted services in the caller app.
@@ -623,16 +345,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         this.RequireEmbeddingGenerator();
         this.RequireOneMemoryDbForIngestion();
         this.RequireOneMemoryDbForRetrieval();
-    }
-
-    private T GetServiceConfig<T>(KernelMemoryConfig cfg, string serviceName)
-    {
-        if (this._servicesConfiguration == null)
-        {
-            throw new ConfigurationException("Services configuration is NULL");
-        }
-
-        return cfg.GetServiceConfig<T>(this._servicesConfiguration, serviceName);
     }
 
     private void RequireEmbeddingGenerator()
@@ -732,76 +444,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         if (pos > 0) { location = location.Substring(pos); }
 
         Console.Write($"## Error ##\n* Message:  {e.Message}\n* Type:     {e.GetType().Name} [{e.GetType().FullName}]\n* Location: {location}\n## ");
-    }
-
-    private static IConfiguration ReadAppSettings(string? settingsDirectory)
-    {
-        if (settingsDirectory == null)
-        {
-            settingsDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-        }
-
-        var env = Environment.GetEnvironmentVariable(AspnetEnv)?.ToLowerInvariant() ?? string.Empty;
-        var builder = new ConfigurationBuilder();
-
-        builder.SetBasePath(settingsDirectory);
-
-        var main = Path.Join(settingsDirectory, "appsettings.json");
-        if (File.Exists(main))
-        {
-            builder.AddJsonFile(main, optional: false);
-        }
-        else
-        {
-            throw new ConfigurationException($"appsettings.json not found. Directory: {settingsDirectory}");
-        }
-
-        if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
-        {
-            var f1 = Path.Join(settingsDirectory, "appsettings.development.json");
-            var f2 = Path.Join(settingsDirectory, "appsettings.Development.json");
-            if (File.Exists(f1))
-            {
-                builder.AddJsonFile(f1, optional: false);
-            }
-            else if (File.Exists(f2))
-            {
-                builder.AddJsonFile(f2, optional: false);
-            }
-        }
-
-        if (env.Equals("production", StringComparison.OrdinalIgnoreCase))
-        {
-            var f1 = Path.Join(settingsDirectory, "appsettings.production.json");
-            var f2 = Path.Join(settingsDirectory, "appsettings.Production.json");
-            if (File.Exists(f1))
-            {
-                builder.AddJsonFile(f1, optional: false);
-            }
-            else if (File.Exists(f2))
-            {
-                builder.AddJsonFile(f2, optional: false);
-            }
-        }
-
-        // Support for environment variables overriding the config files
-        builder.AddEnvironmentVariables();
-
-        // Support for user secrets. Secret Manager doesn't encrypt the stored secrets and
-        // shouldn't be treated as a trusted store. It's for development purposes only.
-        // see: https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager
-        if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
-        {
-            // GetEntryAssembly method can return null if this library is loaded
-            // from an unmanaged application, in which case UserSecrets are not supported.
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly != null)
-            {
-                builder.AddUserSecrets(entryAssembly, optional: true);
-            }
-        }
-
-        return builder.Build();
     }
 
     #endregion

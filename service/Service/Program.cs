@@ -18,7 +18,7 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.InteractiveSetup;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.Service.Auth;
+using Microsoft.KernelMemory.Service;
 using Microsoft.KernelMemory.WebService;
 using Microsoft.OpenApi.Models;
 
@@ -47,48 +47,60 @@ config.ServiceAuthorization.Validate();
 CheckConfiguration();
 
 // OpenAPI/swagger
-appBuilder.Services.AddEndpointsApiExplorer();
-appBuilder.Services.AddSwaggerGen(c =>
+if (config.Service.RunWebService)
 {
-    if (!config.ServiceAuthorization.Enabled) { return; }
-
-    const string ReqName = "auth";
-    c.AddSecurityDefinition(ReqName, new OpenApiSecurityScheme
+    appBuilder.Services.AddEndpointsApiExplorer();
+    appBuilder.Services.AddSwaggerGen(c =>
     {
-        Description = "The API key to access the API",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "ApiKeyScheme",
-        Name = config.ServiceAuthorization.HttpHeaderName,
-        In = ParameterLocation.Header,
-    });
+        if (!config.ServiceAuthorization.Enabled) { return; }
 
-    var scheme = new OpenApiSecurityScheme
-    {
-        Reference = new OpenApiReference
+        const string ReqName = "auth";
+        c.AddSecurityDefinition(ReqName, new OpenApiSecurityScheme
         {
-            Id = ReqName,
-            Type = ReferenceType.SecurityScheme,
-        },
-        In = ParameterLocation.Header
-    };
+            Description = "The API key to access the API",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "ApiKeyScheme",
+            Name = config.ServiceAuthorization.HttpHeaderName,
+            In = ParameterLocation.Header,
+        });
 
-    var requirement = new OpenApiSecurityRequirement
-    {
-        { scheme, new List<string>() }
-    };
+        var scheme = new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Id = ReqName,
+                Type = ReferenceType.SecurityScheme,
+            },
+            In = ParameterLocation.Header
+        };
 
-    c.AddSecurityRequirement(requirement);
-});
+        var requirement = new OpenApiSecurityRequirement
+        {
+            { scheme, new List<string>() }
+        };
+
+        c.AddSecurityRequirement(requirement);
+    });
+}
 
 // Inject memory client and its dependencies
 // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings().Build();
+IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services)
+    .FromAppSettings()
+    // .With...() // in case you need to set something not already defined by `.FromAppSettings()`
+    .Build();
+
 appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
 
 Console.WriteLine("***************************************************************************************************************************");
+Console.WriteLine($"* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Pipeline handlers   : " + (config.Service.RunHandlers ? "Enabled" : "Disabled"));
+Console.WriteLine($"* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Logging level       : {app.Logger.GetLogLevelName()}");
 Console.WriteLine($"* Memory Db           : {app.Services.GetService<IMemoryDb>()?.GetType().FullName}");
 Console.WriteLine($"* Content storage     : {app.Services.GetService<IContentStorage>()?.GetType().FullName}");
 Console.WriteLine($"* Embedding generation: {app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName}");
@@ -344,10 +356,11 @@ if (config.Service.RunWebService)
 // ********************************************************
 
 app.Logger.LogInformation(
-    "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}",
+    "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
     app.Logger.GetLogLevelName(),
     config.Service.RunWebService,
+    config.ServiceAuthorization.Enabled,
     config.Service.RunHandlers);
 
 app.Run();
