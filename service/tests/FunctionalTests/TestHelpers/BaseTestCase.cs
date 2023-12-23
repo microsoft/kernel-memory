@@ -23,6 +23,7 @@ public abstract class BaseTestCase : IDisposable
     protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
     protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureAISearch");
 
+    // IMPORTANT: install Xunit.DependencyInjection package
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
     {
         this._cfg = cfg;
