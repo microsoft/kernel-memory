@@ -183,6 +183,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceFunctionalTests", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTests", "service\tests\ManualTests\ManualTests.csproj", "{F325396A-8320-45CE-9DC9-8A679B2E78A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalTests3P", "service\tests\FunctionalTests3P\FunctionalTests3P.csproj", "{C1F052ED-4667-49D8-AA7D-21F8039EE7C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -227,6 +229,7 @@ Global
 		{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{BCD0255F-2F35-4B6D-BBF2-2FB43B6F95FA} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 		{F325396A-8320-45CE-9DC9-8A679B2E78A4} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
+		{C1F052ED-4667-49D8-AA7D-21F8039EE7C7} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -341,5 +344,9 @@ Global
 		{F325396A-8320-45CE-9DC9-8A679B2E78A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F325396A-8320-45CE-9DC9-8A679B2E78A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F325396A-8320-45CE-9DC9-8A679B2E78A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1F052ED-4667-49D8-AA7D-21F8039EE7C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1F052ED-4667-49D8-AA7D-21F8039EE7C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1F052ED-4667-49D8-AA7D-21F8039EE7C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1F052ED-4667-49D8-AA7D-21F8039EE7C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
