@@ -4,16 +4,60 @@
         <TargetFramework>net7.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
         <NoWarn>$(NoWarn);CA2007,CA1724,CA2254,CA1031,CS1591,CA1861,CA1303,SKEXP0001</NoWarn>
     </PropertyGroup>
 
+    <!--
+    This dependency is needed only to generate appsetting.development.json when testing
+    the code in GitHub for quick demo, e.g. running
+
+    "dotnet run setup"
+
+
+    You can safely remove this reference, removing also this code from Program.cs:
+
+        if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+        {
+            Main.InteractiveSetup(cfgService: true);
+        }
+    -->
     <ItemGroup>
-        <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
-        <ProjectReference Include="..\Core\Core.csproj"/>
         <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
 
-    <Import Project="../code-analysis.props"/>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.23.231224.1" />
+        <PackageReference Include="Microsoft.KernelMemory.Postgres" Version="0.3.231224.1" />
+    </ItemGroup>
+
+    <!-- Code Analysis -->
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.7.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.7.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
 </Project>

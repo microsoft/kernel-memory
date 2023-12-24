@@ -17,6 +17,7 @@ using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
+using Microsoft.KernelMemory.Postgres;
 
 namespace Microsoft.KernelMemory.Service;
 
@@ -277,6 +278,16 @@ internal sealed class ServiceConfiguration
         {
             switch (type)
             {
+                default:
+                    throw new ConfigurationException(
+                        $"Unknown Memory DB option '{type}'. " +
+                        "To use a custom Memory DB, set the configuration value to an empty string, " +
+                        "and inject the custom implementation using `IKernelMemoryBuilder.WithCustomMemoryDb(...)`");
+
+                case "":
+                    // NOOP - allow custom implementations, via WithCustomMemoryDb()
+                    break;
+
                 case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
@@ -290,6 +301,15 @@ internal sealed class ServiceConfiguration
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
                         s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
+                case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"))
                     );
                     builder.AddIngestionMemoryDb(instance);
                     break;
@@ -312,10 +332,6 @@ internal sealed class ServiceConfiguration
                     builder.AddIngestionMemoryDb(instance);
                     break;
                 }
-
-                default:
-                    // NOOP - allow custom implementations, via WithCustomMemoryDb()
-                    break;
             }
         }
     }
@@ -357,6 +373,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"));
+                break;
+
+            case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"));
                 break;
 
             case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):

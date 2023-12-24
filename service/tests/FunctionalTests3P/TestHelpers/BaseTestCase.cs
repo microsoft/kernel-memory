@@ -5,10 +5,11 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.Postgres;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.TestHelpers;
+namespace FunctionalTests3P.TestHelpers;
 
 public abstract class BaseTestCase : IDisposable
 {
@@ -22,6 +23,7 @@ public abstract class BaseTestCase : IDisposable
     protected IConfiguration OpenAIConfiguration => this.ServiceConfiguration.GetSection("OpenAI");
     protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
     protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureAISearch");
+    protected IConfiguration PostgresConfiguration => this.ServiceConfiguration.GetSection("Postgres");
 
     // IMPORTANT: install Xunit.DependencyInjection package
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
@@ -78,6 +80,15 @@ public abstract class BaseTestCase : IDisposable
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
                     .WithAzureAISearch(acsEndpoint, acsKey)
+                    .Build<MemoryServerless>();
+
+            case "postgres":
+                var connString = this.PostgresConfiguration.GetValue<string>("ConnectionString");
+                Assert.False(string.IsNullOrEmpty(connString));
+                return new KernelMemoryBuilder()
+                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                    .WithOpenAIDefaults(openAIKey)
+                    .WithPostgres(connString)
                     .Build<MemoryServerless>();
 
             default:
