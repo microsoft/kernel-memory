@@ -18,6 +18,7 @@ public class FilteringTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItSupportsASingleFilter()
     {
         string indexName = Guid.NewGuid().ToString("D");
@@ -78,6 +79,7 @@ public class FilteringTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItSupportsMultipleFilters()
     {
         string indexName = Guid.NewGuid().ToString("D");
@@ -151,6 +153,7 @@ public class FilteringTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItIgnoresEmptyFilters()
     {
         string indexName = Guid.NewGuid().ToString("D");

@@ -68,7 +68,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
-                    .WithQdrant(qdrantEndpoint)
+                    .WithQdrantMemoryDb(qdrantEndpoint)
                     .Build<MemoryServerless>();
 
             case "az_ai_search":
@@ -79,7 +79,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
-                    .WithAzureAISearch(acsEndpoint, acsKey)
+                    .WithAzureAISearchMemoryDb(acsEndpoint, acsKey)
                     .Build<MemoryServerless>();
 
             case "postgres":
@@ -88,7 +88,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
-                    .WithPostgres(connString)
+                    .WithPostgresMemoryDb(connString)
                     .Build<MemoryServerless>();
 
             default:

@@ -7,6 +7,7 @@ namespace UnitTests.Models;
 public class FileCollectionTest
 {
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItDeDupesCheckingThePath()
     {
         // Arrange
@@ -31,6 +32,7 @@ public class FileCollectionTest
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItDoesntDeDupeStreams()
     {
         // Arrange

@@ -20,6 +20,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task TestExtensionMethod1()
     {
         // Arrange
@@ -36,6 +37,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task TestExtensionMethod2()
     {
         // Arrange
@@ -57,6 +59,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task TestExtensionMethod3()
     {
         // Arrange

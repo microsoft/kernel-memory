@@ -6,17 +6,11 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Llama;
 using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.KernelMemory.MemoryStorage.Qdrant;
-using Microsoft.KernelMemory.Pipeline.Queue.AzureQueues;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
-using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 using Microsoft.KernelMemory.Postgres;
 
 namespace Microsoft.KernelMemory.Service;
@@ -192,12 +186,13 @@ internal sealed class ServiceConfiguration
         {
             switch (this._memoryConfiguration.DataIngestion.DistributedOrchestration.QueueType)
             {
-                case string y when y.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
-                    builder.Services.AddAzureQueue(this.GetServiceConfig<AzureQueueConfig>("AzureQueue"));
+                case string y1 when y1.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
+                case string y2 when y2.Equals("AzureQueues", StringComparison.OrdinalIgnoreCase):
+                    builder.Services.AddAzureQueuesOrchestration(this.GetServiceConfig<AzureQueuesConfig>("AzureQueue"));
                     break;
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    builder.Services.AddRabbitMq(this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
+                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
@@ -215,8 +210,9 @@ internal sealed class ServiceConfiguration
     {
         switch (this._memoryConfiguration.ContentStorageType)
         {
-            case string x when x.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureBlobAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs"));
+            case string x1 when x1.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase):
+            case string x2 when x2.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddAzureBlobsAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):

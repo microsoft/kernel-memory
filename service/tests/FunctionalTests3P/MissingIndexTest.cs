@@ -16,6 +16,7 @@ public class MissingIndexTest : BaseTestCase
     [InlineData("postgres")]
     [InlineData("simple_volatile")]
     [InlineData("az_ai_search")]
+    [Trait("Category", "NugetFunctionalTest")]
     public async Task ItHandlesMissingIndexesConsistently(string memoryType)
     {
         // Arrange

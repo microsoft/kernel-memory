@@ -14,6 +14,7 @@ public class BinaryDataExtensionsTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItHashesDataConsistently()
     {
         // Act

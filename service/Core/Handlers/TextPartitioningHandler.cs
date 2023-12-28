@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
@@ -46,7 +46,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
         this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
         this._log.LogInformation("Handler '{0}' ready", stepName);
 
-        this._tokenCounter = DefaultGPTTokenizer.InternalCountTokens;
+        this._tokenCounter = DefaultGPTTokenizer.StaticCountTokens;
         if (orchestrator.EmbeddingGenerationEnabled)
         {
             foreach (var gen in orchestrator.GetEmbeddingGenerators())

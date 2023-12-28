@@ -21,6 +21,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItIsolatesDirectories()
     {
         // Arrange
@@ -60,6 +61,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItCreatesAndDeletesVolumes()
     {
         // Arrange
@@ -79,6 +81,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItChecksIfVolumesExists()
     {
         // Arrange
@@ -95,6 +98,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDeletesNonEmptyVolumes()
     {
         // Arrange
@@ -113,6 +117,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDeletesDirectories()
     {
         // Arrange
@@ -141,6 +146,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItChecksIfFileExists()
     {
         // Arrange
@@ -161,6 +167,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItReadsFilesThatExist()
     {
         // Arrange
@@ -180,6 +187,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItThrowsIfAFileOrDirDoesntExist()
     {
         // Arrange
@@ -198,6 +206,7 @@ public class InMemoryFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItCanListFiles()
     {
         // Arrange
@@ -230,6 +239,7 @@ public class InMemoryFileSystemTest : BaseTestCase
 #pragma warning disable CA5394
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDoesntCorruptBinaryFiles()
     {
         // Arrange
@@ -265,6 +275,7 @@ public class InMemoryFileSystemTest : BaseTestCase
 #pragma warning restore CA5394
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDoesntCorruptTextFiles()
     {
         // Arrange

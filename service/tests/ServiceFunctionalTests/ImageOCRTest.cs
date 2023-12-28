@@ -23,6 +23,7 @@ public class ImageOCRTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItUsesTextFoundInsideImages()
     {
         // Arrange

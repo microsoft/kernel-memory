@@ -7,6 +7,7 @@ namespace UnitTests.Models;
 public class DocumentTest
 {
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItReplacesSpecialChars()
     {
         // Assert - No exception occurs

@@ -15,6 +15,7 @@ public class IndexDeletionTest : BaseTestCase
     [InlineData("postgres")]
     [InlineData("simple_volatile")]
     [InlineData("az_ai_search")]
+    [Trait("Category", "NugetFunctionalTest")]
     public async Task ItDeletesIndexes(string memoryType)
     {
         // Arrange

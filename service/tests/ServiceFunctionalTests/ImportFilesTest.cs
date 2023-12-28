@@ -23,6 +23,7 @@ public class ImportFilesTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItImportsFromSubDirsApi1()
     {
         // Act - Assert no exception occurs
@@ -38,6 +39,7 @@ public class ImportFilesTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItImportsFromSubDirsApi2()
     {
         // Act - Assert no exception occurs

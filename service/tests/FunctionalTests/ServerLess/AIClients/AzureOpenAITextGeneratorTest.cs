@@ -25,6 +25,7 @@ public class AzureOpenAITextGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItStreamsFromChatModel()
     {
         // Arrange

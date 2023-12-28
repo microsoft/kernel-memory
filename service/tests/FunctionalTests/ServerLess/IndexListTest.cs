@@ -15,6 +15,7 @@ public class IndexListTest : BaseTestCase
     }
 
     [Theory]
+    [Trait("Category", "Serverless")]
     [InlineData("default")]
     [InlineData("simple_on_disk")]
     [InlineData("simple_volatile")]

@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
         <NoWarn>$(NoWarn);CA1050,CA2007,CA1826,CA1303,CA1307,SKEXP0001</NoWarn>
@@ -13,6 +14,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\Core.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
     </ItemGroup>
 
     <ItemGroup>

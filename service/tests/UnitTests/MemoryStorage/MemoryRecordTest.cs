@@ -14,6 +14,7 @@ public class MemoryRecordTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItCanBeSerialized()
     {
         // Arrange
@@ -45,6 +46,7 @@ public class MemoryRecordTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItSupportsSchemaVersioning()
     {
         // This constant should never change
@@ -65,6 +67,7 @@ public class MemoryRecordTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItSelfUpgrades()
     {
         // Arrange
@@ -93,6 +96,7 @@ public class MemoryRecordTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItAllowsToRemoveKeys()
     {
         // Arrange

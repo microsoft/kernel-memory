@@ -19,6 +19,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItCreatesAndDeletesVolumes()
     {
         // Act
@@ -35,6 +36,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItChecksIfVolumesExists()
     {
         // Act
@@ -48,6 +50,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDeletesNonEmptyVolumes()
     {
         // Arrange
@@ -66,6 +69,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDeletesDirectories()
     {
         // Arrange
@@ -93,6 +97,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItChecksIfFileExists()
     {
         // Arrange
@@ -113,6 +118,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItReadsFilesThatExist()
     {
         // Arrange
@@ -132,6 +138,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItThrowsIfAFileOrDirDoesntExist()
     {
         // Arrange
@@ -150,6 +157,7 @@ public class OnDiskFileSystemTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItCanListFiles()
     {
         // Arrange
@@ -182,6 +190,7 @@ public class OnDiskFileSystemTest : BaseTestCase
 #pragma warning disable CA5394
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDoesntCorruptBinaryFiles()
     {
         // Arrange
@@ -217,6 +226,7 @@ public class OnDiskFileSystemTest : BaseTestCase
 #pragma warning restore CA5394
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public async Task ItDoesntCorruptTextFiles()
     {
         // Arrange
