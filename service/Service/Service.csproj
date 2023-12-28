@@ -24,7 +24,8 @@
         }
     -->
     <ItemGroup>
-        <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj"/>
+        <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj" />
+        <ProjectReference Include="..\Service.Core\Service.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +17,7 @@ using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.RabbitMq;
 using Microsoft.KernelMemory.Postgres;
 
-namespace Microsoft.KernelMemory.Service;
+namespace Microsoft.KernelMemory.Service.Core;
 
 internal sealed class ServiceConfiguration
 {
