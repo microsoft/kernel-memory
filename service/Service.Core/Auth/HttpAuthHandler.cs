@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.KernelMemory.Service;
+namespace Microsoft.KernelMemory.Service.Core.Auth;
 
 public class HttpAuthEndpointFilter : IEndpointFilter
 {
@@ -34,6 +32,6 @@ public class HttpAuthEndpointFilter : IEndpointFilter
             }
         }
 
-        return await next(context);
+        return await next(context).ConfigureAwait(false);
     }
 }

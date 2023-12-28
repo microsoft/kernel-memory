@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <AssemblyName>Microsoft.KernelMemory.ServiceAssembly.Core</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Service.Core</RootNamespace>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Service.Core</PackageId>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>true</ImplicitUsings>
+        <NoWarn>$(NoWarn);CA1711,CS1591,CS1574,NU5104,SKEXP0001</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Postgres" Version="0.3.231224.1" />
+    </ItemGroup>
+
+    <Import Project="../nuget-package.props"/>
+    <Import Project="../code-analysis.props"/>
+
+    <PropertyGroup>
+        <Product>Kernel Memory HTTP service components</Product>
+        <Description>Kernel Memory is a Copilot/Semantic Kernel Plugin and Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. The package contains the interfaces and models shared by all Kernel Memory packages.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+</Project>
