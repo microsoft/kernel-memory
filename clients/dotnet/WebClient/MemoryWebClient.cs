@@ -359,7 +359,7 @@ public class MemoryWebClient : IKernelMemory
             // Send HTTP request
             try
             {
-                HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpUploadEndpoint, formData, cancellationToken).ConfigureAwait(false);
                 formData.Dispose();
                 response.EnsureSuccessStatusCode();
             }
