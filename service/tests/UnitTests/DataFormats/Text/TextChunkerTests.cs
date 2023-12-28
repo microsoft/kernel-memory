@@ -11,6 +11,7 @@ public sealed class TextChunkerTests
     private static readonly TextChunker.TokenCounter s_tokenCounter = s => (s.Length >> 2);
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitPlainTextLines()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
@@ -26,6 +27,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphs()
     {
         List<string> input = new()
@@ -46,6 +48,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithOverlap()
     {
         List<string> input = new()
@@ -69,6 +72,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphs()
     {
         List<string> input = new()
@@ -90,6 +94,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithOverlap()
     {
         List<string> input = new()
@@ -113,6 +118,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkDownLines()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
@@ -128,6 +134,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithEmptyInput()
     {
         List<string> input = new();
@@ -140,6 +147,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithEmptyInput()
     {
         List<string> input = new();
@@ -152,6 +160,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsEvenly()
     {
         List<string> input = new()
@@ -178,6 +187,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on \r or \n
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnNewlines()
     {
         List<string> input = new()
@@ -204,6 +214,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on ? or !
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnPunctuation()
     {
         List<string> input = new()
@@ -231,6 +242,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on ;
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnSemicolons()
     {
         List<string> input = new()
@@ -257,6 +269,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on :
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnColons()
     {
         List<string> input = new()
@@ -283,6 +296,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on ,
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnCommas()
     {
         List<string> input = new()
@@ -309,6 +323,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on ) or ] or }
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnClosingBrackets()
     {
         List<string> input = new()
@@ -335,6 +350,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on ' '
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnSpaces()
     {
         List<string> input = new()
@@ -361,6 +377,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that splits on '-'
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsOnHyphens()
     {
         List<string> input = new()
@@ -387,6 +404,7 @@ public sealed class TextChunkerTests
 
     // a plaintext example that does not have any of the above characters
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithNoDelimiters()
     {
         List<string> input = new()
@@ -430,6 +448,7 @@ public sealed class TextChunkerTests
 
     // a markdown example that splits on '\r' or '\n'
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsOnNewlines()
     {
         List<string> input = new()
@@ -455,8 +474,8 @@ public sealed class TextChunkerTests
     }
 
     // a markdown example that does not have any of the above characters
-
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitVeryLargeDocumentsWithoutStackOverflowing()
     {
 #pragma warning disable CA5394 // this test relies on repeatable pseudo-random numbers
@@ -481,6 +500,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitPlainTextLinesWithCustomTokenCounter()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
@@ -496,6 +516,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithCustomTokenCounter()
     {
         List<string> input = new()
@@ -516,6 +537,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithOverlapAndCustomTokenCounter()
     {
         List<string> input = new()
@@ -539,6 +561,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithCustomTokenCounter()
     {
         List<string> input = new()
@@ -560,6 +583,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithOverlapAndCustomTokenCounter()
     {
         List<string> input = new()
@@ -583,6 +607,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkDownLinesWithCustomTokenCounter()
     {
         const string Input = "This is a test of the emergency broadcast system. This is only a test.";
@@ -598,6 +623,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -619,6 +645,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -643,6 +670,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -665,6 +693,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithOverlapAndHeader()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -689,6 +718,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -710,6 +740,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitMarkdownParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -734,6 +765,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";
@@ -756,6 +788,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void CanSplitTextParagraphsWithOverlapAndHeaderAndCustomTokenCounter()
     {
         const string ChunkHeader = "DOCUMENT NAME: test.txt\n\n";

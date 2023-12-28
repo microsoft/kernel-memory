@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
+using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MemoryStorage.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.KernelMemory.MemoryStorage.Qdrant;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.VectorDbComparison;
@@ -21,6 +21,7 @@ public class TestCosineSimilarity
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task CompareCosineSimilarity()
     {
         const string IndexName = "tests";

@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats;
 
 namespace Controllers;
 

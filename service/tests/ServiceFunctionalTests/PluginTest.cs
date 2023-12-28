@@ -14,6 +14,7 @@ public class PluginTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItSupportsQuestionsOnUploadedFiles()
     {
         // Arrange

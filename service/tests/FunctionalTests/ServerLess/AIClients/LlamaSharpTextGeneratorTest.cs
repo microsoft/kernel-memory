@@ -3,9 +3,10 @@
 using System.Diagnostics;
 using System.Text;
 using FunctionalTests.TestHelpers;
+using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.Llama;
-using Microsoft.KernelMemory.AI.Tokenizers.GPT3;
+using Microsoft.KernelMemory.AI.LlamaSharp;
+using Microsoft.KernelMemory.AI.OpenAI.GPT3;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.AI;
@@ -28,6 +29,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public void ItCountsTokens()
     {
         // Arrange
@@ -48,6 +50,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItGeneratesText()
     {
         // Arrange

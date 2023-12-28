@@ -26,6 +26,7 @@ public sealed class OpenAITextEmbeddingGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItGeneratesEmbeddingsThatCaptureSemantics()
     {
         // Arrange

@@ -19,6 +19,7 @@ public class IndexDeletionTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItDeletesSimpleVectorDbIndexes()
     {
         // Arrange
@@ -61,6 +62,7 @@ public class IndexDeletionTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItDeletesQdrantIndexes()
     {
         // Arrange
@@ -70,7 +72,7 @@ public class IndexDeletionTest : BaseTestCase
         var memory = new KernelMemoryBuilder()
             .WithOpenAIDefaults(openAIKey)
             .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "tmp-files" })
-            .WithQdrant("http://127.0.0.1:6333")
+            .WithQdrantMemoryDb("http://127.0.0.1:6333")
             .Build<MemoryServerless>();
 
         // Act
