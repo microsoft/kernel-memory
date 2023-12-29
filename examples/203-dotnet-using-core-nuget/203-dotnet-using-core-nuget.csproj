@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.24.231228.4" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.24.231228.5" />
     </ItemGroup>
 
     <ItemGroup>
