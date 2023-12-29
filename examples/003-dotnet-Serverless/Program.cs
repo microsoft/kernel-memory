@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.Llama;
-using Microsoft.KernelMemory.AI.Tokenizers;
-using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
+using Microsoft.KernelMemory.AI.OpenAI;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.

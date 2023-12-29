@@ -18,6 +18,7 @@ public class DocumentUploadTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItUploadsPDFDocsAndDeletes()
     {
         // Arrange

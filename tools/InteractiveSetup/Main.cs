@@ -522,7 +522,7 @@ public static class Main
                 new("Azure Queue",
                     () =>
                     {
-                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueue"; });
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueues"; });
                         s_cfgAzureQueue.Value = true;
                     }),
                 new("RabbitMQ",
@@ -569,7 +569,7 @@ public static class Main
         if (!s_cfgAzureQueue.Value) { return; }
 
         s_cfgAzureQueue.Value = false;
-        const string ServiceName = "AzureQueue";
+        const string ServiceName = "AzureQueues";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -594,7 +594,7 @@ public static class Main
         if (!s_cfgRabbitMq.Value) { return; }
 
         s_cfgRabbitMq.Value = false;
-        const string ServiceName = "RabbitMq";
+        const string ServiceName = "RabbitMQ";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {

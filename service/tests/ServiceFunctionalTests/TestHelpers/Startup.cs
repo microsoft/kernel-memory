@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// IMPORTANT: this file must be at the root of the namespace
+/* IMPORTANT: the Startup class must be at the root of the namespace and
+ * the namespace must match exactly (required by Xunit.DependencyInjection) */
+
+// ReSharper disable CheckNamespace
 
 namespace FunctionalTests;
 
-/// <summary>
-/// IMPORTANT: this file must be at the root of the namespace
-/// </summary>
 public class Startup
 {
     public void ConfigureHost(IHostBuilder hostBuilder)

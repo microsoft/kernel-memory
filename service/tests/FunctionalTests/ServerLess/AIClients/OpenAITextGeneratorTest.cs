@@ -24,6 +24,7 @@ public sealed class OpenAITextGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItStreamsFromChatModel()
     {
         // Arrange
@@ -42,6 +43,7 @@ public sealed class OpenAITextGeneratorTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "Serverless")]
     public async Task ItStreamsFromTextModel()
     {
         // Arrange

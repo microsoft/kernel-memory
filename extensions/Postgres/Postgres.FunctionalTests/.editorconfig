@@ -1,0 +1,9 @@
+# TEST SETTINGS
+
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in tests
+dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+dotnet_diagnostic.IDE0005.severity = none # No need for documentation
+dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names[*.cs]
+dotnet_diagnostic.IDE0130.severity = none # No namespace checks
+resharper_inconsistent_naming_highlighting = none

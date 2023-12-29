@@ -28,8 +28,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.23.231224.1" />
-        <PackageReference Include="Microsoft.KernelMemory.Postgres" Version="0.3.231224.1" />
+        <!-- Microsoft.KernelMemory.Core includes all Azure extensions and extensions without external dependencies -->
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.24.231228.4" />
+        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
+        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.24.231228.4"/>
+        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.24.231228.4"/>
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.24.231228.4" />
     </ItemGroup>
 
     <!-- Code Analysis -->

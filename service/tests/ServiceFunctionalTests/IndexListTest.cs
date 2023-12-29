@@ -18,6 +18,7 @@ public class IndexListTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
     public async Task ItListsIndexes()
     {
         // Arrange
