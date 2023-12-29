@@ -1,7 +1,7 @@
 # Kernel Memory with Postgres + pgvector
 
-[![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Postgres)](https://www.nuget.org/packages/Microsoft.KernelMemory.Postgres/)
-[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
+[![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Postgres)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Postgres/)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
 
 This project contains the [Postgres](https://www.postgresql.org) adapter allowing
 to use Kernel Memory with [Postgres+pgvector](https://github.com/pgvector/pgvector).

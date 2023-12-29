@@ -397,6 +397,7 @@ internal sealed class PostgresDbClient : IDisposable
                 SELECT {columns}, 1 - ({this._colEmbedding} <=> @embedding) AS {similarityActualValue}
                 FROM {tableName}
                 WHERE {filterSql}
+                ORDER BY {similarityActualValue} DESC
                 LIMIT @limit
                 OFFSET @offset
             ";
