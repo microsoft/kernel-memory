@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\..\Core\Core.csproj"/>
         <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj"/>
