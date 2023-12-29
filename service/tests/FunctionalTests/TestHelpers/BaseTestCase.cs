@@ -23,18 +23,12 @@ public abstract class BaseTestCase : IDisposable
     protected IConfiguration QdrantConfiguration => this.ServiceConfiguration.GetSection("Qdrant");
     protected IConfiguration AzureAISearchConfiguration => this.ServiceConfiguration.GetSection("AzureAISearch");
 
+    // IMPORTANT: install Xunit.DependencyInjection package
     protected BaseTestCase(IConfiguration cfg, ITestOutputHelper output)
     {
         this._cfg = cfg;
         this._output = new RedirectConsole(output);
         Console.SetOut(this._output);
-    }
-
-    protected IKernelMemory GetMemoryWebClient()
-    {
-        string endpoint = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("Endpoint", "http://127.0.0.1:9001/")!;
-        string? apiKey = this.Configuration.GetSection("ServiceAuthorization").GetValue<string>("AccessKey");
-        return new MemoryWebClient(endpoint, apiKey: apiKey);
     }
 
     protected IKernelMemory GetServerlessMemory(string memoryType)
@@ -72,7 +66,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
-                    .WithQdrant(qdrantEndpoint)
+                    .WithQdrantMemoryDb(qdrantEndpoint)
                     .Build<MemoryServerless>();
 
             case "az_ai_search":
@@ -83,7 +77,7 @@ public abstract class BaseTestCase : IDisposable
                 return new KernelMemoryBuilder()
                     .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                     .WithOpenAIDefaults(openAIKey)
-                    .WithAzureAISearch(acsEndpoint, acsKey)
+                    .WithAzureAISearchMemoryDb(acsEndpoint, acsKey)
                     .Build<MemoryServerless>();
 
             default:

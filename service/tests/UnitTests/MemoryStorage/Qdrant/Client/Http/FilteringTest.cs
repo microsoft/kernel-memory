@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.KernelMemory.MemoryStorage.Qdrant.Client.Http;
+using Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 using UnitTests.TestHelpers;
 using Xunit.Abstractions;
 
@@ -14,6 +14,7 @@ public class FilteringTest : BaseTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void FiltersAreRenderedToJson()
     {
         const string Expected = """

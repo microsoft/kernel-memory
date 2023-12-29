@@ -33,6 +33,7 @@ public static class Main
     private static BoundedBoolean s_cfgEmbeddingGenerationEnabled = new();
     private static BoundedBoolean s_cfgAzureAISearch = new();
     private static BoundedBoolean s_cfgQdrant = new();
+    private static BoundedBoolean s_cfgPostgres = new();
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
     public static void InteractiveSetup(
@@ -63,6 +64,7 @@ public static class Main
         s_cfgEmbeddingGenerationEnabled = new(initialState: true);
         s_cfgAzureAISearch = new();
         s_cfgQdrant = new();
+        s_cfgPostgres = new();
         s_cfgSimpleVectorDb = new();
 
         try
@@ -97,6 +99,7 @@ public static class Main
             MemoryDbTypeSetup();
             AzureAISearchSetup();
             QdrantSetup();
+            PostgresSetup();
             SimpleVectorDbSetup();
 
             // Text generation
@@ -106,6 +109,9 @@ public static class Main
             LlamaSharpSetup();
 
             LoggerSetup();
+
+            Console.WriteLine("== Done! :-)\n");
+            Console.WriteLine("== You can start the service with: dotnet run\n");
         }
         catch (Exception e)
         {
@@ -396,8 +402,8 @@ public static class Main
         {
             config = new Dictionary<string, object>
             {
-                { "TextModel", "" },
-                { "EmbeddingModel", "" },
+                { "TextModel", "gpt-3.5-turbo-16k" },
+                { "EmbeddingModel", "text-embedding-ada-002" },
                 { "APIKey", "" },
                 { "OrgId", "" },
                 { "MaxRetries", 10 },
@@ -516,7 +522,7 @@ public static class Main
                 new("Azure Queue",
                     () =>
                     {
-                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueue"; });
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueues"; });
                         s_cfgAzureQueue.Value = true;
                     }),
                 new("RabbitMQ",
@@ -563,7 +569,7 @@ public static class Main
         if (!s_cfgAzureQueue.Value) { return; }
 
         s_cfgAzureQueue.Value = false;
-        const string ServiceName = "AzureQueue";
+        const string ServiceName = "AzureQueues";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -588,7 +594,7 @@ public static class Main
         if (!s_cfgRabbitMq.Value) { return; }
 
         s_cfgRabbitMq.Value = false;
-        const string ServiceName = "RabbitMq";
+        const string ServiceName = "RabbitMQ";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
@@ -708,6 +714,15 @@ public static class Main
                     });
                     s_cfgQdrant.Value = true;
                 }),
+                new("Postgres", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.MemoryDbType = "Postgres";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                    });
+                    s_cfgPostgres.Value = true;
+                }),
                 new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)", () =>
                 {
                     AppSettings.Change(x =>
@@ -797,6 +812,27 @@ public static class Main
         {
             { "Endpoint", SetupUI.AskOpenQuestion("Qdrant <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Qdrant <API Key> (for cloud only)", config["APIKey"].ToString(), optional: true) },
+        });
+    }
+
+    private static void PostgresSetup()
+    {
+        if (!s_cfgPostgres.Value) { return; }
+
+        s_cfgPostgres.Value = false;
+        const string ServiceName = "Postgres";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "ConnectionString", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "ConnectionString", SetupUI.AskPassword("Postgres connection string (e.g. 'Host=..;Port=5432;Username=..;Password=..')", config["ConnectionString"].ToString(), optional: true) },
         });
     }
 }

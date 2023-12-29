@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.MemoryStorage;
 
+/// <summary>
+/// Common interface with all Memory API methods.
+/// </summary>
 public interface IMemoryDb
 {
     /// <summary>

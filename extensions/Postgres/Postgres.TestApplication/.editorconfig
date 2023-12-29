@@ -1,0 +1,5 @@
+[*.cs]
+dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in examples
+dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+resharper_inconsistent_naming_highlighting = none
+resharper_comment_typo_highlighting = none

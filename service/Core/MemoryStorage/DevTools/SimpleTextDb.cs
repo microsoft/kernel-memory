@@ -84,7 +84,7 @@ public class SimpleTextDb : IMemoryDb
 
         var list = this.GetListAsync(index, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
-        await foreach (MemoryRecord r in list.WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord r in list.ConfigureAwait(false))
         {
             records[r.Id] = r;
         }

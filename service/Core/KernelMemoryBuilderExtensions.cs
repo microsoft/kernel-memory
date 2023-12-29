@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
-using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;

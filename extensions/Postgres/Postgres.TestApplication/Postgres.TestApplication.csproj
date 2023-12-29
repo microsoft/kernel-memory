@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <RestoreNoCache>true</RestoreNoCache>
+        <NoWarn>CA1303,CA1852</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="appsettings.json"/>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+
+        <None Remove="appsettings.customsql.json"/>
+        <Content Include="appsettings.customsql.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+
+        <None Remove="appsettings.development.json"/>
+        <Content Include="appsettings.development.json" Condition="Exists('appsettings.development.json')">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+      <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI.csproj" />
+      <ProjectReference Include="..\Postgres\Postgres.csproj" />
+    </ItemGroup>
+
+</Project>

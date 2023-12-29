@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.OpenAI;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
@@ -396,6 +396,6 @@ public static class TextChunker
     private static int GetTokenCount(string input, TokenCounter? tokenCounter)
     {
         // Fall back to GPT tokenizer if none configured
-        return tokenCounter?.Invoke(input) ?? DefaultGPTTokenizer.InternalCountTokens(input);
+        return tokenCounter?.Invoke(input) ?? DefaultGPTTokenizer.StaticCountTokens(input);
     }
 }

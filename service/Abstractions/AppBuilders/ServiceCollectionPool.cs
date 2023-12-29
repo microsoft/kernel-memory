@@ -12,110 +12,185 @@ namespace Microsoft.KernelMemory.AppBuilders;
 /// Represents a collection of service collections, so that DI helpers
 /// like `WithX` act on multiple service collections, e.g. the one used
 /// by KernelMemoryBuilder and the one used by end user application.
+///
+/// The pool is meant to have a "primary" that contains all services,
+/// so that it's possible to look up the aggregate, e.g. check if
+/// a dependency exists in any of the collections, and to loop
+/// through the complete list of service descriptors.
 /// </summary>
 public class ServiceCollectionPool : IServiceCollection
 {
+    /// <summary>
+    /// Collection of service collections, ie the pool.
+    /// </summary>
     private readonly List<IServiceCollection> _pool;
-    private bool _locked;
 
-    public int Count => this._pool.First().Count;
-    public bool IsReadOnly => this._pool.First().IsReadOnly;
+    /// <summary>
+    /// Primary collection used for read and iteration calls
+    /// </summary>
+    private readonly IServiceCollection _primaryCollection;
 
-    public ServiceCollectionPool(IServiceCollection sc)
+    /// <summary>
+    /// Flag indicating whether the list of collections is readonly.
+    /// The list becomes readonly as soon as service descriptors are added.
+    /// </summary>
+    private bool _poolSizeLocked;
+
+    /// <summary>
+    /// The total number of service descriptors registered
+    /// </summary>
+    public int Count => this._primaryCollection.Count;
+
+    /// <inheritdoc/>
+    public bool IsReadOnly => this._primaryCollection.IsReadOnly;
+
+    /// <summary>
+    /// Create a new instance, passing in the primary list of services
+    /// </summary>
+    /// <param name="primaryCollection">The primary service collection</param>
+    public ServiceCollectionPool(IServiceCollection primaryCollection)
     {
-        this._locked = false;
-        this._pool = new List<IServiceCollection> { sc };
+        if (primaryCollection == null)
+        {
+            throw new ArgumentNullException(nameof(primaryCollection), "The primary service collection cannot be NULL");
+        }
+
+        this._poolSizeLocked = false;
+        this._primaryCollection = primaryCollection;
+        this._pool = new List<IServiceCollection> { primaryCollection };
     }
 
-    public void AddServiceCollection(IServiceCollection? sc)
+    /// <summary>
+    /// Add one more service collection to the pool
+    /// </summary>
+    /// <param name="serviceCollection">Service collection</param>
+    public void AddServiceCollection(IServiceCollection? serviceCollection)
     {
-        if (sc == null) { return; }
+        if (serviceCollection == null) { return; }
 
-        if (this._locked)
+        if (this._poolSizeLocked)
         {
             throw new InvalidOperationException("The pool of service collections is already in use and cannot be extended");
         }
 
-        this._pool.Add(sc);
+        this._pool.Add(serviceCollection);
     }
 
+    /// <inheritdoc/>
     public void Add(ServiceDescriptor item)
     {
-        this._locked = true;
+        this.Lock();
         foreach (var sc in this._pool)
         {
             sc.Add(item);
         }
     }
 
+    /// <inheritdoc/>
     public bool Contains(ServiceDescriptor item)
     {
-        this._locked = true;
+        this.Lock();
         return this._pool.First().Contains(item);
     }
 
-    /**
-     * The methods below are not used by KernelMemoryBuilder and could lead to
-     * unexpected bugs/behavior considering that the memory builder service
-     * collection is different from the end user application service collection.
-     */
+    /* IMPORTANT: iterations use the primary collection only. */
 
-    #region unnecessary - risky for collections that could be different
-
-#pragma warning disable CA1065 // these methods are not safe to implement because the internal state can vary
+    /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
     {
-        throw new NotImplementedException();
+        this.Lock();
+        return this._primaryCollection.GetEnumerator();
     }
 
+    /// <inheritdoc/>
     public IEnumerator<ServiceDescriptor> GetEnumerator()
     {
-        throw new NotImplementedException();
+        this.Lock();
+        return this._primaryCollection.GetEnumerator();
     }
 
+    #region unsafe
+
+    /// <inheritdoc/>
+    public bool Remove(ServiceDescriptor item)
+    {
+        this.Lock();
+        DeletionsNotAllowed();
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public void Clear()
+    {
+        this.Lock();
+        DeletionsNotAllowed();
+    }
+
+    /// <inheritdoc/>
     public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        this.Lock();
+        throw AccessByPositionNotAllowed();
     }
 
+    /// <inheritdoc/>
     public int IndexOf(ServiceDescriptor item)
     {
-        throw new NotImplementedException();
+        this.Lock();
+        throw AccessByPositionNotAllowed();
     }
 
+    /// <inheritdoc/>
     public void Insert(int index, ServiceDescriptor item)
     {
-        throw new NotImplementedException();
+        this.Lock();
+        throw AccessByPositionNotAllowed();
     }
 
+    /// <inheritdoc/>
     public void RemoveAt(int index)
     {
-        throw new NotImplementedException();
+        this.Lock();
+        throw AccessByPositionNotAllowed();
     }
 
+    /// <inheritdoc/>
     public ServiceDescriptor this[int index]
     {
         get
         {
-            throw new NotImplementedException();
+            this.Lock();
+            throw AccessByPositionNotAllowed();
         }
         set
         {
-            throw new NotImplementedException();
+            this.Lock();
+            throw AccessByPositionNotAllowed();
         }
     }
 
-    public void Clear()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool Remove(ServiceDescriptor item)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
+
+    private void Lock()
+    {
+        this._poolSizeLocked = true;
+    }
+
+    /// <exception cref="InvalidOperationException"></exception>
+    private static InvalidOperationException DeletionsNotAllowed()
+    {
+        return new InvalidOperationException(
+            $"{nameof(ServiceCollectionPool)} is used to share external service collections with KernelBuilder. " +
+            $"KernelBuilder should never remove service descriptors defined in the hosting application.");
+    }
+
+    /// <exception cref="InvalidOperationException"></exception>
+    private static InvalidOperationException AccessByPositionNotAllowed()
+    {
+        return new InvalidOperationException(
+            $"{nameof(ServiceCollectionPool)} contains collections of different size, " +
+            "and direct access by position is not allowed, to avoid inconsistent results.");
+    }
 
 #pragma warning restore CA1065
 }
