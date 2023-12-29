@@ -144,7 +144,7 @@ public class TestMemoryFilters
             Assert.Equal(4, multipleFiltersResults.Count);
         }
 
-        // Test search by documentId
+        // Test search by memory record Id
         if (test == 4)
         {
             var documentId = "3";
