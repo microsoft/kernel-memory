@@ -64,9 +64,6 @@ built for most popular AI platforms.
     * Local file based queue
     * In memory queues (volatile)
 
-> ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
-> as is not fully functional yet.
-
 # Kernel Memory in serverless mode
 
 Kernel Memory works and scales at best when running as a service, allowing to
