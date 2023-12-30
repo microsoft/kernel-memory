@@ -36,6 +36,13 @@
         <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.24.231228.5" />
     </ItemGroup>
 
+<!--    <ItemGroup>-->
+<!--        <ProjectReference Include="..\Core\Core.csproj"/>-->
+<!--        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp.csproj"/>-->
+<!--        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj"/>-->
+<!--        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj"/>-->
+<!--    </ItemGroup>-->
+
     <!-- Code Analysis -->
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">

@@ -46,4 +46,38 @@ public class DocumentUploadTest : BaseTestCase
         this.Log("Deleting memories extracted from the document");
         await this._memory.DeleteDocumentAsync(Id);
     }
+
+    [Fact]
+    [Trait("Category", "ServiceFunctionalTest")]
+    public async Task ItSupportTags()
+    {
+        // Arrange
+        const string Id = "ItSupportTags-file1-NASA-news.pdf";
+        await this._memory.ImportDocumentAsync(
+            "file1-NASA-news.pdf",
+            documentId: Id,
+            tags: new TagCollection
+            {
+                { "type", "news" },
+                { "type", "test" },
+                { "ext", "pdf" }
+            },
+            steps: Constants.PipelineWithoutSummary);
+
+        // Act
+        var answer1 = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news"));
+        this.Log(answer1.Result);
+        var answer2 = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "test"));
+        this.Log(answer2.Result);
+        var answer3 = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("ext", "pdf"));
+        this.Log(answer3.Result);
+        var answer4 = await this._memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("foo", "bar"));
+        this.Log(answer4.Result);
+
+        // Assert
+        Assert.Contains("spacecraft", answer1.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("spacecraft", answer2.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("spacecraft", answer3.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("NOT FOUND", answer4.Result, StringComparison.OrdinalIgnoreCase);
+    }
 }
