@@ -13,6 +13,9 @@ public static class Constants
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
 
+    // Form field containing the list of tags
+    public const string WebServiceTagsField = "tags";
+
     // Form field containing the list of pipeline steps
     public const string WebServiceStepsField = "steps";
 
