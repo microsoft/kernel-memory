@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -18,15 +19,17 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
     public OpenAITextEmbeddingGenerator(
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextEmbeddingGenerator>())
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextEmbeddingGenerator>(), httpClient)
     {
     }
 
     public OpenAITextEmbeddingGenerator(
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILogger<OpenAITextEmbeddingGenerator>? log = null)
+        ILogger<OpenAITextEmbeddingGenerator>? log = null,
+        HttpClient? httpClient = null)
     {
         this._log = log ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
 
@@ -45,7 +48,8 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             apiKey: config.APIKey,
-            organization: config.OrgId);
+            organization: config.OrgId,
+            httpClient: httpClient);
     }
 
     /// <inheritdoc/>
