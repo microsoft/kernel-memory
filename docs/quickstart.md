@@ -24,11 +24,11 @@ and a .NET application.
 
 ## Configuration
 
-KM service requires a configuration file to start, usually `appsettings.developmnet.json` when working locally,
+KM service requires a configuration file to start, usually `appsettings.development.json` when working locally,
 or `appsettings.production.json` when running in Production environment. The exact config file is automatically
 loaded, by checking the `ASPNETCORE_ENVIRONMENT` environment variable.
 
-KM repository includes a wizard to quickly generate your first `appsettings.developmnet.json`:
+KM repository includes a wizard to quickly generate your first `appsettings.development.json`:
 
     cd service/Service
     dotnet run setup

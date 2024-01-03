@@ -16,7 +16,7 @@ pipelines, with support for
 **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
 synthetic memory, prompt engineering, and custom semantic memory processing.
 
-KM supports PDF and Word documents, PowerPoint presentations, Images, Spreadsheets [and more](extensions/data-formats), 
+KM supports PDF and Word documents, PowerPoint presentations, Images, Spreadsheets [and more](extensions/data-formats),
 extracting information and generating memories by leveraging Large Language Models (LLMs), Embeddings and Vector
 storage.
 

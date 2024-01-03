@@ -34,7 +34,7 @@ to specify a record was extracted from an email received at work.
 
 Some important highlights about Tags and Indexes:
 
-1. Read and Write operations always work withing the boundaries of a single index.
+1. Read and Write operations always work within the boundaries of a single index.
 2. One memory cannot be stored in two or more indexes, unless the memory record is
    written once in each index, and these records are not linked in any way.
 3. A record cannot be moved from one index to another, unless one manually
