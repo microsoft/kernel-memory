@@ -1,12 +1,12 @@
 ---
-nav_order: 100
+nav_order: 4
 grand_parent: Extensions
 parent: Memory DBs
-title: Simple memory
-permalink: /extensions/dev-tools/simple-memory
+title: Elastic Search
+permalink: /extensions/memory-db/elastic-search
 layout: default
 ---
-# Simple memory (dev/test tool)
+# Elastic Search
 
 {: .highlight }
 documentation under development

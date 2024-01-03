@@ -1,12 +1,12 @@
 ---
-nav_order: 100
+nav_order: 5
 grand_parent: Extensions
 parent: Memory DBs
-title: Simple memory
-permalink: /extensions/dev-tools/simple-memory
+title: Redis
+permalink: /extensions/memory-db/redis
 layout: default
 ---
-# Simple memory (dev/test tool)
+# Redis
 
 {: .highlight }
 documentation under development
