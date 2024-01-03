@@ -72,10 +72,15 @@ public class HttpDocumentUploadRequest
             {
                 if (tag == null) { continue; }
 
-                var keyValue = tag.Split(Constants.ReservedEqualsChar, 2);
-                string key = keyValue[0];
+                var keyValue = tag.Trim().Split(Constants.ReservedEqualsChar, 2);
+                string key = keyValue[0].Trim();
+                if (string.IsNullOrWhiteSpace(key)) { continue; }
+
                 ValidateTagName(key);
-                string? value = keyValue.Length == 1 ? null : keyValue[1];
+
+                string? value = keyValue.Length == 1 ? null : keyValue[1].Trim();
+                if (string.IsNullOrWhiteSpace(value)) { value = null; }
+
                 result.Tags.Add(key, value);
             }
         }
@@ -93,7 +98,7 @@ public class HttpDocumentUploadRequest
             }
         }
 
-        result.Index = indexes[0]!;
+        result.Index = indexes.FirstOrDefault()?.Trim() ?? string.Empty;
         result.DocumentId = documentId;
         result.Files = form.Files;
 

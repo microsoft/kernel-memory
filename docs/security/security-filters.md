@@ -1,3 +1,10 @@
+---
+nav_order: 1
+parent: Security
+title: Security Filters
+permalink: /security/filters
+layout: default
+---
 # Security Filters
 
 This document provides some guidance about how to organize your documents in

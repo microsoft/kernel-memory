@@ -24,9 +24,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{371B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
 	ProjectSection(SolutionItems) = preProject
-		docs\FAQ.md = docs\FAQ.md
-		docs\SECURITY_FILTERS.md = docs\SECURITY_FILTERS.md
+		docs\_config.local.yml = docs\_config.local.yml
+		docs\_config.yml = docs\_config.yml
+		docs\csharp.png = docs\csharp.png
+		docs\service.md = docs\service.md
+		docs\serverless.md = docs\serverless.md
+		docs\security.md = docs\security.md
+		docs\run.cmd = docs\run.cmd
+		docs\quickstart.md = docs\quickstart.md
+		docs\quickstart-swagger.png = docs\quickstart-swagger.png
+		docs\quickstart-dotnet-run.png = docs\quickstart-dotnet-run.png
+		docs\python.png = docs\python.png
+		docs\packages.md = docs\packages.md
 		docs\network.png = docs\network.png
+		docs\logo.png = docs\logo.png
+		docs\java.png = docs\java.png
+		docs\index.md = docs\index.md
+		docs\how-tos.md = docs\how-tos.md
+		docs\Gemfile.lock = docs\Gemfile.lock
+		docs\Gemfile = docs\Gemfile
+		docs\features.md = docs\features.md
+		docs\favicon.png = docs\favicon.png
+		docs\FAQ.md = docs\FAQ.md
+		docs\extensions.md = docs\extensions.md
+		docs\concepts.md = docs\concepts.md
+		docs\404.html = docs\404.html
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
