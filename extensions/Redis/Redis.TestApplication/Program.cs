@@ -6,7 +6,6 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using StackExchange.Redis;
-using redis_tests;
 
 public static class Program
 {
@@ -109,9 +108,9 @@ public static class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var connectionString = config.GetValue<string>("RedisConnectionString");
         var useRealEmbeddingGenerator = config.GetValue<bool>("UseRealEmbeddingGenerator");
-        var openAIApiKey = config.GetValue<string>("OpenAiApiKey");
+        var connectionString = config.GetValue<string>("RedisConnectionString") ?? string.Empty;
+        var openAIApiKey = config.GetValue<string>("OpenAiApiKey") ?? string.Empty;
 
         // ======================================================
         // ======================================================

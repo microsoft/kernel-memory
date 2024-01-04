@@ -3,9 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 
-namespace redis_tests;
-
-internal class MockEmbeddingGenerator : ITextEmbeddingGenerator
+internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly Dictionary<string, Embedding> _embeddings = new();
 
