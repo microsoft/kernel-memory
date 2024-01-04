@@ -3,15 +3,13 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 
-namespace redis_tests;
-
-internal class MockEmbeddingGenerator : ITextEmbeddingGenerator
+internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
 {
-    private readonly Dictionary<string, float[]> _embeddings = new();
+    private readonly Dictionary<string, Embedding> _embeddings = new();
 
-    internal void AddFakeEmbedding(string str, float[] floats)
+    internal void AddFakeEmbedding(string str, Embedding vector)
     {
-        this._embeddings.Add(str, floats);
+        this._embeddings.Add(str, vector);
     }
 
     /// <inheritdoc />
@@ -22,5 +20,5 @@ internal class MockEmbeddingGenerator : ITextEmbeddingGenerator
 
     /// <inheritdoc />
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default) =>
-        Task.FromResult(new Embedding(this._embeddings[text]));
+        Task.FromResult(this._embeddings[text]);
 }
