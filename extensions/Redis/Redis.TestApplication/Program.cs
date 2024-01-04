@@ -9,26 +9,46 @@ using StackExchange.Redis;
 
 public static class Program
 {
-    private const string Text = "test1";
+    private const string Text1 = "this is test 1";
+    private const string Text2 = "this is test 2";
 
     public static async Task Main()
     {
-        var (memory, embedding) = await SetupAsync();
+        var (memory, embeddings) = await SetupAsync();
 
         Console.WriteLine("===== DELETE INDEX =====");
 
         await memory.DeleteIndexAsync("test");
+        await memory.DeleteIndexAsync("test1");
+        await memory.DeleteIndexAsync("test2");
 
-        Console.WriteLine("===== CREATE INDEX =====");
+        Console.WriteLine("===== CREATE INDEXES =====");
 
-        await memory.CreateIndexAsync("test", 5);
+        await memory.CreateIndexAsync("test", embeddings[0].Length);
+        await memory.CreateIndexAsync("test1", embeddings[0].Length);
 
-        Console.WriteLine("===== INSERT RECORD 1 =====");
+        Console.WriteLine("===== LIST INDEXES =====");
+
+        IEnumerable<string> indexes = await memory.GetIndexesAsync();
+        foreach (var indexName in indexes)
+        {
+            Console.WriteLine(indexName);
+        }
+
+        Console.WriteLine("===== INSERT RECORD 1 AND 2 =====");
 
         var memoryRecord1 = new MemoryRecord
         {
             Id = "memory 1",
-            Vector = embedding,
+            Vector = embeddings[0],
+            Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
+            Payload = new Dictionary<string, object>()
+        };
+
+        var memoryRecord2 = new MemoryRecord
+        {
+            Id = "memory 2",
+            Vector = embeddings[0],
             Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
             Payload = new Dictionary<string, object>()
         };
@@ -36,29 +56,40 @@ public static class Program
         var id1 = await memory.UpsertAsync("test", memoryRecord1);
         Console.WriteLine($"Insert 1: {id1} {memoryRecord1.Id}");
 
-        Console.WriteLine("===== INSERT RECORD 2 =====");
+        var id2 = await memory.UpsertAsync("test2", memoryRecord2);
+        Console.WriteLine($"Insert 2: {id2} {memoryRecord2.Id}");
 
-        var memoryRecord2 = new MemoryRecord
+        Console.WriteLine("===== LIST INDEXES =====");
+
+        indexes = await memory.GetIndexesAsync();
+        foreach (var indexName in indexes)
         {
-            Id = "memory two",
-            Vector = new[] { 0f, 0, 1, 0, 1 },
+            Console.WriteLine(indexName);
+        }
+
+        Console.WriteLine("===== INSERT RECORD 3 =====");
+
+        var memoryRecord3 = new MemoryRecord
+        {
+            Id = "memory three",
+            Vector = embeddings[1],
             Tags = new TagCollection { { "type", "news" } },
             Payload = new Dictionary<string, object>()
         };
 
-        var id2 = await memory.UpsertAsync("test", memoryRecord2);
-        Console.WriteLine($"Insert 2: {id2} {memoryRecord2.Id}");
+        var id3 = await memory.UpsertAsync("test", memoryRecord3);
+        Console.WriteLine($"Insert 3: {id3} {memoryRecord3.Id}");
 
-        Console.WriteLine("===== UPDATE RECORD 2 =====");
+        Console.WriteLine("===== UPDATE RECORD 3 =====");
 
-        memoryRecord2.Tags.Add("updated", "yes");
-        id2 = await memory.UpsertAsync("test", memoryRecord2);
-        Console.WriteLine($"Update 2: {id2} {memoryRecord2.Id}");
+        memoryRecord3.Tags.Add("updated", "yes");
+        id3 = await memory.UpsertAsync("test", memoryRecord3);
+        Console.WriteLine($"Update 3: {id3} {memoryRecord3.Id}");
 
         Console.WriteLine("===== SEARCH 1 =====");
 
-        var similarList = memory.GetSimilarListAsync("test", text: Text,
-            limit: 10, withEmbeddings: true);
+        var similarList = memory.GetSimilarListAsync(
+            "test", text: Text1, limit: 10, withEmbeddings: true);
         await foreach ((MemoryRecord, double) record in similarList)
         {
             Console.WriteLine(record.Item1.Id);
@@ -68,8 +99,9 @@ public static class Program
 
         Console.WriteLine("===== SEARCH 2 =====");
 
-        similarList = memory.GetSimilarListAsync("test", text: Text,
-            limit: 10, withEmbeddings: true, filters: new List<MemoryFilter> { MemoryFilters.ByTag("type", "email") });
+        similarList = memory.GetSimilarListAsync(
+            "test", text: Text1, limit: 10, withEmbeddings: true,
+            filters: new List<MemoryFilter> { MemoryFilters.ByTag("type", "email") });
         await foreach ((MemoryRecord, double) record in similarList)
         {
             Console.WriteLine(record.Item1.Id);
@@ -101,7 +133,7 @@ public static class Program
         Console.WriteLine("== Done ==");
     }
 
-    private static async Task<(RedisMemory, Embedding)> SetupAsync()
+    private static async Task<(RedisMemory, Embedding[])> SetupAsync()
     {
         IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -138,23 +170,25 @@ public static class Program
         };
 
         var muxer = await ConnectionMultiplexer.ConnectAsync(connectionString);
-        RedisMemory memory = new RedisMemory(new RedisConfig(tags: tags), muxer, embeddingGenerator);
+        var memory = new RedisMemory(new RedisConfig(tags: tags), muxer, embeddingGenerator);
 
-        Embedding embedding;
+        Embedding embedding1 = new[] { 0f, 0, 1, 0, 1 };
+        Embedding embedding2 = new[] { 0, 0, 0.95f, 0.01f, 0.95f };
         if (useRealEmbeddingGenerator)
         {
-            embedding = await embeddingGenerator.GenerateEmbeddingAsync(Text);
+            embedding1 = await embeddingGenerator.GenerateEmbeddingAsync(Text1);
+            embedding2 = await embeddingGenerator.GenerateEmbeddingAsync(Text2);
         }
         else
         {
-            embedding = new[] { 0f, 0, 1, 0, 1 };
-            ((MockEmbeddingGenerator)embeddingGenerator).AddFakeEmbedding(Text, embedding);
+            ((MockEmbeddingGenerator)embeddingGenerator).AddFakeEmbedding(Text1, embedding1);
+            ((MockEmbeddingGenerator)embeddingGenerator).AddFakeEmbedding(Text2, embedding2);
         }
 
         // ======================================================
         // ======================================================
         // ======================================================
 
-        return (memory, embedding);
+        return (memory, new[] { embedding1, embedding2 });
     }
 }
