@@ -5,7 +5,6 @@ title: Partitioning & chunking
 permalink: /how-to/custom-partitioning
 layout: default
 ---
-================
 # Custom Text Partitioning / Chunking
 
 Kernel Memory extracts text from images, pages, and documents, and then partitions the text into
