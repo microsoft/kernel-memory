@@ -1,7 +1,7 @@
 ---
 nav_order: 6
 parent: Quickstart
-title: JavaScript
+title: JavaScript example
 permalink: /quickstart/javascript
 layout: default
 ---
