@@ -60,7 +60,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
             {
 #pragma warning disable CA2254 // the msg is always used
                 var errMsg = $"The configured partition size ({this._options.MaxTokensPerParagraph} tokens) is too big for one " +
-                             $"of the embedding generators in use. The max value allowed is {this._maxTokensPerPartition} tokens";
+                             $"of the embedding generators in use. The max value allowed is {this._maxTokensPerPartition} tokens. " +
+                             $"Consider changing the partitioning options, see {InternalConstants.DocsBaseUrl}/how-to/custom-partitioning for details.";
                 this._log.LogError(errMsg);
                 throw new ConfigurationException(errMsg);
 #pragma warning restore CA2254
