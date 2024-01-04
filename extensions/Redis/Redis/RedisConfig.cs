@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using NRedisStack.Search;
+
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
@@ -19,6 +21,11 @@ public class RedisConfig
     /// inserted into Redis as part of Kernel Memory's operations.
     /// </summary>
     public string AppPrefix { get; }
+
+    /// <summary>
+    /// Gets or sets the Vector Algorithm to use. Defaults to HNSW.
+    /// </summary>
+    public Schema.VectorField.VectorAlgo VectorAlgorithm { get; set; } = Schema.VectorField.VectorAlgo.HNSW;
 
     /// <summary>
     /// The Collection of tags that you want to be able to search on.
