@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.KernelMemory.MemoryDb.Redis;
 
 public class RedisException : KernelMemoryException
