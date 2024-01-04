@@ -12,10 +12,13 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
-    private const string DefaultEmbeddingModel = "text-embedding-ada-002";
-    private const int DefaultEmbeddingModelMaxToken = 8_191;
+    // Using GPT 3.5 Turbo - https://platform.openai.com/docs/models/gpt-3-5
     private const string DefaultTextModel = "gpt-3.5-turbo-16k";
     private const int DefaultTextModelMaxToken = 16_384;
+
+    // Using Ada v2
+    private const string DefaultEmbeddingModel = "text-embedding-ada-002";
+    private const int DefaultEmbeddingModelMaxToken = 8_191;
 
     /// <summary>
     /// Use default OpenAI models (3.5-Turbo and Ada-002) and settings for ingestion and retrieval.
@@ -45,9 +48,9 @@ public static partial class KernelMemoryBuilderExtensions
         var openAIConfig = new OpenAIConfig
         {
             TextModel = DefaultTextModel,
-            TextModelMaxTokenTotal = DefaultEmbeddingModelMaxToken,
+            TextModelMaxTokenTotal = DefaultTextModelMaxToken,
             EmbeddingModel = DefaultEmbeddingModel,
-            EmbeddingModelMaxTokenTotal = DefaultTextModelMaxToken,
+            EmbeddingModelMaxTokenTotal = DefaultEmbeddingModelMaxToken,
             APIKey = apiKey,
             OrgId = organization
         };
