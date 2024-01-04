@@ -24,7 +24,7 @@ we will set up the service and demonstrate how to use the Memory API from Python
   SimpleVectorDb.
 * A copy of the [KM repository](https://github.com/microsoft/kernel-memory).
 
-## Next: [Create a configuration file](configuration)
+## Next: [Create a configuration file](quickstart/configuration)
 
 # Other examples
 
