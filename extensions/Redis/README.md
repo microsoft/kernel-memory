@@ -20,6 +20,8 @@ You can run Redis Stack locally in docker with the following command:
 docker run -p 8001:8001 -p 6379:6379 redis/redis-stack
 ```
 
+This will run Redis on port 6379, as well as running a popular Redis GUI, [RedisInsight](https://redis.com/redis-enterprise/redis-insight/), on port 8001.
+
 ## Configuring Tag Filters
 
 Using tag filters with Redis requires you to to pre-define which tag fields you want. You can

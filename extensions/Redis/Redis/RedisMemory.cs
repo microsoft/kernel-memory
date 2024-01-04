@@ -52,7 +52,7 @@ public sealed class RedisMemory : IMemoryDb
     public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = NormalizeIndexName(index, this._config.AppPrefix);
-        var schema = new Schema().AddVectorField(EmbeddingFieldName, Schema.VectorField.VectorAlgo.HNSW, new Dictionary<string, object>()
+        var schema = new Schema().AddVectorField(EmbeddingFieldName, this._config.VectorAlgorithm, new Dictionary<string, object>()
         {
             { "TYPE", "FLOAT32" },
             { "DIM", vectorSize },
@@ -124,7 +124,10 @@ public sealed class RedisMemory : IMemoryDb
 
             if (item.Value.Any(s => s is not null && s.Contains(separator.ToString(), StringComparison.InvariantCulture)))
             {
-                this._logger.LogWarning("Inserting indexed tag field with the selected separator: '{Separator}' in it", separator);
+                this._logger.LogError("Attempted to insert record with tag field: {Key} containing the separator: '{Separator}'. " +
+                                      "Update your {RedisConfig} to use a different separator, or remove the separator from the field.", item.Key, separator, nameof(RedisConfig));
+                throw new ArgumentException($"Attempted to insert record with tag field: {item.Key} containing the separator: '{separator}'. " +
+                                            $"Update your {nameof(RedisConfig)} to use a different separator, or remove the separator from the field.");
             }
 
             fields.Add(new HashEntry(item.Key, string.Join(separator, item.Value)));
