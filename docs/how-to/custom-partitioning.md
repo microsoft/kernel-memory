@@ -60,7 +60,6 @@ var memory = new KernelMemoryBuilder(appBuilder.Services)
         OverlappingTokens = 50,
     })
     .Build();
-
 ```
 
 For serverless memory, use this code:
