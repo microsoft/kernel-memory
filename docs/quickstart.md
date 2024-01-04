@@ -40,9 +40,9 @@ Follow the questions on screen to create/edit the file. You can run the command 
 >
 > _Protect the web service with API Keys_? **NO**
 > ------ you can leave this off for this test
-
+>
 > _Enable OpenAPI swagger doc at /swagger/index.html_? **YES**
-
+>
 > _Run the .NET pipeline handlers as a service_? **YES**
 >
 > _How should memory ingestion be orchestrated_? **Using asynchronous distributed queues**
