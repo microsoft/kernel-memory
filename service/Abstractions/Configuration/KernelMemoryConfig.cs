@@ -60,6 +60,11 @@ public class KernelMemoryConfig
         public string ImageOcrType { get; set; } = string.Empty;
 
         /// <summary>
+        /// Settings used when partitioning text during memory ingestion.
+        /// </summary>
+        public TextPartitioningOptions TextPartitioning { get; set; } = new();
+
+        /// <summary>
         /// Default document ingestion pipeline steps.
         /// * extract: extract text from files
         /// * partition: spit the text in small chunks
