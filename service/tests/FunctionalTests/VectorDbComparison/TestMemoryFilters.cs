@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
@@ -83,7 +83,7 @@ public class TestMemoryFilters
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        for (int i = 1; i <= 3; i++)
+        for (int i = 1; i <= 4; i++)
         {
             this._log.WriteLine("----- Azure AI Search -----");
             await this.TestVectorDbFiltering(acs, i);
@@ -142,6 +142,14 @@ public class TestMemoryFilters
             }
 
             Assert.Equal(4, multipleFiltersResults.Count);
+        }
+
+        // Test search by memory record Id
+        if (test == 4)
+        {
+            var documentId = "3";
+            var record = await vectorDb.GetByMemoryRecordIdAsync(IndexName, documentId);
+            Assert.Equal(documentId, record?.Id);
         }
     }
 }

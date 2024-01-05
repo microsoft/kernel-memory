@@ -273,6 +273,16 @@ public class AzureAISearchMemory : IMemoryDb
     }
 
     /// <inheritdoc />
+    public async Task<MemoryRecord?> GetByMemoryRecordIdAsync(string index, string id, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    {
+        var client = this.GetSearchClient(index);
+        var encodedId = AzureAISearchMemoryRecord.EncodeId(id);
+
+        var document = await client.GetDocumentAsync<AzureAISearchMemoryRecord>(encodedId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return document?.Value?.ToMemoryRecord(withEmbedding);
+    }
+
+    /// <inheritdoc />
     public async Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         string id = AzureAISearchMemoryRecord.FromMemoryRecord(record).Id;
