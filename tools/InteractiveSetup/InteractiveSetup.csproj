@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.25.240103.1"/>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1" />
     </ItemGroup>
 
     <!--    <ItemGroup>-->
