@@ -27,11 +27,11 @@ The handler performs the following steps:
 
 The default values used by `TextPartitioningHandler` are:
 
-| Setting          | Value           |
-|------------------|-----------------|
-| Paragraph length | 1000 tokens max |
-| Line length      | 300 tokens max  |
-| Overlap          | 100 tokens      |
+| Setting          | Value           | Min | Max                    |
+|------------------|-----------------|-----|------------------------|
+| Paragraph length | 1000 tokens max |  1  | depends on the LLM     |
+| Line length      | 300 tokens max  |  1  | [paragraph length]     |
+| Overlap          | 100 tokens      |  0  | [paragraph length - 1] |
 
 Lengths are expressed in tokens, which depend on the large language model (LLM) in use and its
 tokenization logic. KernelMemoryBuilder allows specifying a custom tokenizer for each LLM during setup.
@@ -45,33 +45,37 @@ However, when working with custom models, **some of these might have a lower lim
 > The configured partition size **(1000 tokens)** is too big for one of the embedding generators in use.
 > The max value allowed is **256 tokens**.
 
-To avoid these errors, or to customize Kernel Memory's behavior, you can modify `TextPartitioningOptions`.
-Although the [service configuration file](https://github.com/microsoft/kernel-memory/blob/main/service/Service/appsettings.json)
-does not support these settings yet, you can edit [Program.cs](https://github.com/microsoft/kernel-memory/blob/main/service/Service/Program.cs)
-as follows:
+To avoid these errors, or to customize Kernel Memory's behavior, you can change KM service configuration:
+edit your local configuration file, and override the
+[default values](https://github.com/microsoft/kernel-memory/blob/main/service/Service/appsettings.json).
 
-```csharp
-var memory = new KernelMemoryBuilder(appBuilder.Services)
-    .FromAppSettings()
-    .With(new TextPartitioningOptions
-    {
-        MaxTokensPerParagraph = 256,
-        MaxTokensPerLine = 256,
-        OverlappingTokens = 50,
-    })
-    .Build();
+For example, with small models supporting up to 256 tokens, something like this will do:
+
+```json
+{
+  "KernelMemory": {
+    ...
+    "DataIngestion": {
+      ...
+      "TextPartitioning": {
+        "MaxTokensPerParagraph": 256,
+        "MaxTokensPerLine": 256,
+        "OverlappingTokens": 50
+      },
+  ...
 ```
 
-For serverless memory, use this code:
+If you are using the .NET Serverless Memory, use this code:
 
 ```csharp
 var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(...)
-    .With(new TextPartitioningOptions
-    {
-        MaxTokensPerParagraph = 256,
-        MaxTokensPerLine = 256,
-        OverlappingTokens = 50,
-    })
+    .WithCustomTextPartitioningOptions(
+        new TextPartitioningOptions
+        {
+            MaxTokensPerParagraph = 256,
+            MaxTokensPerLine = 256,
+            OverlappingTokens = 50
+        })
     .Build<MemoryServerless>();
 ```

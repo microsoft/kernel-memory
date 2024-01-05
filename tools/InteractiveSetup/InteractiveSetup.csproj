@@ -9,9 +9,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.25.240103.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="ReadLine" Version="2.0.1"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.25.240103.1"/>
+    </ItemGroup>
+
+    <!--    <ItemGroup>-->
+    <!--        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+    <!--    </ItemGroup>-->
 
 </Project>

@@ -78,6 +78,8 @@ internal sealed class ServiceConfiguration
 
         this.ConfigureMimeTypeDetectionDependency(builder);
 
+        this.ConfigureTextPartitioning(builder);
+
         this.ConfigureQueueDependency(builder);
 
         this.ConfigureStorageDependency(builder);
@@ -223,6 +225,17 @@ internal sealed class ServiceConfiguration
                 // NOOP - allow custom implementations, via WithCustomStorage()
                 break;
         }
+    }
+
+    private void ConfigureTextPartitioning(IKernelMemoryBuilder builder)
+    {
+        // TODO: enable after upgrade to 0.26
+        // // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        // if (this._memoryConfiguration.DataIngestion.TextPartitioning != null)
+        // {
+        //     this._memoryConfiguration.DataIngestion.TextPartitioning.Validate();
+        //     builder.WithCustomTextPartitioningOptions(this._memoryConfiguration.DataIngestion.TextPartitioning);
+        // }
     }
 
     private void ConfigureMimeTypeDetectionDependency(IKernelMemoryBuilder builder)

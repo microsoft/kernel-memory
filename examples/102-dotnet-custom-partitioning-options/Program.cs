@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.Handlers;
+using Microsoft.KernelMemory.Configuration;
 
 var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .With(new TextPartitioningOptions
+    .WithCustomTextPartitioningOptions(new TextPartitioningOptions
     {
         MaxTokensPerParagraph = 299,
         MaxTokensPerLine = 99,
