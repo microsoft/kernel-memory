@@ -85,7 +85,7 @@ public sealed class RedisMemory : IMemoryDb
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this._search._ListAsync().ConfigureAwait(false);
-        return result.Select(x => (string)x!);
+        return result.Select(x => ((string)x!)).Where(x => x.StartsWith($"{this._config.AppPrefix}-", StringComparison.Ordinal)).Select(x => x.Substring(this._config.AppPrefix.Length + 1));
     }
 
     /// <inheritdoc />
@@ -111,8 +111,12 @@ public sealed class RedisMemory : IMemoryDb
     {
         var normalizedIndexName = NormalizeIndexName(index, this._config.AppPrefix);
         var key = Key(normalizedIndexName, record.Id);
-        var fields = new List<HashEntry>();
-        fields.Add(new HashEntry(EmbeddingFieldName, record.Vector.VectorBlob()));
+        var args = new List<RedisValue>
+        {
+            NormalizeIndexName(index, this._config.AppPrefix),
+            EmbeddingFieldName,
+            record.Vector.VectorBlob()
+        };
         foreach (var item in record.Tags)
         {
             var isIndexed = this._config.Tags.TryGetValue(item.Key, out var c);
@@ -130,15 +134,26 @@ public sealed class RedisMemory : IMemoryDb
                                             $"Update your {nameof(RedisConfig)} to use a different separator, or remove the separator from the field.");
             }
 
-            fields.Add(new HashEntry(item.Key, string.Join(separator, item.Value)));
+            args.Add(item.Key);
+            args.Add(string.Join(separator, item.Value));
         }
 
         if (record.Payload.Count != 0)
         {
-            fields.Add(new HashEntry(PayloadFieldName, JsonSerializer.Serialize(record.Payload))); // assumption: it's safe to serialize/deserialize the payload to/from JSON.
+            args.Add(PayloadFieldName);
+            args.Add(JsonSerializer.Serialize(record.Payload));
         }
 
-        await this._db.HashSetAsync(key, fields.ToArray()).ConfigureAwait(false);
+        var scriptResult = (await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false)).ToString()!;
+        if (scriptResult == "false")
+        {
+            await this.CreateIndexAsync(index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+            await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false);
+        }
+        else if (scriptResult.StartsWith("(error)", StringComparison.Ordinal))
+        {
+            throw new RedisException(scriptResult);
+        }
 
         return record.Id;
     }
@@ -158,15 +173,25 @@ public sealed class RedisMemory : IMemoryDb
         var sb = new StringBuilder();
         if (filters != null && filters.Any(x => x.Pairs.Any()))
         {
-            foreach ((string key, string? value) in filters.SelectMany(x => x.Pairs))
+            sb.Append('(');
+            foreach (var filter in filters)
             {
-                if (value is null)
+                sb.Append('(');
+                foreach ((string key, string? value) in filter.Pairs)
                 {
-                    this._logger.LogWarning("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                    if (value is null)
+                    {
+                        this._logger.LogError("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                        throw new RedisException("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                    }
+
+                    sb.Append(CultureInfo.InvariantCulture, $"@{key}:{{{value}}} ");
                 }
 
-                sb.Append(CultureInfo.InvariantCulture, $"@{key}:{{{value}}} ");
+                sb.Replace(" ", ")|", sb.Length - 1, 1);
             }
+
+            sb.Replace('|', ')', sb.Length - 1, 1);
         }
         else
         {
