@@ -15,7 +15,7 @@ public class FilterTests : BaseTestCase
     }
 
     [Fact]
-    [Trait("Category", "PostgresFunctionalTest")]
+    [Trait("Category", "RedisFunctionalTest")]
     public async Task ItFiltersSourcesCorrectly()
     {
         // Arrange
