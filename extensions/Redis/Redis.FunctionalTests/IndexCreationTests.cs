@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
