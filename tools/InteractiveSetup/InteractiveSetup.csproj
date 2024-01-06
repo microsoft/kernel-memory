@@ -15,10 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1" />
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
     </ItemGroup>
-
-    <!--    <ItemGroup>-->
-    <!--        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
-    <!--    </ItemGroup>-->
 
 </Project>

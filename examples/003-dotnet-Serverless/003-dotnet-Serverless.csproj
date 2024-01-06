@@ -12,10 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\service\Core\Core.csproj"/>
         <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp.csproj" />
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

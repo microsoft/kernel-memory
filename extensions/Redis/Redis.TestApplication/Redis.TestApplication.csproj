@@ -13,7 +13,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
       <ProjectReference Include="..\..\OpenAI\OpenAI.csproj" />
       <ProjectReference Include="..\Redis\Redis.csproj" />
     </ItemGroup>

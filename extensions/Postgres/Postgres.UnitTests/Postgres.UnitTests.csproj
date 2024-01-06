@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.Postgres.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -24,8 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
-      <ProjectReference Include="..\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\Postgres\Postgres.csproj" />
     </ItemGroup>
 
 </Project>

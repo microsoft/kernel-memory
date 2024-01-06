@@ -1,5 +1,0 @@
-# EXAMPLES SETTINGS
-
-[*.cs]
-dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in examples
-dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
