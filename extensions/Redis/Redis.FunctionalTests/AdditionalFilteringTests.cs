@@ -23,7 +23,7 @@ public class AdditionalFilteringTests : BaseFunctionalTestCase
     }
 
     [Fact]
-    [Trait("Category", "RedisFunctionalTest")]
+    [Trait("Category", "Redis")]
     public async Task ItFiltersSourcesCorrectly()
     {
         // Arrange
