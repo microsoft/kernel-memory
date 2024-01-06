@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.MemoryDb.Redis;
 
-internal class Scripts
+internal static class Scripts
 {
     /// <summary>
     /// Script to Upsert a Record. This script checks to see if the index exists

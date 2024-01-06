@@ -3,6 +3,8 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 
+namespace Redis.TestApplication;
+
 internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly Dictionary<string, Embedding> _embeddings = new();
