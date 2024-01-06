@@ -23,6 +23,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly AzureAISearchConfig AzureAiSearchConfig;
     protected readonly QdrantConfig QdrantConfig;
     protected readonly PostgresConfig PostgresConfig;
+    protected readonly RedisConfig RedisConfig;
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
 
@@ -39,6 +40,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.AzureAiSearchConfig = cfg.GetSection("Services:AzureAISearch").Get<AzureAISearchConfig>()!;
         this.QdrantConfig = cfg.GetSection("Services:Qdrant").Get<QdrantConfig>()!;
         this.PostgresConfig = cfg.GetSection("Services:Postgres").Get<PostgresConfig>()!;
+        this.RedisConfig = cfg.GetSection("Services:Redis").Get<RedisConfig>()!;
         this.SimpleVectorDbConfig = cfg.GetSection("Services:SimpleVectorDb").Get<SimpleVectorDbConfig>()!;
         this.LlamaSharpConfig = cfg.GetSection("Services:LlamaSharp").Get<LlamaSharpConfig>()!;
     }
