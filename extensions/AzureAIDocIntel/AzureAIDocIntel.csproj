@@ -9,7 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
     </ItemGroup>
 
     <ItemGroup>

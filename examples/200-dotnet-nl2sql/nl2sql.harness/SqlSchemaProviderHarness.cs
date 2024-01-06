@@ -40,7 +40,7 @@ public sealed class SqlSchemaProviderHarness
     /// After testing with the sample data-sources, try one of your own!
     /// </remarks>
     [Fact(Skip = SkipReason)]
-    [Trait("Category", "Examples")]
+    [Trait("Category", "Nl2SqlExample")]
     public async Task ReverseEngineerSchemaAsync()
     {
         await this.CaptureSchemaAsync(

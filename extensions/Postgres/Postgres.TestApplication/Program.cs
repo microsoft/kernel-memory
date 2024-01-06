@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -19,17 +18,17 @@ internal class Program
 
     private static async Task Test1()
     {
-        var postgresConfig = new PostgresConfig();
-        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
-        var azureOpenAITextConfig = new AzureOpenAIConfig();
-
-        new ConfigurationBuilder()
+        var cfg = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Development.json", optional: true)
-            .Build()
-            .BindSection("KernelMemory:Services:Postgres", postgresConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig);
+            .Build();
+
+        var postgresConfig = cfg.GetSection("KernelMemory:Services:Postgres").Get<PostgresConfig>()
+                             ?? throw new ArgumentNullException(message: "Postgres config not found", null);
+        var azureOpenAIEmbeddingConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIEmbedding").Get<AzureOpenAIConfig>()
+                                         ?? throw new ArgumentNullException(message: "AzureOpenAIEmbedding config not found", null);
+        var azureOpenAITextConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIText").Get<AzureOpenAIConfig>()
+                                    ?? throw new ArgumentNullException(message: "AzureOpenAIText config not found", null);
 
         // Concatenate our 'WithPostgres()' after 'WithOpenAIDefaults()' from the core nuget
         var mem1 = new KernelMemoryBuilder()
@@ -139,11 +138,11 @@ internal class Program
         var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
         var azureOpenAITextConfig = new AzureOpenAIConfig();
 
-        // Note: using appsettings.customsql.json
+        // Note: using appsettings.custom-sql.json
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Development.json", optional: true)
-            .AddJsonFile("appsettings.customsql.json")
+            .AddJsonFile("appsettings.custom-sql.json")
             .Build()
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
