@@ -6,18 +6,21 @@ using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.Postgres;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
+
+// ReSharper disable MissingBlankLines
 
 namespace FunctionalTests.VectorDbComparison;
 
-public class TestCosineSimilarity
+public class TestCosineSimilarity : BaseFunctionalTestCase
 {
-    private readonly IConfiguration _cfg;
+    private const string IndexName = "test-cosinesimil";
+
     private readonly ITestOutputHelper _log;
 
-    public TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log)
+    public TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
     {
-        this._cfg = cfg;
         this._log = log;
     }
 
@@ -25,7 +28,6 @@ public class TestCosineSimilarity
     [Trait("Category", "Serverless")]
     public async Task CompareCosineSimilarity()
     {
-        const string IndexName = "tests";
         const bool AzSearchEnabled = true;
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
@@ -33,31 +35,16 @@ public class TestCosineSimilarity
         // == Ctors
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
-
-        var acs = new AzureAISearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureAISearch")
-                .Get<AzureAISearchConfig>()!, embeddingGenerator);
-
-        var qdrant = new QdrantMemory(
-            this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!, embeddingGenerator);
-
-        var postgres = new PostgresMemory(
-            this._cfg.GetSection("Services").GetSection("Postgres")
-                .Get<PostgresConfig>()!, embeddingGenerator);
-
-        var simpleVecDb = new SimpleVectorDb(
-            this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
+        var acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
+        var qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
+        var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
+        var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         // == Delete indexes left over
 
         if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
-
         if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
-
         if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
-
         await simpleVecDb.DeleteIndexAsync(IndexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
@@ -65,11 +52,8 @@ public class TestCosineSimilarity
         // == Create indexes
 
         if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
-
         if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
-
         if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
-
         await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
         // == Insert data. Note: records are inserted out of order on purpose.
@@ -88,11 +72,8 @@ public class TestCosineSimilarity
         foreach (KeyValuePair<string, MemoryRecord> r in records)
         {
             if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
-
             if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
-
             if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
-
             await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
 

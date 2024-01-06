@@ -5,20 +5,22 @@ using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.Postgres;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
+
+// ReSharper disable MissingBlankLines
 
 namespace FunctionalTests.VectorDbComparison;
 
-public class TestMemoryFilters
+public class TestMemoryFilters : BaseFunctionalTestCase
 {
-    private const string IndexName = "filterstests";
+    private const string IndexName = "test-filters";
 
-    private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _log;
 
-    public TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log)
+    public TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
     {
-        this._cfg = cfg;
         this._log = log;
     }
 
@@ -26,6 +28,10 @@ public class TestMemoryFilters
     [Trait("Category", "Serverless")]
     public async Task TestFilters()
     {
+        const bool AzSearchEnabled = true;
+        const bool QdrantEnabled = true;
+        const bool PostgresEnabled = true;
+
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
         const bool CreateIndex = true;
@@ -33,30 +39,26 @@ public class TestMemoryFilters
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
-        var acs = new AzureAISearchMemory(
-            this._cfg.GetSection("Services").GetSection("AzureAISearch")
-                .Get<AzureAISearchConfig>()!, embeddingGenerator);
-
-        var qdrant = new QdrantMemory(
-            this._cfg.GetSection("Services").GetSection("Qdrant")
-                .Get<QdrantConfig>()!, embeddingGenerator);
-
-        var simpleVecDb = new SimpleVectorDb(
-            this._cfg.GetSection("Services").GetSection("SimpleVectorDb")
-                .Get<SimpleVectorDbConfig>()!, embeddingGenerator);
+        var acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
+        var qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
+        var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
+        var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         if (DeleteIndex)
         {
-            await acs.DeleteIndexAsync(IndexName);
-            await qdrant.DeleteIndexAsync(IndexName);
+            if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
+            if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
+            if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
             await simpleVecDb.DeleteIndexAsync(IndexName);
+
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         if (CreateIndex)
         {
-            await acs.CreateIndexAsync(IndexName, 3);
-            await qdrant.CreateIndexAsync(IndexName, 3);
+            if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
+            if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
+            if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
 
@@ -75,8 +77,9 @@ public class TestMemoryFilters
 
             foreach (KeyValuePair<string, MemoryRecord> r in records)
             {
-                await acs.UpsertAsync(IndexName, r.Value);
-                await qdrant.UpsertAsync(IndexName, r.Value);
+                if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
+                if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
+                if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
 
@@ -85,12 +88,27 @@ public class TestMemoryFilters
 
         for (int i = 1; i <= 3; i++)
         {
-            this._log.WriteLine("----- Azure AI Search -----");
-            await this.TestVectorDbFiltering(acs, i);
-            this._log.WriteLine("\n----- Qdrant vector DB -----");
-            await this.TestVectorDbFiltering(qdrant, i);
-            this._log.WriteLine("\n----- Simple vector DB -----");
+            if (AzSearchEnabled)
+            {
+                this._log.WriteLine("----- Azure AI Search ----- (note: order doesn't matter)");
+                await this.TestVectorDbFiltering(acs, i);
+            }
+
+            if (QdrantEnabled)
+            {
+                this._log.WriteLine("\n----- Qdrant vector DB ----- (note: order doesn't matter)");
+                await this.TestVectorDbFiltering(qdrant, i);
+            }
+
+            if (PostgresEnabled)
+            {
+                this._log.WriteLine("\n----- Postgres vector DB ----- (note: order doesn't matter)");
+                await this.TestVectorDbFiltering(postgres, i);
+            }
+
+            this._log.WriteLine("\n----- Simple vector DB ----- (note: order doesn't matter)");
             await this.TestVectorDbFiltering(simpleVecDb, i);
+
             this._log.WriteLine("\n\n");
         }
     }

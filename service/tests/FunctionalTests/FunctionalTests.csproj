@@ -12,12 +12,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
-        <ProjectReference Include="..\..\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\..\Core\Core.csproj"/>
         <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp.csproj"/>
         <ProjectReference Include="..\..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>

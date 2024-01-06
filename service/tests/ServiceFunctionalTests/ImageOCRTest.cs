@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.Service;
+namespace ServiceFunctionalTests;
 
-public class ImageOCRTest : BaseTestCase
+public class ImageOCRTest : BaseFunctionalTestCase
 {
     private readonly IKernelMemory _memory;
     private readonly string? _fixturesPath;
@@ -23,7 +23,7 @@ public class ImageOCRTest : BaseTestCase
     }
 
     [Fact]
-    [Trait("Category", "ServiceFunctionalTest")]
+    [Trait("Category", "WebService")]
     public async Task ItUsesTextFoundInsideImages()
     {
         // Arrange

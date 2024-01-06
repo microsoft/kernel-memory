@@ -1,27 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess.AIClients;
 
-public class AzureOpenAITextGeneratorTest : BaseTestCase
+public class AzureOpenAITextGeneratorTest : BaseFunctionalTestCase
 {
     private readonly AzureOpenAIConfig _config;
 
     public AzureOpenAITextGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
-        var config = this.Configuration.GetSection("Services").GetSection("AzureOpenAIText");
-        this._config = new AzureOpenAIConfig
-        {
-            Auth = AzureOpenAIConfig.AuthTypes.APIKey,
-            Endpoint = config.GetValue<string>("Endpoint") ?? "",
-            Deployment = config.GetValue<string>("Deployment") ?? "",
-            APIKey = config.GetValue<string>("APIKey") ?? "",
-        };
+        this._config = this.AzureOpenAITextConfiguration;
     }
 
     [Fact]
@@ -37,9 +30,13 @@ public class AzureOpenAITextGeneratorTest : BaseTestCase
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
+        var count = 0;
         await foreach (string word in text)
         {
             Console.Write(word);
+            if (count++ > 10) { break; }
         }
+
+        Assert.True(count > 10);
     }
 }

@@ -10,6 +10,9 @@ internal static class PostgresSchema
 
     private static readonly Regex s_validNameRegex = new(@"^[a-zA-Z0-9\-]+$");
 
+    // Note: "_" is allowed in field names
+    private static readonly Regex s_validFieldNameRegex = new(@"^[a-zA-Z0-9\-_]+$");
+
     public static void ValidateSchemaName(string name)
     {
         if (s_validNameRegex.IsMatch(name)) { return; }
@@ -33,7 +36,7 @@ internal static class PostgresSchema
 
     public static void ValidateFieldName(string name)
     {
-        if (s_validNameRegex.IsMatch(name)) { return; }
+        if (s_validFieldNameRegex.IsMatch(name)) { return; }
 
         throw new PostgresException($"The field name '{name}' contains invalid chars");
     }

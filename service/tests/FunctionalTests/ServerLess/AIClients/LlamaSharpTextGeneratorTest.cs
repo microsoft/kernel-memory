@@ -2,16 +2,15 @@
 
 using System.Diagnostics;
 using System.Text;
-using FunctionalTests.TestHelpers;
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.LlamaSharp;
 using Microsoft.KernelMemory.AI.OpenAI.GPT3;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.AI;
+namespace FunctionalTests.ServerLess.AIClients;
 
-public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
+public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 {
     private readonly LlamaSharpTextGenerator _target;
     private readonly Stopwatch _timer;
@@ -20,11 +19,9 @@ public sealed class LlamaSharpTextGeneratorTest : BaseTestCase
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {
-        var config = new LlamaSharpConfig();
-        this.Configuration.BindSection("Services:LlamaSharp", config);
-        this._target = new LlamaSharpTextGenerator(config, loggerFactory: null);
         this._timer = new Stopwatch();
-        var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
+        this._target = new LlamaSharpTextGenerator(this.LlamaSharpConfig, loggerFactory: null);
+        var modelFilename = this.LlamaSharpConfig.ModelPath.Split('/').Last().Split('\\').Last();
         Console.WriteLine($"Model in use: {modelFilename}");
     }
 

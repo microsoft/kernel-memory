@@ -1,27 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess.AIClients;
 
 // ReSharper disable StringLiteralTypo
-public sealed class OpenAITextEmbeddingGeneratorTest : BaseTestCase
+public sealed class OpenAITextEmbeddingGeneratorTest : BaseFunctionalTestCase
 {
     private readonly OpenAITextEmbeddingGenerator _target;
 
     public OpenAITextEmbeddingGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
-        var config = new OpenAIConfig
-        {
-            APIKey = this.Configuration.GetSection("Services").GetSection("OpenAI").GetValue<string>("APIKey") ?? "",
-            OrgId = this.Configuration.GetSection("Services").GetSection("OpenAI").GetValue<string>("OrgId") ?? "",
-            EmbeddingModel = "text-embedding-ada-002",
-            MaxRetries = 3,
-        };
-
+        var config = this.OpenAiConfig;
+        config.EmbeddingModel = "text-embedding-ada-002";
         this._target = new OpenAITextEmbeddingGenerator(config, loggerFactory: null);
     }
 

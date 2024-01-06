@@ -1,22 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.TestHelpers;
 using Microsoft.KernelMemory;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
 namespace FunctionalTests.ServerLess;
 
-public class OpenAIDependencyInjectionTest : BaseTestCase
+public class OpenAIDependencyInjectionTest : BaseFunctionalTestCase
 {
-    private readonly string _openAIKey;
-
     public OpenAIDependencyInjectionTest(
         IConfiguration cfg,
         ITestOutputHelper output) : base(cfg, output)
     {
-        this._openAIKey = this.OpenAIConfiguration.GetValue<string>("APIKey")
-                          ?? throw new TestCanceledException("OpenAI API key is missing");
     }
 
     [Fact]
@@ -25,7 +20,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
-            .WithOpenAIDefaults(this._openAIKey)
+            .WithOpenAIDefaults(this.OpenAiConfig.APIKey)
             .Build<MemoryServerless>();
 
         // Act
@@ -42,12 +37,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
     {
         // Arrange
         var memory = new KernelMemoryBuilder()
-            .WithOpenAI(new OpenAIConfig
-            {
-                APIKey = this._openAIKey,
-                EmbeddingModel = "text-embedding-ada-002",
-                TextModel = "gpt-3.5-turbo-16k"
-            })
+            .WithOpenAI(this.OpenAiConfig)
             .Build<MemoryServerless>();
 
         // Act
@@ -66,13 +56,13 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
         var memory = new KernelMemoryBuilder()
             .WithOpenAITextEmbeddingGeneration(new OpenAIConfig
             {
-                APIKey = this._openAIKey,
+                APIKey = this.OpenAiConfig.APIKey,
                 EmbeddingModel = "text-embedding-ada-002",
             })
             .WithOpenAITextGeneration(new OpenAIConfig
             {
-                APIKey = this._openAIKey,
-                TextModel = "gpt-3.5-turbo-16k"
+                APIKey = this.OpenAiConfig.APIKey,
+                TextModel = "gpt-4"
             })
             .Build<MemoryServerless>();
 
@@ -81,6 +71,7 @@ public class OpenAIDependencyInjectionTest : BaseTestCase
 
         // Assert
         var answer = await memory.AskAsync("What year is it?");
-        Assert.Contains("2099", answer.Result);
+        Console.WriteLine("answer: " + answer.Result);
+        Assert.Contains("2099", answer.Result, StringComparison.OrdinalIgnoreCase);
     }
 }
