@@ -123,7 +123,8 @@ public sealed class RedisMemory : IMemoryDb
             var separator = c ?? DefaultSeparator;
             if (!isIndexed)
             {
-                this._logger.LogWarning("Inserting un-indexed tag field: {Key}, will not be able to filter on it", item.Key);
+                this._logger.LogError("Attempt to insert un-indexed tag field: {Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
+                throw new ArgumentException($"Attempt to insert un-indexed tag field: {item.Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
             }
 
             if (item.Value.Any(s => s is not null && s.Contains(separator.ToString(), StringComparison.InvariantCulture)))
@@ -205,7 +206,25 @@ public sealed class RedisMemory : IMemoryDb
         query.Limit(0, limit);
         query.Dialect(2);
 
-        var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+        NRedisStack.Search.SearchResult? result = null;
+
+        try
+        {
+            result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+        }
+        catch (RedisServerException e)
+        {
+            if (!e.Message.Contains("no such index", StringComparison.OrdinalIgnoreCase))
+            {
+                throw;
+            }
+        }
+
+        if (result is null)
+        {
+            yield break;
+        }
+
         foreach (var doc in result.Documents)
         {
             var next = this.FromDocument(doc, withEmbeddings);
@@ -239,9 +258,52 @@ public sealed class RedisMemory : IMemoryDb
         }
 
         var query = new Query(sb.ToString());
-        query.Limit(0, limit);
-        var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
-        foreach (var doc in result.Documents)
+        List<NRedisStack.Search.Document> documents = new();
+        try
+        {
+            // handle the case of negative indexes (-1 = end, -2 = 1 from end, etc. . .)
+            if (limit < 0)
+            {
+                var numOfDocumentsFromEnd = -1 * (limit + 1);
+
+                var probingQueryTask = this._search.SearchAsync(normalizedIndexName, query);
+                var configurationCheckTask = this._search.ConfigGetAsync("MAXSEARCHRESULTS"); // need to query Max Search Results since Redis doesn't support unbounded queries.
+
+                // pull back in one round trip, hence the seperated awaits.
+                var firstTripDocs = await probingQueryTask.ConfigureAwait(false);
+                var configurationResult = await configurationCheckTask.ConfigureAwait(false);
+
+                var docsNeeded = (int)firstTripDocs.TotalResults - numOfDocumentsFromEnd;
+
+                documents.AddRange(firstTripDocs.Documents.Take(docsNeeded));
+                if (docsNeeded > 10)
+                {
+                    if (configurationResult.TryGetValue("MAXSEARCHRESULTS", out string? value) && int.TryParse(value, out var maxSearchResults))
+                    {
+                        limit = Math.Min(docsNeeded - 10, maxSearchResults);
+                        query.Limit(10, limit);
+                        var secondTripResults = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+                        documents.AddRange(secondTripResults.Documents);
+                    }
+                    else // shouldn't be reachable.
+                    {
+                        throw new RedisException("Redis does not contain a valid value for MAXSEARCHRESULTS, possible configuration issue in Redis.");
+                    }
+                }
+            }
+            else
+            {
+                query.Limit(0, limit);
+                var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+                documents.AddRange(result.Documents);
+            }
+        }
+        catch (RedisServerException ex) when (ex.Message.Contains("no such index", StringComparison.InvariantCulture))
+        {
+            // NOOP
+        }
+
+        foreach (var doc in documents)
         {
             yield return this.FromDocument(doc, withEmbeddings).Item1;
         }
