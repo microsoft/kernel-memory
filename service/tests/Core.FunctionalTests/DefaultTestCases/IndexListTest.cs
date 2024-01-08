@@ -21,6 +21,22 @@ public static class IndexListTest
         await memory.DeleteIndexAsync(indexNameWithUnderscores);
     }
 
+    public static async Task ItUsesDefaultIndexName(IKernelMemory memory, Action<string> log)
+    {
+        // Arrange
+        string emptyIndexName = string.Empty;
+
+        // Act
+        await memory.ImportTextAsync("something", index: emptyIndexName);
+        var list = (await memory.ListIndexesAsync()).ToList();
+
+        // Clean up before exceptions can occur
+        await memory.DeleteIndexAsync(emptyIndexName);
+
+        // Assert
+        Assert.True(list.Any(x => x.Name == "default"));
+    }
+
     public static async Task ItListsIndexes(IKernelMemory memory, Action<string> log)
     {
         // Arrange

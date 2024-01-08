@@ -7,6 +7,8 @@ using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using StackExchange.Redis;
 
+namespace Redis.TestApplication;
+
 public static class Program
 {
     private const string Text1 = "this is test 1";
