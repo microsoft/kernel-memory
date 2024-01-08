@@ -92,6 +92,7 @@ and **features available only in Kernel Memory**:
     * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
     * [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres)
     * [Qdrant](https://qdrant.tech)
+    * [MSSQL Server(third party)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer/)
     * Elasticsearch (work in progress)
     * Redis: (work in progress)
     * In memory KNN vectors (volatile)
