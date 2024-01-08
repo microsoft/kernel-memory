@@ -8,14 +8,12 @@ body:
       value: |
         Please provide sufficient information to answer your question.
   - type: textarea
-    id: context
     attributes:
       label: Context / Scenario
       description: Help us understanding the scenario you are working on and how you are using Kernel Memory. The more information you can provide here, the better.
     validations:
       required: true
   - type: textarea
-    id: question
     attributes:
       label: Question
       description: Enter your question here
