@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +28,17 @@ public class AzureOpenAITextGenerator : ITextGenerator
     public AzureOpenAITextGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>())
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>(), httpClient)
     {
     }
 
     public AzureOpenAITextGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILogger<AzureOpenAITextGenerator>? log = null)
+        ILogger<AzureOpenAITextGenerator>? log = null,
+        HttpClient? httpClient = null)
     {
         this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
 
@@ -72,6 +75,11 @@ public class AzureOpenAITextGenerator : ITextGenerator
                 ApplicationId = Telemetry.HttpUserAgent,
             }
         };
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
 
         switch (config.Auth)
         {

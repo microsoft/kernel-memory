@@ -9,14 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj"/>
-        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch.csproj"/>
-        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj"/>
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj"/>
-        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj"/>
+        <!--<ProjectReference Include="..\Abstractions\Abstractions.csproj"/>-->
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Note: These project are linked only to automatically import corresponding nugets together with Core. -->
+        <!-- Supply chain: these projects import only nugets maintained by Microsoft. Third party nugets are added manually. -->
+        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
         <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj"/>
-        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant.csproj"/>
+        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -36,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+        <InternalsVisibleTo Include="Microsoft.Core.UnitTests"/>
     </ItemGroup>
 
     <Import Project="../../code-analysis.props"/>

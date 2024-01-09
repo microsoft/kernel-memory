@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +28,17 @@ public class OpenAITextGenerator : ITextGenerator
     public OpenAITextGenerator(
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextGenerator>())
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<OpenAITextGenerator>(), httpClient)
     {
     }
 
     public OpenAITextGenerator(
         OpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILogger<OpenAITextGenerator>? log = null)
+        ILogger<OpenAITextGenerator>? log = null,
+        HttpClient? httpClient = null)
     {
         var textModels = new List<string>
         {
@@ -77,6 +80,11 @@ public class OpenAITextGenerator : ITextGenerator
                 ApplicationId = Telemetry.HttpUserAgent,
             }
         };
+
+        if (httpClient is not null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+        }
 
         this._client = new OpenAIClient(config.APIKey, options);
     }

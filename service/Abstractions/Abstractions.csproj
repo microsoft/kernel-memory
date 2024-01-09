@@ -19,6 +19,10 @@
         <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.Abstractions.UnitTests"/>
+    </ItemGroup>
+
     <Import Project="../../code-analysis.props"/>
 
     <Import Project="../../nuget-package.props"/>

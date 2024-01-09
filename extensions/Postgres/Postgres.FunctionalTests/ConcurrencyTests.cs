@@ -2,11 +2,11 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Postgres.FunctionalTests.TestHelpers;
+using Microsoft.TestHelpers;
 
 namespace Postgres.FunctionalTests;
 
-public class ConcurrencyTests : BaseTestCase
+public class ConcurrencyTests : BaseFunctionalTestCase
 {
     public ConcurrencyTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
@@ -15,7 +15,7 @@ public class ConcurrencyTests : BaseTestCase
     [Theory]
     [InlineData("defaultSQL")]
     [InlineData("customSQL")]
-    [Trait("Category", "PostgresFunctionalTest")]
+    [Trait("Category", "Postgres")]
     public async Task CreateDeleteIndexConcurrencyTest(string type)
     {
         PostgresConfig config;
@@ -25,13 +25,13 @@ public class ConcurrencyTests : BaseTestCase
                 throw new ArgumentOutOfRangeException($"Unknown '{type}' test case");
 
             case "defaultSQL":
-                config = this.PostgresConfiguration;
+                config = this.PostgresConfig;
                 break;
 
             case "customSQL":
                 config = new PostgresConfig
                 {
-                    ConnectionString = this.PostgresConfiguration.ConnectionString,
+                    ConnectionString = this.PostgresConfig.ConnectionString,
                     TableNamePrefix = "custom_sql",
                     Columns = new Dictionary<string, string>()
                     {
@@ -92,14 +92,14 @@ public class ConcurrencyTests : BaseTestCase
     }
 
     [Fact]
-    [Trait("Category", "PostgresFunctionalTest")]
+    [Trait("Category", "Postgres")]
     public async Task UpsertConcurrencyTest()
     {
         var concurrency = 20;
         var vectorSize = 4;
         var indexName = "upsert_test" + Guid.NewGuid().ToString("D");
 
-        using var target = new PostgresMemory(this.PostgresConfiguration, new FakeEmbeddingGenerator());
+        using var target = new PostgresMemory(this.PostgresConfig, new FakeEmbeddingGenerator());
 
         await target.CreateIndexAsync(indexName, vectorSize);
 

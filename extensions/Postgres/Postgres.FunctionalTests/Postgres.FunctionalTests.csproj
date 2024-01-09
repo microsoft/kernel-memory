@@ -1,21 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
+        <NoWarn>$(NoWarn);CA1859;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="xunit"/>
-        <PackageReference Include="xunit.abstractions" />
-        <PackageReference Include="Xunit.DependencyInjection" />
+        <PackageReference Include="xunit.abstractions"/>
+        <PackageReference Include="Xunit.DependencyInjection"/>
         <PackageReference Include="xunit.runner.visualstudio">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -27,10 +28,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
-      <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI.csproj" />
-      <ProjectReference Include="..\..\OpenAI\OpenAI.csproj" />
-      <ProjectReference Include="..\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj"/>
+        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj"/>
     </ItemGroup>
 
 </Project>

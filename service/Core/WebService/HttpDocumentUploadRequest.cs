@@ -29,10 +29,6 @@ public class HttpDocumentUploadRequest
     public static async Task<(HttpDocumentUploadRequest model, bool isValid, string errMsg)> BindHttpRequestAsync(
         HttpRequest httpRequest, CancellationToken cancellationToken = default)
     {
-        const string IndexField = Constants.WebServiceIndexField;
-        const string DocumentIdField = Constants.WebServiceDocumentIdField;
-        const string StepsField = Constants.WebServiceStepsField;
-
         var result = new HttpDocumentUploadRequest();
 
         // Content format validation
@@ -50,71 +46,80 @@ public class HttpDocumentUploadRequest
             return (result, false, "No file was uploaded");
         }
 
-        if (form.TryGetValue(IndexField, out StringValues indexes) && indexes.Count > 1)
+        // Only one index can be defined
+        if (form.TryGetValue(Constants.WebServiceIndexField, out StringValues indexes) && indexes.Count > 1)
         {
-            return (result, false, $"Invalid index name, '{IndexField}', multiple values provided");
+            return (result, false, $"Invalid index name, '{Constants.WebServiceIndexField}', multiple values provided");
         }
 
-        if (form.TryGetValue(DocumentIdField, out StringValues documentIds) && documentIds.Count > 1)
+        // Only one document ID can be defined
+        if (form.TryGetValue(Constants.WebServiceDocumentIdField, out StringValues documentIds) && documentIds.Count > 1)
         {
-            return (result, false, $"Invalid document ID, '{DocumentIdField}' must be a single value, not a list");
+            return (result, false, $"Invalid document ID, '{Constants.WebServiceDocumentIdField}' must be a single value, not a list");
         }
 
-        // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise we generate a random/unique one
-        var documentId = documentIds.FirstOrDefault();
+        // Document Id is optional, e.g. used if the client wants to retry the same upload, otherwise a random/unique one is generated
+        string? documentId = documentIds.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(documentId))
         {
             documentId = DateTimeOffset.Now.ToString("yyyyMMdd.HHmmss.", CultureInfo.InvariantCulture) + Guid.NewGuid().ToString("N");
         }
 
+        // Optional document tags. Tags are passed in as "key:value", where a key can have multiple values. See TagCollection.
+        if (form.TryGetValue(Constants.WebServiceTagsField, out StringValues tags))
+        {
+            foreach (string? tag in tags)
+            {
+                if (tag == null) { continue; }
+
+                var keyValue = tag.Trim().Split(Constants.ReservedEqualsChar, 2);
+                string key = keyValue[0].Trim();
+                if (string.IsNullOrWhiteSpace(key)) { continue; }
+
+                ValidateTagName(key);
+
+                string? value = keyValue.Length == 1 ? null : keyValue[1].Trim();
+                if (string.IsNullOrWhiteSpace(value)) { value = null; }
+
+                result.Tags.Add(key, value);
+            }
+        }
+
         // Optional pipeline steps. The user can pass a custom list or leave it to the system to use the default.
-        if (form.TryGetValue(StepsField, out StringValues steps))
+        if (form.TryGetValue(Constants.WebServiceStepsField, out StringValues steps))
         {
             foreach (string? step in steps)
             {
                 if (string.IsNullOrWhiteSpace(step)) { continue; }
 
+                // Allow step names to be separated by space, comma, semicolon
                 var list = step.Replace(' ', ';').Replace(',', ';').Split(';');
                 result.Steps.AddRange(from s in list where !string.IsNullOrWhiteSpace(s) select s.Trim());
             }
         }
 
+        result.Index = indexes.FirstOrDefault()?.Trim() ?? string.Empty;
         result.DocumentId = documentId;
-        result.Index = indexes[0]!;
         result.Files = form.Files;
-
-        // Store any extra field as a tag
-        foreach (string key in form.Keys)
-        {
-            if (key == DocumentIdField
-                || key == IndexField
-                || key == StepsField
-                || !form.TryGetValue(key, out StringValues values)) { continue; }
-
-            ValidateTagName(key);
-            foreach (string? x in values)
-            {
-                result.Tags.Add(key, x);
-            }
-        }
 
         return (result, true, string.Empty);
     }
 
-    private static void ValidateTagName(string key)
+    private static void ValidateTagName(string tagName)
     {
-        if (key.Contains('=', StringComparison.Ordinal))
+        if (tagName.StartsWith(Constants.ReservedTagsPrefix, StringComparison.Ordinal))
         {
-            throw new KernelMemoryException("A tag name cannot contain the '=' char");
+            throw new KernelMemoryException(
+                $"The tag name prefix '{Constants.ReservedTagsPrefix}' is reserved for internal use.");
         }
 
-        if (key is
-            Constants.ReservedDocumentIdTag
+        if (tagName is Constants.ReservedDocumentIdTag
             or Constants.ReservedFileIdTag
             or Constants.ReservedFilePartitionTag
-            or Constants.ReservedFileTypeTag)
+            or Constants.ReservedFileTypeTag
+            or Constants.ReservedSyntheticTypeTag)
         {
-            throw new KernelMemoryException($"The tag name '{key}' is reserved for internal use.");
+            throw new KernelMemoryException($"The tag name '{tagName}' is reserved for internal use.");
         }
     }
 }

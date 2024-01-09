@@ -25,21 +25,55 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
-### Data formats
+### Kernel Memory (KM) and Semantic Memory (SM)
 
-* MS Word documents
-* MS Excel spreadsheets
-* MS PowerPoint presentations
+**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
+to databases and supports vector search. It was developed as part of the Semantic
+Kernel (SK) project and serves as the first public iteration of long-term memory.
+The core library is maintained in three languages, while the list of supported
+storage engines (known as "connectors") varies across languages.
+
+**Kernel Memory (KM) is a service** built on the feedback received and lessons learned
+from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
+features that would otherwise have to be developed manually, such as storing files,
+extracting text from files, providing a framework to secure users' data, etc.
+The KM codebase is entirely in .NET, which eliminates the need to write and maintain
+features in multiple languages. As a service, **KM can be used from any language, tool,
+or platform, e.g. browser extensions and ChatGPT assistants.**
+
+Here's a few notable differences:
+
+| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                           |
+|------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
+| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
+| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, In memory KNN, On disk KNN                     |
+
+and **features available only in Kernel Memory**:
+
+* RAG (Retrieval Augmented Generation)
+* RAG sources lookup
+* Summarization
+* Security filters (filter memory by users and groups)
+* Long running ingestion, large documents, with retry logic and durable queues
+* Custom tokenization
+* Document storage
+* OCR via Azure Document Intelligence
+* LLMs (Large Language Models) with dedicated tokenization
+* Cloud deployment
+* OpenAPI
+* Custom storage schema (partially implemented/work in progress)
+* Short Term Memory (partially implemented/work in progress)
+
+# Supported Data formats and Backends
+
+* MS Office: Word, Excel, PowerPoint
 * PDF documents
 * Web pages
 * JPG/PNG/TIFF Images with text via OCR
-* MarkDown
-* JSON
-* Raw plain text
-* [..] more coming :-)
-
-### Backends
-
+* MarkDown and Raw plain text
+* JSON files
 * 🧠 AI
     * [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models)
     * [OpenAI](https://platform.openai.com/docs/models)
@@ -50,8 +84,10 @@ built for most popular AI platforms.
     * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
     * [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres)
     * [Qdrant](https://qdrant.tech)
-    * Redis: [work in progress](https://github.com/microsoft/kernel-memory/pull/208)
+    * Elasticsearch (work in progress)
+    * Redis: (work in progress)
     * In memory KNN vectors (volatile)
+    * On disk KNN vectors
 
 * 📀 Content storage
     * [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction)

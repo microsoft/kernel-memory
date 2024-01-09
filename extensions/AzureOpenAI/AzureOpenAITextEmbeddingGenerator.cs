@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -21,15 +22,17 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextEmbeddingGenerator>())
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextEmbeddingGenerator>(), httpClient)
     {
     }
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
-        ILogger<AzureOpenAITextEmbeddingGenerator>? log = null)
+        ILogger<AzureOpenAITextEmbeddingGenerator>? log = null,
+        HttpClient? httpClient = null)
     {
         this._log = log ?? DefaultLogger<AzureOpenAITextEmbeddingGenerator>.Instance;
 
@@ -52,7 +55,8 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     deploymentName: config.Deployment,
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
-                    credential: new DefaultAzureCredential());
+                    credential: new DefaultAzureCredential(),
+                    httpClient: httpClient);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -60,7 +64,8 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     deploymentName: config.Deployment,
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
-                    apiKey: config.APIKey);
+                    apiKey: config.APIKey,
+                    httpClient: httpClient);
                 break;
 
             default:

@@ -6,7 +6,7 @@
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": "explicit"
     }
   },
   "editor.bracketPairColorization.enabled": true,
