@@ -57,7 +57,7 @@ Here's a few notable differences:
 | Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
 | Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
 | Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
-| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, In memory KNN, On disk KNN                     |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, In memory KNN, On disk KNN. In progress: Chroma, SQL Server |
 
 and **features available only in Kernel Memory**:
 
@@ -73,7 +73,8 @@ and **features available only in Kernel Memory**:
 * Cloud deployment
 * OpenAPI
 * Custom storage schema (partially implemented/work in progress)
-* Short Term Memory (partially implemented/work in progress)(\*) *Partially implemented and/or work in progress*.
+* Short Term Memory (partially implemented/work in progress)
+* Concurrent write to multiple vector DBs
 
 # Topics
 
