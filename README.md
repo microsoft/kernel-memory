@@ -32,7 +32,7 @@ Keep in mind that **the provided code is an example** of an abstraction over one
 Retrieval Augmented Generation (RAG) in Large Language Models (LLMs).
 This sample is not intended for production deployments and is **not an officially supported Microsoft offering**.
 
-### Kernel Memory (KM) and Semantic Memory (SM)
+## Kernel Memory (KM) and Semantic Memory (SM)
 
 **Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
 to databases and supports vector search. It was developed as part of the Semantic
