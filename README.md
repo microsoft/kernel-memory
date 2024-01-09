@@ -25,6 +25,13 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
+## Repository Guidance
+
+This public repository showcases best practices and efficient architecture related to memory for specific programming scenarios.
+Keep in mind that **the provided code is an example** of an abstraction over one or multiple vector memory stores designed for
+Retrieval Augmented Generation (RAG) in Large Language Models (LLMs).
+This sample is not intended for production deployments and is **not an officially supported Microsoft offering**.
+
 ### Kernel Memory (KM) and Semantic Memory (SM)
 
 **Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
@@ -432,13 +439,3 @@ web clients. For instance, after starting the service locally, see http://127.0.
 
 A python package with a Web Client and Semantic Kernel plugin will soon be available.
 We also welcome PR contributions to support more languages.
-
-## Repository Guidance
-
-This repository is a public resource designed to showcase best practices and efficient architecture
-for specific programming scenarios. Although bug fixes and secure, scalable enhancements are part
-of our focus, rigorous reviews and strategic considerations of the code are recommended before
-production use. Similar to the nature of AI development, the project will rapidly evolve. We warmly
-welcome you to participate in the development of Kernel Memory. Feel free to contribute opening
-GitHub Issues, sending us PRs, and joining our Discord community. Thank you and happy coding!
-
