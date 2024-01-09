@@ -269,7 +269,7 @@ public sealed class RedisMemory : IMemoryDb
                 var probingQueryTask = this._search.SearchAsync(normalizedIndexName, query);
                 var configurationCheckTask = this._search.ConfigGetAsync("MAXSEARCHRESULTS"); // need to query Max Search Results since Redis doesn't support unbounded queries.
 
-                // pull back in one round trip, hence the seperated awaits.
+                // pull back in one round trip, hence the separated awaits.
                 var firstTripDocs = await probingQueryTask.ConfigureAwait(false);
                 var configurationResult = await configurationCheckTask.ConfigureAwait(false);
 
