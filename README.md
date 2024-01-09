@@ -65,6 +65,7 @@ and **features available only in Kernel Memory**:
 * OpenAPI
 * Custom storage schema (partially implemented/work in progress)
 * Short Term Memory (partially implemented/work in progress)
+* Concurrent write to multiple vector DBs
 
 # Supported Data formats and Backends
 
