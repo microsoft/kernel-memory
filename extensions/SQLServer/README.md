@@ -23,6 +23,48 @@ Configuration (appsettings.json):
   // ...
 ```
 
+## Setup with Kernel Memory Builder / Dependency Injection
+
+Method 1, simple applications:
+
+```csharp
+var sqlServerConfig = cfg.GetSection("Services:SqlServer").Get<SqlServerConfig>()!;
+var memory = new KernelMemoryBuilder()
+    .WithSqlServerMemoryDb(sqlServerConfig)
+    // .WithOpenAI(openAiConfig)
+    // .WithAzureOpenAITextGeneration(azureOpenAITextConfiguration)
+    // .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfiguration)
+    // .Build();
+```
+
+Method 2, injecting memory into an ASP.NET app:
+
+```csharp
+builder.Services.AddSingleton<IKernelMemory>(sp =>
+{
+    KernelMemoryBuilder kernelMemoryBuilder = new()
+        .WithSqlServerMemoryDb(builder.Configuration.GetConnectionString("DefaultConnection"))
+        //... 
+
+    return kernelMemoryBuilder.Build<MemoryServerless>();
+});
+```
+
+## KM Service setup
+
+To run Kernel Memory service with SQL Server backend:
+
+1. clone KM repository
+2. add `KernelMemory.MemoryStorage.SqlServer` nuget to [Service.csproj](https://github.com/microsoft/kernel-memory/blob/main/service/Service/Service.csproj)
+3. edit the part using `KernelMemoryBuilder` adding the same `.WithSqlServerMemoryDb(...)` call mentioned in the previous paragraph, e.g.
+    ```csharp
+   IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services)
+    .FromAppSettings()
+    .WithSqlServerMemoryDb(...)
+    .Build();
+    ```
+
+
 ## Local tests with Docker
 
 You can test the connector locally with Docker:
