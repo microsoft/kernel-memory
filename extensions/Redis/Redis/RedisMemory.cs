@@ -85,7 +85,7 @@ public sealed class RedisMemory : IMemoryDb
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this._search._ListAsync().ConfigureAwait(false);
-        return result.Select(x => ((string)x!)).Where(x => x.StartsWith($"{this._config.AppPrefix}-", StringComparison.Ordinal)).Select(x => x.Substring(this._config.AppPrefix.Length + 1));
+        return result.Select(x => ((string)x!)).Where(x => x.StartsWith($"{this._config.AppPrefix}", StringComparison.Ordinal)).Select(x => x.Substring(this._config.AppPrefix.Length));
     }
 
     /// <inheritdoc />
@@ -392,7 +392,7 @@ public sealed class RedisMemory : IMemoryDb
             index = Constants.DefaultIndex;
         }
 
-        var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}-{index}" : index;
+        var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;
 
         indexWithPrefix = s_replaceIndexNameCharsRegex.Replace(indexWithPrefix.Trim().ToLowerInvariant(), KmSeparator);
 
