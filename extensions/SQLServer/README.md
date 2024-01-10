@@ -6,6 +6,12 @@
 This folder contains tests for the [MS SQL Server](https://www.microsoft.com/sql-server) extension for Kernel Memory
 available [here](https://github.com/kbeaugrand/SemanticKernel.Connectors.Memory.SqlServer).
 
+Please note that the connector should not be confused with a NL2SQL feature, e.g. the ability to query the content
+of a pre-existing SQL server. If you are looking for a solution that allows to import content from a SQL server and make
+it searchable please see
+[How to index data from Azure SQL in Azure AI Search](https://learn.microsoft.com/azure/search/search-howto-connecting-azure-sql-database-to-azure-search-using-indexers)
+
+## Configuration
 
 Configuration (appsettings.json):
 
@@ -16,6 +22,8 @@ Configuration (appsettings.json):
     }
   // ...
 ```
+
+## Local tests with Docker
 
 You can test the connector locally with Docker:
 
@@ -30,9 +38,6 @@ docker run -it -p 1433:1433 --rm -e "MSSQL_SA_PASSWORD=00_CHANGE_ME_00" -e "ACCE
 ```
 Server=tcp:127.0.0.1,1433;Initial Catalog=master;Persist Security Info=False;User ID=sa;Password=00_CHANGE_ME_00;MultipleActiveResultSets=False;TrustServerCertificate=True;Connection Timeout=30;
 ```
-
-
-
 
 For more information about the SQL Server Linux container:
 
