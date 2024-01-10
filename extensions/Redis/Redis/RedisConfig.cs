@@ -12,6 +12,11 @@ namespace Microsoft.KernelMemory;
 public class RedisConfig
 {
     /// <summary>
+    /// The default prefix to be used for index names.
+    /// </summary>
+    public const string DefaultIndexPrefix = "km-";
+
+    /// <summary>
     /// Connection string required to connect to Redis
     /// </summary>
     public string ConnectionString { get; set; } = string.Empty;
@@ -46,7 +51,7 @@ public class RedisConfig
     /// </summary>
     /// <param name="appPrefix">The prefix to use for the index name and all documents inserted into Redis.</param>
     /// <param name="tags">The collection of tags you want to be able to search on. The key</param>
-    public RedisConfig(string appPrefix = "km", Dictionary<string, char?>? tags = null)
+    public RedisConfig(string appPrefix = DefaultIndexPrefix, Dictionary<string, char?>? tags = null)
     {
         this.AppPrefix = appPrefix;
 
