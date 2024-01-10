@@ -251,6 +251,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qdrant.FunctionalTests", "e
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelpers", "service\tests\TestHelpers\TestHelpers.csproj", "{989061F4-164F-4D98-A3F9-601BC40EE216}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -317,6 +319,7 @@ Global
 		{CCA96699-483E-4B2A-95DF-25F0C98E3BB6} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{62B96766-AA6C-4CFF-A6FB-6370C89C2509} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{989061F4-164F-4D98-A3F9-601BC40EE216} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -481,5 +484,8 @@ Global
 		{989061F4-164F-4D98-A3F9-601BC40EE216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{989061F4-164F-4D98-A3F9-601BC40EE216}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{989061F4-164F-4D98-A3F9-601BC40EE216}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
