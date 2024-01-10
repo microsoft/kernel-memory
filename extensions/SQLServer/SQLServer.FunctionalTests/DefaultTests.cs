@@ -28,63 +28,63 @@ public class DefaultTests : BaseFunctionalTestCase
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItSupportsASingleFilter()
     {
         await FilteringTest.ItSupportsASingleFilter(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItSupportsMultipleFilters()
     {
         await FilteringTest.ItSupportsMultipleFilters(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItIgnoresEmptyFilters()
     {
         await FilteringTest.ItIgnoresEmptyFilters(this._memory, this.Log, true);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItListsIndexes()
     {
         await IndexListTest.ItListsIndexes(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItDeletesIndexes()
     {
         await IndexDeletionTest.ItDeletesIndexes(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItHandlesMissingIndexesConsistently()
     {
         await MissingIndexTest.ItHandlesMissingIndexesConsistently(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItUploadsPDFDocsAndDeletes()
     {
         await DocumentUploadTest.ItUploadsPDFDocsAndDeletes(this._memory, this.Log);
     }
 
     [Fact]
-    [Trait("Category", "Postgres")]
+    [Trait("Category", "SQLServer")]
     public async Task ItSupportsTags()
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
