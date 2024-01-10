@@ -302,7 +302,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
             {
                 const string ClassName = nameof(KernelMemoryBuilder);
                 const string MethodName = nameof(this.WithoutDefaultHandlers);
-                throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
+                throw new ConfigurationException("Host service collection not available: unable to register default handlers. " +
                                                  $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
                                                  $"otherwise use `new {ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
             }
@@ -407,7 +407,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var hasQueueFactory = (this._memoryServiceCollection.HasService<QueueClientFactory>());
         var hasContentStorage = (this._memoryServiceCollection.HasService<IContentStorage>());
         var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
-        var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
+        var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>());
         var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
         var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGenerator>());
 
