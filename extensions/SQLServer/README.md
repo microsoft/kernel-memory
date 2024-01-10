@@ -3,8 +3,9 @@
 [![Nuget package](https://img.shields.io/nuget/v/KernelMemory.MemoryStorage.SqlServer)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer/)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
 
-This project contains the [MS SQL Server](https://www.microsoft.com/sql-server) adapter allowing
-to use Kernel Memory with MS SQL Server.
+This folder contains tests for the [MS SQL Server](https://www.microsoft.com/sql-server) extension for Kernel Memory
+available [here](https://github.com/kbeaugrand/SemanticKernel.Connectors.Memory.SqlServer).
+
 
 Configuration (appsettings.json):
 
