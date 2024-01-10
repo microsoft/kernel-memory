@@ -57,14 +57,14 @@ Here's a few notable differences:
 | Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
 | Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
 | Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
-| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, In memory KNN, On disk KNN. In progress: Chroma, SQL Server |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Chroma |
 
 and **features available only in Kernel Memory**:
 
 * RAG (Retrieval Augmented Generation)
 * RAG sources lookup
 * Summarization
-* Security filters (filter memory by users and groups)
+* Security Filters (filter memory by users and groups)
 * Long running ingestion, large documents, with retry logic and durable queues
 * Custom tokenization
 * Document storage
