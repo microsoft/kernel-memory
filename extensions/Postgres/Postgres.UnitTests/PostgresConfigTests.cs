@@ -9,6 +9,7 @@ public class PostgresConfigTests
 {
     [Fact]
     [Trait("Category", "UnitTest")]
+    [Trait("Category", "Postgres")]
     public void ItRequiresOnlyAConnStringToBeValid()
     {
         // Arrange

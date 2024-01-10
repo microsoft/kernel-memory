@@ -15,6 +15,7 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
 
     [Fact]
     [Trait("Category", "UnitTest")]
+    [Trait("Category", "Qdrant")]
     public void FiltersAreRenderedToJson()
     {
         const string Expected = """
@@ -108,6 +109,7 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
 
     [Fact]
     [Trait("Category", "UnitTest")]
+    [Trait("Category", "Qdrant")]
     public void ItRendersOptimizedConditions()
     {
         const string Expected = """

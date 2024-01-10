@@ -24,6 +24,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0"/>
     <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0"/>
     <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1"/>
+    <PackageVersion Include="Moq" Version="4.20.70"/>
     <PackageVersion Include="PdfPig" Version="0.1.8"/>
     <PackageVersion Include="Pgvector" Version="0.2.0"/>
     <PackageVersion Include="Polly.Core" Version="8.2.0"/>

@@ -15,6 +15,7 @@ public class FilteringTest : BaseUnitTestCase
 
     [Fact]
     [Trait("Category", "UnitTest")]
+    [Trait("Category", "Qdrant")]
     public void FiltersAreRenderedToJson()
     {
         const string Expected = """
