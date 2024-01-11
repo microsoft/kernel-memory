@@ -64,7 +64,7 @@ appsettings.development.json to persist files on disk, or choose one of the avai
 Great! If you completed the wizard, you should be ready to start the service and run the examples below. 
 
 {: .important }
-> * If you selected any of the "simpleXYZ" dependency, then data will be stored in memory only, and automatically discarded
+> * If you selected any of the "simpleXYZ" dependencies, then data will be stored in memory only, and automatically discarded
 >   when the service stops. Edit the configuration file manually to persist  data on disk. [More information here](service/configuration).
 > * The configuration wizard uses some default settings that you might want to change. After running the examples, take
 >   a look at the included [appsettings.json](https://github.com/microsoft/kernel-memory/blob/main/service/Service/appsettings.json)
