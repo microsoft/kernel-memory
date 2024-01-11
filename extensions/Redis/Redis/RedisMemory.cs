@@ -85,7 +85,7 @@ public sealed class RedisMemory : IMemoryDb
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         var result = await this._search._ListAsync().ConfigureAwait(false);
-        return result.Select(x => (string)x!);
+        return result.Select(x => ((string)x!)).Where(x => x.StartsWith($"{this._config.AppPrefix}", StringComparison.Ordinal)).Select(x => x.Substring(this._config.AppPrefix.Length));
     }
 
     /// <inheritdoc />
@@ -111,15 +111,20 @@ public sealed class RedisMemory : IMemoryDb
     {
         var normalizedIndexName = NormalizeIndexName(index, this._config.AppPrefix);
         var key = Key(normalizedIndexName, record.Id);
-        var fields = new List<HashEntry>();
-        fields.Add(new HashEntry(EmbeddingFieldName, record.Vector.VectorBlob()));
+        var args = new List<RedisValue>
+        {
+            NormalizeIndexName(index, this._config.AppPrefix),
+            EmbeddingFieldName,
+            record.Vector.VectorBlob()
+        };
         foreach (var item in record.Tags)
         {
             var isIndexed = this._config.Tags.TryGetValue(item.Key, out var c);
             var separator = c ?? DefaultSeparator;
             if (!isIndexed)
             {
-                this._logger.LogWarning("Inserting un-indexed tag field: {Key}, will not be able to filter on it", item.Key);
+                this._logger.LogError("Attempt to insert un-indexed tag field: {Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
+                throw new ArgumentException($"Attempt to insert un-indexed tag field: {item.Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
             }
 
             if (item.Value.Any(s => s is not null && s.Contains(separator.ToString(), StringComparison.InvariantCulture)))
@@ -130,15 +135,26 @@ public sealed class RedisMemory : IMemoryDb
                                             $"Update your {nameof(RedisConfig)} to use a different separator, or remove the separator from the field.");
             }
 
-            fields.Add(new HashEntry(item.Key, string.Join(separator, item.Value)));
+            args.Add(item.Key);
+            args.Add(string.Join(separator, item.Value));
         }
 
         if (record.Payload.Count != 0)
         {
-            fields.Add(new HashEntry(PayloadFieldName, JsonSerializer.Serialize(record.Payload))); // assumption: it's safe to serialize/deserialize the payload to/from JSON.
+            args.Add(PayloadFieldName);
+            args.Add(JsonSerializer.Serialize(record.Payload));
         }
 
-        await this._db.HashSetAsync(key, fields.ToArray()).ConfigureAwait(false);
+        var scriptResult = (await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false)).ToString()!;
+        if (scriptResult == "false")
+        {
+            await this.CreateIndexAsync(index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+            await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false);
+        }
+        else if (scriptResult.StartsWith("(error)", StringComparison.Ordinal))
+        {
+            throw new RedisException(scriptResult);
+        }
 
         return record.Id;
     }
@@ -158,15 +174,25 @@ public sealed class RedisMemory : IMemoryDb
         var sb = new StringBuilder();
         if (filters != null && filters.Any(x => x.Pairs.Any()))
         {
-            foreach ((string key, string? value) in filters.SelectMany(x => x.Pairs))
+            sb.Append('(');
+            foreach (var filter in filters)
             {
-                if (value is null)
+                sb.Append('(');
+                foreach ((string key, string? value) in filter.Pairs)
                 {
-                    this._logger.LogWarning("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                    if (value is null)
+                    {
+                        this._logger.LogError("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                        throw new RedisException("Attempted to perform null check on tag field. This behavior is not supported by Redis");
+                    }
+
+                    sb.Append(CultureInfo.InvariantCulture, $"@{key}:{{{value}}} ");
                 }
 
-                sb.Append(CultureInfo.InvariantCulture, $"@{key}:{{{value}}} ");
+                sb.Replace(" ", ")|", sb.Length - 1, 1);
             }
+
+            sb.Replace('|', ')', sb.Length - 1, 1);
         }
         else
         {
@@ -180,7 +206,25 @@ public sealed class RedisMemory : IMemoryDb
         query.Limit(0, limit);
         query.Dialect(2);
 
-        var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+        NRedisStack.Search.SearchResult? result = null;
+
+        try
+        {
+            result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+        }
+        catch (RedisServerException e)
+        {
+            if (!e.Message.Contains("no such index", StringComparison.OrdinalIgnoreCase))
+            {
+                throw;
+            }
+        }
+
+        if (result is null)
+        {
+            yield break;
+        }
+
         foreach (var doc in result.Documents)
         {
             var next = this.FromDocument(doc, withEmbeddings);
@@ -214,9 +258,52 @@ public sealed class RedisMemory : IMemoryDb
         }
 
         var query = new Query(sb.ToString());
-        query.Limit(0, limit);
-        var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
-        foreach (var doc in result.Documents)
+        List<NRedisStack.Search.Document> documents = new();
+        try
+        {
+            // handle the case of negative indexes (-1 = end, -2 = 1 from end, etc. . .)
+            if (limit < 0)
+            {
+                var numOfDocumentsFromEnd = -1 * (limit + 1);
+
+                var probingQueryTask = this._search.SearchAsync(normalizedIndexName, query);
+                var configurationCheckTask = this._search.ConfigGetAsync("MAXSEARCHRESULTS"); // need to query Max Search Results since Redis doesn't support unbounded queries.
+
+                // pull back in one round trip, hence the separated awaits.
+                var firstTripDocs = await probingQueryTask.ConfigureAwait(false);
+                var configurationResult = await configurationCheckTask.ConfigureAwait(false);
+
+                var docsNeeded = (int)firstTripDocs.TotalResults - numOfDocumentsFromEnd;
+
+                documents.AddRange(firstTripDocs.Documents.Take(docsNeeded));
+                if (docsNeeded > 10)
+                {
+                    if (configurationResult.TryGetValue("MAXSEARCHRESULTS", out string? value) && int.TryParse(value, out var maxSearchResults))
+                    {
+                        limit = Math.Min(docsNeeded - 10, maxSearchResults);
+                        query.Limit(10, limit);
+                        var secondTripResults = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+                        documents.AddRange(secondTripResults.Documents);
+                    }
+                    else // shouldn't be reachable.
+                    {
+                        throw new RedisException("Redis does not contain a valid value for MAXSEARCHRESULTS, possible configuration issue in Redis.");
+                    }
+                }
+            }
+            else
+            {
+                query.Limit(0, limit);
+                var result = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+                documents.AddRange(result.Documents);
+            }
+        }
+        catch (RedisServerException ex) when (ex.Message.Contains("no such index", StringComparison.InvariantCulture))
+        {
+            // NOOP
+        }
+
+        foreach (var doc in documents)
         {
             yield return this.FromDocument(doc, withEmbeddings).Item1;
         }
@@ -305,7 +392,7 @@ public sealed class RedisMemory : IMemoryDb
             index = Constants.DefaultIndex;
         }
 
-        var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}-{index}" : index;
+        var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;
 
         indexWithPrefix = s_replaceIndexNameCharsRegex.Replace(indexWithPrefix.Trim().ToLowerInvariant(), KmSeparator);
 

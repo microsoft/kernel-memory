@@ -39,7 +39,7 @@ public interface IMemoryDb
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Insert/Update a vector + payload
+    /// Insert/Update a vector + payload, creates the given index if it does not exist.
     /// </summary>
     /// <param name="index">Index/Collection name</param>
     /// <param name="record">Vector + payload to save</param>
