@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FreeMindLabs.KernelMemory.Elasticsearch;
+using FreeMindLabs.KernelMemory.Elasticsearch; // For dluc: This is still needed for ElasticsearchConfig. I'll see to remove it.
 using FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.TestHelpers;
 
 namespace Elasticsearch.FunctionalTests;
@@ -24,6 +26,12 @@ public class DefaultTests : BaseFunctionalTestCase
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
             .WithElasticsearch(this._elasticsearchConfig)
+            // For dluc: this is the only storage I could make work for now...
+            .WithSimpleFileStorage(new SimpleFileStorageConfig()
+            {
+                Directory = "ContentStorage",
+                StorageType = FileSystemTypes.Volatile
+            })
             .Build<MemoryServerless>();
     }
 

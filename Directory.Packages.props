@@ -10,7 +10,7 @@
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1"/>
     <PackageVersion Include="ClosedXML" Version="0.102.1"/>
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
-    <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.8.1"/>
+    <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.2"/>
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.57"/>
     <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.0.3"/>
     <PackageVersion Include="LLamaSharp" Version="0.8.1"/>
