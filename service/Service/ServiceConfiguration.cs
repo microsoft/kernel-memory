@@ -190,11 +190,15 @@ internal sealed class ServiceConfiguration
             {
                 case string y1 when y1.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
                 case string y2 when y2.Equals("AzureQueues", StringComparison.OrdinalIgnoreCase):
-                    builder.Services.AddAzureQueuesOrchestration(this.GetServiceConfig<AzureQueuesConfig>("AzureQueue"));
+                    // Check 2 keys for backward compatibility
+                    builder.Services.AddAzureQueuesOrchestration(this.GetServiceConfig<AzureQueuesConfig>("AzureQueues")
+                                                                 ?? this.GetServiceConfig<AzureQueuesConfig>("AzureQueue"));
                     break;
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
+                    // Check 2 keys for backward compatibility
+                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMqConfig>("RabbitMQ")
+                                                              ?? this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
@@ -214,7 +218,9 @@ internal sealed class ServiceConfiguration
         {
             case string x1 when x1.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase):
             case string x2 when x2.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureBlobsAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs"));
+                // Check 2 keys for backward compatibility
+                builder.Services.AddAzureBlobsAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
+                                                               ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
@@ -248,7 +254,7 @@ internal sealed class ServiceConfiguration
         if (this._memoryConfiguration.DataIngestion.EmbeddingGeneratorTypes.Count > 1)
         {
             throw new NotSupportedException("Using multiple embedding generators is currently unsupported. " +
-                                            "You may contact the team if this feature is required, or workaround this exception" +
+                                            "You may contact the team if this feature is required, or workaround this exception " +
                                             "using KernelMemoryBuilder methods explicitly.");
         }
 
