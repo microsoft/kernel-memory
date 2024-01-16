@@ -72,6 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\create-azure-webapp-publish-artifacts.sh = tools\create-azure-webapp-publish-artifacts.sh
 		tools\run-redis.sh = tools\run-redis.sh
 		tools\run-mssql.sh = tools\run-mssql.sh
+		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
 	EndProjectSection
 EndProject
 
