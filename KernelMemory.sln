@@ -72,6 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\create-azure-webapp-publish-artifacts.sh = tools\create-azure-webapp-publish-artifacts.sh
 		tools\run-redis.sh = tools\run-redis.sh
 		tools\run-mssql.sh = tools\run-mssql.sh
+		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
 	EndProjectSection
 EndProject
 
@@ -258,6 +259,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.FunctionalTests", "ex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp.FunctionalTests", "extensions\LlamaSharp\LlamaSharp.FunctionalTests\LlamaSharp.FunctionalTests.csproj", "{9D3C9277-648D-441D-834D-565076EE2E87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -327,6 +330,7 @@ Global
 		{668A48B7-F600-4056-B47E-3200893C0404} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{C8A18E8F-34CC-4226-9831-083335DAB21A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{9D3C9277-648D-441D-834D-565076EE2E87} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -500,5 +504,8 @@ Global
 		{9D3C9277-648D-441D-834D-565076EE2E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D3C9277-648D-441D-834D-565076EE2E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D3C9277-648D-441D-834D-565076EE2E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
