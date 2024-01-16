@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+        <!--<ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj"/>-->
         <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
     </ItemGroup>
 
@@ -24,9 +24,9 @@
         <InternalsVisibleTo Include="Microsoft.UnitTests"/>
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props"/>
+    <Import Project="../../../code-analysis.props"/>
 
-    <Import Project="../../nuget-package.props"/>
+    <Import Project="../../../nuget-package.props"/>
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
@@ -37,7 +37,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
     </ItemGroup>
 
 </Project>

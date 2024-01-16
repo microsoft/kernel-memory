@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\service\Core\Core.csproj"/>
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
     </ItemGroup>
 
 </Project>

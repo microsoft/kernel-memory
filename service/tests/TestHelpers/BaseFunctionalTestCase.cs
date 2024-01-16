@@ -34,15 +34,15 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this._output = new RedirectConsole(output);
         Console.SetOut(this._output);
 
-        this.OpenAiConfig = cfg.GetSection("Services:OpenAI").Get<OpenAIConfig>()!;
-        this.AzureOpenAITextConfiguration = cfg.GetSection("Services:AzureOpenAIText").Get<AzureOpenAIConfig>()!;
-        this.AzureOpenAIEmbeddingConfiguration = cfg.GetSection("Services:AzureOpenAIEmbedding").Get<AzureOpenAIConfig>()!;
-        this.AzureAiSearchConfig = cfg.GetSection("Services:AzureAISearch").Get<AzureAISearchConfig>()!;
-        this.QdrantConfig = cfg.GetSection("Services:Qdrant").Get<QdrantConfig>()!;
-        this.PostgresConfig = cfg.GetSection("Services:Postgres").Get<PostgresConfig>()!;
-        this.RedisConfig = cfg.GetSection("Services:Redis").Get<RedisConfig>()!;
-        this.SimpleVectorDbConfig = cfg.GetSection("Services:SimpleVectorDb").Get<SimpleVectorDbConfig>()!;
-        this.LlamaSharpConfig = cfg.GetSection("Services:LlamaSharp").Get<LlamaSharpConfig>()!;
+        this.OpenAiConfig = cfg.GetSection("Services:OpenAI").Get<OpenAIConfig>() ?? new();
+        this.AzureOpenAITextConfiguration = cfg.GetSection("Services:AzureOpenAIText").Get<AzureOpenAIConfig>() ?? new();
+        this.AzureOpenAIEmbeddingConfiguration = cfg.GetSection("Services:AzureOpenAIEmbedding").Get<AzureOpenAIConfig>() ?? new();
+        this.AzureAiSearchConfig = cfg.GetSection("Services:AzureAISearch").Get<AzureAISearchConfig>() ?? new();
+        this.QdrantConfig = cfg.GetSection("Services:Qdrant").Get<QdrantConfig>() ?? new();
+        this.PostgresConfig = cfg.GetSection("Services:Postgres").Get<PostgresConfig>() ?? new();
+        this.RedisConfig = cfg.GetSection("Services:Redis").Get<RedisConfig>() ?? new();
+        this.SimpleVectorDbConfig = cfg.GetSection("Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
+        this.LlamaSharpConfig = cfg.GetSection("Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
     }
 
     protected IKernelMemory GetMemoryWebClient()

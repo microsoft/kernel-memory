@@ -32,7 +32,7 @@
         <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
         <ProjectReference Include="..\..\Core\Core.csproj"/>
         <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj"/>
     </ItemGroup>
 

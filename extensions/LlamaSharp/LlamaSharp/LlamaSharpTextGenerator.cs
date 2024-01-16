@@ -82,8 +82,13 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
-        return this._textTokenizer?.CountTokens(text)
-               ?? this._context.Tokenize(text, addBos: false, special: false).Length;
+        int? value = this._textTokenizer?.CountTokens(text);
+        if (!value.HasValue)
+        {
+            value = this._context.Tokenize(text, addBos: false, special: false).Length;
+        }
+
+        return value.Value;
     }
 
     /// <inheritdoc/>

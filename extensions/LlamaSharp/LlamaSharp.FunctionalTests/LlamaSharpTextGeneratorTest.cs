@@ -8,7 +8,7 @@ using Microsoft.KernelMemory.AI.OpenAI.GPT3;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess.AIClients;
+namespace LlamaSharp.FunctionalTests;
 
 public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 {
@@ -20,13 +20,15 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         ITestOutputHelper output) : base(cfg, output)
     {
         this._timer = new Stopwatch();
+
+        this.LlamaSharpConfig.Validate();
         this._target = new LlamaSharpTextGenerator(this.LlamaSharpConfig, loggerFactory: null);
         var modelFilename = this.LlamaSharpConfig.ModelPath.Split('/').Last().Split('\\').Last();
         Console.WriteLine($"Model in use: {modelFilename}");
     }
 
     [Fact]
-    [Trait("Category", "Serverless")]
+    [Trait("Category", "LlamaSharp")]
     public void ItCountsTokens()
     {
         // Arrange
@@ -47,7 +49,29 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
     }
 
     [Fact]
-    [Trait("Category", "Serverless")]
+    [Trait("Category", "LlamaSharp")]
+    public void ItCountsTokensOfEmptyStrings()
+    {
+        // Act - No Exceptions should occur
+        this._target.CountTokens("");
+        this._target.CountTokens("\r");
+
+        // To be fixed by LLamaSharp
+        // See https://github.com/SciSharp/LLamaSharp/issues/430
+        // this._target.CountTokens("\n");
+        // this._target.CountTokens("\n\n");
+        // this._target.CountTokens("\t");
+        // this._target.CountTokens("\t\t");
+        // this._target.CountTokens("\v");
+        // this._target.CountTokens("\v\v");
+        // this._target.CountTokens("\0");
+        // this._target.CountTokens("\0\0");
+        // this._target.CountTokens("\b");
+        // this._target.CountTokens("\b\b");
+    }
+
+    [Fact]
+    [Trait("Category", "LlamaSharp")]
     public async Task ItGeneratesText()
     {
         // Arrange

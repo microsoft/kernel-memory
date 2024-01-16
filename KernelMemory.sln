@@ -215,7 +215,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOpenAI", "extensions\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAI", "extensions\OpenAI\OpenAI.csproj", "{A6AE31A1-4F60-47B0-8534-7B083D68118C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp", "extensions\LlamaSharp\LlamaSharp.csproj", "{969625B8-039F-4E5E-A484-6A30DC417FBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp", "extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj", "{969625B8-039F-4E5E-A484-6A30DC417FBB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.UnitTests", "extensions\Postgres\Postgres.UnitTests\Postgres.UnitTests.csproj", "{0675D9B5-B3BB-4C9A-A1A5-11540E2ED715}"
 EndProject
@@ -255,6 +255,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLServer.FunctionalTests", "extensions\SQLServer\SQLServer.FunctionalTests\SQLServer.FunctionalTests.csproj", "{668A48B7-F600-4056-B47E-3200893C0404}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.FunctionalTests", "extensions\Redis\Redis.FunctionalTests\Redis.FunctionalTests.csproj", "{C8A18E8F-34CC-4226-9831-083335DAB21A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp.FunctionalTests", "extensions\LlamaSharp\LlamaSharp.FunctionalTests\LlamaSharp.FunctionalTests.csproj", "{9D3C9277-648D-441D-834D-565076EE2E87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -324,6 +326,7 @@ Global
 		{989061F4-164F-4D98-A3F9-601BC40EE216} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
 		{668A48B7-F600-4056-B47E-3200893C0404} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{C8A18E8F-34CC-4226-9831-083335DAB21A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{9D3C9277-648D-441D-834D-565076EE2E87} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -494,5 +497,8 @@ Global
 		{C8A18E8F-34CC-4226-9831-083335DAB21A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C8A18E8F-34CC-4226-9831-083335DAB21A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8A18E8F-34CC-4226-9831-083335DAB21A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D3C9277-648D-441D-834D-565076EE2E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D3C9277-648D-441D-834D-565076EE2E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D3C9277-648D-441D-834D-565076EE2E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
