@@ -38,7 +38,7 @@
 
 <!--    <ItemGroup>-->
 <!--        <ProjectReference Include="..\Core\Core.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp.csproj"/>-->
+<!--        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>-->
 <!--        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj"/>-->
 <!--        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj"/>-->
 <!--    </ItemGroup>-->
