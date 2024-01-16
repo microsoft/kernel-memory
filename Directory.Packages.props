@@ -3,67 +3,67 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0"/>
-    <PackageVersion Include="Azure.Identity" Version="1.10.4"/>
-    <PackageVersion Include="Azure.Search.Documents" Version="11.5.1"/>
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1"/>
-    <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1"/>
+    <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
+    <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
+    <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
     <PackageVersion Include="ClosedXML" Version="0.102.1"/>
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57"/>
-    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.0.3"/>
-    <PackageVersion Include="LLamaSharp" Version="0.8.1"/>
-    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.8.1"/>
-    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.8.1"/>
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1"/>
-    <PackageVersion Include="Moq" Version="4.20.70"/>
-    <PackageVersion Include="PdfPig" Version="0.1.8"/>
-    <PackageVersion Include="Pgvector" Version="0.2.0"/>
-    <PackageVersion Include="Polly.Core" Version="8.2.0"/>
-    <PackageVersion Include="RabbitMQ.Client" Version="6.8.1"/>
-    <PackageVersion Include="NRedisStack" Version="0.10.1"/>
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1"/>
-    <PackageVersion Include="System.Memory.Data" Version="8.0.0"/>
-    <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0"/>
-    <PackageVersion Include="System.Text.Json" Version="8.0.0"/>
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.1" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
+    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.0.3" />
+    <PackageVersion Include="LLamaSharp" Version="0.9.1" />
+    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.9.1" />
+    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.9.1" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1" />
+    <PackageVersion Include="Moq" Version="4.20.70" />
+    <PackageVersion Include="PdfPig" Version="0.1.8" />
+    <PackageVersion Include="Pgvector" Version="0.2.0" />
+    <PackageVersion Include="Polly.Core" Version="8.2.1" />
+    <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageVersion Include="NRedisStack" Version="0.11.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
+    <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.1"/>
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.0.1"/>
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.0.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.0.1" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0"/>
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
   </ItemGroup>
   <!-- Code Analysis -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0"/>
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14"/>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.7.0"/>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.7.0"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14" />
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.7.0" />
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.7.0" />
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
-    <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.1"/>
-    <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="8.1.0"/>
-    <PackageVersion Include="coverlet.collector" Version="6.0.0"/>
-    <PackageVersion Include="xunit" Version="2.6.3"/>
-    <PackageVersion Include="xunit.abstractions" Version="2.0.3"/>
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.5">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.1" />
+    <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="8.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+    <PackageVersion Include="xunit" Version="2.6.6" />
+    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
