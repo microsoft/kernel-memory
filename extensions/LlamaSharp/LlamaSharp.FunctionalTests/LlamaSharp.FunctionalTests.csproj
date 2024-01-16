@@ -29,8 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj"/>
-        <ProjectReference Include="..\LlamaSharp\LLamaSharp.csproj"/>
+      <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
 </Project>
