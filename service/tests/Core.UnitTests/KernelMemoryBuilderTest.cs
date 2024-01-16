@@ -109,7 +109,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
 
         // Assert - See KernelMemoryBuilder.GetBuildType()
         Assert.True(e is ConfigurationException);
-        Assert.Contains("some dependencies are not defined", e.Message);
-        Assert.Contains("Embedding generator", e.Message);
+        Assert.Contains("some dependencies are not defined", e.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Embedding generator", e.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
