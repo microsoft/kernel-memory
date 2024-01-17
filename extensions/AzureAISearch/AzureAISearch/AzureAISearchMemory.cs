@@ -624,6 +624,24 @@ public class AzureAISearchMemory : IMemoryDb
     {
         List<string> conditions = new();
 
+        // Get all filters that Keys are all the same, and combine them with search.in if more than one tag value is available
+        // Checks if the filter is not empty and if it has only one filter:
+        // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
+        // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
+        var filtersList = filters.ToList();
+        var filtersGroupedByKey = filtersList.Where(f => !f.IsEmpty() && f.GetFilters().Count() == 1)
+            .GroupBy(f => f.GetFilters().First().Key)
+            .Where(g => g.Count() > 1)
+            .ToList();
+
+        foreach (var filterGroup in filtersGroupedByKey)
+        {
+            conditions.Add($"tags/any(s: search.in(s, '{string.Join(",", filterGroup.Select(fg => string.Join(",", fg.GetFilters().Select(f => $"{f.Key}:{f.Value}").ToList())).ToList())}'))");
+        }
+
+        //Exclude filters that were grouped before
+        filters = filtersList.Where(f => !filtersGroupedByKey.Any(g => g.Key == f.GetFilters().First().Key && f.GetFilters().Count() == 1));
+
         // Note: empty filters would lead to a syntax error, so even if they are supposed
         // to be removed upstream, we check again and remove them here too.
         foreach (var filter in filters.Where(f => !f.IsEmpty()))
@@ -640,6 +658,7 @@ public class AzureAISearchMemory : IMemoryDb
         }
 
         // Examples:
+        // (tags/any(s: search.in(s, 'Authorized:0000-0000-0000-00000000,Authorized:0000-0000-0000-00000001'))) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
         return string.Join(" or ", conditions);
