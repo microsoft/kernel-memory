@@ -39,7 +39,7 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1" />
     <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.0.3" />
-    <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.2" />
+    <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
