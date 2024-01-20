@@ -97,8 +97,8 @@ if (ingestion)
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md",
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md",
             documentId: "webPage2",
             steps: Constants.PipelineWithoutSummary);
     }
