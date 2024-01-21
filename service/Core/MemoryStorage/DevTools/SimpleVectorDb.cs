@@ -103,7 +103,7 @@ public class SimpleVectorDb : IMemoryDb
 
         index = NormalizeIndexName(index);
 
-        var list = this.GetListAsync(index, filters, limit, withEmbeddings, cancellationToken);
+        var list = this.GetListAsync(index, filters, int.MaxValue, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
         await foreach (MemoryRecord r in list.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
