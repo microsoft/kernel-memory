@@ -27,6 +27,7 @@ public sealed class RedisMemory : IMemoryDb
     private readonly RedisConfig _config;
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<RedisMemory> _logger;
+    private readonly string[] _fieldNamesNoEmbeddings;
 
     /// <summary>
     /// Initializes the <see cref="RedisMemory"/> instance
@@ -46,6 +47,7 @@ public sealed class RedisMemory : IMemoryDb
         this._logger = logger ?? DefaultLogger<RedisMemory>.Instance;
         this._search = multiplexer.GetDatabase().FT();
         this._db = multiplexer.GetDatabase();
+        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).ToArray();
     }
 
     /// <inheritdoc />
@@ -205,6 +207,10 @@ public sealed class RedisMemory : IMemoryDb
         query.Params(parameters);
         query.Limit(0, limit);
         query.Dialect(2);
+        if (!withEmbeddings)
+        {
+            query.ReturnFields(this._fieldNamesNoEmbeddings);
+        }
 
         NRedisStack.Search.SearchResult? result = null;
 
@@ -258,6 +264,11 @@ public sealed class RedisMemory : IMemoryDb
         }
 
         var query = new Query(sb.ToString());
+        if (!withEmbeddings)
+        {
+            query.ReturnFields(this._fieldNamesNoEmbeddings);
+        }
+
         List<NRedisStack.Search.Document> documents = new();
         try
         {

@@ -34,6 +34,7 @@ public static class Main
     private static BoundedBoolean s_cfgAzureAISearch = new();
     private static BoundedBoolean s_cfgQdrant = new();
     private static BoundedBoolean s_cfgPostgres = new();
+    private static BoundedBoolean s_cfgRedis = new();
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
     public static void InteractiveSetup(
@@ -100,6 +101,7 @@ public static class Main
             AzureAISearchSetup();
             QdrantSetup();
             PostgresSetup();
+            RedisSetup();
             SimpleVectorDbSetup();
 
             // Text generation
@@ -723,6 +725,15 @@ public static class Main
                     });
                     s_cfgPostgres.Value = true;
                 }),
+                new("Redis", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.MemoryDbType = "Redis";
+                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                    });
+                    s_cfgRedis.Value = true;
+                }),
                 new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)", () =>
                 {
                     AppSettings.Change(x =>
@@ -812,6 +823,27 @@ public static class Main
         {
             { "Endpoint", SetupUI.AskOpenQuestion("Qdrant <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Qdrant <API Key> (for cloud only)", config["APIKey"].ToString(), optional: true) },
+        });
+    }
+
+    private static void RedisSetup()
+    {
+        if (!s_cfgRedis.Value) { return; }
+
+        s_cfgRedis.Value = false;
+        const string ServiceName = "Redis";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                ["ConnectionString"] = ""
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "ConnectionString", SetupUI.AskPassword("Redis connection string (e.g. 'localhost:6379,password=..')", config["ConnectionString"].ToString(), optional: true) },
         });
     }
 
