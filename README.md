@@ -27,10 +27,9 @@ built for most popular AI platforms.
 
 ## Repository Guidance
 
-This public repository showcases best practices and efficient architecture related to memory for specific programming scenarios.
-Keep in mind that **the provided code is an example** of an abstraction over one or multiple vector memory stores designed for
-Retrieval Augmented Generation (RAG) in Large Language Models (LLMs).
-This sample is not intended for production deployments and is **not an officially supported Microsoft offering**.
+This repository presents best practices and a reference architecture for memory in specific
+AI and LLMs application scenarios. Please note that **the provided code serves as a
+demonstration** and is **not an officially supported** Microsoft offering.
 
 ## Kernel Memory (KM) and Semantic Memory (SM)
 
