@@ -826,6 +826,28 @@ public static class Main
         });
     }
 
+    private static bool AskMoreTags(string additionalMessage)
+    {
+        string answer = "No";
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions()
+        {
+            Title = $"{additionalMessage}Are there any tag fields you want to filter on?",
+            Options = new List<Answer>
+            {
+                new("Yes", () =>
+                {
+                    answer = "Yes";
+                }),
+                new("No", () =>
+                {
+                    answer = "No";
+                })
+            }
+        });
+
+        return answer.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void RedisSetup()
     {
         if (!s_cfgRedis.Value) { return; }
@@ -841,9 +863,34 @@ public static class Main
             };
         }
 
+        var connectionString = SetupUI.AskPassword("Redis connection string (e.g. 'localhost:6379,password=..')", config["ConnectionString"].ToString(), optional: true);
+        Dictionary<string, string> tagFields = new();
+
+        string additionalMessage = string.Empty;
+        while (AskMoreTags(additionalMessage))
+        {
+            var tagName = SetupUI.AskOpenQuestion("Enter the name of the tag field you'd like to filter on, e.g. username", string.Empty);
+            if (string.IsNullOrEmpty(tagName))
+            {
+                additionalMessage = "Unusable tag name entered. ";
+                continue;
+            }
+
+            var separatorChar = SetupUI.AskOptionalOpenQuestion("Would you like to change your separator character from ','?", ",");
+            if (separatorChar.Length > 1)
+            {
+                additionalMessage = "Unusable separator Char entered. ";
+                continue;
+            }
+
+            tagFields.Add(tagName, separatorChar);
+            additionalMessage = string.Empty;
+        }
+
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "ConnectionString", SetupUI.AskPassword("Redis connection string (e.g. 'localhost:6379,password=..')", config["ConnectionString"].ToString(), optional: true) },
+            { "Tags", tagFields },
+            { "ConnectionString", connectionString },
         });
     }
 
