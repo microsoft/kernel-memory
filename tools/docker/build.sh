@@ -66,19 +66,41 @@ prepare_docker_image_src() {
     echo "⏱️  Publishing .NET build..."
     dotnet publish --configuration $CONFIGURATION --output out/docker
     cd $HERE
-    cp .dockerignore   $ROOT/service/Service/out/docker/
     cp Dockerfile      $ROOT/service/Service/out/docker/
-    cp run.sh          $ROOT/service/Service/out/docker/
+    cp .dockerignore   $ROOT/service/Service/out/docker/
+    cp content/run.sh  $ROOT/service/Service/out/docker/
 }
 
 build_docker_image() {
     echo "⏱️  Building Docker image..."
     cd $ROOT
     cd service/Service/out/docker/
-    DOCKER_TAG="$DOCKER_IMAGE:testing"
-    DOCKER_LABEL2="Commit=$(git log --pretty=format:'%H' -n 1)"
-    DOCKER_LABEL3="Date=$(/usr/bin/env date +%Y-%m-%dT%H:%M:%S)"
-    docker build --compress --tag $DOCKER_TAG --label "$DOCKER_LABEL2" --label "$DOCKER_LABEL3" .
+    SHORT_COMMIT_ID=$(git rev-parse --short HEAD)
+    LONG_COMMIT_ID=$(git rev-parse HEAD)
+    SHORT_DATE=$(/usr/bin/env date +%Y%m%d)
+    LONG_DATE=$(/usr/bin/env date +%Y-%m-%dT%H:%M:%S)
+    DOCKER_TAG1="${DOCKER_IMAGE}:${SHORT_DATE}_${SHORT_COMMIT_ID}"
+    DOCKER_TAG2="${DOCKER_IMAGE}:latest"
+    DOCKER_LABEL1="Commit=${LONG_COMMIT_ID}"
+    DOCKER_LABEL2="Date=${LONG_DATE}"
+    docker build --compress --tag "$DOCKER_TAG1" --tag "$DOCKER_TAG2" --label "$DOCKER_LABEL1" --label "$DOCKER_LABEL2" .
+    
+    echo -e "\n\n✅  Docker images ready:"
+    echo -e " - $DOCKER_TAG1"
+    echo -e " - $DOCKER_TAG2"
+}
+
+howto_test() {
+  echo -e "\nTo test the image with OpenAI:\n"
+  echo "  docker run -it --rm -e OPENAI_DEMO=\"...OPENAI API KEY...\" kernel-memory/service"
+  
+  echo -e "\nTo test the image with your local config:\n"
+  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json kernel-memory/service"
+  
+  echo -e "\nTo inspect the image content:\n"
+  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json --entrypoint /bin/sh kernel-memory/service"
+  
+  echo ""
 }
 
 echo "⏱️  Checking dependencies..."
@@ -90,3 +112,4 @@ cleanup_tmp_files
 build_service
 prepare_docker_image_src
 build_docker_image
+howto_test
