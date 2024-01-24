@@ -9,17 +9,13 @@ ARG BRANCH=main
 
 WORKDIR /build
 
-RUN \
-  apt-get update && \
-  apt-get install -y --no-install-recommends git && \
-  git clone --branch ${BRANCH} --depth 1 ${SOURCE} source
+# Clone latest code only
+RUN git clone --single-branch --branch ${BRANCH} --depth 1 ${SOURCE} source
 
-WORKDIR /build/source
+WORKDIR /build/source/service/Service
 
+# Build code
 RUN \
-    cd /build/source && \
-    cd service/Service && \
-    dotnet restore --verbosity normal && \
     dotnet build --configuration Release --output /build/output && \
     cp ../../tools/docker/content/run.sh /build/output/ && \
     chmod ugo=r /build/output/*.dll
@@ -45,7 +41,6 @@ ARG USER=km
 
 LABEL Maintainer="Devis Lucato, https://github.com/dluc"
 
-# Change working directory
 WORKDIR /app
 
 RUN \
