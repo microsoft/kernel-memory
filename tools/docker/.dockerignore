@@ -1,0 +1,14 @@
+# Exclude user data from the image
+appsettings.development.json
+appsettings.Development.json
+.env
+*.cert
+*.key
+*.tmp
+*.bck
+*.zip
+tmp-*
+tmp_*
+_tmp*
+.vs
+.vscode
