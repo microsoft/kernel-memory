@@ -215,7 +215,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{BA7BCF
 		tools\docker\Dockerfile = tools\docker\Dockerfile
 		tools\docker\start-image.sh = tools\docker\start-image.sh
 		tools\docker\start-image-with-openai.sh = tools\docker\start-image-with-openai.sh
-		tools\docker\.dockerignore = tools\docker\.dockerignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{D4C4BED2-B071-49AB-BAA6-DB4721C0BF26}"

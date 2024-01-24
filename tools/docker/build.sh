@@ -10,29 +10,6 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && cd ../.. && pwd)"
 cd $ROOT
 
-check_dependency_dotnet() {
-    set +e
-    TEST=$(which dotnet)
-    if [[ -z "$TEST" ]]; then
-        echo "🔥 ERROR: 'dotnet' command not found."
-        echo "Install .NET Core and make sure the 'dotnet' command is in the PATH."
-        echo ".NET Core installation: https://dotnet.github.io"
-        exit 1
-    fi
-    set -e
-}
-
-check_dependency_git() {
-    set +e
-    TEST=$(which git)
-    if [[ -z "$TEST" ]]; then
-        echo "🔥 ERROR: 'git' command not found."
-        echo "Install git CLI and make sure the 'git' command is in the PATH."
-        exit 1
-    fi
-    set -e
-}
-
 check_dependency_docker() {
     set +e
     TEST=$(which docker)
@@ -44,50 +21,53 @@ check_dependency_docker() {
     set -e
 }
 
-cleanup_tmp_files() {
-    echo "⏱️  Cleaning up..."
-    cd $ROOT
-    cd service/Service
-    rm -fR bin obj out
+uuid()
+{
+    local N B T
+    for (( N=0; N < 16; ++N ))
+    do
+        B=$(( $RANDOM%255 ))
+        if (( N == 6 ))
+        then
+            printf '4%x' $(( B%15 ))
+        elif (( N == 8 ))
+        then
+            local C='89ab'
+            printf '%c%x' ${C:$(( $RANDOM%${#C} )):1} $(( B%15 ))
+        else
+            printf '%02x' $B
+        fi
+    done
+    echo
 }
 
-build_service() {
-    cd $ROOT
-    cd service/Service
-    echo "⏱️  Restoring .NET packages..."
-    dotnet restore
-    echo "⏱️  Building .NET app..."
-    dotnet build --configuration $CONFIGURATION
-}
-
-prepare_docker_image_src() {
-    cd $ROOT
-    cd service/Service
-    echo "⏱️  Publishing .NET build..."
-    dotnet publish --configuration $CONFIGURATION --output out/docker
-    cd $HERE
-    cp Dockerfile      $ROOT/service/Service/out/docker/
-    cp .dockerignore   $ROOT/service/Service/out/docker/
-    cp content/run.sh  $ROOT/service/Service/out/docker/
-}
 
 build_docker_image() {
     echo "⏱️  Building Docker image..."
-    cd $ROOT
-    cd service/Service/out/docker/
-    SHORT_COMMIT_ID=$(git rev-parse --short HEAD)
-    LONG_COMMIT_ID=$(git rev-parse HEAD)
-    SHORT_DATE=$(/usr/bin/env date +%Y%m%d)
-    LONG_DATE=$(/usr/bin/env date +%Y-%m-%dT%H:%M:%S)
-    DOCKER_TAG1="${DOCKER_IMAGE}:${SHORT_DATE}_${SHORT_COMMIT_ID}"
-    DOCKER_TAG2="${DOCKER_IMAGE}:latest"
-    DOCKER_LABEL1="Commit=${LONG_COMMIT_ID}"
-    DOCKER_LABEL2="Date=${LONG_DATE}"
-    docker build --compress --tag "$DOCKER_TAG1" --tag "$DOCKER_TAG2" --label "$DOCKER_LABEL1" --label "$DOCKER_LABEL2" .
+    cd $HERE
+    DOCKER_TAG1="${DOCKER_IMAGE}:latest"
+    DOCKER_TAGU="${DOCKER_IMAGE}:$(uuid)"
     
-    echo -e "\n\n✅  Docker images ready:"
+    #docker build --compress --tag "$DOCKER_TAG1" --tag "$DOCKER_TAGU" \
+    #  --build-arg="SOURCE=https://github.com/dluc/kernel-memory" \
+    #  --build-arg="BRANCH=docker" .
+    
+    docker build --compress --tag "$DOCKER_TAG1" --tag "$DOCKER_TAGU" .
+    
+    # Read versions details (removing \r char)
+    SHORT_DATE=$(docker run -it --rm -a stdout --entrypoint cat "$DOCKER_TAGU" .SHORT_DATE)
+    SHORT_DATE="${SHORT_DATE%%[[:cntrl:]]}"
+    SHORT_COMMIT_ID=$(docker run -it --rm -a stdout --entrypoint cat "$DOCKER_TAGU" .SHORT_COMMIT_ID)
+    SHORT_COMMIT_ID="${SHORT_COMMIT_ID%%[[:cntrl:]]}"
+    
+    # Add version tag
+    DOCKER_TAG3="${DOCKER_IMAGE}:${SHORT_DATE}.${SHORT_COMMIT_ID}"
+    docker tag $DOCKER_TAGU $DOCKER_TAG3
+    docker rmi $DOCKER_TAGU
+    
+    echo -e "\n\n✅  Docker image ready:"
     echo -e " - $DOCKER_TAG1"
-    echo -e " - $DOCKER_TAG2"
+    echo -e " - $DOCKER_TAG3"
 }
 
 howto_test() {
@@ -104,12 +84,7 @@ howto_test() {
 }
 
 echo "⏱️  Checking dependencies..."
-check_dependency_dotnet
-check_dependency_git
 check_dependency_docker
 
-cleanup_tmp_files
-build_service
-prepare_docker_image_src
 build_docker_image
 howto_test
