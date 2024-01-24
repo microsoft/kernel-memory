@@ -45,7 +45,7 @@ if [ -z "$SKIP_CFG_CHECK" ]; then
         echo -e "Please mount a volume containing either appsettings.development.json, appsettings.production.json or appsettings.json. \n"
         echo -e "=> docker run --volume <path>/appsettings.Development.json:/app/data/appsettings.json .....\n"
         echo -e "\nExample:\n"
-        echo "=> docker run --volume ./service/Service/appsettings.Development.json:/app/data/appsettings.json -it --rm --name kernelmemory kernel-memory/service:latest"
+        echo "=> docker run --volume ./service/Service/appsettings.Development.json:/app/data/appsettings.json -it --rm --name kernelmemory kernelmemory/service:latest"
         echo -e "\n"
         echo -e "You can also set config values using env vars, for example:\n"
         echo "=> docker run -it --rm --name kernelmemory -e SKIP_CFG_CHECK=1        \\"
@@ -53,7 +53,7 @@ if [ -z "$SKIP_CFG_CHECK" ]; then
         echo "    -e KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0=OpenAI \\"
         echo "    -e KernelMemory__TextGeneratorType=OpenAI                         \\"
         echo "    -e KernelMemory__Retrieval__EmbeddingGeneratorType=OpenAI         \\"
-        echo "    kernel-memory/service:latest"
+        echo "    kernelmemory/service:latest"
         exit 1
     fi
     

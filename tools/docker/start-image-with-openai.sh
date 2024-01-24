@@ -13,4 +13,4 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && cd ../.. && pwd)"
 cd $ROOT
 
 # The logic handling $OPENAI_DEMO is in run.sh
-docker run -it --rm --name kernelmemory -e OPENAI_DEMO="${OPENAI_API_KEY}" kernel-memory/service:latest
+docker run -it --rm --name kernelmemory -e OPENAI_DEMO="${OPENAI_API_KEY}" kernelmemory/service:latest

@@ -2,7 +2,7 @@
 
 set -e
 
-DOCKER_IMAGE="kernel-memory/service"
+DOCKER_IMAGE="kernelmemory/service"
 
 # Change current dir to repo root
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -74,13 +74,13 @@ build_docker_image() {
 # Print some instructions
 howto_test() {
   echo -e "\nTo test the image with OpenAI:\n"
-  echo "  docker run -it --rm -e OPENAI_DEMO=\"...OPENAI API KEY...\" kernel-memory/service"
+  echo "  docker run -it --rm -e OPENAI_DEMO=\"...OPENAI API KEY...\" kernelmemory/service"
   
   echo -e "\nTo test the image with your local config:\n"
-  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json kernel-memory/service"
+  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json kernelmemory/service"
   
   echo -e "\nTo inspect the image content:\n"
-  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json --entrypoint /bin/sh kernel-memory/service"
+  echo "  docker run -it --rm -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json --entrypoint /bin/sh kernelmemory/service"
   
   echo ""
 }
