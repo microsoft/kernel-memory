@@ -38,6 +38,7 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 
 // Usual .NET web app builder
 var appBuilder = WebApplication.CreateBuilder();
+appBuilder.Configuration.AddEnvironmentVariables();
 
 // Read the settings, needed below
 var config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
