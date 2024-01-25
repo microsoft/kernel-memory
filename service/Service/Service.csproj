@@ -9,6 +9,24 @@
         <NoWarn>$(NoWarn);CA2007,CA1724,CA2254,CA1031,CS1591,CA1861,CA1303,SKEXP0001</NoWarn>
     </PropertyGroup>
 
+    <ItemGroup>
+        <!-- Microsoft.KernelMemory.Core includes also extensions without external dependencies, e.g. all Azure extensions -->
+        
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.26.240121.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+        
+        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
+
+        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.26.240121.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.26.240121.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+        
+        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.26.240121.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+    </ItemGroup>
+
     <!--
     This dependency is needed only to generate appsetting.development.json when testing
     the code in GitHub for quick demo, e.g. running
@@ -26,22 +44,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <!-- Microsoft.KernelMemory.Core includes all Azure extensions and extensions without external dependencies -->
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.26.240121.1" />
-        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
-        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.26.240121.1" />
-        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.26.240121.1" />
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.26.240121.1" />
-    </ItemGroup>
-
-<!--    <ItemGroup>-->
-<!--        <ProjectReference Include="..\Core\Core.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj"/>-->
-<!--    </ItemGroup>-->
 
     <!-- Code Analysis -->
     <ItemGroup>
