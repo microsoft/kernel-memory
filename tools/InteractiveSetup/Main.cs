@@ -38,9 +38,17 @@ public static class Main
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
     public static void InteractiveSetup(
+        string[] args,
         bool cfgService = false,
         bool cfgOrchestration = true)
     {
+        // If args is not empty, then the user is asking to configure a specific list of services
+        if (args.Length > 0)
+        {
+            ConfigureItem(args);
+            SetupUI.Exit();
+        }
+
         s_cfgOpenAPI = new();
 
         // Storage
@@ -64,8 +72,9 @@ public static class Main
         // Vectors
         s_cfgEmbeddingGenerationEnabled = new(initialState: true);
         s_cfgAzureAISearch = new();
-        s_cfgQdrant = new();
         s_cfgPostgres = new();
+        s_cfgQdrant = new();
+        s_cfgRedis = new();
         s_cfgSimpleVectorDb = new();
 
         try
@@ -122,6 +131,55 @@ public static class Main
         }
 
         SetupUI.Exit();
+    }
+
+    private static void ConfigureItem(string[] items)
+    {
+        foreach (var itemName in items)
+        {
+            switch (itemName)
+            {
+                case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
+                    OpenAISetup(true);
+                    break;
+
+                case string x when x.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
+                    AzureOpenAITextSetup(true);
+                    break;
+
+                case string x when x.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
+                    AzureOpenAIEmbeddingSetup(true);
+                    break;
+
+                case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
+                    LlamaSharpSetup(true);
+                    break;
+
+                case string x when x.Equals("MemoryDbType", StringComparison.OrdinalIgnoreCase):
+                    MemoryDbTypeSetup();
+                    break;
+
+                case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
+                    AzureAISearchSetup(true);
+                    break;
+
+                case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
+                    PostgresSetup(true);
+                    break;
+
+                case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                    QdrantSetup(true);
+                    break;
+
+                case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
+                    RedisSetup(true);
+                    break;
+
+                case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
+                    SimpleVectorDbSetup(true);
+                    break;
+            }
+        }
     }
 
     private static void ServiceSetup()
@@ -334,9 +392,9 @@ public static class Main
         });
     }
 
-    private static void AzureOpenAIEmbeddingSetup()
+    private static void AzureOpenAIEmbeddingSetup(bool force = false)
     {
-        if (!s_cfgAzureOpenAIEmbedding.Value) { return; }
+        if (!s_cfgAzureOpenAIEmbedding.Value && !force) { return; }
 
         s_cfgAzureOpenAIEmbedding.Value = false;
         const string ServiceName = "AzureOpenAIEmbedding";
@@ -362,9 +420,9 @@ public static class Main
         });
     }
 
-    private static void AzureOpenAITextSetup()
+    private static void AzureOpenAITextSetup(bool force = false)
     {
-        if (!s_cfgAzureOpenAIText.Value) { return; }
+        if (!s_cfgAzureOpenAIText.Value && !force) { return; }
 
         s_cfgAzureOpenAIText.Value = false;
         const string ServiceName = "AzureOpenAIText";
@@ -393,9 +451,9 @@ public static class Main
         });
     }
 
-    private static void OpenAISetup()
+    private static void OpenAISetup(bool force = false)
     {
-        if (!s_cfgOpenAI.Value) { return; }
+        if (!s_cfgOpenAI.Value && !force) { return; }
 
         s_cfgOpenAI.Value = false;
         const string ServiceName = "OpenAI";
@@ -422,9 +480,9 @@ public static class Main
         });
     }
 
-    private static void LlamaSharpSetup()
+    private static void LlamaSharpSetup(bool force = false)
     {
-        if (!s_cfgLlamaSharp.Value) { return; }
+        if (!s_cfgLlamaSharp.Value && !force) { return; }
 
         s_cfgLlamaSharp.Value = false;
         const string ServiceName = "LlamaSharp";
@@ -756,9 +814,9 @@ public static class Main
         });
     }
 
-    private static void SimpleVectorDbSetup()
+    private static void SimpleVectorDbSetup(bool force = false)
     {
-        if (!s_cfgSimpleVectorDb.Value) { return; }
+        if (!s_cfgSimpleVectorDb.Value && !force) { return; }
 
         s_cfgSimpleVectorDb.Value = false;
         const string ServiceName = "SimpleVectorDb";
@@ -778,9 +836,9 @@ public static class Main
         });
     }
 
-    private static void AzureAISearchSetup()
+    private static void AzureAISearchSetup(bool force = false)
     {
-        if (!s_cfgAzureAISearch.Value) { return; }
+        if (!s_cfgAzureAISearch.Value && !force) { return; }
 
         s_cfgAzureAISearch.Value = false;
         const string ServiceName = "AzureAISearch";
@@ -803,9 +861,30 @@ public static class Main
         });
     }
 
-    private static void QdrantSetup()
+    private static void PostgresSetup(bool force = false)
     {
-        if (!s_cfgQdrant.Value) { return; }
+        if (!s_cfgPostgres.Value && !force) { return; }
+
+        s_cfgPostgres.Value = false;
+        const string ServiceName = "Postgres";
+
+        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        {
+            config = new Dictionary<string, object>
+            {
+                { "ConnectionString", "" },
+            };
+        }
+
+        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        {
+            { "ConnectionString", SetupUI.AskPassword("Postgres connection string (e.g. 'Host=..;Port=5432;Username=..;Password=..')", config["ConnectionString"].ToString(), optional: true) },
+        });
+    }
+
+    private static void QdrantSetup(bool force = false)
+    {
+        if (!s_cfgQdrant.Value && !force) { return; }
 
         s_cfgQdrant.Value = false;
         const string ServiceName = "Qdrant";
@@ -826,31 +905,9 @@ public static class Main
         });
     }
 
-    private static bool AskMoreTags(string additionalMessage)
+    private static void RedisSetup(bool force = false)
     {
-        string answer = "No";
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions()
-        {
-            Title = $"{additionalMessage}Are there any tag fields you want to filter on?",
-            Options = new List<Answer>
-            {
-                new("Yes", () =>
-                {
-                    answer = "Yes";
-                }),
-                new("No", () =>
-                {
-                    answer = "No";
-                })
-            }
-        });
-
-        return answer.Equals("Yes", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static void RedisSetup()
-    {
-        if (!s_cfgRedis.Value) { return; }
+        if (!s_cfgRedis.Value && !force) { return; }
 
         s_cfgRedis.Value = false;
         const string ServiceName = "Redis";
@@ -864,19 +921,36 @@ public static class Main
         }
 
         var connectionString = SetupUI.AskPassword("Redis connection string (e.g. 'localhost:6379,password=..')", config["ConnectionString"].ToString(), optional: true);
+
+        bool AskMoreTags(string additionalMessage)
+        {
+            string answer = "No";
+            SetupUI.AskQuestionWithOptions(new QuestionWithOptions
+            {
+                Title = $"{additionalMessage}[Redis] Do you want to add a tag (or another tag) to filter memory records?",
+                Options = new List<Answer>
+                {
+                    new("Yes", () => { answer = "Yes"; }),
+                    new("No", () => { answer = "No"; }),
+                }
+            });
+
+            return answer.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+        }
+
         Dictionary<string, string> tagFields = new();
 
         string additionalMessage = string.Empty;
         while (AskMoreTags(additionalMessage))
         {
-            var tagName = SetupUI.AskOpenQuestion("Enter the name of the tag field you'd like to filter on, e.g. username", string.Empty);
+            var tagName = SetupUI.AskOpenQuestion("Enter the name of the tag you'd like to filter on, e.g. username", string.Empty);
             if (string.IsNullOrEmpty(tagName))
             {
                 additionalMessage = "Unusable tag name entered. ";
                 continue;
             }
 
-            var separatorChar = SetupUI.AskOptionalOpenQuestion("Would you like to change your separator character from ','?", ",");
+            var separatorChar = SetupUI.AskOptionalOpenQuestion("How do you want to separate tag values (default is ',')?", ",");
             if (separatorChar.Length > 1)
             {
                 additionalMessage = "Unusable separator Char entered. ";
@@ -891,27 +965,6 @@ public static class Main
         {
             { "Tags", tagFields },
             { "ConnectionString", connectionString },
-        });
-    }
-
-    private static void PostgresSetup()
-    {
-        if (!s_cfgPostgres.Value) { return; }
-
-        s_cfgPostgres.Value = false;
-        const string ServiceName = "Postgres";
-
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
-        {
-            config = new Dictionary<string, object>
-            {
-                { "ConnectionString", "" },
-            };
-        }
-
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
-        {
-            { "ConnectionString", SetupUI.AskPassword("Postgres connection string (e.g. 'Host=..;Port=5432;Username=..;Password=..')", config["ConnectionString"].ToString(), optional: true) },
         });
     }
 }
