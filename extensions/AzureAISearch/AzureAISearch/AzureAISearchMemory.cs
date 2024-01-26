@@ -33,6 +33,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// </summary>
 public class AzureAISearchMemory : IMemoryDb
 {
+    private const string AzureSearchSearchInDelimiter = "|";
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
 
@@ -636,7 +637,18 @@ public class AzureAISearchMemory : IMemoryDb
 
         foreach (var filterGroup in filtersGroupedByKey)
         {
-            conditions.Add($"tags/any(s: search.in(s, '{string.Join(",", filterGroup.Select(fg => string.Join(",", fg.GetFilters().Select(f => $"{f.Key}:{f.Value}").ToList())).ToList())}'))");
+            var filterValues = filterGroup.Select(fg => string.Join(
+                AzureSearchSearchInDelimiter,
+                fg.GetFilters()
+                    .Select(f => $"{f.Key}:{f.Value?.Replace("'", "''", StringComparison.Ordinal)}")
+                    .ToList()));
+
+            // search.in syntax: https://learn.microsoft.com/en-us/azure/search/search-query-odata-search-in-function#syntax
+            // delimiter: A string where each character is treated as a separator when parsing the valueList parameter.
+            // The default value of this parameter is ' ,' which means that any values with spaces and/or commas between them will be separated.
+            // If you need to use separators other than spaces and commas because your values include those characters,
+            // you can specify alternate delimiters such as '|' in this parameter.
+            conditions.Add($"tags/any(s: search.in(s, '{string.Join(AzureSearchSearchInDelimiter, filterValues)}', '{AzureSearchSearchInDelimiter}'))");
         }
 
         //Exclude filters that were grouped before
@@ -658,7 +670,7 @@ public class AzureAISearchMemory : IMemoryDb
         }
 
         // Examples:
-        // (tags/any(s: search.in(s, 'Authorized:0000-0000-0000-00000000,Authorized:0000-0000-0000-00000001'))) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
+        // (tags/any(s: search.in(s, 'Authorized:0000-0000-0000-00000000|Authorized:0000-0000-0000-00000001', '|'))) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
         return string.Join(" or ", conditions);
