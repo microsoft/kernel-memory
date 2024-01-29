@@ -21,8 +21,9 @@ namespace Microsoft.KernelMemory.Postgres.Db;
 internal sealed class PostgresDbClient : IDisposable
 {
     // See: https://www.postgresql.org/docs/8.2/errcodes-appendix.html
-    private const string PgErrUndefinedTable = "42P01";
-    private const string PgErrUniqueViolation = "23505";
+    private const string PgErrUndefinedTable = "42P01"; // UNDEFINED TABLE
+    private const string PgErrUniqueViolation = "23505"; // UNIQUE VIOLATION
+    private const string PgErrTypeDoesNotExist = "42704"; // UNDEFINED OBJECT
 
     private readonly ILogger _log;
     private readonly NpgsqlDataSource _dataSource;
@@ -185,6 +186,11 @@ internal sealed class PostgresDbClient : IDisposable
                 int result = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 this._log.LogTrace("Table '{0}' creation result: {1}", tableName, result);
             }
+        }
+        catch (Npgsql.PostgresException e) when (VectorTypeDoesNotExists(e))
+        {
+            this._log.LogError(e, "Vector type not installed, check 'SELECT * FROM pg_extension'");
+            throw;
         }
         catch (Npgsql.PostgresException e) when (e.SqlState == PgErrUniqueViolation)
         {
@@ -634,6 +640,14 @@ internal sealed class PostgresDbClient : IDisposable
     private static bool IsNotFoundException(Npgsql.PostgresException e)
     {
         return (e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool VectorTypeDoesNotExists(Npgsql.PostgresException e)
+    {
+        return (e.SqlState == PgErrTypeDoesNotExist
+                && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
+                && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
+                && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

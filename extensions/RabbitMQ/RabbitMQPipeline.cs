@@ -107,7 +107,7 @@ public sealed class RabbitMQPipeline : IQueue
         {
             try
             {
-                this._log.LogDebug("Message '{0}' received expires at {1}", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
+                this._log.LogDebug("Message '{0}' received, expires at {1}", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
@@ -115,12 +115,12 @@ public sealed class RabbitMQPipeline : IQueue
                 bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
                 if (success)
                 {
-                    this._log.LogDebug("Message '{0}' dispatch successful, deleting message", args.BasicProperties.MessageId);
+                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties.MessageId);
                     this._channel.BasicAck(args.DeliveryTag, multiple: false);
                 }
                 else
                 {
-                    this._log.LogWarning("Message '{0}' dispatch rejected, putting message back in the queue", args.BasicProperties.MessageId);
+                    this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue", args.BasicProperties.MessageId);
                     this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                 }
             }
