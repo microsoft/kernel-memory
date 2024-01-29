@@ -12,6 +12,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core.csproj"/>
+        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="coverlet.collector">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,14 +34,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
-        <ProjectReference Include="..\..\Core\Core.csproj"/>
-        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj"/>
     </ItemGroup>
 
 </Project>

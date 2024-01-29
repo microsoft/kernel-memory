@@ -137,25 +137,37 @@ public sealed class SimpleQueues : IQueue
     }
 
     /// <inheritdoc />
+    /// <see cref="DistributedPipelineOrchestrator.AddHandlerAsync"/> about the logic handling dequeued messages.
     public void OnDequeue(Func<string, Task<bool>> processMessageAction)
     {
         this.Received += async (sender, args) =>
         {
+            string message = string.Empty;
             try
             {
                 this._log.LogInformation("Message received");
 
-                string message = await this._fileSystem.ReadFileAsTextAsync(this._queueName, "", $"{args.MessageId}{FileExt}").ConfigureAwait(false);
+                // Fetch message content from filesystem
+                message = await this._fileSystem.ReadFileAsTextAsync(
+                    volume: this._queueName, relPath: "", fileName: $"{args.MessageId}{FileExt}").ConfigureAwait(false);
+
+                // Process message with the logic provided by the orchestrator
                 bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
                 if (success)
                 {
+                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.MessageId);
                     await this.DeleteMessageAsync(args.MessageId).ConfigureAwait(false);
                 }
                 else
                 {
-                    this._log.LogWarning("Message '{0}' processing failed, putting message back in the queue", args.MessageId);
+                    this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue. Message content: {1}", args.MessageId, message);
                     this.UnlockMessage(args.MessageId);
                 }
+            }
+            catch (FileNotFoundException e)
+            {
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, the message has been deleted. Removing message from queue.", args.MessageId);
+                await this.DeleteMessageAsync(args.MessageId).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
@@ -163,7 +175,7 @@ public sealed class SimpleQueues : IQueue
                 // Exceptions caught by this block:
                 // - message processing failed with exception
                 // - failed to delete message from disk
-                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.MessageId);
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue. Message content: {1}", args.MessageId, message);
                 this.UnlockMessage(args.MessageId);
             }
 #pragma warning restore CA1031
@@ -177,6 +189,10 @@ public sealed class SimpleQueues : IQueue
         this._dispatchTimer?.Dispose();
     }
 
+    /// <summary>
+    /// Read messages from the file system and store the in memory, ready to be dispatched.
+    /// Use a lock to avoid unnecessary file system reads.
+    /// </summary>
     private void PopulateQueue(object? sender, ElapsedEventArgs elapsedEventArgs)
     {
         if (this._busy)
@@ -226,6 +242,11 @@ public sealed class SimpleQueues : IQueue
 #pragma warning restore CA1031
     }
 
+    /// <summary>
+    /// Dispatch messages in memory, previously loaded from file system by <see cref="PopulateQueue"/>.
+    /// Use a lock to avoid dispatching the same messages more than once.
+    /// <see cref="OnDequeue"/> to track how messages flow externally.
+    /// </summary>
     private void DispatchMessages(object? sender, ElapsedEventArgs e)
     {
         if (this._busy || this._messages.Count == 0)

@@ -12,7 +12,9 @@ extend-exclude = [
     "*.bicep",
     "*.sql",
     "vocab.bpe",
-    "encoder.json"
+    "encoder.json",
+    "appsettings.development.json",
+    "appsettings.Development.json",
 ]
 
 [default.extend-words]

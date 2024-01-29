@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// When using KernelMemoryDev there are two references to Abstractions (project + package)
+// because the Elasticsearch extension is available only as a package, which includes a reference to Abstraction package.
+// As a result, the compiler is unable to see either the Abstractions, with a build error, so we allow these
+// tests only when working with packages.
+
+#if !KernelMemoryDev
 using FreeMindLabs.KernelMemory.Elasticsearch;
 using FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
@@ -90,3 +96,6 @@ public class DefaultTests : BaseFunctionalTestCase
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
 }
+
+#endif
+

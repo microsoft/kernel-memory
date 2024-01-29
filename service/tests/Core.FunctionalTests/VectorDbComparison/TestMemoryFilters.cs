@@ -47,8 +47,11 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         if (DeleteIndex)
         {
             if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
+
             if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
+
             if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
+
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
             await Task.Delay(TimeSpan.FromSeconds(2));
@@ -57,8 +60,11 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         if (CreateIndex)
         {
             if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
+
             if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
+
             if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
+
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
 
@@ -78,8 +84,11 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             foreach (KeyValuePair<string, MemoryRecord> r in records)
             {
                 if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
+
                 if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
+
                 if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
+
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
 
@@ -90,23 +99,23 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         {
             if (AzSearchEnabled)
             {
-                this._log.WriteLine("----- Azure AI Search ----- (note: order doesn't matter)");
+                this._log.WriteLine("----- Azure AI Search -----");
                 await this.TestVectorDbFiltering(acs, i);
             }
 
             if (QdrantEnabled)
             {
-                this._log.WriteLine("\n----- Qdrant vector DB ----- (note: order doesn't matter)");
+                this._log.WriteLine("\n----- Qdrant vector DB -----");
                 await this.TestVectorDbFiltering(qdrant, i);
             }
 
             if (PostgresEnabled)
             {
-                this._log.WriteLine("\n----- Postgres vector DB ----- (note: order doesn't matter)");
+                this._log.WriteLine("\n----- Postgres vector DB -----");
                 await this.TestVectorDbFiltering(postgres, i);
             }
 
-            this._log.WriteLine("\n----- Simple vector DB ----- (note: order doesn't matter)");
+            this._log.WriteLine("\n----- Simple vector DB -----");
             await this.TestVectorDbFiltering(simpleVecDb, i);
 
             this._log.WriteLine("\n\n");
@@ -122,7 +131,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             var singleFilter = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee") };
             var singleFilterResults = await vectorDb.GetListAsync(IndexName, filters: singleFilter, limit: int.MaxValue).ToListAsync();
             this._log.WriteLine($"\nSingle memory filter: {singleFilterResults.Count} results");
-            foreach (MemoryRecord r in singleFilterResults)
+            foreach (MemoryRecord r in singleFilterResults.OrderBy(x => x.Id))
             {
                 this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }
@@ -136,7 +145,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             var singleFilterMultipleTags = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Work") };
             var singleFilterMultipleTagsResults = await vectorDb.GetListAsync(IndexName, filters: singleFilterMultipleTags, limit: int.MaxValue).ToListAsync();
             this._log.WriteLine($"\nSingle memory filter with multiple tags: {singleFilterMultipleTagsResults.Count} results");
-            foreach (MemoryRecord r in singleFilterMultipleTagsResults)
+            foreach (MemoryRecord r in singleFilterMultipleTagsResults.OrderBy(x => x.Id))
             {
                 this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }
@@ -154,7 +163,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             };
             var multipleFiltersResults = await vectorDb.GetListAsync(IndexName, filters: multipleFilters, limit: int.MaxValue).ToListAsync();
             this._log.WriteLine($"\nMultiple memory filters with multiple tags: {multipleFiltersResults.Count} results");
-            foreach (MemoryRecord r in multipleFiltersResults)
+            foreach (MemoryRecord r in multipleFiltersResults.OrderBy(x => x.Id))
             {
                 this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }

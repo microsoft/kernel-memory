@@ -1,3 +1,5 @@
+KernelMemoryDev.*
+
 dotnet/.config
 tmp/
 tmp-*/

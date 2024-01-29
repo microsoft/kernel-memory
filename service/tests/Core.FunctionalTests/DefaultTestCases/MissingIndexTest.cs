@@ -47,6 +47,13 @@ public static class MissingIndexTest
         // Act: import into a non existing index - the index is created
         var id = await memory.ImportTextAsync("some text", documentId: "foo", index: indexName);
         Assert.NotEmpty(id);
+        isReady = false;
+        var attempts = 10;
+        while (!isReady && attempts-- > 0)
+        {
+            isReady = await memory.IsDocumentReadyAsync(id);
+            if (!isReady) { await Task.Delay(TimeSpan.FromMilliseconds(500)); }
+        }
 
         // Assert: verify the index has been created
         list = await memory.ListIndexesAsync();

@@ -63,6 +63,7 @@ public static class TextChunker
 
     /// <summary>
     /// Split plain text into paragraphs.
+    /// Note: in the default KM implementation, one paragraph == one partition.
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
