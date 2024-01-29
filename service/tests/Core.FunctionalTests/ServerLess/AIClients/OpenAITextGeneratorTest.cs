@@ -41,27 +41,26 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         Assert.True(count > 10);
     }
 
-    // TODO: use a different text model. text-davinci-003 has been removed.
-    // [Fact]
-    // [Trait("Category", "Serverless")]
-    // public async Task ItStreamsFromTextModel()
-    // {
-    //     // Arrange
-    //     this._config.TextModel = "text-davinci-003";
-    //     var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
-    //
-    //     // Act
-    //     IAsyncEnumerable<string> text = client.GenerateTextAsync(
-    //         "write 100 words about the Earth", new TextGenerationOptions());
-    //
-    //     // Assert
-    //     var count = 0;
-    //     await foreach (string word in text)
-    //     {
-    //         Console.Write(word);
-    //         if (count++ > 10) { break; }
-    //     }
-    //
-    //     Assert.True(count > 10);
-    // }
+    [Fact]
+    [Trait("Category", "Serverless")]
+    public async Task ItStreamsFromTextModel()
+    {
+        // Arrange
+        this._config.TextModel = "gpt-3.5-turbo-instruct";
+        var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
+
+        // Act
+        IAsyncEnumerable<string> text = client.GenerateTextAsync(
+            "write 100 words about the Earth", new TextGenerationOptions());
+
+        // Assert
+        var count = 0;
+        await foreach (string word in text)
+        {
+            Console.Write(word);
+            if (count++ > 10) { break; }
+        }
+
+        Assert.True(count > 10);
+    }
 }
