@@ -92,7 +92,7 @@ def delete_files_by_extension(root_dir, extensions):
 def find_sln_file(root_folder):
     for dir_name, sub_dirs, filenames in os.walk(root_folder):
         for filename in filenames:
-            if filename.endswith(".sln"):
+            if filename.endswith(".sln") and "dev" not in filename.lower():
                 return filename
 
 

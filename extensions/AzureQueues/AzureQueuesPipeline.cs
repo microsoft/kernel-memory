@@ -206,13 +206,13 @@ public sealed class AzureQueuesPipeline : IQueue
                     bool success = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
                     if (success)
                     {
-                        this._log.LogDebug("Message '{0}' dispatch successful, deleting message", message.MessageId);
+                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
                         await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
                     }
                     else
                     {
                         var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
-                        this._log.LogWarning("Message '{0}' dispatch rejected, putting message back in the queue with a delay of {1} msecs",
+                        this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
                             message.MessageId, backoffDelay.TotalMilliseconds);
                         await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
                     }

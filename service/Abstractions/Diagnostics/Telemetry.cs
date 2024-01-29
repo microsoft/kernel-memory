@@ -16,7 +16,7 @@ public static class Telemetry
     /// HTTP User Agent
     /// Note: Azure max length 24 chars
     /// </summary>
-    public const string HttpUserAgent = "Semantic-Kernel";
+    public const string HttpUserAgent = "Kernel-Memory";
 
     /// <summary>
     /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs

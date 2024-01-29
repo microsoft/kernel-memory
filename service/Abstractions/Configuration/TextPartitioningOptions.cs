@@ -9,11 +9,14 @@ public class TextPartitioningOptions
 {
     /// <summary>
     /// The maximum number of tokens per paragraph.
+    /// When partitioning a document, each partition usually contains one paragraph.
     /// </summary>
     public int MaxTokensPerParagraph { get; set; } = 1000;
 
     /// <summary>
-    /// The maximum number of tokens per line.
+    /// The maximum number of tokens per line, aka per sentence.
+    /// When partitioning a block of text, the text will be split into sentences, that are then grouped into paragraphs.
+    /// Note that this applies to any text format, including tables, code, chats, log files, etc.
     /// </summary>
     public int MaxTokensPerLine { get; set; } = 300;
 
