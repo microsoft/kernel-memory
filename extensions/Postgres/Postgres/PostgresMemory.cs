@@ -71,7 +71,7 @@ public class PostgresMemory : IMemoryDb, IDisposable
         catch (Exception e)
         {
             this._log.LogError(e, "DB error while attempting to create index");
-            throw;
+            throw new PostgresException("DB error while attempting to create index", e);
         }
     }
 

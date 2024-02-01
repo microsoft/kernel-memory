@@ -70,6 +70,83 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         {
             this.Log.LogTrace("Step `{0}`: processing message received from queue", handler.StepName);
             var pipelinePointer = JsonSerializer.Deserialize<DataPipelinePointer>(msg);
+
+#if KernelMemoryDev
+            DataPipeline? pipeline;
+
+            // When returning False a message is put back in the queue and processed again
+            const bool Retry = false;
+
+            // When returning True a message is removed from the queue and deleted
+            const bool Complete = true;
+
+            if (pipelinePointer == null)
+            {
+                this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`. Message discarded.", handler.StepName);
+                return Complete;
+            }
+
+            try
+            {
+                pipeline = await this.ReadPipelineStatusAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (PipelineNotFoundException)
+            {
+                // If the pipeline status file is missing but we know the job is to delete the index, we have sufficient information to proceed.
+                // Note: index deletion is supposed to be the only step in the execution, and other steps might be skipped if happening after the deletion.
+                // Note: deleting an index also cancel concurrent pipelines running on the same index.
+                bool deletingIndex = handler.StepName == Constants.PipelineStepsDeleteIndex && pipelinePointer.Steps.Contains(Constants.PipelineStepsDeleteIndex);
+                if (deletingIndex)
+                {
+                    this.Log.LogError("Pipeline `{0}/{1}` not found, forcing `{2}` to run", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                    pipeline = new DataPipeline
+                    {
+                        Index = pipelinePointer.Index,
+                        DocumentId = pipelinePointer.DocumentId,
+                        ExecutionId = pipelinePointer.ExecutionId,
+                        Steps = pipelinePointer.Steps
+                    };
+                    return await this.RunPipelineStepAsync(pipeline, handler, this.CancellationTokenSource.Token).ConfigureAwait(false);
+                }
+
+                this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                return Complete;
+            }
+            catch (InvalidPipelineDataException)
+            {
+                this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                return Retry;
+            }
+
+            if (pipeline == null)
+            {
+                this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                return Retry;
+            }
+
+            if (pipelinePointer.ExecutionId != pipeline.ExecutionId)
+            {
+                this.Log.LogWarning(
+                    "Document `{0}/{1}` has been updated without waiting for the previous pipeline execution `{2}` to complete (current execution: `{3}`). " +
+                    "Step `{4}` and any consecutive steps from the previous execution have been cancelled.",
+                    pipelinePointer.Index, pipelinePointer.DocumentId, pipelinePointer.ExecutionId, pipeline.ExecutionId, handler.StepName);
+                return Complete;
+            }
+
+            var currentStepName = pipeline.RemainingSteps.First();
+            // IMPORTANT:
+            // * This can occur in case an exception interrupted the previous attempt, e.g. the pipeline state was saved
+            //   but the system couldn't enqueue a message to proceed with the following step.
+            // * This can occur if the index is deleted while an import is running
+            if (currentStepName != handler.StepName)
+            {
+                this.Log.LogWarning(
+                    "Pipeline `{0}/{1}` state on disk is ahead. pipeline.RemainingSteps.First (aka next step) is `{2}`, while handler.StepName (aka the previous step) `{3}` is still in the queue. Rolling back one step",
+                    pipelinePointer.Index, pipelinePointer.DocumentId, currentStepName, handler.StepName);
+                pipeline.RollbackToPreviousStep();
+                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+            }
+#else
             if (pipelinePointer == null)
             {
                 this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`", handler.StepName);
@@ -95,9 +172,11 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 pipeline.RollbackToPreviousStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
+#endif
 
             return await this.RunPipelineStepAsync(pipeline, handler, this.CancellationTokenSource.Token).ConfigureAwait(false);
         });
+
         await this._queues[handler.StepName].ConnectToQueueAsync(handler.StepName, QueueOptions.PubSub, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 

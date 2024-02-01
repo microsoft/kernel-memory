@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--<ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj"/>-->
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
     <ItemGroup>
