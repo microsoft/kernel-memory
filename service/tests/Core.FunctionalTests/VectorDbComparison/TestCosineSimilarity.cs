@@ -34,13 +34,35 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
         const bool RedisEnabled = true;
+        const bool AtlasMongoDbEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();
-        var acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
-        var qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
-        var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
-        var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
+        AzureAISearchMemory acs = null;
+        if (AzSearchEnabled)
+        {
+            acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
+        }
+
+        QdrantMemory qdrant = null;
+        if (QdrantEnabled)
+        {
+            qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
+        }
+
+        PostgresMemory postgres = null;
+        if (PostgresEnabled)
+        {
+            postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
+        }
+
+        MongoDbVectorMemory atlasVectorDb = null;
+        if (AtlasMongoDbEnabled)
+        {
+            atlasVectorDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
+        }
+
+        SimpleVectorDb simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         RedisMemory? redis = null;
         if (RedisEnabled)
@@ -53,9 +75,15 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         // == Delete indexes left over
 
         if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
+
         if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
+
         if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
+
         if (RedisEnabled) { await redis.DeleteIndexAsync(IndexName); }
+
+        if (AtlasMongoDbEnabled) { await atlasVectorDb.DeleteIndexAsync(IndexName); }
+
         await simpleVecDb.DeleteIndexAsync(IndexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
@@ -63,9 +91,15 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         // == Create indexes
 
         if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
+
         if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
+
         if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
+
         if (RedisEnabled) { await redis.CreateIndexAsync(IndexName, 3); }
+
+        if (AtlasMongoDbEnabled) { await atlasVectorDb.CreateIndexAsync(IndexName, 3); }
+
         await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
         // == Insert data. Note: records are inserted out of order on purpose.
@@ -84,9 +118,15 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         foreach (KeyValuePair<string, MemoryRecord> r in records)
         {
             if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
+
             if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
+
             if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
+
             if (RedisEnabled) { await redis.UpsertAsync(IndexName, r.Value); }
+
+            if (AtlasMongoDbEnabled) { await atlasVectorDb.UpsertAsync(IndexName, r.Value); }
+
             await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
 
@@ -101,6 +141,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         IAsyncEnumerable<(MemoryRecord, double)> postgresList;
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
         IAsyncEnumerable<(MemoryRecord, double)> redisList;
+        IAsyncEnumerable<(MemoryRecord, double)> mongodbAtlasList;
         if (AzSearchEnabled)
         {
             acsList = acs.GetSimilarListAsync(
@@ -125,6 +166,12 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
                 index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
+        if (AtlasMongoDbEnabled)
+        {
+            mongodbAtlasList = atlasVectorDb.GetSimilarListAsync(
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
+        }
+
         IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
             index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
 
@@ -132,6 +179,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         List<(MemoryRecord, double)> postgresResults;
         List<(MemoryRecord, double)> qdrantResults;
         List<(MemoryRecord, double)> redisResults;
+        List<(MemoryRecord, double)> mongodbAtlasResults;
         if (AzSearchEnabled)
         {
             acsResults = await acsList.ToListAsync();
@@ -150,6 +198,11 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         if (RedisEnabled)
         {
             redisResults = await redisList.ToListAsync();
+        }
+
+        if (AtlasMongoDbEnabled)
+        {
+            mongodbAtlasResults = await mongodbAtlasList.ToListAsync();
         }
 
         var simpleVecDbResults = await simpleVecDbList.ToListAsync();
@@ -219,6 +272,22 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             }
         }
 
+        if (AtlasMongoDbEnabled)
+        {
+            this._log.WriteLine($"\n\nAtlas Mongo DB: {mongodbAtlasResults.Count} results");
+            previous = "0";
+
+            foreach ((MemoryRecord memoryRecord, double actual) in mongodbAtlasResults)
+            {
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
+                var diff = expected - actual;
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < Precision, $"Difference: {diff:0.000000000000}");
+                Assert.True(string.Compare(memoryRecord.Id, previous, StringComparison.OrdinalIgnoreCase) > 0, "Records are not ordered by similarity");
+                previous = memoryRecord.Id;
+            }
+        }
+
         this._log.WriteLine($"\n\nSimple vector DB: {simpleVecDbResults.Count} results");
         previous = "0";
         foreach ((MemoryRecord memoryRecord, double actual) in simpleVecDbResults)
@@ -226,7 +295,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             var expected = CosineSim(target, records[memoryRecord.Id].Vector);
             var diff = expected - actual;
             this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
-            Assert.True(Math.Abs(diff) < Precision);
+            Assert.True(Math.Abs(diff) < Precision, $"Difference: {diff:0.000000000000}");
             Assert.True(string.Compare(memoryRecord.Id, previous, StringComparison.OrdinalIgnoreCase) > 0, "Records are not ordered by similarity");
             previous = memoryRecord.Id;
         }

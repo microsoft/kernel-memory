@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using Alkampfer.KernelMemory.AtlasMongoDb;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
@@ -31,6 +32,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         const bool AzSearchEnabled = true;
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
+        const bool AtlasMongoDbEnabled = true;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
@@ -39,9 +41,30 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
-        var acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
-        var qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
-        var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
+        AzureAISearchMemory acs;
+        if (AzSearchEnabled)
+        {
+            acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
+        }
+
+        QdrantMemory qdrant;
+        if (QdrantEnabled)
+        {
+            qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
+        }
+
+        PostgresMemory postgres;
+        if (PostgresEnabled)
+        {
+            postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
+        }
+
+        MongoDbVectorMemory atlasMongoDb;
+        if (AtlasMongoDbEnabled)
+        {
+            atlasMongoDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
+        }
+
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         if (DeleteIndex)
@@ -51,6 +74,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
 
             if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
+
+            if (AtlasMongoDbEnabled) { await atlasMongoDb.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -64,6 +89,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
 
             if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
+
+            if (AtlasMongoDbEnabled) { await atlasMongoDb.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -89,6 +116,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
                 if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
+                if (AtlasMongoDbEnabled) { await atlasMongoDb.UpsertAsync(IndexName, r.Value); }
+
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
 
@@ -113,6 +142,12 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             {
                 this._log.WriteLine("\n----- Postgres vector DB -----");
                 await this.TestVectorDbFiltering(postgres, i);
+            }
+
+            if (AtlasMongoDbEnabled)
+            {
+                this._log.WriteLine("\n----- Atlas MongoDb vector DB -----");
+                await this.TestVectorDbFiltering(atlasMongoDb, i);
             }
 
             this._log.WriteLine("\n----- Simple vector DB -----");

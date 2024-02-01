@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using Alkampfer.KernelMemory.AtlasMongoDb;
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
@@ -25,6 +26,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly PostgresConfig PostgresConfig;
     protected readonly RedisConfig RedisConfig;
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
+    protected readonly MongoDbKernelMemoryConfiguration MongoDbKernelMemoryConfiguration;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
 
     // IMPORTANT: install Xunit.DependencyInjection package
@@ -43,6 +45,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.RedisConfig = cfg.GetSection("KernelMemory:Services:Redis").Get<RedisConfig>() ?? new();
         this.SimpleVectorDbConfig = cfg.GetSection("KernelMemory:Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
         this.LlamaSharpConfig = cfg.GetSection("KernelMemory:Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
+        this.MongoDbKernelMemoryConfiguration = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>() ?? new();
     }
 
     protected IKernelMemory GetMemoryWebClient()

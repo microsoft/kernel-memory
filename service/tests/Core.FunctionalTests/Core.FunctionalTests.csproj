@@ -14,6 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\extensions\AtlasMongoDb\AtlasMongoDb\AtlasMongoDb.csproj" />
         <ProjectReference Include="..\..\Core\Core.csproj"/>
         <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj"/>
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
