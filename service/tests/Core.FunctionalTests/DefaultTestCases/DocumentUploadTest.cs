@@ -16,10 +16,18 @@ public static class DocumentUploadTest
             documentId: Id,
             steps: Constants.PipelineWithoutSummary);
 
+        DateTime startWait = DateTime.UtcNow;
         while (!await memory.IsDocumentReadyAsync(documentId: Id))
         {
             log("Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
+
+            //Avoid stalling forever, whathever bug could be in the database/pipeline this test must exit
+            //after a reasonable amount of time
+            if (DateTime.UtcNow.Subtract(startWait).TotalSeconds > 120)
+            {
+                Assert.Fail("Document not inserted after 120 seconds, aborting test");
+            }
         }
 
         // Act
