@@ -173,7 +173,6 @@ public class MemoryServerless : IKernelMemory
         CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
-#if KernelMemoryDev
         try
         {
             DataPipeline? pipeline = await this._orchestrator.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
@@ -183,10 +182,6 @@ public class MemoryServerless : IKernelMemory
         {
             return null;
         }
-#else
-        DataPipeline? pipeline = await this._orchestrator.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline?.ToDataPipelineStatus();
-#endif
     }
 
     /// <inheritdoc />
