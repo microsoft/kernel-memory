@@ -26,3 +26,10 @@ jobs:
           push: true
           file: ./tools/docker/Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          file: ./tools/docker/Dockerfile-ARM64
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-ARM64
