@@ -87,6 +87,10 @@ public class AzureOpenAITextGenerator : ITextGenerator
                 this._client = new OpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential(), options);
                 break;
 
+            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
+                this._client = new OpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
+                break;
+
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
@@ -94,10 +98,6 @@ public class AzureOpenAITextGenerator : ITextGenerator
                 }
 
                 this._client = new OpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
-                break;
-
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
                 break;
 
             default:
