@@ -25,4 +25,4 @@ jobs:
         with:
           push: true
           file: ./tools/docker/Dockerfile
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kernelmemory/service:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
