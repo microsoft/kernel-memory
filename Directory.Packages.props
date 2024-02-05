@@ -10,7 +10,7 @@
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
     <PackageVersion Include="ClosedXML" Version="0.102.1" />
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.58" />
     <PackageVersion Include="LLamaSharp" Version="0.9.1" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.9.1" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.9.1" />
@@ -26,25 +26,25 @@
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
-    <PackageVersion Include="Polly.Core" Version="8.2.1" />
+    <PackageVersion Include="Polly.Core" Version="8.3.0" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageVersion Include="NRedisStack" Version="0.11.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.1" />
   </ItemGroup>
   <!-- Kernel Memory -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.27.240205.2" />
-    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.1.3" />
+    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.3.0" />
     <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.1.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.1.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.3.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.3.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -56,11 +56,11 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14" />
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.9.0">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.9.0">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
