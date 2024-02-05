@@ -33,7 +33,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// </summary>
 public class AzureAISearchMemory : IMemoryDb
 {
-    private static readonly char[] SearchInDelimitersAvailable = new char[] { '|', ',', '#', '-', '_', '@', '=', '&', '+', ' ' };
+    private static readonly char[] s_searchInDelimitersAvailable = { '|', ',', '#', '-', '_', '@', '=', '&', '+', ' ' };
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
 
@@ -624,12 +624,13 @@ public class AzureAISearchMemory : IMemoryDb
     private static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
     {
         List<string> conditions = new();
+        var filterList = filters.ToList();
 
         // Get all filters that Keys are all the same, and combine them with search.in if more than one tag value is available
         // Checks if the filter is not empty and if it has only one filter:
         // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
         // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
-        var filtersForSearchInQuery = filters
+        var filtersForSearchInQuery = filterList
             .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1) // Filters with only one key
             .SelectMany(filter => filter.Pairs) // Flattening to pairs
             .GroupBy(pair => pair.Key) // Grouping by the tag key
@@ -638,8 +639,8 @@ public class AzureAISearchMemory : IMemoryDb
             {
                 Key = group.Key,
                 Values = group.Select(pair => $"{pair.Key}:{pair.Value?.Replace("'", "''", StringComparison.Ordinal)}").ToList(),
-                SearchInDelimiter = SearchInDelimitersAvailable.FirstOrDefault(specialChar =>
-                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar)))
+                SearchInDelimiter = s_searchInDelimitersAvailable.FirstOrDefault(specialChar =>
+                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar, StringComparison.OrdinalIgnoreCase)))
             })
             .Where(item => item.SearchInDelimiter != '\0') // Only items with a valid SearchInDelimiter
             .ToList();
@@ -656,7 +657,7 @@ public class AzureAISearchMemory : IMemoryDb
 
         //Exclude filters that were grouped before in the search.in process
         var keysToExclude = filtersForSearchInQuery.Select(item => item.Key).ToHashSet();
-        var remainingFilters = filters
+        var remainingFilters = filterList
             .Where(filter => !keysToExclude.Contains(filter.Keys.FirstOrDefault()))
             .ToList();
 
