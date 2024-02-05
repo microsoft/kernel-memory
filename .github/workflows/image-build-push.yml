@@ -1,4 +1,4 @@
-# action to build and image and push it to docker hub
+# action to build image and push it to docker hub
 
 name: Build and Push Docker Image
 
@@ -25,4 +25,4 @@ jobs:
         with:
           push: true
           file: ./tools/docker/Dockerfile
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kernelmemory/service:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
