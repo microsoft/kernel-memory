@@ -71,7 +71,6 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             this.Log.LogTrace("Step `{0}`: processing message received from queue", handler.StepName);
             var pipelinePointer = JsonSerializer.Deserialize<DataPipelinePointer>(msg);
 
-#if KernelMemoryDev
             DataPipeline? pipeline;
 
             // When returning False a message is put back in the queue and processed again
@@ -146,33 +145,6 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 pipeline.RollbackToPreviousStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
-#else
-            if (pipelinePointer == null)
-            {
-                this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`", handler.StepName);
-                // Note: returning False, the message is put back in the queue and processed again, eventually this will be moved to the poison queue if available
-                return false;
-            }
-
-            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
-            if (pipeline == null)
-            {
-                this.Log.LogError("Pipeline state load failed, queue `{0}`", handler.StepName);
-                // Note: returning False, the message is put back in the queue and processed again, eventually this will be moved to the poison queue if available
-                return false;
-            }
-
-            var currentStepName = pipeline.RemainingSteps.First();
-            // IMPORTANT: This can occur in case an exception interrupted the previous attempt,
-            // e.g. the pipeline state was saved but the system couldn't enqueue a message to proceed with the following step.
-            if (currentStepName != handler.StepName)
-            {
-                this.Log.LogWarning("Pipeline state on disk is ahead, next step is `{0}`, while the previous step `{1}` is still in the queue. Rolling back one step",
-                    currentStepName, handler.StepName);
-                pipeline.RollbackToPreviousStep();
-                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
-            }
-#endif
 
             return await this.RunPipelineStepAsync(pipeline, handler, this.CancellationTokenSource.Token).ConfigureAwait(false);
         });
