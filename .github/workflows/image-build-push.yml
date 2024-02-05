@@ -1,4 +1,4 @@
-# action to build and image and push it to docker hub
+# action to build image and push it to docker hub
 
 name: Build and Push Docker Image
 
