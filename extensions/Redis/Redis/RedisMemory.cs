@@ -125,15 +125,15 @@ public sealed class RedisMemory : IMemoryDb
             var separator = c ?? DefaultSeparator;
             if (!isIndexed)
             {
-                this._logger.LogError("Attempt to insert un-indexed tag field: {Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
-                throw new ArgumentException($"Attempt to insert un-indexed tag field: {item.Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
+                this._logger.LogError("Attempt to insert un-indexed tag field: '{Key}', will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
+                throw new ArgumentException($"Attempt to insert un-indexed tag field: '{item.Key}', will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
             }
 
             if (item.Value.Any(s => s is not null && s.Contains(separator.ToString(), StringComparison.InvariantCulture)))
             {
                 this._logger.LogError("Attempted to insert record with tag field: {Key} containing the separator: '{Separator}'. " +
                                       "Update your {RedisConfig} to use a different separator, or remove the separator from the field.", item.Key, separator, nameof(RedisConfig));
-                throw new ArgumentException($"Attempted to insert record with tag field: {item.Key} containing the separator: '{separator}'. " +
+                throw new ArgumentException($"Attempted to insert record with tag field: '{item.Key}' containing the separator: '{separator}'. " +
                                             $"Update your {nameof(RedisConfig)} to use a different separator, or remove the separator from the field.");
             }
 
