@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-push-image-arm64:
     runs-on: macos-latest
     steps:
       - name: Checkout code
