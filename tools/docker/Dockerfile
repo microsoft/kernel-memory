@@ -8,8 +8,8 @@ ARG RUN_IMAGE_TAG="8.0-alpine"
 
 FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG as builder
 
-ARG SOURCE=https://github.com/microsoft/kernel-memory
-ARG BRANCH=main
+ARG SOURCE="https://github.com/microsoft/kernel-memory"
+ARG BRANCH="main"
 
 WORKDIR /build
 
