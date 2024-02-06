@@ -139,16 +139,16 @@ public static class Main
         {
             switch (itemName)
             {
-                case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    OpenAISetup(true);
-                    break;
-
-                case string x when x.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                    AzureOpenAITextSetup(true);
+                case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
+                    AzureAISearchSetup(true);
                     break;
 
                 case string x when x.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                     AzureOpenAIEmbeddingSetup(true);
+                    break;
+
+                case string x when x.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
+                    AzureOpenAITextSetup(true);
                     break;
 
                 case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
@@ -159,8 +159,8 @@ public static class Main
                     MemoryDbTypeSetup();
                     break;
 
-                case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
-                    AzureAISearchSetup(true);
+                case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
+                    OpenAISetup(true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
