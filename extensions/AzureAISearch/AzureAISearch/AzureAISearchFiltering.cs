@@ -30,7 +30,7 @@ internal static class AzureAISearchFiltering
         // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
         // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
         var filtersForSearchInQuery = filterList
-            .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1) // Filters with only one key
+            .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1 && filter.Values.First().Count == 1) // Filters with only one key, but not multiple values (i.e: excluding MemoryFilters.ByTag("department", "HR").ByTag("department", "Marketing") as here we want an AND)
             .SelectMany(filter => filter.Pairs) // Flattening to pairs
             .GroupBy(pair => pair.Key) // Grouping by the tag key
             .Where(g => g.Count() > 1)
@@ -39,7 +39,9 @@ internal static class AzureAISearchFiltering
                 Key = group.Key,
                 Values = group.Select(pair => $"{pair.Key}:{pair.Value?.Replace("'", "''", StringComparison.Ordinal)}").ToList(),
                 SearchInDelimiter = s_searchInDelimitersAvailable.FirstOrDefault(specialChar =>
-                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar, StringComparison.Ordinal)))
+                    !group.Any(pair =>
+                        (pair.Value != null && pair.Value.Contains(specialChar, StringComparison.Ordinal)) ||
+                        (pair.Key != null && pair.Key.Contains(specialChar, StringComparison.Ordinal))))
             })
             .Where(item => item.SearchInDelimiter != '\0') // Only items with a valid SearchInDelimiter
             .ToList();

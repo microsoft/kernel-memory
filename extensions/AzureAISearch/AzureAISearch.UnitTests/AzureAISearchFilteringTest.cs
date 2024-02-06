@@ -187,7 +187,7 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
         // Assert
         Console.WriteLine($"Result: {result}");
         Assert.Equal("tags/any(s: search.in(s, 'col|or:blue,col|or:white', ',')) or " +
-                     "tags/any(s: search.in(s, 'si,ze:sm|all-si-ze:med;ium', '-'))", result);
+                     "tags/any(s: search.in(s, 'si,ze:sm|all-si,ze:med;ium', '-'))", result);
     }
 
     [Fact]
