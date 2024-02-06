@@ -14,7 +14,7 @@ ARG BRANCH="main"
 WORKDIR /build
 
 # Clone latest code only
-RUN git clone --single-branch --branch ${BRANCH} --depth 1 ${SOURCE} source
+RUN git clone --single-branch --branch main --depth 1 https://github.com/microsoft/kernel-memory source
 
 WORKDIR /build/source/service/Service
 
