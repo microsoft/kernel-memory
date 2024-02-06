@@ -27,9 +27,12 @@ jobs:
           file: ./tools/docker/Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
 
-      - name: Build and push
+      - name: Build and push arm64
         uses: docker/build-push-action@v5
         with:
           push: true
-          file: ./tools/docker/Dockerfile-ARM64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-ARM64
+          file: ./tools/docker/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-arm64
+          build-args: |
+            BUILD_IMAGE_TAG="8.0-jammy-arm64v8"
+            RUN_IMAGE_TAG="8.0-alpine-arm64v8"
