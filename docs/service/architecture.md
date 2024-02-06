@@ -41,15 +41,15 @@ second, but the time required can grow considerably in two particular situations
 * Step 1: the file(s) uploaded requires an external service to be processed, e.g. OCR on large PDF documents.
 * Step 3: the LLM used to generate embeddings is throttling requests, generating only few vectors per second.
 
-{: .highlight }
-KM uses two storage solutions to hold information:
-* Content Storage: raw data uploaded by clients, pipeline status, unique IDs assigned to documents.
-* Memory Storage: databases with search capability, where KM stored Memory Records.
+{: .note }
+> KM uses two storage solutions to hold information:
+> * Content Storage: raw data uploaded by clients, pipeline status, unique IDs assigned to documents.
+> * Memory Storage: databases with search capability, where KM stored Memory Records.
 
-{: .highlight }
-The ingestion pipeline operates on **Documents**. A document is a collection of one or more files. When asking to import
-a web page, the system creates a document containing a special file that contains the web page URL. When asking to
-import raw text, the system creates a document containing a text file.
+{: .note }
+> The ingestion pipeline operates on **Documents**. A document is a collection of one or more files. When asking to import
+> a web page, the system creates a document containing a special file that contains the web page URL. When asking to
+> import raw text, the system creates a document containing a text file.
 
 ### Ingestion handlers
 
