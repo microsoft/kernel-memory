@@ -9,7 +9,8 @@ on:
 
 jobs:
   build-and-push-image-arm64:
-    runs-on: macos-latest
+    # runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
