@@ -139,7 +139,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         index = IndexExtensions.CleanName(index);
 
-#if KernelMemoryDev
         try
         {
             BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
@@ -163,24 +162,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             throw new PipelineNotFoundException("Pipeline/Document not found");
         }
-#else
-        try
-        {
-            BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
-                .ConfigureAwait(false));
-            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString().RemoveBOM().Trim());
-        }
-        catch (ContentStorageFileNotFoundException)
-        {
-            return null;
-        }
-#endif
     }
 
     ///<inheritdoc />
     public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-#if KernelMemoryDev
         try
         {
             DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
@@ -190,16 +176,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             return null;
         }
-#else
-        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline?.ToDataPipelineStatus();
-#endif
     }
 
     ///<inheritdoc />
     public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-#if KernelMemoryDev
         try
         {
             DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
@@ -209,10 +190,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             return false;
         }
-#else
-        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
-#endif
     }
 
     ///<inheritdoc />
@@ -361,7 +338,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
         DataPipeline? previousPipeline;
-#if KernelMemoryDev
         try
         {
             previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
@@ -370,9 +346,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             previousPipeline = null;
         }
-#else
-        previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
-#endif
 
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {

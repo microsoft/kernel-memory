@@ -7,11 +7,13 @@ layout: default
 ---
 # Configuration
 
-KM service requires a configuration file to start, typically named `appsettings.development.json` for local development
-or `appsettings.production.json` for production environments. The appropriate configuration file is automatically
-loaded, based on the `ASPNETCORE_ENVIRONMENT` environment variable.
+KM service requires a configuration file to start, typically named `appsettings.Development.json` for local development
+or `appsettings.Production.json` for production environments. The appropriate configuration file is automatically
+loaded, based on the `ASPNETCORE_ENVIRONMENT` environment variable. If your development workstation doesn't have this
+environment variable, it's recommended to create it: ASPNETCORE_ENVIRONMENT == "Development". In a production
+environment you'll want to set ASPNETCORE_ENVIRONMENT = "Production".
 
-The KM repository includes a setup wizard to help you create your initial `appsettings.development.json` file:
+The KM repository includes a setup wizard to help you create your initial `appsettings.Development.json` file:
 
     cd service/Service
     dotnet run setup

@@ -27,9 +27,9 @@ using Microsoft.OpenApi.Models;
 // ********************************************************
 
 // Run `dotnet run setup` to run this code and setup the service
-if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
 {
-    Main.InteractiveSetup(cfgService: true);
+    Main.InteractiveSetup(args.Skip(1).ToArray(), cfgService: true);
 }
 
 // ********************************************************

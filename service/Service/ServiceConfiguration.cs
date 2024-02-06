@@ -329,6 +329,15 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
+                case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
                 case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
@@ -391,6 +400,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"));
+                break;
+
+            case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"));
                 break;
 
             case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):

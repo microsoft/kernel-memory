@@ -10,7 +10,8 @@ hybrid pipelines, with support for
 synthetic memory, prompt engineering, and custom semantic memory processing.
 
 KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
-**web clients**, a .NET library for embedded applications, and soon as a Docker container.
+**web clients**, a .NET library for embedded applications, and as a
+[Docker container](https://hub.docker.com/repository/docker/kernelmemory/service/general).
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -225,6 +226,12 @@ about [how to run the Kernel Memory service](service/Service/README.md).
 
 If you want to give the service a quick test, use the following command
 to **start the Kernel Memory Service**:
+
+> ### Using Docker
+>
+> ```shell
+> docker run -it --rm -e OPENAI_DEMO="...OPENAI API KEY..." kernelmemory/service
+> ```
 
 > ### On WSL / Linux / MacOS:
 >
