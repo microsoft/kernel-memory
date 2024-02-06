@@ -34,5 +34,5 @@ jobs:
           file: ./tools/docker/Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-arm64
           build-args: |
-            BUILD_IMAGE_TAG="8.0-jammy-arm64v8"
-            RUN_IMAGE_TAG="8.0-alpine-arm64v8"
+            BUILD_IMAGE_TAG=8.0-jammy-arm64v8
+            RUN_IMAGE_TAG=8.0-alpine-arm64v8
