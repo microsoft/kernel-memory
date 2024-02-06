@@ -33,7 +33,6 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// </summary>
 public class AzureAISearchMemory : IMemoryDb
 {
-    private static readonly char[] SearchInDelimitersAvailable = new char[] { '|', ',', '#', '-', '_', '@', '=', '&', '+', ' ' };
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
 
@@ -183,7 +182,7 @@ public class AzureAISearchMemory : IMemoryDb
 
         if (filters is { Count: > 0 })
         {
-            options.Filter = BuildSearchFilter(filters);
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -233,7 +232,7 @@ public class AzureAISearchMemory : IMemoryDb
         SearchOptions options = new();
         if (filters is { Count: > 0 })
         {
-            options.Filter = BuildSearchFilter(filters);
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -619,68 +618,6 @@ public class AzureAISearchMemory : IMemoryDb
     private static double CosineSimilarityToScore(double similarity)
     {
         return 1 / (2 - similarity);
-    }
-
-    private static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
-    {
-        List<string> conditions = new();
-
-        // Get all filters that Keys are all the same, and combine them with search.in if more than one tag value is available
-        // Checks if the filter is not empty and if it has only one filter:
-        // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
-        // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
-        var filtersForSearchInQuery = filters
-            .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1) // Filters with only one key
-            .SelectMany(filter => filter.Pairs) // Flattening to pairs
-            .GroupBy(pair => pair.Key) // Grouping by the tag key
-            .Where(g => g.Count() > 1)
-            .Select(group => new
-            {
-                Key = group.Key,
-                Values = group.Select(pair => $"{pair.Key}:{pair.Value?.Replace("'", "''", StringComparison.Ordinal)}").ToList(),
-                SearchInDelimiter = SearchInDelimitersAvailable.FirstOrDefault(specialChar =>
-                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar)))
-            })
-            .Where(item => item.SearchInDelimiter != '\0') // Only items with a valid SearchInDelimiter
-            .ToList();
-
-        foreach (var filterGroup in filtersForSearchInQuery)
-        {
-            // search.in syntax: https://learn.microsoft.com/en-us/azure/search/search-query-odata-search-in-function#syntax
-            // delimiter: A string where each character is treated as a separator when parsing the valueList parameter.
-            // The default value of this parameter is ' ,' which means that any values with spaces and/or commas between them will be separated.
-            // If you need to use separators other than spaces and commas because your values include those characters,
-            // you can specify alternate delimiters such as '|' in this parameter.
-            conditions.Add($"tags/any(s: search.in(s, '{string.Join(filterGroup.SearchInDelimiter, filterGroup.Values)}', '{filterGroup.SearchInDelimiter}'))");
-        }
-
-        //Exclude filters that were grouped before in the search.in process
-        var keysToExclude = filtersForSearchInQuery.Select(item => item.Key).ToHashSet();
-        var remainingFilters = filters
-            .Where(filter => !keysToExclude.Contains(filter.Keys.FirstOrDefault()))
-            .ToList();
-
-        // Note: empty filters would lead to a syntax error, so even if they are supposed
-        // to be removed upstream, we check again and remove them here too.
-        foreach (var filter in remainingFilters.Where(f => !f.IsEmpty()))
-        {
-            var filterConditions = filter.GetFilters()
-                .Select(keyValue =>
-                {
-                    var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
-                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsChar}{fieldValue}')";
-                })
-                .ToList();
-
-            conditions.Add($"({string.Join(" and ", filterConditions)})");
-        }
-
-        // Examples:
-        // In search.in queries delimiter will vary according to the special chars found in the values
-        // (tags/any(s: search.in(s, 'Authorized:0000-0000-0000-00000000|Authorized:0000-0000-0000-00000001', '|'))) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
-        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
-        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
-        return string.Join(" or ", conditions);
     }
 
     #endregion
