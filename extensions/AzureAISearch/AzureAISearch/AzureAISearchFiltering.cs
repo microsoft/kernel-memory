@@ -8,15 +8,25 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
 internal static class AzureAISearchFiltering
 {
-    private static readonly char[] s_searchInDelimitersAvailable = { '|', ',', '#', '-', '_', '@', '=', '&', '+', ' ' };
+    private static readonly char[] s_searchInDelimitersAvailable = { '|', ',', ';', '-', '_', '.', ' ', '^', '$', '*', '`', '#', '@', '&', '/', '~' };
 
+    /// <summary>
+    /// Build a search query optimized to scale for in case a key has several (hundreds+) values
+    /// Note:
+    /// * One filter can have multiple key-values: these are combined with AND conditions
+    /// * Multiple filters are combined using OR
+    /// * Multiple filters can apply to the same key:
+    ///     * if filters have only one condition, these are rendered using "search.in"
+    ///     * if filters have multiple conditions, the values are combined with OR
+    /// </summary>
+    /// <param name="filters">List of filters</param>
+    /// <returns>Query string for Azure AI Search</returns>
     internal static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
     {
         List<string> conditions = new();
         var filterList = filters?.ToList() ?? new List<MemoryFilter>();
 
-        // Get all filters that Keys are all the same, and combine them with search.in if more than one tag value is available
-        // Checks if the filter is not empty and if it has only one filter:
+        // Get all non empty filters with the same key and more than one value, and combine them using "search.in"
         // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
         // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
         var filtersForSearchInQuery = filterList
@@ -29,7 +39,7 @@ internal static class AzureAISearchFiltering
                 Key = group.Key,
                 Values = group.Select(pair => $"{pair.Key}:{pair.Value?.Replace("'", "''", StringComparison.Ordinal)}").ToList(),
                 SearchInDelimiter = s_searchInDelimitersAvailable.FirstOrDefault(specialChar =>
-                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar, StringComparison.OrdinalIgnoreCase)))
+                    !group.Any(pair => pair.Value != null && pair.Value.Contains(specialChar, StringComparison.Ordinal)))
             })
             .Where(item => item.SearchInDelimiter != '\0') // Only items with a valid SearchInDelimiter
             .ToList();
@@ -47,7 +57,7 @@ internal static class AzureAISearchFiltering
         //Exclude filters that were grouped before in the search.in process
         var keysToExclude = filtersForSearchInQuery.Select(item => item.Key).ToHashSet();
         var remainingFilters = filterList
-            .Where(filter => !keysToExclude.Contains(filter.Keys.FirstOrDefault()))
+            .Where(filter => !filter.IsEmpty() && !keysToExclude.Contains(filter.Keys.FirstOrDefault() ?? ""))
             .ToList();
 
         // Note: empty filters would lead to a syntax error, so even if they are supposed
@@ -68,6 +78,34 @@ internal static class AzureAISearchFiltering
         // Examples:
         // In search.in queries delimiter will vary according to the special chars found in the values
         // (tags/any(s: search.in(s, 'Authorized:0000-0000-0000-00000000|Authorized:0000-0000-0000-00000001', '|'))) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
+        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
+        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
+        return string.Join(" or ", conditions);
+    }
+
+    /// <summary>
+    /// This is here to allow comparing the new logic above with the old/original version, e.g. unit tests and debugging.
+    /// </summary>
+    internal static string BuildSearchFilterV1(IEnumerable<MemoryFilter> filters)
+    {
+        List<string> conditions = new();
+
+        // Note: empty filters would lead to a syntax error, so even if they are supposed
+        // to be removed upstream, we check again and remove them here too.
+        foreach (var filter in filters.Where(f => !f.IsEmpty()))
+        {
+            var filterConditions = filter.GetFilters()
+                .Select(keyValue =>
+                {
+                    var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
+                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsChar}{fieldValue}')";
+                })
+                .ToList();
+
+            conditions.Add($"({string.Join(" and ", filterConditions)})");
+        }
+
+        // Examples:
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
         return string.Join(" or ", conditions);

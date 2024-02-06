@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
         <ProjectReference Include="..\AzureAISearch\AzureAISearch.csproj"/>
     </ItemGroup>
 
