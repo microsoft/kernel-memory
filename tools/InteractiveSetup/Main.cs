@@ -664,6 +664,7 @@ public static class Main
                 { "Port", "5672" },
                 { "Username", "user" },
                 { "Password", "" },
+                { "VirtualHost", "/" },
             };
         }
 
@@ -673,6 +674,7 @@ public static class Main
             { "Port", SetupUI.AskOpenQuestion("RabbitMQ <TCP port>", config["Port"].ToString()) },
             { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
             { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
+            { "VirtualHost", SetupUI.AskOpenQuestion("RabbitMQ <virtualhost>", config["VirtualHost"].ToString()) },
         });
     }
 
