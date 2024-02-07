@@ -207,6 +207,7 @@ public sealed class RedisMemory : IMemoryDb
         query.Params(parameters);
         query.Limit(0, limit);
         query.Dialect(2);
+        query.SortBy = DistanceFieldName;
         if (!withEmbeddings)
         {
             query.ReturnFields(this._fieldNamesNoEmbeddings);
