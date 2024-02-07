@@ -48,6 +48,8 @@ public static class Program
 
         Console.WriteLine("# START");
 
+        // Run some code and observe the console for log entries. With LogLevel.Warning the console should be empty.
+        // Change the log level to LogLevel.Information / LogLevel.Debug / LogLevel.Trace to see more log entries.
         await memory.ImportTextAsync("In physics, mass–energy equivalence is the relationship between mass and energy " +
                                      "in a system's rest frame, where the two quantities differ only by a multiplicative " +
                                      "constant and the units of measurement. The principle is described by the physicist " +
