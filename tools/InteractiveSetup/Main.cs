@@ -171,6 +171,10 @@ public static class Main
                     QdrantSetup(true);
                     break;
 
+                case string x when x.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
+                    RabbitMQSetup(true);
+                    break;
+
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
                     RedisSetup(true);
                     break;
@@ -649,9 +653,9 @@ public static class Main
         });
     }
 
-    private static void RabbitMQSetup()
+    private static void RabbitMQSetup(bool force = false)
     {
-        if (!s_cfgRabbitMq.Value) { return; }
+        if (!s_cfgRabbitMq.Value && !force) { return; }
 
         s_cfgRabbitMq.Value = false;
         const string ServiceName = "RabbitMQ";
@@ -664,6 +668,7 @@ public static class Main
                 { "Port", "5672" },
                 { "Username", "user" },
                 { "Password", "" },
+                { "VirtualHost", "/" },
             };
         }
 
@@ -673,6 +678,7 @@ public static class Main
             { "Port", SetupUI.AskOpenQuestion("RabbitMQ <TCP port>", config["Port"].ToString()) },
             { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
             { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
+            { "VirtualHost", SetupUI.AskOpenQuestion("RabbitMQ <virtualhost>", config["VirtualHost"].ToString()) },
         });
     }
 
