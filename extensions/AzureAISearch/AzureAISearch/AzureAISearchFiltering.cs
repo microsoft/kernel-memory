@@ -86,6 +86,7 @@ internal static class AzureAISearchFiltering
         return string.Join(" or ", conditions);
     }
 
+    /*
     /// <summary>
     /// This is here to allow comparing the new logic above with the old/original version, e.g. unit tests and debugging.
     /// </summary>
@@ -113,4 +114,5 @@ internal static class AzureAISearchFiltering
         // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
         return string.Join(" or ", conditions);
     }
+    */
 }
