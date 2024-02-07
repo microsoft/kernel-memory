@@ -47,7 +47,7 @@ public sealed class RedisMemory : IMemoryDb
         this._logger = logger ?? DefaultLogger<RedisMemory>.Instance;
         this._search = multiplexer.GetDatabase().FT();
         this._db = multiplexer.GetDatabase();
-        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).ToArray();
+        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).Append(DistanceFieldName).ToArray();
     }
 
     /// <inheritdoc />
