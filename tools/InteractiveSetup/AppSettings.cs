@@ -10,6 +10,8 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 public static class AppSettings
 {
     private const string SettingsFile = "appsettings.Development.json";
+    private const string DefaultSettingsFile = "appsettings.json";
+    private static readonly JsonSerializerSettings s_jsonOptions = new() { Formatting = Formatting.Indented };
 
     public static void Change(Action<KernelMemoryConfig> configChanges)
     {
@@ -28,7 +30,7 @@ public static class AppSettings
 
         data["KernelMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
 
-        json = JsonConvert.SerializeObject(data, Formatting.Indented);
+        json = JsonConvert.SerializeObject(data, s_jsonOptions);
         File.WriteAllText(SettingsFile, json);
     }
 
@@ -70,8 +72,27 @@ public static class AppSettings
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
-            throw new SetupException("Unable to parse file");
+            throw new SetupException($"Unable to parse `{SettingsFile}` file");
         }
+
+        // TODO: merge appsettings.json, only needed blocks
+        // if (File.Exists(DefaultSettingsFile))
+        // {
+        //     json = File.ReadAllText(DefaultSettingsFile);
+        //     JObject? defaultData = JsonConvert.DeserializeObject<JObject>(json);
+        //     if (defaultData == null)
+        //     {
+        //         throw new SetupException($"Unable to parse `{DefaultSettingsFile}` file");
+        //     }
+        //
+        //     defaultData.Merge(data, new JsonMergeSettings
+        //     {
+        //         MergeArrayHandling = MergeArrayHandling.Replace,
+        //         PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
+        //     });
+        //
+        //     data = defaultData;
+        // }
 
         return data;
     }
