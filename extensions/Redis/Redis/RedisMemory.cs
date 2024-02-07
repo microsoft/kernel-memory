@@ -47,7 +47,7 @@ public sealed class RedisMemory : IMemoryDb
         this._logger = logger ?? DefaultLogger<RedisMemory>.Instance;
         this._search = multiplexer.GetDatabase().FT();
         this._db = multiplexer.GetDatabase();
-        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).ToArray();
+        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).Append(DistanceFieldName).ToArray();
     }
 
     /// <inheritdoc />
@@ -207,6 +207,7 @@ public sealed class RedisMemory : IMemoryDb
         query.Params(parameters);
         query.Limit(0, limit);
         query.Dialect(2);
+        query.SortBy = DistanceFieldName;
         if (!withEmbeddings)
         {
             query.ReturnFields(this._fieldNamesNoEmbeddings);
@@ -234,7 +235,7 @@ public sealed class RedisMemory : IMemoryDb
         foreach (var doc in result.Documents)
         {
             var next = this.FromDocument(doc, withEmbeddings);
-            if (1 - next.Item2 > minRelevance)
+            if (next.Item2 > minRelevance)
             {
                 yield return next;
             }
@@ -377,7 +378,7 @@ public sealed class RedisMemory : IMemoryDb
             }
             else if (field.Key == DistanceFieldName)
             {
-                distance = (double)field.Value;
+                distance = 1 - (double)field.Value;
             }
             else
             {
