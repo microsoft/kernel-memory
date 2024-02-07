@@ -41,7 +41,7 @@ public static class Program
         kernelMemoryBuilder.Services
             .AddLogging(c =>
             {
-                c.AddConsole().SetMinimumLevel(LogLevel.Warning);
+                c.AddConsole().SetMinimumLevel(LogLevel.Warning); // <== Log Level
             });
 
         var memory = kernelMemoryBuilder.Build();
