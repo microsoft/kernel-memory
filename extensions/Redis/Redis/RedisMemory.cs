@@ -234,7 +234,7 @@ public sealed class RedisMemory : IMemoryDb
         foreach (var doc in result.Documents)
         {
             var next = this.FromDocument(doc, withEmbeddings);
-            if (1 - next.Item2 > minRelevance)
+            if (next.Item2 > minRelevance)
             {
                 yield return next;
             }
@@ -377,7 +377,7 @@ public sealed class RedisMemory : IMemoryDb
             }
             else if (field.Key == DistanceFieldName)
             {
-                distance = (double)field.Value;
+                distance = 1 - (double)field.Value;
             }
             else
             {
