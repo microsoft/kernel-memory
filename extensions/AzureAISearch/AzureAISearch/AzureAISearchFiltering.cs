@@ -30,7 +30,8 @@ internal static class AzureAISearchFiltering
         // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
         // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
         var filtersForSearchInQuery = filterList
-            .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1 && filter.Values.First().Count == 1) // Filters with only one key, but not multiple values (i.e: excluding MemoryFilters.ByTag("department", "HR").ByTag("department", "Marketing") as here we want an AND)
+            // Filters with only one key, but not multiple values (i.e: excluding MemoryFilters.ByTag("department", "HR").ByTag("department", "Marketing") as here we want an `AND`)
+            .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1 && filter.Values.First().Count == 1)
             .SelectMany(filter => filter.Pairs) // Flattening to pairs
             .GroupBy(pair => pair.Key) // Grouping by the tag key
             .Where(g => g.Count() > 1)
