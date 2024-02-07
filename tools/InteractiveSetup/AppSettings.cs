@@ -9,8 +9,8 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public static class AppSettings
 {
+    // private const string DefaultSettingsFile = "appsettings.json";
     private const string SettingsFile = "appsettings.Development.json";
-    private const string DefaultSettingsFile = "appsettings.json";
     private static readonly JsonSerializerSettings s_jsonOptions = new() { Formatting = Formatting.Indented };
 
     public static void Change(Action<KernelMemoryConfig> configChanges)
