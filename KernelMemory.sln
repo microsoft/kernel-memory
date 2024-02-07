@@ -231,6 +231,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B897
 		.github\pull_request_template.md = .github\pull_request_template.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "206-dotnet-configuration-and-logging", "examples\206-dotnet-configuration-and-logging\206-dotnet-configuration-and-logging.csproj", "{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -295,6 +297,7 @@ Global
 		{D4C4BED2-B071-49AB-BAA6-DB4721C0BF26} = {BA7BCF0A-4394-4384-A82D-7FBB4779F25F}
 		{9F564F2D-EADD-47DE-9293-92B3E9CFFE36} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{B8976338-7CDC-47AE-8502-C2FBAFBEBD68} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
+		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -465,5 +468,8 @@ Global
 		{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
