@@ -224,6 +224,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{D4C4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.UnitTests", "extensions\AzureAISearch\AzureAISearch.UnitTests\AzureAISearch.UnitTests.csproj", "{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
+	ProjectSection(SolutionItems) = preProject
+		.github\_typos.toml = .github\_typos.toml
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\pull_request_template.md = .github\pull_request_template.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -287,6 +294,7 @@ Global
 		{BA7BCF0A-4394-4384-A82D-7FBB4779F25F} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
 		{D4C4BED2-B071-49AB-BAA6-DB4721C0BF26} = {BA7BCF0A-4394-4384-A82D-7FBB4779F25F}
 		{9F564F2D-EADD-47DE-9293-92B3E9CFFE36} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{B8976338-7CDC-47AE-8502-C2FBAFBEBD68} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
