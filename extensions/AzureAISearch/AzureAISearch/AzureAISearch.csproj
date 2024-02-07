@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+        <InternalsVisibleTo Include="Microsoft.AzureAISearch.UnitTests"/>
     </ItemGroup>
 
     <Import Project="../../../code-analysis.props"/>
