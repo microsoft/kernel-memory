@@ -11,13 +11,8 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-# /home/bohdan/dev/kernel-memory/service/Service/Service.csproj
-# /home/bohdan/dev/kernel-memory/tools/docker/NewDockerfile
 COPY ["service/Service/Service.csproj", "service/Service/"]
-
-
 RUN dotnet restore "./service/Service/./Service.csproj"
-
 COPY ["extensions", "extensions"]
 COPY ["tools", "tools"]
 

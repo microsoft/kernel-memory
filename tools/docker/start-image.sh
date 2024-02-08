@@ -7,7 +7,7 @@ set -e
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && cd ../.. && pwd)"
 cd $ROOT
 
-docker run -it --rm --name kernelmemory -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json kernelmemory/service
+docker run -it --rm --name kernelmemory -p 8080:8080 -v ./service/Service/appsettings.Development.json:/app/data/appsettings.json bc123456/service
 
 
 
