@@ -10,15 +10,14 @@ ARG BRANCH=main
 WORKDIR /build
 
 # Clone latest code only
-RUN git clone --single-branch --branch ${BRANCH} --depth 1 ${SOURCE} source
+RUN git clone --single-branch --branch ${BRANCH} --depth 2 ${SOURCE} source
 
 WORKDIR /build/source/service/Service
 
 # Build code
 RUN \
     dotnet build --configuration Release --output /build/output && \
-    cp ../../tools/docker/content/run.sh /build/output/ && \
-    cp ../../tools/docker/content/setup.sh /build/output/ && \
+    cp ../../tools/docker/content/* /build/output/ && \
     chmod ugo=r /build/output/*.dll
 
 # Generate data used outside the image to label it
