@@ -38,7 +38,7 @@
   <!-- Kernel Memory -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.27.240205.2" />
-    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.3.0" />
+    <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.3.1" />
     <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
   <!-- Semantic Kernel -->
@@ -55,7 +55,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28" />
     <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -67,7 +67,7 @@
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.1" />
     <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="8.1.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
