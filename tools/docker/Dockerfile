@@ -8,13 +8,13 @@ ARG RUN_IMAGE_TAG="8.0-alpine"
 
 FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG as builder
 
-ARG SOURCE="https://github.com/microsoft/kernel-memory"
-ARG BRANCH="main"
+ARG SOURCE=https://github.com/microsoft/kernel-memory
+ARG BRANCH=main
 
 WORKDIR /build
 
 # Clone latest code only
-RUN git clone --single-branch --branch main --depth 1 https://github.com/microsoft/kernel-memory source
+RUN git clone --single-branch --branch ${BRANCH} --depth 1 ${SOURCE} source
 
 WORKDIR /build/source/service/Service
 

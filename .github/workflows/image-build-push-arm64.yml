@@ -25,7 +25,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          file: ./tools/docker/Dockerfile
+          file: ./Service.Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-arm64
           build-args: |
             BUILD_IMAGE_TAG=8.0-jammy-arm64v8

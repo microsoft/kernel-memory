@@ -5,6 +5,8 @@
         <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <!-- TODO- temporary solution.  String parameters as a reference type should not be marked as nullable  -->
+        <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CA1031,CA1303,CA1724,CS1591</NoWarn>
     </PropertyGroup>
 
