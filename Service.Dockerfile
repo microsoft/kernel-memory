@@ -13,11 +13,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["service/Service/Service.csproj", "service/Service/"]
 RUN dotnet restore "./service/Service/./Service.csproj"
+
 COPY ["extensions", "extensions"]
 COPY ["tools", "tools"]
-
-
-# COPY . .
+COPY ["service", "service"]
 WORKDIR "/src/service/Service"
 RUN dotnet build "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
