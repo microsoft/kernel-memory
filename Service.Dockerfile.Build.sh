@@ -78,7 +78,8 @@ howto_test() {
 echo "⏱️  Checking dependencies..."
 check_dependency_docker
 
-build_docker_image "8.0-jammy" "8.0-alpine" "latest"
-build_docker_image "8.0-jammy-arm64v8" "8.0-alpine-arm64v8" "latest-arm64"
+# build_docker_image "8.0-jammy" "8.0-alpine" "latest"
+# build_docker_image "8.0-jammy-arm64v8" "8.0-alpine-arm64v8" "latest-arm64"
+build_docker_image "7.0-jammy" "7.0-alpine" "latest"
 
 howto_test
