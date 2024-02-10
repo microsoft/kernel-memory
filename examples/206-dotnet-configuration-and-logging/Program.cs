@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 
 public static class Program
 {
-    // ReSharper disable InconsistentNaming
+    // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
         var openAIConfig = new OpenAIConfig

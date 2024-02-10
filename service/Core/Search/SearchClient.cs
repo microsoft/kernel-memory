@@ -118,47 +118,23 @@ public class SearchClient : ISearchClient
         // Memories are sorted by relevance, starting from the most relevant
         foreach ((MemoryRecord memory, double relevance) in list)
         {
-            if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedDocumentIdTag);
-            }
-
-            if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
-            }
-
-            if (!memory.Tags.ContainsKey(Constants.ReservedFileTypeTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
-            }
-
             // Note: a document can be composed by multiple files
-            string documentId = memory.Tags[Constants.ReservedDocumentIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.GetDocumentId(this._log);
 
             // Identify the file in case there are multiple files
-            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+            string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file
+            // TODO: URL to access the file in content storage
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
-            string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
-
-            // URL the source, used for web pages and external data. Null when empty.
-            string? sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString();
-
-            var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
+            var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
             {
                 this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
                 continue;
             }
 
-            if (relevance > float.MinValue)
-            {
-                this._log.LogTrace("Adding result with relevance {0}", relevance);
-            }
+            if (relevance > float.MinValue) { this._log.LogTrace("Adding result with relevance {0}", relevance); }
 
             // If the file is already in the list of citations, only add the partition
             var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
@@ -173,19 +149,19 @@ public class SearchClient : ISearchClient
             citation.DocumentId = documentId;
             citation.FileId = fileId;
             citation.Link = linkToFile;
-            citation.SourceContentType = fileContentType;
-            citation.SourceName = fileName;
-            citation.SourceUrl = string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl;
-
-#pragma warning disable CA1806 // it's ok if parsing fails
-            DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
-#pragma warning restore CA1806
+            citation.SourceContentType = memory.GetFileContentType(this._log);
+            citation.SourceName = memory.GetFileName(this._log);
+            citation.SourceUrl = memory.GetWebPageUrl();
 
             citation.Partitions.Add(new Citation.Partition
             {
                 Text = partitionText,
                 Relevance = (float)relevance,
-                LastUpdate = lastUpdate,
+#if KernelMemoryDev
+                PartitionNumber = memory.GetPartitionNumber(this._log),
+                SectionNumber = memory.GetSectionNumber(),
+#endif
+                LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
         }
@@ -246,43 +222,25 @@ public class SearchClient : ISearchClient
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
-            if (!memory.Tags.ContainsKey(Constants.ReservedDocumentIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedDocumentIdTag);
-            }
-
-            if (!memory.Tags.ContainsKey(Constants.ReservedFileIdTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileIdTag);
-            }
-
-            if (!memory.Tags.ContainsKey(Constants.ReservedFileTypeTag))
-            {
-                this._log.LogError("The memory record is missing the '{0}' tag", Constants.ReservedFileTypeTag);
-            }
-
             // Note: a document can be composed by multiple files
-            string documentId = memory.Tags[Constants.ReservedDocumentIdTag].FirstOrDefault() ?? string.Empty;
+            string documentId = memory.GetDocumentId(this._log);
 
             // Identify the file in case there are multiple files
-            string fileId = memory.Tags[Constants.ReservedFileIdTag].FirstOrDefault() ?? string.Empty;
+            string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file
+            // TODO: URL to access the file in content storage
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
-            string fileContentType = memory.Tags[Constants.ReservedFileTypeTag].FirstOrDefault() ?? string.Empty;
-            string fileName = memory.Payload[Constants.ReservedPayloadFileNameField].ToString() ?? string.Empty;
+            string fileName = memory.GetFileName(this._log);
 
-            // URL the source, used for web pages and external data. Null when empty.
-            string? sourceUrl = memory.Payload[Constants.ReservedPayloadUrlField].ToString();
-
-            factsAvailableCount++;
-            var partitionText = memory.Payload[Constants.ReservedPayloadTextField].ToString()?.Trim() ?? "";
+            var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
             {
                 this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
                 continue;
             }
+
+            factsAvailableCount++;
 
             // TODO: add file age in days, to push relevance of newer documents
             var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
@@ -296,7 +254,7 @@ public class SearchClient : ISearchClient
             }
 
             factsUsedCount++;
-            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
+            if (relevance > float.MinValue) { this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance); }
 
             facts.Append(fact);
             tokensAvailable -= size;
@@ -314,19 +272,15 @@ public class SearchClient : ISearchClient
             citation.DocumentId = documentId;
             citation.FileId = fileId;
             citation.Link = linkToFile;
-            citation.SourceContentType = fileContentType;
+            citation.SourceContentType = memory.GetFileContentType(this._log);
             citation.SourceName = fileName;
-            citation.SourceUrl = string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl;
-
-#pragma warning disable CA1806 // it's ok if parsing fails
-            DateTimeOffset.TryParse(memory.Payload[Constants.ReservedPayloadLastUpdateField].ToString(), out var lastUpdate);
-#pragma warning restore CA1806
+            citation.SourceUrl = memory.GetWebPageUrl();
 
             citation.Partitions.Add(new Citation.Partition
             {
                 Text = partitionText,
                 Relevance = (float)relevance,
-                LastUpdate = lastUpdate,
+                LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
         }
