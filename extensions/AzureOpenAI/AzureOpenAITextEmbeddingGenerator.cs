@@ -59,6 +59,15 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     httpClient: httpClient);
                 break;
 
+            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
+                this._client = new AzureOpenAITextEmbeddingGenerationService(
+                    deploymentName: config.Deployment,
+                    modelId: config.Deployment,
+                    endpoint: config.Endpoint,
+                    credential: config.GetTokenCredential(),
+                    httpClient: httpClient);
+                break;
+
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
