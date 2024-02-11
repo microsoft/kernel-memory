@@ -34,6 +34,7 @@ public sealed class RabbitMQPipeline : IQueue
             Port = config.Port,
             UserName = config.Username,
             Password = config.Password,
+            VirtualHost = !string.IsNullOrWhiteSpace(config.VirtualHost) ? config.VirtualHost : "/",
             DispatchConsumersAsync = true
         };
 

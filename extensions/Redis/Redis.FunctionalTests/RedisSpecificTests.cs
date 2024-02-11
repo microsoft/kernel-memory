@@ -47,4 +47,24 @@ public class RedisSpecificTests : BaseFunctionalTestCase
             $"Attempted to insert record with tag field: user containing the separator: '|'. Update your {nameof(Microsoft.KernelMemory.RedisConfig)} to use a different separator, or remove the separator from the field.",
             res.Message);
     }
+
+    [Fact]
+    [Trait("Category", "Redis")]
+    public async Task ResultContainsScore()
+    {
+        // Arrange
+        const string Q = "in one or two words, what colors should I choose?";
+        await this._memory.ImportTextAsync("green is a great color", documentId: "1", tags: new TagCollection { { "user", "hulk" } });
+        await this._memory.ImportTextAsync("red is a great color", documentId: "2", tags: new TagCollection { { "user", "flash" } });
+
+        // Act + Assert - See only memory about Green color
+        var answer = await this._memory.AskAsync(Q, filter: MemoryFilters.ByDocument("1"));
+        Assert.Contains("green", answer.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("red", answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        Assert.True(answer.RelevantSources.Any(c => c.Partitions.Any(p => p.Relevance > 0)));
+
+        var searchResult = await this._memory.SearchAsync(Q);
+        Assert.True(searchResult.Results.Any(c => c.Partitions.Any(p => p.Relevance > 0)));
+    }
 }

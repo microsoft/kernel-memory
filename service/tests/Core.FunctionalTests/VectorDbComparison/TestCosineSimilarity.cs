@@ -3,10 +3,12 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
+using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.TestHelpers;
+using StackExchange.Redis;
 using Xunit.Abstractions;
 
 // ReSharper disable MissingBlankLines
@@ -31,20 +33,26 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         const bool AzSearchEnabled = true;
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
+        const bool RedisEnabled = true;
 
         // == Ctors
-
         var embeddingGenerator = new FakeEmbeddingGenerator();
         var acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
         var qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
         var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
+        // TODO: revisit RedisMemory not to need this, e.g. not to connect in ctor
+        IConnectionMultiplexer redisMux;
+        if (RedisEnabled) { redisMux = await ConnectionMultiplexer.ConnectAsync(this.RedisConfig.ConnectionString); }
+        var redis = new RedisMemory(this.RedisConfig, redisMux, embeddingGenerator);
+
         // == Delete indexes left over
 
         if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
         if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
         if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
+        if (RedisEnabled) { await redis.DeleteIndexAsync(IndexName); }
         await simpleVecDb.DeleteIndexAsync(IndexName);
 
         await Task.Delay(TimeSpan.FromSeconds(2));
@@ -54,6 +62,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
         if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
         if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
+        if (RedisEnabled) { await redis.CreateIndexAsync(IndexName, 3); }
         await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
         // == Insert data. Note: records are inserted out of order on purpose.
@@ -74,6 +83,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
             if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
             if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
+            if (RedisEnabled) { await redis.UpsertAsync(IndexName, r.Value); }
             await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
 
@@ -87,6 +97,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         IAsyncEnumerable<(MemoryRecord, double)> acsList;
         IAsyncEnumerable<(MemoryRecord, double)> postgresList;
         IAsyncEnumerable<(MemoryRecord, double)> qdrantList;
+        IAsyncEnumerable<(MemoryRecord, double)> redisList;
         if (AzSearchEnabled)
         {
             acsList = acs.GetSimilarListAsync(
@@ -105,12 +116,19 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
                 index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
+        if (RedisEnabled)
+        {
+            redisList = redis.GetSimilarListAsync(
+                index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
+        }
+
         IAsyncEnumerable<(MemoryRecord, double)> simpleVecDbList = simpleVecDb.GetSimilarListAsync(
             index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
 
         List<(MemoryRecord, double)> acsResults;
         List<(MemoryRecord, double)> postgresResults;
         List<(MemoryRecord, double)> qdrantResults;
+        List<(MemoryRecord, double)> redisResults;
         if (AzSearchEnabled)
         {
             acsResults = await acsList.ToListAsync();
@@ -124,6 +142,11 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         if (QdrantEnabled)
         {
             qdrantResults = await qdrantList.ToListAsync();
+        }
+
+        if (RedisEnabled)
+        {
+            redisResults = await redisList.ToListAsync();
         }
 
         var simpleVecDbResults = await simpleVecDbList.ToListAsync();
@@ -168,6 +191,21 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             this._log.WriteLine($"\n\nQdrant: {qdrantResults.Count} results");
             previous = "0";
             foreach ((MemoryRecord memoryRecord, double actual) in qdrantResults)
+            {
+                var expected = CosineSim(target, records[memoryRecord.Id].Vector);
+                var diff = expected - actual;
+                this._log.WriteLine($" - ID: {memoryRecord.Id}, Distance: {actual}, Expected distance: {expected}, Difference: {diff:0.0000000000}");
+                Assert.True(Math.Abs(diff) < Precision);
+                Assert.True(string.Compare(memoryRecord.Id, previous, StringComparison.OrdinalIgnoreCase) > 0, "Records are not ordered by similarity");
+                previous = memoryRecord.Id;
+            }
+        }
+
+        if (RedisEnabled)
+        {
+            this._log.WriteLine($"\n\nRedis: {redisResults.Count} results");
+            previous = "0";
+            foreach ((MemoryRecord memoryRecord, double actual) in redisResults)
             {
                 var expected = CosineSim(target, records[memoryRecord.Id].Vector);
                 var diff = expected - actual;
