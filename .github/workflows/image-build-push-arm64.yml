@@ -1,0 +1,32 @@
+# Build image and push it to docker hub
+
+name: Build and Push Docker Image arm64
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push-image-arm64:
+    # runs-on: macos-latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push arm64
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          file: ./Service.Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest-arm64
+          build-args: |
+            BUILD_IMAGE_TAG=8.0-jammy-arm64v8
+            RUN_IMAGE_TAG=8.0-alpine-arm64v8
