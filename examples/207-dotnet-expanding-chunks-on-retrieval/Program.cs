@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -44,15 +43,10 @@ public static class Program
         // Partition input text in chunks of 100 tokens
         const int PartitionSize = 100;
 
-        // Some sample long content
-        string story = await File.ReadAllTextAsync("story.txt");
+        // Search settings
         const string Query = "astrobiology";
         const float MinRelevance = 0.7f;
         const int Limit = 2;
-
-        // Print the content size in tokens
-        var tokenCount = DefaultGPTTokenizer.StaticCountTokens(story);
-        Console.WriteLine($"Token count: {tokenCount}");
 
         // Load OpenAI settings and API key
         var openAIConfig = new OpenAIConfig();
@@ -80,7 +74,7 @@ public static class Program
 
         // Load text into memory
         Console.WriteLine("Importing memories...");
-        await memory.ImportTextAsync(story, documentId: "example207");
+        await memory.ImportDocumentAsync(filePath: "story.docx", documentId: "example207");
 
         // Search
         Console.WriteLine("Searching memories...");
