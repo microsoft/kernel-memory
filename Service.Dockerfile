@@ -50,8 +50,6 @@ EXPOSE 8081
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-# Allow to mount files, e.g. configuration files
-VOLUME ["/app/data"]
 
 # Define executable
 ENTRYPOINT ["dotnet", "Microsoft.KernelMemory.ServiceAssembly.dll"]
