@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -47,20 +48,22 @@ public class MsExcelDecoder
         this._rowSuffix = rowSuffix ?? DefaultRowSuffix;
     }
 
-    public string DocToText(string filename)
+    public List<FileSection> DocToText(string filename)
     {
         using var stream = File.OpenRead(filename);
         return this.DocToText(stream);
     }
 
-    public string DocToText(BinaryData data)
+    public List<FileSection> DocToText(BinaryData data)
     {
         using var stream = data.ToStream();
         return this.DocToText(stream);
     }
 
-    public string DocToText(Stream data)
+    public List<FileSection> DocToText(Stream data)
     {
+        var result = new List<FileSection>();
+
         using var workbook = new XLWorkbook(data);
         var sb = new StringBuilder();
 
@@ -108,8 +111,12 @@ public class MsExcelDecoder
             {
                 sb.AppendLine(this._endOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
+
+            string worksheetContent = sb.ToString().Trim();
+            sb.Clear();
+            result.Add(new FileSection(worksheetNumber, worksheetContent, true));
         }
 
-        return sb.ToString().Trim();
+        return result;
     }
 }

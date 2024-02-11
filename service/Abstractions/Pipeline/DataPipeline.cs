@@ -25,6 +25,7 @@ public sealed class DataPipeline
         ExtractedText = 2,
         TextEmbeddingVector = 3,
         SyntheticData = 4,
+        ExtractedSections = 5,
     }
 
     public sealed class PipelineLogEntry
