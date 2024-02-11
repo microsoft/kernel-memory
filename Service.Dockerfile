@@ -1,6 +1,6 @@
 
-ARG BUILD_IMAGE_TAG="8.0-jammy"
-ARG RUN_IMAGE_TAG="8.0-alpine"
+ARG BUILD_IMAGE_TAG="7.0-jammy"
+ARG RUN_IMAGE_TAG="7.0-alpine"
 
 #########################################################################
 # build and publish
