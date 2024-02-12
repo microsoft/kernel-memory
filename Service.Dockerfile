@@ -28,15 +28,15 @@ RUN dotnet publish "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 
 FROM mcr.microsoft.com/dotnet/aspnet:$RUN_IMAGE_TAG AS base
 # Non-root user that will run the service
-# ARG USER=km
-# RUN \
-#     # Create user
-#     #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
-#     adduser -D -h /app -s /bin/sh $USER && \
-#     # Allow user to access the build
-#     chown -R $USER.$USER /app
-# # Define current user
-# USER $USER
+ARG USER=km
+RUN \
+    # Create user
+    #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
+    adduser -D -h /app -s /bin/sh $USER && \
+    # Allow user to access the build
+    chown -R $USER.$USER /app
+# Define current user
+USER $USER
 
 WORKDIR /app
 EXPOSE 8080
