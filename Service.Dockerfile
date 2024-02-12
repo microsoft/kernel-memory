@@ -8,6 +8,7 @@ ARG RUN_IMAGE_TAG="7.0-alpine"
 
 FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG AS build
 ARG BUILD_CONFIGURATION=Release
+ARG TARGETARCH
 WORKDIR /src
 COPY ["service/Service/Service.csproj", "service/Service/"]
 RUN dotnet restore "./service/Service/./Service.csproj"
