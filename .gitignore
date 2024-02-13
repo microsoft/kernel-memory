@@ -493,3 +493,5 @@ playwright-report/
 swa-cli.config.json
 **/copilot-chat-app/webapp/build
 **/copilot-chat-app/webapp/node_modules
+
+appsettings.*.json
