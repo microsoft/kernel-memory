@@ -227,7 +227,7 @@ about [how to run the Kernel Memory service](service/Service/README.md).
 ## Quick test using the Docker image
  
 If you want to give the service a quick test, use the following command
-to **start the Kernel Memory Service** usign OpenAI:
+to **start the Kernel Memory Service** using OpenAI:
 
 ```shell
 docker run -it --rm -e OPENAI_API_KEY="..." kernelmemory/service
