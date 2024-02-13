@@ -26,7 +26,7 @@
         <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.28.240212.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.28.240212.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.28.240212.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
