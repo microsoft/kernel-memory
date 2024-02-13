@@ -12,7 +12,6 @@ ARG BUILD_CONFIGURATION=Release
 ARG TARGETARCH
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" > /log
 
 WORKDIR /src
 COPY ["service/Service/Service.csproj", "service/Service/"]

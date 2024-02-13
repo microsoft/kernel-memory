@@ -1,12 +1,8 @@
-
-ARG BUILD_IMAGE_TAG="8.0-jammy"
-ARG RUN_IMAGE_TAG="8.0-alpine"
-
 #########################################################################
 # Download and build code
 #########################################################################
 
-FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG as builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy as builder
 
 ARG SOURCE=https://github.com/microsoft/kernel-memory
 ARG BRANCH=main
@@ -35,7 +31,7 @@ RUN \
 # Package the build
 #########################################################################
 
-FROM mcr.microsoft.com/dotnet/aspnet:$RUN_IMAGE_TAG
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 #Debian: FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy
 
 COPY --from=builder /build/output /app/
