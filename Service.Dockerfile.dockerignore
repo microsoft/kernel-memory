@@ -10,4 +10,4 @@ docker-compose.*.yml
 */obj
 
 
-**/appsettings*
+# **/appsettings*
