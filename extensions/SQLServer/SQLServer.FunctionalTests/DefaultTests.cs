@@ -16,20 +16,19 @@ namespace SQLServer.FunctionalTests;
 public class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
-    private SqlServerConfig _sqlServerConfig;
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._sqlServerConfig = cfg.GetSection("Services:SqlServer").Get<SqlServerConfig>()!;
+        SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithSqlServerMemoryDb(this._sqlServerConfig)
+            .WithSqlServerMemoryDb(sqlServerConfig)
             .Build<MemoryServerless>();
     }
 

@@ -11,20 +11,22 @@ namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsWordDecoder
 {
-    public string DocToText(string filename)
+    public FileContent ExtractContent(string filename)
     {
         using var stream = File.OpenRead(filename);
-        return this.DocToText(stream);
+        return this.ExtractContent(stream);
     }
 
-    public string DocToText(BinaryData data)
+    public FileContent ExtractContent(BinaryData data)
     {
         using var stream = data.ToStream();
-        return this.DocToText(stream);
+        return this.ExtractContent(stream);
     }
 
-    public string DocToText(Stream data)
+    public FileContent ExtractContent(Stream data)
     {
+        var result = new FileContent();
+
         var wordprocessingDocument = WordprocessingDocument.Open(data, false);
         try
         {
@@ -42,16 +44,31 @@ public class MsWordDecoder
                 throw new InvalidOperationException("The document body is missing.");
             }
 
+            int pageNumber = 1;
             IEnumerable<Paragraph>? paragraphs = body.Descendants<Paragraph>();
             if (paragraphs != null)
             {
                 foreach (Paragraph p in paragraphs)
                 {
+                    // Note: this is just an attempt at counting pages, not 100% reliable
+                    // see https://stackoverflow.com/questions/39992870/how-to-access-openxml-content-by-page-number
+                    var lastRenderedPageBreak = p.GetFirstChild<Run>()?.GetFirstChild<LastRenderedPageBreak>();
+                    if (lastRenderedPageBreak != null)
+                    {
+                        string pageContent = sb.ToString().Trim();
+                        sb.Clear();
+                        result.Sections.Add(new FileSection(pageNumber, pageContent, true));
+                        pageNumber++;
+                    }
+
                     sb.AppendLine(p.InnerText);
                 }
             }
 
-            return sb.ToString().Trim();
+            var lastPageContent = sb.ToString().Trim();
+            result.Sections.Add(new FileSection(pageNumber, lastPageContent, true));
+
+            return result;
         }
         finally
         {

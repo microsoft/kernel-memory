@@ -77,6 +77,12 @@ public class TextPartitioningHandler : IPipelineStepHandler
     {
         this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
+        if (pipeline.Files.Count == 0)
+        {
+            this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
+            return (true, pipeline);
+        }
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -99,8 +105,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 }
 
                 // Use a different partitioning strategy depending on the file type
-                List<string> paragraphs;
-                List<string> lines;
+                List<string> partitions;
+                List<string> sentences;
                 BinaryData partitionContent = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
 
                 // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
@@ -112,9 +118,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning text file {0}", file.Name);
                         string content = partitionContent.ToString();
-                        lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
-                        paragraphs = TextChunker.SplitPlainTextParagraphs(
-                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
+                        sentences = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
+                        partitions = TextChunker.SplitPlainTextParagraphs(
+                            sentences, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -122,9 +128,9 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = partitionContent.ToString();
-                        lines = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
-                        paragraphs = TextChunker.SplitMarkdownParagraphs(
-                            lines, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
+                        sentences = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
+                        partitions = TextChunker.SplitMarkdownParagraphs(
+                            sentences, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -137,18 +143,20 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         continue;
                 }
 
-                if (paragraphs.Count == 0) { continue; }
+                if (partitions.Count == 0) { continue; }
 
-                this._log.LogDebug("Saving {0} file partitions", paragraphs.Count);
-                for (int index = 0; index < paragraphs.Count; index++)
+                this._log.LogDebug("Saving {0} file partitions", partitions.Count);
+                for (int partitionNumber = 0; partitionNumber < partitions.Count; partitionNumber++)
                 {
-                    string text = paragraphs[index];
+                    // TODO: turn partitions in objects with more details, e.g. page number
+                    string text = partitions[partitionNumber];
+                    int sectionNumber = 0; // TODO: use this to store the page number (if any)
                     BinaryData textData = new(text);
 
                     int tokenCount = this._tokenCounter(text);
                     this._log.LogDebug("Partition size: {0} tokens", tokenCount);
 
-                    var destFile = uploadedFile.GetPartitionFileName(index);
+                    var destFile = uploadedFile.GetPartitionFileName(partitionNumber);
                     await this._orchestrator.WriteFileAsync(pipeline, destFile, textData, cancellationToken).ConfigureAwait(false);
 
                     var destFileDetails = new DataPipeline.GeneratedFileDetails
@@ -159,6 +167,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Size = text.Length,
                         MimeType = MimeTypes.PlainText,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
+                        PartitionNumber = partitionNumber,
+                        SectionNumber = sectionNumber,
                         Tags = pipeline.Tags,
                         ContentSHA256 = textData.CalculateSHA256(),
                     };

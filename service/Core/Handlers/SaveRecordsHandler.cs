@@ -100,37 +100,45 @@ public class SaveRecordsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> SaveEmbeddingsAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        var embeddingsFound = false;
+
         // For each embedding file => For each Memory DB => Upsert record
-        foreach (FileDetailsWithRecordId file in GetListOfEmbeddingFiles(pipeline))
+        foreach (FileDetailsWithRecordId embeddingFile in GetListOfEmbeddingFiles(pipeline))
         {
-            if (file.File.AlreadyProcessedBy(this))
+            if (embeddingFile.File.AlreadyProcessedBy(this))
             {
-                this._log.LogTrace("File {0} already processed by this handler", file.File.Name);
+                embeddingsFound = true;
+                this._log.LogTrace("File {0} already processed by this handler", embeddingFile.File.Name);
                 continue;
             }
 
-            string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, file.File.Name, cancellationToken).ConfigureAwait(false);
+            string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.File.Name, cancellationToken).ConfigureAwait(false);
             EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson.RemoveBOM().Trim());
             if (embeddingData == null)
             {
-                throw new OrchestrationException($"Unable to deserialize embedding file {file.File.Name}");
+                throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.File.Name}");
             }
 
+            embeddingsFound = true;
+
+            DataPipeline.FileDetails fileDetails = pipeline.GetFile(embeddingFile.File.ParentId);
             string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
-            string url = await this.GetSourceUrlAsync(pipeline, pipeline.GetFile(file.File.ParentId), cancellationToken).ConfigureAwait(false);
+            string url = await this.GetSourceUrlAsync(pipeline, fileDetails, cancellationToken).ConfigureAwait(false);
 
             var record = PrepareRecord(
                 pipeline: pipeline,
-                recordId: file.RecordId,
-                fileName: pipeline.GetFile(file.File.ParentId).Name,
+                recordId: embeddingFile.RecordId,
+                fileName: fileDetails.Name,
                 url: url,
-                fileId: file.File.ParentId,
-                partitionFileId: file.File.SourcePartitionId,
+                fileId: embeddingFile.File.ParentId,
+                partitionFileId: embeddingFile.File.SourcePartitionId,
                 partitionContent: partitionContent,
+                partitionNumber: embeddingFile.File.PartitionNumber,
+                sectionNumber: embeddingFile.File.SectionNumber,
                 partitionEmbedding: embeddingData.Vector,
                 embeddingGeneratorProvider: embeddingData.GeneratorProvider,
                 embeddingGeneratorName: embeddingData.GeneratorName,
-                file.File.Tags);
+                embeddingFile.File.Tags);
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
@@ -141,7 +149,12 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
             }
 
-            file.File.MarkProcessedBy(this);
+            embeddingFile.File.MarkProcessedBy(this);
+        }
+
+        if (!embeddingsFound)
+        {
+            this._log.LogWarning("Pipeline '{0}/{1}': embeddings not found, cannot save embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
@@ -153,31 +166,39 @@ public class SaveRecordsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> SavePartitionsAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        var partitionsFound = false;
+
         // Create records only for partitions (text chunks) and synthetic data
         foreach (FileDetailsWithRecordId file in GetListOfPartitionAndSyntheticFiles(pipeline))
         {
             if (file.File.AlreadyProcessedBy(this))
             {
+                partitionsFound = true;
                 this._log.LogTrace("File {0} already processed by this handler", file.File.Name);
                 continue;
             }
+
+            partitionsFound = true;
 
             switch (file.File.MimeType)
             {
                 case MimeTypes.PlainText:
                 case MimeTypes.MarkDown:
 
+                    DataPipeline.FileDetails partitionFileDetails = pipeline.GetFile(file.File.ParentId);
                     string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, file.File.Name, cancellationToken).ConfigureAwait(false);
-                    string url = await this.GetSourceUrlAsync(pipeline, pipeline.GetFile(file.File.ParentId), cancellationToken).ConfigureAwait(false);
+                    string url = await this.GetSourceUrlAsync(pipeline, partitionFileDetails, cancellationToken).ConfigureAwait(false);
 
                     var record = PrepareRecord(
                         pipeline: pipeline,
                         recordId: file.RecordId,
-                        fileName: pipeline.GetFile(file.File.ParentId).Name,
+                        fileName: partitionFileDetails.Name,
                         url: url,
                         fileId: file.File.ParentId,
                         partitionFileId: file.File.Id,
                         partitionContent: partitionContent,
+                        partitionNumber: partitionFileDetails.PartitionNumber,
+                        sectionNumber: partitionFileDetails.SectionNumber,
                         partitionEmbedding: new Embedding(),
                         embeddingGeneratorProvider: "",
                         embeddingGeneratorName: "",
@@ -200,6 +221,11 @@ public class SaveRecordsHandler : IPipelineStepHandler
             }
 
             file.File.MarkProcessedBy(this);
+        }
+
+        if (!partitionsFound)
+        {
+            this._log.LogWarning("Pipeline '{0}/{1}': partitions and synthetic records not found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
@@ -262,6 +288,23 @@ public class SaveRecordsHandler : IPipelineStepHandler
         return fileContent.ToString();
     }
 
+    /// <summary>
+    /// Prepare a records to be saved in memory DB
+    /// </summary>
+    /// <param name="pipeline">Pipeline object (TODO: pass only data)</param>
+    /// <param name="recordId">DB record ID</param>
+    /// <param name="fileName">Filename</param>
+    /// <param name="url">Web page URL, if any</param>
+    /// <param name="fileId">ID assigned to the file (note: a document can contain multiple files)</param>
+    /// <param name="partitionFileId">ID assigned to the partition (or synth) file generated during the import</param>
+    /// <param name="partitionContent">Content of the partition</param>
+    /// <param name="partitionNumber">Number of the partition, starting from zero</param>
+    /// <param name="sectionNumber">Page number (if the doc is paginated), audio segment number, video scene number, etc.</param>
+    /// <param name="partitionEmbedding">Embedding vector calculated from the partition content</param>
+    /// <param name="embeddingGeneratorProvider">Name of the embedding provider (e.g. Azure), for future use when using multiple embedding types concurrently</param>
+    /// <param name="embeddingGeneratorName">Name of the model used to generate embeddings, for future use</param>
+    /// <param name="tags">Collection of tags assigned to the record</param>
+    /// <returns>Memory record ready to be saved</returns>
     private static MemoryRecord PrepareRecord(
         DataPipeline pipeline,
         string recordId,
@@ -270,6 +313,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
         string fileId,
         string partitionFileId,
         string partitionContent,
+        int partitionNumber,
+        int sectionNumber,
         Embedding partitionEmbedding,
         string embeddingGeneratorProvider,
         string embeddingGeneratorName,
@@ -312,6 +357,10 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
         // Partition ID. Filtering used for purge.
         record.Tags.Add(Constants.ReservedFilePartitionTag, partitionFileId);
+
+        // Partition number (starting from 0) and Page number (provided by text extractor)
+        record.Tags.Add(Constants.ReservedFilePartitionNumberTag, $"{partitionNumber}");
+        record.Tags.Add(Constants.ReservedFileSectionNumberTag, $"{sectionNumber}");
 
         /*
          * TIMESTAMP and USER TAGS

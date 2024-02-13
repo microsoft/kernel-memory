@@ -76,18 +76,13 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
     {
         // Arrange
         var prompt = """
-                     Facts:
-                     The public Kernel Memory project kicked off around May 2023.
-                     Now, in December 2023, we are integrating LLama compatibility
-                     into KM, following the steady addition of numerous features.
-                     By January, we anticipate to complete this update and potentially
-                     introduce more models by February.
-                     Instructions: Reply in JSON.
-                     Question: What's the current month?
+                     # Current date: 12/12/2024.
+                     # Instructions: use JSON syntax.
+                     # Deduction: { "DayOfWeek": "Monday", "MonthName":
                      """;
         var options = new TextGenerationOptions
         {
-            MaxTokens = 30,
+            MaxTokens = 60,
             Temperature = 0,
             StopSequences = new List<string> { "Question" }
         };
@@ -106,7 +101,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         var answer = result.ToString();
 
         // Assert
-        Console.WriteLine($"=============================\n{answer}\n=============================");
+        Console.WriteLine($"Model Output:\n=============================\n{answer}\n=============================");
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
         Assert.Contains("december", answer, StringComparison.OrdinalIgnoreCase);
     }

@@ -22,7 +22,7 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._elasticsearchConfig = cfg.GetSection("Services:Elasticsearch").Get<ElasticsearchConfig>()!;
+        this._elasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })

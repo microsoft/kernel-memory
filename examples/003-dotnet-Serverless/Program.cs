@@ -31,7 +31,7 @@ new ConfigurationBuilder()
 
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithOpenAI(openAICfg)
+    // .WithOpenAI(openAIConfig)
     // .WithLlamaTextGeneration(llamaConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
