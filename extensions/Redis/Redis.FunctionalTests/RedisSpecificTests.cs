@@ -31,7 +31,7 @@ public class RedisSpecificTests : BaseFunctionalTestCase
             tags: new TagCollection { { "non-configuredTag", "foobarbaz" } }));
 
         Assert.Equal(
-            "Attempt to insert un-indexed tag field: non-configuredTag, will not be able to filter on it, please adjust the tag settings in your Redis Configuration",
+            "Attempt to insert un-indexed tag field: 'non-configuredTag', will not be able to filter on it, please adjust the tag settings in your Redis Configuration",
             res.Message);
     }
 
@@ -44,7 +44,7 @@ public class RedisSpecificTests : BaseFunctionalTestCase
             documentId: "1",
             tags: new TagCollection { { "user", "foo|bar|baz" } }));
         Assert.Equal(
-            $"Attempted to insert record with tag field: user containing the separator: '|'. Update your {nameof(Microsoft.KernelMemory.RedisConfig)} to use a different separator, or remove the separator from the field.",
+            $"Attempted to insert record with tag field: 'user' containing the separator: '|'. Update your {nameof(Microsoft.KernelMemory.RedisConfig)} to use a different separator, or remove the separator from the field.",
             res.Message);
     }
 
