@@ -2,10 +2,7 @@
 
 name: Build and Push Docker Image
 
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 
 jobs:
   build-and-push-image:
