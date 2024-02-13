@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
@@ -18,25 +19,28 @@ namespace Microsoft.KernelMemory.Service;
 internal sealed class ServiceConfiguration
 {
     // Content of appsettings.json, used to access dynamic data under "Services"
-    private readonly IConfiguration _servicesConfiguration;
+    private IConfiguration _rawAppSettings;
 
     // Normalized configuration
-    private readonly KernelMemoryConfig _memoryConfiguration;
+    private KernelMemoryConfig _memoryConfiguration;
 
     // appsettings.json root node name
     private const string ConfigRoot = "KernelMemory";
 
     // ASP.NET env var
-    private const string AspnetEnv = "ASPNETCORE_ENVIRONMENT";
+    private const string AspnetEnvVar = "ASPNETCORE_ENVIRONMENT";
+
+    // OpenAI env var
+    private const string OpenAIEnvVar = "OPENAI_API_KEY";
 
     public ServiceConfiguration(string? settingsDirectory = null)
         : this(ReadAppSettings(settingsDirectory))
     {
     }
 
-    public ServiceConfiguration(IConfiguration servicesConfiguration)
-        : this(servicesConfiguration,
-            servicesConfiguration.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
+    public ServiceConfiguration(IConfiguration rawAppSettings)
+        : this(rawAppSettings,
+            rawAppSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
             ?? throw new ConfigurationException($"Unable to load Kernel Memory settings from the given configuration. " +
                                                 $"There should be a '{ConfigRoot}' root node, " +
                                                 $"with data mapping to '{nameof(KernelMemoryConfig)}'"))
@@ -44,11 +48,15 @@ internal sealed class ServiceConfiguration
     }
 
     public ServiceConfiguration(
-        IConfiguration servicesConfiguration,
+        IConfiguration rawAppSettings,
         KernelMemoryConfig memoryConfiguration)
     {
-        this._servicesConfiguration = servicesConfiguration ?? throw new ConfigurationException("The given service configuration is NULL");
+        this._rawAppSettings = rawAppSettings ?? throw new ConfigurationException("The given app settings configuration is NULL");
         this._memoryConfiguration = memoryConfiguration ?? throw new ConfigurationException("The given memory configuration is NULL");
+
+        if (!this.MinimumConfigurationIsAvailable(false)) { this.SetupForOpenAI(); }
+
+        this.MinimumConfigurationIsAvailable(true);
     }
 
     public IKernelMemoryBuilder PrepareBuilder(IKernelMemoryBuilder builder)
@@ -63,9 +71,9 @@ internal sealed class ServiceConfiguration
             throw new ConfigurationException("The given memory configuration is NULL");
         }
 
-        if (this._servicesConfiguration == null)
+        if (this._rawAppSettings == null)
         {
-            throw new ConfigurationException("The given service configuration is NULL");
+            throw new ConfigurationException("The given app settings configuration is NULL");
         }
 
         // Required by ctors expecting KernelMemoryConfig via DI
@@ -119,7 +127,7 @@ internal sealed class ServiceConfiguration
             settingsDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
         }
 
-        var env = Environment.GetEnvironmentVariable(AspnetEnv) ?? string.Empty;
+        var env = Environment.GetEnvironmentVariable(AspnetEnvVar) ?? string.Empty;
         var builder = new ConfigurationBuilder();
 
         builder.SetBasePath(settingsDirectory);
@@ -464,6 +472,89 @@ internal sealed class ServiceConfiguration
     }
 
     /// <summary>
+    /// Check the configuration for minimum requirements
+    /// </summary>
+    /// <param name="exitOnError">Whether to stop or return false when the config is incomplete</param>
+    /// <returns>Whether the configuration is valid</returns>
+    private bool MinimumConfigurationIsAvailable(bool exitOnError)
+    {
+        const string Help = """
+                            You can set your configuration in appsettings.json or appsettings.<current environment>.json.
+                            The value of <current environment> depends on ASPNETCORE_ENVIRONMENT environment variable, and
+                            is usually either "Development" or "Production".
+
+                            You can also run `dotnet run setup` to launch a wizard that will guide through the creation
+                            of a basic working version of "appsettings.Development.json".
+
+                            If you would like to setup the service to use custom dependencies, e.g. a custom storage or
+                            a custom LLM, you should edit Program.cs accordingly, setting up your dependencies with the
+                            usual .NET dependency injection approach.
+                            """;
+
+        // Check if text generation settings
+        if (string.IsNullOrEmpty(this._memoryConfiguration.TextGeneratorType))
+        {
+            if (!exitOnError) { return false; }
+
+            Console.WriteLine("\n******\nText generation (TextGeneratorType) is not configured.\n" +
+                              $"Please configure the service and retry.\n\n{Help}\n******\n");
+            Environment.Exit(-1);
+        }
+
+        // Check embedding generation ingestion settings
+        if (this._memoryConfiguration.DataIngestion.EmbeddingGenerationEnabled)
+        {
+            if (this._memoryConfiguration.DataIngestion.EmbeddingGeneratorTypes.Count == 0)
+            {
+                if (!exitOnError) { return false; }
+
+                Console.WriteLine("\n******\nData ingestion embedding generation (DataIngestion.EmbeddingGeneratorTypes) is not configured.\n" +
+                                  $"Please configure the service and retry.\n\n{Help}\n******\n");
+                Environment.Exit(-1);
+            }
+        }
+
+        // Check embedding generation retrieval settings
+        if (string.IsNullOrEmpty(this._memoryConfiguration.Retrieval.EmbeddingGeneratorType))
+        {
+            if (!exitOnError) { return false; }
+
+            Console.WriteLine("\n******\nRetrieval embedding generation (Retrieval.EmbeddingGeneratorType) is not configured.\n" +
+                              $"Please configure the service and retry.\n\n{Help}\n******\n");
+            Environment.Exit(-1);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Rewrite configuration using OpenAI, if possible.
+    /// </summary>
+    private void SetupForOpenAI()
+    {
+        string openAIKey = Environment.GetEnvironmentVariable(OpenAIEnvVar)?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(openAIKey))
+        {
+            return;
+        }
+
+        var inMemoryConfig = new Dictionary<string, string?>
+        {
+            { $"{ConfigRoot}:Services:OpenAI:APIKey", openAIKey },
+            { $"{ConfigRoot}:TextGeneratorType", "OpenAI" },
+            { $"{ConfigRoot}:DataIngestion:EmbeddingGeneratorTypes:0", "OpenAI" },
+            { $"{ConfigRoot}:Retrieval:EmbeddingGeneratorType", "OpenAI" }
+        };
+
+        var newAppSettings = new ConfigurationBuilder();
+        newAppSettings.AddConfiguration(this._rawAppSettings);
+        newAppSettings.AddInMemoryCollection(inMemoryConfig);
+
+        this._rawAppSettings = newAppSettings.Build();
+        this._memoryConfiguration = this._rawAppSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()!;
+    }
+
+    /// <summary>
     /// Get an instance of T, using dependencies available in the builder,
     /// except for existing service descriptors for T. Replace/Use the
     /// given action to define T's implementation.
@@ -511,6 +602,6 @@ internal sealed class ServiceConfiguration
     /// <returns>Configuration instance, settings for the dependency specified</returns>
     private T GetServiceConfig<T>(string serviceName)
     {
-        return this._memoryConfiguration.GetServiceConfig<T>(this._servicesConfiguration, serviceName);
+        return this._memoryConfiguration.GetServiceConfig<T>(this._rawAppSettings, serviceName);
     }
 }
