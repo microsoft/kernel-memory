@@ -43,6 +43,9 @@ public class RedisConfig
         { Constants.ReservedDocumentIdTag, '|' },
         { Constants.ReservedFileIdTag, '|' },
         { Constants.ReservedFilePartitionTag, '|' },
+#if KernelMemoryDev
+        { Constants.ReservedFileSectionNumberTag, '|' },
+#endif
         { Constants.ReservedFileTypeTag, '|' },
     };
 
