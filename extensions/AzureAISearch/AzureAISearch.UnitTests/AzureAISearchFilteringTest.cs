@@ -14,6 +14,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItRendersEmptyFilters()
     {
         // Arrange
@@ -32,6 +34,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItRendersSimpleFilter()
     {
         // Arrange
@@ -46,6 +50,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItRendersSimpleFilters()
     {
         // Arrange
@@ -64,6 +70,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItRendersUsingSearchIn()
     {
         // Arrange
@@ -82,6 +90,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItUsesSearchInWithAlternativeSeparators()
     {
         // Arrange
@@ -108,6 +118,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesComplexFilters()
     {
         // Arrange
@@ -128,6 +140,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase0()
     {
         // Arrange
@@ -147,6 +161,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase1()
     {
         // Arrange
@@ -169,6 +185,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase2()
     {
         // Arrange
@@ -191,6 +209,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase3()
     {
         // Arrange
@@ -209,6 +229,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase4()
     {
         // Arrange
@@ -228,6 +250,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase5()
     {
         // Arrange
@@ -246,6 +270,8 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase6()
     {
         // Arrange

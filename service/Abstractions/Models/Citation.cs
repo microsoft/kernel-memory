@@ -87,6 +87,20 @@ public class Citation
         public float Relevance { get; set; } = 0;
 
         /// <summary>
+        /// Partition number, zero based
+        /// </summary>
+        [JsonPropertyName("partitionNumber")]
+        [JsonPropertyOrder(3)]
+        public int PartitionNumber { get; set; } = 0;
+
+        /// <summary>
+        /// Text page number / Audio segment number / Video scene number
+        /// </summary>
+        [JsonPropertyName("sectionNumber")]
+        [JsonPropertyOrder(4)]
+        public int SectionNumber { get; set; } = 0;
+
+        /// <summary>
         /// Timestamp about the file/text partition.
         /// </summary>
         [JsonPropertyName("lastUpdate")]

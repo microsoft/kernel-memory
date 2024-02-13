@@ -33,6 +33,8 @@ public static class Constants
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
+    public const string ReservedFilePartitionNumberTag = $"{ReservedTagsPrefix}part_n";
+    public const string ReservedFileSectionNumberTag = $"{ReservedTagsPrefix}sect_n";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
     public const string ReservedSyntheticTypeTag = $"{ReservedTagsPrefix}synth";
 
