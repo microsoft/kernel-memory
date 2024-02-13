@@ -34,15 +34,11 @@ public static class MemoryRecordExtensions
     /// </summary>
     public static int GetPartitionNumber(this MemoryRecord record, ILogger? log = null)
     {
-#if KernelMemoryDev
         var value = record.GetTagValue(Constants.ReservedFilePartitionNumberTag, log);
         if (string.IsNullOrEmpty(value))
         {
             return 0;
         }
-#else
-        var value = "0";
-#endif
 
         return int.TryParse(value, out int number) ? number : 0;
     }
@@ -52,15 +48,11 @@ public static class MemoryRecordExtensions
     /// </summary>
     public static int GetSectionNumber(this MemoryRecord record, ILogger? log = null)
     {
-#if KernelMemoryDev
         var value = record.GetTagValue(Constants.ReservedFileSectionNumberTag, log);
         if (string.IsNullOrEmpty(value))
         {
             return 0;
         }
-#else
-        var value = "0";
-#endif
 
         return int.TryParse(value, out int number) ? number : 0;
     }

@@ -157,10 +157,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 Size = text.Length,
                                 MimeType = MimeTypes.TextEmbeddingVector,
                                 ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector,
-#if KernelMemoryDev
                                 PartitionNumber = partitionFile.PartitionNumber,
                                 SectionNumber = partitionFile.SectionNumber,
-#endif
                                 Tags = partitionFile.Tags,
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);

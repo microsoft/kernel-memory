@@ -81,108 +81,80 @@ public static class Program
         SearchResult relevant = await memory.SearchAsync(query: Query, minRelevance: MinRelevance, limit: Limit);
         Console.WriteLine($"Relevant documents: {relevant.Results.Count}");
 
-#if KernelMemoryDev
-        var relevantDocuments = new Dictionary<string, List<int>>();
         foreach (Citation result in relevant.Results)
         {
             // Store the document IDs so we can load all their records later
-            relevantDocuments.Add(result.DocumentId, new List<int>());
             Console.WriteLine($"Document ID: {result.DocumentId}");
             Console.WriteLine($"Relevant partitions: {result.Partitions.Count}");
             foreach (Citation.Partition partition in result.Partitions)
             {
-                Console.WriteLine("--------------------------");
-                Console.WriteLine($"Partition number: {partition.PartitionNumber}");
-                Console.WriteLine($"Relevance: {partition.Relevance}\n");
-                Console.WriteLine(partition.Text);
+                Console.WriteLine($" * Partition {partition.PartitionNumber}, relevance: {partition.Relevance}");
+            }
 
-                relevantDocuments[result.DocumentId].Add(partition.PartitionNumber);
+            Console.WriteLine("--------------------------");
+
+            // For each relevant partition fetch the partition before and one after
+            foreach (Citation.Partition partition in result.Partitions)
+            {
+                // Collect partitions in a sorted collection
+                var partitions = new SortedDictionary<int, Citation.Partition> { [partition.PartitionNumber] = partition };
+
+                // Filters to fetch adjacent partitions
+                var filters = new List<MemoryFilter>
+                {
+                    MemoryFilters.ByDocument(result.DocumentId).ByTag(Constants.ReservedFilePartitionNumberTag, $"{partition.PartitionNumber - 1}"),
+                    MemoryFilters.ByDocument(result.DocumentId).ByTag(Constants.ReservedFilePartitionNumberTag, $"{partition.PartitionNumber + 1}")
+                };
+
+                // Fetch adjacent partitions and add them to the sorted collection
+                SearchResult adjacentList = await memory.SearchAsync("", filters: filters, limit: 2);
+                foreach (Citation.Partition adjacent in adjacentList.Results.First().Partitions)
+                {
+                    partitions[adjacent.PartitionNumber] = adjacent;
+                }
+
+                // Print partitions in order
+                foreach (var p in partitions)
+                {
+                    Console.WriteLine($"# Partition {p.Value.PartitionNumber}");
+                    Console.WriteLine(p.Value.Text);
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("--------------------------");
             }
 
             Console.WriteLine();
         }
-
-        // For each relevant document
-        // Note: loops can be optimized for better perf, this code is only a demo
-        const int HowManyToAdd = 1;
-        Console.WriteLine("Fetching all document partitions...");
-        foreach (KeyValuePair<string, List<int>> relevantPartitionNumbers in relevantDocuments)
-        {
-            var docId = relevantPartitionNumbers.Key;
-            Console.WriteLine($"\nDocument ID: {docId}");
-
-            // Load all partitions. Note: the list might be out of order.
-            SearchResult all = await memory.SearchAsync("", filters: new[] { MemoryFilters.ByDocument(docId) }, limit: int.MaxValue);
-            List<Citation.Partition> allPartitionsContent = all.Results.FirstOrDefault()?.Partitions ?? new();
-
-            // Loop through the relevant partitions
-            foreach (int relevantPartitionNumber in relevantPartitionNumbers.Value)
-            {
-                Console.WriteLine("--------------------------");
-
-                // Use a data structure to order partitions by number
-                var result = new SortedDictionary<int, string>();
-
-                // Loop all partitions, include <HowManyToAdd> before and <HowManyToAdd> after the relevant ones
-                foreach (Citation.Partition p in allPartitionsContent)
-                {
-                    if (Math.Abs(p.PartitionNumber - relevantPartitionNumber) <= HowManyToAdd)
-                    {
-                        result.Add(p.PartitionNumber, p.Text);
-                    }
-                }
-
-                // Show partition and adjacent ones in order
-                foreach (var p in result)
-                {
-                    Console.WriteLine($"Partition: {p.Key}");
-                    Console.WriteLine(p.Value);
-                }
-
-                Console.WriteLine();
-            }
-        }
-#endif
     }
 }
 
 /* Result:
 
-Token count: 2510
 Importing memories...
 Searching memories...
 Relevant documents: 1
 Document ID: example207
 Relevant partitions: 2
+* Partition 27, relevance: 0.8557962
+* Partition 13, relevance: 0.85513425
 --------------------------
-Partition number: 27
-Relevance: 0.8557962
+# Partition 26
+Dr. Mei Lin, a renowned ...
 
-As scientific interest in [...] or ancient microbial life.
+# Partition 27
+As scientific interest in ...
+
+# Partition 28
+Meanwhile, back on Earth, the ...
 --------------------------
-Partition number: 13
-Relevance: 0.85513425
+# Partition 12
+Appearing as a glowing, translucent ...
 
-Gerald Marshall, the Chief [...] in astrobiological research."
+# Partition 13
+Gerald Marshall, the Chief ...
 
-Fetching all document partitions...
-
-Document ID: example207
+# Partition 14
+While further studies are ...
 --------------------------
-Partition: 26
-Dr. Mei Lin, a renowned [...] of life in the universe."
-Partition: 27
-As scientific interest [...] ancient microbial life.
-Partition: 28
-Meanwhile, back on Earth, [...] meaning in the universe.
-
---------------------------
-Partition: 12
-Appearing as a glowing, [...] including its high CO2 levels.
-Partition: 13
-Gerald Marshall, the [...] in astrobiological research."
-Partition: 14
-While further studies [...] alien at the same time.
-
 */
-

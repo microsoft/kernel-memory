@@ -133,13 +133,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 fileId: embeddingFile.File.ParentId,
                 partitionFileId: embeddingFile.File.SourcePartitionId,
                 partitionContent: partitionContent,
-#if KernelMemoryDev
                 partitionNumber: embeddingFile.File.PartitionNumber,
                 sectionNumber: embeddingFile.File.SectionNumber,
-#else
-                partitionNumber: 0,
-                sectionNumber: 0,
-#endif
                 partitionEmbedding: embeddingData.Vector,
                 embeddingGeneratorProvider: embeddingData.GeneratorProvider,
                 embeddingGeneratorName: embeddingData.GeneratorName,
@@ -202,13 +197,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
                         fileId: file.File.ParentId,
                         partitionFileId: file.File.Id,
                         partitionContent: partitionContent,
-#if KernelMemoryDev
                         partitionNumber: partitionFileDetails.PartitionNumber,
                         sectionNumber: partitionFileDetails.SectionNumber,
-#else
-                        partitionNumber: 0,
-                        sectionNumber: 0,
-#endif
                         partitionEmbedding: new Embedding(),
                         embeddingGeneratorProvider: "",
                         embeddingGeneratorName: "",
@@ -368,11 +358,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
         // Partition ID. Filtering used for purge.
         record.Tags.Add(Constants.ReservedFilePartitionTag, partitionFileId);
 
-#if KernelMemoryDev
         // Partition number (starting from 0) and Page number (provided by text extractor)
         record.Tags.Add(Constants.ReservedFilePartitionNumberTag, $"{partitionNumber}");
         record.Tags.Add(Constants.ReservedFileSectionNumberTag, $"{sectionNumber}");
-#endif
 
         /*
          * TIMESTAMP and USER TAGS

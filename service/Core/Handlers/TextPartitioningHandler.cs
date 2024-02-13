@@ -150,9 +150,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 {
                     // TODO: turn partitions in objects with more details, e.g. page number
                     string text = partitions[partitionNumber];
-#if KernelMemoryDev
                     int sectionNumber = 0; // TODO: use this to store the page number (if any)
-#endif
                     BinaryData textData = new(text);
 
                     int tokenCount = this._tokenCounter(text);
@@ -169,10 +167,8 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         Size = text.Length,
                         MimeType = MimeTypes.PlainText,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
-#if KernelMemoryDev
                         PartitionNumber = partitionNumber,
                         SectionNumber = sectionNumber,
-#endif
                         Tags = pipeline.Tags,
                         ContentSHA256 = textData.CalculateSHA256(),
                     };

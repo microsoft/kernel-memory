@@ -157,10 +157,8 @@ public class SearchClient : ISearchClient
             {
                 Text = partitionText,
                 Relevance = (float)relevance,
-#if KernelMemoryDev
                 PartitionNumber = memory.GetPartitionNumber(this._log),
                 SectionNumber = memory.GetSectionNumber(),
-#endif
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });

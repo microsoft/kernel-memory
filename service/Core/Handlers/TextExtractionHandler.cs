@@ -67,9 +67,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
             var sourceFile = uploadedFile.Name;
             var destFile = $"{uploadedFile.Name}.extract.txt";
-#if KernelMemoryDev
             var destFile2 = $"{uploadedFile.Name}.extract.json";
-#endif
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
 
             string text = string.Empty;
@@ -104,7 +102,6 @@ public class TextExtractionHandler : IPipelineStepHandler
                 destFileDetails.MarkProcessedBy(this);
                 uploadedFile.GeneratedFiles.Add(destFile, destFileDetails);
 
-#if KernelMemoryDev
                 // Structured content (pages)
                 this._log.LogDebug("Saving extracted content {0}", destFile2);
                 await this._orchestrator.WriteFileAsync(pipeline, destFile2, new BinaryData(content), cancellationToken).ConfigureAwait(false);
@@ -120,7 +117,6 @@ public class TextExtractionHandler : IPipelineStepHandler
                 };
                 destFile2Details.MarkProcessedBy(this);
                 uploadedFile.GeneratedFiles.Add(destFile2, destFile2Details);
-#endif
             }
 
             uploadedFile.MarkProcessedBy(this);
