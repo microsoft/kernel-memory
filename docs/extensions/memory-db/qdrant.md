@@ -10,7 +10,7 @@ layout: default
 
 [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Qdrant)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Qdrant/)
 
-The [Qdrant](https://qdrant.tech) adapter allowa to use Kernel Memory with Qdrant.
+The [Qdrant](https://qdrant.tech) adapter allows to use Kernel Memory with Qdrant.
 
 {: .note }
 Qdrant record keys (point IDs) are limited to GUID or INT formats. Kernel Memory uses custom string

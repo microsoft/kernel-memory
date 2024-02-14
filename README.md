@@ -224,33 +224,30 @@ sending documents and asking questions using the **MemoryWebClient**.
 [Here](service/Service/README.md) you can find a complete set of instruction
 about [how to run the Kernel Memory service](service/Service/README.md).
 
+## Quick test using the Docker image
+ 
 If you want to give the service a quick test, use the following command
-to **start the Kernel Memory Service**:
+to **start the Kernel Memory Service** using OpenAI:
 
-> ### Using Docker
->
-> ```shell
-> docker run -it --rm -e OPENAI_DEMO="...OPENAI API KEY..." kernelmemory/service
-> ```
+```shell
+docker run -it --rm -e OPENAI_API_KEY="..." kernelmemory/service
+```
 
-> ### On WSL / Linux / MacOS:
->
-> ```shell
-> cd service/Service
-> ./setup.sh
-> ./run.sh
-> ```
+If you prefer using custom settings and services such as Azure OpenAI, Azure
+Document Intelligence, etc., you should create an `appsettings.development.json`
+file overriding the default values set in `appsettings.json`, or using the
+configuration wizard included:
 
-> ### On Windows:
->
-> ```shell
-> cd service\Service
-> setup.cmd
-> run.cmd
-> ```
+    cd service/Service
+    dotnet run setup
 
-> ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
->
+Then run this command to start the Docker image with the configuration just created:
+
+    docker run --volume ./appsettings.Development.json:/app/data/appsettings.Production.json \
+         -it --rm kernelmemory/service
+
+### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
+
 > ```csharp
 > #reference clients/WebClient/WebClient.csproj
 >
@@ -267,7 +264,8 @@ to **start the Kernel Memory Service**:
 >         .AddTag("fiscalYear", "2023"));
 > ```
 
-> ### Getting answers via the web service
+### Getting answers via the web service
+
 > ```
 > curl http://127.0.0.1:9001/ask -d'{"query":"Any news from NASA about Orion?"}' -H 'Content-Type: application/json'
 > ```
