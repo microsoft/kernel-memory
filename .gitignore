@@ -494,4 +494,5 @@ swa-cli.config.json
 **/copilot-chat-app/webapp/build
 **/copilot-chat-app/webapp/node_modules
 
+# to make sure we don't commit our local settings
 appsettings.*.json

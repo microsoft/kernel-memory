@@ -9,5 +9,5 @@ docker-compose.*.yml
 */bin
 */obj
 
-
+# To make sure that the local appsettings files are not copied when building the image locally.  During the build in GitHub these files filtered our bacause of .gitignore
 **/appsettings.*.json
