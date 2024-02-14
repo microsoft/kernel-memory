@@ -1,10 +1,9 @@
-#!/usr/bin/env bash
+# This script can be used from the repo or from the docker image
 
-set -e
-
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
-
-dotnet restore
-dotnet build
-dotnet run setup
-
+if [ -f "Microsoft.KernelMemory.ServiceAssembly.dll" ]; then
+    dotnet Microsoft.KernelMemory.ServiceAssembly.dll setup
+else
+    dotnet restore
+    dotnet build
+    dotnet run setup
+fi
