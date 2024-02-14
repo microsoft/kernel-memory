@@ -234,7 +234,7 @@ docker run -it --rm -e OPENAI_API_KEY="..." kernelmemory/service
 ```
 
 If you prefer using custom settings and services such as Azure OpenAI, Azure
-Document Intelligence, etc., you should create an `appsettings.development.json`
+Document Intelligence, etc., you should create an `appsettings.Development.json`
 file overriding the default values set in `appsettings.json`, or using the
 configuration wizard included:
 
