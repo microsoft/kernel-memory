@@ -6,7 +6,7 @@ on: workflow_dispatch
 
 jobs:
   build-and-push-image:
-    if: (github.actor == 'dluc' || github.actor == 'cherchyk') && hub.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+    if: (github.actor == 'dluc' || github.actor == 'cherchyk') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,5 +29,4 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64
-          file: ./Service.Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
