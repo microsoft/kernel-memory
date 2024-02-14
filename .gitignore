@@ -425,10 +425,14 @@ FodyWeavers.xsd
 
 .env
 certs/
+
+# to make sure we don't commit local settings which might contain credentials
 launchSettings.json
 config.development.yaml
 *.development.config
 *.development.json
+appsettings.*.json
+
 .DS_Store
 .idea/
 node_modules/
@@ -493,6 +497,3 @@ playwright-report/
 swa-cli.config.json
 **/copilot-chat-app/webapp/build
 **/copilot-chat-app/webapp/node_modules
-
-# to make sure we don't commit our local settings
-appsettings.*.json
