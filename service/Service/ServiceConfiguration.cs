@@ -478,18 +478,36 @@ internal sealed class ServiceConfiguration
     /// <returns>Whether the configuration is valid</returns>
     private bool MinimumConfigurationIsAvailable(bool exitOnError)
     {
-        const string Help = """
-                            You can set your configuration in appsettings.json or appsettings.<current environment>.json.
-                            The value of <current environment> depends on ASPNETCORE_ENVIRONMENT environment variable, and
-                            is usually either "Development" or "Production".
+        var env = Environment.GetEnvironmentVariable(AspnetEnvVar);
+        if (string.IsNullOrEmpty(env)) { env = "-UNDEFINED-"; }
 
-                            You can also run `dotnet run setup` to launch a wizard that will guide through the creation
-                            of a basic working version of "appsettings.Development.json".
+        string help = $"""
+                       How to configure the service:
 
-                            If you would like to setup the service to use custom dependencies, e.g. a custom storage or
-                            a custom LLM, you should edit Program.cs accordingly, setting up your dependencies with the
-                            usual .NET dependency injection approach.
-                            """;
+                       1. Set the ASPNETCORE_ENVIRONMENT env var to "Development" or "Production".
+
+                          Current value: {env}
+
+                       2. Manual configuration:
+
+                            * Create a configuration file, either "appsettings.Development.json" or
+                              "appsettings.Production.json", depending on the value of ASPNETCORE_ENVIRONMENT.
+
+                            * Copy and customize the default settings from appsettings.json.
+                              You don't need to copy everything, only the settings you want to change.
+
+                         Automatic configuration:
+
+                            * You can run `dotnet run setup` to launch a wizard that will guide through
+                              the creation of a custom "appsettings.Development.json".
+
+                         Adding components:
+
+                            * If you would like to setup the service to use custom dependencies, such as a
+                              custom storage or a custom LLM, you should edit Program.cs accordingly, setting
+                              up your dependencies with the usual .NET dependency injection approach.
+
+                       """;
 
         // Check if text generation settings
         if (string.IsNullOrEmpty(this._memoryConfiguration.TextGeneratorType))
@@ -497,7 +515,7 @@ internal sealed class ServiceConfiguration
             if (!exitOnError) { return false; }
 
             Console.WriteLine("\n******\nText generation (TextGeneratorType) is not configured.\n" +
-                              $"Please configure the service and retry.\n\n{Help}\n******\n");
+                              $"Please configure the service and retry.\n\n{help}\n******\n");
             Environment.Exit(-1);
         }
 
@@ -509,7 +527,7 @@ internal sealed class ServiceConfiguration
                 if (!exitOnError) { return false; }
 
                 Console.WriteLine("\n******\nData ingestion embedding generation (DataIngestion.EmbeddingGeneratorTypes) is not configured.\n" +
-                                  $"Please configure the service and retry.\n\n{Help}\n******\n");
+                                  $"Please configure the service and retry.\n\n{help}\n******\n");
                 Environment.Exit(-1);
             }
         }
@@ -520,7 +538,7 @@ internal sealed class ServiceConfiguration
             if (!exitOnError) { return false; }
 
             Console.WriteLine("\n******\nRetrieval embedding generation (Retrieval.EmbeddingGeneratorType) is not configured.\n" +
-                              $"Please configure the service and retry.\n\n{Help}\n******\n");
+                              $"Please configure the service and retry.\n\n{help}\n******\n");
             Environment.Exit(-1);
         }
 
