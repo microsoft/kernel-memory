@@ -1,5 +1,5 @@
 @echo off
 
-dotnet restore
-dotnet build
-dotnet run setup
+dotnet clean
+dotnet build -c Debug -p "SolutionName=KernelMemory"
+cmd /C "set ASPNETCORE_ENVIRONMENT=Development && dotnet run setup --no-build --no-restore"
