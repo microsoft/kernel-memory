@@ -51,7 +51,7 @@ EXPOSE 9001
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish --chown=km:km --chmod=ugo=r  /app/publish .
 
 # Define executable
 ENTRYPOINT ["dotnet", "Microsoft.KernelMemory.ServiceAssembly.dll"]
