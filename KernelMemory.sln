@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		code-analysis.props = code-analysis.props
 		build.py = build.py
 		nuget.config = nuget.config
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{371BB479-AA1C-41CB-BF07-24C363601289}"
@@ -222,6 +224,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "206-dotnet-configuration-an
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "207-dotnet-expanding-chunks-on-retrieval", "examples\207-dotnet-expanding-chunks-on-retrieval\207-dotnet-expanding-chunks-on-retrieval.csproj", "{47CEEA8F-7858-4635-B902-4C704CF55EA0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
+		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
+		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -286,6 +295,7 @@ Global
 		{B8976338-7CDC-47AE-8502-C2FBAFBEBD68} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{48E79819-1E9E-4075-90DA-BAEC761C89B2} = {B8976338-7CDC-47AE-8502-C2FBAFBEBD68}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
