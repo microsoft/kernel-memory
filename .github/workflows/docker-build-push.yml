@@ -30,4 +30,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/service:latest
-            ${{ vars.DOCKERHUB_USERNAME }}/service:${{ GITHUB_SHA }}
+            ${{ vars.DOCKERHUB_USERNAME }}/service:${{ env.GITHUB_SHA }}
