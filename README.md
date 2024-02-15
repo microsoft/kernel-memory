@@ -230,7 +230,7 @@ If you want to give the service a quick test, use the following command
 to **start the Kernel Memory Service** using OpenAI:
 
 ```shell
-docker run -it --rm -e OPENAI_API_KEY="..." kernelmemory/service
+docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service
 ```
 
 If you prefer using custom settings and services such as Azure OpenAI, Azure
@@ -244,7 +244,7 @@ configuration wizard included:
 Then run this command to start the Docker image with the configuration just created:
 
     docker run --volume ./appsettings.Development.json:/app/data/appsettings.Production.json \
-         -it --rm kernelmemory/service
+         -it --rm -p 9001:9001 kernelmemory/service
 
 ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
 

@@ -1,6 +1,6 @@
 # Build image and push it to docker hub
 
-name: Build and Push Docker Image
+name: Docker Image Build and Push to DockerHub
 
 on: workflow_dispatch
 
@@ -20,7 +20,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
@@ -28,4 +28,6 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service:latest
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/service:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/service:${{ GITHUB_SHA }}
