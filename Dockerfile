@@ -1,4 +1,3 @@
-
 ARG BUILD_IMAGE_TAG="7.0-jammy"
 ARG RUN_IMAGE_TAG="7.0-alpine"
 
@@ -40,18 +39,23 @@ RUN \
     adduser -D -h /app -s /bin/sh $USER && \
     # Allow user to access the build
     chown -R $USER.$USER /app
+
 # Define current user
 USER $USER
 
-ENV ASPNETCORE_HTTP_PORTS 9001
+# Used by .NET and KM to load appsettings.Productions.json
 ENV ASPNETCORE_ENVIRONMENT Production
+ENV ASPNETCORE_URLS http://+:9001
 
 WORKDIR /app
 EXPOSE 9001
 
 FROM base AS final
+
+MAINTAINER Devis Lucato "https://github.com/dluc"
 WORKDIR /app
-COPY --from=publish --chown=km:km --chmod=ugo=r  /app/publish .
+
+COPY --from=publish --chown=km:km --chmod=0550  /app/publish .
 
 # Define executable
 ENTRYPOINT ["dotnet", "Microsoft.KernelMemory.ServiceAssembly.dll"]
