@@ -43,7 +43,7 @@ RUN \
 # Define current user
 USER $USER
 
-# Used by .NET and KM to load appsettings.Productions.json
+# Used by .NET and KM to load appsettings.Production.json
 ENV ASPNETCORE_ENVIRONMENT Production
 ENV ASPNETCORE_URLS http://+:9001
 
