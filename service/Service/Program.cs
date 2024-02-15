@@ -40,6 +40,17 @@ if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), String
 var appBuilder = WebApplication.CreateBuilder();
 appBuilder.Configuration.AddEnvironmentVariables();
 
+// Note:
+// * .NET loads settings from appsettings.json
+// * You should set ASPNETCORE_ENVIRONMENT env var if you want to use also appsettings.<env>.json
+//   * In production environments:
+//          Set ASPNETCORE_ENVIRONMENT = Production
+//          and the app will try to load appsettings.Production.json
+//
+//   * In local dev workstations:
+//          Set ASPNETCORE_ENVIRONMENT = Development
+//          and the app will try to load appsettings.Development.json
+
 // Read the settings, needed below
 var config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
              ?? throw new ConfigurationException("Unable to load configuration");
@@ -95,6 +106,7 @@ appBuilder.Services.AddSingleton(memory);
 var app = appBuilder.Build();
 
 Console.WriteLine("***************************************************************************************************************************");
+Console.WriteLine($"* Environment         : " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined");
 Console.WriteLine($"* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
 Console.WriteLine($"* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
 Console.WriteLine($"* Pipeline handlers   : " + (config.Service.RunHandlers ? "Enabled" : "Disabled"));
@@ -354,13 +366,19 @@ if (config.Service.RunWebService)
 // ************** START ***********************************
 // ********************************************************
 
+var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? string.Empty;
 app.Logger.LogInformation(
     "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
-    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+    env,
     app.Logger.GetLogLevelName(),
     config.Service.RunWebService,
     config.ServiceAuthorization.Enabled,
     config.Service.RunHandlers);
+
+if (string.IsNullOrEmpty(env))
+{
+    app.Logger.LogError("ASPNETCORE_ENVIRONMENT env var not defined.");
+}
 
 app.Run();
 
