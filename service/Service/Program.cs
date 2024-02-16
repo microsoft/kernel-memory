@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -52,35 +53,51 @@ internal sealed class Program
 
         // *************************** APP BUILD *******************************
 
-        // Usual .NET web app builder
+        // Usual .NET web app builder with settings from appsettings.json, appsettings.<ENV>.json, and env vars
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
         appBuilder.Configuration.AddKMConfigurationSources();
 
-        // Read settings and validate. Settings are needed before building the app.
+        // Read KM settings, needed before building the app.
         KernelMemoryConfig config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
                                     ?? throw new ConfigurationException("Unable to load configuration");
-        config.ServiceAuthorization.Validate();
+
+        // Register pipeline handlers if enabled
+        if (config.Service.RunHandlers)
+        {
+            // You can add handlers in the configuration or manually here using one of these syntaxes:
+            // appBuilder.Services.AddHandlerAsHostedService<...CLASS...>("...STEP NAME...");
+            // appBuilder.Services.AddHandlerAsHostedService("...assembly file name...", "...type full name...", "...STEP NAME...");
+
+            // Register all pipeline handlers defined in the configuration to run as hosted services
+            foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
+            {
+                appBuilder.Services.AddHandlerAsHostedService(config: handlerConfig.Value, stepName: handlerConfig.Key);
+            }
+        }
 
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
         // Inject memory client and its dependencies
         // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-        IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services)
-            .FromAppSettings()
-            // .With...() // in case you need to set something not already defined by `.FromAppSettings()`
-            .Build();
+        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services)
+            .FromAppSettings();
 
-        appBuilder.Services.AddSingleton(memory);
+        // Build the memory client and make it available for dependency injection
+        appBuilder.Services.AddSingleton<IKernelMemory>(memoryBuilder.Build());
 
-        // Build .NET web app as usual, add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
+        // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
+
+        // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
         app.ConfigureMinimalAPI(config);
 
         // *************************** START ***********************************
 
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
         Console.WriteLine("***************************************************************************************************************************");
-        Console.WriteLine($"* Environment         : " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined");
+        Console.WriteLine($"* Environment         : " + (string.IsNullOrEmpty(env) ? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined" : env));
         Console.WriteLine($"* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
         Console.WriteLine($"* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
         Console.WriteLine($"* Pipeline handlers   : " + (config.Service.RunHandlers ? "Enabled" : "Disabled"));
@@ -92,7 +109,6 @@ internal sealed class Program
         Console.WriteLine($"* Text generation     : {app.Services.GetService<ITextGenerator>()?.GetType().FullName}");
         Console.WriteLine("***************************************************************************************************************************");
 
-        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? string.Empty;
         app.Logger.LogInformation(
             "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
             env,

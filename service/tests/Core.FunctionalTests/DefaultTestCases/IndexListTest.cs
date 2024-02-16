@@ -58,25 +58,25 @@ public static class IndexListTest
 
         while (!await memory.IsDocumentReadyAsync(documentId: id1, index: indexName1))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id1: {id1}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id2, index: indexName2))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id2: {id2}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id3, index: indexNameWithDashes))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id3: {id3}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id4, index: indexNameWithUnderscores))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id4: {id4}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 

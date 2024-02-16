@@ -31,6 +31,7 @@ internal static class WebAPIEndpoints
         app.UseDeleteDocumentsEndpoint(config, authFilter);
         app.UseAskEndpoint(config, authFilter);
         app.UseSearchEndpoint(config, authFilter);
+        app.UseUploadStatusEndpoint(config, authFilter);
     }
 
     public static void UseGetStatusEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)

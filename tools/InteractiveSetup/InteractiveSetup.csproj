@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.28.240212.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.28.240212.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\..\service\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
     <ItemGroup>

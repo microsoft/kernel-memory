@@ -84,7 +84,7 @@ public class AzureOpenAIConfig
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException("Azure OpenAI TokenCredential not defined");
     }
 
     /// <summary>
@@ -94,33 +94,33 @@ public class AzureOpenAIConfig
     {
         if (this.Auth == AuthTypes.Unknown)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Auth), "The authentication type is not defined");
+            throw new ArgumentOutOfRangeException(nameof(this.Auth), "The Azure OpenAI Authentication Type is not defined");
         }
 
         if (this.Auth == AuthTypes.APIKey && string.IsNullOrWhiteSpace(this.APIKey))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The API Key is empty");
+            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The Azure OpenAI API Key is empty");
         }
 
         if (string.IsNullOrWhiteSpace(this.Endpoint))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value is empty");
+            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The Azure OpenAI Endpoint value is empty");
         }
 
         if (!this.Endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value must start with https://");
+            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The Azure OpenAI Endpoint value must start with https://");
         }
 
         if (string.IsNullOrWhiteSpace(this.Deployment))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Deployment), "The deployment value is empty");
+            throw new ArgumentOutOfRangeException(nameof(this.Deployment), "The Azure OpenAI Deployment Name is empty");
         }
 
         if (this.MaxTokenTotal < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(this.MaxTokenTotal),
-                $"{nameof(this.MaxTokenTotal)} cannot be less than 1");
+                $"Azure OpenAI: {nameof(this.MaxTokenTotal)} cannot be less than 1");
         }
     }
 }
