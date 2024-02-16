@@ -2,9 +2,9 @@
 
 using Microsoft.KernelMemory;
 
-/* The following code shows how to create a custom handler, attached
- * to a queue and listening for work to do. You can also add multiple handlers
- * the same way.
+/* The following code shows how to create a custom handler and run it as a standalone service.
+ * The handler will automatically attach to a queue and listen for work to do.
+ * You can also add multiple handlers the same way.
  */
 
 // Usual .NET web app builder
