@@ -68,22 +68,11 @@ internal sealed class Program
             // appBuilder.Services.AddHandlerAsHostedService<...CLASS...>("...STEP NAME...");
             // appBuilder.Services.AddHandlerAsHostedService("...assembly file name...", "...type full name...", "...STEP NAME...");
 
-#if KernelMemoryDev
             // Register all pipeline handlers defined in the configuration to run as hosted services
             foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
             {
                 appBuilder.Services.AddHandlerAsHostedService(config: handlerConfig.Value, stepName: handlerConfig.Key);
             }
-#else
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.TextExtractionHandler>("extract");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.TextPartitioningHandler>("partition");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.GenerateEmbeddingsHandler>("gen_embeddings");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.SaveRecordsHandler>("save_records");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.SummarizationHandler>("summarize");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.DeleteGeneratedFilesHandler>("delete_generated_files");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.DeleteDocumentHandler>("private_delete_document");
-            appBuilder.Services.AddHandlerAsHostedService<Microsoft.KernelMemory.Handlers.DeleteIndexHandler>("private_delete_index");
-#endif
         }
 
         // Some OpenAPI Explorer/Swagger dependencies
