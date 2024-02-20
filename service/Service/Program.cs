@@ -78,10 +78,8 @@ internal sealed class Program
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
-        // Inject memory client and its dependencies
-        // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services)
-            .FromAppSettings();
+        // Prepare memory instance using configuration settings
+        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings();
 
         // Build the memory client and make it available for dependency injection
         appBuilder.Services.AddSingleton<IKernelMemory>(memoryBuilder.Build());
@@ -95,6 +93,10 @@ internal sealed class Program
         // *************************** START ***********************************
 
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (string.IsNullOrEmpty(env))
+        {
+            app.Logger.LogError("ASPNETCORE_ENVIRONMENT env var not defined.");
+        }
 
         Console.WriteLine("***************************************************************************************************************************");
         Console.WriteLine($"* Environment         : " + (string.IsNullOrEmpty(env) ? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined" : env));
@@ -116,11 +118,6 @@ internal sealed class Program
             config.Service.RunWebService,
             config.ServiceAuthorization.Enabled,
             config.Service.RunHandlers);
-
-        if (string.IsNullOrEmpty(env))
-        {
-            app.Logger.LogError("ASPNETCORE_ENVIRONMENT env var not defined.");
-        }
 
         app.Run();
     }
