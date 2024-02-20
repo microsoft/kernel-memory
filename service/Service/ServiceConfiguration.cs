@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
@@ -79,11 +77,6 @@ internal sealed class ServiceConfiguration
         // Required by ctors expecting KernelMemoryConfig via DI
         builder.AddSingleton(this._memoryConfiguration);
 
-        if (!this._memoryConfiguration.Service.RunHandlers)
-        {
-            builder.WithoutDefaultHandlers();
-        }
-
         this.ConfigureMimeTypeDetectionDependency(builder);
 
         this.ConfigureTextPartitioning(builder);
@@ -122,71 +115,8 @@ internal sealed class ServiceConfiguration
 
     private static IConfiguration ReadAppSettings(string? settingsDirectory)
     {
-        if (settingsDirectory == null)
-        {
-            settingsDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? Directory.GetCurrentDirectory();
-        }
-
-        var env = Environment.GetEnvironmentVariable(AspnetEnvVar) ?? string.Empty;
         var builder = new ConfigurationBuilder();
-
-        builder.SetBasePath(settingsDirectory);
-
-        var main = Path.Join(settingsDirectory, "appsettings.json");
-        if (File.Exists(main))
-        {
-            builder.AddJsonFile(main, optional: false);
-        }
-        else
-        {
-            throw new ConfigurationException($"appsettings.json not found. Directory: {settingsDirectory}");
-        }
-
-        if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
-        {
-            var f1 = Path.Join(settingsDirectory, "appsettings.development.json");
-            var f2 = Path.Join(settingsDirectory, "appsettings.Development.json");
-            if (File.Exists(f1))
-            {
-                builder.AddJsonFile(f1, optional: false);
-            }
-            else if (File.Exists(f2))
-            {
-                builder.AddJsonFile(f2, optional: false);
-            }
-        }
-
-        if (env.Equals("production", StringComparison.OrdinalIgnoreCase))
-        {
-            var f1 = Path.Join(settingsDirectory, "appsettings.production.json");
-            var f2 = Path.Join(settingsDirectory, "appsettings.Production.json");
-            if (File.Exists(f1))
-            {
-                builder.AddJsonFile(f1, optional: false);
-            }
-            else if (File.Exists(f2))
-            {
-                builder.AddJsonFile(f2, optional: false);
-            }
-        }
-
-        // Support for environment variables overriding the config files
-        builder.AddEnvironmentVariables();
-
-        // Support for user secrets. Secret Manager doesn't encrypt the stored secrets and
-        // shouldn't be treated as a trusted store. It's for development purposes only.
-        // see: https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager
-        if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
-        {
-            // GetEntryAssembly method can return null if this library is loaded
-            // from an unmanaged application, in which case UserSecrets are not supported.
-            var entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly != null)
-            {
-                builder.AddUserSecrets(entryAssembly, optional: true);
-            }
-        }
-
+        builder.AddKMConfigurationSources(settingsDirectory: settingsDirectory);
         return builder.Build();
     }
 

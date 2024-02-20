@@ -1,9 +1,9 @@
-# This script can be used from the repo or from the docker image
+# This script is used also in the Docker image
 
 if [ -f "Microsoft.KernelMemory.ServiceAssembly.dll" ]; then
     dotnet Microsoft.KernelMemory.ServiceAssembly.dll setup
 else
-    dotnet restore
-    dotnet build
-    dotnet run setup
+    dotnet clean
+    dotnet build -c Debug -p "SolutionName=KernelMemory"
+    ASPNETCORE_ENVIRONMENT=Development dotnet run setup --no-build --no-restore
 fi

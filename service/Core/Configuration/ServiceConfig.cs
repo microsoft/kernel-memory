@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+
 namespace Microsoft.KernelMemory.Configuration;
 
 public class ServiceConfig
@@ -20,4 +22,9 @@ public class ServiceConfig
     /// Web service settings, e.g. whether to expose OpenAPI swagger docs.
     /// </summary>
     public bool OpenApiEnabled { get; set; } = false;
+
+    /// <summary>
+    /// List of handlers to enable
+    /// </summary>
+    public Dictionary<string, HandlerConfig> Handlers { get; set; } = new();
 }
