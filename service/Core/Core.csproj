@@ -27,13 +27,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions"/>
         <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="PdfPig"/>
         <PackageReference Include="Polly.Core"/>
-        <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="System.Linq.Async"/>
     </ItemGroup>
 
