@@ -1,27 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4C35-4370-8539-5DDF45357A50}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-		SECURITY.md = SECURITY.md
-		LICENSE = LICENSE
-		CONTRIBUTING.md = CONTRIBUTING.md
-		COMMUNITY.md = COMMUNITY.md
-		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
-		.gitignore = .gitignore
-		.gitattributes = .gitattributes
-		.editorconfig = .editorconfig
-		Directory.Build.props = Directory.Build.props
-		Directory.Packages.props = Directory.Packages.props
-		nuget-package.props = nuget-package.props
-		code-analysis.props = code-analysis.props
-		build.py = build.py
-		nuget.config = nuget.config
-		Dockerfile = Dockerfile
-		.dockerignore = .dockerignore
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{371BB479-AA1C-41CB-BF07-24C363601289}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
@@ -59,9 +38,71 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A
 		examples\Directory.Build.props = examples\Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebooks", "{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD}"
+	ProjectSection(SolutionItems) = preProject
+		examples\000-notebooks\001-upload-and-ask.ipynb = examples\000-notebooks\001-upload-and-ask.ipynb
+		examples\000-notebooks\appsettings.json = examples\000-notebooks\appsettings.json
+		examples\000-notebooks\002-semantic-kernel-plugin.ipynb = examples\000-notebooks\002-semantic-kernel-plugin.ipynb
+		examples\000-notebooks\NASA-news.pdf = examples\000-notebooks\NASA-news.pdf
+		examples\000-notebooks\sample-KM-Readme.pdf = examples\000-notebooks\sample-KM-Readme.pdf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "006-curl-calling-webservice", "006-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
+	ProjectSection(SolutionItems) = preProject
+		examples\006-curl-calling-webservice\test.pdf = examples\006-curl-calling-webservice\test.pdf
+		examples\006-curl-calling-webservice\README.md = examples\006-curl-calling-webservice\README.md
+		examples\006-curl-calling-webservice\ask-example.sh = examples\006-curl-calling-webservice\ask-example.sh
+		examples\006-curl-calling-webservice\upload-example.sh = examples\006-curl-calling-webservice\upload-example.sh
+		examples\006-curl-calling-webservice\search-example.sh = examples\006-curl-calling-webservice\search-example.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
+	ProjectSection(SolutionItems) = preProject
+		examples\200-dotnet-nl2sql\README.md = examples\200-dotnet-nl2sql\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{155DA079-E267-49AF-973A-D1D44681970F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4C35-4370-8539-5DDF45357A50}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		SECURITY.md = SECURITY.md
+		LICENSE = LICENSE
+		CONTRIBUTING.md = CONTRIBUTING.md
+		COMMUNITY.md = COMMUNITY.md
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		.gitignore = .gitignore
+		.gitattributes = .gitattributes
+		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		nuget-package.props = nuget-package.props
+		code-analysis.props = code-analysis.props
+		build.py = build.py
+		nuget.config = nuget.config
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
+	ProjectSection(SolutionItems) = preProject
+		.github\_typos.toml = .github\_typos.toml
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\pull_request_template.md = .github\pull_request_template.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
+		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
+		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5E7DD43D-B5E7-4827-B57D-447E5B428589}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{3C17F42B-CFC8-4900-8CFB-88936311E919}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
@@ -77,16 +118,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
 	EndProjectSection
 EndProject
-
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "service\Core\Core.csproj", "{27910ADC-5A28-4EB4-A16E-974B91940758}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions.UnitTests", "service\tests\Abstractions.UnitTests\Abstractions.UnitTests.csproj", "{C4AFA538-8939-4525-A361-665833947F72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "service\Service\Service.csproj", "{1071A8B6-ED76-4E46-A291-E0563B9C4575}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "service\Core\Core.csproj", "{27910ADC-5A28-4EB4-A16E-974B91940758}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.UnitTests", "service\tests\Core.UnitTests\Core.UnitTests.csproj", "{4AE9DB51-2A22-4FB3-A780-838738566D18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.FunctionalTests", "service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj", "{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "service\Service\Service.csproj", "{1071A8B6-ED76-4E46-A291-E0563B9C4575}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.FunctionalTests", "service\tests\Service.FunctionalTests\Service.FunctionalTests.csproj", "{BCD0255F-2F35-4B6D-BBF2-2FB43B6F95FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelpers", "service\tests\TestHelpers\TestHelpers.csproj", "{989061F4-164F-4D98-A3F9-601BC40EE216}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveSetup", "tools\InteractiveSetup\InteractiveSetup.csproj", "{C03BC9FE-5301-43EE-B912-1363F430DBA0}"
 EndProject
@@ -94,37 +140,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernelPlugin", "cli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebClient", "clients\dotnet\WebClient\WebClient.csproj", "{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}"
 EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "000-notebooks", "000-notebooks", "{C93FCED9-808A-4B03-9B4C-0DBAE46D5BDD}"
-	ProjectSection(SolutionItems) = preProject
-		examples\000-notebooks\001-upload-and-ask.ipynb = examples\000-notebooks\001-upload-and-ask.ipynb
-		examples\000-notebooks\appsettings.json = examples\000-notebooks\appsettings.json
-		examples\000-notebooks\sample-SK-Readme.pdf = examples\000-notebooks\sample-SK-Readme.pdf
-		examples\000-notebooks\002-semantic-kernel-plugin.ipynb = examples\000-notebooks\002-semantic-kernel-plugin.ipynb
-		examples\000-notebooks\NASA-news.pdf = examples\000-notebooks\NASA-news.pdf
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "005-curl-calling-webservice", "005-curl-calling-webservice", "{CA1D9162-D4C5-490D-AAD5-7A9A23092C28}"
-	ProjectSection(SolutionItems) = preProject
-		examples\005-curl-calling-webservice\test.pdf = examples\005-curl-calling-webservice\test.pdf
-		examples\005-curl-calling-webservice\README.md = examples\005-curl-calling-webservice\README.md
-		examples\005-curl-calling-webservice\ask-example.sh = examples\005-curl-calling-webservice\ask-example.sh
-		examples\005-curl-calling-webservice\upload-example.sh = examples\005-curl-calling-webservice\upload-example.sh
-		examples\005-curl-calling-webservice\search-example.sh = examples\005-curl-calling-webservice\search-example.sh
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "200-dotnet-nl2sql", "200-dotnet-nl2sql", "{2C4D5F14-CCFC-4913-B884-B2FF9067BEFF}"
-	ProjectSection(SolutionItems) = preProject
-		examples\200-dotnet-nl2sql\README.md = examples\200-dotnet-nl2sql\README.md
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-WebClient", "examples\001-dotnet-WebClient\001-dotnet-WebClient.csproj", "{A77F639B-EA35-4519-9DBF-54687E5AC895}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-SemanticKernelPlugin", "examples\002-dotnet-SemanticKernelPlugin\002-dotnet-SemanticKernelPlugin.csproj", "{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-SemanticKernel-plugin", "examples\002-dotnet-SemanticKernel-plugin\002-dotnet-SemanticKernel-plugin.csproj", "{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "003-dotnet-Serverless", "examples\003-dotnet-Serverless\003-dotnet-Serverless.csproj", "{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-ServerlessCustomPipeline", "examples\004-dotnet-ServerlessCustomPipeline\004-dotnet-ServerlessCustomPipeline.csproj", "{158F5D5D-818B-4346-9A79-1C27C2F2144D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-serverless-custom-pipeline", "examples\004-dotnet-serverless-custom-pipeline\004-dotnet-serverless-custom-pipeline.csproj", "{158F5D5D-818B-4346-9A79-1C27C2F2144D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "005-dotnet-async-memory-custom-pipeline", "examples\005-dotnet-async-memory-custom-pipeline\005-dotnet-async-memory-custom-pipeline.csproj", "{A5CE3CB2-F746-4832-B239-1A3226F9BD48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "101-dotnet-custom-Prompts", "examples\101-dotnet-custom-Prompts\101-dotnet-custom-Prompts.csproj", "{6ABCC373-F472-4A34-9C78-4A324DDED207}"
 EndProject
@@ -134,9 +158,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "103-dotnet-custom-Embedding
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "104-dotnet-custom-LLM", "examples\104-dotnet-custom-LLM\104-dotnet-custom-LLM.csproj", "{34FA6EE2-26FE-44D6-8F91-6A5E5A06074B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "201-dotnet-InProcessMemoryWithCustomHandler", "examples\201-dotnet-InProcessMemoryWithCustomHandler\201-dotnet-InProcessMemoryWithCustomHandler.csproj", "{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "105-dotnet-serverless-llamasharp", "examples\105-dotnet-serverless-llamasharp\105-dotnet-serverless-llamasharp.csproj", "{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "202-dotnet-CustomHandlerAsAService", "examples\202-dotnet-CustomHandlerAsAService\202-dotnet-CustomHandlerAsAService.csproj", "{DE115127-C77F-40FF-BA5A-E888A32F2289}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "106-dotnet-retrieve-synthetics", "examples\106-dotnet-retrieve-synthetics\106-dotnet-retrieve-synthetics.csproj", "{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "201-dotnet-serverless-custom-handler", "examples\201-dotnet-serverless-custom-handler\201-dotnet-serverless-custom-handler.csproj", "{791E3E2E-133C-4EB5-AB5E-10D31F0A9807}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "202-dotnet-custom-handler-as-a-service", "examples\202-dotnet-custom-handler-as-a-service\202-dotnet-custom-handler-as-a-service.csproj", "{DE115127-C77F-40FF-BA5A-E888A32F2289}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "203-dotnet-using-core-nuget", "examples\203-dotnet-using-core-nuget\203-dotnet-using-core-nuget.csproj", "{1B41A9A1-0B57-4297-B579-D04FC0BA3227}"
 EndProject
@@ -144,44 +172,43 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "204-dotnet-ASP.NET-MVC-inte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "205-dotnet-extract-text-from-docs", "examples\205-dotnet-extract-text-from-docs\205-dotnet-extract-text-from-docs.csproj", "{9202380E-D793-4C3C-89B3-3BE790925029}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "105-dotnet-serverless-llamasharp", "examples\105-dotnet-serverless-llamasharp\105-dotnet-serverless-llamasharp.csproj", "{E762B1C6-4B5B-487A-BF8C-C6870D6EACB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "206-dotnet-configuration-and-logging", "examples\206-dotnet-configuration-and-logging\206-dotnet-configuration-and-logging.csproj", "{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "106-dotnet-retrieve-synthetics", "examples\106-dotnet-retrieve-synthetics\106-dotnet-retrieve-synthetics.csproj", "{EDFDA12E-BA10-4A00-BBE7-1C10A0B0F1A6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.FunctionalTests", "service\tests\Service.FunctionalTests\Service.FunctionalTests.csproj", "{BCD0255F-2F35-4B6D-BBF2-2FB43B6F95FA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{155DA079-E267-49AF-973A-D1D44681970F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "207-dotnet-expanding-chunks-on-retrieval", "examples\207-dotnet-expanding-chunks-on-retrieval\207-dotnet-expanding-chunks-on-retrieval.csproj", "{47CEEA8F-7858-4635-B902-4C704CF55EA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureBlobs", "extensions\AzureBlobs\AzureBlobs.csproj", "{20FFF62D-5BA5-4126-A16C-C14E1FF35A4F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureQueues", "extensions\AzureQueues\AzureQueues.csproj", "{40CB6452-68DD-4C78-9852-78281A161950}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ", "extensions\RabbitMQ\RabbitMQ.csproj", "{E3877E49-958E-4DC8-B5E8-834010F5C4B7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres", "extensions\Postgres\Postgres\Postgres.csproj", "{6577B501-E295-4DCE-B640-BF40C9881A00}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAIDocIntel", "extensions\AzureAIDocIntel\AzureAIDocIntel.csproj", "{CFE7C192-2561-40CC-8592-136293451EC1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOpenAI", "extensions\AzureOpenAI\AzureOpenAI.csproj", "{93FA6DD6-D0B2-4751-8680-3F959E1F7AF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAI", "extensions\OpenAI\OpenAI.csproj", "{A6AE31A1-4F60-47B0-8534-7B083D68118C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.TestApplication", "extensions\AzureAISearch\AzureAISearch.TestApplication\AzureAISearch.TestApplication.csproj", "{11445C36-1B94-4AFB-AC23-976C94924603}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp", "extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj", "{969625B8-039F-4E5E-A484-6A30DC417FBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch", "extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj", "{8F2185AB-F87C-4DD0-9DB8-E97920500A37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.FunctionalTests", "extensions\AzureAISearch\AzureAISearch.FunctionalTests\AzureAISearch.FunctionalTests.csproj", "{E2AD3323-42AA-47D5-87E4-1E90B0A7C6E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.UnitTests", "extensions\AzureAISearch\AzureAISearch.UnitTests\AzureAISearch.UnitTests.csproj", "{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres", "extensions\Postgres\Postgres\Postgres.csproj", "{6577B501-E295-4DCE-B640-BF40C9881A00}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.UnitTests", "extensions\Postgres\Postgres.UnitTests\Postgres.UnitTests.csproj", "{0675D9B5-B3BB-4C9A-A1A5-11540E2ED715}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "packages", "packages", "{16A884AC-E0DF-4CC2-8399-7A2668322EDF}"
-	ProjectSection(SolutionItems) = preProject
-		packages\icon.png = packages\icon.png
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.TestApplication", "extensions\Postgres\Postgres.TestApplication\Postgres.TestApplication.csproj", "{E9EAD4A8-05B8-4138-8B17-E33127C83CF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.FunctionalTests", "extensions\Postgres\Postgres.FunctionalTests\Postgres.FunctionalTests.csproj", "{14106EE4-AB77-494D-B16A-3EC042539456}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp", "extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj", "{969625B8-039F-4E5E-A484-6A30DC417FBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp.FunctionalTests", "extensions\LlamaSharp\LlamaSharp.FunctionalTests\LlamaSharp.FunctionalTests.csproj", "{9D3C9277-648D-441D-834D-565076EE2E87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.TestApplication", "extensions\Redis\Redis.TestApplication\Redis.TestApplication.csproj", "{CCA96699-483E-4B2A-95DF-25F0C98E3BB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "extensions\Redis\Redis\Redis.csproj", "{F25BC232-6161-4D45-8AFF-E92A52F0F85A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions.UnitTests", "service\tests\Abstractions.UnitTests\Abstractions.UnitTests.csproj", "{C4AFA538-8939-4525-A361-665833947F72}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.TestApplication", "extensions\Postgres\Postgres.TestApplication\Postgres.TestApplication.csproj", "{E9EAD4A8-05B8-4138-8B17-E33127C83CF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.FunctionalTests", "extensions\Redis\Redis.FunctionalTests\Redis.FunctionalTests.csproj", "{C8A18E8F-34CC-4226-9831-083335DAB21A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qdrant", "extensions\Qdrant\Qdrant\Qdrant.csproj", "{9D078C9B-42A3-4558-898A-2396F59A54D3}"
 EndProject
@@ -189,47 +216,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qdrant.UnitTests", "extensi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qdrant.TestApplication", "extensions\Qdrant\Qdrant.TestApplication\Qdrant.TestApplication.csproj", "{3897E2B7-85A3-4D69-B1C0-AEF41236F940}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.TestApplication", "extensions\AzureAISearch\AzureAISearch.TestApplication\AzureAISearch.TestApplication.csproj", "{11445C36-1B94-4AFB-AC23-976C94924603}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch", "extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj", "{8F2185AB-F87C-4DD0-9DB8-E97920500A37}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Postgres.FunctionalTests", "extensions\Postgres\Postgres.FunctionalTests\Postgres.FunctionalTests.csproj", "{14106EE4-AB77-494D-B16A-3EC042539456}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.FunctionalTests", "extensions\AzureAISearch\AzureAISearch.FunctionalTests\AzureAISearch.FunctionalTests.csproj", "{E2AD3323-42AA-47D5-87E4-1E90B0A7C6E9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{3C17F42B-CFC8-4900-8CFB-88936311E919}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qdrant.FunctionalTests", "extensions\Qdrant\Qdrant.FunctionalTests\Qdrant.FunctionalTests.csproj", "{62B96766-AA6C-4CFF-A6FB-6370C89C2509}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelpers", "service\tests\TestHelpers\TestHelpers.csproj", "{989061F4-164F-4D98-A3F9-601BC40EE216}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ", "extensions\RabbitMQ\RabbitMQ.csproj", "{E3877E49-958E-4DC8-B5E8-834010F5C4B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAI", "extensions\OpenAI\OpenAI.csproj", "{A6AE31A1-4F60-47B0-8534-7B083D68118C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLServer.FunctionalTests", "extensions\SQLServer\SQLServer.FunctionalTests\SQLServer.FunctionalTests.csproj", "{668A48B7-F600-4056-B47E-3200893C0404}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.FunctionalTests", "extensions\Redis\Redis.FunctionalTests\Redis.FunctionalTests.csproj", "{C8A18E8F-34CC-4226-9831-083335DAB21A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LlamaSharp.FunctionalTests", "extensions\LlamaSharp\LlamaSharp.FunctionalTests\LlamaSharp.FunctionalTests.csproj", "{9D3C9277-648D-441D-834D-565076EE2E87}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAISearch.UnitTests", "extensions\AzureAISearch\AzureAISearch.UnitTests\AzureAISearch.UnitTests.csproj", "{9F564F2D-EADD-47DE-9293-92B3E9CFFE36}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
-	ProjectSection(SolutionItems) = preProject
-		.github\_typos.toml = .github\_typos.toml
-		.github\dependabot.yml = .github\dependabot.yml
-		.github\pull_request_template.md = .github\pull_request_template.md
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "206-dotnet-configuration-and-logging", "examples\206-dotnet-configuration-and-logging\206-dotnet-configuration-and-logging.csproj", "{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "207-dotnet-expanding-chunks-on-retrieval", "examples\207-dotnet-expanding-chunks-on-retrieval\207-dotnet-expanding-chunks-on-retrieval.csproj", "{47CEEA8F-7858-4635-B902-4C704CF55EA0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
-		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
-		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -296,6 +291,7 @@ Global
 		{D7D8FCA0-BFC6-4B0E-9885-64C2EA90AA62} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{48E79819-1E9E-4075-90DA-BAEC761C89B2} = {B8976338-7CDC-47AE-8502-C2FBAFBEBD68}
+		{A5CE3CB2-F746-4832-B239-1A3226F9BD48} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -309,6 +305,7 @@ Global
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1071A8B6-ED76-4E46-A291-E0563B9C4575}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AAD973E-2FDC-4C89-94BA-4F6671C2F23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -322,6 +319,7 @@ Global
 		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C03BC9FE-5301-43EE-B912-1363F430DBA0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D04A01C0-EF1B-49B2-B6AB-8AC635566E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -472,5 +470,8 @@ Global
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

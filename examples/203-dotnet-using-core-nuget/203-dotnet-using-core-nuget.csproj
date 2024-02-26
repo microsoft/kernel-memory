@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="sample-SK-Readme.pdf"/>
-        <Content Include="sample-SK-Readme.pdf">
+        <None Remove="sample-KM-Readme.pdf"/>
+        <Content Include="sample-KM-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
