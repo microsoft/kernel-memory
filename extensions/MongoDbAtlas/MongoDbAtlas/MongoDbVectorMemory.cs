@@ -1,29 +1,28 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using KernelMemory.AtlasMongoDb.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Alkampfer.KernelMemory.AtlasMongoDb;
+namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
 {
+    private const string ConnectionNamePrefix = "_ix_";
+
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<MongoDbVectorMemory> _log;
     private readonly AtlasSearchHelper _utils;
-    private const string ConnectionNamePrefix = "_ix_";
 
     /// <summary>
     /// Create a new instance of MongoDbVectorMemory from configuration
@@ -38,40 +37,8 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     {
         this._embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
         this._log = log ?? DefaultLogger<MongoDbVectorMemory>.Instance;
-
         this._utils = new AtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
     }
-
-    #region Basic helper functions
-
-    private static string NormalizeIndexName(string indexName)
-    {
-        if (string.IsNullOrEmpty(indexName))
-        {
-            return Constants.DefaultIndex;
-        }
-
-        return indexName.Replace("_", "-", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private IMongoCollection<BsonDocument> GetCollectionFromIndexName(string indexName)
-    {
-        var collectionName = this.GetCollectionName(NormalizeIndexName(indexName));
-        return this.GetCollection(collectionName);
-    }
-
-    private string GetCollectionName(string indexName)
-    {
-        var normalizedIndexName = NormalizeIndexName(indexName);
-        if (this.Config.UseSingleCollectionForVectorSearch)
-        {
-            return $"{ConnectionNamePrefix}_kernel_memory_single_index";
-        }
-
-        return $"{ConnectionNamePrefix}{normalizedIndexName}";
-    }
-
-    #endregion
 
     public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
@@ -87,11 +54,6 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         var filter = Builders<BsonDocument>.Filter.Eq("_id", normalizedIndexName);
         var update = Builders<BsonDocument>.Update.Set("index", normalizedIndexName).Set("lastCreateIndex", DateTime.UtcNow);
         await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, cancellationToken).ConfigureAwait(false);
-    }
-
-    private static string GetIndexListCollectionName()
-    {
-        return $"{ConnectionNamePrefix}_kernel_memory_index_lists";
     }
 
     public async Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
@@ -144,7 +106,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         var normalizedIndexName = NormalizeIndexName(index);
         var conditions = new BsonArray();
         this.ConvertsFilterToConditions(normalizedIndexName, filters, conditions);
-        BsonDocument[] pipeline = await this.CreatePipelineAsync(normalizedIndexName, conditions, limit, null).ConfigureAwait(false);
+        BsonDocument[] pipeline = this.CreatePipeline(normalizedIndexName, conditions, limit, null);
 
         var collection = this.GetCollectionFromIndexName(index);
 
@@ -177,7 +139,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         this.ConvertsFilterToConditions(normalizedIndexName, filters, conditions);
 
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
-        BsonDocument[] pipeline = await this.CreatePipelineAsync(normalizedIndexName, conditions, limit, embeddings).ConfigureAwait(false);
+        BsonDocument[] pipeline = this.CreatePipeline(normalizedIndexName, conditions, limit, embeddings);
 
         // add the $meta to get the score
         var projectStage = new BsonDocument
@@ -256,7 +218,22 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         return bsonDocument["_id"].AsString;
     }
 
-    #region Helper functions for query
+    private IMongoCollection<BsonDocument> GetCollectionFromIndexName(string indexName)
+    {
+        var collectionName = this.GetCollectionName(NormalizeIndexName(indexName));
+        return this.GetCollection(collectionName);
+    }
+
+    private string GetCollectionName(string indexName)
+    {
+        var normalizedIndexName = NormalizeIndexName(indexName);
+        if (this.Config.UseSingleCollectionForVectorSearch)
+        {
+            return $"{ConnectionNamePrefix}_kernel_memory_single_index";
+        }
+
+        return $"{ConnectionNamePrefix}{normalizedIndexName}";
+    }
 
     /// <summary>
     /// Create the real pipeline operator to send to the database to perform the search.
@@ -266,7 +243,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     /// <param name="limit"></param>
     /// <param name="embeddings">Used to perform a Knn query</param>
     /// <returns></returns>
-    private async Task<BsonDocument[]> CreatePipelineAsync(
+    private BsonDocument[] CreatePipeline(
         string index,
         BsonArray filters,
         int limit,
@@ -361,10 +338,10 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         {
             var thisFilter = filter.GetFilters().ToArray();
             //this is an and filter, we can distinguish between single filter and multiple filters
-            var numOfFilters = thisFilter.Count(x => !String.IsNullOrEmpty(x.Value));
+            var numOfFilters = thisFilter.Count(x => !string.IsNullOrEmpty(x.Value));
             if (numOfFilters == 1)
             {
-                var (key, value) = thisFilter.First(x => !String.IsNullOrEmpty(x.Value));
+                var (key, value) = thisFilter.First(x => !string.IsNullOrEmpty(x.Value));
                 filtersArray.Add(new BsonDocument
                 {
                     ["text"] = new BsonDocument
@@ -420,32 +397,6 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         }
     }
 
-    private static MemoryRecord FromBsonDocument(BsonDocument doc, Boolean withEmbeddings)
-    {
-        var record = new MemoryRecord
-        {
-            Id = doc["_id"].AsString,
-            Vector = withEmbeddings ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray() : Array.Empty<float>(),
-        };
-        foreach (var element in doc.Elements)
-        {
-            if (element.Name.StartsWith("pl_", StringComparison.OrdinalIgnoreCase))
-            {
-                var key = element.Name.Replace("pl_", "", StringComparison.OrdinalIgnoreCase);
-                record.Payload[key] = element.Value.AsString;
-            }
-            else if (element.Name.StartsWith("tg_", StringComparison.OrdinalIgnoreCase))
-            {
-                var key = element.Name.Replace("tg_", "", StringComparison.OrdinalIgnoreCase);
-                record.Tags[key] = element.Value.AsBsonArray.Select(x => (string?)x.AsString).ToList();
-            }
-        }
-
-        return record;
-    }
-
-    #endregion
-
     /// <summary>
     /// Due to different score system of Atlas MongoDB that normalized cosine
     /// we need to manually recompute the cosine similarity distance manually
@@ -472,5 +423,44 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
 
         double cosineSimilarity = dot / (Math.Sqrt(m1) * Math.Sqrt(m2));
         return cosineSimilarity;
+    }
+
+    private static string GetIndexListCollectionName()
+    {
+        return $"{ConnectionNamePrefix}_kernel_memory_index_lists";
+    }
+
+    private static MemoryRecord FromBsonDocument(BsonDocument doc, bool withEmbeddings)
+    {
+        var record = new MemoryRecord
+        {
+            Id = doc["_id"].AsString,
+            Vector = withEmbeddings ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray() : Array.Empty<float>(),
+        };
+        foreach (var element in doc.Elements)
+        {
+            if (element.Name.StartsWith("pl_", StringComparison.OrdinalIgnoreCase))
+            {
+                var key = element.Name.Replace("pl_", "", StringComparison.OrdinalIgnoreCase);
+                record.Payload[key] = element.Value.AsString;
+            }
+            else if (element.Name.StartsWith("tg_", StringComparison.OrdinalIgnoreCase))
+            {
+                var key = element.Name.Replace("tg_", "", StringComparison.OrdinalIgnoreCase);
+                record.Tags[key] = element.Value.AsBsonArray.Select(x => (string?)x.AsString).ToList();
+            }
+        }
+
+        return record;
+    }
+
+    private static string NormalizeIndexName(string indexName)
+    {
+        if (string.IsNullOrEmpty(indexName))
+        {
+            return Constants.DefaultIndex;
+        }
+
+        return indexName.Replace("_", "-", StringComparison.OrdinalIgnoreCase);
     }
 }

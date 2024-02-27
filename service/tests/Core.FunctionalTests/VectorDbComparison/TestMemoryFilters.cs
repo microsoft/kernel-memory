@@ -1,11 +1,11 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Alkampfer.KernelMemory.AtlasMongoDb;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
@@ -32,7 +32,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         const bool AzSearchEnabled = true;
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
-        const bool AtlasMongoDbEnabled = true;
+        const bool MongoDbAtlasEnabled = true;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
@@ -60,7 +60,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         }
 
         MongoDbVectorMemory atlasMongoDb;
-        if (AtlasMongoDbEnabled)
+        if (MongoDbAtlasEnabled)
         {
             atlasMongoDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
         }
@@ -75,7 +75,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
 
-            if (AtlasMongoDbEnabled) { await atlasMongoDb.DeleteIndexAsync(IndexName); }
+            if (MongoDbAtlasEnabled) { await atlasMongoDb.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -90,7 +90,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
 
-            if (AtlasMongoDbEnabled) { await atlasMongoDb.CreateIndexAsync(IndexName, 3); }
+            if (MongoDbAtlasEnabled) { await atlasMongoDb.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -116,7 +116,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
                 if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
-                if (AtlasMongoDbEnabled) { await atlasMongoDb.UpsertAsync(IndexName, r.Value); }
+                if (MongoDbAtlasEnabled) { await atlasMongoDb.UpsertAsync(IndexName, r.Value); }
 
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
@@ -144,7 +144,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
                 await this.TestVectorDbFiltering(postgres, i);
             }
 
-            if (AtlasMongoDbEnabled)
+            if (MongoDbAtlasEnabled)
             {
                 this._log.WriteLine("\n----- Atlas MongoDb vector DB -----");
                 await this.TestVectorDbFiltering(atlasMongoDb, i);

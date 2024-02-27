@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +7,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
-namespace Alkampfer.KernelMemory.AtlasMongoDb;
+namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IContentStorage
 {
@@ -31,23 +29,6 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
         await bucket.DropAsync(cancellationToken).ConfigureAwait(false);
 
         await this.Database.DropCollectionAsync(index, cancellationToken).ConfigureAwait(false);
-    }
-
-    public Task CreateDocumentDirectoryAsync(string index, string documentId,
-        CancellationToken cancellationToken = new CancellationToken())
-    {
-        //no need to create anything for the document
-        return Task.CompletedTask;
-    }
-
-    private static async Task<IAsyncCursor<GridFSFileInfo<string>>> GetFromBucketByIdAsync(string id, GridFSBucket<string> bucket, CancellationToken cancellationToken)
-    {
-        return await bucket.FindAsync(GetBucketFilterById(id), cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    private static FilterDefinition<GridFSFileInfo<string>> GetBucketFilterById(string id)
-    {
-        return Builders<GridFSFileInfo<string>>.Filter.Eq(x => x.Id, id);
     }
 
     public async Task EmptyDocumentDirectoryAsync(string index, string documentId,
@@ -135,17 +116,11 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
         }
     }
 
-    private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)
+    public Task CreateDocumentDirectoryAsync(string index, string documentId,
+        CancellationToken cancellationToken = new CancellationToken())
     {
-        var collection = this.GetCollection(index);
-
-        //upsert the doc based on the id
-        await collection.ReplaceOneAsync(
-            Builders<BsonDocument>.Filter.Eq("_id", id),
-            doc,
-            new ReplaceOptions { IsUpsert = true },
-            cancellationToken
-        ).ConfigureAwait(false);
+        //no need to create anything for the document
+        return Task.CompletedTask;
     }
 
     public async Task<BinaryData> ReadFileAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true,
@@ -212,5 +187,28 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
             memoryStream.Position = 0;
             return new BinaryData(memoryStream.ToArray());
         }
+    }
+
+    private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)
+    {
+        var collection = this.GetCollection(index);
+
+        //upsert the doc based on the id
+        await collection.ReplaceOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", id),
+            doc,
+            new ReplaceOptions { IsUpsert = true },
+            cancellationToken
+        ).ConfigureAwait(false);
+    }
+
+    private static async Task<IAsyncCursor<GridFSFileInfo<string>>> GetFromBucketByIdAsync(string id, GridFSBucket<string> bucket, CancellationToken cancellationToken)
+    {
+        return await bucket.FindAsync(GetBucketFilterById(id), cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    private static FilterDefinition<GridFSFileInfo<string>> GetBucketFilterById(string id)
+    {
+        return Builders<GridFSFileInfo<string>>.Filter.Eq(x => x.Id, id);
     }
 }

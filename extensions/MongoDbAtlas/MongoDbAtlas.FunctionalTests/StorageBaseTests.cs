@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
-using Alkampfer.KernelMemory.AtlasMongoDb;
-using KernelMemory.AtlasMongoDb.Helpers;
 using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.MongoDbAtlas;
+using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 
-namespace AtlasMongoDb.FunctionalTests;
+namespace MongoDbAtlas.FunctionalTests;
 
 public class StorageBaseTests : IDisposable
 {
     private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _output;
-    private readonly MongoDbKernelMemoryConfiguration _atlasMongoDbMemoryConfiguration;
+    private readonly MongoDbKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
     private MongoDbKernelMemoryStorage _sut;
 
     private readonly string IndexName = $"storagetestindex{_seed++}";
@@ -23,14 +23,14 @@ public class StorageBaseTests : IDisposable
         this._cfg = cfg;
         this._output = output;
 
-        this._atlasMongoDbMemoryConfiguration = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
-        this._atlasMongoDbMemoryConfiguration.DatabaseName += "StorageTests";
-        var ash = new AtlasSearchHelper(this._atlasMongoDbMemoryConfiguration.ConnectionString, this._atlasMongoDbMemoryConfiguration.DatabaseName);
+        this._mongoDbAtlasMemoryConfiguration = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        this._mongoDbAtlasMemoryConfiguration.DatabaseName += "StorageTests";
+        var ash = new AtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
 
         //delete everything for every collection
         ash.DropAllDocumentsFromCollectionsAsync().Wait();
 
-        this._sut = new MongoDbKernelMemoryStorage(this._atlasMongoDbMemoryConfiguration);
+        this._sut = new MongoDbKernelMemoryStorage(this._mongoDbAtlasMemoryConfiguration);
         this._sut.CreateIndexDirectoryAsync("testindex").Wait();
     }
 
@@ -49,7 +49,7 @@ public class StorageBaseTests : IDisposable
     }
 
     [Fact]
-    [Trait("Category", "AtlasMongoDb")]
+    [Trait("Category", "MongoDbAtlas")]
     public async Task SaveFilesHonorsId()
     {
         //Act save a file with the same id updating content.
@@ -67,7 +67,7 @@ public class StorageBaseTests : IDisposable
     }
 
     [Theory]
-    [Trait("Category", "AtlasMongoDb")]
+    [Trait("Category", "MongoDbAtlas")]
     [InlineData("txt", "Hello World", "Hello world 2")]
     [InlineData("text_embedding", @"{ ""Text"": ""Hello World"" }", @"{ ""Text"": ""Hello World 2"" }")]
     public async Task SaveDifferentFiles(string extension, string content1, string content2)
@@ -94,7 +94,7 @@ public class StorageBaseTests : IDisposable
     }
 
     [Fact]
-    [Trait("Category", "AtlasMongoDb")]
+    [Trait("Category", "MongoDbAtlas")]
     public async Task SaveFilesHonorsIdWithBinaryContent()
     {
         //Act save a file with the same id updating content.
@@ -113,7 +113,7 @@ public class StorageBaseTests : IDisposable
     }
 
     [Fact]
-    [Trait("Category", "AtlasMongoDb")]
+    [Trait("Category", "MongoDbAtlas")]
     public async Task SaveDifferentFilesWithBinaryContent()
     {
         //Act save a file with the same id updating content.
@@ -137,7 +137,7 @@ public class StorageBaseTests : IDisposable
     }
 
     [Fact]
-    [Trait("Category", "AtlasMongoDb")]
+    [Trait("Category", "MongoDbAtlas")]
     public async Task CanCleanIndexCorrectly()
     {
         //Arrange: save some files into the index

@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Alkampfer.KernelMemory.AtlasMongoDb</AssemblyName>
-        <RootNamespace>Alkampfer.KernelMemory.AtlasMongoDb</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
         <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
     </PropertyGroup>
 

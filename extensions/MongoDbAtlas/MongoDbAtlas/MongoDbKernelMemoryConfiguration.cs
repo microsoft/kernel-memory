@@ -2,10 +2,12 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Alkampfer.KernelMemory.AtlasMongoDb;
+namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 public class MongoDbKernelMemoryConfiguration
 {
+    private MongoClient _client = null!;
+
     public string ConnectionString { get; set; } = null!;
 
     public string DatabaseName { get; set; } = null!;
@@ -48,14 +50,12 @@ public class MongoDbKernelMemoryConfiguration
         return this;
     }
 
-    private MongoClient _client = null!;
-
     internal IMongoDatabase GetDatabase()
     {
         if (this._client == null)
         {
             var builder = new MongoUrlBuilder(this.ConnectionString);
-            if (!String.IsNullOrEmpty(this.DatabaseName))
+            if (!string.IsNullOrEmpty(this.DatabaseName))
             {
                 builder.DatabaseName = this.DatabaseName;
             }

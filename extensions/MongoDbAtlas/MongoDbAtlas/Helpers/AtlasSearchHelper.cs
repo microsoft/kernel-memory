@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace KernelMemory.AtlasMongoDb.Helpers;
+namespace Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 
 /// <summary>
 /// <para>Wrapper for ATLAS search indexes stuff</para>
@@ -21,7 +20,7 @@ namespace KernelMemory.AtlasMongoDb.Helpers;
 /// </ul>
 /// </para>
 /// </summary>
-public class AtlasSearchHelper
+internal sealed class AtlasSearchHelper
 {
     private readonly IMongoDatabase _db;
 
@@ -42,61 +41,6 @@ public class AtlasSearchHelper
     /// <param name="collectionName"></param>
     /// <returns></returns>
     public string GetIndexName(string collectionName) => $"searchix_{collectionName}";
-
-    /// <summary>
-    /// Retrieve information about an Atlas MongoDb index for a specific
-    /// collection name. If the index does not exists it returns null
-    /// </summary>
-    /// <param name="collectionName"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    private async Task<IndexInfo> GetIndexInfoAsync(string collectionName)
-    {
-        var collection = this._db.GetCollection<BsonDocument>(collectionName);
-        var pipeline = new BsonDocument[]
-        {
-            new BsonDocument
-            {
-                {
-                    "$listSearchIndexes",
-                    new BsonDocument
-                    {
-                        { "name", this.GetIndexName(collectionName) }
-                    }
-                }
-            }
-        };
-
-        //if collection does not exists, index does not exists
-        if (!await this.CollectionExistsAsync(collectionName).ConfigureAwait(false))
-        {
-            //index does not exists because collection does not exists
-            return s_falseIndexInfo;
-        }
-
-        var result = await collection.AggregateAsync<BsonDocument>(pipeline).ConfigureAwait(false);
-        var allIndexInfo = await result.ToListAsync().ConfigureAwait(false);
-
-        //Verify if we have information about the index.
-        if (allIndexInfo.Count == 0)
-        {
-            return s_falseIndexInfo;
-        }
-
-        if (allIndexInfo.Count > 1)
-        {
-            throw new Exception("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
-        }
-
-        var indexInfo = allIndexInfo[0];
-
-        var latestDefinition = indexInfo["latestDefinition"] as BsonDocument;
-        var mapping = latestDefinition["mappings"] as BsonDocument;
-
-        var deserializedMapping = BsonSerializer.Deserialize<AtlasMapping>(mapping);
-
-        return new IndexInfo(true, indexInfo["status"].AsString.ToLower(), deserializedMapping);
-    }
 
     /// <summary>
     /// Create an ATLAS index and return the id of the index. It also wait for the index to be
@@ -196,6 +140,7 @@ public class AtlasSearchHelper
     /// https://www.mongodb.com/docs/upcoming/reference/command/createSearchIndexes/
     /// </summary>
     /// <param name="collectionName"></param>
+    /// <param name="embeddingDimension"></param>
     /// <returns></returns>
     public BsonDocument CreateCreationCommand(string collectionName, int embeddingDimension)
     {
@@ -264,8 +209,6 @@ public class AtlasSearchHelper
         return collections.Any();
     }
 
-    private ConcurrentDictionary<string, HashSet<string>> _mappings = new ConcurrentDictionary<string, HashSet<string>>();
-
     /// <summary>
     /// Utility function to drop the entire database with all search indexes created.
     /// </summary>
@@ -299,6 +242,61 @@ public class AtlasSearchHelper
         }
     }
 
+    /// <summary>
+    /// Retrieve information about an Atlas MongoDb index for a specific
+    /// collection name. If the index does not exists it returns null
+    /// </summary>
+    /// <param name="collectionName"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private async Task<IndexInfo> GetIndexInfoAsync(string collectionName)
+    {
+        var collection = this._db.GetCollection<BsonDocument>(collectionName);
+        var pipeline = new BsonDocument[]
+        {
+            new BsonDocument
+            {
+                {
+                    "$listSearchIndexes",
+                    new BsonDocument
+                    {
+                        { "name", this.GetIndexName(collectionName) }
+                    }
+                }
+            }
+        };
+
+        //if collection does not exists, index does not exists
+        if (!await this.CollectionExistsAsync(collectionName).ConfigureAwait(false))
+        {
+            //index does not exists because collection does not exists
+            return s_falseIndexInfo;
+        }
+
+        var result = await collection.AggregateAsync<BsonDocument>(pipeline).ConfigureAwait(false);
+        var allIndexInfo = await result.ToListAsync().ConfigureAwait(false);
+
+        //Verify if we have information about the index.
+        if (allIndexInfo.Count == 0)
+        {
+            return s_falseIndexInfo;
+        }
+
+        if (allIndexInfo.Count > 1)
+        {
+            throw new Exception("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
+        }
+
+        var indexInfo = allIndexInfo[0];
+
+        var latestDefinition = indexInfo["latestDefinition"] as BsonDocument;
+        var mapping = latestDefinition["mappings"] as BsonDocument;
+
+        var deserializedMapping = BsonSerializer.Deserialize<AtlasMapping>(mapping);
+
+        return new IndexInfo(true, indexInfo["status"].AsString.ToLower(), deserializedMapping);
+    }
+
     private static readonly IndexInfo s_falseIndexInfo = new IndexInfo(false, "", null);
 
     public record IndexInfo(bool Exists, string Status, AtlasMapping Mapping);
@@ -310,7 +308,7 @@ public class AtlasMapping
     public bool Dynamic { get; set; }
 
     [BsonElement("fields")]
-    public Dictionary<string, FieldProperties> Fields { get; set; }
+    public Dictionary<string, FieldProperties>? Fields { get; set; }
 }
 
 public class FieldProperties

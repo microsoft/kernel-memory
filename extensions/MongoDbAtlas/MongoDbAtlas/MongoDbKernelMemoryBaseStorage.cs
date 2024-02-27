@@ -3,11 +3,12 @@ using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using System.Collections.Generic;
 
-namespace Alkampfer.KernelMemory.AtlasMongoDb;
+namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 public class MongoDbKernelMemoryBaseStorage
 {
     protected IMongoDatabase Database { get; private set; }
+
     protected MongoDbKernelMemoryConfiguration Config { get; private set; }
 
     /// <summary>

@@ -6,6 +6,7 @@ using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.TestHelpers;
 using StackExchange.Redis;
@@ -34,7 +35,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
         const bool RedisEnabled = true;
-        const bool AtlasMongoDbEnabled = true;
+        const bool MongoDbAtlasEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();
@@ -57,7 +58,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         }
 
         MongoDbVectorMemory atlasVectorDb = null;
-        if (AtlasMongoDbEnabled)
+        if (MongoDbAtlasEnabled)
         {
             atlasVectorDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
         }
@@ -82,7 +83,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
 
         if (RedisEnabled) { await redis.DeleteIndexAsync(IndexName); }
 
-        if (AtlasMongoDbEnabled) { await atlasVectorDb.DeleteIndexAsync(IndexName); }
+        if (MongoDbAtlasEnabled) { await atlasVectorDb.DeleteIndexAsync(IndexName); }
 
         await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -98,7 +99,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
 
         if (RedisEnabled) { await redis.CreateIndexAsync(IndexName, 3); }
 
-        if (AtlasMongoDbEnabled) { await atlasVectorDb.CreateIndexAsync(IndexName, 3); }
+        if (MongoDbAtlasEnabled) { await atlasVectorDb.CreateIndexAsync(IndexName, 3); }
 
         await simpleVecDb.CreateIndexAsync(IndexName, 3);
 
@@ -125,7 +126,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
 
             if (RedisEnabled) { await redis.UpsertAsync(IndexName, r.Value); }
 
-            if (AtlasMongoDbEnabled) { await atlasVectorDb.UpsertAsync(IndexName, r.Value); }
+            if (MongoDbAtlasEnabled) { await atlasVectorDb.UpsertAsync(IndexName, r.Value); }
 
             await simpleVecDb.UpsertAsync(IndexName, r.Value);
         }
@@ -166,7 +167,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
                 index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
         }
 
-        if (AtlasMongoDbEnabled)
+        if (MongoDbAtlasEnabled)
         {
             mongodbAtlasList = atlasVectorDb.GetSimilarListAsync(
                 index: IndexName, text: "text01", limit: 10, withEmbeddings: true);
@@ -200,7 +201,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             redisResults = await redisList.ToListAsync();
         }
 
-        if (AtlasMongoDbEnabled)
+        if (MongoDbAtlasEnabled)
         {
             mongodbAtlasResults = await mongodbAtlasList.ToListAsync();
         }
@@ -272,7 +273,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             }
         }
 
-        if (AtlasMongoDbEnabled)
+        if (MongoDbAtlasEnabled)
         {
             this._log.WriteLine($"\n\nAtlas Mongo DB: {mongodbAtlasResults.Count} results");
             previous = "0";
