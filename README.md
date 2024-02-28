@@ -238,7 +238,7 @@ configuration wizard included:
 
 Then run this command to start the Docker image with the configuration just created:
 
-    docker run --volume ./appsettings.Development.json:/app/data/appsettings.Production.json \
+    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json \
          -it --rm -p 9001:9001 kernelmemory/service
 
 ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
