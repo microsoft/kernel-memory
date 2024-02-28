@@ -230,6 +230,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas", "extensions\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas.FunctionalTests", "extensions\MongoDbAtlas\MongoDbAtlas.FunctionalTests\MongoDbAtlas.FunctionalTests.csproj", "{8A602227-B291-4F1B-ACB8-237F49501B6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCosmosDBMongoDB", "extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.csproj", "{8b62c632-9d70-4dc1-aeab-82d057a09a19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCosmosDBMongoDB.FunctionalTests", "extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.FunctionalTests\AzureCosmosDBMongoDB.FunctionalTests.csproj", "{27df6d22-92c2-44f1-8c2f-142cf607a96c}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "107-dotnet-SemanticKernel-TextCompletion", "examples\107-dotnet-SemanticKernel-TextCompletion\107-dotnet-SemanticKernel-TextCompletion.csproj", "{494B8590-F0B2-4D40-A895-F9D7BDF26250}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "208-dotnet-lmstudio", "examples\208-dotnet-lmstudio\208-dotnet-lmstudio.csproj", "{BC8057DA-CB40-4308-96FB-EF0100822BAD}"
@@ -324,6 +328,8 @@ Global
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{4A539320-EB49-4688-82E1-4FA0ADBB3810} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8A602227-B291-4F1B-ACB8-237F49501B6A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{8b62c632-9d70-4dc1-aeab-82d057a09a19} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{27df6d22-92c2-44f1-8c2f-142cf607a96c} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{A5D7FC55-C9AB-493C-83FD-1966A86542FB} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
@@ -517,6 +523,13 @@ Global
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Release|Any CPU.ActiveCfg = Release|Any CPU
