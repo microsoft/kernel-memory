@@ -39,6 +39,7 @@ var memory = new KernelMemoryBuilder()
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                             // => use Azure Blobs
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))  // => use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333")                                           // => use Qdrant to store memories
+    // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
     .Build<MemoryServerless>();
 
 // Use these boolean to enable/disable parts of the examples below
@@ -121,6 +122,18 @@ if (ingestion)
         Console.WriteLine("webPage1 already uploaded.");
     }
 
+    // Working with HTML files
+    toDelete.Add("htmlDoc001");
+    if (!await memory.IsDocumentReadyAsync(documentId: "htmlDoc001"))
+    {
+        Console.WriteLine("Uploading a HTML file about Apache Submarine project");
+        await memory.ImportDocumentAsync(new Document("htmlDoc001").AddFile("file7-submarine.html").AddTag("user", "Ela"));
+    }
+    else
+    {
+        Console.WriteLine("htmlDoc001 already uploaded.");
+    }
+
     // Custom pipelines, e.g. excluding summarization
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
@@ -185,6 +198,15 @@ if (retrieval)
                 : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
         }
     }
+
+    Console.WriteLine("\n====================================\n");
+
+    // Question about HTML content
+    question = "What's the latest version of Apache Submarine?";
+    Console.WriteLine($"Question: {question}");
+
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Ela"));
+    Console.WriteLine($"\nAnswer: {answer.Result}");
 
     Console.WriteLine("\n====================================\n");
 
@@ -288,6 +310,13 @@ For more information about the Artemis program, NASA has provided a link: https:
  - file5-NASA-news.pdf  - default/doc003/2255254b21a3497180209b2705d3953e [Tuesday, February 27, 2024]
 
 ====================================
+
+Question: What's the latest version of Apache Submarine?
+
+Answer: The latest version of Apache Submarine is 0.8.0, released on 2023-09-23.
+
+====================================
+
 
 Question: What is Orion?
 

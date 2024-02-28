@@ -78,7 +78,7 @@ and **features available only in Kernel Memory**:
 
 * 📝 MS Office: Word, Excel, PowerPoint
 * 📃 PDF documents
-* 🌐 Web pages
+* 🌐 Fetch web pages and HTML files
 * 🖼️ JPG/PNG/TIFF Images with text via OCR
 * 📄 MarkDown and Raw plain text
 * 💻 JSON files
