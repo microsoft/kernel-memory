@@ -36,11 +36,11 @@ var memory = memoryBuilder.Build<MemoryServerless>();
 
 Console.WriteLine("* Registering pipeline handlers...");
 
-memory.Orchestrator.AddHandler<TextExtractionHandler>("extract");
-memory.Orchestrator.AddHandler<TextPartitioningHandler>("partition");
-memory.Orchestrator.AddHandler<GenerateEmbeddingsHandler>("gen_embeddings");
+memory.Orchestrator.AddHandler<TextExtractionHandler>("extract_text");
+memory.Orchestrator.AddHandler<TextPartitioningHandler>("split_text_in_partitions");
+memory.Orchestrator.AddHandler<GenerateEmbeddingsHandler>("generate_embeddings");
 memory.Orchestrator.AddHandler<SummarizationHandler>("summarize");
-memory.Orchestrator.AddHandler<SaveRecordsHandler>("save_records");
+memory.Orchestrator.AddHandler<SaveRecordsHandler>("save_memory_records");
 
 /*********************************************************
  * Import files using custom handlers
@@ -56,6 +56,12 @@ await memory.ImportDocumentAsync(
         .AddFile("file5-NASA-news.pdf")
         .AddTag("testName", "example3"),
     index: "user-id-1",
-    steps: new[] { "extract", "partition", "gen_embeddings", "save_records" });
+    steps: new[]
+    {
+        "extract_text",
+        "split_text_in_partitions",
+        "generate_embeddings",
+        "save_memory_records"
+    });
 
 Console.WriteLine("* File import completed.");

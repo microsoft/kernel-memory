@@ -95,12 +95,11 @@ and **features available only in Kernel Memory**:
   [Elasticsearch (third party)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch),
   [Redis](https://redis.io),
   [Chroma (work in progress)](https://www.trychroma.com),
-  In memory KNN vectors (volatile),
-  On disk KNN vectors.
+  KNN vectors in memory (volatile),
+  KNN vectors on disk (persistent).
 * 🗂 Content storage: [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction),
   Local file system,
-  In memory,
-  volatile content.
+  In memory content (volatile).
 * ⏳ Orchestration: [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction),
   [RabbitMQ](https://www.rabbitmq.com),
   Local file based queues,

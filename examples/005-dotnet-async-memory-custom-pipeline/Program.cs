@@ -38,11 +38,11 @@ var memoryBuilder = new KernelMemoryBuilder(host.Services)
 
 Console.WriteLine("* Registering custom pipeline handlers...");
 
-host.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract");
-host.Services.AddHandlerAsHostedService<TextPartitioningHandler>("partition");
+host.Services.AddHandlerAsHostedService<TextExtractionHandler>("extract_text");
+host.Services.AddHandlerAsHostedService<TextPartitioningHandler>("split_text_in_partitions");
 host.Services.AddHandlerAsHostedService<SummarizationHandler>("summarize");
-host.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("gen_embeddings");
-host.Services.AddHandlerAsHostedService<SaveRecordsHandler>("save_records");
+host.Services.AddHandlerAsHostedService<GenerateEmbeddingsHandler>("generate_embeddings");
+host.Services.AddHandlerAsHostedService<SaveRecordsHandler>("save_memory_records");
 
 /*********************************************************
  * Start asynchronous handlers
@@ -73,7 +73,13 @@ string docId = await memory.ImportDocumentAsync(
         .AddFile("file4-KM-Readme.pdf")
         .AddFile("file5-NASA-news.pdf")
         .AddTag("testName", "example3"),
-    steps: new[] { "extract", "partition", "gen_embeddings", "save_records" });
+    steps: new[]
+    {
+        "extract_text",
+        "split_text_in_partitions",
+        "generate_embeddings",
+        "save_memory_records"
+    });
 
 Console.WriteLine("* File import started.");
 

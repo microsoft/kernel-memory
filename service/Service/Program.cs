@@ -81,7 +81,7 @@ internal static class Program
         // Inject memory client and its dependencies
         // Note: pass the current service collection to the builder, in order to start the pipeline handlers
         var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services)
-            .WithoutDefaultHandlers()
+            .WithoutDefaultHandlers() // Note: handlers must be enabled via configuration in appsettings.json and/or appsettings.<env>.json
             .FromAppSettings();
 
         // Build the memory client and make it available for dependency injection
