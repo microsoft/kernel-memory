@@ -175,12 +175,10 @@ public class TextExtractionHandler : IPipelineStepHandler
                 content = new PdfDecoder().ExtractContent(fileContent);
                 break;
 
-#if KernelMemoryDev
             case MimeTypes.Html:
                 this._log.LogDebug("Extracting text from HTML file {0}", uploadedFile.Name);
                 content = new HtmlDecoder().ExtractContent(fileContent);
                 break;
-#endif
 
             case MimeTypes.WebPageUrl:
                 var url = fileContent.ToString();
