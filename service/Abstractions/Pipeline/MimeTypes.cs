@@ -10,6 +10,7 @@ public static class MimeTypes
 {
     public const string PlainText = "text/plain";
     public const string MarkDown = "text/plain-markdown";
+    public const string Html = "text/html";
     public const string MsWord = "application/msword";
     public const string MsPowerPoint = "application/mspowerpoint";
     public const string MsExcel = "application/msexcel";
@@ -34,6 +35,8 @@ public static class FileExtensions
     public const string MsPowerPoint = ".pptx";
     public const string MsExcel = ".xlsx";
     public const string Pdf = ".pdf";
+    public const string Htm = ".htm";
+    public const string Html = ".html";
     public const string WebPageUrl = ".url";
     public const string TextEmbeddingVector = ".text_embedding";
     public const string ImageBmp = ".bmp";
@@ -62,6 +65,8 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.ImageTiff, MimeTypes.ImageTiff },
             { FileExtensions.Json, MimeTypes.Json },
             { FileExtensions.MarkDown, MimeTypes.MarkDown },
+            { FileExtensions.Htm, MimeTypes.Html },
+            { FileExtensions.Html, MimeTypes.Html },
             { FileExtensions.WebPageUrl, MimeTypes.WebPageUrl },
             { FileExtensions.MsWord, MimeTypes.MsWord },
             { FileExtensions.MsWordX, MimeTypes.MsWord },
