@@ -1,7 +1,7 @@
 ﻿<Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.29.0</Version>
+        <Version>0.30.0</Version>
 
         <!-- These are set at the project level-->
         <IsPackable>false</IsPackable>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.WebService;
 
@@ -24,40 +25,37 @@ internal static class WebAPIEndpoints
 
         var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
 
-        app.UseGetStatusEndpoint(config, authFilter);
-        app.UsePostUploadEndpoint(config, authFilter);
-        app.UseGetIndexesEndpoint(config, authFilter);
-        app.UseDeleteIndexesEndpoint(config, authFilter);
-        app.UseDeleteDocumentsEndpoint(config, authFilter);
-        app.UseAskEndpoint(config, authFilter);
-        app.UseSearchEndpoint(config, authFilter);
-        app.UseUploadStatusEndpoint(config, authFilter);
+        app.UseGetStatusEndpoint(authFilter);
+        app.UsePostUploadEndpoint(authFilter);
+        app.UseGetIndexesEndpoint(authFilter);
+        app.UseDeleteIndexesEndpoint(authFilter);
+        app.UseDeleteDocumentsEndpoint(authFilter);
+        app.UseAskEndpoint(authFilter);
+        app.UseSearchEndpoint(authFilter);
+        app.UseUploadStatusEndpoint(authFilter);
     }
 
-    public static void UseGetStatusEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseGetStatusEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Simple ping endpoint
-        app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
-                                         "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                                                       - s_start.ToUnixTimeSeconds()) + " secs " +
-                                         $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
-            .AddEndpointFilter(authFilter)
+        var route = app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
+                                                     "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                                                                   - s_start.ToUnixTimeSeconds()) + " secs " +
+                                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
             .Produces<string>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UsePostUploadEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UsePostUploadEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // File upload endpoint
-        app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
+        var route = app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 IKernelMemory service,
-                ILogger<Program> log,
+                ILogger<WebAPIEndpoint> log,
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New upload HTTP request");
@@ -93,23 +91,22 @@ internal static class WebAPIEndpoints
                     return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
                 }
             })
-            .AddEndpointFilter(authFilter)
             .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseGetIndexesEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseGetIndexesEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // List of indexes endpoint
-        app.MapGet(Constants.HttpIndexesEndpoint,
+        var route = app.MapGet(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     IKernelMemory service,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New index list HTTP request");
@@ -125,23 +122,22 @@ internal static class WebAPIEndpoints
 
                     return Results.Ok(result);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<IndexCollection>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseDeleteIndexesEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseDeleteIndexesEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Delete index endpoint
-        app.MapDelete(Constants.HttpIndexesEndpoint,
+        var route = app.MapDelete(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     IKernelMemory service,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
@@ -155,25 +151,24 @@ internal static class WebAPIEndpoints
                         Message = "Index deletion request received, pipeline started"
                     });
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseDeleteDocumentsEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseDeleteDocumentsEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Delete document endpoint
-        app.MapDelete(Constants.HttpDocumentsEndpoint,
+        var route = app.MapDelete(Constants.HttpDocumentsEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory service,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
@@ -189,22 +184,21 @@ internal static class WebAPIEndpoints
                         Message = "Document deletion request received, pipeline started"
                     });
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseAskEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseAskEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Ask endpoint
-        app.MapPost(Constants.HttpAskEndpoint,
+        var route = app.MapPost(Constants.HttpAskEndpoint,
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search request");
@@ -217,22 +211,21 @@ internal static class WebAPIEndpoints
                         .ConfigureAwait(false);
                     return Results.Ok(answer);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<MemoryAnswer>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseSearchEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseSearchEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Search endpoint
-        app.MapPost(Constants.HttpSearchEndpoint,
+        var route = app.MapPost(Constants.HttpSearchEndpoint,
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search HTTP request");
@@ -246,25 +239,24 @@ internal static class WebAPIEndpoints
                         .ConfigureAwait(false);
                     return Results.Ok(answer);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<SearchResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseUploadStatusEndpoint(this WebApplication app, KernelMemoryConfig config, HttpAuthEndpointFilter authFilter)
+    public static void UseUploadStatusEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
-
         // Document status endpoint
-        app.MapGet(Constants.HttpUploadStatusEndpoint,
+        var route = app.MapGet(Constants.HttpUploadStatusEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory memoryClient,
-                    ILogger<Program> log,
+                    ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New document status HTTP request");
@@ -289,11 +281,20 @@ internal static class WebAPIEndpoints
 
                     return Results.Ok(pipeline);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
+
+    // Class used to tag log entries and allow log filtering
+    // ReSharper disable once ClassNeverInstantiated.Local
+#pragma warning disable CA1812 // used by logger, can't be static
+    private sealed class WebAPIEndpoint
+    {
+    }
+#pragma warning restore CA1812
 }

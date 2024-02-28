@@ -39,7 +39,7 @@ using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.Service;
 
-internal sealed class Program
+internal static class Program
 {
     public static void Main(string[] args)
     {
@@ -78,8 +78,11 @@ internal sealed class Program
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
-        // Prepare memory instance using configuration settings
-        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings();
+        // Inject memory client and its dependencies
+        // Note: pass the current service collection to the builder, in order to start the pipeline handlers
+        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services)
+            .WithoutDefaultHandlers() // Note: handlers must be enabled via configuration in appsettings.json and/or appsettings.<env>.json
+            .FromAppSettings();
 
         // Build the memory client and make it available for dependency injection
         appBuilder.Services.AddSingleton<IKernelMemory>(memoryBuilder.Build());
@@ -119,6 +122,7 @@ internal sealed class Program
             config.ServiceAuthorization.Enabled,
             config.Service.RunHandlers);
 
+        // Start web service and handler services
         app.Run();
     }
 }

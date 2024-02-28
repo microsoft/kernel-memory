@@ -76,39 +76,34 @@ and **features available only in Kernel Memory**:
 
 # Supported Data formats and Backends
 
-* MS Office: Word, Excel, PowerPoint
-* PDF documents
-* Web pages
-* JPG/PNG/TIFF Images with text via OCR
-* MarkDown and Raw plain text
-* JSON files
-* 🧠 AI
-    * [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models)
-    * [OpenAI](https://platform.openai.com/docs/models)
-    * LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp)
-    * [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
-
-* ↗️ Vector storage
-    * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
-    * [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres)
-    * [Qdrant](https://qdrant.tech)
-    * [MSSQL Server (third party)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer)
-    * [Elasticsearch (third party)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch)
-    * [Redis](https://redis.io)
-    * [Chroma (work in progress)](https://www.trychroma.com)
-    * In memory KNN vectors (volatile)
-    * On disk KNN vectors
-
-* 📀 Content storage
-    * [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction)
-    * Local file system
-    * In memory, volatile content
-
-* ⏳ Orchestration
-    * [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction)
-    * [RabbitMQ](https://www.rabbitmq.com)
-    * Local file based queue
-    * In memory queues (volatile)
+* 📝 MS Office: Word, Excel, PowerPoint
+* 📃 PDF documents
+* 🌐 Web pages
+* 🖼️ JPG/PNG/TIFF Images with text via OCR
+* 📄 MarkDown and Raw plain text
+* 💻 JSON files
+* 💡 AI:
+  [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models),
+  [OpenAI](https://platform.openai.com/docs/models),
+  LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp),
+  [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
+* 🧠 Vector storage:
+  [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search),
+  [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres),
+  [Qdrant](https://qdrant.tech),
+  [MSSQL Server (third party)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer),
+  [Elasticsearch (third party)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch),
+  [Redis](https://redis.io),
+  [Chroma (work in progress)](https://www.trychroma.com),
+  KNN vectors in memory (volatile),
+  KNN vectors on disk (persistent).
+* 🗂 Content storage: [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction),
+  Local file system,
+  In memory content (volatile).
+* ⏳ Orchestration: [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction),
+  [RabbitMQ](https://www.rabbitmq.com),
+  Local file based queues,
+  In memory queues (volatile).
 
 # Kernel Memory in serverless mode
 
@@ -217,7 +212,7 @@ However, if you are in one of these scenarios:
   logic**
 
 then you can deploy Kernel Memory as a service, plugging in the
-default handlers or your custom Python/TypeScript/Java/etc. handlers,
+default handlers, or your custom Python/TypeScript/Java/etc. handlers,
 and leveraging the asynchronous non-blocking memory encoding process,
 sending documents and asking questions using the **MemoryWebClient**.
 
@@ -300,30 +295,23 @@ customize the steps, which will be handled by your custom business logic:
 
 ```csharp
 // Memory setup, e.g. how to calculate and where to store embeddings
-var memoryBuilder = new KernelMemoryBuilder().WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
-memoryBuilder.Build();
-var orchestrator = memoryBuilder.GetOrchestrator();
+var memoryBuilder = new KernelMemoryBuilder()
+    .WithoutDefaultHandlers()
+    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
 
-// Define custom .NET handlers
-var step1 = new MyHandler1("step1", orchestrator);
-var step2 = new MyHandler2("step2", orchestrator);
-var step3 = new MyHandler3("step3", orchestrator);
-await orchestrator.AddHandlerAsync(step1);
-await orchestrator.AddHandlerAsync(step2);
-await orchestrator.AddHandlerAsync(step3);
+var memory = memoryBuilder.Build();
 
-// Instantiate a custom pipeline
-var pipeline = orchestrator
-    .PrepareNewFileUploadPipeline("user-id-1", "mytest", new[] { "memory-collection" })
-    .AddUploadFile("file1", "file1.docx", "file1.docx")
-    .AddUploadFile("file2", "file2.pdf", "file2.pdf")
-    .Then("step1")
-    .Then("step2")
-    .Then("step3")
-    .Build();
+// Plug in custom .NET handlers
+memory.Orchestrator.AddHandler<MyHandler1>("step1");
+memory.Orchestrator.AddHandler<MyHandler2>("step2");
+memory.Orchestrator.AddHandler<MyHandler3>("step3");
 
-// Execute in process, process all files with all the handlers
-await orchestrator.RunPipelineAsync(pipeline);
+// Use the custom handlers with the memory object
+await memory.ImportDocumentAsync(
+    new Document("mytest001")
+        .AddFile("file1.docx")
+        .AddFile("file2.pdf"),
+    steps: new[] { "step1", "step2", "step3" });
 ```
 
 # Web API specs
@@ -337,31 +325,35 @@ running the service locally with OpenAPI enabled.
 
 1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
-3. [Using KM Plugin for Semantic Kernel](examples/002-dotnet-SemanticKernelPlugin)
+3. [Using KM Plugin for Semantic Kernel](examples/002-dotnet-SemanticKernel-plugin)
 4. [Importing files and asking question without running the service (serverless mode)](examples/003-dotnet-Serverless)
-5. [Processing files with custom steps](examples/004-dotnet-ServerlessCustomPipeline)
-6. [Upload files and ask questions from command line using curl](examples/005-curl-calling-webservice)
-7. [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
-8. [Custom partitioning/text chunking options](examples/102-dotnet-custom-partitioning-options)
-9. [Using a custom embedding/vector generator](examples/103-dotnet-custom-EmbeddingGenerator)
-10. [Using custom LLMs](examples/104-dotnet-custom-LLM)
-11. [Using LLama](examples/105-dotnet-serverless-llamasharp)
-12. [Summarizing documents](examples/106-dotnet-retrieve-synthetics)
-11. [Natural language to SQL examples](examples/200-dotnet-nl2sql)
-12. [Writing and using a custom ingestion handler](examples/201-dotnet-InProcessMemoryWithCustomHandler)
-13. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-CustomHandlerAsAService)
-14. [Test project linked to KM package from nuget.org](examples/203-dotnet-using-core-nuget)
-15. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-16. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+5. [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
+6. [Processing files with custom logic (custom handlers) in asynchronous mode](examples/005-dotnet-AsyncMemoryCustomPipeline)
+7. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
+8. [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
+9. [Custom partitioning/text chunking options](examples/102-dotnet-custom-partitioning-options)
+10. [Using a custom embedding/vector generator](examples/103-dotnet-custom-EmbeddingGenerator)
+11. [Using custom LLMs](examples/104-dotnet-custom-LLM)
+12. [Using LLama](examples/105-dotnet-serverless-llamasharp)
+13. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
+14. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
+15. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+16. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+17. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+18. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+19. [Expanding chunks retrieving adjacent partitions](examples/206-dotnet-configuration-and-logging)
 
 ## Tools
 
-1. [Curl script to upload files](tools/upload-file.sh)
-2. [Curl script to ask questions](tools/ask.sh)
-3. [Curl script to search documents](tools/search.sh)
-4. [Script to start Qdrant for development tasks](tools/run-qdrant.sh)
-5. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
-6. [.NET appsettings.json generator](tools/InteractiveSetup)
+1. [.NET appsettings.json generator](tools/InteractiveSetup)
+2. [Curl script to upload files](tools/upload-file.sh)
+3. [Curl script to ask questions](tools/ask.sh)
+4. [Curl script to search documents](tools/search.sh)
+5. [Script to start Qdrant for development tasks](tools/run-qdrant.sh)
+6. [Script to start Elasticsearch for development tasks](tools/run-elasticsearch.sh)
+7. [Script to start MS SQL Server for development tasks](tools/run-mssql.sh)
+8. [Script to start Redis for development tasks](tools/run-redis.sh)
+9. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
 
 ### .NET packages
 
