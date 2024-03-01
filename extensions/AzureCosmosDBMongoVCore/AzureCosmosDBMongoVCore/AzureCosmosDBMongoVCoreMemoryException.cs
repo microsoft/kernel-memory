@@ -4,10 +4,10 @@ using System;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore;
 
-public class AzureCosmosDBMongoVCorehMemoryException : KernelMemoryException
+public class AzureCosmosDBMongoVCoreMemoryException : KernelMemoryException
 {
     /// <inheritdoc />
-    public AzureCosmosDBMongoVCorehMemoryException()
+    public AzureCosmosDBMongoVCoreMemoryException()
     {
     }
 

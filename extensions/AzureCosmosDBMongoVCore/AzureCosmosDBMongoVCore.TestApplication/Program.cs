@@ -2,19 +2,21 @@
 
 using System;
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore;
 using Microsoft.KernelMemory.MemoryStorage;
-using MongoClient;
+using MongoDB.Driver;
 
 namespace AzureCosmosDBMongoVCore.TestApplication;
 
 public static class Program
 {
     // Azure Cosmos DB Mongo vCore Database Name
-    private const string DatabaseName = "cosmos_test_db"
+    private const string DatabaseName = "cosmos_test_db";
 
     // Azure Cosmos DB Mongo vCore Collection Name
-    private const string CollectionName = "cosmos_test_collection"
+    private const string CollectionName = "cosmos_test_collection";
 
     private const string Text1 = "this is test 1";
     private const string Text2 = "this is test 2";
@@ -30,7 +32,7 @@ public static class Program
 
         Console.WriteLine("++++ CREATE INDEX ++++");
 
-        await memory.CreateIndexAsync("default_index", embedding[0].Length);
+        await memory.CreateIndexAsync("default_index", embeddings[0].Length);
 
         Console.WriteLine("++++ LIST INDEXES ++++");
 
@@ -57,7 +59,7 @@ public static class Program
             Payload = new Dictionary<string, object>()
         };
 
-        var id1 = await memory.UpsertAsync("default_index", memoryRecord1)
+        var id1 = await memory.UpsertAsync("default_index", memoryRecord1);
         Console.WriteLine($"Insert 1: {id1} {memoryRecord1.Id}");
 
         var id2 = await memory.UpsertAsync("default_index", memoryRecord2);
@@ -68,7 +70,7 @@ public static class Program
 
         var memoryRecord3 = new MemoryRecord
         {
-            Id = "memory three",
+            Id = "memory 3",
             Vector = embeddings[1],
             Tags = new TagCollection { { "type", "news" } },
             Payload = new Dictionary<string, object>()
@@ -86,10 +88,11 @@ public static class Program
         Console.WriteLine("===== SEARCH 1 =====");
 
         var similarList = memory.GetSimilarListAsync(
-            "default_index", text: Text1, limit: 10, withEmbeddings; true);
+            "default_index", text: Text1, limit: 10, withEmbeddings: true, minRelevance:0.7);
         await foreach((MemoryRecord, double) record in similarList)
         {
             Console.WriteLine(record.Item1.Id);
+            Console.WriteLine("  score: " + record.Item2);
             Console.WriteLine("  tags: " + record.Item1.Tags.Count);
             Console.WriteLine("  size: " + record.Item1.Vector.Length);
         }    
@@ -97,14 +100,16 @@ public static class Program
         Console.WriteLine("===== DELETE =====");
 
         await memory.DeleteAsync("test", new MemoryRecord { Id = "memory 1" });
+        await memory.DeleteAsync("test", new MemoryRecord { Id = "memory 2" });
+        await memory.DeleteAsync("test", new MemoryRecord { Id = "memory 3" });
         
         Console.WriteLine("== Done ==");
 
     }
 
-    private static async Task<(RedisMemory, Embedding[])> SetupAsync()
+    private static async Task<(AzureCosmosDBMongoVCoreMemory, Embedding[])> SetupAsync()
     {
-        IConfiguration config = new ConfigurationBuilder()
+        IConfiguration cfg = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
@@ -112,19 +117,19 @@ public static class Program
         var config = cfg.GetSection("KernelMemory:Services:AzureCosmosDBMongoVCore").Get<AzureCosmosDBMongoVCoreConfig>()
                      ?? throw new ArgumentNullException(message: "AzureAISearch config not found", null);         
         var openAIConfig = cfg.GetSection("KernelMemory:Service:OpenAI").Get<OpenAIConfig>();
-
+        var useRealEmbeddingGenerator = cfg.GetValue<bool>("UseRealEmbeddingGenerator");
         ITextEmbeddingGenerator embeddingGenerator;
-        useRealEmbeddingGenerator = !string.IsNullOrEmpty(openAIConfig.APIKey)
+
         if (useRealEmbeddingGenerator)
         {
-            embeddingGenerator = new OpenAITextEmbeddingGenerator(openAIConfig, log: null)
+            embeddingGenerator = new OpenAITextEmbeddingGenerator(openAIConfig, log: null);
         } 
         else
         {
             embeddingGenerator = new MockEmbeddingGenerator();
         }
 
-        var memory = AzureCosmosDBMongoVCoreMemory(config, embeddingGenerator, databaseName, collectionName)
+        var memory = new AzureCosmosDBMongoVCoreMemory(config, embeddingGenerator, DatabaseName, CollectionName);
 
         Embedding embedding1 = new[] { 0f, 0, 1, 0, 1 };
         Embedding embedding2 = new[] { 0, 0, 0.95f, 0.01f, 0.95f };

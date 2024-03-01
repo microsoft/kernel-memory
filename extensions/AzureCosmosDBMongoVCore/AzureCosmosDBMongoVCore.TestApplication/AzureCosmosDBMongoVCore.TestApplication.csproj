@@ -10,14 +10,20 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
         <NoWarn>$(NoWarn);CA1050,CA2007,CA1826,CA1303,CA1307,SKEXP0001</NoWarn>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\OpenAI\OpenAI.csproj"/>
         <ProjectReference Include="..\AzureCosmosDBMongoVCore\AzureCosmosDBMongoVCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="MongoDB.Driver" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
     </ItemGroup>
 
 </Project>

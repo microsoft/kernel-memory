@@ -6,6 +6,7 @@
         <AssemblyName>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore</RootNamespace>
         <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +17,10 @@
     <ItemGroup>
         <PackageReference Include="System.Linq.Async"/>
         <PackageReference Include="MongoDB.Driver"/>
+    </ItemGroup>
+       
+    <ItemGroup>
+        <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
     </ItemGroup>
 
     <ItemGroup>
