@@ -8,21 +8,16 @@ using Microsoft.TestHelpers;
 
 namespace MongoDbAtlas.FunctionalTests;
 
-public class DefaultTests : BaseFunctionalTestCase
+public abstract class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
     private readonly MongoDbKernelMemoryConfiguration _atlasMongoDbMemoryConfiguration;
 
-    public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    protected DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._atlasMongoDbMemoryConfiguration = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
-
-        this._atlasMongoDbMemoryConfiguration
-            .WithSingleCollectionForVectorSearch(true)
-            //Need to wait for atlas to grab the data from the collection and index.
-            .WithAfterIndexCallback(async () => await Task.Delay(2000));
+        this._atlasMongoDbMemoryConfiguration = this.GetConfiguration(cfg);
 
         //Clear all content in any collection before running the test.
         var ash = new AtlasSearchHelper(this._atlasMongoDbMemoryConfiguration.ConnectionString, this._atlasMongoDbMemoryConfiguration.DatabaseName);
@@ -45,6 +40,8 @@ public class DefaultTests : BaseFunctionalTestCase
             .WithMongoDbAtlasMemoryDb(this._atlasMongoDbMemoryConfiguration)
             .Build<MemoryServerless>();
     }
+
+    protected abstract MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
 
     [Fact]
     [Trait("Category", "MongoDbAtlas")]
@@ -107,5 +104,39 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItSupportsTags()
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
+    }
+}
+
+public class SingleCollectionDefaultTests : DefaultTests
+{
+    public SingleCollectionDefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    {
+    }
+
+    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    {
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        config
+            .WithSingleCollectionForVectorSearch(true)
+            //Need to wait for atlas to grab the data from the collection and index.
+            .WithAfterIndexCallback(async () => await Task.Delay(2000));
+        return config;
+    }
+}
+
+public class MultipleCollectionDefaultTests : DefaultTests
+{
+    public MultipleCollectionDefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    {
+    }
+
+    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    {
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        config
+            .WithSingleCollectionForVectorSearch(false)
+            //Need to wait for atlas to grab the data from the collection and index.
+            .WithAfterIndexCallback(async () => await Task.Delay(2000));
+        return config;
     }
 }

@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas.Helpers;
@@ -63,14 +61,23 @@ internal sealed class AtlasSearchHelper
         var status = await this.GetIndexInfoAsync(collectionName).ConfigureAwait(false);
         if (status.Exists)
         {
-            return status;
+            //index exists, but we found that status is "does_not_exist" this identify a stale state.
+            if (status.Status == "does_not_exist")
+            {
+                //delete the index and recreate it.
+                await this.DeleteIndicesAsync(collectionName).ConfigureAwait(false);
+            }
+            else
+            {
+                return status;
+            }
         }
 
         //now I can create the index.
         var command = this.CreateCreationCommand(collectionName, embeddingDimension);
         var result = await this._db.RunCommandAsync<BsonDocument>(command).ConfigureAwait(false);
         var creationResult = result["indexesCreated"] as BsonArray;
-        if (creationResult.Count == 0)
+        if (creationResult == null || creationResult.Count == 0)
         {
             return s_falseIndexInfo;
         }
@@ -86,8 +93,7 @@ internal sealed class AtlasSearchHelper
     {
         var pipeline = new BsonDocument[]
         {
-            new BsonDocument
-            {
+            new() {
                 {
                     "$listSearchIndexes",
                     new BsonDocument
@@ -127,7 +133,7 @@ internal sealed class AtlasSearchHelper
         while (DateTime.UtcNow < maxWait)
         {
             var indexInfo = await this.GetIndexInfoAsync(collectionName).ConfigureAwait(false);
-            if (indexInfo.Exists && indexInfo.Status != "pending")
+            if (indexInfo.Exists && indexInfo.Queryable)
             {
                 return;
             }
@@ -153,42 +159,43 @@ internal sealed class AtlasSearchHelper
                     new BsonDocument
                     {
                         { "name", this.GetIndexName(collectionName) },
+                        { "type", "vectorSearch" },
                         {
                             "definition", new BsonDocument
                             {
-                                { "mappings", this.GetMappings(embeddingDimension) },
-                                { "analyzers", this.GetAnalyzersList() },
+                                {
+                                    "fields", new BsonArray()
+                                    {
+                                        new BsonDocument()
+                                        {
+                                            { "path", "Embedding" },
+                                            { "type", "vector" },
+                                            { "numDimensions", embeddingDimension },
+                                            { "similarity", "cosine" }
+                                        },
+                                        new BsonDocument()
+                                        {
+                                            { "type", "filter" },
+                                            { "path", "Index" }
+                                        },
+                                        new BsonDocument()
+                                        {
+                                            { "type", "filter" },
+                                            { "path", "Tags.Key" }
+                                        },
+                                        new BsonDocument()
+                                        {
+                                            { "type", "filter" },
+                                            { "path", "Tags.Values" }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         };
-    }
-
-    /// <summary>
-    /// https://www.mongodb.com/docs/atlas/atlas-search/define-field-mappings/#std-label-fts-field-mappings
-    /// Create the mappings for AtlasMongoDB
-    /// </summary>
-    /// <param name="numberOfDimensions"></param>
-    /// <returns></returns>
-    private BsonDocument GetMappings(int numberOfDimensions)
-    {
-        var mappings = new BsonDocument();
-
-        mappings["dynamic"] = true;
-
-        var fields = new BsonDocument();
-        mappings["fields"] = fields;
-
-        fields["embedding"] = new BsonDocument
-        {
-            { "type", "knnVector" },
-            { "dimensions", numberOfDimensions },
-            { "similarity", "cosine" }
-        };
-
-        return mappings;
     }
 
     /// <summary>
@@ -288,73 +295,11 @@ internal sealed class AtlasSearchHelper
         }
 
         var indexInfo = allIndexInfo[0];
-
-        var latestDefinition = indexInfo["latestDefinition"] as BsonDocument;
-        var mapping = latestDefinition["mappings"] as BsonDocument;
-
-        var deserializedMapping = BsonSerializer.Deserialize<AtlasMapping>(mapping);
-
-        return new IndexInfo(true, indexInfo["status"].AsString.ToLower(), deserializedMapping);
+        var status = indexInfo["status"]!.AsString!.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+        return new IndexInfo(true, status, indexInfo["queryable"].AsBoolean);
     }
 
-    private static readonly IndexInfo s_falseIndexInfo = new IndexInfo(false, "", null);
+    private static readonly IndexInfo s_falseIndexInfo = new IndexInfo(false, "", false);
 
-    public record IndexInfo(bool Exists, string Status, AtlasMapping Mapping);
-}
-
-public class AtlasMapping
-{
-    [BsonElement("dynamic")]
-    public bool Dynamic { get; set; }
-
-    [BsonElement("fields")]
-    public Dictionary<string, FieldProperties>? Fields { get; set; }
-}
-
-public class FieldProperties
-{
-    [BsonElement("type")]
-    public string Type { get; set; }
-
-    [BsonElement("analyzer")]
-    public string Analyzer { get; set; }
-
-    [BsonElement("store")]
-    public bool Store { get; set; }
-
-    [BsonElement("vector")]
-    public VectorProperties Vector { get; set; }
-
-    [BsonElement("multi")]
-    public Dictionary<string, MultiProperties> Multi { get; set; }
-
-    [BsonElement("dimensions")]
-    public int Dimensions { get; set; }
-
-    [BsonElement("similarity")]
-    public string Similarity { get; set; }
-}
-
-public class VectorProperties
-{
-    [BsonElement("dimensions")]
-    public int Dimensions { get; set; }
-
-    [BsonElement("method")]
-    public string Method { get; set; }
-
-    [BsonElement("distance")]
-    public string Distance { get; set; }
-
-    [BsonElement("sparse")]
-    public bool Sparse { get; set; }
-}
-
-public class MultiProperties
-{
-    [BsonElement("analyzer")]
-    public string Analyzer { get; set; }
-
-    [BsonElement("type")]
-    public string Type { get; set; }
+    public record IndexInfo(bool Exists, string Status, Boolean Queryable);
 }

@@ -7,24 +7,23 @@ using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 
 namespace MongoDbAtlas.FunctionalTests;
 
-public class StorageBaseTests : IDisposable
+public abstract class StorageBaseTests : IDisposable
 {
     private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _output;
     private readonly MongoDbKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
-    private MongoDbKernelMemoryStorage _sut;
+    private readonly MongoDbKernelMemoryStorage _sut;
 
     private readonly string IndexName = $"storagetestindex{_seed++}";
 
     private static int _seed = 0;
 
-    public StorageBaseTests(IConfiguration cfg, ITestOutputHelper output)
+    protected StorageBaseTests(IConfiguration cfg, ITestOutputHelper output)
     {
         this._cfg = cfg;
         this._output = output;
 
-        this._mongoDbAtlasMemoryConfiguration = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
-        this._mongoDbAtlasMemoryConfiguration.DatabaseName += "StorageTests";
+        this._mongoDbAtlasMemoryConfiguration = this.GetConfiguration(cfg);
         var ash = new AtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
 
         //delete everything for every collection
@@ -33,6 +32,8 @@ public class StorageBaseTests : IDisposable
         this._sut = new MongoDbKernelMemoryStorage(this._mongoDbAtlasMemoryConfiguration);
         this._sut.CreateIndexDirectoryAsync("testindex").Wait();
     }
+
+    protected abstract MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
 
     public void Dispose()
     {
@@ -155,5 +156,35 @@ public class StorageBaseTests : IDisposable
         //Assert: check that the files are not there anymore
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName1, false));
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName2, false));
+    }
+}
+
+public class SingleCollectionBaseTests : StorageBaseTests
+{
+    public SingleCollectionBaseTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    {
+    }
+
+    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    {
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        config.DatabaseName += "StorageTests";
+        config.UseSingleCollectionForVectorSearch = true;
+        return config;
+    }
+}
+
+public class MultipleCollectionBaseTests : StorageBaseTests
+{
+    public MultipleCollectionBaseTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    {
+    }
+
+    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    {
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        config.DatabaseName += "StorageTests";
+        config.UseSingleCollectionForVectorSearch = false;
+        return config;
     }
 }

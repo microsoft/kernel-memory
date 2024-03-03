@@ -81,7 +81,7 @@ Once you installed Atlas CLI you can create a local MongoDB Atlas cluster with t
  atlas deployments setup --type local
 ```
 
-You can follow instruction, pleae select MongoDB 7 as version because the corresponding KernelMemory uses knnBeta that is supported in latest version.
+You can follow instruction, you can use both 6 or 7 version of MongoDB Atlas.
 
 You can then list all of your environment with
 

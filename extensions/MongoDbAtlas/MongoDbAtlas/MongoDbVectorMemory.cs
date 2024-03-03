@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -63,7 +62,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         {
             //actually if we use a single collection we do not delete the entire collection we simply delete records of the index
             var collection = this.GetCollectionFromIndexName(index);
-            await collection.DeleteManyAsync(x => x["index"] == normalizedIndexName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.DeleteManyAsync(x => x.Index == normalizedIndexName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -87,7 +86,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     public Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollectionFromIndexName(index);
-        return collection.DeleteOneAsync(x => x["_id"] == record.Id, cancellationToken: cancellationToken);
+        return collection.DeleteOneAsync(x => x.Id == record.Id, cancellationToken: cancellationToken);
     }
 
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
@@ -102,20 +101,19 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
             limit = 10;
         }
 
-        //need to create a search query and execute it
-        var normalizedIndexName = NormalizeIndexName(index);
-        var conditions = new BsonArray();
-        this.ConvertsFilterToConditions(normalizedIndexName, filters, conditions);
-        BsonDocument[] pipeline = this.CreatePipeline(normalizedIndexName, conditions, limit, null);
-
+        //need to create a query and execute it without using $vector
         var collection = this.GetCollectionFromIndexName(index);
+        var finalFilter = this.TranslateFilters(filters, index);
 
-        using var cursor = await collection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
+        // we need to performa a simple query without using vector search
+        var cursor = await collection.FindAsync(finalFilter, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var documents = await cursor.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        IEnumerable<BsonDocument> documents = cursor.ToEnumerable(cancellationToken: cancellationToken).Take(limit);
         foreach (var document in documents)
         {
-            yield return FromBsonDocument(document, withEmbeddings);
+            var memoryRecord = FromMongodbMemoryRecord(document, withEmbeddings);
+
+            yield return memoryRecord;
         }
     }
 
@@ -134,30 +132,27 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         }
 
         //need to create a search query and execute it
-        var normalizedIndexName = NormalizeIndexName(index);
-        var conditions = new BsonArray();
-        this.ConvertsFilterToConditions(normalizedIndexName, filters, conditions);
-
+        var collectionName = this.GetCollectionName(index);
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
-        BsonDocument[] pipeline = this.CreatePipeline(normalizedIndexName, conditions, limit, embeddings);
 
-        // add the $meta to get the score
-        var projectStage = new BsonDocument
+        // define vector embeddings to search
+        var vector = embeddings.Data.Span.ToArray();
+
+        //need to create the filters
+        var finalFilter = this.TranslateFilters(filters, index);
+
+        var options = new VectorSearchOptions<MongoDbAtlasMemoryRecord>()
         {
-            {
-                "$project", new BsonDocument
-                {
-                    { "document", "$$ROOT" },
-                    { "score", new BsonDocument { { "$meta", "searchScore" } } }
-                }
-            }
+            IndexName = this._utils.GetIndexName(collectionName),
+            NumberOfCandidates = limit,
+            Filter = finalFilter
         };
+        var collection = this.GetCollectionFromIndexName(index);
 
-        pipeline = pipeline.Append(projectStage).ToArray();
-        var collection = this.GetCollectionFromIndexName(normalizedIndexName);
-
-        using var cursor = await collection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var documents = cursor.ToEnumerable(cancellationToken: cancellationToken).Take(limit);
+        // run query
+        var documents = await collection.Aggregate()
+            .VectorSearch(m => m.Embedding, vector, limit, options)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         // If you check documentation Atlas normalize the score with formula
         // score = (1 + cosine/dot_product(v1,v2)) / 2
@@ -168,12 +163,10 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
 #endif
         foreach (var document in documents)
         {
-            var memoryRecordDocument = (BsonDocument)document["document"];
+            var memoryRecord = FromMongodbMemoryRecord(document, withEmbeddings);
 
-            var memoryRecord = FromBsonDocument(memoryRecordDocument, withEmbeddings);
-            var vector = memoryRecordDocument["embedding"].AsBsonArray.Select(x => x.AsDouble).ToArray();
             // we have score that is normalized, so we need to recompute similarity to have a real cosine distance
-            var cosineSimilarity = CosineSim(embeddings, vector);
+            var cosineSimilarity = CosineSim(embeddings, document.Embedding);
             if (cosineSimilarity < minRelevance)
             {
                 //we have reached the limit for minimum relevance so we can stop iterating
@@ -193,35 +186,124 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         }
     }
 
+    /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = NormalizeIndexName(index);
         var collection = this.GetCollectionFromIndexName(index);
-        BsonDocument bsonDocument = new()
+        MongoDbAtlasMemoryRecord mongoRecord = new()
         {
-            ["_id"] = record.Id,
-            ["index"] = normalizedIndexName,
-            ["embedding"] = new BsonArray(record.Vector.Data.Span.ToArray())
+            Id = record.Id,
+            Index = normalizedIndexName,
+            Embedding = record.Vector.Data.ToArray(),
+            Tags = record.Tags.Select(x => new MongoDbAtlasMemoryRecord.Tag(x.Key, x.Value.ToArray())).ToList(),
+            Payloads = record.Payload.Select(x => new MongoDbAtlasMemoryRecord.Payload(x.Key, x.Value)).ToList()
         };
-        foreach (var (key, value) in record.Payload)
-        {
-            bsonDocument[$"pl_{key}"] = value?.ToString();
-        }
 
-        foreach (var (key, value) in record.Tags)
-        {
-            bsonDocument[$"tg_{key}"] = new BsonArray(value);
-        }
-
-        await collection.InsertOneAsync(bsonDocument, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await collection.InsertOneAsync(mongoRecord, cancellationToken: cancellationToken).ConfigureAwait(false);
         await this.Config.AfterIndexCallbackAsync().ConfigureAwait(false);
-        return bsonDocument["_id"].AsString;
+        return record.Id;
     }
 
-    private IMongoCollection<BsonDocument> GetCollectionFromIndexName(string indexName)
+    internal class MongoDbAtlasMemoryRecord
+    {
+        public string Id { get; set; }
+        public string Index { get; set; }
+        public float[] Embedding { get; set; }
+        public List<Tag> Tags { get; set; } = new();
+        public List<Payload> Payloads { get; set; } = new();
+
+        internal class Payload
+        {
+            public Payload(string key, object value)
+            {
+                this.Key = key;
+                this.Value = value;
+            }
+
+            public string Key { get; set; }
+            public object Value { get; set; }
+        }
+
+        internal class Tag
+        {
+            public Tag(string key, string?[] values)
+            {
+                this.Key = key;
+                this.Values = values;
+            }
+
+            public string Key { get; set; }
+            public string?[] Values { get; set; }
+        }
+    }
+
+    private FilterDefinition<MongoDbAtlasMemoryRecord>? TranslateFilters(ICollection<MemoryFilter>? filters, string index)
+    {
+        List<FilterDefinition<MongoDbAtlasMemoryRecord>> outerFiltersArray = new();
+        foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
+        {
+            var thisFilter = filter.GetFilters().ToArray();
+            var numOfFilters = thisFilter.Count(x => !string.IsNullOrEmpty(x.Value));
+            List<FilterDefinition<MongoDbAtlasMemoryRecord>> filtersArray = new();
+            foreach (var singleFilter in thisFilter)
+            {
+                var condition = Builders<MongoDbAtlasMemoryRecord>.Filter.And(
+                    Builders<MongoDbAtlasMemoryRecord>.Filter.Eq("Tags.Key", singleFilter.Key),
+                    Builders<MongoDbAtlasMemoryRecord>.Filter.Eq("Tags.Values", singleFilter.Value)
+                );
+                filtersArray.Add(condition);
+            }
+
+            //all these filter if more than one must be enclosed in an end filter
+            if (filtersArray.Count > 1)
+            {
+                //More than one condition we need to create the condition
+                var andFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.And(filtersArray);
+                outerFiltersArray.Add(andFilter);
+            }
+            else if (filtersArray.Count == 1)
+            {
+                //we do not need to include an and filter because we have only one condition 
+                outerFiltersArray.Add(filtersArray[0]);
+            }
+        }
+
+        FilterDefinition<MongoDbAtlasMemoryRecord>? finalFilter = null;
+
+        //outer filters must be composed in or
+        if (outerFiltersArray.Count > 1)
+        {
+            finalFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.Or(outerFiltersArray);
+        }
+        else if (outerFiltersArray.Count == 1)
+        {
+            //we do not need to include an or filter because we have only one condition
+            finalFilter = outerFiltersArray[0];
+        }
+
+        //remember that if we are usins a single collection for all records we need to add an index filter
+        if (this.Config.UseSingleCollectionForVectorSearch)
+        {
+            var indexFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.Eq("Index", index);
+            if (finalFilter == null)
+            {
+                finalFilter = indexFilter;
+            }
+            else
+            {
+                //compose in and
+                finalFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.And(indexFilter, finalFilter);
+            }
+        }
+
+        return finalFilter;
+    }
+
+    private IMongoCollection<MongoDbAtlasMemoryRecord> GetCollectionFromIndexName(string indexName)
     {
         var collectionName = this.GetCollectionName(NormalizeIndexName(indexName));
-        return this.GetCollection(collectionName);
+        return this.GetCollection<MongoDbAtlasMemoryRecord>(collectionName);
     }
 
     private string GetCollectionName(string indexName)
@@ -257,8 +339,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
             compound["must"] = filters;
             return new BsonDocument[]
             {
-                new BsonDocument
-                {
+                new() {
                     {
                         "$search", new BsonDocument
                         {
@@ -267,8 +348,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
                         }
                     }
                 },
-                new BsonDocument
-                {
+                new() {
                     {
                         "$limit", limit
                     }
@@ -405,7 +485,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     /// <param name="vec1"></param>
     /// <param name="vec2"></param>
     /// <returns></returns>
-    private static double CosineSim(Embedding vec1, double[] vec2)
+    private static double CosineSim(Embedding vec1, float[] vec2)
     {
         var v1 = vec1.Data.ToArray();
         var v2 = vec2;
@@ -430,25 +510,22 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         return $"{ConnectionNamePrefix}_kernel_memory_index_lists";
     }
 
-    private static MemoryRecord FromBsonDocument(BsonDocument doc, bool withEmbeddings)
+    private static MemoryRecord FromMongodbMemoryRecord(MongoDbAtlasMemoryRecord doc, bool withEmbeddings)
     {
         var record = new MemoryRecord
         {
-            Id = doc["_id"].AsString,
-            Vector = withEmbeddings ? doc["embedding"].AsBsonArray.Select(x => (float)x.AsDouble).ToArray() : Array.Empty<float>(),
+            Id = doc.Id,
+            Vector = withEmbeddings ? doc.Embedding : Array.Empty<float>(),
         };
-        foreach (var element in doc.Elements)
+
+        foreach (var tag in doc.Tags)
         {
-            if (element.Name.StartsWith("pl_", StringComparison.OrdinalIgnoreCase))
-            {
-                var key = element.Name.Replace("pl_", "", StringComparison.OrdinalIgnoreCase);
-                record.Payload[key] = element.Value.AsString;
-            }
-            else if (element.Name.StartsWith("tg_", StringComparison.OrdinalIgnoreCase))
-            {
-                var key = element.Name.Replace("tg_", "", StringComparison.OrdinalIgnoreCase);
-                record.Tags[key] = element.Value.AsBsonArray.Select(x => (string?)x.AsString).ToList();
-            }
+            record.Tags[tag.Key] = tag.Values.ToList();
+        }
+
+        foreach (var payload in doc.Payloads)
+        {
+            record.Payload[payload.Key] = payload.Value;
         }
 
         return record;
