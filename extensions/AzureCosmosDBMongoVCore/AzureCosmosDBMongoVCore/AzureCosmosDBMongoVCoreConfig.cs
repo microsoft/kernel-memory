@@ -38,9 +38,9 @@ public class AzureCosmosDBMongoVCoreConfig
     /// <summary>
     /// Similarity: Similarity metric to use with the IVF index.
     ///     Possible options are:
-    ///         - CosmosDBSimilarityType.COS (cosine distance),
-    ///         - CosmosDBSimilarityType.L2 (Euclidean distance), and
-    ///         - CosmosDBSimilarityType.IP (inner product).
+    ///         - COS (cosine distance),
+    ///         - L2 (Euclidean distance), and
+    ///         - IP (inner product).
     /// </summary>
     public string Similarity { get; set; }
 
