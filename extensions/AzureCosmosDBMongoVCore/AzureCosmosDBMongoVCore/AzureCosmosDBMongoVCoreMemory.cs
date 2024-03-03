@@ -185,7 +185,6 @@ public class AzureCosmosDBMongoVCoreMemory : IMemoryDb
         if (limit <= 0) { limit=int.MaxValue;}
 
         Embedding embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
-        // var textEmbedding = embedding.Data.ToArray();
 
         BsonDocument[] pipeline = null;
         switch (this._config.Kind)

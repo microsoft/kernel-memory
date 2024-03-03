@@ -14,7 +14,7 @@ public class AzureCosmosDBMongoVCoreConfig
     public string ConnectionString { get; set; }
 
     /// <summary>
-    /// Indexn name for the Mongo vCore DB
+    /// Index name for the Mongo vCore DB
     /// </summary>
     public string IndexName { get; set; }
 
