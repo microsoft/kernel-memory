@@ -11,7 +11,7 @@ public abstract class StorageBaseTests : IDisposable
 {
     private readonly IConfiguration _cfg;
     private readonly ITestOutputHelper _output;
-    private readonly MongoDbKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
+    private readonly MongoDbAtlasKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
     private readonly MongoDbKernelMemoryStorage _sut;
 
     private readonly string IndexName = $"storagetestindex{_seed++}";
@@ -24,7 +24,7 @@ public abstract class StorageBaseTests : IDisposable
         this._output = output;
 
         this._mongoDbAtlasMemoryConfiguration = this.GetConfiguration(cfg);
-        var ash = new AtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
+        var ash = new MongoDbAtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
 
         //delete everything for every collection
         ash.DropAllDocumentsFromCollectionsAsync().Wait();
@@ -33,7 +33,7 @@ public abstract class StorageBaseTests : IDisposable
         this._sut.CreateIndexDirectoryAsync("testindex").Wait();
     }
 
-    protected abstract MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
+    protected abstract MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
 
     public void Dispose()
     {
@@ -165,9 +165,9 @@ public class SingleCollectionBaseTests : StorageBaseTests
     {
     }
 
-    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
     {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
         config.DatabaseName += "StorageTests";
         config.UseSingleCollectionForVectorSearch = true;
         return config;
@@ -180,9 +180,9 @@ public class MultipleCollectionBaseTests : StorageBaseTests
     {
     }
 
-    protected override MongoDbKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
+    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
     {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbKernelMemoryConfiguration>()!;
+        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
         config.DatabaseName += "StorageTests";
         config.UseSingleCollectionForVectorSearch = false;
         return config;

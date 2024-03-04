@@ -11,7 +11,7 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IContentStorage
 {
-    public MongoDbKernelMemoryStorage(MongoDbKernelMemoryConfiguration config) : base(config)
+    public MongoDbKernelMemoryStorage(MongoDbAtlasKernelMemoryConfiguration config) : base(config)
     {
     }
 

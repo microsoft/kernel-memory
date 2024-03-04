@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -18,7 +17,7 @@ namespace Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 /// </ul>
 /// </para>
 /// </summary>
-internal sealed class AtlasSearchHelper
+internal sealed class MongoDbAtlasSearchHelper
 {
     private readonly IMongoDatabase _db;
 
@@ -27,7 +26,7 @@ internal sealed class AtlasSearchHelper
     /// </summary>
     /// <param name="connection"></param>
     /// <param name="dbName"></param>
-    public AtlasSearchHelper(string connection, string dbName)
+    public MongoDbAtlasSearchHelper(string connection, string dbName)
     {
         var client = new MongoClient(connection);
         this._db = client.GetDatabase(dbName);
@@ -261,8 +260,7 @@ internal sealed class AtlasSearchHelper
         var collection = this._db.GetCollection<BsonDocument>(collectionName);
         var pipeline = new BsonDocument[]
         {
-            new BsonDocument
-            {
+            new() {
                 {
                     "$listSearchIndexes",
                     new BsonDocument
@@ -291,7 +289,7 @@ internal sealed class AtlasSearchHelper
 
         if (allIndexInfo.Count > 1)
         {
-            throw new Exception("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
+            throw new MongoDbAtlasKernelMemoryException("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
         }
 
         var indexInfo = allIndexInfo[0];
@@ -299,7 +297,7 @@ internal sealed class AtlasSearchHelper
         return new IndexInfo(true, status, indexInfo["queryable"].AsBoolean);
     }
 
-    private static readonly IndexInfo s_falseIndexInfo = new IndexInfo(false, "", false);
+    private static readonly IndexInfo s_falseIndexInfo = new(false, "", false);
 
     public record IndexInfo(bool Exists, string Status, Boolean Queryable);
 }

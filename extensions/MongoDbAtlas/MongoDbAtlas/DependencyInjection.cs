@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.KernelMemory;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 
@@ -15,7 +16,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="configuration">Configuration for Mongodb</param>
     public static IKernelMemoryBuilder WithMongoDbAtlasMemoryAndStorageDb(
         this IKernelMemoryBuilder builder,
-        MongoDbKernelMemoryConfiguration configuration)
+        MongoDbAtlasKernelMemoryConfiguration configuration)
     {
         builder.Services.AddMongoDbAtlasAsStoreAndMemoryDb(configuration);
         return builder;
@@ -29,7 +30,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="configuration">Configuration for Mongodb</param>
     public static IKernelMemoryBuilder WithMongoDbAtlasMemoryDb(
         this IKernelMemoryBuilder builder,
-        MongoDbKernelMemoryConfiguration configuration)
+        MongoDbAtlasKernelMemoryConfiguration configuration)
     {
         builder.Services.AddMongoDbAtlasAsMemoryDb(configuration);
         return builder;
@@ -48,7 +49,7 @@ public static partial class DependencyInjection
     /// <param name="config">Mongodb configuration.</param>
     public static IServiceCollection AddMongoDbAtlasAsMemoryDb(
         this IServiceCollection services,
-        MongoDbKernelMemoryConfiguration config)
+        MongoDbAtlasKernelMemoryConfiguration config)
     {
         return services
             .AddSingleton(config)
@@ -62,7 +63,7 @@ public static partial class DependencyInjection
     /// <param name="config">Mongodb configuration.</param>
     public static IServiceCollection AddMongoDbAtlasAsStoreAndMemoryDb(
         this IServiceCollection services,
-        MongoDbKernelMemoryConfiguration config)
+        MongoDbAtlasKernelMemoryConfiguration config)
     {
         return services
             .AddSingleton(config)

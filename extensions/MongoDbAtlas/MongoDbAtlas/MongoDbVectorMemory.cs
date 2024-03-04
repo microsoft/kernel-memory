@@ -21,7 +21,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
 
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<MongoDbVectorMemory> _log;
-    private readonly AtlasSearchHelper _utils;
+    private readonly MongoDbAtlasSearchHelper _utils;
 
     /// <summary>
     /// Create a new instance of MongoDbVectorMemory from configuration
@@ -30,13 +30,13 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="log">Application logger</param>
     public MongoDbVectorMemory(
-        MongoDbKernelMemoryConfiguration config,
+        MongoDbAtlasKernelMemoryConfiguration config,
         ITextEmbeddingGenerator embeddingGenerator,
         ILogger<MongoDbVectorMemory>? log = null) : base(config)
     {
         this._embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
         this._log = log ?? DefaultLogger<MongoDbVectorMemory>.Instance;
-        this._utils = new AtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
+        this._utils = new MongoDbAtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
     }
 
     public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
@@ -205,39 +205,6 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         return record.Id;
     }
 
-    internal class MongoDbAtlasMemoryRecord
-    {
-        public string Id { get; set; }
-        public string Index { get; set; }
-        public float[] Embedding { get; set; }
-        public List<Tag> Tags { get; set; } = new();
-        public List<Payload> Payloads { get; set; } = new();
-
-        internal class Payload
-        {
-            public Payload(string key, object value)
-            {
-                this.Key = key;
-                this.Value = value;
-            }
-
-            public string Key { get; set; }
-            public object Value { get; set; }
-        }
-
-        internal class Tag
-        {
-            public Tag(string key, string?[] values)
-            {
-                this.Key = key;
-                this.Values = values;
-            }
-
-            public string Key { get; set; }
-            public string?[] Values { get; set; }
-        }
-    }
-
     private FilterDefinition<MongoDbAtlasMemoryRecord>? TranslateFilters(ICollection<MemoryFilter>? filters, string index)
     {
         List<FilterDefinition<MongoDbAtlasMemoryRecord>> outerFiltersArray = new();
@@ -318,166 +285,6 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     }
 
     /// <summary>
-    /// Create the real pipeline operator to send to the database to perform the search.
-    /// </summary>
-    /// <param name="index"></param>
-    /// <param name="filters"></param>
-    /// <param name="limit"></param>
-    /// <param name="embeddings">Used to perform a Knn query</param>
-    /// <returns></returns>
-    private BsonDocument[] CreatePipeline(
-        string index,
-        BsonArray filters,
-        int limit,
-        Embedding? embeddings)
-    {
-        //we have two distinct way of search based on textual query.
-        if (embeddings == null)
-        {
-            //ok we have a simple filter query where we need to apply only filter
-            var compound = new BsonDocument();
-            compound["must"] = filters;
-            return new BsonDocument[]
-            {
-                new() {
-                    {
-                        "$search", new BsonDocument
-                        {
-                            { "index", this._utils.GetIndexName(this.GetCollectionName(index)) },
-                            { "compound", compound }
-                        }
-                    }
-                },
-                new() {
-                    {
-                        "$limit", limit
-                    }
-                }
-            };
-        }
-
-        //now the query is performed using knnBeta.
-        var aggregationSearchPipeline = new BsonDocument[]
-        {
-            new()
-            {
-                {
-                    "$search", new BsonDocument
-                    {
-                        { "index", this._utils.GetIndexName(this.GetCollectionName(index)) },
-                        {
-                            "knnBeta", new BsonDocument
-                            {
-                                { "vector", new BsonArray(embeddings.Value.Data.ToArray()) },
-                                { "path", "embedding" },
-                                { "k", limit }
-                            }
-                        }
-                    }
-                }
-            },
-        };
-
-        //If some filters are present we need to add them to the pipeline, if not filter is present do
-        //not add anything because the query will be invalid.
-        var compoundFilter = new BsonDocument();
-        if (filters.Count > 0)
-        {
-            var knnFilters = new BsonDocument();
-            knnFilters["must"] = filters;
-            compoundFilter["compound"] = knnFilters;
-
-            aggregationSearchPipeline[0]["$search"]["knnBeta"]["filter"] = compoundFilter;
-        }
-
-        return aggregationSearchPipeline;
-    }
-
-    private void ConvertsFilterToConditions(
-        string index,
-        ICollection<MemoryFilter>? filters,
-        BsonArray conditions)
-    {
-        //this is a must filter, a condition that must be satisfied because we need to search into the index.
-        if (this.Config.UseSingleCollectionForVectorSearch)
-        {
-            //need to add an index filter we have all data of index in the same collection
-            var condition = new BsonDocument
-            {
-                ["term"] = new BsonDocument
-                {
-                    { "index", index }
-                }
-            };
-        }
-
-        //then semantic is that each element in filters must be an or. Each filter
-        //can contains more than one condition, that is in and
-        BsonArray filtersArray = new();
-        foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
-        {
-            var thisFilter = filter.GetFilters().ToArray();
-            //this is an and filter, we can distinguish between single filter and multiple filters
-            var numOfFilters = thisFilter.Count(x => !string.IsNullOrEmpty(x.Value));
-            if (numOfFilters == 1)
-            {
-                var (key, value) = thisFilter.First(x => !string.IsNullOrEmpty(x.Value));
-                filtersArray.Add(new BsonDocument
-                {
-                    ["text"] = new BsonDocument
-                    {
-                        { "query", value },
-                        { "path", $"tg_{key}" }
-                    }
-                });
-            }
-            else if (numOfFilters > 1)
-            {
-                //we need to create an AND compound
-                BsonArray andArray = new();
-                foreach (var (key, value) in thisFilter.Where(f => !string.IsNullOrEmpty(f.Value)))
-                {
-                    var condition = new BsonDocument
-                    {
-                        ["text"] = new BsonDocument
-                        {
-                            { "query", value },
-                            { "path", $"tg_{key}" }
-                        }
-                    };
-                    andArray.Add(condition);
-                }
-
-                filtersArray.Add(new BsonDocument
-                {
-                    ["compound"] = new BsonDocument
-                    {
-                        ["must"] = andArray
-                    }
-                });
-            }
-        }
-
-        //how many filter we have?
-        if (filtersArray.Count == 1)
-        {
-            conditions.Add(filtersArray[0]);
-        }
-        else if (filtersArray.Count > 1)
-        {
-            //we need to create an OR compound
-            var orCompound = new BsonDocument
-            {
-                ["compound"] = new BsonDocument
-                {
-                    ["should"] = filtersArray
-                }
-            };
-            conditions.Add(orCompound);
-        }
-    }
-
-    /// <summary>
     /// Due to different score system of Atlas MongoDB that normalized cosine
     /// we need to manually recompute the cosine similarity distance manually
     /// for each vector to have a real cosine similarity distance returned.
@@ -539,5 +346,42 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         }
 
         return indexName.Replace("_", "-", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+internal class MongoDbAtlasMemoryRecord
+{
+    public string Id { get; set; } = null!;
+
+    public string Index { get; set; } = null!;
+
+    public float[] Embedding { get; set; } = null!;
+
+    public List<Tag> Tags { get; set; } = new();
+
+    public List<Payload> Payloads { get; set; } = new();
+
+    internal class Payload
+    {
+        public Payload(string key, object value)
+        {
+            this.Key = key;
+            this.Value = value;
+        }
+
+        public string Key { get; set; }
+        public object Value { get; set; }
+    }
+
+    internal class Tag
+    {
+        public Tag(string key, string?[] values)
+        {
+            this.Key = key;
+            this.Values = values;
+        }
+
+        public string Key { get; set; }
+        public string?[] Values { get; set; }
     }
 }

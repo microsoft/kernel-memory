@@ -59,10 +59,10 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
         }
 
-        MongoDbVectorMemory atlasMongoDb;
+        MongoDbVectorMemory mongoDbAtlas;
         if (MongoDbAtlasEnabled)
         {
-            atlasMongoDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
+            mongoDbAtlas = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
         }
 
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
@@ -75,7 +75,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
 
-            if (MongoDbAtlasEnabled) { await atlasMongoDb.DeleteIndexAsync(IndexName); }
+            if (MongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -90,7 +90,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
 
-            if (MongoDbAtlasEnabled) { await atlasMongoDb.CreateIndexAsync(IndexName, 3); }
+            if (MongoDbAtlasEnabled) { await mongoDbAtlas.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -116,7 +116,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
                 if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
-                if (MongoDbAtlasEnabled) { await atlasMongoDb.UpsertAsync(IndexName, r.Value); }
+                if (MongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
 
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
@@ -147,7 +147,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             if (MongoDbAtlasEnabled)
             {
                 this._log.WriteLine("\n----- Atlas MongoDb vector DB -----");
-                await this.TestVectorDbFiltering(atlasMongoDb, i);
+                await this.TestVectorDbFiltering(mongoDbAtlas, i);
             }
 
             this._log.WriteLine("\n----- Simple vector DB -----");
