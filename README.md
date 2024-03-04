@@ -11,7 +11,7 @@ synthetic memory, prompt engineering, and custom semantic memory processing.
 
 KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
 **web clients**, a .NET library for embedded applications, and as a
-[Docker container](https://hub.docker.com/repository/docker/kernelmemory/service/general).
+[Docker container](https://hub.docker.com/r/kernelmemory/service).
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -236,7 +236,8 @@ configuration wizard included:
     cd service/Service
     dotnet run setup
 
-Then run this command to start the Docker image with the configuration just created:
+Then run this command to start the [Docker image](https://hub.docker.com/r/kernelmemory/service)
+with the configuration just created:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json \
          -it --rm -p 9001:9001 kernelmemory/service
