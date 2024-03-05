@@ -41,40 +41,40 @@ public class SearchClientConfig
     /// </summary>
     public string EmptyAnswer { get; set; } = "INFO NOT FOUND";
 
-    //
-    // Summary:
-    //     Temperature controls the randomness of the completion. The higher the temperature,
-    //     the more random the completion.
-    public double Temperature { get; set; }
+    /// <summary>
+    /// Number between 0.0 and 2.0. It controls the randomness of the completion.
+    /// The higher the temperature, the more random the completion.
+    /// </summary>
+    public double Temperature { get; set; } = 0;
 
-    //
-    // Summary:
-    //     TopP controls the diversity of the completion. The higher the TopP, the more
-    //     diverse the completion.
-    public double TopP { get; set; }
+    /// <summary>
+    /// Number between 0.0 and 2.0. It controls the diversity of the completion.
+    /// The higher the TopP, the more diverse the completion.
+    /// </summary>    
+    public double TopP { get; set; } = 0;
 
-    //
-    // Summary:
-    //     Number between -2.0 and 2.0. Positive values penalize new tokens based on whether
-    //     they appear in the text so far, increasing the model's likelihood to talk about
-    //     new topics.
-    public double PresencePenalty { get; set; }
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on whether
+    /// they appear in the text so far, increasing the model's likelihood to talk about
+    /// new topics.
+    /// </summary>
+    public double PresencePenalty { get; set; } = 0;
 
-    //
-    // Summary:
-    //     Number between -2.0 and 2.0. Positive values penalize new tokens based on their
-    //     existing frequency in the text so far, decreasing the model's likelihood to repeat
-    //     the same line verbatim.
-    public double FrequencyPenalty { get; set; }
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their
+    /// existing frequency in the text so far, decreasing the model's likelihood to repeat
+    /// the same line verbatim.
+    /// </summary> 
+    public double FrequencyPenalty { get; set; } = 0;
 
-    //
-    // Summary:
-    //     Sequences where the completion will stop generating further tokens.
+    /// <summary>
+    /// Up to 4 sequences where the completion will stop generating further tokens.
+    /// </summary>
     public IList<string> StopSequences { get; set; } = Array.Empty<string>();
 
-    //
-    // Summary:
-    //     Modify the likelihood of specified tokens appearing in the completion.
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>
     public Dictionary<int, float> TokenSelectionBiases { get; set; } = new Dictionary<int, float>();
 
     /// <summary>
