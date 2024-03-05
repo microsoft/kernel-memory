@@ -87,7 +87,17 @@ public static class SetupUI
             }
         }
 
+        // Find the active option
         int current = 0;
+        for (int index = 0; index < question.Options.Count; index++)
+        {
+            if (question.Options[index].IsSelected)
+            {
+                current = index;
+                break;
+            }
+        }
+
         ShowQuestion(current);
 
         var maxPos = question.Options.Count - 1;
@@ -131,7 +141,7 @@ public static class SetupUI
 
                 // Select current
                 case ConsoleKey.Enter:
-                    action = question.Options[current].Selected;
+                    action = question.Options[current].OnSelected;
                     done = true;
                     break;
 
