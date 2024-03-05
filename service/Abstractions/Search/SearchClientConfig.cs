@@ -50,7 +50,7 @@ public class SearchClientConfig
     /// <summary>
     /// Number between 0.0 and 2.0. It controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
-    /// </summary>    
+    /// </summary>
     public double TopP { get; set; } = 0;
 
     /// <summary>
@@ -64,7 +64,7 @@ public class SearchClientConfig
     /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their
     /// existing frequency in the text so far, decreasing the model's likelihood to repeat
     /// the same line verbatim.
-    /// </summary> 
+    /// </summary>
     public double FrequencyPenalty { get; set; } = 0;
 
     /// <summary>
@@ -75,7 +75,7 @@ public class SearchClientConfig
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
-    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new Dictionary<int, float>();
+    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
 
     /// <summary>
     /// Verify that the current state is valid.
@@ -121,7 +121,7 @@ public class SearchClientConfig
         if (this.PresencePenalty is < -2 or > 2)
         {
             throw new ArgumentOutOfRangeException(nameof(this.PresencePenalty),
-                               $"{nameof(this.PresencePenalty)} must be between -2 and 2");
+                $"{nameof(this.PresencePenalty)} must be between -2 and 2");
         }
 
         if (this.FrequencyPenalty is < -2 or > 2)
