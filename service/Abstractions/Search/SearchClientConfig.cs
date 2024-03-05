@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -41,6 +42,42 @@ public class SearchClientConfig
     public string EmptyAnswer { get; set; } = "INFO NOT FOUND";
 
     /// <summary>
+    /// Number between 0.0 and 2.0. It controls the randomness of the completion.
+    /// The higher the temperature, the more random the completion.
+    /// </summary>
+    public double Temperature { get; set; } = 0;
+
+    /// <summary>
+    /// Number between 0.0 and 2.0. It controls the diversity of the completion.
+    /// The higher the TopP, the more diverse the completion.
+    /// </summary>
+    public double TopP { get; set; } = 0;
+
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on whether
+    /// they appear in the text so far, increasing the model's likelihood to talk about
+    /// new topics.
+    /// </summary>
+    public double PresencePenalty { get; set; } = 0;
+
+    /// <summary>
+    /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their
+    /// existing frequency in the text so far, decreasing the model's likelihood to repeat
+    /// the same line verbatim.
+    /// </summary>
+    public double FrequencyPenalty { get; set; } = 0;
+
+    /// <summary>
+    /// Up to 4 sequences where the completion will stop generating further tokens.
+    /// </summary>
+    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Modify the likelihood of specified tokens appearing in the completion.
+    /// </summary>
+    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
+
+    /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
     public void Validate()
@@ -67,6 +104,30 @@ public class SearchClientConfig
         {
             throw new ArgumentOutOfRangeException(nameof(this.EmptyAnswer),
                 $"{nameof(this.EmptyAnswer)} is too long, consider something shorter");
+        }
+
+        if (this.Temperature is < 0 or > 2)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.Temperature),
+                $"{nameof(this.Temperature)} must be between 0 and 2");
+        }
+
+        if (this.TopP is < 0 or > 2)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.TopP),
+                $"{nameof(this.TopP)} must be between 0 and 2");
+        }
+
+        if (this.PresencePenalty is < -2 or > 2)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.PresencePenalty),
+                $"{nameof(this.PresencePenalty)} must be between -2 and 2");
+        }
+
+        if (this.FrequencyPenalty is < -2 or > 2)
+        {
+            throw new ArgumentOutOfRangeException(nameof(this.FrequencyPenalty),
+                $"{nameof(this.FrequencyPenalty)} must be between -2 and 2");
         }
     }
 }
