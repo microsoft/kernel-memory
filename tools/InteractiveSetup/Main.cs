@@ -188,22 +188,23 @@ public static class Main
 
     private static void ServiceSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Run the web service (upload and search endpoints)?",
             Options = new List<Answer>
             {
-                new("Yes", () =>
+                new("Yes", config.Service.RunWebService, () =>
                 {
                     AppSettings.Change(x => { x.Service.RunWebService = true; });
                     s_cfgOpenAPI.Value = true;
                 }),
-                new("No", () =>
+                new("No", !config.Service.RunWebService, () =>
                 {
                     AppSettings.Change(x => { x.Service.RunWebService = false; });
                     s_cfgOpenAPI.Value = false;
                 }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
 
@@ -212,7 +213,7 @@ public static class Main
             Title = "Protect the web service with API Keys?",
             Options = new List<Answer>
             {
-                new("Yes", () =>
+                new("Yes", config.ServiceAuthorization.Enabled, () =>
                 {
                     AppSettings.Change(x =>
                     {
@@ -222,7 +223,7 @@ public static class Main
                         x.ServiceAuthorization.AccessKey2 = SetupUI.AskPassword("API Key 2 (min 32 chars, alphanumeric ('- . _' allowed))", x.ServiceAuthorization.AccessKey2);
                     });
                 }),
-                new("No", () =>
+                new("No", !config.ServiceAuthorization.Enabled, () =>
                 {
                     AppSettings.Change(x =>
                     {
@@ -232,7 +233,7 @@ public static class Main
                         x.ServiceAuthorization.AccessKey2 = "";
                     });
                 }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
 
@@ -243,9 +244,9 @@ public static class Main
                 Title = "Enable OpenAPI swagger doc at /swagger/index.html?",
                 Options = new List<Answer>
                 {
-                    new("Yes", () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = true; }); }),
-                    new("No", () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = false; }); }),
-                    new("-exit-", SetupUI.Exit),
+                    new("Yes", config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = true; }); }),
+                    new("No", !config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = false; }); }),
+                    new("-exit-", false, SetupUI.Exit),
                 }
             });
         }
@@ -255,9 +256,9 @@ public static class Main
             Title = "Run the .NET pipeline handlers as a service?",
             Options = new List<Answer>
             {
-                new("Yes", () => { AppSettings.Change(x => { x.Service.RunHandlers = true; }); }),
-                new("No", () => { AppSettings.Change(x => { x.Service.RunHandlers = false; }); }),
-                new("-exit-", SetupUI.Exit),
+                new("Yes", config.Service.RunHandlers, () => { AppSettings.Change(x => { x.Service.RunHandlers = true; }); }),
+                new("No", !config.Service.RunHandlers, () => { AppSettings.Change(x => { x.Service.RunHandlers = false; }); }),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -282,13 +283,13 @@ public static class Main
             Title = "Log level?",
             Options = new List<Answer>
             {
-                new("Trace", () => { logLevel = "Trace"; }),
-                new("Debug", () => { logLevel = "Debug"; }),
-                new("Information", () => { logLevel = "Information"; }),
-                new("Warning", () => { logLevel = "Warning"; }),
-                new("Error", () => { logLevel = "Error"; }),
-                new("Critical", () => { logLevel = "Critical"; }),
-                new("-exit-", SetupUI.Exit),
+                new("Trace", false, () => { logLevel = "Trace"; }),
+                new("Debug", false, () => { logLevel = "Debug"; }),
+                new("Information", false, () => { logLevel = "Information"; }),
+                new("Warning", true, () => { logLevel = "Warning"; }),
+                new("Error", false, () => { logLevel = "Error"; }),
+                new("Critical", false, () => { logLevel = "Critical"; }),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
 
@@ -307,17 +308,19 @@ public static class Main
 
     private static void EmbeddingGeneratorTypeSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When importing data, generate embeddings, or let the memory Db class take care of it?",
             Options = new List<Answer>
             {
-                new("Yes, generate embeddings", () =>
+                new("Yes, generate embeddings", config.DataIngestion.EmbeddingGenerationEnabled, () =>
                 {
                     AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = true);
                     s_cfgEmbeddingGenerationEnabled.Value = true;
                 }),
-                new("No, my memory Db class/engine takes care of it", () =>
+                new("No, my memory Db class/engine takes care of it", !config.DataIngestion.EmbeddingGenerationEnabled, () =>
                 {
                     AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = false);
                     s_cfgEmbeddingGenerationEnabled.Value = false;
@@ -330,7 +333,7 @@ public static class Main
             Title = "When searching for text and/or answers, which embedding generator should be used for vector search?",
             Options = new List<Answer>
             {
-                new("Azure OpenAI embedding model", () =>
+                new("Azure OpenAI embedding model", config.Retrieval.EmbeddingGeneratorType == "AzureOpenAIEmbedding", () =>
                 {
                     AppSettings.Change(x =>
                     {
@@ -341,7 +344,7 @@ public static class Main
                     });
                     s_cfgAzureOpenAIEmbedding.Value = true;
                 }),
-                new("OpenAI embedding model", () =>
+                new("OpenAI embedding model", config.Retrieval.EmbeddingGeneratorType == "OpenAI", () =>
                 {
                     AppSettings.Change(x =>
                     {
@@ -352,7 +355,7 @@ public static class Main
                     });
                     s_cfgOpenAI.Value = true;
                 }),
-                new("None/Custom (manually set with code)", () =>
+                new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
                 {
                     AppSettings.Change(x =>
                     {
@@ -360,38 +363,40 @@ public static class Main
                         x.DataIngestion.EmbeddingGeneratorTypes = new List<string> { };
                     });
                 }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
 
     private static void TextGeneratorTypeSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When generating answers and synthetic data, which LLM text generator should be used?",
             Options = new List<Answer>
             {
-                new("Azure OpenAI text/chat model", () =>
+                new("Azure OpenAI text/chat model", config.TextGeneratorType == "AzureOpenAIText", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "AzureOpenAIText"; });
                     s_cfgAzureOpenAIText.Value = true;
                 }),
-                new("OpenAI text/chat model", () =>
+                new("OpenAI text/chat model", config.TextGeneratorType == "OpenAI", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "OpenAI"; });
                     s_cfgOpenAI.Value = true;
                 }),
-                new("LLama model", () =>
+                new("LLama model", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
                     s_cfgLlamaSharp.Value = true;
                 }),
-                new("None/Custom (manually set with code)", () =>
+                new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.TextGeneratorType), () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = ""; });
                 }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -509,21 +514,23 @@ public static class Main
 
     private static void OCRSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Which service should be used to extract text from images?",
             Options = new List<Answer>
             {
-                new("None", () =>
+                new("None", config.DataIngestion.ImageOcrType == "None", () =>
                 {
                     AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "None"; });
                 }),
-                new("Azure AI Document Intelligence", () =>
+                new("Azure AI Document Intelligence", config.DataIngestion.ImageOcrType == "AzureAIDocIntel", () =>
                 {
                     AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "AzureAIDocIntel"; });
                     s_cfgAzureAIDocIntel.Value = true;
                 }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -555,20 +562,24 @@ public static class Main
 
     private static void OrchestrationTypeSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "How should memory ingestion be orchestrated?",
             Options = new List<Answer>
             {
                 new("Using asynchronous distributed queues (allows to mix handlers written in different languages)",
+                    config.DataIngestion.OrchestrationType == "Distributed",
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "Distributed"; });
                         s_cfgQueue.Value = true;
                     }),
                 new("In process orchestration, all .NET handlers run synchronously",
+                    config.DataIngestion.OrchestrationType == "InProcess",
                     () => { AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "InProcess"; }); }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -577,6 +588,8 @@ public static class Main
     {
         if (!s_cfgQueue.Value) { return; }
 
+        var config = AppSettings.GetCurrentConfig();
+
         s_cfgQueue.Value = false;
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
@@ -584,24 +597,27 @@ public static class Main
             Options = new List<Answer>
             {
                 new("Azure Queue",
+                    config.DataIngestion.DistributedOrchestration.QueueType == "AzureQueues",
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueues"; });
                         s_cfgAzureQueue.Value = true;
                     }),
                 new("RabbitMQ",
+                    config.DataIngestion.DistributedOrchestration.QueueType == "RabbitMQ",
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "RabbitMQ"; });
                         s_cfgRabbitMq.Value = true;
                     }),
                 new("SimpleQueues (only for tests, data stored in memory or disk, see config file)",
+                    config.DataIngestion.DistributedOrchestration.QueueType == "SimpleQueues",
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
                         s_cfgSimpleQueues.Value = true;
                     }),
-                new("-exit-", SetupUI.Exit),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -686,22 +702,28 @@ public static class Main
     {
         if (!s_cfgContentStorage.Value) { return; }
 
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Where should the service store files?",
             Options = new List<Answer>
             {
-                new("Azure Blobs", () =>
-                {
-                    AppSettings.Change(x => { x.ContentStorageType = "AzureBlobs"; });
-                    s_cfgAzureBlobs.Value = true;
-                }),
-                new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)", () =>
-                {
-                    AppSettings.Change(x => { x.ContentStorageType = "SimpleFileStorage"; });
-                    s_cfgSimpleFileStorage.Value = true;
-                }),
-                new("-exit-", SetupUI.Exit),
+                new("Azure Blobs",
+                    config.ContentStorageType == "AzureBlobs",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.ContentStorageType = "AzureBlobs"; });
+                        s_cfgAzureBlobs.Value = true;
+                    }),
+                new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)",
+                    config.ContentStorageType == "SimpleFileStorage",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.ContentStorageType = "SimpleFileStorage"; });
+                        s_cfgSimpleFileStorage.Value = true;
+                    }),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -757,65 +779,79 @@ public static class Main
 
     private static void MemoryDbTypeSetup()
     {
+        var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When searching for answers, which memory DB service contains the records to search?",
             Options = new List<Answer>
             {
-                new("Azure AI Search", () =>
-                {
-                    AppSettings.Change(x =>
+                new("Azure AI Search",
+                    config.Retrieval.MemoryDbType == "AzureAISearch",
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "AzureAISearch";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
-                    });
-                    s_cfgAzureAISearch.Value = true;
-                }),
-                new("Qdrant", () =>
-                {
-                    AppSettings.Change(x =>
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "AzureAISearch";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                        });
+                        s_cfgAzureAISearch.Value = true;
+                    }),
+                new("Qdrant",
+                    config.Retrieval.MemoryDbType == "Qdrant",
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "Qdrant";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
-                    });
-                    s_cfgQdrant.Value = true;
-                }),
-                new("Postgres", () =>
-                {
-                    AppSettings.Change(x =>
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "Qdrant";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                        });
+                        s_cfgQdrant.Value = true;
+                    }),
+                new("Postgres",
+                    config.Retrieval.MemoryDbType == "Postgres",
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "Postgres";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
-                    });
-                    s_cfgPostgres.Value = true;
-                }),
-                new("Redis", () =>
-                {
-                    AppSettings.Change(x =>
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "Postgres";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                        });
+                        s_cfgPostgres.Value = true;
+                    }),
+                new("Redis",
+                    config.Retrieval.MemoryDbType == "Redis",
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "Redis";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
-                    });
-                    s_cfgRedis.Value = true;
-                }),
-                new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)", () =>
-                {
-                    AppSettings.Change(x =>
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "Redis";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                        });
+                        s_cfgRedis.Value = true;
+                    }),
+                new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)",
+                    config.Retrieval.MemoryDbType == "SimpleVectorDb",
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "SimpleVectorDb";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
-                    });
-                    s_cfgSimpleVectorDb.Value = true;
-                }),
-                new("None/Custom (manually set in code)", () =>
-                {
-                    AppSettings.Change(x =>
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "SimpleVectorDb";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                        });
+                        s_cfgSimpleVectorDb.Value = true;
+                    }),
+                new("None/Custom (manually set in code)",
+                    string.IsNullOrEmpty(config.Retrieval.MemoryDbType),
+                    () =>
                     {
-                        x.Retrieval.MemoryDbType = "";
-                        x.DataIngestion.MemoryDbTypes = new List<string> { };
-                    });
-                }),
-                new("-exit-", SetupUI.Exit),
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "";
+                            x.DataIngestion.MemoryDbTypes = new List<string> { };
+                        });
+                    }),
+                new("-exit-", false, SetupUI.Exit),
             }
         });
     }
@@ -936,8 +972,8 @@ public static class Main
                 Title = $"{additionalMessage}[Redis] Do you want to add a tag (or another tag) to filter memory records?",
                 Options = new List<Answer>
                 {
-                    new("Yes", () => { answer = "Yes"; }),
-                    new("No", () => { answer = "No"; }),
+                    new("Yes", false, () => { answer = "Yes"; }),
+                    new("No", true, () => { answer = "No"; }),
                 }
             });
 

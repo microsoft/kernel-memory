@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,8 +10,8 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public static class AppSettings
 {
-    // private const string DefaultSettingsFile = "appsettings.json";
-    private const string SettingsFile = "appsettings.Development.json";
+    private const string DefaultSettingsFile = "appsettings.json";
+    private const string DevelopmentSettingsFile = "appsettings.Development.json";
     private static readonly JsonSerializerSettings s_jsonOptions = new() { Formatting = Formatting.Indented };
 
     public static void Change(Action<KernelMemoryConfig> configChanges)
@@ -21,7 +22,7 @@ public static class AppSettings
 
         configChanges.Invoke(config);
 
-        string json = File.ReadAllText(SettingsFile);
+        string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
@@ -31,7 +32,7 @@ public static class AppSettings
         data["KernelMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
 
         json = JsonConvert.SerializeObject(data, s_jsonOptions);
-        File.WriteAllText(SettingsFile, json);
+        File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
     public static void GlobalChange(Action<JObject> configChanges)
@@ -43,36 +44,29 @@ public static class AppSettings
         configChanges.Invoke(config);
 
         var json = JsonConvert.SerializeObject(config, Formatting.Indented);
-        File.WriteAllText(SettingsFile, json);
+        File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
     public static KernelMemoryConfig GetCurrentConfig()
     {
-        JObject data = GetGlobalConfig();
-        if (data["KernelMemory"] == null)
-        {
-            Console.WriteLine("KernelMemory property missing, using an empty configuration.");
-            return new KernelMemoryConfig();
-        }
+        var config = new KernelMemoryConfig();
 
-        KernelMemoryConfig? config = JsonConvert
-            .DeserializeObject<KernelMemoryConfig>(JsonConvert
-                .SerializeObject(data["KernelMemory"]));
-        if (config == null)
-        {
-            throw new SetupException("Unable to parse file");
-        }
+        new ConfigurationBuilder()
+            .AddJsonFile(DefaultSettingsFile, optional: true, reloadOnChange: false)
+            .AddJsonFile(DevelopmentSettingsFile, optional: false, reloadOnChange: false)
+            .Build()
+            .BindSection("KernelMemory", config);
 
         return config;
     }
 
     private static JObject GetGlobalConfig()
     {
-        string json = File.ReadAllText(SettingsFile);
+        string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
-            throw new SetupException($"Unable to parse `{SettingsFile}` file");
+            throw new SetupException($"Unable to parse `{DevelopmentSettingsFile}` file");
         }
 
         // TODO: merge appsettings.json, only needed blocks
@@ -99,9 +93,9 @@ public static class AppSettings
 
     private static void CreateFileIfNotExists()
     {
-        if (File.Exists(SettingsFile)) { return; }
+        if (File.Exists(DevelopmentSettingsFile)) { return; }
 
-        File.Create(SettingsFile).Dispose();
+        File.Create(DevelopmentSettingsFile).Dispose();
         var data = new
         {
             KernelMemory = new
@@ -117,6 +111,6 @@ public static class AppSettings
             AllowedHosts = "*",
         };
 
-        File.WriteAllText(SettingsFile, JsonConvert.SerializeObject(data, Formatting.Indented));
+        File.WriteAllText(DevelopmentSettingsFile, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
 }
