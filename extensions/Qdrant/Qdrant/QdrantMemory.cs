@@ -25,6 +25,7 @@ public class QdrantMemory : IMemoryDb
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
+    private readonly string _defaultIndex;
 
     /// <summary>
     /// Create new instance
@@ -46,6 +47,7 @@ public class QdrantMemory : IMemoryDb
 
         this._log = log ?? DefaultLogger<QdrantMemory>.Instance;
         this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey);
+        this._defaultIndex = !string.IsNullOrWhiteSpace(config.DefaultIndex) ? config.DefaultIndex : Constants.DefaultIndex;
     }
 
     /// <inheritdoc />
@@ -225,7 +227,7 @@ public class QdrantMemory : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            index = this._defaultIndex;
         }
 
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
