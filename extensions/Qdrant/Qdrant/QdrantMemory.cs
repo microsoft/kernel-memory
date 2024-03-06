@@ -24,8 +24,8 @@ public class QdrantMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
-    private readonly string _defaultIndex;
     private readonly ILogger<QdrantMemory> _log;
+    private readonly string _defaultIndex;
 
     /// <summary>
     /// Create new instance
