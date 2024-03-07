@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
@@ -30,7 +30,7 @@
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
         <!-- There isn't a NuGet package for the other project so not including that here -->
-        <ProjectReference Include="..\Service.Core\Service.Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\Service.Core\Service.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

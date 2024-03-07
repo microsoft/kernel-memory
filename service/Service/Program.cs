@@ -13,7 +13,6 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.Service.Auth;
 using Microsoft.KernelMemory.Service.Core;
 
 // KM Configuration:
