@@ -82,16 +82,15 @@ internal sealed class Program
         appBuilder.ConfigureSwagger(config);
 
         // Prepare memory instance using configuration settings
-        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings();
-
-        // Build the memory client and make it available for dependency injection
-        appBuilder.Services.AddSingleton<IKernelMemory>(memoryBuilder.Build());
+        appBuilder.AddKernelMemory(builder => builder.FromAppSettings());
 
         // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
 
         if (config.Service.RunWebService)
         {
+            app.UseSwagger(config);
+
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
             app.AddKernelMemoryEndpoints()
                 .AddEndpointFilter(new HttpAuthEndpointFilter(config.ServiceAuthorization));

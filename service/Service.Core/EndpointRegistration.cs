@@ -10,15 +10,8 @@ using Microsoft.KernelMemory.WebService;
 namespace Microsoft.KernelMemory.Service.Core;
 public static class EndpointRegistration
 {
-    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/", bool openAPIEnabled = true)
+    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")
     {
-        if (openAPIEnabled)
-        {
-            // URL: http://localhost:9001/swagger/index.html
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
         var group = app.MapGroup(apiPrefix);
 
         // File upload endpoint
