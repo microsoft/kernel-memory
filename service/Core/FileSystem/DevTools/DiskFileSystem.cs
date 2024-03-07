@@ -54,17 +54,28 @@ internal sealed class DiskFileSystem : IFileSystem
     }
 
     /// <inheritdoc />
-    public Task DeleteVolumeAsync(string volume, CancellationToken cancellationToken = default)
+    public async Task DeleteVolumeAsync(string volume, CancellationToken cancellationToken = default)
     {
         volume = ValidateVolumeName(volume);
         var path = Path.Join(this._dataPath, volume);
         this._log.LogWarning("Deleting directory: {0}", path);
-        if (Directory.Exists(path))
+        for (int attempt = 1; attempt <= 5; attempt++)
         {
-            Directory.Delete(path, true);
-        }
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
 
-        return Task.CompletedTask;
+            try
+            {
+                Directory.Delete(path, true);
+                return;
+            }
+            catch (IOException e) when (e.Message.Contains("not empty", StringComparison.OrdinalIgnoreCase))
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(attempt * 75), cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc />

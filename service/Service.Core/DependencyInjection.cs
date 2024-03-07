@@ -10,14 +10,6 @@ namespace Microsoft.KernelMemory.Service.Core;
 
 public static class DependencyInjection
 {
-    public static WebApplicationBuilder AddKernelMemoryWithDefaults(this WebApplicationBuilder appBuilder)
-    {
-        return appBuilder.AddKernelMemory(builder =>
-        {
-            return new ServiceConfiguration().PrepareBuilder(builder);
-        });
-    }
-
     public static WebApplicationBuilder AddKernelMemory(this WebApplicationBuilder appBuilder, Func<IKernelMemoryBuilder, IKernelMemoryBuilder> configure)
     {
         KernelMemoryConfig config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()

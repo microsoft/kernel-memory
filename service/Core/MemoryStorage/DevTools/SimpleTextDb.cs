@@ -48,6 +48,7 @@ public class SimpleTextDb : IMemoryDb
     /// <inheritdoc />
     public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
+        index = NormalizeIndexName(index);
         return this._fileSystem.CreateVolumeAsync(index, cancellationToken);
     }
 
@@ -60,12 +61,14 @@ public class SimpleTextDb : IMemoryDb
     /// <inheritdoc />
     public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
+        index = NormalizeIndexName(index);
         return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        index = NormalizeIndexName(index);
         await this._fileSystem.WriteFileAsync(index, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
         return record.Id;
     }
@@ -81,6 +84,8 @@ public class SimpleTextDb : IMemoryDb
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = int.MaxValue; }
+
+        index = NormalizeIndexName(index);
 
         var list = this.GetListAsync(index, filters, limit, withEmbeddings, cancellationToken);
         var records = new Dictionary<string, MemoryRecord>();
@@ -136,6 +141,8 @@ public class SimpleTextDb : IMemoryDb
     {
         if (limit <= 0) { limit = int.MaxValue; }
 
+        index = NormalizeIndexName(index);
+
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
@@ -167,10 +174,27 @@ public class SimpleTextDb : IMemoryDb
     /// <inheritdoc />
     public Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        index = NormalizeIndexName(index);
         return this._fileSystem.DeleteFileAsync(index, "", EncodeId(record.Id), cancellationToken);
     }
 
     #region private
+
+    // Note: normalize "_" to "-" for consistency with other DBs
+    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
+    private const string ValidSeparator = "-";
+
+    private static string NormalizeIndexName(string index)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            index = Constants.DefaultIndex;
+        }
+
+        index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
+
+        return index.Trim();
+    }
 
     private static bool TagsMatchFilters(TagCollection tags, ICollection<MemoryFilter>? filters)
     {

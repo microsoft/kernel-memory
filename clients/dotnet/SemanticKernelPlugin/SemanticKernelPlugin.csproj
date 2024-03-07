@@ -4,21 +4,10 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.SemanticKernelPlugin</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
-        <IsPackable>true</IsPackable>
-        <PackageId>Microsoft.KernelMemory.SemanticKernelPlugin</PackageId>
         <NoWarn>$(NoWarn);CS1591,NU5104</NoWarn>
     </PropertyGroup>
 
-    <Import Project="../../../service/nuget-package.props"/>
-
-    <PropertyGroup>
-        <Product>Memory Plugin for Semantic Kernel</Product>
-        <Description>Kernel Memory Plugin allows to use Kernel Memory Service as a Semantic Kernel plugin, to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
-        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
-    </PropertyGroup>
-
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\WebClient\WebClient.csproj" />
     </ItemGroup>
 
@@ -26,6 +15,20 @@
         <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
     </ItemGroup>
 
-    <Import Project="../../../service/code-analysis.props"/>
+    <Import Project="../../../code-analysis.props"/>
+
+    <Import Project="../../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.SemanticKernelPlugin</PackageId>
+        <Product>Memory Plugin for Semantic Kernel</Product>
+        <Description>Kernel Memory Plugin allows to use Kernel Memory Service as a Semantic Kernel plugin, to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
 
 </Project>

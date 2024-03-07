@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.Llama;
-using Microsoft.KernelMemory.AI.Tokenizers;
-using Microsoft.KernelMemory.DataFormats.Image.AzureAIDocIntel;
+using Microsoft.KernelMemory.AI.OpenAI;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -33,7 +31,7 @@ new ConfigurationBuilder()
 
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithOpenAI(openAICfg)
+    // .WithOpenAI(openAIConfig)
     // .WithLlamaTextGeneration(llamaConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
@@ -127,8 +125,8 @@ if (ingestion)
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
     {
-        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md");
-        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md",
+        Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md");
+        await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md",
             documentId: "webPage2",
             steps: Constants.PipelineWithoutSummary);
     }
@@ -249,7 +247,7 @@ Uploading Image file with a news about a conference sponsored by Microsoft
 Uploading a text file, a Word doc, and a PDF about Semantic Kernel
 Uploading a PDF with a news about NASA and Orion
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
-Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/SECURITY_FILTERS.md
+Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md
 
 ====================================
 

@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.Llama;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.OpenAI;
 
 var llamaConfig = new LlamaSharpConfig();
 var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();

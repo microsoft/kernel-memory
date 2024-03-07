@@ -1,0 +1,1 @@
+docker run -p 8001:8001 -p 6379:6379 redis/redis-stack

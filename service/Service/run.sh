@@ -2,9 +2,8 @@
 
 set -e
 
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
+cd "$(dirname "${BASH_SOURCE[0]:-$0}")"
 
-dotnet restore
-dotnet build
-ASPNETCORE_ENVIRONMENT=Development dotnet run
-
+dotnet clean
+dotnet build -c Debug -p "SolutionName=KernelMemory"
+ASPNETCORE_ENVIRONMENT=Development dotnet run --no-build --no-restore

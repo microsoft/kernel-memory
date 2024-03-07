@@ -109,49 +109,84 @@ public class ServiceCollectionPool : IServiceCollection
         return this._primaryCollection.GetEnumerator();
     }
 
-    #region unsafe
-
     /// <inheritdoc/>
     public bool Remove(ServiceDescriptor item)
     {
         this.Lock();
-        DeletionsNotAllowed();
-        return false;
+
+        var result = false;
+        foreach (var service in this._pool)
+        {
+            result = result || service.Remove(item);
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
         this.Lock();
-        DeletionsNotAllowed();
+        foreach (var service in this._pool)
+        {
+            service.Clear();
+        }
     }
+
+    #region unsafe
 
     /// <inheritdoc/>
     public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
     {
         this.Lock();
-        throw AccessByPositionNotAllowed();
-    }
 
-    /// <inheritdoc/>
-    public int IndexOf(ServiceDescriptor item)
-    {
-        this.Lock();
-        throw AccessByPositionNotAllowed();
+        // When using multiple service providers, the position is not consistent
+        // If you need this API, e.g. to loop through the service descriptors:
+        // * loop using the enumerator
+        if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+        this._primaryCollection.CopyTo(array, arrayIndex);
     }
 
     /// <inheritdoc/>
     public void Insert(int index, ServiceDescriptor item)
     {
         this.Lock();
-        throw AccessByPositionNotAllowed();
+
+        // When using multiple service providers, the position is not consistent
+        // If you need this API, e.g. to loop through the service descriptors:
+        // * create a custom service collection and pass it to KernelMemoryBuilder ctor
+        if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+        this._primaryCollection.Insert(index, item);
+    }
+
+    /// <inheritdoc/>
+    public int IndexOf(ServiceDescriptor item)
+    {
+        this.Lock();
+
+        // When using multiple service providers, the position is not consistent
+        // If you need this API, e.g. to loop through the service descriptors:
+        // * loop using the enumerator
+        // * create a custom service collection and pass it to KernelMemoryBuilder ctor
+        if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+        return this._primaryCollection.IndexOf(item);
     }
 
     /// <inheritdoc/>
     public void RemoveAt(int index)
     {
         this.Lock();
-        throw AccessByPositionNotAllowed();
+
+        // When using multiple service providers, the position is not consistent
+        // If you need this API, e.g. to loop through the service descriptors:
+        // * loop using the enumerator
+        // * create a custom service collection and pass it to KernelMemoryBuilder ctor
+        if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+        this._primaryCollection.RemoveAt(index);
     }
 
     /// <inheritdoc/>
@@ -160,12 +195,25 @@ public class ServiceCollectionPool : IServiceCollection
         get
         {
             this.Lock();
-            throw AccessByPositionNotAllowed();
+
+            // When using multiple service providers, the position is not consistent
+            // If you need this API, e.g. to loop through the service descriptors:
+            // * loop using the enumerator
+            // * create a custom service collection and pass it to KernelMemoryBuilder ctor
+            if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+            return this._primaryCollection[index];
         }
         set
         {
             this.Lock();
-            throw AccessByPositionNotAllowed();
+
+            // When using multiple service providers, the position is not consistent
+            // If you need this API, e.g. to loop through the service descriptors:
+            // * create a custom service collection and pass it to KernelMemoryBuilder ctor
+            if (this._pool.Count != 1) { throw AccessByPositionNotAllowed(); }
+
+            this._primaryCollection[index] = value;
         }
     }
 
@@ -174,14 +222,6 @@ public class ServiceCollectionPool : IServiceCollection
     private void Lock()
     {
         this._poolSizeLocked = true;
-    }
-
-    /// <exception cref="InvalidOperationException"></exception>
-    private static InvalidOperationException DeletionsNotAllowed()
-    {
-        return new InvalidOperationException(
-            $"{nameof(ServiceCollectionPool)} is used to share external service collections with KernelBuilder. " +
-            $"KernelBuilder should never remove service descriptors defined in the hosting application.");
     }
 
     /// <exception cref="InvalidOperationException"></exception>

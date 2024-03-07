@@ -3,15 +3,15 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.Service.Core.Auth;
 using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.Core;
 public static class EndpointRegistration
 {
-    public static WebApplication AddKernelMemoryEndpoints(this WebApplication app)
+    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")
     {
         KernelMemoryConfig config = app.Services.GetService<KernelMemoryConfig>() ?? throw new ArgumentException("Ensure that you call appBuilder.AddKernelMemory before adding endpoints.");
 
@@ -22,10 +22,10 @@ public static class EndpointRegistration
             app.UseSwaggerUI();
         }
 
-        HttpAuthEndpointFilter authFilter = new(config.ServiceAuthorization);
+        var group = app.MapGroup(apiPrefix);
 
         // File upload endpoint
-        app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
+        group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 IKernelMemory service,
                 ILogger<IKernelMemory> log,
@@ -64,7 +64,6 @@ public static class EndpointRegistration
                 return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
             }
         })
-            .AddEndpointFilter(authFilter)
             .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
@@ -72,7 +71,7 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
         // List of indexes endpoint
-        app.MapGet(Constants.HttpIndexesEndpoint,
+        group.MapGet(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     IKernelMemory service,
                     ILogger<IKernelMemory> log,
@@ -91,16 +90,15 @@ public static class EndpointRegistration
 
                     return Results.Ok(result);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<IndexCollection>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         // Delete index endpoint
-        app.MapDelete(Constants.HttpIndexesEndpoint,
+        group.MapDelete(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
-                string? index,
+                    string? index,
                     IKernelMemory service,
                     ILogger<IKernelMemory> log,
                     CancellationToken cancellationToken) =>
@@ -116,18 +114,17 @@ public static class EndpointRegistration
                         Message = "Index deletion request received, pipeline started"
                     });
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         // Delete document endpoint
-        app.MapDelete(Constants.HttpDocumentsEndpoint,
+        group.MapDelete(Constants.HttpDocumentsEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
-                string? index,
+                    string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
-                string documentId,
+                    string documentId,
                     IKernelMemory service,
                     ILogger<IKernelMemory> log,
                     CancellationToken cancellationToken) =>
@@ -145,13 +142,12 @@ public static class EndpointRegistration
                         Message = "Document deletion request received, pipeline started"
                     });
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         // Ask endpoint
-        app.MapPost(Constants.HttpAskEndpoint,
+        group.MapPost(Constants.HttpAskEndpoint,
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
@@ -168,13 +164,12 @@ public static class EndpointRegistration
                         .ConfigureAwait(false);
                     return Results.Ok(answer);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<MemoryAnswer>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         // Search endpoint
-        app.MapPost(Constants.HttpSearchEndpoint,
+        group.MapPost(Constants.HttpSearchEndpoint,
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
@@ -192,13 +187,12 @@ public static class EndpointRegistration
                         .ConfigureAwait(false);
                     return Results.Ok(answer);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<SearchResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         // Document status endpoint
-        app.MapGet(Constants.HttpUploadStatusEndpoint,
+        group.MapGet(Constants.HttpUploadStatusEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                 string? index,
@@ -230,13 +224,57 @@ public static class EndpointRegistration
 
                     return Results.Ok(pipeline);
                 })
-            .AddEndpointFilter(authFilter)
             .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
-        return app;
+        group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
+                HttpRequest request,
+                IKernelMemory service,
+                ILogger log,
+                CancellationToken cancellationToken) =>
+        {
+            log.LogTrace("New upload HTTP request");
+
+            // Note: .NET doesn't yet support binding multipart forms including data and files
+            (HttpDocumentUploadRequest input, bool isValid, string errMsg)
+                = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
+                    .ConfigureAwait(false);
+
+            if (!isValid)
+            {
+                log.LogError(errMsg);
+                return Results.Problem(detail: errMsg, statusCode: 400);
+            }
+
+            try
+            {
+                // UploadRequest => Document
+                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
+                    .ConfigureAwait(false);
+                var url = Constants.HttpUploadStatusEndpointWithParams
+                    .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
+                    .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
+                return Results.Accepted(url, new UploadAccepted
+                {
+                    DocumentId = documentId,
+                    Index = input.Index,
+                    Message = "Document upload completed, ingestion pipeline started"
+                });
+            }
+            catch (Exception e)
+            {
+                return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
+            }
+        })
+            .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+            .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
+
+        return group;
     }
 }

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AssemblyName/>
+        <RootNamespace/>
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+        <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
+        <NoWarn>$(NoWarn);CA1050;CA2000;CA1707;CA1303;CA2007;CA1724;CA1861;</NoWarn>
+        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
+      <ProjectReference Include="..\..\service\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="story.docx" />
+      <Content Include="story.docx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+</Project>

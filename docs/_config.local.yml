@@ -1,0 +1,82 @@
+# Config for local Jekyll tests
+theme: just-the-docs
+
+# ==================================================
+# == everything below is the same as _config.yaml ==
+# ==================================================
+
+title: Kernel Memory
+description: >-
+  Index and query any data using LLM and natural language, tracking sources and
+  showing citations. Kernel Memory (KM) is a multi-modal AI Service specialized
+  in the efficient indexing of datasets through custom continuous data hybrid
+  pipelines, with support for Retrieval Augmented Generation (RAG), synthetic
+  memory, prompt engineering, and custom semantic memory processing.
+baseurl: "/kernel-memory"
+url: ""
+
+favicon_ico: "/favicon.png"
+enable_copy_code_button: true
+heading_anchors: true
+color_scheme: custom
+
+callouts:
+  highlight:
+    color: yellow
+  console:
+    color: green
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+nav_external_links:
+  - title: KM on GitHub
+    url: https://github.com/microsoft/kernel-memory
+  - title: KM on Discord
+    url: https://aka.ms/KMDiscord
+
+aux_links:
+  "GitHub":
+    - "https://github.com/microsoft/kernel-memory"
+  "Discord":
+    - "https://aka.ms/KMDiscord"
+
+back_to_top: false
+back_to_top_text: "Back to top"
+
+gh_edit_link: true
+gh_edit_link_text: "Edit this page"
+gh_edit_repository: "https://github.com/microsoft/kernel-memory"
+gh_edit_branch: "main"
+gh_edit_source: docs
+gh_edit_view_mode: "tree"
+
+search_enabled: true
+search:
+  # Split pages into sections that can be searched individually # Supports 1 - 6, default: 6
+  heading_level: 6
+  # Maximum amount of previews per search result # Default: 3
+  previews: 3
+  # Maximum amount of words to display before a matched word in the preview # Default: 5
+  preview_words_before: 6
+  # Maximum amount of words to display after a matched word in the preview # Default: 10
+  preview_words_after: 10
+  # Set the search token separator # Default: /[\s\-/]+/ # Example: enable support for hyphenated search words
+  tokenizer_separator: /[\s/]+/
+  # Display the relative url in search results # Supports true (default) or false
+  rel_url: false
+  # Enable or disable the search button that appears in the bottom right corner of every page # Supports true or false (default)
+  button: true
+
+mermaid:
+  # See https://cdn.jsdelivr.net/npm/mermaid/
+  version: "10.6.1"

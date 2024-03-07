@@ -138,30 +138,58 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         index = IndexExtensions.CleanName(index);
+
         try
         {
             BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
                 .ConfigureAwait(false));
-            return content == null ? null : JsonSerializer.Deserialize<DataPipeline>(content.ToString().RemoveBOM().Trim());
+
+            if (content == null)
+            {
+                throw new InvalidPipelineDataException("The pipeline data is null");
+            }
+
+            var result = JsonSerializer.Deserialize<DataPipeline>(content.ToString().RemoveBOM().Trim());
+
+            if (result == null)
+            {
+                throw new InvalidPipelineDataException("The pipeline data deserializes to a null value");
+            }
+
+            return result;
         }
         catch (ContentStorageFileNotFoundException)
         {
-            return null;
+            throw new PipelineNotFoundException("Pipeline/Document not found");
         }
     }
 
     ///<inheritdoc />
     public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline?.ToDataPipelineStatus();
+        try
+        {
+            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
+            return pipeline?.ToDataPipelineStatus();
+        }
+        catch (PipelineNotFoundException)
+        {
+            return null;
+        }
     }
 
     ///<inheritdoc />
     public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-        return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
+        try
+        {
+            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
+            return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
+        }
+        catch (PipelineNotFoundException)
+        {
+            return false;
+        }
     }
 
     ///<inheritdoc />
@@ -309,8 +337,16 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         // If the folder contains the status of a previous execution,
         // capture it to run consolidation later, e.g. purging deprecated memory records.
         // Note: although not required, the list of executions to purge is ordered from oldest to most recent
-        DataPipeline? previousPipeline = await this.ReadPipelineStatusAsync(
-            currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        DataPipeline? previousPipeline;
+        try
+        {
+            previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (PipelineNotFoundException)
+        {
+            previousPipeline = null;
+        }
+
         if (previousPipeline != null && previousPipeline.ExecutionId != currentPipeline.ExecutionId)
         {
             var dedupe = new HashSet<string>();

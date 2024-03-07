@@ -26,7 +26,6 @@ namespace Microsoft.KernelMemory;
 /// * memory.search
 /// * memory.delete
 ///
-/// TODO / not supported: filters on tags
 /// </summary>
 public class MemoryPlugin
 {
@@ -338,12 +337,15 @@ public class MemoryPlugin
         double minRelevance = 0,
         [ /*SKName(LimitParam),*/ Description("Maximum number of memories to return"), DefaultValue(1)]
         int limit = 1,
+        [ /*SKName(TagsParam),*/ Description("Memories tags to search for information"), DefaultValue(null)]
+        TagCollectionWrapper? tags = null,
         CancellationToken cancellationToken = default)
     {
         SearchResult result = await this._memory
             .SearchAsync(
                 query: query,
                 index: index ?? this._defaultIndex,
+                filter: TagsToMemoryFilter(tags ?? this._defaultRetrievalTags),
                 minRelevance: minRelevance,
                 limit: limit,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -373,12 +375,15 @@ public class MemoryPlugin
         string? index = null,
         [ /*SKName(MinRelevanceParam),*/ Description("Minimum relevance of the sources to consider"), DefaultValue(0d)]
         double minRelevance = 0,
+        [ /*SKName(TagsParam),*/ Description("Memories tags to search for information"), DefaultValue(null)]
+        TagCollectionWrapper? tags = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         MemoryAnswer answer = await this._memory.AskAsync(
             question: question,
             index: index ?? this._defaultIndex,
+            filter: TagsToMemoryFilter(tags ?? this._defaultRetrievalTags),
             minRelevance: minRelevance,
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return answer.Result;
@@ -424,5 +429,22 @@ public class MemoryPlugin
         {
             // Nothing to do
         }
+    }
+
+    private static MemoryFilter? TagsToMemoryFilter(TagCollection? tags)
+    {
+        if (tags == null)
+        {
+            return null;
+        }
+
+        var filters = new MemoryFilter();
+
+        foreach (var tag in tags)
+        {
+            filters.Add(tag.Key, tag.Value);
+        }
+
+        return filters;
     }
 }

@@ -73,6 +73,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
         this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
+        var partitionsFound = false;
         foreach (var uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -83,6 +84,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
                 {
+                    partitionsFound = true;
                     this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
                     continue;
                 }
@@ -94,6 +96,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
                     continue;
                 }
+
+                partitionsFound = true;
 
                 // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
                 switch (partitionFile.MimeType)
@@ -153,6 +157,8 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 Size = text.Length,
                                 MimeType = MimeTypes.TextEmbeddingVector,
                                 ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector,
+                                PartitionNumber = partitionFile.PartitionNumber,
+                                SectionNumber = partitionFile.SectionNumber,
                                 Tags = partitionFile.Tags,
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
@@ -174,6 +180,11 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
             {
                 uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
             }
+        }
+
+        if (!partitionsFound)
+        {
+            this._log.LogWarning("Pipeline '{0}/{1}': text partitions not found, cannot generate embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);

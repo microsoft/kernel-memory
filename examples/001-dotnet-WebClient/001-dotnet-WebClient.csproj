@@ -12,7 +12,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\..\clients\dotnet\WebClient\WebClient.csproj" />
     </ItemGroup>
 

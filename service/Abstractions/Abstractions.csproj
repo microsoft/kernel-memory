@@ -4,31 +4,39 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Abstractions</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <IsPackable>true</IsPackable>
-        <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
         <NoWarn>$(NoWarn);CA1711,CS1591,CS1574,NU5104,SKEXP0001</NoWarn>
     </PropertyGroup>
 
-    <Import Project="../nuget-package.props"/>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
+        <PackageReference Include="System.Memory.Data"/>
+        <PackageReference Include="System.Numerics.Tensors"/>
+        <PackageReference Include="System.Text.Json"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.Abstractions.UnitTests"/>
+    </ItemGroup>
+
+    <Import Project="../../code-analysis.props"/>
+
+    <Import Project="../../nuget-package.props"/>
 
     <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
         <Product>Kernel Memory Interfaces and Modules</Product>
         <Description>Kernel Memory is a Copilot/Semantic Kernel Plugin and Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. The package contains the interfaces and models shared by all Kernel Memory packages.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-        <PackageReference Include="Microsoft.Extensions.Hosting"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
-        <PackageReference Include="System.Memory.Data"/>
-        <PackageReference Include="System.Numerics.Tensors" />
-        <PackageReference Include="System.Text.Json"/>
+        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
     </ItemGroup>
-
-    <Import Project="../code-analysis.props"/>
 
 </Project>

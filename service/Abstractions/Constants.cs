@@ -13,6 +13,9 @@ public static class Constants
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
 
+    // Form field containing the list of tags
+    public const string WebServiceTagsField = "tags";
+
     // Form field containing the list of pipeline steps
     public const string WebServiceStepsField = "steps";
 
@@ -30,6 +33,8 @@ public static class Constants
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
+    public const string ReservedFilePartitionNumberTag = $"{ReservedTagsPrefix}part_n";
+    public const string ReservedFileSectionNumberTag = $"{ReservedTagsPrefix}sect_n";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
     public const string ReservedSyntheticTypeTag = $"{ReservedTagsPrefix}synth";
 

@@ -102,12 +102,7 @@ readParameters "$@"
 validateParameters
 
 # Prepare curl command
-CMD="curl -v -F 'file1=@\"${FILENAME}\"' -F 'index=\"${INDEXNAME}\"' -F 'documentId=\"${DOCUMENT_ID}\"'"
-
-# Handle list of tags
-for TAG in $TAGS; do
-    CMD="$CMD -F '${TAG}'"
-done
+CMD="curl -v -F 'file1=@\"${FILENAME}\"' -F 'index=\"${INDEXNAME}\"' -F 'documentId=\"${DOCUMENT_ID}\"' -F 'tags=\"${TAGS}\"'"
 
 # Add URL
 CMD="$CMD $SERVICE_URL/upload"

@@ -1,3 +1,10 @@
+---
+nav_order: 90
+has_children: false
+title: F.A.Q.
+permalink: /faq
+layout: default
+---
 # Kernel Memory F.A.Q.
 
 ### How do I integrate Kernel Memory with my application?

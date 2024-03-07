@@ -37,7 +37,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     // Services required to build the memory client class
     private readonly IServiceCollection _memoryServiceCollection;
 
-    // Services of the host application, when hosting pipeline handlers, e.g. in service mode
+    // Services of the host application
     private readonly IServiceCollection? _hostServiceCollection;
 
     // List of all the embedding generators to use during ingestion
@@ -296,29 +296,6 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
         var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
 
-        if (this._useDefaultHandlers)
-        {
-            if (this._hostServiceCollection == null)
-            {
-                const string ClassName = nameof(KernelMemoryBuilder);
-                const string MethodName = nameof(this.WithoutDefaultHandlers);
-                throw new ConfigurationException("Service collection not available, unable to register default handlers. " +
-                                                 $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
-                                                 $"otherwise use `new {ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
-            }
-
-            // Handlers - Register these handlers to run as hosted services in the caller app.
-            // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
-            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>(Constants.PipelineStepsExtract);
-            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>(Constants.PipelineStepsPartition);
-            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>(Constants.PipelineStepsGenEmbeddings);
-            this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>(Constants.PipelineStepsSaveRecords);
-            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>(Constants.PipelineStepsSummarize);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.PipelineStepsDeleteDocument);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
-        }
-
         this.CheckForMissingDependencies();
 
         return new MemoryService(orchestrator, searchClient);
@@ -407,7 +384,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         var hasQueueFactory = (this._memoryServiceCollection.HasService<QueueClientFactory>());
         var hasContentStorage = (this._memoryServiceCollection.HasService<IContentStorage>());
         var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
-        var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
+        var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>());
         var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
         var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGenerator>());
 

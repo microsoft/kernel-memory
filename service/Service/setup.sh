@@ -1,10 +1,9 @@
-#!/usr/bin/env bash
+# This script is used also in the Docker image
 
-set -e
-
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
-
-dotnet restore
-dotnet build
-dotnet run setup
-
+if [ -f "Microsoft.KernelMemory.ServiceAssembly.dll" ]; then
+    dotnet Microsoft.KernelMemory.ServiceAssembly.dll setup
+else
+    dotnet clean
+    dotnet build -c Debug -p "SolutionName=KernelMemory"
+    ASPNETCORE_ENVIRONMENT=Development dotnet run setup --no-build --no-restore
+fi

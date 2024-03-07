@@ -33,19 +33,19 @@ public class SimpleFileStorage : IContentStorage
         }
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
         return this._fileSystem.CreateVolumeAsync(index, cancellationToken);
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
         return this._fileSystem.DeleteVolumeAsync(index, cancellationToken);
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public Task CreateDocumentDirectoryAsync(
         string index,
         string documentId,
@@ -54,7 +54,7 @@ public class SimpleFileStorage : IContentStorage
         return this._fileSystem.CreateDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public async Task EmptyDocumentDirectoryAsync(
         string index,
         string documentId,
@@ -70,7 +70,7 @@ public class SimpleFileStorage : IContentStorage
         }
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public Task DeleteDocumentDirectoryAsync(
         string index,
         string documentId,
@@ -79,7 +79,7 @@ public class SimpleFileStorage : IContentStorage
         return this._fileSystem.DeleteDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public async Task WriteFileAsync(
         string index,
         string documentId,
@@ -91,7 +91,7 @@ public class SimpleFileStorage : IContentStorage
         await this._fileSystem.WriteFileAsync(volume: index, relPath: documentId, fileName: fileName, streamContent: streamContent, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inherit />
+    /// <inheritdoc />
     public async Task<BinaryData> ReadFileAsync(
         string index,
         string documentId,

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.OpenAI;
 
 // Use this boolean to decide whether to use OpenAI or Azure OpenAI models
 const bool UseAzure = true;

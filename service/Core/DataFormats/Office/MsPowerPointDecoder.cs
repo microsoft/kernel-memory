@@ -33,14 +33,14 @@ public class MsPowerPointDecoder
     /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
     /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
     /// <returns>The text extracted from the presentation</returns>
-    public string DocToText(
+    public FileContent ExtractContent(
         string filename,
         bool withSlideNumber = true,
         bool withEndOfSlideMarker = false,
         bool skipHiddenSlides = true)
     {
         using var stream = File.OpenRead(filename);
-        return this.DocToText(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
+        return this.ExtractContent(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
     }
 
     /// <summary>
@@ -51,14 +51,14 @@ public class MsPowerPointDecoder
     /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
     /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
     /// <returns>The text extracted from the presentation</returns>
-    public string DocToText(
+    public FileContent ExtractContent(
         BinaryData data,
         bool withSlideNumber = true,
         bool withEndOfSlideMarker = false,
         bool skipHiddenSlides = true)
     {
         using var stream = data.ToStream();
-        return this.DocToText(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
+        return this.ExtractContent(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
     }
 
     /// <summary>
@@ -69,12 +69,14 @@ public class MsPowerPointDecoder
     /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
     /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
     /// <returns>The text extracted from the presentation</returns>
-    public string DocToText(
+    public FileContent ExtractContent(
         Stream data,
         bool withSlideNumber = true,
         bool withEndOfSlideMarker = false,
         bool skipHiddenSlides = true)
     {
+        var result = new FileContent();
+
         using PresentationDocument presentationDocument = PresentationDocument.Open(data, false);
         var sb = new StringBuilder();
 
@@ -103,19 +105,19 @@ public class MsPowerPointDecoder
                     bool isVisible = slidePart.Slide.Show ?? true;
                     if (skipHiddenSlides && !isVisible) { continue; }
 
-                    var slideContent = new StringBuilder();
+                    var currentSlideContent = new StringBuilder();
                     for (var i = 0; i < texts.Count; i++)
                     {
                         var text = texts[i];
-                        slideContent.Append(text.Text);
+                        currentSlideContent.Append(text.Text);
                         if (i < texts.Count - 1)
                         {
-                            slideContent.Append(' ');
+                            currentSlideContent.Append(' ');
                         }
                     }
 
                     // Skip the slide if there is no text
-                    if (slideContent.Length < 1) { continue; }
+                    if (currentSlideContent.Length < 1) { continue; }
 
                     // Prepend slide number before the slide text
                     if (withSlideNumber)
@@ -123,7 +125,7 @@ public class MsPowerPointDecoder
                         sb.AppendLine(this._slideNumberTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
 
-                    sb.Append(slideContent);
+                    sb.Append(currentSlideContent);
                     sb.AppendLine();
 
                     // Append the end of slide marker
@@ -132,9 +134,13 @@ public class MsPowerPointDecoder
                         sb.AppendLine(this._endOfSlideMarkerTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
                 }
+
+                string slideContent = sb.ToString().Trim();
+                sb.Clear();
+                result.Sections.Add(new FileSection(slideNumber, slideContent, true));
             }
         }
 
-        return sb.ToString().Trim();
+        return result;
     }
 }

@@ -1,5 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+/*
+ * The ingestion pipeline is composed by a set of default STEPS to process documents:
+ *  - extract
+ *  - partition
+ *  - gen_embeddings
+ *  - save_records
+ *
+ * Each step is managed by a HANDLER, see the Core/Handlers for a list of available handlers.
+ *
+ * You can create new handlers, and customize the pipeline in multiple ways:
+ *
+ *  - If you are using the Memory Web Service, the list of handlers can be configured in appsettings.json and appsettings.<ENV>.json
+ *  - You can create new handlers and load them in the configuration, passing the path to the assembly and the handler class.
+ *  - If you are using the Serverless Memory, see the example below.
+ *  - You can also remove the default handlers calling .WithoutDefaultHandlers() in the memory builder.
+ */
+
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Handlers;
 

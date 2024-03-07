@@ -13,15 +13,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
         <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Postgres" Version="0.3.231224.1" />
-    </ItemGroup>
-
-    <Import Project="../nuget-package.props"/>
-    <Import Project="../code-analysis.props"/>
 
     <PropertyGroup>
         <Product>Kernel Memory HTTP service components</Product>
