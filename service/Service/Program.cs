@@ -155,7 +155,6 @@ internal static class Program
     {
         if (memory is not MemoryServerless) { return 0; }
 
-#if KernelMemoryDev
         var orchestrator = ((MemoryServerless)memory).Orchestrator;
         foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
         {
@@ -163,8 +162,5 @@ internal static class Program
         }
 
         return orchestrator.HandlerNames.Count;
-#else
-        return 0;
-#endif
     }
 }
