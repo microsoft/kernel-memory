@@ -228,7 +228,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer.FunctionalTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Core", "service\Service.Core\Service.Core.csproj", "{C329DAE4-41DF-4A65-AD13-B224BF97936D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Core", "service\Service.Core\Service.Core.csproj", "{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -415,10 +415,10 @@ Global
 		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C089DE42-9D39-4633-AC0C-5034BA0B98E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C329DAE4-41DF-4A65-AD13-B224BF97936D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C329DAE4-41DF-4A65-AD13-B224BF97936D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C329DAE4-41DF-4A65-AD13-B224BF97936D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C329DAE4-41DF-4A65-AD13-B224BF97936D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -484,6 +484,6 @@ Global
 		{A6AE31A1-4F60-47B0-8534-7B083D68118C} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{668A48B7-F600-4056-B47E-3200893C0404} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{C089DE42-9D39-4633-AC0C-5034BA0B98E1} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
-		{C329DAE4-41DF-4A65-AD13-B224BF97936D} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{466FC1F6-BEAC-470B-AEC5-FA49E30DA5EF} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
 	EndGlobalSection
 EndGlobal
