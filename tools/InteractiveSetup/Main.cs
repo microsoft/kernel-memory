@@ -9,7 +9,7 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 
 public static class Main
 {
-    private static BoundedBoolean s_cfgOpenAPI = new();
+    private static BoundedBoolean s_cfgWebService = new();
 
     // Storage
     private static BoundedBoolean s_cfgContentStorage = new();
@@ -37,10 +37,7 @@ public static class Main
     private static BoundedBoolean s_cfgRedis = new();
     private static BoundedBoolean s_cfgSimpleVectorDb = new();
 
-    public static void InteractiveSetup(
-        string[] args,
-        bool cfgService = false,
-        bool cfgOrchestration = true)
+    public static void InteractiveSetup(string[] args)
     {
         // If args is not empty, then the user is asking to configure a specific list of services
         if (args.Length > 0)
@@ -49,7 +46,7 @@ public static class Main
             SetupUI.Exit();
         }
 
-        s_cfgOpenAPI = new();
+        s_cfgWebService = new();
 
         // Storage
         s_cfgContentStorage = new(initialState: true);
@@ -79,17 +76,14 @@ public static class Main
 
         try
         {
-            if (cfgService) { ServiceSetup(); }
-            else { NoService(); }
+            ServiceSetup();
+            WebserviceSetup();
 
-            if (cfgOrchestration)
-            {
-                OrchestrationTypeSetup();
-                QueuesSetup();
-                AzureQueueSetup();
-                RabbitMQSetup();
-                SimpleQueuesSetup();
-            }
+            // Orchestration
+            QueuesSetup();
+            AzureQueueSetup();
+            RabbitMQSetup();
+            SimpleQueuesSetup();
 
             // Storage
             ContentStorageTypeSetup();
@@ -189,28 +183,72 @@ public static class Main
     private static void ServiceSetup()
     {
         var config = AppSettings.GetCurrentConfig();
+
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "Run the web service (upload and search endpoints)?",
+            Title = "How should Kernel Memory service run and handle memory and documents ingestion?",
+            Description = "KM provides a HTTP web service for uploading documents, searching, asking questions, etc. The " +
+                          "service can be configured to run ingestion (loading documents) asynchronously or synchronously. " +
+                          "When running asynchronously, handlers run in the background and use distributed queues to enable " +
+                          "long running tasks, to retry in case of errors, and to allow scaling the service horizontally. " +
+                          "The web service can also be disabled in case the queued jobs are populated differently.",
             Options = new List<Answer>
             {
-                new("Yes", config.Service.RunWebService, () =>
-                {
-                    AppSettings.Change(x => { x.Service.RunWebService = true; });
-                    s_cfgOpenAPI.Value = true;
-                }),
-                new("No", !config.Service.RunWebService, () =>
-                {
-                    AppSettings.Change(x => { x.Service.RunWebService = false; });
-                    s_cfgOpenAPI.Value = false;
-                }),
+                new("Web Service with Asynchronous Ingestion Handlers (better for retry logic and long operations)",
+                    config.Service.RunWebService && config.Service.RunHandlers,
+                    () =>
+                    {
+                        s_cfgWebService.Value = true;
+                        s_cfgQueue.Value = true;
+                        AppSettings.Change(x =>
+                        {
+                            x.Service.RunWebService = true;
+                            x.Service.RunHandlers = true;
+                            x.DataIngestion.OrchestrationType = "Distributed";
+                        });
+                    }),
+                new("Web Service with Synchronous Ingestion Handlers",
+                    config.Service.RunWebService && !config.Service.RunHandlers,
+                    () =>
+                    {
+                        s_cfgWebService.Value = true;
+                        s_cfgQueue.Value = false;
+                        AppSettings.Change(x =>
+                        {
+                            x.Service.RunWebService = true;
+                            x.Service.RunHandlers = false;
+                            x.DataIngestion.OrchestrationType = "InProcess";
+                            x.DataIngestion.DistributedOrchestration.QueueType = "";
+                        });
+                    }),
+                new("No web Service, run only asynchronous Ingestion Handlers in the background",
+                    !config.Service.RunWebService && config.Service.RunHandlers,
+                    () =>
+                    {
+                        s_cfgWebService.Value = false;
+                        s_cfgQueue.Value = true;
+                        AppSettings.Change(x =>
+                        {
+                            x.Service.RunWebService = false;
+                            x.Service.RunHandlers = true;
+                            x.DataIngestion.OrchestrationType = "Distributed";
+                        });
+                    }),
                 new("-exit-", false, SetupUI.Exit),
             }
         });
+    }
+
+    private static void WebserviceSetup(bool force = false)
+    {
+        if (!s_cfgWebService.Value && !force) { return; }
+
+        var config = AppSettings.GetCurrentConfig();
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Protect the web service with API Keys?",
+            Description = "If the web service runs on a public network it should protected requiring clients to pass one of two secret API keys on each request. The API Key is passed using the `Authorization` HTTP header.",
             Options = new List<Answer>
             {
                 new("Yes", config.ServiceAuthorization.Enabled, () =>
@@ -237,41 +275,15 @@ public static class Main
             }
         });
 
-        if (s_cfgOpenAPI.Value)
-        {
-            SetupUI.AskQuestionWithOptions(new QuestionWithOptions
-            {
-                Title = "Enable OpenAPI swagger doc at /swagger/index.html?",
-                Options = new List<Answer>
-                {
-                    new("Yes", config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = true; }); }),
-                    new("No", !config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = false; }); }),
-                    new("-exit-", false, SetupUI.Exit),
-                }
-            });
-        }
-
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "Run the .NET pipeline handlers as a service?",
+            Title = "Enable OpenAPI swagger doc at /swagger/index.html?",
             Options = new List<Answer>
             {
-                new("Yes", config.Service.RunHandlers, () => { AppSettings.Change(x => { x.Service.RunHandlers = true; }); }),
-                new("No", !config.Service.RunHandlers, () => { AppSettings.Change(x => { x.Service.RunHandlers = false; }); }),
+                new("Yes", config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = true; }); }),
+                new("No", !config.Service.OpenApiEnabled, () => { AppSettings.Change(x => { x.Service.OpenApiEnabled = false; }); }),
                 new("-exit-", false, SetupUI.Exit),
             }
-        });
-    }
-
-    private static void NoService()
-    {
-        AppSettings.Change(x =>
-        {
-            x.Service.RunWebService = false;
-            x.Service.RunHandlers = false;
-            x.Service.OpenApiEnabled = false;
-            x.DataIngestion.OrchestrationType = "InProcess";
-            x.DataIngestion.DistributedOrchestration.QueueType = "";
         });
     }
 
@@ -557,30 +569,6 @@ public static class Main
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure AI <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Azure AI <API Key>", config["APIKey"].ToString()) },
-        });
-    }
-
-    private static void OrchestrationTypeSetup()
-    {
-        var config = AppSettings.GetCurrentConfig();
-
-        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
-        {
-            Title = "How should memory ingestion be orchestrated?",
-            Options = new List<Answer>
-            {
-                new("Using asynchronous distributed queues (allows to mix handlers written in different languages)",
-                    config.DataIngestion.OrchestrationType == "Distributed",
-                    () =>
-                    {
-                        AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "Distributed"; });
-                        s_cfgQueue.Value = true;
-                    }),
-                new("In process orchestration, all .NET handlers run synchronously",
-                    config.DataIngestion.OrchestrationType == "InProcess",
-                    () => { AppSettings.Change(x => { x.DataIngestion.OrchestrationType = "InProcess"; }); }),
-                new("-exit-", false, SetupUI.Exit),
-            }
         });
     }
 

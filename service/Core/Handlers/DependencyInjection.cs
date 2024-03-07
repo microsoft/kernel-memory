@@ -67,7 +67,8 @@ public static partial class DependencyInjection
     /// <param name="services">Application builder service collection</param>
     /// <param name="stepName">Pipeline step name</param>
     /// <typeparam name="THandler">Handler class</typeparam>
-    public static IServiceCollection AddHandlerAsHostedService<THandler>(this IServiceCollection services, string stepName) where THandler : class, IPipelineStepHandler
+    public static IServiceCollection AddHandlerAsHostedService<THandler>(
+        this IServiceCollection services, string stepName) where THandler : class, IPipelineStepHandler
     {
         services.AddTransient<THandler>(
             serviceProvider => ActivatorUtilities.CreateInstance<THandler>(serviceProvider, stepName));
@@ -84,7 +85,8 @@ public static partial class DependencyInjection
     /// <param name="services">Application builder service collection</param>
     /// <param name="tHandler">Handler class</param>
     /// <param name="stepName">Pipeline step name</param>
-    public static IServiceCollection AddHandlerAsHostedService(this IServiceCollection services, Type tHandler, string stepName)
+    public static IServiceCollection AddHandlerAsHostedService(
+        this IServiceCollection services, Type tHandler, string stepName)
     {
         if (!typeof(IPipelineStepHandler).IsAssignableFrom(tHandler))
         {
@@ -116,7 +118,8 @@ public static partial class DependencyInjection
     /// <param name="services">Application builder service collection</param>
     /// <param name="config">Handler type configuration</param>
     /// <param name="stepName">Pipeline step name</param>
-    public static IServiceCollection AddHandlerAsHostedService(this IServiceCollection services, HandlerConfig config, string stepName)
+    public static IServiceCollection AddHandlerAsHostedService(
+        this IServiceCollection services, HandlerConfig config, string stepName)
     {
         if (HandlerTypeLoader.TryGetHandlerType(config, out var handlerType))
         {
@@ -133,7 +136,8 @@ public static partial class DependencyInjection
     /// <param name="assemblyFile">Path to assembly containing handler class</param>
     /// <param name="typeFullName">Handler type, within the assembly</param>
     /// <param name="stepName">Pipeline step name</param>
-    public static IServiceCollection AddHandlerAsHostedService(this IServiceCollection services, string assemblyFile, string typeFullName, string stepName)
+    public static IServiceCollection AddHandlerAsHostedService(
+        this IServiceCollection services, string assemblyFile, string typeFullName, string stepName)
     {
         services.AddHandlerAsHostedService(new HandlerConfig(assemblyFile, typeFullName), stepName);
 

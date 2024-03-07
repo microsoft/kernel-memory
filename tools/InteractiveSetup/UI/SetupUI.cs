@@ -71,6 +71,8 @@ public static class SetupUI
         {
             Console.Clear();
             Console.WriteLine($"{question.Title}\n");
+            ShowQuestionDescription(question.Description);
+
             for (int index = 0; index < question.Options.Count; index++)
             {
                 Answer answer = question.Options[index];
@@ -160,5 +162,32 @@ public static class SetupUI
     public static void Exit()
     {
         Environment.Exit(0);
+    }
+
+    private static void ShowQuestionDescription(string desc)
+    {
+        if (string.IsNullOrEmpty(desc)) { return; }
+
+        const int MaxLineLen = 72;
+        var parts = desc.Split(' ');
+        var count = 0;
+        foreach (var p in parts)
+        {
+            if (count + 1 + p.Length <= MaxLineLen)
+            {
+                Console.Write(' ');
+                count++;
+            }
+            else
+            {
+                Console.Write("\n ");
+                count = 1;
+            }
+
+            Console.Write(p);
+            count += p.Length;
+        }
+
+        Console.WriteLine("\n");
     }
 }
