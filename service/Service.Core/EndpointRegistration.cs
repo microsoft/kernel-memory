@@ -4,18 +4,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.Core;
 public static class EndpointRegistration
 {
-    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")
+    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/", bool openAPIEnabled = true)
     {
-        KernelMemoryConfig config = app.Services.GetService<KernelMemoryConfig>() ?? throw new ArgumentException("Ensure that you call appBuilder.AddKernelMemory before adding endpoints.");
-
-        if (config.Service.OpenApiEnabled)
+        if (openAPIEnabled)
         {
             // URL: http://localhost:9001/swagger/index.html
             app.UseSwagger();
