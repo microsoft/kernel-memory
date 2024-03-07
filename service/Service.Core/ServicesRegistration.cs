@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.KernelMemory.Service.Core;
 
-public static class DependencyInjection
+public static class ServicesRegistration
 {
     public static WebApplicationBuilder AddKernelMemory(this WebApplicationBuilder appBuilder, Func<IKernelMemoryBuilder, IKernelMemoryBuilder> configure)
     {
