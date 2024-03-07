@@ -1,0 +1,11 @@
+# https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# - Code owners must have write permissions for the repository
+# - When the code owner is a team, that team must be visible and it
+#   must have write permissions.
+# - Code owners are automatically requested for review when someone
+#   opens a pull request that modifies code that they own.
+# - Code owners are not automatically requested to review draft pull
+#   requests.
+
+/.github/ @dluc
+*  @dluc

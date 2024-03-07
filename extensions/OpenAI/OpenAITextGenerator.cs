@@ -119,6 +119,11 @@ public class OpenAITextGenerator : ITextGenerator
                 foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
             }
 
+            if (options.TokenSelectionBiases is { Count: > 0 })
+            {
+                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
+            }
+
             StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
             await foreach (Completions? completions in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
             {
@@ -144,6 +149,11 @@ public class OpenAITextGenerator : ITextGenerator
             if (options.StopSequences is { Count: > 0 })
             {
                 foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
+            }
+
+            if (options.TokenSelectionBiases is { Count: > 0 })
+            {
+                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
             }
 
             openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));

@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
 
-public class MyHandler : IPipelineStepHandler
+public class MyHandler : IHostedService, IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<MyHandler> _log;
@@ -16,10 +16,26 @@ public class MyHandler : IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? DefaultLogger<MyHandler>.Instance;
+
+        this._log.LogInformation("Instantiating handler {0}...", this.GetType().FullName);
     }
 
     /// <inheritdoc />
     public string StepName { get; }
+
+    /// <inheritdoc />
+    public Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        this._log.LogInformation("Starting handler {0}...", this.GetType().FullName);
+        return this._orchestrator.AddHandlerAsync(this, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken = default)
+    {
+        this._log.LogInformation("Stopping handler {0}...", this.GetType().FullName);
+        return this._orchestrator.StopAllPipelinesAsync();
+    }
 
     /// <inheritdoc />
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
@@ -28,7 +44,7 @@ public class MyHandler : IPipelineStepHandler
          * ... handler ...
          * ... business logic ... */
 
-        Console.WriteLine("My handler is working");
+        this._log.LogInformation("Running handler {0}...", this.GetType().FullName);
 
         // Remove this - here only to avoid build errors
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);

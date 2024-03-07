@@ -64,6 +64,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public abstract List<string> HandlerNames { get; }
+
+    ///<inheritdoc />
     public abstract Task AddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />

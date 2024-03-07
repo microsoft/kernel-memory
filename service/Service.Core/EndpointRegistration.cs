@@ -267,4 +267,12 @@ public static class EndpointRegistration
 
         return group;
     }
+
+    // Class used to tag log entries and allow log filtering
+    // ReSharper disable once ClassNeverInstantiated.Local
+#pragma warning disable CA1812 // used by logger, can't be static
+    private sealed class WebAPIEndpoint
+    {
+    }
+#pragma warning restore CA1812
 }

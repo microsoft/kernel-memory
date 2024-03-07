@@ -337,16 +337,15 @@ public class SearchClient : ISearchClient
 
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
-        // TODO: receive options from API: https://github.com/microsoft/kernel-memory/issues/137
         var options = new TextGenerationOptions
         {
-            // Temperature = 0,
-            // TopP = 0,
-            // PresencePenalty = 0,
-            // FrequencyPenalty = 0,
+            Temperature = this._config.Temperature,
+            TopP = this._config.TopP,
+            PresencePenalty = this._config.PresencePenalty,
+            FrequencyPenalty = this._config.FrequencyPenalty,
             MaxTokens = this._config.AnswerTokens,
-            // StopSequences = null,
-            // TokenSelectionBiases = null
+            StopSequences = this._config.StopSequences,
+            TokenSelectionBiases = this._config.TokenSelectionBiases,
         };
 
         if (this._log.IsEnabled(LogLevel.Debug))

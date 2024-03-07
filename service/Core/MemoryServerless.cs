@@ -24,8 +24,17 @@ namespace Microsoft.KernelMemory;
 public class MemoryServerless : IKernelMemory
 {
     private readonly ISearchClient _searchClient;
+
     private readonly InProcessPipelineOrchestrator _orchestrator;
 
+    /// <summary>
+    /// Synchronous orchestrator used by the serverless memory.
+    /// The property is public to allow adding synchronous handlers, e.g.
+    /// - memory.Orchestrator.TryAddHandlerAsync(...)
+    /// - memory.Orchestrator.AddHandlerAsync(...)
+    /// - memory.Orchestrator.AddHandler(...)
+    /// - memory.Orchestrator.AddHandler...(...)
+    /// </summary>
     public InProcessPipelineOrchestrator Orchestrator => this._orchestrator;
 
     public MemoryServerless(
@@ -34,15 +43,6 @@ public class MemoryServerless : IKernelMemory
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
-    }
-
-    /// <summary>
-    /// Register a pipeline handler. If a handler for the same step name already exists, it gets replaced.
-    /// </summary>
-    /// <param name="handler">Handler instance</param>
-    public void AddHandler(IPipelineStepHandler handler)
-    {
-        this._orchestrator.AddHandler(handler);
     }
 
     /// <inheritdoc />

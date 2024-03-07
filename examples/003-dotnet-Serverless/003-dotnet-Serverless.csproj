@@ -33,8 +33,8 @@
         <Content Include="file3-lorem-ipsum.docx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="file4-SK-Readme.pdf"/>
-        <Content Include="file4-SK-Readme.pdf">
+        <None Remove="file4-KM-Readme.pdf"/>
+        <Content Include="file4-KM-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <None Remove="file5-NASA-news.pdf"/>
@@ -43,6 +43,10 @@
         </Content>
         <None Remove="file6-ANWC-image.jpg"/>
         <Content Include="file6-ANWC-image.jpg">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file7-submarine.html"/>
+        <Content Include="file7-submarine.html">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

@@ -24,9 +24,9 @@ var memory = new KernelMemoryBuilder()
     // })
     .Build<MemoryServerless>();
 
-await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");
+await memory.ImportDocumentAsync("sample-KM-Readme.pdf", documentId: "doc001");
 
-var question = "What's Semantic Kernel?";
+var question = "What's Kernel Memory?";
 
 Console.WriteLine($"\n\nQuestion: {question}");
 

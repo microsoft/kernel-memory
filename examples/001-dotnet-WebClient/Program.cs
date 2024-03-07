@@ -53,9 +53,9 @@ if (ingestion)
     toDelete.Add("doc002");
     if (!await memory.IsDocumentReadyAsync(documentId: "doc002"))
     {
-        Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Semantic Kernel");
+        Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Kernel Memory");
         await memory.ImportDocumentAsync(new Document("doc002")
-            .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-SK-Readme.pdf" })
+            .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf" })
             .AddTag("user", "Blake"));
     }
     else
@@ -141,7 +141,7 @@ if (retrieval)
     Console.WriteLine("\n====================================\n");
 
     // Another question without filters
-    question = "What's Semantic Kernel?";
+    question = "What's Kernel Memory?";
     Console.WriteLine($"Question: {question}");
 
     answer = await memory.AskAsync(question);
@@ -231,7 +231,7 @@ if (purge)
 Uploading text about E=mc^2
 Uploading article file about Carbon
 Uploading Image file with a news about a conference sponsored by Microsoft
-Uploading a text file, a Word doc, and a PDF about Semantic Kernel
+Uploading a text file, a Word doc, and a PDF about Kernel Memory
 Uploading a PDF with a news about NASA and Orion
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md
@@ -246,47 +246,64 @@ Waiting for memory ingestion to complete...
 
 Question: What's E = m*c^2?
 
-Answer: In physics, E = m*c^2 is the formula for mass-energy equivalence, which describes the relationship between mass and energy in a system's rest frame, where the two quantities differ only by a multiplicative constant and the units of measurement.
+Answer: E = m*c^2 is Albert Einstein's famous equation expressing the principle of mass–energy equivalence. This equation states that energy (E) equals mass (m) multiplied by the speed of light (c) squared. It implies that mass and energy are interchangeable; they are different forms of the same thing. In this formula, the speed of light (c) is a constant that is approximately equal to 299,792,458 meters per second. This equation is a fundamental concept in physics and has important implications in various fields, including nuclear physics and cosmology.
 
 ====================================
 
-Question: What's Semantic Kernel?
+Question: What's Kernel Memory?
 
-Answer: Semantic Kernel (SK) is a lightweight SDK that enables integration of AI Large Language Models (LLMs) with conventional programming languages. The SK extensible programming model combines natural language semantic functions, traditional code native functions, and embeddings-based memory unlocking new potential and adding value to applications with AI. SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities out of the box. By joining the SK community, developers can build AI-first apps faster and have a front-row peek at how the SDK is being built.
+Answer: Kernel Memory (KM) is a multi-modal AI Service that specializes in the efficient indexing of datasets through custom continuous data hybrid pipelines. It supports various features such as Retrieval Augmented Generation (RAG), synthetic memory, prompt engineering, and custom semantic memory processing. KM is designed to work with advanced embeddings and Large Language Models (LLMs) to enable natural language querying, providing answers from indexed data with citations and links to original sources.
 
-Sources:
+KM includes a GPT Plugin, web clients, a .NET library for embedded applications, and is available as a Docker container. It is designed for seamless integration with Semantic Kernel, Microsoft Copilot, and ChatGPT, enhancing data-driven features in applications built for popular AI platforms.
 
-- file4-SK-Readme.pdf  - doc002/d5fe4f03416b43479429b90b63cedd79 [Friday, December 8, 2023]
-- content.url  - webPage1/bab2145e40a240eda3e0a24f24f10703 [Friday, December 8, 2023]
-- content.url  - webPage2/2724f84d7298495585fcedf94327ca30 [Friday, December 8, 2023]
+Kernel Memory is built on the feedback and lessons learned from developing Semantic Kernel (SK) and Semantic Memory (SM). It offers several features that simplify tasks such as storing files, extracting text from files, securing user data, and more. The KM codebase is entirely in .NET, allowing it to be used from any language, tool, or platform, including browser extensions and ChatGPT assistants.
+
+KM supports a variety of data formats, including web pages, PDFs, images, Word, PowerPoint, Excel, Markdown, text, JSON, and more. It also offers a range of search capabilities, such as cosine similarity and hybrid search with filters and AND/OR conditions. KM can be used with various storage engines and vector storage solutions, and it provides features like document storage
+
+ Sources:
+
+ - file4-KM-Readme.pdf  - default/doc002/92a8d0ee2e1646858fcc4d682fd2ca8d [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md [Tuesday, February 27, 2024]
+ - file3-lorem-ipsum.docx  - default/doc002/943c9dde131e4e09911118f2e5e22f07 [Tuesday, February 27, 2024]
+ - content.txt  - default/d2cd29f2cdfd46eaaa0e4fb483e03f54202402271228588843230/5cf47bd8a826472db322f26492dea138 [Tuesday, February 27, 2024]
+ - file2-Wikipedia-Moon.txt  - default/doc002/975b675969034019a54be0c365bb7982 [Tuesday, February 27, 2024]
 
 ====================================
 
 Question: Which conference is Microsoft sponsoring?
 
-Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event in Detroit, Michigan on September 12, 2023.
+Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event, which is taking place in Detroit, Michigan on September 12, 2023.
 
-Sources:
+ Sources:
 
-- file6-ANWC-image.jpg  - img001/9e1c3829e4364617a898abf1a4641535 [Friday, December 8, 2023]
-- ANWC-image-for-OCR.jpg  - ItParsesTextFromImages/2a3a933c23a740399a532aae44025f4c [Friday, December 1, 2023]
-- ANWC-image-for-OCR.jpg  - ItUsesTextFoundInsideImages/7cb72bfb686e449b8dbbd6967b90a493 [Wednesday, December 6, 2023]
-- file5-NASA-news.pdf  - doc003/1f9ce815e60b4c2eafe99ddf289f5609 [Friday, December 8, 2023]
-- NASA-news.pdf  - NASA001/ede5c76987e74e5a8fc81e3549e5763f [Thursday, December 7, 2023]
-- content.url  - webPage1/bab2145e40a240eda3e0a24f24f10703 [Friday, December 8, 2023]
-- file4-SK-Readme.pdf  - doc002/d5fe4f03416b43479429b90b63cedd79 [Friday, December 8, 2023]
-- file3-lorem-ipsum.docx  - doc002/efeb64b6aa2a4a418026447e5397d367 [Friday, December 8, 2023]
+ - file6-ANWC-image.jpg  - default/img001/f4bd27bb0a584795b406bf394bcb5684 [Tuesday, February 27, 2024]
+ - file4-KM-Readme.pdf  - default/doc002/92a8d0ee2e1646858fcc4d682fd2ca8d [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md [Tuesday, February 27, 2024]
+ - file5-NASA-news.pdf  - default/doc003/78a4ddf2e2f041b4a55dbea584793931 [Tuesday, February 27, 2024]
+ - file3-lorem-ipsum.docx  - default/doc002/943c9dde131e4e09911118f2e5e22f07 [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md [Tuesday, February 27, 2024]
+
 
 ====================================
 
 Question: Any news from NASA about Orion?
 
-Blake Answer (none expected): INFO NOT FOUND.
+Blake Answer (none expected): Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version of the Orion spacecraft and the hardware that will be used to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event is scheduled to take place at Naval Base San Diego on Wednesday, August 2, at 11 a.m. PDT. Personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with the media.
 
-Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. Recovery operations personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with media. Teams are currently conducting the first in a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. The tests will help prepare the team for Artemis II, NASA’s first crewed mission under Artemis that will send four astronauts in Orion around the Moon to checkout systems ahead of future lunar missions. The Artemis II crew will participate in recovery testing at sea next year.
-Sources:
+Teams are currently conducting tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. These tests will help prepare the team for Artemis II, which will be NASA's first crewed mission under the Artemis program. The Artemis II crew, consisting of NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency astronaut Jeremy Hansen, will participate in recovery testing at sea next year. For more information about the Artemis program, you can visit the NASA website.
 
-- file5-NASA-news.pdf  - doc003/1f9ce815e60b4c2eafe99ddf289f5609 [Friday, December 8, 2023]
+Taylor Answer: Yes, there is news from NASA regarding the Orion spacecraft. NASA has invited media to view the new test version of the Orion spacecraft and the hardware that will be used to recover the capsule and astronauts upon their return from space during the Artemis II mission. This event is scheduled to take place at 11 a.m. PDT on Wednesday, August 2, at Naval Base San Diego.
+
+NASA and Department of Defense personnel have been practicing recovery operations aboard the USS John P. Murtha using a crew module test article. These tests are part of a series being conducted in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations of crewed Artemis missions. The goal is to prepare the team for Artemis II, which will be NASA’s first crewed mission under the Artemis program. Artemis II aims to send four astronauts in the Orion spacecraft around the Moon to check out systems ahead of future lunar missions.
+
+The Artemis II crew consists of NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, along with CSA (Canadian Space Agency) astronaut Jeremy Hansen. They will participate in recovery testing at sea next year.
+
+For more information about the Artemis program, NASA has provided a link: https://www.nasa.gov/artemis.
+ Sources:
+
+ - file5-NASA-news.pdf  - default/doc003/78a4ddf2e2f041b4a55dbea584793931 [Tuesday, February 27, 2024]
+
 
 ====================================
 
@@ -294,14 +311,17 @@ Question: What is Orion?
 
 Articles (none expected): INFO NOT FOUND
 
-News: Orion is a spacecraft developed by NASA for crewed missions, including the Artemis program which aims to send astronauts to the Moon. NASA is currently conducting tests to evaluate the recovery operations and hardware for crewed Artemis missions, including the recovery of the Orion spacecraft and astronauts upon their return from space. The Artemis II crew, which includes NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA astronaut Jeremy Hansen, will participate in recovery testing at sea next year.
+News: Orion is NASA's spacecraft designed for human deep space exploration. It is part of NASA's Artemis program, which aims to return humans to the Moon and eventually send them to Mars and beyond. The Orion spacecraft is built to take astronauts farther into space than ever before, provide emergency abort capability, sustain the crew during space travel, and provide safe re-entry from deep space return velocities. It is a critical component of NASA's plans to establish a sustainable human presence on the Moon to prepare for missions to Mars. The Artemis II mission, which will be the first crewed mission of the Artemis program, will send four astronauts in the Orion spacecraft around the Moon to test its systems ahead of future lunar missions.
+
 ====================================
-Deleting memories derived from cbcc6f3019e04fab8d08a2029501e508202312070437150015410
+
+Deleting memories derived from d2cd29f2cdfd46eaaa0e4fb483e03f54202402271228588843230
 Deleting memories derived from doc001
 Deleting memories derived from img001
 Deleting memories derived from doc002
 Deleting memories derived from doc003
 Deleting memories derived from webPage1
 Deleting memories derived from webPage2
+
 
 */

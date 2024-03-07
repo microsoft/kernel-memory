@@ -32,6 +32,6 @@ The repository contains more documentation and examples, here's some suggestions
 
 * [KM concepts: Indexes, Documents, Tags and more](concepts)
 * [Memory API](functions)
-* [Collection of Jupyter notebooks with various scenarios](https://github.com/microsoft/kernel-memory/examples/000-notebooks)
-* [Using Kernel Memory web service to upload documents and answer questions](https://github.com/microsoft/kernel-memory/examples/001-dotnet-WebClient)
-* [Summarizing documents](https://github.com/microsoft/kernel-memory/examples/106-dotnet-retrieve-synthetics)
+* [Collection of Jupyter notebooks with various scenarios](https://github.com/microsoft/kernel-memory/tree/main/examples/000-notebooks)
+* [Using Kernel Memory web service to upload documents and answer questions](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient)
+* [Summarizing documents](https://github.com/microsoft/kernel-memory/tree/main/examples/106-dotnet-retrieve-synthetics)

@@ -12,6 +12,12 @@ namespace Microsoft.KernelMemory.Pipeline;
 public interface IPipelineOrchestrator
 {
     /// <summary>
+    /// List of handlers available.
+    /// The list might be populated asynchronously during the service bootstrap.
+    /// </summary>
+    List<string> HandlerNames { get; }
+
+    /// <summary>
     /// Attach a handler for a specific task
     /// </summary>
     /// <param name="handler">Handler instance</param>

@@ -32,7 +32,7 @@ var memory = new KernelMemoryBuilder()
 // Import a couple of documents to summarize.
 // Note that we're using a custom set of steps, asking the pipeline to just summarize the docs (ie skipping chunking)
 await memory.ImportDocumentAsync(new Document("doc1")
-        .AddFile("file4-SK-Readme.pdf")
+        .AddFile("file4-KM-Readme.pdf")
         .AddFile("file5-NASA-news.pdf"),
     steps: Constants.PipelineOnlySummary);
 
@@ -50,24 +50,14 @@ foreach (var result in results)
 
 OUTPUT:
 
-== file4-SK-Readme.pdf summary ==
-Semantic Kernel (SK) is a lightweight SDK that allows integration of AI Large Language Models
-with conventional programming languages. It combines natural language semantic functions,
-traditional code native functions, and embeddings-based memory. SK supports prompt templifying,
-function chaining, vectorized memory, and intelligent planning capabilities. It encapsulates
-several design patterns from AI research, enabling developers to infuse their applications
-with various plugins. The SK community invites developers to contribute and build AI-first
-apps. SK is available for C# and Python and includes sample applications. It requires an Open
-AI API Key or Azure Open AI service key to get started. The project welcomes contributions and
-suggestions, and it operates under the Microsoft Open Source Code of Conduct.
+== file4-KM-Readme.pdf summary ==
+Kernel Memory is an AI service designed for efficient indexing of datasets, supporting features like Retrieval Augmented Generation, synthetic memory, and custom semantic memory processing. It integrates with platforms like Semantic Kernel, Microsoft Copilot, and ChatGPT, and is available as a GPT Plugin, web clients, a .NET library, and a Docker container. It allows natural language querying and provides answers with citations from indexed data.
+Semantic Memory, part of the Semantic Kernel project, is a library for C#, Python, and Java that supports vector search and wraps database calls. Kernel Memory builds upon this, offering additional features like text extraction from various file formats, secure data frameworks, and a .NET codebase for ease of use across languages and platforms.
+Kernel Memory supports a wide range of data formats and backends, including Microsoft Office files, PDFs, web pages, images with OCR, and JSON files. It integrates with various AI and vector storage services and offers content storage and orchestration options.
+Kernel Memory can be used in serverless mode, embedded in applications, or as a service for scalable document ingestion and information retrieval. It supports custom ingestion pipelines, data lineage, and citations for verifying answer accuracy.
+The service provides a web API with OpenAPI documentation for easy access and testing. It also includes a Docker image for quick deployment and a web client for file import and querying. Custom memory ingestion pipelines can be defined with .NET handlers, and the service offers a range of .NET packages for integration with different services and platforms. Python and Java packages are also planned, with contributions for other languages welcomed.
 
 == file5-NASA-news.pdf summary ==
-NASA has invited the media to view the new test version of the Orion spacecraft and the recovery
-hardware for the Artemis II mission. The event will be held at Naval Base San Diego on August 2.
-Personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available for interviews.
-The teams are currently conducting tests in the Pacific Ocean to prepare for the Artemis II
-mission, which will send four astronauts around the moon. The Artemis II crew, including NASA
-astronauts Reid Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency astronaut
-Jeremy Hansen, will participate in recovery testing at sea next year.
+NASA has announced an event for media to view the new test version of the Orion spacecraft and recovery hardware for the Artemis II mission, scheduled for 11 a.m. PDT on August 2 at Naval Base San Diego. Recovery operations personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available for interviews. U.S. media must RSVP by July 31. The event is part of a series of tests in the Pacific Ocean to prepare for the Artemis II mission, NASA's first crewed flight around the Moon, which will include astronauts Reid Wiseman, Victor Glover, Christina Koch, and CSA astronaut Jeremy Hansen. For more information, contact Rachel Kraft or Madison Tuttle.
 
 */
