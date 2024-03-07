@@ -37,10 +37,6 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-    </ItemGroup>
-
     <!--
     This dependency is needed only to generate appsetting.development.json when testing
     the code in GitHub for quick demo, e.g. running
