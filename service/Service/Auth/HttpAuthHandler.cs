@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.KernelMemory.Configuration;
 
-namespace Microsoft.KernelMemory.Service.Auth;
+namespace Microsoft.KernelMemory.Service;
 
 public class HttpAuthEndpointFilter : IEndpointFilter
 {
@@ -35,6 +35,6 @@ public class HttpAuthEndpointFilter : IEndpointFilter
             }
         }
 
-        return await next(context).ConfigureAwait(false);
+        return await next(context);
     }
 }
