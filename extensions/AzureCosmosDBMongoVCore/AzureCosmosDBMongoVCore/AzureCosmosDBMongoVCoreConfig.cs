@@ -1,17 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Get more details about Azure Cosmos Mongo vCore and these configs https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
+/// </summary>
 public class AzureCosmosDBMongoVCoreConfig
 {
     /// <summary>
-    /// Get more details about Azure Cosmos Mongo vCore https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
-    /// </summary>
-
-    /// <summary>
-    /// Connection string required to connect to Azure Cosmos Mongo vCore
+    /// Connection string required to connect to Azure Cosmos Mongo vCore, https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/quickstart-portal
     /// </summary>
     public string ConnectionString { get; set; }
+
+    /// <summary>
+    /// Application name for the client for tracking and logging
+    /// </summary>
+    public string ApplicationName { get; set; }
 
     /// <summary>
     /// Index name for the Mongo vCore DB
@@ -25,7 +32,7 @@ public class AzureCosmosDBMongoVCoreConfig
     ///         - vector-hnsw: available as a preview feature only,
     ///                        to enable visit https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/preview-features
     /// </summary>
-    public string Kind { get; set; }
+    public AzureCosmosDBVectorSearchType Kind { get; set; }
 
     /// <summary>
     /// NumLists: This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data.
@@ -42,12 +49,7 @@ public class AzureCosmosDBMongoVCoreConfig
     ///         - L2 (Euclidean distance), and
     ///         - IP (inner product).
     /// </summary>
-    public string Similarity { get; set; }
-
-    /// <summary>
-    /// Dimensions: Number of dimensions for vector similarity. The maximum number of supported dimensions is 2000
-    /// </summary>
-    public int Dimensions { get; set; }
+    public AzureCosmosDBSimilarityType Similarity { get; set; }
 
     /// <summary>
     /// NumberOfConnections: The max number of connections per layer (16 by default, minimum value is 2, maximum value is 
@@ -67,4 +69,48 @@ public class AzureCosmosDBMongoVCoreConfig
     /// the cost of speed.
     /// </summary>
     public int EfSearch { get; set; }
+
+    public AzureCosmosDBMongoVCoreConfig()
+    {
+        // Initialize default values
+        ApplicationName = "DotNet_Kernel_Memory";
+        IndexName = "default_index";
+        Kind = AzureCosmosDBVectorSearchType.VECTOR_HNSW;
+        NumLists = 1;
+        Similarity = AzureCosmosDBSimilarityType.COS;
+        NumberOfConnections = 16;
+        EfConstruction = 64;
+        EfSearch = 40;
+    }
+}
+
+public enum AzureCosmosDBSimilarityType
+{
+    [EnumMember(Value = "COS")]
+    COS,
+    
+    [EnumMember(Value = "IP")]
+    IP,
+    
+    [EnumMember(Value = "L2")]
+    L2
+}
+
+public enum AzureCosmosDBVectorSearchType
+{
+    [EnumMember(Value = "vector-ivf")]
+    VECTOR_IVF,
+    
+    [EnumMember(Value = "vector-hnsw")]
+    VECTOR_HNSW
+}
+
+public static class EnumExtensions
+{
+    public static string GetStringValue(this Enum value)
+    {
+        var memberInfo = value.GetType().GetMember(value.ToString());
+        var enumMemberAttribute = (EnumMemberAttribute)memberInfo[0].GetCustomAttributes(typeof(EnumMemberAttribute), false)[0];
+        return enumMemberAttribute.Value;
+    }
 }

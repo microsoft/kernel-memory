@@ -115,11 +115,11 @@ public static class Program
             .Build();
 
         var config = cfg.GetSection("KernelMemory:Services:AzureCosmosDBMongoVCore").Get<AzureCosmosDBMongoVCoreConfig>()
-                     ?? throw new ArgumentNullException(message: "AzureAISearch config not found", null);         
+                     ?? throw new ArgumentNullException(message: "AzureAISearch config not found", null);
         var openAIConfig = cfg.GetSection("KernelMemory:Service:OpenAI").Get<OpenAIConfig>();
         var useRealEmbeddingGenerator = cfg.GetValue<bool>("UseRealEmbeddingGenerator");
         ITextEmbeddingGenerator embeddingGenerator;
-
+        
         if (useRealEmbeddingGenerator)
         {
             embeddingGenerator = new OpenAITextEmbeddingGenerator(openAIConfig, log: null);
