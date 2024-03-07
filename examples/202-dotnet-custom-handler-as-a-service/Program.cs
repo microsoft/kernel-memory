@@ -20,9 +20,15 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 // builder.Services.AddHandlerAsHostedService<MyHandler3>("mypipelinestep-3");
 
 // Build the memory instance injecting its dependencies into the current app
-var _ = new KernelMemoryBuilder(appBuilder.Services)
+var memory = new KernelMemoryBuilder(appBuilder.Services)
+    .WithoutDefaultHandlers()
+    .WithSimpleQueuesPipeline() // Queues are required by handlers hosted as a service
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     .Build();
+
+// Console.WriteLine("Memory type: " + memory.GetType().FullName);
+// Enqueue a task, just for testing
+memory.ImportTextAsync("something", steps: new[] { "mypipelinestep" });
 
 // Build and run .NET web app as usual
 Console.WriteLine("Starting service...");

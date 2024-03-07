@@ -16,6 +16,8 @@ public class MyHandler : IHostedService, IPipelineStepHandler
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._log = log ?? DefaultLogger<MyHandler>.Instance;
+
+        this._log.LogInformation("Instantiating handler {0}...", this.GetType().FullName);
     }
 
     /// <inheritdoc />
@@ -24,14 +26,14 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        this._log.LogInformation("Starting {0}...", this.GetType().FullName);
+        this._log.LogInformation("Starting handler {0}...", this.GetType().FullName);
         return this._orchestrator.AddHandlerAsync(this, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
-        this._log.LogInformation("Stopping {0}...", this.GetType().FullName);
+        this._log.LogInformation("Stopping handler {0}...", this.GetType().FullName);
         return this._orchestrator.StopAllPipelinesAsync();
     }
 
@@ -41,6 +43,8 @@ public class MyHandler : IHostedService, IPipelineStepHandler
         /* ... your custom ...
          * ... handler ...
          * ... business logic ... */
+
+        this._log.LogInformation("Running handler {0}...", this.GetType().FullName);
 
         // Remove this - here only to avoid build errors
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);

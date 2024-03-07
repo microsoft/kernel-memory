@@ -12,6 +12,7 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Pipeline;
 
 // KM Configuration:
 //
@@ -48,7 +49,7 @@ internal static class Program
         // Run `dotnet run setup` to run this code and setup the service
         if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
-            InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray(), cfgService: true);
+            InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
         }
 
         // *************************** APP BUILD *******************************
@@ -61,31 +62,21 @@ internal static class Program
         KernelMemoryConfig config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
                                     ?? throw new ConfigurationException("Unable to load configuration");
 
-        // Register pipeline handlers if enabled
-        if (config.Service.RunHandlers)
-        {
-            // You can add handlers in the configuration or manually here using one of these syntaxes:
-            // appBuilder.Services.AddHandlerAsHostedService<...CLASS...>("...STEP NAME...");
-            // appBuilder.Services.AddHandlerAsHostedService("...assembly file name...", "...type full name...", "...STEP NAME...");
-
-            // Register all pipeline handlers defined in the configuration to run as hosted services
-            foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
-            {
-                appBuilder.Services.AddHandlerAsHostedService(config: handlerConfig.Value, stepName: handlerConfig.Key);
-            }
-        }
-
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
-        // Inject memory client and its dependencies
-        // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services)
-            .WithoutDefaultHandlers() // Note: handlers must be enabled via configuration in appsettings.json and/or appsettings.<env>.json
-            .FromAppSettings();
+        // Prepare memory builder, sharing the service collection used by the hosting service
+        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).WithoutDefaultHandlers();
+
+        // When using distributed orchestration, handlers are hosted in the current app
+        var asyncHandlersCount = AddHandlersToHostingApp(config, memoryBuilder, appBuilder);
 
         // Build the memory client and make it available for dependency injection
-        appBuilder.Services.AddSingleton<IKernelMemory>(memoryBuilder.Build());
+        var memory = memoryBuilder.FromAppSettings().Build();
+        appBuilder.Services.AddSingleton<IKernelMemory>(memory);
+
+        // When using in process orchestration, handlers are hosted by the memory orchestrator
+        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
 
         // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
@@ -102,16 +93,17 @@ internal static class Program
         }
 
         Console.WriteLine("***************************************************************************************************************************");
-        Console.WriteLine($"* Environment         : " + (string.IsNullOrEmpty(env) ? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined" : env));
-        Console.WriteLine($"* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
-        Console.WriteLine($"* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
-        Console.WriteLine($"* Pipeline handlers   : " + (config.Service.RunHandlers ? "Enabled" : "Disabled"));
-        Console.WriteLine($"* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
-        Console.WriteLine($"* Logging level       : {app.Logger.GetLogLevelName()}");
-        Console.WriteLine($"* Memory Db           : {app.Services.GetService<IMemoryDb>()?.GetType().FullName}");
-        Console.WriteLine($"* Content storage     : {app.Services.GetService<IContentStorage>()?.GetType().FullName}");
-        Console.WriteLine($"* Embedding generation: {app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName}");
-        Console.WriteLine($"* Text generation     : {app.Services.GetService<ITextGenerator>()?.GetType().FullName}");
+        Console.WriteLine("* Environment         : " + (string.IsNullOrEmpty(env) ? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined" : env));
+        Console.WriteLine("* Memory type         : " + ((memory is MemoryServerless) ? "Sync - " : "Async - ") + memory.GetType().FullName);
+        Console.WriteLine("* Pipeline handlers   : " + $"{syncHandlersCount} synchronous / {asyncHandlersCount} asynchronous");
+        Console.WriteLine("* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
+        Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
+        Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+        Console.WriteLine("* Memory Db           : " + app.Services.GetService<IMemoryDb>()?.GetType().FullName);
+        Console.WriteLine("* Content storage     : " + app.Services.GetService<IContentStorage>()?.GetType().FullName);
+        Console.WriteLine("* Embedding generation: " + app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName);
+        Console.WriteLine("* Text generation     : " + app.Services.GetService<ITextGenerator>()?.GetType().FullName);
+        Console.WriteLine("* Log level           : " + app.Logger.GetLogLevelName());
         Console.WriteLine("***************************************************************************************************************************");
 
         app.Logger.LogInformation(
@@ -124,5 +116,51 @@ internal static class Program
 
         // Start web service and handler services
         app.Run();
+    }
+
+    /// <summary>
+    /// Register handlers as asynchronous hosted services
+    /// </summary>
+    private static int AddHandlersToHostingApp(
+        KernelMemoryConfig config,
+        IKernelMemoryBuilder memoryBuilder,
+        WebApplicationBuilder appBuilder)
+    {
+        if (config.DataIngestion.OrchestrationType != "Distributed") { return 0; }
+
+        if (!config.Service.RunHandlers) { return 0; }
+
+        // Handlers are enabled via configuration in appsettings.json and/or appsettings.<env>.json
+        memoryBuilder.WithoutDefaultHandlers();
+
+        // You can add handlers in the configuration or manually here using one of these syntaxes:
+        // appBuilder.Services.AddHandlerAsHostedService<...CLASS...>("...STEP NAME...");
+        // appBuilder.Services.AddHandlerAsHostedService("...assembly file name...", "...type full name...", "...STEP NAME...");
+
+        // Register all pipeline handlers defined in the configuration to run as hosted services
+        foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
+        {
+            appBuilder.Services.AddHandlerAsHostedService(config: handlerConfig.Value, stepName: handlerConfig.Key);
+        }
+
+        // Return registered handlers count
+        return appBuilder.Services.Count(s => typeof(IPipelineStepHandler).IsAssignableFrom(s.ServiceType));
+    }
+
+    /// <summary>
+    /// Register handlers instances inside the synchronous orchestrator
+    /// </summary>
+    private static int AddHandlersToOrchestrator(
+        KernelMemoryConfig config, IKernelMemory memory)
+    {
+        if (memory is not MemoryServerless) { return 0; }
+
+        var orchestrator = ((MemoryServerless)memory).Orchestrator;
+        foreach (KeyValuePair<string, HandlerConfig> handlerConfig in config.Service.Handlers)
+        {
+            orchestrator.AddSynchronousHandler(handlerConfig.Value, handlerConfig.Key);
+        }
+
+        return orchestrator.HandlerNames.Count;
     }
 }

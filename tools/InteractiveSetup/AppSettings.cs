@@ -2,12 +2,14 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
+/// <summary>
+/// Handle settings stored in appsettings.development.json
+/// </summary>
 public static class AppSettings
 {
     private const string DefaultSettingsFile = "appsettings.json";
@@ -47,20 +49,32 @@ public static class AppSettings
         File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
+    /// <summary>
+    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.development.json
+    /// Note: the code reads from the current folder, which is usually service/Service. Using ConfigurationBuilder would read from
+    ///       bin/Debug/net7.0/, causing problems because GetGlobalConfig doesn't.
+    /// </summary>
     public static KernelMemoryConfig GetCurrentConfig()
     {
-        var config = new KernelMemoryConfig();
+        JObject data = GetGlobalConfig(true);
+        if (data["KernelMemory"] == null)
+        {
+            Console.WriteLine("KernelMemory property missing, using an empty configuration.");
+            return new KernelMemoryConfig();
+        }
 
-        new ConfigurationBuilder()
-            .AddJsonFile(DefaultSettingsFile, optional: true, reloadOnChange: false)
-            .AddJsonFile(DevelopmentSettingsFile, optional: false, reloadOnChange: false)
-            .Build()
-            .BindSection("KernelMemory", config);
+        KernelMemoryConfig? config = JsonConvert
+            .DeserializeObject<KernelMemoryConfig>(JsonConvert
+                .SerializeObject(data["KernelMemory"]));
+        if (config == null)
+        {
+            throw new SetupException("Unable to parse file");
+        }
 
         return config;
     }
 
-    private static JObject GetGlobalConfig()
+    private static JObject GetGlobalConfig(bool includeDefaults = false)
     {
         string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
@@ -69,24 +83,23 @@ public static class AppSettings
             throw new SetupException($"Unable to parse `{DevelopmentSettingsFile}` file");
         }
 
-        // TODO: merge appsettings.json, only needed blocks
-        // if (File.Exists(DefaultSettingsFile))
-        // {
-        //     json = File.ReadAllText(DefaultSettingsFile);
-        //     JObject? defaultData = JsonConvert.DeserializeObject<JObject>(json);
-        //     if (defaultData == null)
-        //     {
-        //         throw new SetupException($"Unable to parse `{DefaultSettingsFile}` file");
-        //     }
-        //
-        //     defaultData.Merge(data, new JsonMergeSettings
-        //     {
-        //         MergeArrayHandling = MergeArrayHandling.Replace,
-        //         PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
-        //     });
-        //
-        //     data = defaultData;
-        // }
+        if (includeDefaults && File.Exists(DefaultSettingsFile))
+        {
+            json = File.ReadAllText(DefaultSettingsFile);
+            JObject? defaultData = JsonConvert.DeserializeObject<JObject>(json);
+            if (defaultData == null)
+            {
+                throw new SetupException($"Unable to parse `{DefaultSettingsFile}` file");
+            }
+
+            defaultData.Merge(data, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Replace,
+                PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
+            });
+
+            data = defaultData;
+        }
 
         return data;
     }
