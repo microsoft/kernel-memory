@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.KernelMemory.Service;
