@@ -13,6 +13,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteDocumentHandler : IPipelineStepHandler
 {
+    private readonly KernelMemoryConfig _config;
     private readonly List<IMemoryDb> _memoryDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteDocumentHandler> _log;
@@ -21,11 +22,13 @@ public class DeleteDocumentHandler : IPipelineStepHandler
 
     public DeleteDocumentHandler(
         string stepName,
+        KernelMemoryConfig config,
         IContentStorage contentStorage,
         List<IMemoryDb> memoryDbs,
         ILogger<DeleteDocumentHandler>? log = null)
     {
         this.StepName = stepName;
+        this._config = config;
         this._contentStorage = contentStorage;
         this._memoryDbs = memoryDbs;
         this._log = log ?? DefaultLogger<DeleteDocumentHandler>.Instance;
@@ -43,20 +46,20 @@ public class DeleteDocumentHandler : IPipelineStepHandler
         foreach (IMemoryDb db in this._memoryDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
-                index: pipeline.Index,
+                index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex),
                 limit: -1,
                 filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
                 cancellationToken: cancellationToken);
 
             await foreach (var record in records.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                await db.DeleteAsync(index: pipeline.Index, record, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await db.DeleteAsync(index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex), record, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
         // Delete files, leaving the status file
         await this._contentStorage.EmptyDocumentDirectoryAsync(
-            index: pipeline.Index,
+            index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex),
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 

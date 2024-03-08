@@ -43,7 +43,7 @@ public sealed class DataPipelinePointer
 
     public DataPipelinePointer(DataPipeline pipeline)
     {
-        this.Index = pipeline.Index;
+        this.Index = pipeline.Index!;
         this.DocumentId = pipeline.DocumentId;
         this.ExecutionId = pipeline.ExecutionId;
         this.Steps = pipeline.Steps;

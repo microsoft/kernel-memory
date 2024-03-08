@@ -4,11 +4,9 @@ namespace Microsoft.KernelMemory;
 
 public static class IndexExtensions
 {
-    public static string CleanName(string? name)
+    public static string CleanName(string? name, string defaultValue)
     {
-        if (name == null) { return Constants.DefaultIndex; }
-
-        name = name.Trim();
-        return string.IsNullOrEmpty(name) ? Constants.DefaultIndex : name;
+        var indexName = (string.IsNullOrWhiteSpace(name) ? defaultValue : name)?.Trim();
+        return string.IsNullOrEmpty(indexName) ? Constants.DefaultIndex : indexName!;
     }
 }

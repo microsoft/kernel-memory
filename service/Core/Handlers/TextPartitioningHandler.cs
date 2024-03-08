@@ -16,6 +16,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class TextPartitioningHandler : IPipelineStepHandler
 {
+    private readonly KernelMemoryConfig _config;
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly TextPartitioningOptions _options;
     private readonly ILogger<TextPartitioningHandler> _log;
@@ -30,16 +31,19 @@ public class TextPartitioningHandler : IPipelineStepHandler
     /// Note: stepName and other params are injected with DI.
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
+    /// <param name="config"></param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="options">The customize text partitioning option</param>
     /// <param name="log">Application logger</param>
     public TextPartitioningHandler(
         string stepName,
+        KernelMemoryConfig config,
         IPipelineOrchestrator orchestrator,
         TextPartitioningOptions? options = null,
         ILogger<TextPartitioningHandler>? log = null)
     {
         this.StepName = stepName;
+        this._config = config;
         this._orchestrator = orchestrator;
 
         this._options = options ?? new TextPartitioningOptions();
@@ -75,11 +79,12 @@ public class TextPartitioningHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
+        this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", index, pipeline.DocumentId);
 
         if (pipeline.Files.Count == 0)
         {
-            this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
+            this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", index, pipeline.DocumentId);
             return (true, pipeline);
         }
 

@@ -19,6 +19,7 @@ public class SummarizationHandler : IPipelineStepHandler
 {
     private const int MinLength = 50;
 
+    private readonly KernelMemoryConfig _config;
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
     private readonly string _summarizationPrompt;
@@ -32,16 +33,19 @@ public class SummarizationHandler : IPipelineStepHandler
     /// data generated for documents, in order to increase hit ratio and Q/A quality.
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
+    /// <param name="config">Kernel Memory configuration</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
     public SummarizationHandler(
         string stepName,
+        KernelMemoryConfig config,
         IPipelineOrchestrator orchestrator,
         IPromptProvider? promptProvider = null,
         ILogger<SummarizationHandler>? log = null)
     {
         this.StepName = stepName;
+        this._config = config;
         this._orchestrator = orchestrator;
 
         promptProvider ??= new EmbeddedPromptProvider();
@@ -56,7 +60,8 @@ public class SummarizationHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Generating summary, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
+        this._log.LogDebug("Generating summary, pipeline '{0}/{1}'", index, pipeline.DocumentId);
 
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {

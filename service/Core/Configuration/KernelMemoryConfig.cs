@@ -128,6 +128,12 @@ public class KernelMemoryConfig
     public string TextGeneratorType { get; set; } = string.Empty;
 
     /// <summary>
+    /// The default index to use when storing and searching for relevant data
+    /// in the memory DB.
+    /// </summary>
+    public string DefaultIndex { get; set; } = Constants.DefaultIndex;
+
+    /// <summary>
     /// HTTP service authorization settings.
     /// </summary>
     public ServiceAuthorizationConfig ServiceAuthorization { get; set; } = new();

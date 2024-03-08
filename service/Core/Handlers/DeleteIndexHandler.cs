@@ -13,6 +13,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteIndexHandler : IPipelineStepHandler
 {
+    private KernelMemoryConfig _config;
     private readonly List<IMemoryDb> _memoryDbs;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteIndexHandler> _log;
@@ -21,11 +22,13 @@ public class DeleteIndexHandler : IPipelineStepHandler
 
     public DeleteIndexHandler(
         string stepName,
+        KernelMemoryConfig config,
         IContentStorage contentStorage,
         List<IMemoryDb> memoryDbs,
         ILogger<DeleteIndexHandler>? log = null)
     {
         this.StepName = stepName;
+        this._config = config;
         this._contentStorage = contentStorage;
         this._memoryDbs = memoryDbs;
         this._log = log ?? DefaultLogger<DeleteIndexHandler>.Instance;
@@ -37,17 +40,18 @@ public class DeleteIndexHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Deleting index, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
+        this._log.LogDebug("Deleting index, pipeline '{0}/{1}'", index, pipeline.DocumentId);
 
         // Delete index from vector storage
         foreach (IMemoryDb db in this._memoryDbs)
         {
-            await db.DeleteIndexAsync(index: pipeline.Index, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await db.DeleteIndexAsync(index: index, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         // Delete index from file storage
         await this._contentStorage.DeleteIndexDirectoryAsync(
-            index: pipeline.Index,
+            index: index,
             cancellationToken).ConfigureAwait(false);
 
         return (true, pipeline);

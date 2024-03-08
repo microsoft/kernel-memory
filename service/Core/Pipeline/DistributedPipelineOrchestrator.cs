@@ -107,10 +107,11 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 return Complete;
             }
 
+            var index = IndexExtensions.CleanName(pipelinePointer.Index, base.Config.DefaultIndex);
             DataPipeline? pipeline;
             try
             {
-                pipeline = await this.ReadPipelineStatusAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
+                pipeline = await this.ReadPipelineStatusAsync(index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
             }
             catch (PipelineNotFoundException)
             {
@@ -120,10 +121,10 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 bool deletingIndex = handler.StepName == Constants.PipelineStepsDeleteIndex && pipelinePointer.Steps.Contains(Constants.PipelineStepsDeleteIndex);
                 if (deletingIndex)
                 {
-                    this.Log.LogError("Pipeline `{0}/{1}` not found, forcing `{2}` to run", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                    this.Log.LogError("Pipeline `{0}/{1}` not found, forcing `{2}` to run", index, pipelinePointer.DocumentId, handler.StepName);
                     pipeline = new DataPipeline
                     {
-                        Index = pipelinePointer.Index,
+                        Index = index,
                         DocumentId = pipelinePointer.DocumentId,
                         ExecutionId = pipelinePointer.ExecutionId,
                         Steps = pipelinePointer.Steps
@@ -131,18 +132,18 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                     return await this.RunPipelineStepAsync(pipeline, handler, this.CancellationTokenSource.Token).ConfigureAwait(false);
                 }
 
-                this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", index, pipelinePointer.DocumentId, handler.StepName);
                 return Complete;
             }
             catch (InvalidPipelineDataException)
             {
-                this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", index, pipelinePointer.DocumentId, handler.StepName);
                 return Retry;
             }
 
             if (pipeline == null)
             {
-                this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
+                this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", index, pipelinePointer.DocumentId, handler.StepName);
                 return Retry;
             }
 
@@ -151,7 +152,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 this.Log.LogWarning(
                     "Document `{0}/{1}` has been updated without waiting for the previous pipeline execution `{2}` to complete (current execution: `{3}`). " +
                     "Step `{4}` and any consecutive steps from the previous execution have been cancelled.",
-                    pipelinePointer.Index, pipelinePointer.DocumentId, pipelinePointer.ExecutionId, pipeline.ExecutionId, handler.StepName);
+                    index, pipelinePointer.DocumentId, pipelinePointer.ExecutionId, pipeline.ExecutionId, handler.StepName);
                 return Complete;
             }
 
@@ -164,7 +165,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             {
                 this.Log.LogWarning(
                     "Pipeline `{0}/{1}` state on disk is ahead. pipeline.RemainingSteps.First (aka next step) is `{2}`, while handler.StepName (aka the previous step) `{3}` is still in the queue. Rolling back one step",
-                    pipelinePointer.Index, pipelinePointer.DocumentId, currentStepName, handler.StepName);
+                    index, pipelinePointer.DocumentId, currentStepName, handler.StepName);
                 pipeline.RollbackToPreviousStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
@@ -210,7 +211,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", IndexExtensions.CleanName(pipeline.Index, base.Config.DefaultIndex), pipeline.DocumentId);
             return;
         }
 
@@ -227,7 +228,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         // In case the pipeline has no steps
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", IndexExtensions.CleanName(pipeline.Index, base.Config.DefaultIndex), pipeline.DocumentId);
             // Note: returning True, the message is removed from the queue
             return true;
         }
@@ -257,9 +258,11 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
     private async Task MoveForwardAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
+        var index = IndexExtensions.CleanName(pipeline.Index, base.Config.DefaultIndex);
+
         if (pipeline.Complete)
         {
-            this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
+            this.Log.LogInformation("Pipeline '{0}/{1}' complete", index, pipeline.DocumentId);
 
             // Save the pipeline status. If this fails the system should retry the current step.
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
@@ -269,7 +272,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         else
         {
             string nextStepName = pipeline.RemainingSteps.First();
-            this.Log.LogInformation("Enqueueing pipeline '{0}/{1}' step '{2}'", pipeline.Index, pipeline.DocumentId, nextStepName);
+            this.Log.LogInformation("Enqueueing pipeline '{0}/{1}' step '{2}'", index, pipeline.DocumentId, nextStepName);
 
             // Execute as much logic as possible before writing the new pipeline state to disk,
             // to reduce the chance of the persisted state to be out of sync.

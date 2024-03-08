@@ -15,8 +15,6 @@ namespace Microsoft.KernelMemory.Pipeline;
 /// </summary>
 public sealed class DataPipeline
 {
-    private string _index = string.Empty;
-
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ArtifactTypes
     {
@@ -210,11 +208,7 @@ public sealed class DataPipeline
     /// </summary>
     [JsonPropertyOrder(0)]
     [JsonPropertyName("index")]
-    public string Index
-    {
-        get { return this._index; }
-        set { this._index = IndexExtensions.CleanName(value); }
-    }
+    public string? Index { get; set; }
 
     /// <summary>
     /// Id of the document and the pipeline instance.
@@ -442,7 +436,7 @@ public sealed class DataPipeline
             Completed = this.Complete,
             Failed = false, // TODO
             Empty = this.Files.Count == 0,
-            Index = this.Index,
+            Index = this.Index!,
             DocumentId = this.DocumentId,
             Tags = this.Tags,
             Creation = this.Creation,

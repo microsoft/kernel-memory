@@ -55,6 +55,7 @@ internal static class WebAPIEndpoints
         var route = app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 IKernelMemory service,
+                KernelMemoryConfig config,
                 ILogger<WebAPIEndpoint> log,
                 CancellationToken cancellationToken) =>
             {
@@ -77,7 +78,7 @@ internal static class WebAPIEndpoints
                     var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
-                        .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
+                        .Replace(Constants.HttpIndexPlaceholder, IndexExtensions.CleanName(input.Index, config.DefaultIndex), StringComparison.Ordinal)
                         .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
                     return Results.Accepted(url, new UploadAccepted
                     {
@@ -137,11 +138,12 @@ internal static class WebAPIEndpoints
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     IKernelMemory service,
+                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
-                    await service.DeleteIndexAsync(index: index, cancellationToken)
+                    await service.DeleteIndexAsync(index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
                         .ConfigureAwait(false);
                     // There's no API to check the index deletion progress, so the URL is empty
                     var url = string.Empty;
@@ -168,11 +170,12 @@ internal static class WebAPIEndpoints
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory service,
+                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
-                    await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken)
+                    await service.DeleteDocumentAsync(documentId: documentId, index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
                         .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.Ordinal)
@@ -198,13 +201,14 @@ internal static class WebAPIEndpoints
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
+                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search request");
                     MemoryAnswer answer = await service.AskAsync(
                             question: query.Question,
-                            index: query.Index,
+                            index: IndexExtensions.CleanName(query.Index, config.DefaultIndex),
                             filters: query.Filters,
                             minRelevance: query.MinRelevance,
                             cancellationToken: cancellationToken)
@@ -225,13 +229,14 @@ internal static class WebAPIEndpoints
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
+                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search HTTP request");
                     SearchResult answer = await service.SearchAsync(
                             query: query.Query,
-                            index: query.Index,
+                            index: IndexExtensions.CleanName(query.Index, config.DefaultIndex),
                             filters: query.Filters,
                             minRelevance: query.MinRelevance,
                             limit: query.Limit,
@@ -256,18 +261,18 @@ internal static class WebAPIEndpoints
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory memoryClient,
+                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New document status HTTP request");
-                    index = IndexExtensions.CleanName(index);
 
                     if (string.IsNullOrEmpty(documentId))
                     {
                         return Results.Problem(detail: $"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value", statusCode: 400);
                     }
 
-                    DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken)
+                    DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
                         .ConfigureAwait(false);
                     if (pipeline == null)
                     {

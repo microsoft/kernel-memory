@@ -11,6 +11,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public class DeleteGeneratedFilesHandler : IPipelineStepHandler
 {
+    private readonly KernelMemoryConfig _config;
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteGeneratedFilesHandler> _log;
 
@@ -18,10 +19,12 @@ public class DeleteGeneratedFilesHandler : IPipelineStepHandler
 
     public DeleteGeneratedFilesHandler(
         string stepName,
+        KernelMemoryConfig config,
         IContentStorage contentStorage,
         ILogger<DeleteGeneratedFilesHandler>? log = null)
     {
         this.StepName = stepName;
+        this._config = config;
         this._contentStorage = contentStorage;
         this._log = log ?? DefaultLogger<DeleteGeneratedFilesHandler>.Instance;
 
@@ -36,7 +39,7 @@ public class DeleteGeneratedFilesHandler : IPipelineStepHandler
 
         // Delete files, leaving the status file
         await this._contentStorage.EmptyDocumentDirectoryAsync(
-            index: pipeline.Index,
+            index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex),
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 
