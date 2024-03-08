@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.Core;
@@ -185,9 +181,9 @@ public static class EndpointRegistration
         group.MapGet(Constants.HttpUploadStatusEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
-                string? index,
+                    string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
-                string documentId,
+                    string documentId,
                     IKernelMemory memoryClient,
                     ILogger<IKernelMemory> log,
                     CancellationToken cancellationToken) =>
@@ -267,12 +263,4 @@ public static class EndpointRegistration
 
         return group;
     }
-
-    // Class used to tag log entries and allow log filtering
-    // ReSharper disable once ClassNeverInstantiated.Local
-#pragma warning disable CA1812 // used by logger, can't be static
-    private sealed class WebAPIEndpoint
-    {
-    }
-#pragma warning restore CA1812
 }
