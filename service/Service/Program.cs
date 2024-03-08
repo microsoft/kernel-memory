@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Service.AspNetCore;
 using Microsoft.KernelMemory.Pipeline;
-using NetTopologySuite.Utilities;
+using Microsoft.AspNetCore.Mvc;
 
 // KM Configuration:
 //
@@ -45,6 +45,8 @@ namespace Microsoft.KernelMemory.Service;
 
 internal static class Program
 {
+    private static readonly DateTimeOffset s_start = DateTimeOffset.UtcNow;
+
     public static void Main(string[] args)
     {
         // *************************** CONFIG WIZARD ***************************
@@ -88,9 +90,20 @@ internal static class Program
         {
             app.UseSwagger(config);
 
+            var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
+
+            app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
+                                                     "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                                                                   - s_start.ToUnixTimeSeconds()) + " secs " +
+                                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+            .AddEndpointFilter(authFilter)
+            .Produces<string>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
             app.AddKernelMemoryEndpoints()
-                .AddEndpointFilter(new HttpAuthEndpointFilter(config.ServiceAuthorization));
+                .AddEndpointFilter(authFilter);
         }
 
         // *************************** START ***********************************
