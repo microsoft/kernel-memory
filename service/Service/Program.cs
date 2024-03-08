@@ -15,6 +15,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Service.Core;
 using Microsoft.KernelMemory.Pipeline;
+using NetTopologySuite.Utilities;
 
 // KM Configuration:
 //
@@ -68,27 +69,20 @@ internal static class Program
         appBuilder.ConfigureSwagger(config);
 
         // Prepare memory instance using configuration settings
+        int asyncHandlersCount = 0;
         appBuilder.AddKernelMemory(builder =>
         {
             var mb = builder.FromAppSettings().WithoutDefaultHandlers();
-            AddHandlersToHostingApp(config, mb, appBuilder);
+            asyncHandlersCount = AddHandlersToHostingApp(config, mb, appBuilder);
             return mb;
         });
-        // Prepare memory builder, sharing the service collection used by the hosting service
-        // var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).WithoutDefaultHandlers();
-
-        // // When using distributed orchestration, handlers are hosted in the current app
-        // var asyncHandlersCount = AddHandlersToHostingApp(config, memoryBuilder, appBuilder);
-
-        // // Build the memory client and make it available for dependency injection
-        // var memory = memoryBuilder.FromAppSettings().Build();
-        // appBuilder.Services.AddSingleton<IKernelMemory>(memory);
-
-        // When using in process orchestration, handlers are hosted by the memory orchestrator
-        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
 
         // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
+
+        var memory = app.Services.GetRequiredService<IKernelMemory>();
+        // When using in process orchestration, handlers are hosted by the memory orchestrator
+        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
 
         if (config.Service.RunWebService)
         {
