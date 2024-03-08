@@ -40,26 +40,27 @@ public class DeleteDocumentHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
+        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
+        this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", index, pipeline.DocumentId);
 
         // Delete embeddings
         foreach (IMemoryDb db in this._memoryDbs)
         {
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
-                index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex),
+                index: index,
                 limit: -1,
                 filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
                 cancellationToken: cancellationToken);
 
             await foreach (var record in records.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                await db.DeleteAsync(index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex), record, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await db.DeleteAsync(index: index, record, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
         // Delete files, leaving the status file
         await this._contentStorage.EmptyDocumentDirectoryAsync(
-            index: IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex),
+            index: index,
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 
