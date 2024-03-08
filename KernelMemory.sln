@@ -228,7 +228,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer.FunctionalTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Core", "service\Service.Core\Service.Core.csproj", "{37DCB424-B89A-4602-8798-02627774C896}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.AspNetCore", "service\Service.AspNetCore\Service.AspNetCore.csproj", "{37DCB424-B89A-4602-8798-02627774C896}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

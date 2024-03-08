@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.KernelMemory.Service.Core;
+namespace Microsoft.KernelMemory.Service.AspNetCore;
 
 public static class ServicesRegistration
 {

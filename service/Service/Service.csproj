@@ -30,7 +30,7 @@
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
         <!-- There isn't a NuGet package for the other project so not including that here -->
-        <ProjectReference Include="..\Service.Core\Service.Core.csproj"/>
+        <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

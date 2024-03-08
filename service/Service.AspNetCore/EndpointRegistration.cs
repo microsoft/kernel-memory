@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.KernelMemory.WebService;
 
-namespace Microsoft.KernelMemory.Service.Core;
+namespace Microsoft.KernelMemory.Service.AspNetCore;
 public static class EndpointRegistration
 {
     public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")

@@ -3,10 +3,10 @@
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly.Core</AssemblyName>
-        <RootNamespace>Microsoft.KernelMemory.Service.Core</RootNamespace>
+        <RootNamespace>Microsoft.KernelMemory.Service.AspNetCore</RootNamespace>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <IsPackable>true</IsPackable>
-        <PackageId>Microsoft.KernelMemory.Service.Core</PackageId>
+        <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
         <Nullable>enable</Nullable>
         <ImplicitUsings>true</ImplicitUsings>
         <NoWarn>$(NoWarn);CA1711,CS1591,CS1574,NU5104,SKEXP0001</NoWarn>

@@ -13,7 +13,7 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.Service.Core;
+using Microsoft.KernelMemory.Service.AspNetCore;
 using Microsoft.KernelMemory.Pipeline;
 using NetTopologySuite.Utilities;
 
