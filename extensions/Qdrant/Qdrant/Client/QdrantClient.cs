@@ -95,7 +95,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         // Creation is idempotent, ignore error (and for now ignore vector size)
-        if (response.StatusCode == HttpStatusCode.BadRequest && content.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict && content.Contains("already exists", StringComparison.OrdinalIgnoreCase))
         {
             this._log.LogDebug("Collection {0} already exists", collectionName);
             return;
