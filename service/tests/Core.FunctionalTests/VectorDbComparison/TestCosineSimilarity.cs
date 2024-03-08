@@ -52,7 +52,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         if (PostgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
 
         MongoDbVectorMemory? atlasVectorDb = null;
-        if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator); }
+        if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbVectorMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
 
         RedisMemory? redis = null;
         if (RedisEnabled)

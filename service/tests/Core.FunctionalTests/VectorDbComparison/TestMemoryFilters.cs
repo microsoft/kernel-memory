@@ -62,7 +62,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
         MongoDbVectorMemory mongoDbAtlas;
         if (MongoDbAtlasEnabled)
         {
-            mongoDbAtlas = new MongoDbVectorMemory(this.MongoDbKernelMemoryConfiguration, embeddingGenerator);
+            mongoDbAtlas = new MongoDbVectorMemory(this.MongoDbAtlasConfig, embeddingGenerator);
         }
 
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);

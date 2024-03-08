@@ -16,12 +16,12 @@ public static partial class KernelMemoryBuilderExtensions
     /// vectors are stored inside MongoDb.
     /// </summary>
     /// <param name="builder">The kernel builder</param>
-    /// <param name="configuration">Configuration for Mongodb</param>
+    /// <param name="config">Configuration for Mongodb</param>
     public static IKernelMemoryBuilder WithMongoDbAtlasMemoryAndStorageDb(
         this IKernelMemoryBuilder builder,
-        MongoDbAtlasKernelMemoryConfiguration configuration)
+        MongoDbAtlasConfig config)
     {
-        builder.Services.AddMongoDbAtlasAsStoreAndMemoryDb(configuration);
+        builder.Services.AddMongoDbAtlasAsStoreAndMemoryDb(config);
         return builder;
     }
 
@@ -30,12 +30,12 @@ public static partial class KernelMemoryBuilderExtensions
     /// can use local file system store or other storage.
     /// </summary>
     /// <param name="builder">The kernel builder</param>
-    /// <param name="configuration">Configuration for Mongodb</param>
+    /// <param name="config">Configuration for Mongodb</param>
     public static IKernelMemoryBuilder WithMongoDbAtlasMemoryDb(
         this IKernelMemoryBuilder builder,
-        MongoDbAtlasKernelMemoryConfiguration configuration)
+        MongoDbAtlasConfig config)
     {
-        builder.Services.AddMongoDbAtlasAsMemoryDb(configuration);
+        builder.Services.AddMongoDbAtlasAsMemoryDb(config);
         return builder;
     }
 }
@@ -52,7 +52,7 @@ public static partial class DependencyInjection
     /// <param name="config">Mongodb configuration.</param>
     public static IServiceCollection AddMongoDbAtlasAsMemoryDb(
         this IServiceCollection services,
-        MongoDbAtlasKernelMemoryConfiguration config)
+        MongoDbAtlasConfig config)
     {
         return services
             .AddSingleton(config)
@@ -66,7 +66,7 @@ public static partial class DependencyInjection
     /// <param name="config">Mongodb configuration.</param>
     public static IServiceCollection AddMongoDbAtlasAsStoreAndMemoryDb(
         this IServiceCollection services,
-        MongoDbAtlasKernelMemoryConfiguration config)
+        MongoDbAtlasConfig config)
     {
         return services
             .AddSingleton(config)

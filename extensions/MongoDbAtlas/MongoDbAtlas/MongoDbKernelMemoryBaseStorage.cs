@@ -9,7 +9,7 @@ public class MongoDbKernelMemoryBaseStorage
 {
     protected IMongoDatabase Database { get; private set; }
 
-    protected MongoDbAtlasKernelMemoryConfiguration Config { get; private set; }
+    protected MongoDbAtlasConfig Config { get; private set; }
 
     /// <summary>
     /// Keys are mongo collection of T but since we do not know T we cache them
@@ -17,7 +17,7 @@ public class MongoDbKernelMemoryBaseStorage
     /// </summary>
     protected Dictionary<string, object> Collections { get; private set; } = new();
 
-    public MongoDbKernelMemoryBaseStorage(MongoDbAtlasKernelMemoryConfiguration config)
+    public MongoDbKernelMemoryBaseStorage(MongoDbAtlasConfig config)
     {
         this.Database = config.GetDatabase();
         this.Config = config;

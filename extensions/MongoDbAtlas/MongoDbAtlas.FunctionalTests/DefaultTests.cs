@@ -2,26 +2,56 @@
 
 using FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 using Microsoft.TestHelpers;
 
 namespace MongoDbAtlas.FunctionalTests;
 
+public class DefaultTestsSingleCollection : DefaultTests
+{
+    public DefaultTestsSingleCollection(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output, multiCollection: false)
+    {
+    }
+}
+
+public class DefaultTestsMultipleCollections : DefaultTests
+{
+    public DefaultTestsMultipleCollections(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output, multiCollection: true)
+    {
+    }
+}
+
 public abstract class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
-    private readonly MongoDbAtlasKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
 
-    protected DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    protected DefaultTests(IConfiguration cfg, ITestOutputHelper output, bool multiCollection) : base(cfg, output)
     {
-        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey), "OpenAI API Key is empty");
 
-        this._mongoDbAtlasMemoryConfiguration = this.GetConfiguration(cfg);
+        if (multiCollection)
+        {
+            // this._config = this.MongoDbAtlasConfig;
+            this.MongoDbAtlasConfig
+                .WithSingleCollectionForVectorSearch(false)
+                // Need to wait for atlas to grab the data from the collection and index.
+                .WithAfterIndexCallback(async () => await Task.Delay(2000));
+
+            this.MongoDbAtlasConfig.DatabaseName += "multicoll";
+        }
+        else
+        {
+            this.MongoDbAtlasConfig
+                .WithSingleCollectionForVectorSearch(true)
+                //Need to wait for atlas to grab the data from the collection and index.
+                .WithAfterIndexCallback(async () => await Task.Delay(2000));
+        }
 
         // Clear all content in any collection before running the test.
-        var ash = new MongoDbAtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
-        if (this._mongoDbAtlasMemoryConfiguration.UseSingleCollectionForVectorSearch)
+        var ash = new MongoDbAtlasSearchHelper(this.MongoDbAtlasConfig.ConnectionString, this.MongoDbAtlasConfig.DatabaseName);
+        if (this.MongoDbAtlasConfig.UseSingleCollectionForVectorSearch)
         {
             //delete everything for every collection
             ash.DropAllDocumentsFromCollectionsAsync().Wait();
@@ -37,11 +67,11 @@ public abstract class DefaultTests : BaseFunctionalTestCase
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithMongoDbAtlasMemoryDb(this._mongoDbAtlasMemoryConfiguration)
+            .WithMongoDbAtlasMemoryDb(this.MongoDbAtlasConfig)
             .Build<MemoryServerless>();
     }
 
-    protected abstract MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
+    // protected abstract MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
 
     [Fact]
     [Trait("Category", "MongoDbAtlas")]
@@ -104,41 +134,5 @@ public abstract class DefaultTests : BaseFunctionalTestCase
     public async Task ItSupportsTags()
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
-    }
-}
-
-public class SingleCollectionDefaultTests : DefaultTests
-{
-    public SingleCollectionDefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
-    {
-    }
-
-    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
-    {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
-        config
-            .WithSingleCollectionForVectorSearch(true)
-            //Need to wait for atlas to grab the data from the collection and index.
-            .WithAfterIndexCallback(async () => await Task.Delay(2000));
-        return config;
-    }
-}
-
-public class MultipleCollectionDefaultTests : DefaultTests
-{
-    public MultipleCollectionDefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
-    {
-    }
-
-    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
-    {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
-        config
-            .WithSingleCollectionForVectorSearch(false)
-            //Need to wait for atlas to grab the data from the collection and index.
-            .WithAfterIndexCallback(async () => await Task.Delay(2000));
-
-        config.DatabaseName += "multicoll";
-        return config;
     }
 }

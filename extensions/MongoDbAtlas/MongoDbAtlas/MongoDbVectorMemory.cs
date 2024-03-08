@@ -30,7 +30,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="log">Application logger</param>
     public MongoDbVectorMemory(
-        MongoDbAtlasKernelMemoryConfiguration config,
+        MongoDbAtlasConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
         ILogger<MongoDbVectorMemory>? log = null) : base(config)
     {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbAtlasKernelMemoryConfiguration
+public class MongoDbAtlasConfig
 {
     private MongoClient _client = null!;
 
@@ -20,13 +20,13 @@ public class MongoDbAtlasKernelMemoryConfiguration
     /// </summary>
     public Func<Task> AfterIndexCallbackAsync { get; private set; } = () => Task.CompletedTask;
 
-    public MongoDbAtlasKernelMemoryConfiguration WithConnection(string mongoConnection)
+    public MongoDbAtlasConfig WithConnection(string mongoConnection)
     {
         this.ConnectionString = mongoConnection;
         return this;
     }
 
-    public MongoDbAtlasKernelMemoryConfiguration WithDatabaseName(string databaseName)
+    public MongoDbAtlasConfig WithDatabaseName(string databaseName)
     {
         this.DatabaseName = databaseName;
         return this;
@@ -38,13 +38,13 @@ public class MongoDbAtlasKernelMemoryConfiguration
     /// </summary>
     /// <param name="useSingleCollectionForVectorSearch"></param>
     /// <returns></returns>
-    public MongoDbAtlasKernelMemoryConfiguration WithSingleCollectionForVectorSearch(bool useSingleCollectionForVectorSearch)
+    public MongoDbAtlasConfig WithSingleCollectionForVectorSearch(bool useSingleCollectionForVectorSearch)
     {
         this.UseSingleCollectionForVectorSearch = useSingleCollectionForVectorSearch;
         return this;
     }
 
-    public MongoDbAtlasKernelMemoryConfiguration WithAfterIndexCallback(Func<Task> afterIndexCallback)
+    public MongoDbAtlasConfig WithAfterIndexCallback(Func<Task> afterIndexCallback)
     {
         this.AfterIndexCallbackAsync = afterIndexCallback;
         return this;

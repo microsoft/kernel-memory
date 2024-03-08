@@ -4,47 +4,59 @@ using System.Text;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
+using Microsoft.TestHelpers;
 
 namespace MongoDbAtlas.FunctionalTests;
 
-public abstract class StorageBaseTests : IDisposable
+public class StorageTestsSingleCollection : StorageTests
 {
-    private readonly IConfiguration _cfg;
-    private readonly ITestOutputHelper _output;
-    private readonly MongoDbAtlasKernelMemoryConfiguration _mongoDbAtlasMemoryConfiguration;
+    public StorageTestsSingleCollection(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output, multiCollection: false)
+    {
+    }
+}
+
+public class StorageTestsMultipleCollections : StorageTests
+{
+    public StorageTestsMultipleCollections(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output, multiCollection: true)
+    {
+    }
+}
+
+public abstract class StorageTests : BaseFunctionalTestCase
+{
     private readonly MongoDbKernelMemoryStorage _sut;
-
     private readonly string IndexName = $"storagetestindex{_seed++}";
-
     private static int _seed = 0;
 
-    protected StorageBaseTests(IConfiguration cfg, ITestOutputHelper output)
+    protected StorageTests(IConfiguration cfg, ITestOutputHelper output, bool multiCollection) : base(cfg, output)
     {
-        this._cfg = cfg;
-        this._output = output;
+        if (multiCollection)
+        {
+            this.MongoDbAtlasConfig.DatabaseName += "StorageTests";
+            this.MongoDbAtlasConfig.UseSingleCollectionForVectorSearch = false;
+        }
+        else
+        {
+            this.MongoDbAtlasConfig.DatabaseName += "StorageTests";
+            this.MongoDbAtlasConfig.UseSingleCollectionForVectorSearch = true;
+        }
 
-        this._mongoDbAtlasMemoryConfiguration = this.GetConfiguration(cfg);
-        var ash = new MongoDbAtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
+        var ash = new MongoDbAtlasSearchHelper(this.MongoDbAtlasConfig.ConnectionString, this.MongoDbAtlasConfig.DatabaseName);
 
-        //delete everything for every collection
+        // delete everything for every collection
         ash.DropAllDocumentsFromCollectionsAsync().Wait();
 
-        this._sut = new MongoDbKernelMemoryStorage(this._mongoDbAtlasMemoryConfiguration);
+        this._sut = new MongoDbKernelMemoryStorage(this.MongoDbAtlasConfig);
         this._sut.CreateIndexDirectoryAsync("testindex").Wait();
     }
 
-    protected abstract MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
-
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
+    protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
+            base.Dispose(disposing);
             this._sut.DeleteIndexDirectoryAsync(this.IndexName).Wait();
         }
     }
@@ -156,35 +168,5 @@ public abstract class StorageBaseTests : IDisposable
         //Assert: check that the files are not there anymore
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName1, false));
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName2, false));
-    }
-}
-
-public class SingleCollectionBaseTests : StorageBaseTests
-{
-    public SingleCollectionBaseTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
-    {
-    }
-
-    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
-    {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
-        config.DatabaseName += "StorageTests";
-        config.UseSingleCollectionForVectorSearch = true;
-        return config;
-    }
-}
-
-public class MultipleCollectionBaseTests : StorageBaseTests
-{
-    public MultipleCollectionBaseTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
-    {
-    }
-
-    protected override MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg)
-    {
-        var config = cfg.GetSection("KernelMemory:Services:MongoDb").Get<MongoDbAtlasKernelMemoryConfiguration>()!;
-        config.DatabaseName += "StorageTests";
-        config.UseSingleCollectionForVectorSearch = false;
-        return config;
     }
 }
