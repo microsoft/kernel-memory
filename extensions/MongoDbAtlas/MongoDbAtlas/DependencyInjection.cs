@@ -3,8 +3,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MongoDbAtlas;
 
-namespace Microsoft.KernelMemory.MongoDbAtlas;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {

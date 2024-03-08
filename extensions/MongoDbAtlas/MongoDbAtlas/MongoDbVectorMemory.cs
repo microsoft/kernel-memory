@@ -231,7 +231,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
             }
             else if (filtersArray.Count == 1)
             {
-                //we do not need to include an and filter because we have only one condition 
+                //we do not need to include an and filter because we have only one condition
                 outerFiltersArray.Add(filtersArray[0]);
             }
         }
@@ -285,7 +285,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     }
 
     /// <summary>
-    /// Due to different score system of Atlas MongoDB that normalized cosine
+    /// Due to different score system of MongoDB Atlas that normalized cosine
     /// we need to manually recompute the cosine similarity distance manually
     /// for each vector to have a real cosine similarity distance returned.
     /// </summary>

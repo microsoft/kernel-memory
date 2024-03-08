@@ -92,7 +92,8 @@ internal sealed class MongoDbAtlasSearchHelper
     {
         var pipeline = new BsonDocument[]
         {
-            new() {
+            new()
+            {
                 {
                     "$listSearchIndexes",
                     new BsonDocument
@@ -249,7 +250,7 @@ internal sealed class MongoDbAtlasSearchHelper
     }
 
     /// <summary>
-    /// Retrieve information about an Atlas MongoDb index for a specific
+    /// Retrieve information about an MongoDB Atlas index for a specific
     /// collection name. If the index does not exists it returns null
     /// </summary>
     /// <param name="collectionName"></param>
@@ -260,7 +261,8 @@ internal sealed class MongoDbAtlasSearchHelper
         var collection = this._db.GetCollection<BsonDocument>(collectionName);
         var pipeline = new BsonDocument[]
         {
-            new() {
+            new()
+            {
                 {
                     "$listSearchIndexes",
                     new BsonDocument

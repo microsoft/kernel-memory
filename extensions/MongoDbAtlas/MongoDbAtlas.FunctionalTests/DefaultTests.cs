@@ -19,7 +19,7 @@ public abstract class DefaultTests : BaseFunctionalTestCase
 
         this._mongoDbAtlasMemoryConfiguration = this.GetConfiguration(cfg);
 
-        //Clear all content in any collection before running the test.
+        // Clear all content in any collection before running the test.
         var ash = new MongoDbAtlasSearchHelper(this._mongoDbAtlasMemoryConfiguration.ConnectionString, this._mongoDbAtlasMemoryConfiguration.DatabaseName);
         if (this._mongoDbAtlasMemoryConfiguration.UseSingleCollectionForVectorSearch)
         {

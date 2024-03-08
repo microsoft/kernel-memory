@@ -146,7 +146,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             if (MongoDbAtlasEnabled)
             {
-                this._log.WriteLine("\n----- Atlas MongoDb vector DB -----");
+                this._log.WriteLine("\n----- MongoDB Atlas vector DB -----");
                 await this.TestVectorDbFiltering(mongoDbAtlas, i);
             }
 
