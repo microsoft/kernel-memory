@@ -64,7 +64,7 @@ public interface IPipelineOrchestrator
     /// <param name="documentId">Id of the document and pipeline execution instance</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Pipeline status if available</returns>
-    Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default);
+    Task<DataPipeline?> ReadPipelineStatusAsync(string? index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetch the pipeline status from storage
