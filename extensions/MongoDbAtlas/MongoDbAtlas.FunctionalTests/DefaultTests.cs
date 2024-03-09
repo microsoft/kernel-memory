@@ -71,8 +71,6 @@ public abstract class DefaultTests : BaseFunctionalTestCase
             .Build<MemoryServerless>();
     }
 
-    // protected abstract MongoDbAtlasKernelMemoryConfiguration GetConfiguration(IConfiguration cfg);
-
     [Fact]
     [Trait("Category", "MongoDbAtlas")]
     public async Task ItSupportsASingleFilter()

@@ -82,7 +82,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         else if (extension == ".text_embedding")
         {
             //ok the file is a text embedding formatted as json, I'd like to save parsing the document.
-            //saving evertying in the content field not as string but as json.
+            //saving everything in the content field not as string but as json.
             using var reader = new StreamReader(streamContent);
             var content = await reader.ReadToEndAsync().ConfigureAwait(false);
             // now deserialize the json

@@ -164,26 +164,26 @@ internal sealed class MongoDbAtlasSearchHelper
                             "definition", new BsonDocument
                             {
                                 {
-                                    "fields", new BsonArray()
+                                    "fields", new BsonArray
                                     {
-                                        new BsonDocument()
+                                        new BsonDocument
                                         {
                                             { "path", "Embedding" },
                                             { "type", "vector" },
                                             { "numDimensions", embeddingDimension },
                                             { "similarity", "cosine" }
                                         },
-                                        new BsonDocument()
+                                        new BsonDocument
                                         {
                                             { "type", "filter" },
                                             { "path", "Index" }
                                         },
-                                        new BsonDocument()
+                                        new BsonDocument
                                         {
                                             { "type", "filter" },
                                             { "path", "Tags.Key" }
                                         },
-                                        new BsonDocument()
+                                        new BsonDocument
                                         {
                                             { "type", "filter" },
                                             { "path", "Tags.Values" }
@@ -196,24 +196,6 @@ internal sealed class MongoDbAtlasSearchHelper
                 }
             }
         };
-    }
-
-    /// <summary>
-    /// Verify CreateIndexSettingsAnalysisDescriptor for mapper 7
-    /// </summary>
-    /// <exception cref="NotImplementedException"></exception>
-    private BsonArray GetAnalyzersList()
-    {
-        var analyzers = new BsonArray();
-
-        return analyzers;
-    }
-
-    private async Task<bool> CollectionExistsAsync(string connectionName)
-    {
-        var filter = new BsonDocument("name", connectionName);
-        var collections = await this._db.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter }).ConfigureAwait(false);
-        return collections.Any();
     }
 
     /// <summary>
@@ -247,6 +229,26 @@ internal sealed class MongoDbAtlasSearchHelper
             //delete all documents
             await collection.DeleteManyAsync(new BsonDocument()).ConfigureAwait(false);
         }
+    }
+
+    public record IndexInfo(bool Exists, string Status, Boolean Queryable);
+
+    /// <summary>
+    /// Verify CreateIndexSettingsAnalysisDescriptor for mapper 7
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    private BsonArray GetAnalyzersList()
+    {
+        var analyzers = new BsonArray();
+
+        return analyzers;
+    }
+
+    private async Task<bool> CollectionExistsAsync(string connectionName)
+    {
+        var filter = new BsonDocument("name", connectionName);
+        var collections = await this._db.ListCollectionsAsync(new ListCollectionsOptions { Filter = filter }).ConfigureAwait(false);
+        return collections.Any();
     }
 
     /// <summary>
@@ -297,6 +299,4 @@ internal sealed class MongoDbAtlasSearchHelper
     }
 
     private static readonly IndexInfo s_falseIndexInfo = new(false, "", false);
-
-    public record IndexInfo(bool Exists, string Status, Boolean Queryable);
 }
