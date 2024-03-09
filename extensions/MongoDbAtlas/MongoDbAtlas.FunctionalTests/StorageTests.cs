@@ -65,14 +65,14 @@ public abstract class StorageTests : BaseFunctionalTestCase
     [Trait("Category", "MongoDbAtlas")]
     public async Task SaveFilesHonorsId()
     {
-        //Act save a file with the same id updating content.
+        // Act save a file with the same id updating content.
         var fileContent1 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World"));
         var fileContent2 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World 2"));
         string id = $"_pipeline_status{_seed++}.txt";
         await this._sut.WriteFileAsync(this.IndexName, id, "filename.txt", fileContent1);
         await this._sut.WriteFileAsync(this.IndexName, id, "filename.txt", fileContent2);
 
-        //assert
+        // Assert
         var file = await this._sut.ReadFileAsync(this.IndexName, id, "filename.txt");
         var content = file.ToString();
 
@@ -85,7 +85,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
     [InlineData("text_embedding", @"{ ""Text"": ""Hello World"" }", @"{ ""Text"": ""Hello World 2"" }")]
     public async Task SaveDifferentFiles(string extension, string content1, string content2)
     {
-        //Act save a file with the same id updating content.
+        // Act save a file with the same id updating content.
         var fileContent1 = new MemoryStream(Encoding.UTF8.GetBytes(content1));
         var fileContent2 = new MemoryStream(Encoding.UTF8.GetBytes(content2));
         string id = $"_pipeline_status{_seed++}.{extension}";
@@ -95,7 +95,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
         await this._sut.WriteFileAsync(this.IndexName, id, fileName1, fileContent1);
         await this._sut.WriteFileAsync(this.IndexName, id, fileName2, fileContent2);
 
-        //assert
+        // Assert
         var file = await this._sut.ReadFileAsync(this.IndexName, id, fileName1);
         var content = file.ToString();
 
@@ -110,7 +110,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
     [Trait("Category", "MongoDbAtlas")]
     public async Task SaveFilesHonorsIdWithBinaryContent()
     {
-        //Act save a file with the same id updating content.
+        // Act save a file with the same id updating content.
         var fileContent1 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World"));
         var fileContent2 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World 2"));
         string id = $"_pipeline_status{_seed++}.txt";
@@ -118,7 +118,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
         await this._sut.WriteFileAsync(this.IndexName, id, fileName, fileContent1);
         await this._sut.WriteFileAsync(this.IndexName, id, fileName, fileContent2);
 
-        //assert
+        // Assert
         var file = await this._sut.ReadFileAsync(this.IndexName, id, fileName);
         var content = file.ToString();
 
@@ -129,7 +129,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
     [Trait("Category", "MongoDbAtlas")]
     public async Task SaveDifferentFilesWithBinaryContent()
     {
-        //Act save a file with the same id updating content.
+        // Act save a file with the same id updating content.
         var fileContent1 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World"));
         var fileContent2 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World 2"));
         string id = $"_pipeline_status{_seed++}.txt";
@@ -138,7 +138,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
         await this._sut.WriteFileAsync(this.IndexName, id, fileName1, fileContent1);
         await this._sut.WriteFileAsync(this.IndexName, id, fileName2, fileContent2);
 
-        //assert
+        // Assert
         var file = await this._sut.ReadFileAsync(this.IndexName, id, fileName1);
         var content = file.ToString();
 
@@ -153,7 +153,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
     [Trait("Category", "MongoDbAtlas")]
     public async Task CanCleanIndexCorrectly()
     {
-        //Arrange: save some files into the index
+        // Arrange: save some files into the index
         var fileContent1 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World"));
         var fileContent2 = new MemoryStream(Encoding.UTF8.GetBytes("Hello World 2"));
         string id = $"_pipeline_status{_seed++}.txt";
@@ -162,10 +162,10 @@ public abstract class StorageTests : BaseFunctionalTestCase
         await this._sut.WriteFileAsync(this.IndexName, id, fileName1, fileContent1);
         await this._sut.WriteFileAsync(this.IndexName, id, fileName2, fileContent2);
 
-        //Act: clean the index
+        // Act: clean the index
         await this._sut.EmptyDocumentDirectoryAsync(this.IndexName, id);
 
-        //Assert: check that the files are not there anymore
+        // Assert: check that the files are not there anymore
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName1, false));
         await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName2, false));
     }

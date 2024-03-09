@@ -60,7 +60,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
         var normalizedIndexName = NormalizeIndexName(index);
         if (this.Config.UseSingleCollectionForVectorSearch)
         {
-            //actually if we use a single collection we do not delete the entire collection we simply delete records of the index
+            // Actually if we use a single collection we do not delete the entire collection we simply delete records of the index
             var collection = this.GetCollectionFromIndexName(index);
             await collection.DeleteManyAsync(x => x.Index == normalizedIndexName, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
@@ -77,7 +77,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
 
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
-        //we load index from the index list collection
+        // We load index from the index list collection
         var collection = this.Database.GetCollection<BsonDocument>(GetIndexListCollectionName());
         var cursor = await collection.FindAsync(Builders<BsonDocument>.Filter.Empty, cancellationToken: cancellationToken).ConfigureAwait(false);
         return cursor.ToEnumerable(cancellationToken: cancellationToken).Select(x => x["_id"].AsString).ToImmutableArray();
@@ -222,34 +222,34 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
                 filtersArray.Add(condition);
             }
 
-            //all these filter if more than one must be enclosed in an end filter
+            // All these filter if more than one must be enclosed in an end filter
             if (filtersArray.Count > 1)
             {
-                //More than one condition we need to create the condition
+                // More than one condition we need to create the condition
                 var andFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.And(filtersArray);
                 outerFiltersArray.Add(andFilter);
             }
             else if (filtersArray.Count == 1)
             {
-                //we do not need to include an and filter because we have only one condition
+                // We do not need to include an and filter because we have only one condition
                 outerFiltersArray.Add(filtersArray[0]);
             }
         }
 
         FilterDefinition<MongoDbAtlasMemoryRecord>? finalFilter = null;
 
-        //outer filters must be composed in or
+        // Outer filters must be composed in or
         if (outerFiltersArray.Count > 1)
         {
             finalFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.Or(outerFiltersArray);
         }
         else if (outerFiltersArray.Count == 1)
         {
-            //we do not need to include an or filter because we have only one condition
+            // We do not need to include an or filter because we have only one condition
             finalFilter = outerFiltersArray[0];
         }
 
-        //remember that if we are usins a single collection for all records we need to add an index filter
+        // Remember that if we are using a single collection for all records we need to add an index filter
         if (this.Config.UseSingleCollectionForVectorSearch)
         {
             var indexFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.Eq("Index", index);
@@ -259,7 +259,7 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
             }
             else
             {
-                //compose in and
+                // Compose in and
                 finalFilter = Builders<MongoDbAtlasMemoryRecord>.Filter.And(indexFilter, finalFilter);
             }
         }

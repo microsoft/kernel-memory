@@ -104,8 +104,8 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
                 }
             };
 
-            //since the pattern of usage is that you can upload a file for a document id and then update, we need to delete
-            //any esisting file with the same id check if the file exists and delete it
+            // Since the pattern of usage is that you can upload a file for a document id and then update, we need to delete
+            // any existing file with the same id check if the file exists and delete it
             IAsyncCursor<GridFSFileInfo<string>> existingFile = await GetFromBucketByIdAsync(id, bucket, cancellationToken).ConfigureAwait(false);
             if (existingFile.Any(cancellationToken))
             {
@@ -126,7 +126,7 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
     public async Task<BinaryData> ReadFileAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true,
         CancellationToken cancellationToken = new CancellationToken())
     {
-        // read from mongodb but you need to check extension to load correctly
+        // Read from mongodb but you need to check extension to load correctly
         var extension = Path.GetExtension(fileName);
         var id = $"{documentId}/{fileName}";
         if (extension == ".txt")
