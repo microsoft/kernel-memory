@@ -11,9 +11,9 @@ using MongoDB.Driver.GridFS;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IContentStorage
+public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
 {
-    public MongoDbKernelMemoryStorage(MongoDbAtlasConfig config) : base(config)
+    public MongoDbAtlasStorage(MongoDbAtlasConfig config) : base(config)
     {
     }
 

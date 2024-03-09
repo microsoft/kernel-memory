@@ -59,10 +59,10 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
         }
 
-        MongoDbVectorMemory mongoDbAtlas;
+        MongoDbAtlasMemory mongoDbAtlas;
         if (MongoDbAtlasEnabled)
         {
-            mongoDbAtlas = new MongoDbVectorMemory(this.MongoDbAtlasConfig, embeddingGenerator);
+            mongoDbAtlas = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator);
         }
 
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);

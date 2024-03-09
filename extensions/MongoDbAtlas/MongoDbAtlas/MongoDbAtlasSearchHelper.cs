@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace Microsoft.KernelMemory.MongoDbAtlas.Helpers;
+namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 /// <summary>
 /// <para>Wrapper for ATLAS search indexes stuff</para>
@@ -253,9 +253,6 @@ internal sealed class MongoDbAtlasSearchHelper
     /// Retrieve information about an MongoDB Atlas index for a specific
     /// collection name. If the index does not exists it returns null
     /// </summary>
-    /// <param name="collectionName"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
     private async Task<IndexInfo> GetIndexInfoAsync(string collectionName)
     {
         var collection = this._db.GetCollection<BsonDocument>(collectionName);

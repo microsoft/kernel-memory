@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbKernelMemoryBaseStorage
+public class MongoDbAtlasBaseStorage
 {
     protected IMongoDatabase Database { get; private set; }
 
@@ -19,7 +19,7 @@ public class MongoDbKernelMemoryBaseStorage
     /// </summary>
     protected Dictionary<string, object> Collections { get; private set; } = new();
 
-    public MongoDbKernelMemoryBaseStorage(MongoDbAtlasConfig config)
+    public MongoDbAtlasBaseStorage(MongoDbAtlasConfig config)
     {
         this.Database = config.GetDatabase();
         this.Config = config;

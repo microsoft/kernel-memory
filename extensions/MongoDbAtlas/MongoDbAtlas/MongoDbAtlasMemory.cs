@@ -11,18 +11,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
+public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
 {
     private const string ConnectionNamePrefix = "_ix_";
 
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
-    private readonly ILogger<MongoDbVectorMemory> _log;
+    private readonly ILogger<MongoDbAtlasMemory> _log;
     private readonly MongoDbAtlasSearchHelper _utils;
 
     /// <summary>
@@ -31,13 +30,13 @@ public class MongoDbVectorMemory : MongoDbKernelMemoryBaseStorage, IMemoryDb
     /// <param name="config">Configuration</param>
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="log">Application logger</param>
-    public MongoDbVectorMemory(
+    public MongoDbAtlasMemory(
         MongoDbAtlasConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<MongoDbVectorMemory>? log = null) : base(config)
+        ILogger<MongoDbAtlasMemory>? log = null) : base(config)
     {
         this._embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
-        this._log = log ?? DefaultLogger<MongoDbVectorMemory>.Instance;
+        this._log = log ?? DefaultLogger<MongoDbAtlasMemory>.Instance;
         this._utils = new MongoDbAtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
     }
 

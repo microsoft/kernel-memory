@@ -3,7 +3,6 @@
 using System.Text;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
-using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
 using Microsoft.TestHelpers;
 
 namespace MongoDbAtlas.FunctionalTests;
@@ -26,7 +25,7 @@ public class StorageTestsMultipleCollections : StorageTests
 
 public abstract class StorageTests : BaseFunctionalTestCase
 {
-    private readonly MongoDbKernelMemoryStorage _sut;
+    private readonly MongoDbAtlasStorage _sut;
     private readonly string IndexName = $"storagetestindex{_seed++}";
     private static int _seed = 0;
 
@@ -48,7 +47,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
         // delete everything for every collection
         ash.DropAllDocumentsFromCollectionsAsync().Wait();
 
-        this._sut = new MongoDbKernelMemoryStorage(this.MongoDbAtlasConfig);
+        this._sut = new MongoDbAtlasStorage(this.MongoDbAtlasConfig);
         this._sut.CreateIndexDirectoryAsync("testindex").Wait();
     }
 

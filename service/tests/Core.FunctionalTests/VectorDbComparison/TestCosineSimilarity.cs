@@ -30,10 +30,10 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
     public async Task CompareCosineSimilarity()
     {
         const bool SimpleDbEnabled = true;
-        const bool AzSearchEnabled = false;
-        const bool QdrantEnabled = false;
+        const bool AzSearchEnabled = true;
+        const bool QdrantEnabled = true;
         const bool PostgresEnabled = true;
-        const bool RedisEnabled = false;
+        const bool RedisEnabled = true;
         const bool MongoDbAtlasEnabled = true;
 
         // == Ctors
@@ -51,8 +51,8 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         PostgresMemory? postgres = null;
         if (PostgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
 
-        MongoDbVectorMemory? atlasVectorDb = null;
-        if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbVectorMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
+        MongoDbAtlasMemory? atlasVectorDb = null;
+        if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
 
         RedisMemory? redis = null;
         if (RedisEnabled)
@@ -62,7 +62,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
             redis = new RedisMemory(this.RedisConfig, redisMux, embeddingGenerator);
         }
 
-        var dbs = new IMemoryDb[] { simpleVecDb, acs, postgres, qdrant, redis, atlasVectorDb };
+        var dbs = new IMemoryDb[] { simpleVecDb!, acs!, postgres!, qdrant!, redis!, atlasVectorDb! };
 
         // == Delete indexes left over
 

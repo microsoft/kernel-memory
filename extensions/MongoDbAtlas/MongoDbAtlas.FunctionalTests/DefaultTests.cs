@@ -2,7 +2,7 @@
 
 using FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.MongoDbAtlas.Helpers;
+using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.TestHelpers;
 
 namespace MongoDbAtlas.FunctionalTests;
