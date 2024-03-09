@@ -77,13 +77,14 @@ internal static class WebAPIEndpoints
                     // UploadRequest => Document
                     var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
                         .ConfigureAwait(false);
+                    var index = IndexExtensions.CleanName(input.Index, config.DefaultIndex);
                     var url = Constants.HttpUploadStatusEndpointWithParams
-                        .Replace(Constants.HttpIndexPlaceholder, IndexExtensions.CleanName(input.Index, config.DefaultIndex), StringComparison.Ordinal)
+                        .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.Ordinal)
                         .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
                     return Results.Accepted(url, new UploadAccepted
                     {
                         DocumentId = documentId,
-                        Index = input.Index,
+                        Index = index,
                         Message = "Document upload completed, ingestion pipeline started"
                     });
                 }
@@ -143,13 +144,14 @@ internal static class WebAPIEndpoints
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
-                    await service.DeleteIndexAsync(index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
+                    index = IndexExtensions.CleanName(index, config.DefaultIndex);
+                    await service.DeleteIndexAsync(index: index, cancellationToken)
                         .ConfigureAwait(false);
                     // There's no API to check the index deletion progress, so the URL is empty
                     var url = string.Empty;
                     return Results.Accepted(url, new DeleteAccepted
                     {
-                        Index = index ?? string.Empty,
+                        Index = index,
                         Message = "Index deletion request received, pipeline started"
                     });
                 })
@@ -175,7 +177,8 @@ internal static class WebAPIEndpoints
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request");
-                    await service.DeleteDocumentAsync(documentId: documentId, index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
+                    index = IndexExtensions.CleanName(index, config.DefaultIndex);
+                    await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
                         .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.Ordinal)
@@ -183,7 +186,7 @@ internal static class WebAPIEndpoints
                     return Results.Accepted(url, new DeleteAccepted
                     {
                         DocumentId = documentId,
-                        Index = index ?? string.Empty,
+                        Index = index,
                         Message = "Document deletion request received, pipeline started"
                     });
                 })
@@ -201,14 +204,13 @@ internal static class WebAPIEndpoints
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
-                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search request");
                     MemoryAnswer answer = await service.AskAsync(
                             question: query.Question,
-                            index: IndexExtensions.CleanName(query.Index, config.DefaultIndex),
+                            index: query.Index,
                             filters: query.Filters,
                             minRelevance: query.MinRelevance,
                             cancellationToken: cancellationToken)
@@ -229,14 +231,13 @@ internal static class WebAPIEndpoints
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
-                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search HTTP request");
                     SearchResult answer = await service.SearchAsync(
                             query: query.Query,
-                            index: IndexExtensions.CleanName(query.Index, config.DefaultIndex),
+                            index: query.Index,
                             filters: query.Filters,
                             minRelevance: query.MinRelevance,
                             limit: query.Limit,
@@ -261,7 +262,6 @@ internal static class WebAPIEndpoints
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory memoryClient,
-                    KernelMemoryConfig config,
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
@@ -272,7 +272,7 @@ internal static class WebAPIEndpoints
                         return Results.Problem(detail: $"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value", statusCode: 400);
                     }
 
-                    DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: IndexExtensions.CleanName(index, config.DefaultIndex), cancellationToken)
+                    DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
                     if (pipeline == null)
                     {
