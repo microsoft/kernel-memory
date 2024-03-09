@@ -43,14 +43,14 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
     public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = NormalizeIndexName(index);
-        //Index name is the name of the collection, so we need to understand if the collection exists
+        // Index name is the name of the collection, so we need to understand if the collection exists
         var collectionName = this.GetCollectionName(index);
         await this._utils.CreateIndexAsync(collectionName, vectorSize).ConfigureAwait(false);
         await this._utils.WaitForIndexToBeReadyAsync(collectionName, 120).ConfigureAwait(false);
 
-        //Keep tracks of created indexes.
+        // Keep tracks of created indexes.
         var collection = this.Database.GetCollection<BsonDocument>(GetIndexListCollectionName());
-        //upsert the name of the index
+        // upsert the name of the index
         var filter = Builders<BsonDocument>.Filter.Eq("_id", normalizedIndexName);
         var update = Builders<BsonDocument>.Update.Set("index", normalizedIndexName).Set("lastCreateIndex", DateTime.UtcNow);
         await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, cancellationToken).ConfigureAwait(false);
@@ -102,11 +102,11 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
             limit = 10;
         }
 
-        //need to create a query and execute it without using $vector
+        // Need to create a query and execute it without using $vector
         var collection = this.GetCollectionFromIndexName(index);
         var finalFilter = this.TranslateFilters(filters, index);
 
-        // we need to performa a simple query without using vector search
+        // We need to perform a simple query without using vector search
         var cursor = await collection.FindAsync(finalFilter, cancellationToken: cancellationToken).ConfigureAwait(false);
         var documents = await cursor.ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -132,14 +132,14 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
             limit = 10;
         }
 
-        //need to create a search query and execute it
+        // Need to create a search query and execute it
         var collectionName = this.GetCollectionName(index);
         var embeddings = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
 
-        // define vector embeddings to search
+        // Define vector embeddings to search
         var vector = embeddings.Data.Span.ToArray();
 
-        //need to create the filters
+        // Need to create the filters
         var finalFilter = this.TranslateFilters(filters, index);
 
         var options = new VectorSearchOptions<MongoDbAtlasMemoryRecord>()
@@ -150,7 +150,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         };
         var collection = this.GetCollectionFromIndexName(index);
 
-        // run query
+        // Run query
         var documents = await collection.Aggregate()
             .VectorSearch(m => m.Embedding, vector, limit, options)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
