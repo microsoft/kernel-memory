@@ -166,8 +166,6 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override async Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(pipeline.Index, base.Config.DefaultIndex);
-
         // Files must be uploaded before starting any other task
         await this.UploadFilesAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
@@ -190,19 +188,19 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             {
                 pipeline = updatedPipeline;
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, index, pipeline.DocumentId);
+                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, index, pipeline.DocumentId);
+                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                 throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
             }
         }
 
         await this.CleanUpAfterCompletionAsync(pipeline, cancellationToken).ConfigureAwait(false);
 
-        this.Log.LogInformation("Pipeline '{0}/{1}' complete", index, pipeline.DocumentId);
+        this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
     }
 }

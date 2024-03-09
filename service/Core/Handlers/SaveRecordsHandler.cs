@@ -44,7 +44,6 @@ public class SaveRecordsHandler : IPipelineStepHandler
     }
 
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly KernelMemoryConfig _config;
     private readonly List<IMemoryDb> _memoryDbs;
     private readonly ILogger<SaveRecordsHandler> _log;
     private readonly bool _embeddingGenerationEnabled;
@@ -57,17 +56,14 @@ public class SaveRecordsHandler : IPipelineStepHandler
     /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
-    /// <param name="config">Kernel Memory configuration</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="log">Application logger</param>
     public SaveRecordsHandler(
         string stepName,
-        KernelMemoryConfig config,
         IPipelineOrchestrator orchestrator,
         ILogger<SaveRecordsHandler>? log = null)
     {
         this.StepName = stepName;
-        this._config = config;
         this._log = log ?? DefaultLogger<SaveRecordsHandler>.Instance;
         this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
 
@@ -88,8 +84,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
-        this._log.LogDebug("Saving memory records, pipeline '{0}/{1}'", index, pipeline.DocumentId);
+        this._log.LogDebug("Saving memory records, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         await this.DeletePreviousRecordsAsync(pipeline, cancellationToken).ConfigureAwait(false);
         pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
@@ -106,7 +101,6 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var embeddingsFound = false;
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
 
         // For each embedding file => For each Memory DB => Upsert record
         foreach (FileDetailsWithRecordId embeddingFile in GetListOfEmbeddingFiles(pipeline))
@@ -148,11 +142,11 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
-                this._log.LogTrace("Creating index '{0}'", index);
-                await client.CreateIndexAsync(index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                this._log.LogTrace("Creating index '{0}'", pipeline.Index);
+                await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, index);
-                await client.UpsertAsync(index, record, cancellationToken).ConfigureAwait(false);
+                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
             }
 
             embeddingFile.File.MarkProcessedBy(this);
@@ -160,7 +154,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
         if (!embeddingsFound)
         {
-            this._log.LogWarning("Pipeline '{0}/{1}': embeddings not found, cannot save embeddings, moving to next pipeline step.", index, pipeline.DocumentId);
+            this._log.LogWarning("Pipeline '{0}/{1}': embeddings not found, cannot save embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
@@ -173,7 +167,6 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var partitionsFound = false;
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
 
         // Create records only for partitions (text chunks) and synthetic data
         foreach (FileDetailsWithRecordId file in GetListOfPartitionAndSyntheticFiles(pipeline))
@@ -213,11 +206,11 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
-                        this._log.LogTrace("Creating index '{0}'", index);
-                        await client.CreateIndexAsync(index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                        this._log.LogTrace("Creating index '{0}'", pipeline.Index);
+                        await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                        this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, index);
-                        await client.UpsertAsync(index, record, cancellationToken).ConfigureAwait(false);
+                        this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                        await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
                     }
 
                     break;
@@ -232,7 +225,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
         if (!partitionsFound)
         {
-            this._log.LogWarning("Pipeline '{0}/{1}': partitions and synthetic records not found, cannot save, moving to next pipeline step.", index, pipeline.DocumentId);
+            this._log.LogWarning("Pipeline '{0}/{1}': partitions and synthetic records not found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
@@ -243,7 +236,6 @@ public class SaveRecordsHandler : IPipelineStepHandler
         if (pipeline.PreviousExecutionsToPurge.Count == 0) { return; }
 
         var recordsToKeep = new HashSet<string>();
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
 
         // Decide which records not to delete, looking at the current pipeline
         foreach (FileDetailsWithRecordId embeddingFile in GetListOfEmbeddingFiles(pipeline).Concat(GetListOfPartitionAndSyntheticFiles(pipeline)))
@@ -261,7 +253,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 foreach (IMemoryDb client in this._memoryDbs)
                 {
                     this._log.LogTrace("Deleting old record {0}", file.RecordId);
-                    await client.DeleteAsync(index, new MemoryRecord { Id = file.RecordId }, cancellationToken).ConfigureAwait(false);
+                    await client.DeleteAsync(pipeline.Index, new MemoryRecord { Id = file.RecordId }, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

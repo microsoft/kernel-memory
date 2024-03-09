@@ -20,7 +20,6 @@ namespace Microsoft.KernelMemory.Handlers;
 /// </summary>
 public class TextExtractionHandler : IPipelineStepHandler
 {
-    private readonly KernelMemoryConfig _config;
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly WebScraper _webScraper;
     private readonly IOcrEngine? _ocrEngine;
@@ -34,19 +33,16 @@ public class TextExtractionHandler : IPipelineStepHandler
     /// Note: stepName and other params are injected with DI.
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
-    /// <param name="config">Kernel Memory configuration</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="ocrEngine">The ocr engine to use for parsing image files</param>
     /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,
-        KernelMemoryConfig config,
         IPipelineOrchestrator orchestrator,
         IOcrEngine? ocrEngine = null,
         ILogger<TextExtractionHandler>? log = null)
     {
         this.StepName = stepName;
-        this._config = config;
         this._orchestrator = orchestrator;
         this._ocrEngine = ocrEngine;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
@@ -59,8 +55,7 @@ public class TextExtractionHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
-        this._log.LogDebug("Extracting text, pipeline '{0}/{1}'", index, pipeline.DocumentId);
+        this._log.LogDebug("Extracting text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {

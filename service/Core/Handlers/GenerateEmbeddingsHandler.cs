@@ -19,7 +19,6 @@ namespace Microsoft.KernelMemory.Handlers;
 /// </summary>
 public class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
-    private readonly KernelMemoryConfig _config;
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
     private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
@@ -33,17 +32,14 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
-    /// <param name="config">Kernel Memory configuration</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="log">Application logger</param>
     public GenerateEmbeddingsHandler(
         string stepName,
-        KernelMemoryConfig config,
         IPipelineOrchestrator orchestrator,
         ILogger<GenerateEmbeddingsHandler>? log = null)
     {
         this.StepName = stepName;
-        this._config = config;
         this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
         this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
 
@@ -69,14 +65,13 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
     public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(pipeline.Index, this._config.DefaultIndex);
         if (!this._embeddingGenerationEnabled)
         {
-            this._log.LogTrace("Embedding generation is disabled, skipping - pipeline '{0}/{1}'", index, pipeline.DocumentId);
+            this._log.LogTrace("Embedding generation is disabled, skipping - pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
             return (true, pipeline);
         }
 
-        this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", index, pipeline.DocumentId);
+        this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         var partitionsFound = false;
         foreach (var uploadedFile in pipeline.Files)
@@ -189,7 +184,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
         if (!partitionsFound)
         {
-            this._log.LogWarning("Pipeline '{0}/{1}': text partitions not found, cannot generate embeddings, moving to next pipeline step.", index, pipeline.DocumentId);
+            this._log.LogWarning("Pipeline '{0}/{1}': text partitions not found, cannot generate embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
