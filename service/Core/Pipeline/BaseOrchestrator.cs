@@ -158,6 +158,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 throw new InvalidPipelineDataException("The pipeline data deserializes to a null value");
             }
 
+            result.DefaultIndex = this.Config.DefaultIndex;
             return result;
         }
         catch (ContentStorageFileNotFoundException)

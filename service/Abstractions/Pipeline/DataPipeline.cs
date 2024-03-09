@@ -16,7 +16,6 @@ namespace Microsoft.KernelMemory.Pipeline;
 public sealed class DataPipeline
 {
     private string _index = string.Empty;
-    private string? _defaultIndex = Constants.DefaultIndex;
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ArtifactTypes
@@ -214,7 +213,7 @@ public sealed class DataPipeline
     public string Index
     {
         get { return this._index; }
-        set { this._index = IndexExtensions.CleanName(value, this._defaultIndex); }
+        set { this._index = IndexExtensions.CleanName(value, this.DefaultIndex); }
     }
 
     /// <summary>
@@ -303,9 +302,16 @@ public sealed class DataPipeline
     [JsonIgnore]
     public bool UploadComplete { get; set; }
 
+    [JsonIgnore]
+    public string? DefaultIndex { get; set; }
+
+    public DataPipeline()
+    {
+    }
+
     public DataPipeline(string? defaultIndex)
     {
-        this._defaultIndex = defaultIndex;
+        this.DefaultIndex = defaultIndex;
     }
 
     public DataPipeline Then(string stepName)
