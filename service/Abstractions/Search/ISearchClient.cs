@@ -22,7 +22,7 @@ public interface ISearchClient
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>List of relevant results matching the search criteria</returns>
     Task<SearchResult> SearchAsync(
-        string index,
+        string? index,
         string query,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
@@ -39,7 +39,7 @@ public interface ISearchClient
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the given question</returns>
     Task<MemoryAnswer> AskAsync(
-        string index,
+        string? index,
         string question,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,

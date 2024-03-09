@@ -266,12 +266,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
 
         var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-        var kernelMemoryConfig = serviceProvider.GetService<KernelMemoryConfig>() ?? throw new ConfigurationException("Unable to build memory configuration");
         var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
 
         this.CheckForMissingDependencies();
 
-        return new MemoryService(orchestrator, kernelMemoryConfig, searchClient);
+        return new MemoryService(orchestrator, searchClient);
     }
 
     private KernelMemoryBuilder CompleteServerlessClient(ServiceProvider serviceProvider)

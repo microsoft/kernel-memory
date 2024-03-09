@@ -19,6 +19,7 @@ public class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
+    private readonly KernelMemoryConfig _kernelMemoryConfig;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
@@ -26,12 +27,14 @@ public class SearchClient : ISearchClient
     public SearchClient(
         IMemoryDb memoryDb,
         ITextGenerator textGenerator,
+        KernelMemoryConfig? kernelMemoryConfig = null,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
         ILogger<SearchClient>? log = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
+        this._kernelMemoryConfig = kernelMemoryConfig ?? new KernelMemoryConfig();
         this._config = config ?? new SearchClientConfig();
         this._config.Validate();
 
@@ -59,13 +62,14 @@ public class SearchClient : ISearchClient
 
     /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
-        string index,
+        string? index,
         string query,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = -1,
         CancellationToken cancellationToken = default)
     {
+        index = IndexExtensions.CleanName(index, this._kernelMemoryConfig.DefaultIndex);
         if (limit <= 0) { limit = this._config.MaxMatchesCount; }
 
         var result = new SearchResult
@@ -174,12 +178,13 @@ public class SearchClient : ISearchClient
 
     /// <inheritdoc />
     public async Task<MemoryAnswer> AskAsync(
-        string index,
+        string? index,
         string question,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         CancellationToken cancellationToken = default)
     {
+        index = IndexExtensions.CleanName(index, this._kernelMemoryConfig.DefaultIndex);
         var noAnswerFound = new MemoryAnswer
         {
             Question = question,

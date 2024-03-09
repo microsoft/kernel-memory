@@ -38,7 +38,7 @@ public interface IPipelineOrchestrator
     /// <param name="uploadRequest">Details about the file and how to import it</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Import Id</returns>
-    Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default);
+    Task<string> ImportDocumentAsync(string? index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new pipeline value object for files upload
@@ -48,7 +48,7 @@ public interface IPipelineOrchestrator
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewDocumentUpload(string index, string documentId, TagCollection tags, IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null);
+    DataPipeline PrepareNewDocumentUpload(string? index, string documentId, TagCollection tags, IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null);
 
     /// <summary>
     /// Start a new data pipeline execution
@@ -73,7 +73,7 @@ public interface IPipelineOrchestrator
     /// <param name="documentId">Id of the document and pipeline execution instance</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Pipeline status if available</returns>
-    Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default);
+    Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string? index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Check if a document ID exists in a user memory and is ready for usage.
@@ -84,7 +84,7 @@ public interface IPipelineOrchestrator
     /// <param name="documentId">Document ID</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>True if the document has been successfully uploaded and imported</returns>
-    public Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default);
+    public Task<bool> IsDocumentReadyAsync(string? index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stop all the pipelines in progress

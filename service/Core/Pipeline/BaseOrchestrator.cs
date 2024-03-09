@@ -77,7 +77,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public async Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(string? index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadRequest.Files.Count, uploadRequest.DocumentId);
 
@@ -118,7 +118,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     ///<inheritdoc />
     public DataPipeline PrepareNewDocumentUpload(
-        string index,
+        string? index,
         string documentId,
         TagCollection tags,
         IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null)
@@ -127,7 +127,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         var pipeline = new DataPipeline(this.Config.DefaultIndex)
         {
-            Index = index,
+            Index = index!,
             DocumentId = documentId,
             Tags = tags,
             FilesToUpload = filesToUpload.ToList(),
@@ -139,7 +139,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipeline?> ReadPipelineStatusAsync(string? index, string documentId, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -167,11 +167,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string? index, string documentId, CancellationToken cancellationToken = default)
     {
         try
         {
-            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: IndexExtensions.CleanName(index, this.Config.DefaultIndex), documentId: documentId, cancellationToken).ConfigureAwait(false);
+            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
             return pipeline?.ToDataPipelineStatus();
         }
         catch (PipelineNotFoundException)
@@ -181,11 +181,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsDocumentReadyAsync(string? index, string documentId, CancellationToken cancellationToken = default)
     {
         try
         {
-            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: IndexExtensions.CleanName(index, this.Config.DefaultIndex), documentId, cancellationToken).ConfigureAwait(false);
+            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
             return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
         }
         catch (PipelineNotFoundException)
@@ -249,7 +249,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        DataPipeline pipeline = PrepareIndexDeletion(index: index, this.Config.DefaultIndex);
+        DataPipeline pipeline = PrepareIndexDeletion(index: index, defaultIndex: this.Config.DefaultIndex);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 

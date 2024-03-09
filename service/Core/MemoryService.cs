@@ -18,16 +18,13 @@ namespace Microsoft.KernelMemory;
 public class MemoryService : IKernelMemory
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly KernelMemoryConfig _config;
     private readonly ISearchClient _searchClient;
 
     public MemoryService(
         IPipelineOrchestrator orchestrator,
-        KernelMemoryConfig config,
         ISearchClient searchClient)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
-        this._config = config ?? throw new ConfigurationException("The Kernel Memory configuration is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
     }
 
@@ -61,7 +58,7 @@ public class MemoryService : IKernelMemory
         DocumentUploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.ImportDocumentAsync(IndexExtensions.CleanName(uploadRequest.Index, this._config.DefaultIndex), uploadRequest, cancellationToken);
+        return this._orchestrator.ImportDocumentAsync(uploadRequest.Index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -75,7 +72,7 @@ public class MemoryService : IKernelMemory
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddStream(fileName, content);
-        DocumentUploadRequest uploadRequest = new(document, IndexExtensions.CleanName(index, this._config.DefaultIndex), steps);
+        DocumentUploadRequest uploadRequest = new(document, index, steps);
         return this.ImportDocumentAsync(uploadRequest, cancellationToken);
     }
 
@@ -91,7 +88,7 @@ public class MemoryService : IKernelMemory
         var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await using (content.ConfigureAwait(false))
         {
-            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: IndexExtensions.CleanName(index, this._config.DefaultIndex), steps: steps, cancellationToken: cancellationToken)
+            return await this.ImportDocumentAsync(content, fileName: "content.txt", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -116,7 +113,7 @@ public class MemoryService : IKernelMemory
                     fileName: "content.url",
                     documentId: documentId,
                     tags,
-                    index: IndexExtensions.CleanName(index, this._config.DefaultIndex),
+                    index: index,
                     steps: steps,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -133,13 +130,13 @@ public class MemoryService : IKernelMemory
     /// <inheritdoc />
     public Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.StartIndexDeletionAsync(index: IndexExtensions.CleanName(index, this._config.DefaultIndex), cancellationToken);
+        return this._orchestrator.StartIndexDeletionAsync(index: index, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.StartDocumentDeletionAsync(documentId: documentId, index: IndexExtensions.CleanName(index, this._config.DefaultIndex), cancellationToken);
+        return this._orchestrator.StartDocumentDeletionAsync(documentId: documentId, index: index, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -148,7 +145,7 @@ public class MemoryService : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.IsDocumentReadyAsync(index: IndexExtensions.CleanName(index, this._config.DefaultIndex), documentId, cancellationToken);
+        return this._orchestrator.IsDocumentReadyAsync(index: index, documentId, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -157,7 +154,7 @@ public class MemoryService : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        return this._orchestrator.ReadPipelineSummaryAsync(index: IndexExtensions.CleanName(index, this._config.DefaultIndex), documentId, cancellationToken);
+        return this._orchestrator.ReadPipelineSummaryAsync(index: index, documentId, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -178,7 +175,7 @@ public class MemoryService : IKernelMemory
         }
 
         return this._searchClient.SearchAsync(
-            index: IndexExtensions.CleanName(index, this._config.DefaultIndex),
+            index: index,
             query: query,
             filters: filters,
             minRelevance: minRelevance,
@@ -203,7 +200,7 @@ public class MemoryService : IKernelMemory
         }
 
         return this._searchClient.AskAsync(
-            index: IndexExtensions.CleanName(index, this._config.DefaultIndex),
+            index: index,
             question: question,
             filters: filters,
             minRelevance: minRelevance,
