@@ -56,6 +56,13 @@ public class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "Elasticsearch")]
+    public async Task ItDoesntFailIfTheIndexExistsAlready()
+    {
+        await IndexCreationTest.ItDoesntFailIfTheIndexExistsAlready(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItListsIndexes()
     {
         await IndexListTest.ItListsIndexes(this._memory, this.Log);
