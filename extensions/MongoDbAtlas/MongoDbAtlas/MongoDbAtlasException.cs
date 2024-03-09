@@ -4,14 +4,14 @@ using System;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-internal class MongoDbAtlasKernelMemoryException : KernelMemoryException
+public class MongoDbAtlasException : KernelMemoryException
 {
     /// <inheritdoc />
-    public MongoDbAtlasKernelMemoryException() { }
+    public MongoDbAtlasException() { }
 
     /// <inheritdoc />
-    public MongoDbAtlasKernelMemoryException(string message) : base(message) { }
+    public MongoDbAtlasException(string message) : base(message) { }
 
     /// <inheritdoc />
-    public MongoDbAtlasKernelMemoryException(string message, Exception? innerException) : base(message, innerException) { }
+    public MongoDbAtlasException(string message, Exception? innerException) : base(message, innerException) { }
 }

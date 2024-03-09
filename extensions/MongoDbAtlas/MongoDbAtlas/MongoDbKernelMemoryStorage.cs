@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,9 +24,9 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
 
     public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = new CancellationToken())
     {
-        // delete all document in gridfs that have index as metadata
+        // Delete all document in GridFS that have index as metadata
         var filter = Builders<GridFSFileInfo>.Filter.Eq("metadata.index", index);
-        // load all id then delete all id
+        // Load all id then delete all id
         var bucket = this.GetBucketForIndex(index);
         await bucket.DropAsync(cancellationToken).ConfigureAwait(false);
 
@@ -34,7 +36,7 @@ public class MongoDbKernelMemoryStorage : MongoDbKernelMemoryBaseStorage, IConte
     public async Task EmptyDocumentDirectoryAsync(string index, string documentId,
         CancellationToken cancellationToken = new CancellationToken())
     {
-        // delete all document in gridfs that have index as metadata
+        // delete all document in GridFS that have index as metadata
         var bucket = this.GetBucketForIndex(index);
         var filter = Builders<GridFSFileInfo<string>>.Filter.Eq("metadata.documentId", documentId);
 

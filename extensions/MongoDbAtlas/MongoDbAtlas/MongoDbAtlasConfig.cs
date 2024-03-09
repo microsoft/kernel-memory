@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using MongoDB.Driver;
 using System;
 using System.Threading.Tasks;
 

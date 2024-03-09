@@ -291,7 +291,7 @@ internal sealed class MongoDbAtlasSearchHelper
 
         if (allIndexInfo.Count > 1)
         {
-            throw new MongoDbAtlasKernelMemoryException("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
+            throw new MongoDbAtlasException("We have too many atlas search index for the collection: " + string.Join(",", allIndexInfo.Select(i => i["name"].AsString)));
         }
 
         var indexInfo = allIndexInfo[0];

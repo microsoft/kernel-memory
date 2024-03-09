@@ -1,4 +1,6 @@
-﻿using MongoDB.Bson;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using System.Collections.Generic;
