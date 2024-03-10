@@ -16,6 +16,9 @@ using MongoDB.Driver;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
+/// <summary>
+/// Implementation of <see cref="IMemoryDb"/> based on MongoDB Atlas.
+/// </summary>
 public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
 {
     private const string ConnectionNamePrefix = "_ix_";
@@ -40,6 +43,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         this._utils = new MongoDbAtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
     }
 
+    /// <inheritdoc />
     public async Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = NormalizeIndexName(index);
@@ -56,6 +60,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         await collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
         var normalizedIndexName = NormalizeIndexName(index);
@@ -76,6 +81,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         await collectionIndexList.DeleteOneAsync(x => x["_id"] == index, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         // We load index from the index list collection
@@ -84,12 +90,14 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         return cursor.ToEnumerable(cancellationToken: cancellationToken).Select(x => x["_id"].AsString).ToImmutableArray();
     }
 
+    /// <inheritdoc />
     public Task DeleteAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollectionFromIndexName(index);
         return collection.DeleteOneAsync(x => x.Id == record.Id, cancellationToken: cancellationToken);
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
         string index,
         ICollection<MemoryFilter>? filters = null,
@@ -107,7 +115,13 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         var finalFilter = this.TranslateFilters(filters, index);
 
         // We need to perform a simple query without using vector search
-        var cursor = await collection.FindAsync(finalFilter, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var cursor = await collection
+            .FindAsync(finalFilter,
+                new FindOptions<MongoDbAtlasMemoryRecord>()
+                {
+                    Limit = limit
+                },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
         var documents = await cursor.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var document in documents)
@@ -118,6 +132,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         }
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetSimilarListAsync(
         string index,
         string text,
@@ -159,9 +174,6 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         // score = (1 + cosine/dot_product(v1,v2)) / 2
         // Thus it does not output the real cosine similarity, this is annoying so we
         // need to recompute cosine similarity using the embeddings.
-#if DEBUG
-        //List<(double, double, double)> similarities = new();
-#endif
         foreach (var document in documents)
         {
             var memoryRecord = FromMongodbMemoryRecord(document, withEmbeddings);
@@ -173,16 +185,7 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
                 //we have reached the limit for minimum relevance so we can stop iterating
                 break;
             }
-#if DEBUG
-            // Tried to calculate cosine similarity thanks to helper function of embeddings class but the precision
-            // is different from what is used by the tests, so test fails. This forces me to use actually the
-            // CosineSim formula. This commented code can be use in debugging to verify the differences between
-            // various values
-            // var score = document["score"].AsDouble;
-            // var cosineSimilarity2 = embeddings.CosineSimilarity(memoryRecord.Vector);
-            // similarities.Add((score, cosineSimilarity, cosineSimilarity2));
-            // var diff = Math.Abs(cosineSimilarity - cosineSimilarity2);
-#endif
+
             yield return (memoryRecord, cosineSimilarity);
         }
     }
@@ -212,7 +215,6 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
         {
             var thisFilter = filter.GetFilters().ToArray();
-            var numOfFilters = thisFilter.Count(x => !string.IsNullOrEmpty(x.Value));
             List<FilterDefinition<MongoDbAtlasMemoryRecord>> filtersArray = new();
             foreach (var singleFilter in thisFilter)
             {
@@ -223,7 +225,8 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
                 filtersArray.Add(condition);
             }
 
-            // All these filter if more than one must be enclosed in an end filter
+            // if we have more than one condition, we need to compose all conditions with AND
+            // but if we have only a single filter we can directly use the filter.
             if (filtersArray.Count > 1)
             {
                 // More than one condition we need to create the condition

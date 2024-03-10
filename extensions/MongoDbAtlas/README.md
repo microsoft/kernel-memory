@@ -101,3 +101,20 @@ You can then connect with the standard connection string
 ```
 mongodb://localhost:27017/?directConnection=true&serverSelectionTimeoutMS=2000
 ```
+
+## Some useful commands
+
+If in local atlas installation tests fails or you have some strange error, it could happen that the search index is corrupted. To manually delete an index, first of all list all available vector and search indexes inside the collection
+
+```
+db.getCollection("_ix__kernel_memory_single_index").aggregate([
+
+{"$listSearchIndexes" : {}}
+])
+```
+
+This will return the list of all indexes that are defined in the collection, you can delete an index using the command
+
+```
+db.runCommand({"dropSearchIndex" : "_ix__kernel_memory_single_index", "id" : "65e4ae1623dd55119d74571e"})
+```

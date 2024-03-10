@@ -22,11 +22,10 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = new CancellationToken())
     {
-        // Delete all document in GridFS that have index as metadata
-        var filter = Builders<GridFSFileInfo>.Filter.Eq("metadata.index", index);
-        // Load all id then delete all id
+        // get the bucket related to this index ant then drop it.
         var bucket = this.GetBucketForIndex(index);
         await bucket.DropAsync(cancellationToken).ConfigureAwait(false);
 
