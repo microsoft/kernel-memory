@@ -39,7 +39,7 @@ public class MongoDbAtlasConfig
     /// </summary>
     /// <param name="mongoConnection">Connection string</param>
     /// <returns></returns>
-    public MongoDbAtlasConfig WithConnection(string mongoConnection)
+    public MongoDbAtlasConfig WithConnectionString(string mongoConnection)
     {
         this.ConnectionString = mongoConnection;
         return this;

@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 /// <summary>
 /// Base storage class for both memory and vector storage classes
 /// </summary>
-public class MongoDbAtlasBaseStorage
+public abstract class MongoDbAtlasBaseStorage
 {
     /// <summary>
     /// Database instance
