@@ -212,8 +212,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         try
         {
-            var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
+            ServiceProvider serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
             this.CompleteServerlessClient(serviceProvider);
 
             // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
@@ -261,16 +260,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
         this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
         this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
+        this.CheckForMissingDependencies();
 
         // Recreate the service provider, in order to have the latest dependencies just configured
         serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
-        var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-        var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-
-        this.CheckForMissingDependencies();
-
-        return new MemoryService(orchestrator, searchClient);
+        return ActivatorUtilities.CreateInstance<MemoryService>(serviceProvider);
     }
 
     private KernelMemoryBuilder CompleteServerlessClient(ServiceProvider serviceProvider)

@@ -25,7 +25,6 @@ public class QdrantMemory : IMemoryDb
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
-    private readonly string _defaultIndex;
 
     /// <summary>
     /// Create new instance
@@ -47,7 +46,6 @@ public class QdrantMemory : IMemoryDb
 
         this._log = log ?? DefaultLogger<QdrantMemory>.Instance;
         this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey);
-        this._defaultIndex = !string.IsNullOrWhiteSpace(config.DefaultIndex) ? config.DefaultIndex : Constants.DefaultIndex;
     }
 
     /// <inheritdoc />
@@ -55,7 +53,7 @@ public class QdrantMemory : IMemoryDb
         string index, int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
+        index = NormalizeIndexName(index);
         return this._qdrantClient.CreateCollectionAsync(index, vectorSize, cancellationToken);
     }
 
@@ -73,13 +71,7 @@ public class QdrantMemory : IMemoryDb
         string index,
         CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
-        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
-        {
-            this._log.LogWarning("The default index cannot be deleted");
-            return Task.CompletedTask;
-        }
-
+        index = NormalizeIndexName(index);
         return this._qdrantClient.DeleteCollectionAsync(index, cancellationToken);
     }
 
@@ -89,7 +81,7 @@ public class QdrantMemory : IMemoryDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
+        index = NormalizeIndexName(index);
 
         QdrantPoint<DefaultQdrantPayload> qdrantPoint;
 
@@ -134,7 +126,7 @@ public class QdrantMemory : IMemoryDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
+        index = NormalizeIndexName(index);
         if (limit <= 0) { limit = int.MaxValue; }
 
         // Remove empty filters
@@ -170,7 +162,7 @@ public class QdrantMemory : IMemoryDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
+        index = NormalizeIndexName(index);
         if (limit <= 0) { limit = int.MaxValue; }
 
         // Remove empty filters
@@ -202,7 +194,7 @@ public class QdrantMemory : IMemoryDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        index = this.NormalizeIndexName(index);
+        index = NormalizeIndexName(index);
 
         QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
             .GetVectorByPayloadIdAsync(index, record.Id, cancellationToken: cancellationToken)
@@ -223,11 +215,11 @@ public class QdrantMemory : IMemoryDb
     private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
     private const string ValidSeparator = "-";
 
-    private string NormalizeIndexName(string index)
+    private static string NormalizeIndexName(string index)
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = this._defaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);

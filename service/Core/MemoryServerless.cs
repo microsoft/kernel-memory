@@ -24,8 +24,8 @@ namespace Microsoft.KernelMemory;
 public class MemoryServerless : IKernelMemory
 {
     private readonly ISearchClient _searchClient;
-
     private readonly InProcessPipelineOrchestrator _orchestrator;
+    private readonly string? _defaultIndexName;
 
     /// <summary>
     /// Synchronous orchestrator used by the serverless memory.
@@ -39,10 +39,12 @@ public class MemoryServerless : IKernelMemory
 
     public MemoryServerless(
         InProcessPipelineOrchestrator orchestrator,
-        ISearchClient searchClient)
+        ISearchClient searchClient,
+        KernelMemoryConfig? config = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
+        this._defaultIndexName = config?.DefaultIndexName;
     }
 
     /// <inheritdoc />
@@ -75,7 +77,7 @@ public class MemoryServerless : IKernelMemory
         DocumentUploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(uploadRequest.Index);
+        var index = IndexExtensions.CleanName(uploadRequest.Index, this._defaultIndexName);
         return this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken);
     }
 
@@ -147,12 +149,14 @@ public class MemoryServerless : IKernelMemory
     /// <inheritdoc />
     public Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         return this._orchestrator.StartIndexDeletionAsync(index: index, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task DeleteDocumentAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         return this._orchestrator.StartDocumentDeletionAsync(documentId: documentId, index: index, cancellationToken);
     }
 
@@ -162,7 +166,7 @@ public class MemoryServerless : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         return await this._orchestrator.IsDocumentReadyAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
     }
 
@@ -172,7 +176,7 @@ public class MemoryServerless : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         try
         {
             DataPipeline? pipeline = await this._orchestrator.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
@@ -201,7 +205,7 @@ public class MemoryServerless : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         return this._searchClient.SearchAsync(
             index: index,
             query: query,
@@ -227,7 +231,7 @@ public class MemoryServerless : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
+        index = IndexExtensions.CleanName(index, this._defaultIndexName);
         return this._searchClient.AskAsync(
             index: index,
             question: question,

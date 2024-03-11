@@ -19,5 +19,4 @@ public class QdrantConfig
 
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
-    public string DefaultIndex { get; set; } = Constants.DefaultIndex;
 }

@@ -128,6 +128,11 @@ public class KernelMemoryConfig
     public string TextGeneratorType { get; set; } = string.Empty;
 
     /// <summary>
+    /// Name of the index to use when none is specified.
+    /// </summary>
+    public string DefaultIndexName { get; set; } = "default";
+
+    /// <summary>
     /// HTTP service authorization settings.
     /// </summary>
     public ServiceAuthorizationConfig ServiceAuthorization { get; set; } = new();

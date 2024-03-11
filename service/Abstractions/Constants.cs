@@ -22,9 +22,6 @@ public static class Constants
     // Internal file used to track progress of asynchronous pipelines
     public const string PipelineStatusFilename = "__pipeline_status.json";
 
-    // Index name used when none is specified
-    public const string DefaultIndex = "default";
-
     // Tags settings
     public const char ReservedEqualsChar = ':';
     public const string ReservedTagsPrefix = "__";
