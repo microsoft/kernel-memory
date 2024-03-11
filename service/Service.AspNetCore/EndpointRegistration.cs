@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
+
 public static class EndpointRegistration
 {
     public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")
     {
-        var group = app.MapGroup(apiPrefix);
+        RouteGroupBuilder group = app.MapGroup(apiPrefix);
 
         // File upload endpoint
         group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
@@ -16,40 +17,40 @@ public static class EndpointRegistration
                 IKernelMemory service,
                 ILogger<IKernelMemory> log,
                 CancellationToken cancellationToken) =>
-        {
-            log.LogTrace("New upload HTTP request");
-
-            // Note: .NET doesn't yet support binding multipart forms including data and files
-            (HttpDocumentUploadRequest input, bool isValid, string errMsg)
-                = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
-                    .ConfigureAwait(false);
-
-            if (!isValid)
             {
-                log.LogError(errMsg);
-                return Results.Problem(detail: errMsg, statusCode: 400);
-            }
+                log.LogTrace("New upload HTTP request");
 
-            try
-            {
-                // UploadRequest => Document
-                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
-                    .ConfigureAwait(false);
-                var url = Constants.HttpUploadStatusEndpointWithParams
-                    .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
-                    .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
-                return Results.Accepted(url, new UploadAccepted
+                // Note: .NET doesn't yet support binding multipart forms including data and files
+                (HttpDocumentUploadRequest input, bool isValid, string errMsg)
+                    = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
+                        .ConfigureAwait(false);
+
+                if (!isValid)
                 {
-                    DocumentId = documentId,
-                    Index = input.Index,
-                    Message = "Document upload completed, ingestion pipeline started"
-                });
-            }
-            catch (Exception e)
-            {
-                return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
-            }
-        })
+                    log.LogError(errMsg);
+                    return Results.Problem(detail: errMsg, statusCode: 400);
+                }
+
+                try
+                {
+                    // UploadRequest => Document
+                    var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
+                        .ConfigureAwait(false);
+                    var url = Constants.HttpUploadStatusEndpointWithParams
+                        .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
+                        .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
+                    return Results.Accepted(url, new UploadAccepted
+                    {
+                        DocumentId = documentId,
+                        Index = input.Index,
+                        Message = "Document upload completed, ingestion pipeline started"
+                    });
+                }
+                catch (Exception e)
+                {
+                    return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
+                }
+            })
             .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
@@ -221,40 +222,40 @@ public static class EndpointRegistration
                 IKernelMemory service,
                 ILogger log,
                 CancellationToken cancellationToken) =>
-        {
-            log.LogTrace("New upload HTTP request");
-
-            // Note: .NET doesn't yet support binding multipart forms including data and files
-            (HttpDocumentUploadRequest input, bool isValid, string errMsg)
-                = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
-                    .ConfigureAwait(false);
-
-            if (!isValid)
             {
-                log.LogError(errMsg);
-                return Results.Problem(detail: errMsg, statusCode: 400);
-            }
+                log.LogTrace("New upload HTTP request");
 
-            try
-            {
-                // UploadRequest => Document
-                var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
-                    .ConfigureAwait(false);
-                var url = Constants.HttpUploadStatusEndpointWithParams
-                    .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
-                    .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
-                return Results.Accepted(url, new UploadAccepted
+                // Note: .NET doesn't yet support binding multipart forms including data and files
+                (HttpDocumentUploadRequest input, bool isValid, string errMsg)
+                    = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
+                        .ConfigureAwait(false);
+
+                if (!isValid)
                 {
-                    DocumentId = documentId,
-                    Index = input.Index,
-                    Message = "Document upload completed, ingestion pipeline started"
-                });
-            }
-            catch (Exception e)
-            {
-                return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
-            }
-        })
+                    log.LogError(errMsg);
+                    return Results.Problem(detail: errMsg, statusCode: 400);
+                }
+
+                try
+                {
+                    // UploadRequest => Document
+                    var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
+                        .ConfigureAwait(false);
+                    var url = Constants.HttpUploadStatusEndpointWithParams
+                        .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
+                        .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
+                    return Results.Accepted(url, new UploadAccepted
+                    {
+                        DocumentId = documentId,
+                        Index = input.Index,
+                        Message = "Document upload completed, ingestion pipeline started"
+                    });
+                }
+                catch (Exception e)
+                {
+                    return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
+                }
+            })
             .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)

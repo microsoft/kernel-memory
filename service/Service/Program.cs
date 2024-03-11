@@ -74,7 +74,7 @@ internal static class Program
         int asyncHandlersCount = 0;
         appBuilder.AddKernelMemory(builder =>
         {
-            var mb = builder.FromAppSettings().WithoutDefaultHandlers();
+            IKernelMemoryBuilder mb = builder.FromAppSettings().WithoutDefaultHandlers();
             asyncHandlersCount = AddHandlersToHostingApp(config, mb, appBuilder);
             return mb;
         });
@@ -93,13 +93,13 @@ internal static class Program
             var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
 
             app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
-                                                     "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                                                                   - s_start.ToUnixTimeSeconds()) + " secs " +
-                                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
-            .AddEndpointFilter(authFilter)
-            .Produces<string>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+                                             "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                                                           - s_start.ToUnixTimeSeconds()) + " secs " +
+                                             $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+                .AddEndpointFilter(authFilter)
+                .Produces<string>(StatusCodes.Status200OK)
+                .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+                .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
             app.AddKernelMemoryEndpoints()
