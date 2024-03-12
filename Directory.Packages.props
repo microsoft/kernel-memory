@@ -37,7 +37,7 @@
   </ItemGroup>
   <!-- Kernel Memory -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.33.240312.1" />
+    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.33.240312.2" />
     <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.3.3" />
     <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
