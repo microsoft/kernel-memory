@@ -152,12 +152,12 @@ public class TextExtractionHandler : IPipelineStepHandler
                 content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 break;
 
-            case MimeTypes.MsWord:
+            case MimeTypes.MsWordX:
                 this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
                 content = new MsWordDecoder().ExtractContent(fileContent);
                 break;
 
-            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsPowerPointX:
                 this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
                 content = new MsPowerPointDecoder().ExtractContent(fileContent,
                     withSlideNumber: true,
@@ -165,7 +165,7 @@ public class TextExtractionHandler : IPipelineStepHandler
                     skipHiddenSlides: true);
                 break;
 
-            case MimeTypes.MsExcel:
+            case MimeTypes.MsExcelX:
                 this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
                 content = new MsExcelDecoder().ExtractContent(fileContent);
                 break;
