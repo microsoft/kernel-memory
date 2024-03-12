@@ -71,8 +71,7 @@ public class MemoryWebClient : IKernelMemory
         DocumentUploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(uploadRequest.Index);
-        return this.ImportInternalAsync(index, uploadRequest, cancellationToken);
+        return this.ImportInternalAsync(uploadRequest.Index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -152,7 +151,6 @@ public class MemoryWebClient : IKernelMemory
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpDeleteIndexEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
@@ -181,7 +179,6 @@ public class MemoryWebClient : IKernelMemory
             throw new KernelMemoryException("The document ID is empty");
         }
 
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpDeleteDocumentEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
@@ -219,7 +216,6 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpUploadStatusEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
@@ -254,7 +250,6 @@ public class MemoryWebClient : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
         SearchQuery request = new()
         {
             Index = index,
@@ -288,7 +283,6 @@ public class MemoryWebClient : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
         MemoryQuery request = new()
         {
             Index = index,

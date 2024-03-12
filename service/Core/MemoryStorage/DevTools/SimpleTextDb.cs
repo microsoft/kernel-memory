@@ -188,7 +188,7 @@ public class SimpleTextDb : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);

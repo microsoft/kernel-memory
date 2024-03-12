@@ -260,8 +260,6 @@ internal static class WebAPIEndpoints
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New document status HTTP request");
-                    index = IndexExtensions.CleanName(index);
-
                     if (string.IsNullOrEmpty(documentId))
                     {
                         return Results.Problem(detail: $"'{Constants.WebServiceDocumentIdField}' query parameter is missing or has no value", statusCode: 400);

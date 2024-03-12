@@ -75,7 +75,7 @@ internal sealed class ServiceConfiguration
         }
 
         // Required by ctors expecting KernelMemoryConfig via DI
-        builder.AddSingleton(this._memoryConfiguration);
+        builder.AddSingleton<KernelMemoryConfig>(this._memoryConfiguration);
 
         this.ConfigureMimeTypeDetectionDependency(builder);
 

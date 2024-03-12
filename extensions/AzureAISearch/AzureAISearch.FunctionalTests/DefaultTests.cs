@@ -18,6 +18,7 @@ public class DefaultTests : BaseFunctionalTestCase
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
         this._memory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             .WithAzureAISearchMemoryDb(this.AzureAiSearchConfig.Endpoint, this.AzureAiSearchConfig.APIKey)
@@ -64,6 +65,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "AzAISearch")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
     }
 
     [Fact]

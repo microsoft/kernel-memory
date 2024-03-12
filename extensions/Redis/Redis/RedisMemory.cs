@@ -401,7 +401,7 @@ public sealed class RedisMemory : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;

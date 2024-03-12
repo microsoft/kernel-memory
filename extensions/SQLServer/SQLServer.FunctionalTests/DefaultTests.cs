@@ -24,6 +24,7 @@ public class DefaultTests : BaseFunctionalTestCase
         SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
@@ -72,6 +73,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "SQLServer")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
     }
 
     [Fact]

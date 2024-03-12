@@ -60,6 +60,13 @@ public class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "WebService")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default");
+    }
+
+    [Fact]
+    [Trait("Category", "WebService")]
     public async Task ItDeletesIndexes()
     {
         await IndexDeletionTest.ItDeletesIndexes(this._memory, this.Log);
