@@ -33,7 +33,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
     {
         if (multiCollection)
         {
-            this.MongoDbAtlasConfig.DatabaseName += "StorageTests";
+            this.MongoDbAtlasConfig.DatabaseName += "StorageTestsMultiCollection";
             this.MongoDbAtlasConfig.UseSingleCollectionForVectorSearch = false;
         }
         else

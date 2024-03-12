@@ -28,7 +28,7 @@ internal sealed class MongoDbAtlasSearchHelper
     /// <param name="dbName"></param>
     public MongoDbAtlasSearchHelper(string connection, string dbName)
     {
-        var client = new MongoClient(connection);
+        var client = MongoDbAtlasDatabaseHelper.GetClient(connection);
         this._db = client.GetDatabase(dbName);
     }
 
