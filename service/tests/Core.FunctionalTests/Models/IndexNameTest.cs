@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Models;
 
 namespace FunctionalTests.Models;
