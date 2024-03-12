@@ -12,6 +12,7 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -82,7 +83,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadRequest.Files.Count, uploadRequest.DocumentId);
 
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
 
         var pipeline = this.PrepareNewDocumentUpload(
             index: index,
@@ -126,7 +127,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         TagCollection tags,
         IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
 
         filesToUpload ??= new List<DocumentUploadRequest.UploadedFile>();
 
@@ -146,7 +147,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
 
         try
         {
@@ -176,7 +177,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
 
         try
         {
@@ -192,7 +193,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<bool> IsDocumentReadyAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
 
         try
         {
@@ -215,28 +216,28 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexExtensions.CleanName(pipeline.Index, this._defaultIndexName);
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return (await this.ReadFileAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false)).ToString();
     }
 
     ///<inheritdoc />
     public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexExtensions.CleanName(pipeline.Index, this._defaultIndexName);
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken);
     }
 
     ///<inheritdoc />
     public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexExtensions.CleanName(pipeline.Index, this._defaultIndexName);
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return this.WriteFileAsync(pipeline, fileName, new BinaryData(fileContent), cancellationToken);
     }
 
     ///<inheritdoc />
     public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexExtensions.CleanName(pipeline.Index, this._defaultIndexName);
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, fileName, fileContent.ToStream(), cancellationToken);
     }
 
@@ -264,7 +265,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
         DataPipeline pipeline = PrepareIndexDeletion(index: index);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
@@ -272,7 +273,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index, this._defaultIndexName);
+        index = IndexName.CleanName(index, this._defaultIndexName);
         DataPipeline pipeline = PrepareDocumentDeletion(index: index, documentId: documentId);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }

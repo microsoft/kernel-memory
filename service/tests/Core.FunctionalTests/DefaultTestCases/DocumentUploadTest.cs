@@ -16,10 +16,12 @@ public static class DocumentUploadTest
             documentId: Id,
             steps: Constants.PipelineWithoutSummary);
 
+        var count = 0;
         while (!await memory.IsDocumentReadyAsync(documentId: Id))
         {
+            Assert.True(count++ <= 30, "Document import timed out");
             log("Waiting for memory ingestion to complete...");
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         // Act

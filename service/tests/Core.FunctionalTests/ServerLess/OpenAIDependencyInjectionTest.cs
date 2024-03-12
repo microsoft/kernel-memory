@@ -28,6 +28,7 @@ public class OpenAIDependencyInjectionTest : BaseFunctionalTestCase
 
         // Assert
         var answer = await memory.AskAsync("What year is it?");
+        Console.WriteLine(answer.Result);
         Assert.Contains("2099", answer.Result);
     }
 

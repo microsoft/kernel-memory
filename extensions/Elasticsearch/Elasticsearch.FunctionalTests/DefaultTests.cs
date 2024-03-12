@@ -25,6 +25,7 @@ public class DefaultTests : BaseFunctionalTestCase
         this._elasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
@@ -73,6 +74,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "Elasticsearch")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
     }
 
     [Fact]

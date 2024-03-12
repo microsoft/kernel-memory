@@ -78,7 +78,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		Directory.Packages.props = Directory.Packages.props
 		nuget-package.props = nuget-package.props
 		code-analysis.props = code-analysis.props
-		build.py = build.py
 		nuget.config = nuget.config
 		Dockerfile = Dockerfile
 		.dockerignore = .dockerignore

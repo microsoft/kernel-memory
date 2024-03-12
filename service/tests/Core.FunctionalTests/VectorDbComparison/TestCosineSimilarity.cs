@@ -42,10 +42,13 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         var postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
-        // TODO: revisit RedisMemory not to need this, e.g. not to connect in ctor
-        IConnectionMultiplexer redisMux;
-        if (RedisEnabled) { redisMux = await ConnectionMultiplexer.ConnectAsync(this.RedisConfig.ConnectionString); }
-        var redis = new RedisMemory(this.RedisConfig, redisMux, embeddingGenerator);
+        RedisMemory? redis = null;
+        if (RedisEnabled)
+        {
+            // TODO: revisit RedisMemory not to need this, e.g. not to connect in ctor
+            var redisMux = await ConnectionMultiplexer.ConnectAsync(this.RedisConfig.ConnectionString);
+            redis = new RedisMemory(this.RedisConfig, redisMux, embeddingGenerator);
+        }
 
         // == Delete indexes left over
 

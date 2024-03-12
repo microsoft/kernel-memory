@@ -9,7 +9,7 @@ public class MemoryQuery
 {
     [JsonPropertyName("index")]
     [JsonPropertyOrder(0)]
-    public string Index { get; set; } = string.Empty;
+    public string? Index { get; set; } = string.Empty;
 
     [JsonPropertyName("question")]
     [JsonPropertyOrder(1)]
