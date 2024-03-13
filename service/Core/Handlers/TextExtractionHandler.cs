@@ -170,6 +170,17 @@ public class TextExtractionHandler : IPipelineStepHandler
                 content = new MsExcelDecoder().ExtractContent(fileContent);
                 break;
 
+            case MimeTypes.MsWord:
+            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsExcel:
+                skipFile = true;
+                uploadedFile.Log(
+                    this,
+                    "Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx, xlsx or pptx). Ignoring the file."
+                );
+                this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
+                break;
+
             case MimeTypes.Pdf:
                 this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
                 content = new PdfDecoder().ExtractContent(fileContent);

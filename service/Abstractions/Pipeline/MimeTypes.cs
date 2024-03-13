@@ -73,11 +73,11 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.Htm, MimeTypes.Html },
             { FileExtensions.Html, MimeTypes.Html },
             { FileExtensions.WebPageUrl, MimeTypes.WebPageUrl },
-            // { FileExtensions.MsWord, MimeTypes.MsWord }, // TODO: add support for legacy doc files
+            { FileExtensions.MsWord, MimeTypes.MsWord }, // TODO: add support for legacy doc files
             { FileExtensions.MsWordX, MimeTypes.MsWordX },
-            // { FileExtensions.MsPowerPoint, MimeTypes.MsPowerPoint }, // TODO: add support for legacy ppt files
+            { FileExtensions.MsPowerPoint, MimeTypes.MsPowerPoint }, // TODO: add support for legacy ppt files
             { FileExtensions.MsPowerPointX, MimeTypes.MsPowerPointX },
-            // { FileExtensions.MsExcel, MimeTypes.MsExcel }, // TODO: add support for legacy xls files
+            { FileExtensions.MsExcel, MimeTypes.MsExcel }, // TODO: add support for legacy xls files
             { FileExtensions.MsExcelX, MimeTypes.MsExcelX },
             { FileExtensions.PlainText, MimeTypes.PlainText },
             { FileExtensions.Pdf, MimeTypes.Pdf },
