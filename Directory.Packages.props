@@ -43,8 +43,8 @@
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.4.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.4.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.6.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.6.1" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
