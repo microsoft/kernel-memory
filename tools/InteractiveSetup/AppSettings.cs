@@ -76,6 +76,10 @@ public static class AppSettings
 
     private static JObject GetGlobalConfig(bool includeDefaults = false)
     {
+        if (!File.Exists(DevelopmentSettingsFile))
+        {
+            CreateFileIfNotExists();
+        }
         string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)

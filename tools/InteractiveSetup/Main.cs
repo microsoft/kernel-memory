@@ -626,9 +626,12 @@ public static class Main
             };
         }
 
+        var queueFolderOnDisk = SetupUI.AskOpenQuestion("Directory where to store queue messages, empty to use in memory volatile queue", "", optional: true);
+
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "Directory", SetupUI.AskOpenQuestion("Directory where to store queue messages", config["Directory"].ToString()) }
+            { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
+            { "Directory", queueFolderOnDisk }
         });
     }
 
@@ -732,9 +735,12 @@ public static class Main
             };
         }
 
+        var queueFolderOnDisk = SetupUI.AskOpenQuestion("Directory where to store files, empty to use in memory volatile storage", "", optional: true);
+
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "Directory", SetupUI.AskOpenQuestion("Directory where to store files", config["Directory"].ToString()) }
+            { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
+            { "Directory", queueFolderOnDisk }
         });
     }
 
@@ -860,9 +866,12 @@ public static class Main
             };
         }
 
+        var queueFolderOnDisk = SetupUI.AskOpenQuestion("Directory where to store vectors, empty to use in memory volatile memory", "", optional: true);
+
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "Directory", SetupUI.AskOpenQuestion("Directory where to store vectors", config["Directory"].ToString()) }
+            { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
+            { "Directory", queueFolderOnDisk }
         });
     }
 
