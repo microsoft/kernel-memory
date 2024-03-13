@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.AzureOpenAI</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.AzureOpenAI</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;CS1591;SKEXP0011;</NoWarn>
+        <NoWarn>$(NoWarn);CA1724;CS1591;SKEXP0010;SKEXP0011;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

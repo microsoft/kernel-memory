@@ -103,11 +103,11 @@ public static partial class DependencyInjection
         // Build generic type: HandlerAsAHostedService<THandler>
         Type handlerAsAHostedServiceTHandler = typeof(HandlerAsAHostedService<>).MakeGenericType(tHandler);
 
-        Func<IServiceProvider, IHostedService> implementationFactory =
-            serviceProvider => (IHostedService)ActivatorUtilities.CreateInstance(serviceProvider, handlerAsAHostedServiceTHandler, stepName);
+        IHostedService ImplementationFactory(IServiceProvider serviceProvider)
+            => (IHostedService)ActivatorUtilities.CreateInstance(serviceProvider, handlerAsAHostedServiceTHandler, stepName);
 
         // See https://github.com/dotnet/runtime/issues/38751 for troubleshooting
-        services.Add(ServiceDescriptor.Singleton<IHostedService>(implementationFactory));
+        services.Add(ServiceDescriptor.Singleton<IHostedService>((Func<IServiceProvider, IHostedService>)ImplementationFactory));
 
         return services;
     }
