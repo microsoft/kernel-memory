@@ -152,7 +152,6 @@ public class TextExtractionHandler : IPipelineStepHandler
                 content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 break;
 
-#if KernelMemoryDev
             case MimeTypes.MsWordX:
                 this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
                 content = new MsWordDecoder().ExtractContent(fileContent);
@@ -181,30 +180,6 @@ public class TextExtractionHandler : IPipelineStepHandler
                 );
                 this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
                 break;
-#else
-            case MimeTypes.MsWord:
-            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": // TODO: remove this constant after upgrades
-                this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
-                content = new MsWordDecoder().ExtractContent(fileContent);
-                break;
-
-            case MimeTypes.MsPowerPoint:
-            case "application/vnd.ms-powerpoint": // TODO: remove this constant after upgrades
-            case "application/vnd.openxmlformats-officedocument.presentationml.presentation": // TODO: remove this constant after upgrades
-                this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
-                content = new MsPowerPointDecoder().ExtractContent(fileContent,
-                    withSlideNumber: true,
-                    withEndOfSlideMarker: false,
-                    skipHiddenSlides: true);
-                break;
-
-            case MimeTypes.MsExcel:
-            case "application/vnd.ms-excel": // TODO: remove this constant after upgrades
-            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": // TODO: remove this constant after upgrades
-                this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
-                content = new MsExcelDecoder().ExtractContent(fileContent);
-                break;
-#endif
 
             case MimeTypes.Pdf:
                 this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
