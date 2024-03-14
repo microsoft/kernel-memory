@@ -448,5 +448,5 @@ We also welcome PR contributions to support more languages.
 
 # Contributors
 
-<!-- readme: collaborators,<alexchaomander>,contributors -start -->
-<!-- readme: collaborators,<alexchaomander>,contributors -end -->
+<!-- readme: collaborators,contributors -start -->
+<!-- readme: collaborators,contributors -end -->
