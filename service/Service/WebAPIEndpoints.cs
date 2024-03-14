@@ -58,12 +58,14 @@ internal static class WebAPIEndpoints
                 ILogger<WebAPIEndpoint> log,
                 CancellationToken cancellationToken) =>
             {
-                log.LogTrace("New upload HTTP request");
+                log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
 
                 // Note: .NET doesn't yet support binding multipart forms including data and files
                 (HttpDocumentUploadRequest input, bool isValid, string errMsg)
                     = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
                         .ConfigureAwait(false);
+
+                log.LogTrace("Index '{0}'", input.Index);
 
                 if (!isValid)
                 {
@@ -76,6 +78,9 @@ internal static class WebAPIEndpoints
                     // UploadRequest => Document
                     var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
                         .ConfigureAwait(false);
+
+                    log.LogTrace("Doc Id '{1}'", documentId);
+
                     var url = Constants.HttpUploadStatusEndpointWithParams
                         .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
                         .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
@@ -140,7 +145,7 @@ internal static class WebAPIEndpoints
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request");
+                    log.LogTrace("New delete document HTTP request, index '{0}'", index);
                     await service.DeleteIndexAsync(index: index, cancellationToken)
                         .ConfigureAwait(false);
                     // There's no API to check the index deletion progress, so the URL is empty
@@ -171,7 +176,7 @@ internal static class WebAPIEndpoints
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request");
+                    log.LogTrace("New delete document HTTP request, index '{0}'", index);
                     await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
@@ -201,7 +206,7 @@ internal static class WebAPIEndpoints
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New search request");
+                    log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
                     MemoryAnswer answer = await service.AskAsync(
                             question: query.Question,
                             index: query.Index,
@@ -228,7 +233,7 @@ internal static class WebAPIEndpoints
                     ILogger<WebAPIEndpoint> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New search HTTP request");
+                    log.LogTrace("New search HTTP request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
                     SearchResult answer = await service.SearchAsync(
                             query: query.Query,
                             index: query.Index,

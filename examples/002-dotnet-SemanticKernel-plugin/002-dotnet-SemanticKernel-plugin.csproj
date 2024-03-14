@@ -8,11 +8,11 @@
         <RootNamespace/>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
-        <NoWarn>$(NoWarn);CA1050,CA1859</NoWarn>
+        <NoWarn>$(NoWarn);CA1050;CA1859;CA2000;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.6.1" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.6.2" />
         <PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.34.240313.1" />
     </ItemGroup>
 
