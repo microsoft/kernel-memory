@@ -445,3 +445,8 @@ A .NET Web Client and a Semantic Kernel plugin are available, see the nugets pac
 
 A python package with a Web Client and Semantic Kernel plugin will soon be available.
 We also welcome PR contributions to support more languages.
+
+# Contributors
+
+<!-- readme: collaborators,<alexchaomander>,contributors -start -->
+<!-- readme: collaborators,<alexchaomander>,contributors -end -->
