@@ -10,19 +10,6 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 /// </summary>
 internal static class MongoDbAtlasDatabaseHelper
 {
-    /// <summary>
-    /// From a connection string to MongoDB it get a key that can uniquely identify the
-    /// connection. Usually the key is related to the host part of the connection string.
-    /// </summary>
-    /// <param name="connectionString"></param>
-    /// <returns></returns>
-    private static string GetConnectionKey(string connectionString)
-    {
-        MongoUrlBuilder mongoUrlBuilder = new (connectionString);
-        //now we can simply use the host and the username to create a unique key
-        return $"{mongoUrlBuilder.Server.Host}:{mongoUrlBuilder.Server.Port}:{mongoUrlBuilder.Username ?? ""}";
-    }
-
     private static readonly ConcurrentDictionary<string, IMongoClient> s_mongoClientCache = new();
 
     internal static IMongoDatabase GetDatabase(string connectionString, string databaseName)
@@ -49,5 +36,18 @@ internal static class MongoDbAtlasDatabaseHelper
         }
 
         return client;
+    }
+
+    /// <summary>
+    /// From a connection string to MongoDB it get a key that can uniquely identify the
+    /// connection. Usually the key is related to the host part of the connection string.
+    /// </summary>
+    /// <param name="connectionString"></param>
+    /// <returns></returns>
+    private static string GetConnectionKey(string connectionString)
+    {
+        MongoUrlBuilder mongoUrlBuilder = new(connectionString);
+        // Now we can simply use the host and the username to create a unique key
+        return $"{mongoUrlBuilder.Server.Host}:{mongoUrlBuilder.Server.Port}:{mongoUrlBuilder.Username ?? ""}";
     }
 }

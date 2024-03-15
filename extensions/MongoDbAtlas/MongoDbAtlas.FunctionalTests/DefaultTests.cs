@@ -108,6 +108,13 @@ public abstract class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "MongoDbAtlas")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
+    }
+
+    [Fact]
+    [Trait("Category", "MongoDbAtlas")]
     public async Task ItDeletesIndexes()
     {
         await IndexDeletionTest.ItDeletesIndexes(this._memory, this.Log);

@@ -293,9 +293,6 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
     /// we need to manually recompute the cosine similarity distance manually
     /// for each vector to have a real cosine similarity distance returned.
     /// </summary>
-    /// <param name="vec1"></param>
-    /// <param name="vec2"></param>
-    /// <returns></returns>
     private static double CosineSim(Embedding vec1, float[] vec2)
     {
         var v1 = vec1.Data.ToArray();
@@ -344,9 +341,9 @@ public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
 
     private static string NormalizeIndexName(string indexName)
     {
-        if (string.IsNullOrEmpty(indexName))
+        if (string.IsNullOrWhiteSpace(indexName))
         {
-            return Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(indexName), "The index name is empty");
         }
 
         return indexName.Replace("_", "-", StringComparison.OrdinalIgnoreCase);

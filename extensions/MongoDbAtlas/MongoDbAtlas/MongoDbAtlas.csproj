@@ -26,7 +26,7 @@
     <Import Project="../../../nuget-package.props"/>
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
         <Product>MongoDb Atlas connector for Kernel Memory</Product>
         <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>
