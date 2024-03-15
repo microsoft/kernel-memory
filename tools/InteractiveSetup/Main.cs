@@ -626,8 +626,6 @@ public static class Main
             };
         }
 
-        var queueFolderOnDisk = SetupUI.AskOpenQuestion("Directory where to store queue messages, empty to use in memory volatile queue", "", optional: true);
-
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
