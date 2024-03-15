@@ -860,8 +860,6 @@ public static class Main
             };
         }
 
-        var queueFolderOnDisk = SetupUI.AskOpenQuestion("Directory where to store vectors, empty to use in memory volatile memory", "", optional: true);
-
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
             { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
