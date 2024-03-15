@@ -862,8 +862,7 @@ public static class Main
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
         {
-            { "StorageType", string.IsNullOrEmpty(queueFolderOnDisk) ? "Volatile" : "Disk" },
-            { "Directory", queueFolderOnDisk }
+            { "Directory", SetupUI.AskOpenQuestion("Directory where to store vectors", config["Directory"].ToString()) }
         });
     }
 
