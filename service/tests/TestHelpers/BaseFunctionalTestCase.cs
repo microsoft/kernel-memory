@@ -6,6 +6,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MongoDbAtlas;
 using Xunit.Abstractions;
 
 namespace Microsoft.TestHelpers;
@@ -24,6 +25,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly QdrantConfig QdrantConfig;
     protected readonly PostgresConfig PostgresConfig;
     protected readonly RedisConfig RedisConfig;
+    protected readonly MongoDbAtlasConfig MongoDbAtlasConfig;
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
 
@@ -41,6 +43,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.QdrantConfig = cfg.GetSection("KernelMemory:Services:Qdrant").Get<QdrantConfig>() ?? new();
         this.PostgresConfig = cfg.GetSection("KernelMemory:Services:Postgres").Get<PostgresConfig>() ?? new();
         this.RedisConfig = cfg.GetSection("KernelMemory:Services:Redis").Get<RedisConfig>() ?? new();
+        this.MongoDbAtlasConfig = cfg.GetSection("KernelMemory:Services:MongoDbAtlas").Get<MongoDbAtlasConfig>() ?? new();
         this.SimpleVectorDbConfig = cfg.GetSection("KernelMemory:Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
         this.LlamaSharpConfig = cfg.GetSection("KernelMemory:Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
     }

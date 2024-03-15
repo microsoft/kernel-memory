@@ -12,11 +12,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core.csproj"/>
-        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj"/>
-        <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj"/>
+        <ProjectReference Include="..\..\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
+        <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
+        <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -24,12 +25,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="Xunit.DependencyInjection"/>
-        <PackageReference Include="Xunit.DependencyInjection.Logging"/>
-        <PackageReference Include="xunit"/>
-        <PackageReference Include="xunit.abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Xunit.DependencyInjection" />
+        <PackageReference Include="Xunit.DependencyInjection.Logging" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.abstractions" />
         <PackageReference Include="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

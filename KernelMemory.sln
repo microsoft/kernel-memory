@@ -115,6 +115,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-redis.sh = tools\run-redis.sh
 		tools\run-mssql.sh = tools\run-mssql.sh
 		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
+		tools\run-mongodb-atlas.sh = tools\run-mongodb-atlas.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -225,6 +226,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLServer.FunctionalTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C089DE42-9D39-4633-AC0C-5034BA0B98E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas", "extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj", "{4A539320-EB49-4688-82E1-4FA0ADBB3810}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas.FunctionalTests", "extensions\MongoDbAtlas\MongoDbAtlas.FunctionalTests\MongoDbAtlas.FunctionalTests.csproj", "{8A602227-B291-4F1B-ACB8-237F49501B6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -291,6 +296,8 @@ Global
 		{47CEEA8F-7858-4635-B902-4C704CF55EA0} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{48E79819-1E9E-4075-90DA-BAEC761C89B2} = {B8976338-7CDC-47AE-8502-C2FBAFBEBD68}
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{4A539320-EB49-4688-82E1-4FA0ADBB3810} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{8A602227-B291-4F1B-ACB8-237F49501B6A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -472,5 +479,12 @@ Global
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A539320-EB49-4688-82E1-4FA0ADBB3810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A539320-EB49-4688-82E1-4FA0ADBB3810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A539320-EB49-4688-82E1-4FA0ADBB3810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A539320-EB49-4688-82E1-4FA0ADBB3810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

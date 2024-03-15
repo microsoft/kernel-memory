@@ -80,6 +80,7 @@ public static class AppSettings
         {
             CreateFileIfNotExists();
         }
+
         string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
