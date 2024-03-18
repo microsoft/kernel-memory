@@ -452,10 +452,6 @@ We also welcome PR contributions to support more languages.
 githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
 -->
 
-
-> github-contributors-list@1.2.5 start
-> ./bin/githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
-
 [<img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110">](https://github.com/afederici75) |[<img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110">](https://github.com/alexibraimov) |[<img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110">](https://github.com/alkampfergit) |[<img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110">](https://github.com/amomra) |[<img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110">](https://github.com/anthonypuppo) |[<img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110">](https://github.com/cherchyk) |
 :---: |:---: |:---: |:---: |:---: |:---: |
 [afederici75](https://github.com/afederici75) |[alexibraimov](https://github.com/alexibraimov) |[alkampfergit](https://github.com/alkampfergit) |[amomra](https://github.com/amomra) |[anthonypuppo](https://github.com/anthonypuppo) |[cherchyk](https://github.com/cherchyk) |
