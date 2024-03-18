@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if KernelMemoryDev // This code requires the next release (use KernelMemoryDev.sln)
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.Tokenizers;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var endpoint = Env.Var("AOAI_ENDPOINT");
@@ -13,29 +14,24 @@ var config = new SemanticKernelConfig();
 var tokenizer = new DefaultGPTTokenizer();
 
 var memory = new KernelMemoryBuilder()
-    .WithSemanticKernelTextGenerationService(new AzureOpenAIChatCompletionService(chatDeployment, endpoint, apiKey)
-                                            , config
-                                            , tokenizer)
-    .WithSemanticKernelTextEmbeddingGenerationService(new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey)
-                                            , config
-                                            , tokenizer)
+    .WithSemanticKernelTextGenerationService(
+        new AzureOpenAIChatCompletionService(chatDeployment, endpoint, apiKey), config, tokenizer)
+    .WithSemanticKernelTextEmbeddingGenerationService(
+        new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey), config, tokenizer)
     .Build<MemoryServerless>();
 
-// using document form 203-dotnet-using-core-nuget
+await memory.ImportDocumentAsync("story.docx", documentId: "doc001");
 
-await memory.ImportDocumentAsync("sample-SK-Readme.pdf", documentId: "doc001");
-
-var question = "What's Semantic Kernel?";
-
+var question = "What's radiant mold?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);
-
 Console.WriteLine($"\nAnswer: {answer.Result}");
 
 Console.WriteLine("\n\n  Sources:\n");
-
 foreach (var x in answer.RelevantSources)
 {
     Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }
+
+#endif

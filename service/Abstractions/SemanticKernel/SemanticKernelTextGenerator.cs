@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
+
 namespace Microsoft.KernelMemory.AI;
 
 internal class SemanticKernelTextGenerator : ITextGenerator
@@ -15,7 +16,11 @@ internal class SemanticKernelTextGenerator : ITextGenerator
     private readonly ITextTokenizer _tokenizer;
     private readonly SemanticKernelConfig _config;
 
+    /// <inheritdoc />
     public int MaxTokenTotal { get; }
+
+    /// <inheritdoc />
+    public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 
     public SemanticKernelTextGenerator(ITextGenerationService service, SemanticKernelConfig config, ITextTokenizer tokenizer)
     {
@@ -47,7 +52,7 @@ internal class SemanticKernelTextGenerator : ITextGenerator
     {
         var settings = new PromptExecutionSettings
         {
-            ExtensionData = new()
+            ExtensionData = new Dictionary<string, object>()
             {
                 [nameof(options.Temperature)] = options.Temperature,
                 [nameof(options.TopP)] = options.TopP,
@@ -66,7 +71,4 @@ internal class SemanticKernelTextGenerator : ITextGenerator
 
         return settings;
     }
-
-    /// <inheritdoc />
-    public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 }

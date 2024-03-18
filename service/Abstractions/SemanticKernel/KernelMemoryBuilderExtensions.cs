@@ -2,9 +2,8 @@
 
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
-using Microsoft.SemanticKernel.TextGeneration;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory;
 
