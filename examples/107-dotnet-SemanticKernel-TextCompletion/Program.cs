@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if KernelMemoryDev // This code requires the next release (use KernelMemoryDev.sln)
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var endpoint = Env.Var("AOAI_ENDPOINT");
@@ -20,9 +20,9 @@ var memory = new KernelMemoryBuilder()
         new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey), config, tokenizer)
     .Build<MemoryServerless>();
 
-await memory.ImportDocumentAsync("story.docx", documentId: "doc001");
+await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/COMMUNITY.md", documentId: "doc001");
 
-var question = "What's radiant mold?";
+var question = "How can I join Kernel Memory's Discord?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);
@@ -33,5 +33,3 @@ foreach (var x in answer.RelevantSources)
 {
     Console.WriteLine($"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
 }
-
-#endif
