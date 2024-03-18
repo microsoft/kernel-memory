@@ -230,6 +230,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas", "extensions\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas.FunctionalTests", "extensions\MongoDbAtlas\MongoDbAtlas.FunctionalTests\MongoDbAtlas.FunctionalTests.csproj", "{8A602227-B291-4F1B-ACB8-237F49501B6A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "107-dotnet-SemanticKernel-TextCompletion", "examples\107-dotnet-SemanticKernel-TextCompletion\107-dotnet-SemanticKernel-TextCompletion.csproj", "{494B8590-F0B2-4D40-A895-F9D7BDF26250}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -298,6 +300,7 @@ Global
 		{A5CE3CB2-F746-4832-B239-1A3226F9BD48} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{4A539320-EB49-4688-82E1-4FA0ADBB3810} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8A602227-B291-4F1B-ACB8-237F49501B6A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{494B8590-F0B2-4D40-A895-F9D7BDF26250} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -486,5 +489,8 @@ Global
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A602227-B291-4F1B-ACB8-237F49501B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
