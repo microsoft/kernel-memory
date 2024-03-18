@@ -11,7 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\service\Core\Core.csproj"/>
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
     </ItemGroup>
 
 </Project>

@@ -13,14 +13,14 @@ public static class Constants
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
 
+    // Form field containing the list of tags
+    public const string WebServiceTagsField = "tags";
+
     // Form field containing the list of pipeline steps
     public const string WebServiceStepsField = "steps";
 
     // Internal file used to track progress of asynchronous pipelines
     public const string PipelineStatusFilename = "__pipeline_status.json";
-
-    // Index name used when none is specified
-    public const string DefaultIndex = "default";
 
     // Tags settings
     public const char ReservedEqualsChar = ':';
@@ -30,6 +30,8 @@ public static class Constants
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
+    public const string ReservedFilePartitionNumberTag = $"{ReservedTagsPrefix}part_n";
+    public const string ReservedFileSectionNumberTag = $"{ReservedTagsPrefix}sect_n";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
     public const string ReservedSyntheticTypeTag = $"{ReservedTagsPrefix}synth";
 
@@ -37,6 +39,7 @@ public static class Constants
     public const string TagsSyntheticSummary = "summary";
 
     // Properties stored inside the payload
+    public const string ReservedPayloadSchemaVersionField = "schema";
     public const string ReservedPayloadTextField = "text";
     public const string ReservedPayloadFileNameField = "file";
     public const string ReservedPayloadUrlField = "url";

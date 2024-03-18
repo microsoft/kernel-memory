@@ -155,5 +155,11 @@ public class TagCollection : IDictionary<string, List<string?>>
         {
             throw new KernelMemoryException("A tag name cannot contain the '=' char");
         }
+
+        // ':' is reserved for backward/forward compatibility
+        if (key.Contains(':'))
+        {
+            throw new KernelMemoryException("A tag name cannot contain the ':' char");
+        }
     }
 }

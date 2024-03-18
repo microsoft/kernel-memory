@@ -71,8 +71,7 @@ public class MemoryWebClient : IKernelMemory
         DocumentUploadRequest uploadRequest,
         CancellationToken cancellationToken = default)
     {
-        var index = IndexExtensions.CleanName(uploadRequest.Index);
-        return this.ImportInternalAsync(index, uploadRequest, cancellationToken);
+        return this.ImportInternalAsync(uploadRequest.Index, uploadRequest, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -152,7 +151,6 @@ public class MemoryWebClient : IKernelMemory
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpDeleteIndexEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
@@ -181,7 +179,6 @@ public class MemoryWebClient : IKernelMemory
             throw new KernelMemoryException("The document ID is empty");
         }
 
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpDeleteDocumentEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
@@ -219,7 +216,6 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        index = IndexExtensions.CleanName(index);
         var url = Constants.HttpUploadStatusEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, index)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
@@ -254,7 +250,6 @@ public class MemoryWebClient : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
         SearchQuery request = new()
         {
             Index = index,
@@ -288,7 +283,6 @@ public class MemoryWebClient : IKernelMemory
             filters.Add(filter);
         }
 
-        index = IndexExtensions.CleanName(index);
         MemoryQuery request = new()
         {
             Index = index,
@@ -320,8 +314,8 @@ public class MemoryWebClient : IKernelMemory
         using (StringContent documentIdContent = new(uploadRequest.DocumentId))
         {
             List<IDisposable> disposables = new();
-            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
             formData.Add(indexContent, Constants.WebServiceIndexField);
+            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
 
             // Add steps to the form
             foreach (string? step in uploadRequest.Steps)
@@ -336,9 +330,9 @@ public class MemoryWebClient : IKernelMemory
             // Add tags to the form
             foreach (KeyValuePair<string, string?> tag in uploadRequest.Tags.Pairs)
             {
-                var tagContent = new StringContent(tag.Value);
+                var tagContent = new StringContent($"{tag.Key}{Constants.ReservedEqualsChar}{tag.Value}");
                 disposables.Add(tagContent);
-                formData.Add(tagContent, tag.Key);
+                formData.Add(tagContent, Constants.WebServiceTagsField);
             }
 
             // Add files to the form
@@ -360,7 +354,6 @@ public class MemoryWebClient : IKernelMemory
             try
             {
                 HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
-                formData.Dispose();
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
@@ -373,6 +366,7 @@ public class MemoryWebClient : IKernelMemory
             }
             finally
             {
+                formData.Dispose();
                 foreach (var disposable in disposables)
                 {
                     disposable.Dispose();

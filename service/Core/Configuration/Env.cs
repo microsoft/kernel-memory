@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.Configuration;
 
@@ -13,7 +14,7 @@ public sealed class Env
     public static string Var(string key)
     {
         var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Env>()
+            .AddUserSecrets(Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly())
             .Build();
 
         var value = configuration[key];

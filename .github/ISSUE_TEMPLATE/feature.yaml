@@ -1,0 +1,35 @@
+name: 🚀 Feature request
+description: Suggest an idea for Kernel Memory
+title: "[Feature Request] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to request this feature!
+  - type: textarea
+    attributes:
+      label: Context / Scenario
+      description: Help us understanding the scenario you are working on and how you are using Kernel Memory. The more information you can provide here, the better.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The problem
+      description: Please describe the problem this feature would solve.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed solution
+      description: Please describe what you would like to happen.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Importance
+      description: How important is this feature to you?
+      options:
+        - nice to have
+        - would be great to have
+        - I cannot use Kernel Memory without this

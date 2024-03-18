@@ -7,11 +7,13 @@ namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 public sealed class Answer
 {
     public string Name { get; }
-    public Action Selected { get; }
+    public bool IsSelected { get; }
+    public Action OnSelected { get; }
 
-    public Answer(string name, Action selected)
+    public Answer(string name, bool isSelected, Action onSelected)
     {
         this.Name = name;
-        this.Selected = selected;
+        this.IsSelected = isSelected;
+        this.OnSelected = onSelected;
     }
 }

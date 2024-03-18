@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -38,19 +37,6 @@ public interface IKernelMemoryBuilder
     /// <typeparam name="T">Type of memory derived from IKernelMemory</typeparam>
     /// <returns>A memory instance</returns>
     public T Build<T>() where T : class, IKernelMemory;
-
-    /// <summary>
-    /// Setup the builder using settings from appsettings.json and appsettings.[ENV].json
-    /// </summary>
-    /// <param name="settingsDirectory">Directory where to look for configuration files</param>
-    public IKernelMemoryBuilder FromAppSettings(string? settingsDirectory = null);
-
-    /// <summary>
-    /// Setup the builder using the provided configuration settings.
-    /// </summary>
-    /// <param name="config">Kernel Memory settings</param>
-    /// <param name="servicesConfiguration">Host application settings</param>
-    public IKernelMemoryBuilder FromConfiguration(KernelMemoryConfig config, IConfiguration servicesConfiguration);
 
     /// <summary>
     /// Add a singleton to the builder service collection pool.

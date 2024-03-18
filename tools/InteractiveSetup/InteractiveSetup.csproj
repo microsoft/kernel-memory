@@ -9,7 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\service\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -7,9 +7,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
+/// <summary>
+/// Handle settings stored in appsettings.development.json
+/// </summary>
 public static class AppSettings
 {
-    private const string SettingsFile = "appsettings.Development.json";
+    private const string DefaultSettingsFile = "appsettings.json";
+    private const string DevelopmentSettingsFile = "appsettings.Development.json";
+    private static readonly JsonSerializerSettings s_jsonOptions = new() { Formatting = Formatting.Indented };
 
     public static void Change(Action<KernelMemoryConfig> configChanges)
     {
@@ -19,7 +24,7 @@ public static class AppSettings
 
         configChanges.Invoke(config);
 
-        string json = File.ReadAllText(SettingsFile);
+        string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
@@ -28,8 +33,8 @@ public static class AppSettings
 
         data["KernelMemory"] = JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(config));
 
-        json = JsonConvert.SerializeObject(data, Formatting.Indented);
-        File.WriteAllText(SettingsFile, json);
+        json = JsonConvert.SerializeObject(data, s_jsonOptions);
+        File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
     public static void GlobalChange(Action<JObject> configChanges)
@@ -41,12 +46,17 @@ public static class AppSettings
         configChanges.Invoke(config);
 
         var json = JsonConvert.SerializeObject(config, Formatting.Indented);
-        File.WriteAllText(SettingsFile, json);
+        File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
+    /// <summary>
+    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.development.json
+    /// Note: the code reads from the current folder, which is usually service/Service. Using ConfigurationBuilder would read from
+    ///       bin/Debug/net7.0/, causing problems because GetGlobalConfig doesn't.
+    /// </summary>
     public static KernelMemoryConfig GetCurrentConfig()
     {
-        JObject data = GetGlobalConfig();
+        JObject data = GetGlobalConfig(true);
         if (data["KernelMemory"] == null)
         {
             Console.WriteLine("KernelMemory property missing, using an empty configuration.");
@@ -64,13 +74,36 @@ public static class AppSettings
         return config;
     }
 
-    private static JObject GetGlobalConfig()
+    private static JObject GetGlobalConfig(bool includeDefaults = false)
     {
-        string json = File.ReadAllText(SettingsFile);
+        if (!File.Exists(DevelopmentSettingsFile))
+        {
+            CreateFileIfNotExists();
+        }
+
+        string json = File.ReadAllText(DevelopmentSettingsFile);
         JObject? data = JsonConvert.DeserializeObject<JObject>(json);
         if (data == null)
         {
-            throw new SetupException("Unable to parse file");
+            throw new SetupException($"Unable to parse `{DevelopmentSettingsFile}` file");
+        }
+
+        if (includeDefaults && File.Exists(DefaultSettingsFile))
+        {
+            json = File.ReadAllText(DefaultSettingsFile);
+            JObject? defaultData = JsonConvert.DeserializeObject<JObject>(json);
+            if (defaultData == null)
+            {
+                throw new SetupException($"Unable to parse `{DefaultSettingsFile}` file");
+            }
+
+            defaultData.Merge(data, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Replace,
+                PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
+            });
+
+            data = defaultData;
         }
 
         return data;
@@ -78,9 +111,9 @@ public static class AppSettings
 
     private static void CreateFileIfNotExists()
     {
-        if (File.Exists(SettingsFile)) { return; }
+        if (File.Exists(DevelopmentSettingsFile)) { return; }
 
-        File.Create(SettingsFile).Dispose();
+        File.Create(DevelopmentSettingsFile).Dispose();
         var data = new
         {
             KernelMemory = new
@@ -96,6 +129,6 @@ public static class AppSettings
             AllowedHosts = "*",
         };
 
-        File.WriteAllText(SettingsFile, JsonConvert.SerializeObject(data, Formatting.Indented));
+        File.WriteAllText(DevelopmentSettingsFile, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
 }

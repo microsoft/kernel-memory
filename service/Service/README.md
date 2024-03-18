@@ -5,16 +5,37 @@ settings, ingest data and query for answers.
 
 The service is composed by two main components:
 
-* A web service to upload files, to ask questions, and to manage settings.
-* A background asynchronous data pipeline to process the files uploaded.
+1. A web service to upload files, to ask questions.
+2. A background asynchronous data pipeline to process the files uploaded.
 
 If you need deploying and scaling the webservice and the pipeline handlers
-separately, you can configure the service to enable/disable them.
+separately, you can enable/disable each of them via configuration.
 
 Once the service is up and running, you can use the **Kernel Memory web
 client** or simply interact with the Web API. The API schema is available
 at http://127.0.0.1:9001/swagger/index.html when running the service locally
 with **OpenAPI** enabled.
+
+# ▶️ Docker support
+
+If you're looking for a Docker image, we publish a build [here](https://hub.docker.com/r/kernelmemory/service) and
+you can use the [Dockerfile](https://github.com/microsoft/kernel-memory/blob/main/Dockerfile) in the repo for custom builds.
+
+You can test the image in demo mode passing the OPENAI_API_KEY environment variable:
+
+```
+docker run -e OPENAI_API_KEY="..." -p 9001:9001 -it --rm kernelmemory/service
+```
+
+otherwise for a full setup, after creating a configuration file:
+
+on Windows:
+
+    docker run --volume .\appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
+
+on macOS/Linux:
+
+    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
 # ⚙️ Configuration
 
@@ -25,23 +46,23 @@ questions on screen.
 dotnet run setup
 ```
 
-The app will create a configuration file `appsettings.Development.json`
+The wizard will create a configuration file `appsettings.Development.json`
 that you can customize. Look at the comments in `appsettings.json` for
 details and more advanced options.
 
-Configuration settings can be saved in four places:
+Configuration settings can be saved in multiple places, each source can also override the previous
+(ie environment variables can be used to override settings in the config files):
 
-1. `appsettings.json`: although possible, it's not recommended, to avoid
-   risks of leaking secrets in source code repositories.
-2. `appsettings.Development.json`: this works only when the environment
-   variable `ASPNETCORE_ENVIRONMENT` is set to `Development`.
-3. `appsettings.Production.json`: this works only when the environment
-   variable `ASPNETCORE_ENVIRONMENT` is set to `Production`.
-4. using **env vars**: preferred method for credentials. Any setting in
-   appsettings.json can be overridden by env vars. The env var name correspond
-   to the configuration key name, using `__` (double underscore) as a separator.
+1. `appsettings.json`: although possible, it's not recommended, to avoid risks of leaking secrets
+   in source code repositories. The file is mandatory and is used only for default settings.
+2. `appsettings.Development.json`: this is used only when the environment variable `ASPNETCORE_ENVIRONMENT` is set to `Development`.
+3. `appsettings.Production.json`: this is used only when the environment variable `ASPNETCORE_ENVIRONMENT` is set to `Production`.
+4. [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets#secret-manager)
+5. using **env vars**: preferred method for credentials. Any setting in  appsettings.json can be overridden by env vars.
+   The env var name corresponds to the configuration key name, using `__` (double underscore) as a separator instead of `:`.
+   For instance `Logging:LogLevel:Default` is set with `Logging__LogLevel__Default`.
 
-# ▶️ Start the service
+# ▶️ Start the service from source
 
 To run the Kernel Memory service:
 
@@ -88,29 +109,18 @@ The service depends on three main components:
   get better results with 16k, 32k and bigger models.
 
 
-* **Vector storage**: service used to persist embeddings. Currently, the
-  service supports **Azure AI Search**, **Qdrant** and a very basic
-  in memory vector storage with support for persistence on disk.
-  Soon we'll add support for more DBs.
-
-  > To use Qdrant locally, install docker and launch Qdrant with:
-  >
-  >       docker run -it --rm --name qdrant -p 6333:6333 qdrant/qdrant
-  > or simply use the `run-qdrant.sh` script from the `tools` folder.
+* **Vector storage**: service used to persist embeddings. The
+  service supports **Azure AI Search**, **Qdrant**, **Redis** and other engines,
+  plus  a very basic in memory vector storage with support for persistence on disk
+  called **SimpleVectorDb**. Unless configured differently, KM uses SimpleVectorDb
+  storing data in memory only.
 
 
 * **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which
-  case it requires persistent queues like **Azure Queues** or **RabbitMQ**
-  (corelib includes also a basic in memory queue, that might be useful
-  for tests and demos, with support for persistence on disk).
+  case it requires persistent queues like **Azure Queues** or **RabbitMQ**.
+  The Core assembly/package includes also a basic in memory queue called
+  **SimpleQueues** that might be useful for tests and demos.
 
   When running the service, we recommend persistent queues for reliability and
   horizontal scaling, like Azure Queues and RabbitMQ.
-
-  > To use RabbitMQ locally, install docker and launch RabbitMQ with:
-  >
-  >      docker run -it --rm --name rabbitmq \
-  >         -p 5672:5672 -e RABBITMQ_DEFAULT_USER=user -e RABBITMQ_DEFAULT_PASS=password \
-  >         rabbitmq:3
-  > or simply use the `run-rabbitmq.sh` script from the `tools` folder.

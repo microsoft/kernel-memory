@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
+        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MongoDB.Driver.GridFS" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="MongoDbAtlas.FunctionalTests"/>
+    </ItemGroup>
+
+    <Import Project="../../../code-analysis.props"/>
+
+    <Import Project="../../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
+        <Product>MongoDb Atlas connector for Kernel Memory</Product>
+        <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>
+        <PackageTags>Memory, RAG, Kernel Memory, MongoDb, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+</Project>
