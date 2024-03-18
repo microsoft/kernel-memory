@@ -156,6 +156,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
         }
     }
 
+    // Note: not using external libraries to have complete control on the expected value.
     private static double CosineSim(Embedding vec1, Embedding vec2)
     {
         var v1 = vec1.Data.ToArray();
