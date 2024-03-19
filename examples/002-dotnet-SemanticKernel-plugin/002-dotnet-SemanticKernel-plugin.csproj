@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.6.2" />
-        <PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.34.240313.1" />
+        <PackageReference Include="Microsoft.KernelMemory.SemanticKernelPlugin" Version="0.35.240318.1" />
     </ItemGroup>
 
     <ItemGroup>
