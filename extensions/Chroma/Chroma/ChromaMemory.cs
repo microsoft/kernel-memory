@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
@@ -39,12 +40,16 @@ public class ChromaMemory : IMemoryDb
 
         this._log = log ?? DefaultLogger<ChromaMemory>.Instance;
 
+        // Normalize underscore and check for invalid symbols
+        config.CollectionNamePrefix = NormalizeCollectionNamePrefix(config.CollectionNamePrefix);
+
         this._client = new ChromaClient(config.Endpoint);
     }
 
     /// <inheritdoc />
     public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
+        index = NormalizeIndexName(index);
         return this._client.CreateCollectionAsync(index, cancellationToken);
     }
 
@@ -85,4 +90,33 @@ public class ChromaMemory : IMemoryDb
     {
         throw new NotImplementedException();
     }
+
+    #region private ================================================================================
+
+    // Note: "_" is allowed in Postgres, but we normalize it to "-" for consistency with other DBs
+    private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
+    private const string ValidSeparator = "-";
+
+    private static string NormalizeIndexName(string index)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
+        }
+
+        index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
+
+        return index;
+    }
+
+    private static string NormalizeCollectionNamePrefix(string? name)
+    {
+        if (name == null) { return string.Empty; }
+
+        name = s_replaceIndexNameCharsRegex.Replace(name.Trim().ToLowerInvariant(), ValidSeparator);
+
+        return name;
+    }
+
+    #endregion
 }

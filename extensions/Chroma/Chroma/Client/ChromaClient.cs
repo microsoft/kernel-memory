@@ -23,15 +23,19 @@ internal sealed class ChromaClient
     /// <summary>
     /// Initializes a new instance of the <see cref="ChromaClient"/> class.
     /// </summary>
-    /// <param name="endpoint">Chroma server endpoint URL.</param>
+    /// <param name="config">Chroma settings.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="httpClient">Optional HTTP client override.</param>
     public ChromaClient(
-        string endpoint,
+        ChromaConfig config,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
     {
-        this._endpoint = endpoint;
+        config.Validate();
+
+        this._endpoint = config.Endpoint;
+        this._collectionNamePrefix = config.CollectionNamePrefix;
+
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._log = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? DefaultLogger<ChromaClient>.Instance;
     }
@@ -45,6 +49,7 @@ internal sealed class ChromaClient
         string collectionName,
         CancellationToken cancellationToken = default)
     {
+        collectionName = this.WithCollectionNamePrefix(collectionName);
         this._log.LogDebug("Creating collection {0}", collectionName);
         using var request = CreateCollectionRequest.Create(collectionName).Build();
         await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
@@ -58,6 +63,7 @@ internal sealed class ChromaClient
     /// <returns>Instance of <see cref="CollectionModel"/> model.</returns>
     public async Task<CollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
+        collectionName = this.WithCollectionNamePrefix(collectionName);
         this._log.LogDebug("Getting collection {0}", collectionName);
         try
         {
@@ -78,6 +84,7 @@ internal sealed class ChromaClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
+        collectionName = this.WithCollectionNamePrefix(collectionName);
         this._log.LogDebug("Deleting collection {0}", collectionName);
         try
         {
@@ -104,9 +111,9 @@ internal sealed class ChromaClient
 
         var collections = JsonSerializer.Deserialize<List<CollectionModel>>(responseContent);
 
-        foreach (var collection in collections!)
+        foreach (var collection in collections!.Where(collection => collection.Name.StartsWith(this._collectionNamePrefix, StringComparison.OrdinalIgnoreCase)))
         {
-            yield return collection.Name;
+            yield return collection.Name.Remove(0, this._collectionNamePrefix.Length);
         }
     }
 
@@ -118,6 +125,7 @@ internal sealed class ChromaClient
     private readonly ILogger _log;
     private readonly HttpClient _httpClient;
     private readonly string? _endpoint = null;
+    private readonly string _collectionNamePrefix;
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
@@ -154,6 +162,11 @@ internal sealed class ChromaClient
         }
 
         return (response, responseContent);
+    }
+
+    private string WithCollectionNamePrefix(string collectionName)
+    {
+        return $"{this._collectionNamePrefix}{collectionName}";
     }
 
     private string SanitizeEndpoint(string endpoint)
