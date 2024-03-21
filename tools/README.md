@@ -32,35 +32,37 @@ Instructions:
 
 # Vector DB scripts
 
+### run-chroma.sh
+
+Script to start Chroma using Python, for local development/debugging.
+
+This will run Chroma on port 8000.
+
 ### run-elasticsearch.sh
 
 Script to start Elasticsearch using Docker for local development/debugging.
 
-Elasticsearch is used to store and search vectors, as an alternative to
-[Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search/).
+Elasticsearch is used to store and search vectors.
 
 ### run-mssql.sh
 
 Script to start MS SQL using Docker for local development/debugging.
 
-MS SQL is used to store and search vectors, as an alternative to
-[Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search/).
+MS SQL is used to store and search vectors.
 
 ### run-qdrant.sh
 
 Script to start Qdrant using Docker, for local development/debugging.
 
-Qdrant is used to store and search vectors, as an alternative to
-[Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search/).
+Qdrant is used to store and search vectors.
 
 ### run-redis.sh
 
 Script to start Redis using Docker, for local development/debugging.
-This will run Redis on port 6379, as well as running a popular Redis
-GUI, [RedisInsight](https://redis.com/redis-enterprise/redis-insight/), on port 8001.
 
-Redis is used to store and search vectors, as an alternative to
-[Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search/).
+This will run Redis on port 6379 and
+[RedisInsight](https://redis.com/redis-enterprise/redis-insight/) on port 8001.
+
 
 # Orchestration queues scripts
 
@@ -71,6 +73,7 @@ Script to start RabbitMQ using Docker, for local development/debugging.
 RabbitMQ is used to provides queues for the asynchronous pipelines,
 as an alternative to
 [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction).
+
 
 # Kernel memory runtime scripts
 

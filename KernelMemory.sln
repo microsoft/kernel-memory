@@ -232,6 +232,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MongoDbAtlas.FunctionalTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "107-dotnet-SemanticKernel-TextCompletion", "examples\107-dotnet-SemanticKernel-TextCompletion\107-dotnet-SemanticKernel-TextCompletion.csproj", "{494B8590-F0B2-4D40-A895-F9D7BDF26250}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chroma", "extensions\Chroma\Chroma\Chroma.csproj", "{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chroma.TestApplication", "extensions\Chroma\Chroma.TestApplication\Chroma.TestApplication.csproj", "{3F1B0BA7-7C6E-44E8-8945-83CB62114728}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +305,8 @@ Global
 		{4A539320-EB49-4688-82E1-4FA0ADBB3810} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8A602227-B291-4F1B-ACB8-237F49501B6A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{3F1B0BA7-7C6E-44E8-8945-83CB62114728} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -492,5 +498,12 @@ Global
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637710DC-C9BA-4CB8-AEAE-4B63B0D68E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F1B0BA7-7C6E-44E8-8945-83CB62114728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F1B0BA7-7C6E-44E8-8945-83CB62114728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F1B0BA7-7C6E-44E8-8945-83CB62114728}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
