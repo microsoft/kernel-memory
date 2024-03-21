@@ -292,7 +292,7 @@ on macOS/Linux:
 > }
 > ```
 
-You can find a [full example here](examples/002-dotnet-WebClient/README.md).
+You can find a [full example here](examples/001-dotnet-WebClient/README.md).
 
 ## Custom memory ingestion pipelines
 
