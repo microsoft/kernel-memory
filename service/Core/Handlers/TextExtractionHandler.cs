@@ -152,12 +152,12 @@ public class TextExtractionHandler : IPipelineStepHandler
                 content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 break;
 
-            case MimeTypes.MsWord:
+            case MimeTypes.MsWordX:
                 this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
                 content = new MsWordDecoder().ExtractContent(fileContent);
                 break;
 
-            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsPowerPointX:
                 this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
                 content = new MsPowerPointDecoder().ExtractContent(fileContent,
                     withSlideNumber: true,
@@ -165,14 +165,30 @@ public class TextExtractionHandler : IPipelineStepHandler
                     skipHiddenSlides: true);
                 break;
 
-            case MimeTypes.MsExcel:
+            case MimeTypes.MsExcelX:
                 this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
                 content = new MsExcelDecoder().ExtractContent(fileContent);
+                break;
+
+            case MimeTypes.MsWord:
+            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsExcel:
+                skipFile = true;
+                uploadedFile.Log(
+                    this,
+                    "Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx, xlsx or pptx). Ignoring the file."
+                );
+                this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
                 break;
 
             case MimeTypes.Pdf:
                 this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
                 content = new PdfDecoder().ExtractContent(fileContent);
+                break;
+
+            case MimeTypes.Html:
+                this._log.LogDebug("Extracting text from HTML file {0}", uploadedFile.Name);
+                content = new HtmlDecoder().ExtractContent(fileContent);
                 break;
 
             case MimeTypes.WebPageUrl:

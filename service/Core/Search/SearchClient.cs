@@ -134,6 +134,7 @@ public class SearchClient : ISearchClient
                 continue;
             }
 
+            // Relevance is `float.MinValue` when search uses only filters and no embeddings (see code above)
             if (relevance > float.MinValue) { this._log.LogTrace("Adding result with relevance {0}", relevance); }
 
             // If the file is already in the list of citations, only add the partition
@@ -252,7 +253,7 @@ public class SearchClient : ISearchClient
             }
 
             factsUsedCount++;
-            if (relevance > float.MinValue) { this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance); }
+            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
 
             facts.Append(fact);
             tokensAvailable -= size;
@@ -314,13 +315,17 @@ public class SearchClient : ISearchClient
         }
 
         watch.Stop();
-        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
 
         answer.Result = text.ToString();
         answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
         {
             answer.NoResultReason = "No relevant memories found";
+            this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
+        }
+        else
+        {
+            this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
         }
 
         return answer;
@@ -337,16 +342,15 @@ public class SearchClient : ISearchClient
 
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
-        // TODO: receive options from API: https://github.com/microsoft/kernel-memory/issues/137
         var options = new TextGenerationOptions
         {
-            // Temperature = 0,
-            // TopP = 0,
-            // PresencePenalty = 0,
-            // FrequencyPenalty = 0,
+            Temperature = this._config.Temperature,
+            TopP = this._config.TopP,
+            PresencePenalty = this._config.PresencePenalty,
+            FrequencyPenalty = this._config.FrequencyPenalty,
             MaxTokens = this._config.AnswerTokens,
-            // StopSequences = null,
-            // TokenSelectionBiases = null
+            StopSequences = this._config.StopSequences,
+            TokenSelectionBiases = this._config.TokenSelectionBiases,
         };
 
         if (this._log.IsEnabled(LogLevel.Debug))

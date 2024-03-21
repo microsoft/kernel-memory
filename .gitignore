@@ -2,6 +2,7 @@ KernelMemoryDev.*
 
 dotnet/.config
 tmp/
+_tmp/
 tmp-*/
 out/
 _files/

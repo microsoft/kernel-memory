@@ -16,6 +16,7 @@ public class DefaultTests : BaseFunctionalTestCase
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
         this._memory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             .WithRedisMemoryDb(this.RedisConfig)
@@ -45,6 +46,13 @@ public class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "Redis")]
+    public async Task ItDoesntFailIfTheIndexExistsAlready()
+    {
+        await IndexCreationTest.ItDoesntFailIfTheIndexExistsAlready(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "Redis")]
     public async Task ItListsIndexes()
     {
         await IndexListTest.ItListsIndexes(this._memory, this.Log);
@@ -61,7 +69,7 @@ public class DefaultTests : BaseFunctionalTestCase
     [Trait("Category", "Redis")]
     public async Task ItUsesDefaultIndexName()
     {
-        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log);
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
     }
 
     [Fact]

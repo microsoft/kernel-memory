@@ -75,7 +75,7 @@ public class DocumentUploadRequest
     /// <param name="steps">How to process the files, e.g. how to extract/chunk etc.</param>
     public DocumentUploadRequest(Document document, string? index = null, IEnumerable<string>? steps = null)
     {
-        this.Index = IndexExtensions.CleanName(index);
+        this.Index = index ?? string.Empty;
         this.Steps = steps?.ToList() ?? new List<string>();
 
         this.DocumentId = document.Id;

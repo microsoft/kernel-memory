@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);SKEXP0011;CA2208;CA1308;CA1724;CS1591;</NoWarn>
+        <NoWarn>$(NoWarn);SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;CS1591;</NoWarn>
         <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
     </PropertyGroup>
 
@@ -27,13 +27,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions"/>
         <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="PdfPig"/>
         <PackageReference Include="Polly.Core"/>
-        <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="System.Linq.Async"/>
     </ItemGroup>
 

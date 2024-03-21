@@ -5,9 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.Pipeline;
@@ -16,16 +19,40 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
 {
     private readonly Dictionary<string, IPipelineStepHandler> _handlers = new(StringComparer.InvariantCultureIgnoreCase);
 
+    private readonly IServiceProvider? _serviceProvider;
+
+    /// <summary>
+    /// Create a new instance of the synchronous orchestrator.
+    /// </summary>
+    /// <param name="contentStorage">Service used to store files</param>
+    /// <param name="embeddingGenerators">Services used to generate embeddings during the ingestion</param>
+    /// <param name="memoryDbs">Services where to store memory records</param>
+    /// <param name="textGenerator">Service used to generate text, e.g. synthetic memory records</param>
+    /// <param name="mimeTypeDetection">Service used to detect a file type</param>
+    /// <param name="serviceProvider">Optional service provider to add handlers by type</param>
+    /// <param name="config">Global KM configuration</param>
+    /// <param name="log">Application logger</param>
     public InProcessPipelineOrchestrator(
         IContentStorage contentStorage,
         List<ITextEmbeddingGenerator> embeddingGenerators,
         List<IMemoryDb> memoryDbs,
         ITextGenerator textGenerator,
-        KernelMemoryConfig? config = null,
         IMimeTypeDetection? mimeTypeDetection = null,
+        IServiceProvider? serviceProvider = null,
+        KernelMemoryConfig? config = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
         : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
+        this._serviceProvider = serviceProvider;
+    }
+
+    ///<inheritdoc />
+    public override List<string> HandlerNames
+    {
+        get
+        {
+            return this._handlers.Keys.OrderBy(x => x).ToList();
+        }
     }
 
     ///<inheritdoc />
@@ -35,6 +62,80 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     {
         this.AddHandler(handler);
         return Task.CompletedTask;
+    }
+
+    ///<inheritdoc />
+    public override Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(handler.StepName))
+        {
+            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
+        }
+
+        if (this._handlers.ContainsKey(handler.StepName)) { return Task.CompletedTask; }
+
+        try
+        {
+#pragma warning disable CA1849 // AddHandler doesn't do any I/O
+            this.AddHandler(handler);
+#pragma warning restore CA1849
+        }
+        catch (ArgumentException)
+        {
+            // TODO: use a more specific exception
+            // Ignore
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Register a pipeline handler. If a handler for the same step name already exists, it gets replaced.
+    /// </summary>
+    /// <param name="stepName">Name of the queue/step associated with the handler</param>
+    /// <typeparam name="T">Handler class</typeparam>
+    public void AddHandler<T>(string stepName) where T : IPipelineStepHandler
+    {
+        if (this._serviceProvider == null)
+        {
+            throw new InvalidOperationException("Service provider is undefined. Try using <.AddHandler(handler instance)> method instead.");
+        }
+
+        this.AddHandler(ActivatorUtilities.CreateInstance<T>(this._serviceProvider, stepName));
+    }
+
+    /// <summary>
+    /// Register a pipeline handler.
+    /// </summary>
+    /// <param name="config">Handler type configuration</param>
+    /// <param name="stepName">Pipeline step name</param>
+    public void AddSynchronousHandler(HandlerConfig config, string stepName)
+    {
+        if (HandlerTypeLoader.TryGetHandlerType(config, out var handlerType))
+        {
+            this.AddHandler(handlerType, stepName);
+        }
+    }
+
+    /// <summary>
+    /// Register a pipeline handler.
+    /// </summary>
+    /// <param name="handlerType">Handler class</param>
+    /// <param name="stepName">Name of the queue/step associated with the handler</param>
+    public void AddHandler(Type handlerType, string stepName)
+    {
+        if (this._serviceProvider == null)
+        {
+            throw new InvalidOperationException("Service provider is undefined. Try using <.AddHandler(handler instance)> method instead.");
+        }
+
+        var handler = ActivatorUtilities.CreateInstance(this._serviceProvider, handlerType, stepName);
+        if (handler is not IPipelineStepHandler)
+        {
+            throw new InvalidOperationException($"Type '{handlerType}' is not valid: {nameof(IPipelineStepHandler)} not implemented.");
+        }
+
+        this.AddHandler((IPipelineStepHandler)handler);
     }
 
     /// <summary>
@@ -60,32 +161,6 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         }
 
         this._handlers[handler.StepName] = handler;
-    }
-
-    ///<inheritdoc />
-    public override async Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
-    {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler), "The handler is NULL");
-        }
-
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
-
-        if (this._handlers.ContainsKey(handler.StepName)) { return; }
-
-        try
-        {
-            await this.AddHandlerAsync(handler, cancellationToken).ConfigureAwait(false);
-        }
-        catch (ArgumentException)
-        {
-            // TODO: use a more specific exception
-            // Ignore
-        }
     }
 
     ///<inheritdoc />

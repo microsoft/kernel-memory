@@ -10,12 +10,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.29.240219.2" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.35.240318.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="sample-SK-Readme.pdf"/>
-        <Content Include="sample-SK-Readme.pdf">
+        <None Remove="sample-KM-Readme.pdf"/>
+        <Content Include="sample-KM-Readme.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/jquery.js" type="text/javascript"></script>
+    <script src="js/script.js" type="text/javascript"></script>
+    <script src="js/projects.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
+    <title>Apache Project Information</title>
+</head>
+<body onload="preloadEverything(buildProjectPage);">
+
+<div id="logo">
+    <h1>
+        <div style="padding-top: 30px;">Project Information</div>
+    </h1>
+</div>
+<div id="cssmenu">
+    <div id="bg-one"></div>
+    <div id="bg-two"></div>
+    <div id="bg-three"></div>
+    <div id="bg-four"></div>
+    <ul>
+        <li><a href="."><span>Home</span></a></li>
+        <li><a href="committees.html"><span>Committees</span></a></li>
+        <li class="active"><a href="projects.html"><span>Projects</span></a></li>
+        <li><a href="releases.html"><span>Releases</span></a></li>
+        <li><a href="statistics.html"><span>Statistics</span></a></li>
+        <li class="last"><a href="timelines.html"><span>Timelines</span></a></li>
+        <li style="background: none !important"><input type="text" style="margin-top: 20px;"
+                                                       onkeypress="checkKeyPress(event, this);" placeholder="Search...">
+        </li>
+        <li style="float: right;"><a href="about.html"><span>About</span></a></li>
+        <!--li style="background: none; float: right;"><a href="edit/"><img title="Edit project data" style="vertical-align: middle; margin-top: -5px; height: 24px; width: 24px;" src="images/edit.png"/></a></li-->
+    </ul>
+</div>
+
+<div class="leftbar">
+    <ul>
+        <li>Project listings:</li>
+        <li><img src="images/byname.png"> &nbsp; <a href="projects.html?name">By Name</a></li>
+        <li><img src="images/bypmc.png"> &nbsp; <a href="projects.html?committee">By Committee</a></li>
+        <li><img src="images/bycategory.png"> &nbsp; <a href="projects.html?category">By Category</a></li>
+        <li><img src="images/bylanguage.png"> &nbsp; <a href="projects.html?language">By Programming Language</a></li>
+        <li><img src="images/bynumber.png"> &nbsp; <a href="projects.html?number">By Number of Committers</a></li>
+    </ul>
+</div>
+<div id="contents"><h1>Apache Submarine <font size="-1">(a project managed by the <a href="committee.html?submarine">Apache
+    Submarine Committee</a>)</font></h1>
+    <p>Apache Submarine (Submarine for short) is an End-to-End Machine Learning Platform to allow data scientists to
+        create end-to-end machine learning workflows. On Submarine, data scientists can finish each stage in the ML
+        model lifecycle, including data exploration, data pipeline creation, model training, serving, and
+        monitoring.</p><h4>Project base data:</h4>
+    <ul>
+        <li><b>Short description:</b> Submarine is Cloud Native Machine Learning Platform.</li>
+        <li><b>Category:</b> <a href="projects.html?category#cloud">cloud</a> &nbsp; <a
+                href="projects.html?category#java">java</a> &nbsp; <a href="projects.html?category#python">python</a>
+            &nbsp; <a href="projects.html?category#go">go</a> &nbsp;
+        </li>
+        <li><b>Website:</b> <a href="https://submarine.apache.org" target="_blank">https://submarine.apache.org</a></li>
+        <li><b>Project status:</b> <span class="pactive">Active</span></li>
+        <li><b>Project data file:</b> <a
+                href="https://gitbox.apache.org/repos/asf?p=submarine.git;a=blob_plain;f=doap_Submarine.rdf;hb=HEAD"
+                target="_blank">DOAP RDF Source</a> (<a href="json/projects/submarine.json">generated json</a>)
+        </li>
+        <li><b>Project data maintainer(s):</b> <a href="mailto:dev@submarine.apache.org">Apache Submarine PMC</a>&nbsp;
+        </li>
+    </ul>
+    <h4>Development:</h4>
+    <ul>
+        <li><b>Programming language:</b> <a href="projects.html?language#Java">Java</a>&nbsp;</li>
+        <li><b>Mailing list(s):</b> <a href="https://issues.apache.org/jira/projects/SUBMARINE">https://issues.apache.org/jira/projects/SUBMARINE</a>
+        </li>
+        <li><b>Git repository:</b> <a target="*_blank'" href="https://github.com/apache/submarine.git">https://github.com/apache/submarine.git</a>
+        </li>
+    </ul>
+    <h4>Releases <font size="-2">(from DOAP)</font>:</h4>
+    <ul>
+        <li><b>Download:</b> <a href="https://submarine.apache.org/docs/next/download" target="_blank">https://submarine.apache.org/docs/next/download</a>
+        </li>
+        <li><b>0.8.0</b> (2023-09-23): Apache Submarine 0.8.0</li>
+        <li><b>0.7.0</b> (2022-04-25): Apache Submarine 0.7.0</li>
+        <li><b>0.6.0</b> (2021-10-21): Apache Submarine 0.6.0</li>
+        <li><b>0.5.0</b> (2020-12-17): Apache Submarine 0.5.0</li>
+        <li><b>0.4.0</b> (2020-07-05): Apache Submarine 0.4.0</li>
+        <li><b>0.3.0</b> (2020-02-01): Apache Submarine 0.3.0</li>
+        <li><b>0.2.0</b> (2019-07-02): Apache Submarine 0.2.0</li>
+        <li><b>0.1.0</b> (2019-01-16): Apache Submarine 0.1.0</li>
+    </ul>
+</div>
+<div id="footer">
+    Managed by the <a href="https://community.apache.org">Apache Community Development Project</a>.<br>
+    Copyright© 2020, the Apache Software Foundation. Licensed under the <a
+        href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a><br>
+    Apache® and the Apache feather logo are trademarks of The Apache Software Foundation.
+</div>
+
+
+</body>
+</html>

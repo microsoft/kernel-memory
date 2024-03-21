@@ -58,7 +58,7 @@ In order to protect users data, you should follow these design principles:
   this User ID
 * **Use Kernel Memory Tags as Security Filters**. Make sure every API call
   to Kernel Memory uses a User tag, both when reading and writing to memory.
-  See [Security Filters](SECURITY_FILTERS.md) for more details.
+  See [Security Filters](security/filters) for more details.
 
 ![Network diagram](network.png)
 

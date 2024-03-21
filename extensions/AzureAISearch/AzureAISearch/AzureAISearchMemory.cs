@@ -119,12 +119,6 @@ public class AzureAISearchMemory : IMemoryDb
     public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
         index = this.NormalizeIndexName(index);
-        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
-        {
-            this._log.LogWarning("The default index cannot be deleted");
-            return Task.CompletedTask;
-        }
-
         return this._adminClient.DeleteIndexAsync(index, cancellationToken);
     }
 
@@ -439,7 +433,7 @@ public class AzureAISearchMemory : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         if (index.Length > 128)

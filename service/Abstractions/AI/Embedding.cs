@@ -50,6 +50,15 @@ public struct Embedding : IEquatable<Embedding>
 
     public double CosineSimilarity(Embedding embedding)
     {
+        var size1 = this.Data.Span.Length;
+        var size2 = embedding.Data.Span.Length;
+        if (size1 != size2)
+        {
+            throw new InvalidOperationException(
+                "Embedding vectors must have the same length to calculate cosine similarity. " +
+                $"Embedding 1 length: {size1}; Embedding 2 length: {size2}.");
+        }
+
         return TensorPrimitives.CosineSimilarity(this.Data.Span, embedding.Data.Span);
     }
 

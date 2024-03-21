@@ -21,17 +21,21 @@ with **OpenAPI** enabled.
 If you're looking for a Docker image, we publish a build [here](https://hub.docker.com/r/kernelmemory/service) and
 you can use the [Dockerfile](https://github.com/microsoft/kernel-memory/blob/main/Dockerfile) in the repo for custom builds.
 
-You can test the image in demo mode passing the OPENAI_API_KEY environment variable, otherwise for a full setup
-you will need a configuration file first.
+You can test the image in demo mode passing the OPENAI_API_KEY environment variable:
 
 ```
 docker run -e OPENAI_API_KEY="..." -p 9001:9001 -it --rm kernelmemory/service
 ```
 
-```
-docker run --volume ./appsettings.Development.json:/app/data/appsettings.Production.json \
-           -p 9001:9001 -it --rm kernelmemory/service
-```
+otherwise for a full setup, after creating a configuration file:
+
+on Windows:
+
+    docker run --volume .\appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
+
+on macOS/Linux:
+
+    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
 # ⚙️ Configuration
 

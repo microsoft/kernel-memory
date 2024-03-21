@@ -9,7 +9,7 @@ public class SearchQuery
 {
     [JsonPropertyName("index")]
     [JsonPropertyOrder(0)]
-    public string Index { get; set; } = string.Empty;
+    public string? Index { get; set; } = string.Empty;
 
     [JsonPropertyName("query")]
     [JsonPropertyOrder(1)]
