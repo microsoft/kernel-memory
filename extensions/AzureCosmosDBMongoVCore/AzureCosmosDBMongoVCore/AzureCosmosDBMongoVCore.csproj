@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore</RootNamespace>
+        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Linq.Async"/>
+        <PackageReference Include="MongoDB.Driver"/>
+    </ItemGroup>
+       
+    <ItemGroup>
+        <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+    </ItemGroup>
+
+    <Import Project="../../../code-analysis.props"/>
+
+    <Import Project="../../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoVCore</PackageId>
+        <Product>Azure CosmosDB Mongo vCore connector for Kernel Memory</Product>
+        <Description>Azure CosmosDB Mongo vCore connector for Microsoft Kernel Memory, to store and search memory using Azure AI Search vector indexing and semantic features.</Description>
+        <PackageTags>Memory, RAG, Kernel Memory, Azure AI Search, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+</Project>
