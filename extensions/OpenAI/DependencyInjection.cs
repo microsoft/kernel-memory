@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
@@ -99,6 +100,33 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
+    /// Use OpenAI models for ingestion and retrieval
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="openAIClient">Custom pre-configured OpenAI client</param>
+    /// <param name="textGenerationTokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <param name="textEmbeddingTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    /// <param name="onlyForRetrieval">Whether to use OpenAI only for ingestion, not for retrieval (search and ask API)</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAI(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        OpenAIClient openAIClient,
+        ITextTokenizer? textGenerationTokenizer = null,
+        ITextTokenizer? textEmbeddingTokenizer = null,
+        bool onlyForRetrieval = false)
+    {
+        config.Validate();
+        textGenerationTokenizer ??= new DefaultGPTTokenizer();
+        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
+
+        builder.WithOpenAITextEmbeddingGeneration(config, openAIClient, textEmbeddingTokenizer, onlyForRetrieval);
+        builder.WithOpenAITextGeneration(config, openAIClient, textGenerationTokenizer);
+        return builder;
+    }
+
+    /// <summary>
     /// Use OpenAI to generate text embedding.
     /// </summary>
     /// <param name="builder">Kernel Memory builder</param>
@@ -128,6 +156,35 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
+    /// Use OpenAI to generate text embedding.
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="openAIClient">Custom pre-configured OpenAI client</param>
+    /// <param name="textTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    /// <param name="onlyForRetrieval">Whether to use OpenAI only for ingestion, not for retrieval (search and ask API)</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAITextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        OpenAIClient openAIClient,
+        ITextTokenizer? textTokenizer = null,
+        bool onlyForRetrieval = false)
+    {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
+        builder.Services.AddOpenAITextEmbeddingGeneration(config, openAIClient);
+        if (!onlyForRetrieval)
+        {
+            builder.AddIngestionEmbeddingGenerator(
+                new OpenAITextEmbeddingGenerator(config, openAIClient, textTokenizer));
+        }
+
+        return builder;
+    }
+
+    /// <summary>
     /// Use OpenAI to generate text, e.g. answers and summaries.
     /// </summary>
     /// <param name="builder">Kernel Memory builder</param>
@@ -145,6 +202,27 @@ public static partial class KernelMemoryBuilderExtensions
         textTokenizer ??= new DefaultGPTTokenizer();
 
         builder.Services.AddOpenAITextGeneration(config, textTokenizer, httpClient);
+        return builder;
+    }
+
+    /// <summary>
+    /// Use OpenAI to generate text, e.g. answers and summaries.
+    /// </summary>
+    /// <param name="builder">Kernel Memory builder</param>
+    /// <param name="config">OpenAI settings</param>
+    /// <param name="openAIClient">Custom pre-configured OpenAI client</param>
+    /// <param name="textTokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <returns>KM builder instance</returns>
+    public static IKernelMemoryBuilder WithOpenAITextGeneration(
+        this IKernelMemoryBuilder builder,
+        OpenAIConfig config,
+        OpenAIClient openAIClient,
+        ITextTokenizer? textTokenizer = null)
+    {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
+        builder.Services.AddOpenAITextGeneration(config, openAIClient, textTokenizer);
         return builder;
     }
 }
@@ -169,6 +247,24 @@ public static partial class DependencyInjection
                     httpClient));
     }
 
+    public static IServiceCollection AddOpenAITextEmbeddingGeneration(
+        this IServiceCollection services,
+        OpenAIConfig config,
+        OpenAIClient openAIClient,
+        ITextTokenizer? textTokenizer = null)
+    {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
+        return services
+            .AddSingleton<ITextEmbeddingGenerator>(
+                serviceProvider => new OpenAITextEmbeddingGenerator(
+                    config: config,
+                    openAIClient: openAIClient,
+                    textTokenizer: textTokenizer,
+                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+    }
+
     public static IServiceCollection AddOpenAITextGeneration(
         this IServiceCollection services,
         OpenAIConfig config,
@@ -184,5 +280,22 @@ public static partial class DependencyInjection
                 textTokenizer: textTokenizer,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
                 httpClient));
+    }
+
+    public static IServiceCollection AddOpenAITextGeneration(
+        this IServiceCollection services,
+        OpenAIConfig config,
+        OpenAIClient openAIClient,
+        ITextTokenizer? textTokenizer = null)
+    {
+        config.Validate();
+        textTokenizer ??= new DefaultGPTTokenizer();
+
+        return services
+            .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
+                config: config,
+                openAIClient: openAIClient,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 }

@@ -50,12 +50,12 @@ or platform, e.g. browser extensions and ChatGPT assistants.**
 
 Here's a few notable differences:
 
-| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                           |
-|------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
-| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
-| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
-| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Chroma |
+| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                                                                                          |
+|------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                                                                                |
+| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                                                                                       |
+| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, MongoDB Atlas, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Azure Cosmos DB for MongoDB vCore, Chroma |
 
 and **features available only in Kernel Memory**:
 
@@ -86,6 +86,7 @@ and **features available only in Kernel Memory**:
   [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models),
   [OpenAI](https://platform.openai.com/docs/models),
   LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp),
+  [LM Studio](https://lmstudio.ai/),
   [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
 * 🧠 Vector storage:
   [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search),
@@ -347,7 +348,9 @@ running the service locally with OpenAPI enabled.
 16. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
 17. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
 18. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-19. [Expanding chunks retrieving adjacent partitions](examples/206-dotnet-configuration-and-logging)
+19. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+20. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+21. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 
 ## Tools
 
@@ -360,6 +363,7 @@ running the service locally with OpenAPI enabled.
 7. [Script to start MS SQL Server for development tasks](tools/run-mssql.sh)
 8. [Script to start Redis for development tasks](tools/run-redis.sh)
 9. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
+10. [Script to start MongoDB Atlas for development tasks](tools/run-mongodb-atlas.sh)
 
 ### .NET packages
 
