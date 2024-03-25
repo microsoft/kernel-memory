@@ -52,7 +52,7 @@ EXPOSE 9001
 
 FROM base AS final
 
-MAINTAINER Devis Lucato "https://github.com/dluc"
+LABEL org.opencontainers.image.authors="devis.lucato@microsoft.com"
 WORKDIR /app
 
 COPY --from=publish --chown=km:km --chmod=0550  /app/publish .
