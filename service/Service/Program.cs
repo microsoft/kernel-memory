@@ -12,10 +12,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.InteractiveSetup;
-using Microsoft.KernelMemory.Service.Auth;
+using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Service;
 using Microsoft.KernelMemory.WebService;
 using Microsoft.OpenApi.Models;
 
@@ -35,53 +38,75 @@ if (new[] { "setup", "-setup" }.Contains(args.FirstOrDefault(), StringComparer.O
 
 // Usual .NET web app builder
 var appBuilder = WebApplication.CreateBuilder();
+appBuilder.Configuration.AddEnvironmentVariables();
 
 // Read the settings, needed below
 var config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
              ?? throw new ConfigurationException("Unable to load configuration");
 config.ServiceAuthorization.Validate();
 
+CheckConfiguration();
+
 // OpenAPI/swagger
-appBuilder.Services.AddEndpointsApiExplorer();
-appBuilder.Services.AddSwaggerGen(c =>
+if (config.Service.RunWebService)
 {
-    if (!config.ServiceAuthorization.Enabled) { return; }
-
-    const string ReqName = "auth";
-    c.AddSecurityDefinition(ReqName, new OpenApiSecurityScheme
+    appBuilder.Services.AddEndpointsApiExplorer();
+    appBuilder.Services.AddSwaggerGen(c =>
     {
-        Description = "The API key to access the API",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "ApiKeyScheme",
-        Name = config.ServiceAuthorization.HttpHeaderName,
-        In = ParameterLocation.Header,
-    });
+        if (!config.ServiceAuthorization.Enabled) { return; }
 
-    var scheme = new OpenApiSecurityScheme
-    {
-        Reference = new OpenApiReference
+        const string ReqName = "auth";
+        c.AddSecurityDefinition(ReqName, new OpenApiSecurityScheme
         {
-            Id = ReqName,
-            Type = ReferenceType.SecurityScheme,
-        },
-        In = ParameterLocation.Header
-    };
+            Description = "The API key to access the API",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "ApiKeyScheme",
+            Name = config.ServiceAuthorization.HttpHeaderName,
+            In = ParameterLocation.Header,
+        });
 
-    var requirement = new OpenApiSecurityRequirement
-    {
-        { scheme, new List<string>() }
-    };
+        var scheme = new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Id = ReqName,
+                Type = ReferenceType.SecurityScheme,
+            },
+            In = ParameterLocation.Header
+        };
 
-    c.AddSecurityRequirement(requirement);
-});
+        var requirement = new OpenApiSecurityRequirement
+        {
+            { scheme, new List<string>() }
+        };
+
+        c.AddSecurityRequirement(requirement);
+    });
+}
 
 // Inject memory client and its dependencies
 // Note: pass the current service collection to the builder, in order to start the pipeline handlers
-IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services).FromAppSettings().Build();
+IKernelMemory memory = new KernelMemoryBuilder(appBuilder.Services)
+    .FromAppSettings()
+    // .With...() // in case you need to set something not already defined by `.FromAppSettings()`
+    .Build();
+
 appBuilder.Services.AddSingleton(memory);
 
 // Build .NET web app as usual
 var app = appBuilder.Build();
+
+Console.WriteLine("***************************************************************************************************************************");
+Console.WriteLine($"* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Pipeline handlers   : " + (config.Service.RunHandlers ? "Enabled" : "Disabled"));
+Console.WriteLine($"* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+Console.WriteLine($"* Logging level       : {app.Logger.GetLogLevelName()}");
+Console.WriteLine($"* Memory Db           : {app.Services.GetService<IMemoryDb>()?.GetType().FullName}");
+Console.WriteLine($"* Content storage     : {app.Services.GetService<IContentStorage>()?.GetType().FullName}");
+Console.WriteLine($"* Embedding generation: {app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName}");
+Console.WriteLine($"* Text generation     : {app.Services.GetService<ITextGenerator>()?.GetType().FullName}");
+Console.WriteLine("***************************************************************************************************************************");
 
 // ********************************************************
 // ************** WEB SERVICE ENDPOINTS *******************
@@ -318,7 +343,7 @@ if (config.Service.RunWebService)
                 return Results.Ok(pipeline);
             })
         .AddEndpointFilter(authFilter)
-        .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+        .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
         .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
         .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
@@ -332,10 +357,47 @@ if (config.Service.RunWebService)
 // ********************************************************
 
 app.Logger.LogInformation(
-    "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Pipeline handlers: {3}",
+    "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
     app.Logger.GetLogLevelName(),
     config.Service.RunWebService,
+    config.ServiceAuthorization.Enabled,
     config.Service.RunHandlers);
 
 app.Run();
+
+void CheckConfiguration()
+{
+    const string Help = """
+                        You can set your configuration in appsettings.json or appsettings.<current environment>.json.
+                        The value of <current environment> depends on ASPNETCORE_ENVIRONMENT environment variable, and
+                        is usually either "Development" or "Production".
+
+                        You can also run `dotnet run setup` to launch a wizard that will guide through the creation
+                        of a basic working version of "appsettings.Development.json".
+
+                        If you would like to setup the service to use custom dependencies, e.g. a custom storage or
+                        a custom LLM, you should edit Program.cs accordingly, setting up your dependencies with the
+                        usual .NET dependency injection approach.
+                        """;
+
+    if (config.DataIngestion.EmbeddingGenerationEnabled && config.DataIngestion.EmbeddingGeneratorTypes.Count == 0)
+    {
+        Console.WriteLine("\n******\nData ingestion embedding generation (DataIngestion.EmbeddingGeneratorTypes) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+        Environment.Exit(-1);
+    }
+
+    if (string.IsNullOrEmpty(config.TextGeneratorType))
+    {
+        Console.WriteLine("\n******\nText generation (TextGeneratorType) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+    }
+
+    if (string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType))
+    {
+        Console.WriteLine("\n******\nRetrieval embedding generation (Retrieval.EmbeddingGeneratorType) is not configured.\n" +
+                          $"Please configure the service and retry.\n\n{Help}\n******\n");
+        Environment.Exit(-1);
+    }
+}

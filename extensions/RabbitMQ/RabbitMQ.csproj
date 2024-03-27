@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Orchestration.RabbitMQ</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Orchestration.RabbitMQ</RootNamespace>
+        <NoWarn>$(NoWarn);CS1591;CA1724;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="RabbitMQ.Client"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+    </ItemGroup>
+
+    <Import Project="../../code-analysis.props"/>
+
+    <Import Project="../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Orchestration.RabbitMQ</PackageId>
+        <Product>RabbitMQ connector for Kernel Memory</Product>
+        <Description>RabbitMQ connector for Microsoft Kernel Memory, to run asynchronous pipelines via RabbitMQ queues.</Description>
+        <PackageTags>Memory, RAG, Kernel Memory, RabbitMQ, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+</Project>

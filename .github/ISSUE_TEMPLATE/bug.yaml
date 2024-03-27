@@ -1,0 +1,42 @@
+name: 🐛 Bug Report
+description: File a bug report to help us improve Kernel Memory
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    attributes:
+      label: Context / Scenario
+      description: Help us understanding the scenario you are working on and how you are using Kernel Memory. The more information you can provide here, the better.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Please include what you expected to happen
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Importance
+      description: How critical is this bug?
+      options:
+        - edge case
+        - a fix would make my life easier
+        - I cannot use Kernel Memory
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Platform, Language, Versions
+      description: Please tell us the programming language, the version of Kernel Memory, and the platform you are using.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. The text will be automatically formatted.
+      render: shell

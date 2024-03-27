@@ -11,7 +11,6 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline.Queue;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -35,12 +34,12 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IContentStorage contentStorage,
         IMimeTypeDetection mimeTypeDetection,
         QueueClientFactory queueClientFactory,
-        List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
-        ITextGeneration textGenerator,
+        List<ITextEmbeddingGenerator> embeddingGenerators,
+        List<IMemoryDb> memoryDbs,
+        ITextGenerator textGenerator,
         KernelMemoryConfig? config = null,
         ILogger<DistributedPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, vectorDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
         this._queueClientFactory = queueClientFactory;
     }

@@ -12,15 +12,17 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
-    private readonly List<IVectorDb> _vectorDbs;
-    private readonly List<ITextEmbeddingGeneration> _embeddingGenerators;
-    private readonly ITextGeneration _textGenerator;
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
+
+    private readonly List<IMemoryDb> _memoryDbs;
+    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
+    private readonly ITextGenerator _textGenerator;
     private readonly List<string> _defaultIngestionSteps;
     private readonly IContentStorage _contentStorage;
     private readonly IMimeTypeDetection _mimeTypeDetection;
@@ -30,29 +32,32 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected BaseOrchestrator(
         IContentStorage contentStorage,
-        List<ITextEmbeddingGeneration> embeddingGenerators,
-        List<IVectorDb> vectorDbs,
-        ITextGeneration textGenerator,
+        List<ITextEmbeddingGenerator> embeddingGenerators,
+        List<IMemoryDb> memoryDbs,
+        ITextGenerator textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
         ILogger<BaseOrchestrator>? log = null)
     {
+        config ??= new KernelMemoryConfig();
+
         this.Log = log ?? DefaultLogger<BaseOrchestrator>.Instance;
-        this._defaultIngestionSteps = (config ?? new KernelMemoryConfig()).DataIngestion.GetDefaultStepsOrDefaults();
+        this._defaultIngestionSteps = config.DataIngestion.GetDefaultStepsOrDefaults();
+        this.EmbeddingGenerationEnabled = config.DataIngestion.EmbeddingGenerationEnabled;
         this._contentStorage = contentStorage;
         this._embeddingGenerators = embeddingGenerators;
-        this._vectorDbs = vectorDbs;
+        this._memoryDbs = memoryDbs;
         this._textGenerator = textGenerator;
 
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this.CancellationTokenSource = new CancellationTokenSource();
 
-        if (embeddingGenerators.Count == 0)
+        if (this.EmbeddingGenerationEnabled && embeddingGenerators.Count == 0)
         {
             this.Log.LogWarning("No embedding generators available");
         }
 
-        if (vectorDbs.Count == 0)
+        if (memoryDbs.Count == 0)
         {
             this.Log.LogWarning("No vector DBs available");
         }
@@ -191,19 +196,22 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public List<ITextEmbeddingGeneration> GetEmbeddingGenerators()
+    public bool EmbeddingGenerationEnabled { get; }
+
+    ///<inheritdoc />
+    public List<ITextEmbeddingGenerator> GetEmbeddingGenerators()
     {
         return this._embeddingGenerators;
     }
 
     ///<inheritdoc />
-    public List<IVectorDb> GetVectorDbs()
+    public List<IMemoryDb> GetMemoryDbs()
     {
-        return this._vectorDbs;
+        return this._memoryDbs;
     }
 
     ///<inheritdoc />
-    public ITextGeneration GetTextGenerator()
+    public ITextGenerator GetTextGenerator()
     {
         return this._textGenerator;
     }
@@ -211,14 +219,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StartIndexDeletionAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        DataPipeline pipeline = this.PrepareIndexDeletion(index: index);
+        DataPipeline pipeline = PrepareIndexDeletion(index: index);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
     ///<inheritdoc />
     public Task StartDocumentDeletionAsync(string documentId, string? index = null, CancellationToken cancellationToken = default)
     {
-        DataPipeline pipeline = this.PrepareDocumentDeletion(index: index, documentId: documentId);
+        DataPipeline pipeline = PrepareDocumentDeletion(index: index, documentId: documentId);
         return this.RunPipelineAsync(pipeline, cancellationToken);
     }
 
@@ -263,7 +271,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 #pragma warning restore CA1031
     }
 
-    protected DataPipeline PrepareIndexDeletion(string? index)
+    protected static DataPipeline PrepareIndexDeletion(string? index)
     {
         var pipeline = new DataPipeline
         {
@@ -271,10 +279,10 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             DocumentId = string.Empty,
         };
 
-        return pipeline.Then(Constants.DeleteIndexPipelineStepName).Build();
+        return pipeline.Then(Constants.PipelineStepsDeleteIndex).Build();
     }
 
-    protected DataPipeline PrepareDocumentDeletion(string? index, string documentId)
+    protected static DataPipeline PrepareDocumentDeletion(string? index, string documentId)
     {
         if (string.IsNullOrWhiteSpace(documentId))
         {
@@ -287,7 +295,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             DocumentId = documentId,
         };
 
-        return pipeline.Then(Constants.DeleteDocumentPipelineStepName).Build();
+        return pipeline.Then(Constants.PipelineStepsDeleteDocument).Build();
     }
 
     protected async Task UploadFilesAsync(DataPipeline currentPipeline, CancellationToken cancellationToken = default)
@@ -358,7 +366,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
     protected static string ToJson(object data, bool indented = false)
     {
-        return JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(data, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     private async Task UploadFormFilesAsync(DataPipeline pipeline, CancellationToken cancellationToken)
@@ -398,6 +406,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 Name = file.FileName,
                 Size = fileSize,
                 MimeType = mimeType,
+                Tags = pipeline.Tags,
             });
 
             this.Log.LogInformation("File uploaded: {0}, {1} bytes", file.FileName, fileSize);

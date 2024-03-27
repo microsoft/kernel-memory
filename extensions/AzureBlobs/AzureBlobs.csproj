@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.ContentStorage.AzureBlobs</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.ContentStorage.AzureBlobs</RootNamespace>
+        <NoWarn>$(NoWarn);CA1724;CS1591;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Azure.Identity"/>
+        <PackageReference Include="Azure.Storage.Blobs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+    </ItemGroup>
+
+    <Import Project="../../code-analysis.props"/>
+
+    <Import Project="../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.ContentStorage.AzureBlobs</PackageId>
+        <Product>Azure Blob Storage for Kernel Memory content storage</Product>
+        <Description>Azure Blob Storage adapter allowing Kernel Memory to upload documents and maintain their state in Azure Blobs</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Azure Blob, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+</Project>

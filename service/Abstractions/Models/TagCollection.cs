@@ -5,8 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 // JSON serializable alternative to NameValueCollection
@@ -156,6 +154,12 @@ public class TagCollection : IDictionary<string, List<string?>>
         if (key.Contains('='))
         {
             throw new KernelMemoryException("A tag name cannot contain the '=' char");
+        }
+
+        // ':' is reserved for backward/forward compatibility
+        if (key.Contains(':'))
+        {
+            throw new KernelMemoryException("A tag name cannot contain the ':' char");
         }
     }
 }

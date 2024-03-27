@@ -4,18 +4,34 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public class SearchResult
 {
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
+    private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     /// <summary>
     /// Client question.
     /// </summary>
     [JsonPropertyName("query")]
     [JsonPropertyOrder(1)]
     public string Query { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether the search didn't return any result
+    /// </summary>
+    [JsonPropertyName("noResult")]
+    [JsonPropertyOrder(2)]
+    public bool NoResult
+    {
+        get
+        {
+            return this.Results.Count == 0;
+        }
+        private set { }
+    }
 
     /// <summary>
     /// List of the relevant sources used to produce the answer.
@@ -34,12 +50,12 @@ public class SearchResult
     /// <returns>JSON serialization</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(this, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     public MemoryAnswer FromJson(string json)
     {
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions)
                ?? new MemoryAnswer();
     }
 }

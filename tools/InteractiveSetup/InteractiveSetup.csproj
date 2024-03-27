@@ -5,16 +5,17 @@
         <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <NoWarn>CA1031,CA1303,CA1724,CS1591</NoWarn>
+        <NoWarn>$(NoWarn);CA1031,CA1303,CA1724,CS1591</NoWarn>
     </PropertyGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="ReadLine" Version="2.0.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Version="0.26.240104.1" />
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
     </ItemGroup>
 
 </Project>

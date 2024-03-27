@@ -8,10 +8,27 @@ public static class Program
     // ReSharper disable InconsistentNaming
     public static async Task Main()
     {
+        var azureOpenAITextConfig = new AzureOpenAIConfig();
+        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+        var openAIConfig = new OpenAIConfig();
+        var searchClientConfig = new SearchClientConfig();
+
+        new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .Build()
+            .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+            .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+
         var memory = new KernelMemoryBuilder()
             .WithCustomPromptProvider(new MyPromptProvider())
-            .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-            .BuildServerlessClient();
+            // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            // .WithOpenAI(openAICfg)
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
+            .Build<MemoryServerless>();
 
         await memory.ImportTextAsync("NASA space probe Lucy flies by asteroid 152830 Dinkinesh, the first of eight asteroids planned to be visited by the spacecraft.");
 
@@ -27,7 +44,7 @@ public static class Program
         verification = await memory.AskAsync(statement);
         Console.WriteLine($"{statement} => {verification.Result}");
 
-        /** OUTPUT **
+        /* OUTPUT *
 
         Lucy flied by an asteroid => TRUE
         Lucy landed on an asteroid => FALSE

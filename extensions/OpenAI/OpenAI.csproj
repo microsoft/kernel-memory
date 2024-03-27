@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.AI.OpenAI</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.AI.OpenAI</RootNamespace>
+        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;SKEXP0011;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--<ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj"/>-->
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="GPT3\encoder.json"/>
+        <EmbeddedResource Include="GPT3\vocab.bpe"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.UnitTests"/>
+        <InternalsVisibleTo Include="Microsoft.KernelMemory.AI.AzureOpenAI"/>
+    </ItemGroup>
+
+    <Import Project="../../code-analysis.props"/>
+    
+    <Import Project="../../nuget-package.props"/>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.AI.OpenAI</PackageId>
+        <Product>OpenAI LLM connector for Kernel Memory</Product>
+        <Description>Provide access to OpenAI LLM models in Kernel Memory to generate embeddings and text</Description>
+        <PackageTags>OpenAI, Plugin, Memory, RAG, Kernel Memory, Azure Blob, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+</Project>

@@ -2,7 +2,6 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 
 public static class Program
 {
@@ -18,13 +17,16 @@ public static class Program
         // Usual code to create an instance of SK, using Azure OpenAI.
         // You can use any LLM, replacing `WithAzureChatCompletionService` with other LLM options.
 
-        var builder = new KernelBuilder();
+        var builder = Kernel.CreateBuilder();
         builder
-            // .WithOpenAIChatCompletionService(
+            // For OpenAI:
+            //.AddOpenAIChatCompletion(
             //     modelId: "gpt-3.5-turbo",
             //     apiKey: EnvVar("OPENAI_API_KEY"))
-            .WithAzureOpenAIChatCompletionService(
+            // Azure OpenAI:
+            .AddAzureOpenAIChatCompletion(
                 deploymentName: EnvVar("AOAI_DEPLOYMENT_TEXT"),
+                modelId: EnvVar("AOAI_DEPLOYMENT_TEXT"),
                 endpoint: EnvVar("AOAI_ENDPOINT"),
                 apiKey: EnvVar("AOAI_API_KEY"));
 
@@ -43,7 +45,7 @@ public static class Program
                        If the answer is empty say 'I don't know' otherwise reply with a preview of the answer, truncated to 15 words.
                        """;
 
-        var oracleFunction = kernel.CreateSemanticFunction(skPrompt);
+        var myFunction = kernel.CreateFunctionFromPrompt(skPrompt);
 
         // === PREPARE MEMORY PLUGIN ===
         // Load the Kernel Memory plugin into Semantic Kernel.
@@ -51,7 +53,7 @@ public static class Program
         // otherwise change the URL pointing to your KM endpoint.
 
         var memoryConnector = GetMemoryConnector();
-        var memoryPlugin = kernel.ImportFunctions(new MemoryPlugin(memoryConnector, waitForIngestionToComplete: true), "memory");
+        var memoryPlugin = kernel.ImportPluginFromObject(new MemoryPlugin(memoryConnector, waitForIngestionToComplete: true), "memory");
 
         // === LOAD DOCUMENT INTO MEMORY ===
         // Load some data in memory, in this case use a PDF file, though
@@ -59,10 +61,12 @@ public static class Program
 
         // You can use either the plugin or the connector, the result is the same
         // await memoryConnector.ImportDocumentAsync(filePath: DocFilename, documentId: "NASA001");
-        var context = kernel.CreateNewContext();
-        context.Variables[MemoryPlugin.FilePathParam] = DocFilename;
-        context.Variables[MemoryPlugin.DocumentIdParam] = "NASA001";
-        await memoryPlugin["SaveFile"].InvokeAsync(context);
+        var context = new KernelArguments
+        {
+            [MemoryPlugin.FilePathParam] = DocFilename,
+            [MemoryPlugin.DocumentIdParam] = "NASA001"
+        };
+        await memoryPlugin["SaveFile"].InvokeAsync(kernel, context);
 
         // === RUN SEMANTIC FUNCTION ===
         // Run some example questions, showing how the answer is grounded on the document uploaded.
@@ -70,18 +74,18 @@ public static class Program
         // information about Question2 and Question3.
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question1 + "\n");
-        FunctionResult answer = await oracleFunction.InvokeAsync(Question1, kernel);
+        Console.WriteLine(Question1 + " (expected: some answer using the PDF provided)\n");
+        var answer = await myFunction.InvokeAsync(kernel, Question1);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question2 + "\n");
-        answer = await oracleFunction.InvokeAsync(Question2, kernel);
+        Console.WriteLine(Question2 + " (expected answer: \"I don't know\")\n");
+        answer = await myFunction.InvokeAsync(kernel, Question2);
         Console.WriteLine("Answer: " + answer);
 
         Console.WriteLine("---------");
-        Console.WriteLine(Question3 + "\n");
-        answer = await oracleFunction.InvokeAsync(Question3, kernel);
+        Console.WriteLine(Question3 + " (expected answer: \"I don't know\")\n");
+        answer = await myFunction.InvokeAsync(kernel, Question3);
         Console.WriteLine("Answer: " + answer);
     }
 
@@ -133,7 +137,7 @@ public static class Program
         //         Auth = AzureOpenAIConfig.AuthTypes.APIKey,
         //         APIKey = EnvVar("AOAI_API_KEY"),
         //     })
-        //     .BuildServerlessClient();
+        //     .Build<MemoryServerless>();
     }
 
     private static string EnvVar(string name)

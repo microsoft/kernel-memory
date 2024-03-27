@@ -48,14 +48,14 @@ To run the Kernel Memory service:
 > ### On WSL / Linux / MacOS:
 >
 > ```shell
-> cd dotnet/Service
+> cd service/Service
 > ./run.sh
 > ```
 
 > ### On Windows:
 >
 > ```shell
-> cd dotnet\Service
+> cd service\Service
 > run.cmd
 > ```
 
@@ -89,9 +89,9 @@ The service depends on three main components:
 
 
 * **Vector storage**: service used to persist embeddings. Currently, the
-  service supports **Azure Cognitive Search**, **Qdrant** and a very basic
+  service supports **Azure AI Search**, **Qdrant** and a very basic
   in memory vector storage with support for persistence on disk.
-  Soon we'll add support for more vector DBs.
+  Soon we'll add support for more DBs.
 
   > To use Qdrant locally, install docker and launch Qdrant with:
   >

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory.DataFormats.Image;
+using Microsoft.KernelMemory.DataFormats;
 
 public class MyOcrEngine : IOcrEngine
 {

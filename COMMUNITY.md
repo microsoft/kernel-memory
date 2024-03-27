@@ -25,5 +25,4 @@ We have a growing and active channel on Discord where you can get help, engage
 in lively discussion, and share what you've built with Kernel Memory and
 Semantic Kernel!
 
-Join our Discord:
-[https://aka.ms/SKDiscord](https://aka.ms/SKDiscord)
+[Join our Discord](https://aka.ms/KMdiscord)

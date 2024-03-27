@@ -1,0 +1,56 @@
+﻿<Project>
+    <PropertyGroup>
+        <!-- Central version prefix - applies to all nuget packages. -->
+        <Version>0.26.0</Version>
+
+        <!-- These are set at the project level-->
+        <IsPackable>false</IsPackable>
+        <PackageId>Undefined</PackageId>
+
+        <!-- Default description and tags. Packages can override. -->
+        <Authors>Microsoft</Authors>
+        <Company>Microsoft</Company>
+        <Product>Kernel Memory</Product>
+        <Description>Copilot Memory Plugin and Memory Service to index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+
+        <!-- Required license, copyright, and repo information. Packages can override. -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+        <PackageProjectUrl>https://github.com/microsoft/kernel-memory</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/microsoft/kernel-memory</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <!-- Use icon linked below -->
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageIconUrl>icon.png</PackageIconUrl>
+
+        <!-- Use readme linked by the project (csproj must include a README) -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- Include the XML documentation file in the NuGet package. -->
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
+        <!-- https://github.com/dotnet/sourcelink -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(RepoRoot)/packages/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    </PropertyGroup>
+</Project>

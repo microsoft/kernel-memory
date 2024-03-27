@@ -1,13 +1,16 @@
 # Kernel Memory
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
 
-**Kernel Memory** (KM) is an open-source [service](service/Service/README.md) and
-[plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)
+**Kernel Memory** (KM) is a **multi-modal [AI Service](service/Service/README.md)**
 specialized in the efficient indexing of datasets through custom continuous data
-hybrid pipelines. For some scenarios KM is also available as a library, and soon
-as a Docker container.
+hybrid pipelines, with support for
+**[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
+synthetic memory, prompt engineering, and custom semantic memory processing.
+
+KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
+**web clients**, a .NET library for embedded applications, and soon as a Docker container.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -22,87 +25,104 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
+## Repository Guidance
 
-### Packages for Python, Java and other languages
+This repository presents best practices and a reference architecture for memory in specific
+AI and LLMs application scenarios. Please note that **the provided code serves as a
+demonstration** and is **not an officially supported** Microsoft offering.
 
-A python package with a Web Client and Semantic Kernel plugin will soon be available.
-We also welcome PR contributions to support more languages.
+## Kernel Memory (KM) and Semantic Memory (SM)
 
-In the meantime you can easily connect to Kernel Memory web service following the
-existing **OpenAPI** swagger at http://127.0.0.1:9001/swagger/index.html.
+**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
+to databases and supports vector search. It was developed as part of the Semantic
+Kernel (SK) project and serves as the first public iteration of long-term memory.
+The core library is maintained in three languages, while the list of supported
+storage engines (known as "connectors") varies across languages.
 
-### .NET packages
+**Kernel Memory (KM) is a service** built on the feedback received and lessons learned
+from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
+features that would otherwise have to be developed manually, such as storing files,
+extracting text from files, providing a framework to secure users' data, etc.
+The KM codebase is entirely in .NET, which eliminates the need to write and maintain
+features in multiple languages. As a service, **KM can be used from any language, tool,
+or platform, e.g. browser extensions and ChatGPT assistants.**
 
-* **Microsoft.KernelMemory.WebClient:** The web client library, can be used to call
-  a running instance of the Memory web service. .NET Standard 2.0 compatible.
+Here's a few notable differences:
 
-  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                           |
+|------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
+| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
+| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Chroma |
 
-* **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
-  replacing the original Semantic Memory available in SK. .NET Standard 2.0 compatible.
+and **features available only in Kernel Memory**:
 
-  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/011-dotnet-using-MemoryPlugin)
+* RAG (Retrieval Augmented Generation)
+* RAG sources lookup
+* Summarization
+* Security Filters (filter memory by users and groups)
+* Long running ingestion, large documents, with retry logic and durable queues
+* Custom tokenization
+* Document storage
+* OCR via Azure Document Intelligence
+* LLMs (Large Language Models) with dedicated tokenization
+* Cloud deployment
+* OpenAPI
+* Custom storage schema (partially implemented/work in progress)
+* Short Term Memory (partially implemented/work in progress)
+* Concurrent write to multiple vector DBs
 
-* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom
-  pipelines and handlers, and contains a serverless client to use memory in a
-  synchronous way, without the web service. .NET 6+.
+# Supported Data formats and Backends
 
-  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
-
-* **Microsoft.KernelMemory.Abstractions:** The internal interfaces and models
-  shared by all packages. .NET Standard 2.0 compatible.
-
-  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Abstractions)](https://www.nuget.org/packages/Microsoft.KernelMemory.Abstractions/)
-
-### Supported data formats
-
-* MS Word documents
-* MS Excel spreadsheets
-* MS PowerPoint presentations
+* MS Office: Word, Excel, PowerPoint
 * PDF documents
 * Web pages
 * JPG/PNG/TIFF Images with text via OCR
-* MarkDown
-* JSON
-* Raw plain text
-* [..] more coming :-)
-
-### Supported backends
+* MarkDown and Raw plain text
+* JSON files
+* 🧠 AI
+    * [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models)
+    * [OpenAI](https://platform.openai.com/docs/models)
+    * LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp)
+    * [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
 
 * ↗️ Vector storage
-    * Azure AI Search
-    * Qdrant
+    * [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search)
+    * [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres)
+    * [Qdrant](https://qdrant.tech)
+    * [MSSQL Server (third party)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer)
+    * [Elasticsearch (third party)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch)
+    * [Redis](https://redis.io)
+    * [Chroma (work in progress)](https://www.trychroma.com)
     * In memory KNN vectors (volatile)
+    * On disk KNN vectors
+
 * 📀 Content storage
-    * Azure Blobs
+    * [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction)
     * Local file system
     * In memory, volatile content
-* ⏳ Asynchronous ingestion queues
-    * Azure Queues
-    * RabbitMQ
+
+* ⏳ Orchestration
+    * [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction)
+    * [RabbitMQ](https://www.rabbitmq.com)
     * Local file based queue
     * In memory queues (volatile)
-
-> ℹ️ **NOTE**: the documentation below is work in progress, will evolve quickly
-> as is not fully functional yet.
 
 # Kernel Memory in serverless mode
 
 Kernel Memory works and scales at best when running as a service, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Kernel Memory also serverless, embedding the `MemoryServerlessClient`
-in your app.
+However, you can use Kernel Memory also serverless, embedding the `MemoryServerless`
+class in your app.
 
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
 > ```csharp
 > var memory = new KernelMemoryBuilder()
 >     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
->     .Build();
+>     .Build<MemoryServerless>();
 >
 > // Import a file
 > await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
@@ -131,7 +151,7 @@ The code leverages the default documents ingestion pipeline:
 2. Partition the text in small chunks, to optimize search
 3. Extract embedding using an LLM embedding generator
 4. Save embedding into a vector index such as
-   [Azure Cognitive Search](https://learn.microsoft.com/en-us/azure/search/vector-search-overview),
+   [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
    [Qdrant](https://qdrant.tech/) or other DBs.
 
 Documents are organized by users, safeguarding their private information.
@@ -180,9 +200,9 @@ foreach (var x in answer.RelevantSources)
 Depending on your scenarios, you might want to run all the code **locally
 inside your process, or remotely through an asynchronous service.**
 
-If you're importing small files, and need only C# or only Python, and can block
+If you're importing small files, and need only C# and can block
 the process during the import, local-in-process execution can be fine, using
-the **MemoryServerlessClient** seen above.
+the **MemoryServerless** seen above.
 
 However, if you are in one of these scenarios:
 
@@ -209,7 +229,7 @@ to **start the Kernel Memory Service**:
 > ### On WSL / Linux / MacOS:
 >
 > ```shell
-> cd dotnet/Service
+> cd service/Service
 > ./setup.sh
 > ./run.sh
 > ```
@@ -217,7 +237,7 @@ to **start the Kernel Memory Service**:
 > ### On Windows:
 >
 > ```shell
-> cd dotnet\Service
+> cd service\Service
 > setup.cmd
 > run.cmd
 > ```
@@ -225,7 +245,7 @@ to **start the Kernel Memory Service**:
 > ### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
 >
 > ```csharp
-> #reference dotnet/ClientLib/ClientLib.csproj
+> #reference clients/WebClient/WebClient.csproj
 >
 > var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
 >
@@ -319,7 +339,9 @@ running the service locally with OpenAPI enabled.
 7. [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
 8. [Custom partitioning/text chunking options](examples/102-dotnet-custom-partitioning-options)
 9. [Using a custom embedding/vector generator](examples/103-dotnet-custom-EmbeddingGenerator)
-10. [Using Llama and other custom LLMs](examples/104-dotnet-custom-LLM)
+10. [Using custom LLMs](examples/104-dotnet-custom-LLM)
+11. [Using LLama](examples/105-dotnet-serverless-llamasharp)
+12. [Summarizing documents](examples/106-dotnet-retrieve-synthetics)
 11. [Natural language to SQL examples](examples/200-dotnet-nl2sql)
 12. [Writing and using a custom ingestion handler](examples/201-dotnet-InProcessMemoryWithCustomHandler)
 13. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-CustomHandlerAsAService)
@@ -336,3 +358,85 @@ running the service locally with OpenAPI enabled.
 5. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
 6. [.NET appsettings.json generator](tools/InteractiveSetup)
 
+### .NET packages
+
+* **Microsoft.KernelMemory.WebClient:** The web client library, can be used to call
+  a running instance of the Memory web service. .NET Standard 2.0 compatible.
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+
+* **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
+  replacing the original Semantic Memory available in SK. .NET Standard 2.0 compatible.
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/011-dotnet-using-MemoryPlugin)
+
+* **Microsoft.KernelMemory.Abstractions:** The internal interfaces and models
+  shared by all packages, used to extend KM to support third party services.
+  .NET Standard 2.0 compatible.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.Abstractions)](https://www.nuget.org/packages/Microsoft.KernelMemory.Abstractions/)
+
+* **Microsoft.KernelMemory.MemoryDb.AzureAISearch:** Memory storage using
+  **[Azure AI Search](extensions/AzureAISearch)**.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.AzureAISearch)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.AzureAISearch/)
+
+* **Microsoft.KernelMemory.MemoryDb.Postgres:** Memory storage using
+  **[PostgreSQL](extensions/Postgres)**.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Postgres)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Postgres/)
+
+* **Microsoft.KernelMemory.MemoryDb.Qdrant:** Memory storage using
+  **[Qdrant](extensions/Qdrant)**.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Qdrant)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Qdrant/)
+
+* **Microsoft.KernelMemory.AI.AzureOpenAI:** Integration with **[Azure OpenAI](extensions/OpenAI)** LLMs.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.AI.AzureOpenAI)](https://www.nuget.org/packages/Microsoft.KernelMemory.AI.AzureOpenAI/)
+
+* **Microsoft.KernelMemory.AI.LlamaSharp:** Integration with **[LLama](extensions/LlamaSharp)** LLMs.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.AI.LlamaSharp)](https://www.nuget.org/packages/Microsoft.KernelMemory.AI.LlamaSharp/)
+
+* **Microsoft.KernelMemory.AI.OpenAI:** Integration with **[OpenAI](extensions/OpenAI)** LLMs.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.AI.OpenAI)](https://www.nuget.org/packages/Microsoft.KernelMemory.AI.OpenAI/)
+
+* **Microsoft.KernelMemory.DataFormats.AzureAIDocIntel:** Integration with
+  [Azure AI Document Intelligence](extensions/AzureAIDocIntel).
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.DataFormats.AzureAIDocIntel)](https://www.nuget.org/packages/Microsoft.KernelMemory.DataFormats.AzureAIDocIntel/)
+
+* **Microsoft.KernelMemory.Orchestration.AzureQueues:** Ingestion and synthetic memory
+  pipelines via [Azure Queue Storage](extensions/AzureQueues).
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.Orchestration.AzureQueues)](https://www.nuget.org/packages/Microsoft.KernelMemory.Orchestration.AzureQueues/)
+
+* **Microsoft.KernelMemory.Orchestration.RabbitMQ:** Ingestion and synthetic memory
+  pipelines via [RabbitMQ](extensions/RabbitMQ).
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.Orchestration.RabbitMQ)](https://www.nuget.org/packages/Microsoft.KernelMemory.Orchestration.RabbitMQ/)
+
+* **Microsoft.KernelMemory.ContentStorage.AzureBlobs:** Used to store content on
+  [Azure Storage Blobs](extensions/AzureBlobs).
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.ContentStorage.AzureBlobs)](https://www.nuget.org/packages/Microsoft.KernelMemory.ContentStorage.AzureBlobs/)
+
+* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom
+  pipelines and handlers, and contains a serverless client to use memory in a
+  synchronous way, without the web service. .NET 6+.
+
+  [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
+
+### Packages for Python, Java and other languages
+
+Kernel Memory service offers a **Web API** out of the box, including the **OpenAPI
+swagger** documentation that you can leverage to test the API and create custom
+web clients. For instance, after starting the service locally, see http://127.0.0.1:9001/swagger/index.html.
+
+A python package with a Web Client and Semantic Kernel plugin will soon be available.
+We also welcome PR contributions to support more languages.

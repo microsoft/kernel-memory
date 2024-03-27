@@ -12,12 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.Internals;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
 public class MemoryWebClient : IKernelMemory
 {
+    private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     private readonly HttpClient _client;
 
     public MemoryWebClient(string endpoint, string? apiKey = "", string apiKeyHeader = "Authorization")
@@ -144,7 +144,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var data = JsonSerializer.Deserialize<IndexCollection>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new IndexCollection();
+        var data = JsonSerializer.Deserialize<IndexCollection>(json, s_caseInsensitiveJsonOptions) ?? new IndexCollection();
 
         return data.Results;
     }
@@ -234,11 +234,6 @@ public class MemoryWebClient : IKernelMemory
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
 
-        if (status == null)
-        {
-            return null;
-        }
-
         return status;
     }
 
@@ -274,7 +269,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<SearchResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new SearchResult();
+        return JsonSerializer.Deserialize<SearchResult>(json, s_caseInsensitiveJsonOptions) ?? new SearchResult();
     }
 
     /// <inheritdoc />
@@ -307,7 +302,7 @@ public class MemoryWebClient : IKernelMemory
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new MemoryAnswer();
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
     }
 
     #region private
@@ -325,8 +320,8 @@ public class MemoryWebClient : IKernelMemory
         using (StringContent documentIdContent = new(uploadRequest.DocumentId))
         {
             List<IDisposable> disposables = new();
-            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
             formData.Add(indexContent, Constants.WebServiceIndexField);
+            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
 
             // Add steps to the form
             foreach (string? step in uploadRequest.Steps)
@@ -341,9 +336,9 @@ public class MemoryWebClient : IKernelMemory
             // Add tags to the form
             foreach (KeyValuePair<string, string?> tag in uploadRequest.Tags.Pairs)
             {
-                var tagContent = new StringContent(tag.Value);
+                var tagContent = new StringContent($"{tag.Key}{Constants.ReservedEqualsChar}{tag.Value}");
                 disposables.Add(tagContent);
-                formData.Add(tagContent, tag.Key);
+                formData.Add(tagContent, Constants.WebServiceTagsField);
             }
 
             // Add files to the form
@@ -365,7 +360,6 @@ public class MemoryWebClient : IKernelMemory
             try
             {
                 HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
-                formData.Dispose();
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
@@ -378,6 +372,7 @@ public class MemoryWebClient : IKernelMemory
             }
             finally
             {
+                formData.Dispose();
                 foreach (var disposable in disposables)
                 {
                     disposable.Dispose();

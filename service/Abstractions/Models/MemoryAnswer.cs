@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public class MemoryAnswer
 {
+    private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_notIndentedJsonOptions = new() { WriteIndented = false };
+    private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     /// <summary>
     /// Client question.
     /// </summary>
@@ -17,11 +19,23 @@ public class MemoryAnswer
     [JsonPropertyOrder(1)]
     public string Question { get; set; } = string.Empty;
 
+    [JsonPropertyName("noResult")]
+    [JsonPropertyOrder(2)]
+    public bool NoResult { get; set; } = true;
+
+    /// <summary>
+    /// Content of the answer.
+    /// </summary>
+    [JsonPropertyName("noResultReason")]
+    [JsonPropertyOrder(3)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? NoResultReason { get; set; }
+
     /// <summary>
     /// Content of the answer.
     /// </summary>
     [JsonPropertyName("text")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(10)]
     public string Result { get; set; } = string.Empty;
 
     /// <summary>
@@ -30,7 +44,7 @@ public class MemoryAnswer
     /// Value = List of partitions used from the document.
     /// </summary>
     [JsonPropertyName("relevantSources")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(20)]
     public List<Citation> RelevantSources { get; set; } = new();
 
     /// <summary>
@@ -41,12 +55,12 @@ public class MemoryAnswer
     /// <returns>JSON serialization</returns>
     public string ToJson(bool indented = false)
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = indented });
+        return JsonSerializer.Serialize(this, indented ? s_indentedJsonOptions : s_notIndentedJsonOptions);
     }
 
     public MemoryAnswer FromJson(string json)
     {
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions)
                ?? new MemoryAnswer();
     }
 }
