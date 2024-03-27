@@ -119,12 +119,6 @@ public class AzureAISearchMemory : IMemoryDb
     public Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
         index = this.NormalizeIndexName(index);
-        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
-        {
-            this._log.LogWarning("The default index cannot be deleted");
-            return Task.CompletedTask;
-        }
-
         return this._adminClient.DeleteIndexAsync(index, cancellationToken);
     }
 
@@ -182,7 +176,7 @@ public class AzureAISearchMemory : IMemoryDb
 
         if (filters is { Count: > 0 })
         {
-            options.Filter = BuildSearchFilter(filters);
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -232,7 +226,7 @@ public class AzureAISearchMemory : IMemoryDb
         SearchOptions options = new();
         if (filters is { Count: > 0 })
         {
-            options.Filter = BuildSearchFilter(filters);
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
             options.Size = limit;
 
             this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
@@ -439,7 +433,7 @@ public class AzureAISearchMemory : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         if (index.Length > 128)
@@ -618,31 +612,6 @@ public class AzureAISearchMemory : IMemoryDb
     private static double CosineSimilarityToScore(double similarity)
     {
         return 1 / (2 - similarity);
-    }
-
-    private static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
-    {
-        List<string> conditions = new();
-
-        // Note: empty filters would lead to a syntax error, so even if they are supposed
-        // to be removed upstream, we check again and remove them here too.
-        foreach (var filter in filters.Where(f => !f.IsEmpty()))
-        {
-            var filterConditions = filter.GetFilters()
-                .Select(keyValue =>
-                {
-                    var fieldValue = keyValue.Value?.Replace("'", "''", StringComparison.Ordinal);
-                    return $"tags/any(s: s eq '{keyValue.Key}{Constants.ReservedEqualsChar}{fieldValue}')";
-                })
-                .ToList();
-
-            conditions.Add($"({string.Join(" and ", filterConditions)})");
-        }
-
-        // Examples:
-        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:someone2') and tags/any(s: s eq 'type:news'))
-        // (tags/any(s: s eq 'user:someone1') and tags/any(s: s eq 'type:news')) or (tags/any(s: s eq 'user:admin') and tags/any(s: s eq 'type:fact'))
-        return string.Join(" or ", conditions);
     }
 
     #endregion

@@ -47,7 +47,7 @@ public static class Program
                 Diagnostics =
                 {
                     IsTelemetryEnabled = true,
-                    ApplicationId = "Semantic-Kernel"
+                    ApplicationId = "Kernel-Memory"
                 }
             });
 

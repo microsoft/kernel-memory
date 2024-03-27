@@ -27,6 +27,7 @@ public sealed class RedisMemory : IMemoryDb
     private readonly RedisConfig _config;
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<RedisMemory> _logger;
+    private readonly string[] _fieldNamesNoEmbeddings;
 
     /// <summary>
     /// Initializes the <see cref="RedisMemory"/> instance
@@ -46,6 +47,7 @@ public sealed class RedisMemory : IMemoryDb
         this._logger = logger ?? DefaultLogger<RedisMemory>.Instance;
         this._search = multiplexer.GetDatabase().FT();
         this._db = multiplexer.GetDatabase();
+        this._fieldNamesNoEmbeddings = config.Tags.Keys.Append(PayloadFieldName).Append(DistanceFieldName).ToArray();
     }
 
     /// <inheritdoc />
@@ -123,15 +125,15 @@ public sealed class RedisMemory : IMemoryDb
             var separator = c ?? DefaultSeparator;
             if (!isIndexed)
             {
-                this._logger.LogError("Attempt to insert un-indexed tag field: {Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
-                throw new ArgumentException($"Attempt to insert un-indexed tag field: {item.Key}, will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
+                this._logger.LogError("Attempt to insert un-indexed tag field: '{Key}', will not be able to filter on it, please adjust the tag settings in your Redis Configuration", item.Key);
+                throw new ArgumentException($"Attempt to insert un-indexed tag field: '{item.Key}', will not be able to filter on it, please adjust the tag settings in your Redis Configuration");
             }
 
             if (item.Value.Any(s => s is not null && s.Contains(separator.ToString(), StringComparison.InvariantCulture)))
             {
                 this._logger.LogError("Attempted to insert record with tag field: {Key} containing the separator: '{Separator}'. " +
                                       "Update your {RedisConfig} to use a different separator, or remove the separator from the field.", item.Key, separator, nameof(RedisConfig));
-                throw new ArgumentException($"Attempted to insert record with tag field: {item.Key} containing the separator: '{separator}'. " +
+                throw new ArgumentException($"Attempted to insert record with tag field: '{item.Key}' containing the separator: '{separator}'. " +
                                             $"Update your {nameof(RedisConfig)} to use a different separator, or remove the separator from the field.");
             }
 
@@ -205,6 +207,11 @@ public sealed class RedisMemory : IMemoryDb
         query.Params(parameters);
         query.Limit(0, limit);
         query.Dialect(2);
+        query.SortBy = DistanceFieldName;
+        if (!withEmbeddings)
+        {
+            query.ReturnFields(this._fieldNamesNoEmbeddings);
+        }
 
         NRedisStack.Search.SearchResult? result = null;
 
@@ -228,7 +235,7 @@ public sealed class RedisMemory : IMemoryDb
         foreach (var doc in result.Documents)
         {
             var next = this.FromDocument(doc, withEmbeddings);
-            if (1 - next.Item2 > minRelevance)
+            if (next.Item2 > minRelevance)
             {
                 yield return next;
             }
@@ -258,6 +265,11 @@ public sealed class RedisMemory : IMemoryDb
         }
 
         var query = new Query(sb.ToString());
+        if (!withEmbeddings)
+        {
+            query.ReturnFields(this._fieldNamesNoEmbeddings);
+        }
+
         List<NRedisStack.Search.Document> documents = new();
         try
         {
@@ -366,7 +378,7 @@ public sealed class RedisMemory : IMemoryDb
             }
             else if (field.Key == DistanceFieldName)
             {
-                distance = (double)field.Value;
+                distance = 1 - (double)field.Value;
             }
             else
             {
@@ -389,7 +401,7 @@ public sealed class RedisMemory : IMemoryDb
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;

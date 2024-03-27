@@ -15,8 +15,6 @@ namespace Microsoft.KernelMemory.Pipeline;
 /// </summary>
 public sealed class DataPipeline
 {
-    private string _index = string.Empty;
-
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ArtifactTypes
     {
@@ -25,6 +23,7 @@ public sealed class DataPipeline
         ExtractedText = 2,
         TextEmbeddingVector = 3,
         SyntheticData = 4,
+        ExtractedContent = 5,
     }
 
     public sealed class PipelineLogEntry
@@ -86,9 +85,23 @@ public sealed class DataPipeline
         public ArtifactTypes ArtifactType { get; set; } = ArtifactTypes.Undefined;
 
         /// <summary>
-        /// File tags. Note, the data structure allows file tags to differ from the document tags.
+        /// If the file is a partition, which partition number in the list of partitions extracted from a file.
         /// </summary>
         [JsonPropertyOrder(5)]
+        [JsonPropertyName("partition_number")]
+        public int PartitionNumber { get; set; } = 0;
+
+        /// <summary>
+        /// If the file is a partition, from which document page/audio segment/video scene is it from.
+        /// </summary>
+        [JsonPropertyOrder(6)]
+        [JsonPropertyName("section_number")]
+        public int SectionNumber { get; set; } = 0;
+
+        /// <summary>
+        /// File tags. Note, the data structure allows file tags to differ from the document tags.
+        /// </summary>
+        [JsonPropertyOrder(7)]
         [JsonPropertyName("tags")]
         public TagCollection Tags { get; set; } = new();
 
@@ -195,11 +208,7 @@ public sealed class DataPipeline
     /// </summary>
     [JsonPropertyOrder(0)]
     [JsonPropertyName("index")]
-    public string Index
-    {
-        get { return this._index; }
-        set { this._index = IndexExtensions.CleanName(value); }
-    }
+    public string Index { get; set; } = string.Empty;
 
     /// <summary>
     /// Id of the document and the pipeline instance.

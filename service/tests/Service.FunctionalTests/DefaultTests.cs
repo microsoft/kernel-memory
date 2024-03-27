@@ -39,6 +39,13 @@ public class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "WebService")]
+    public async Task ItDoesntFailIfTheIndexExistsAlready()
+    {
+        await IndexCreationTest.ItDoesntFailIfTheIndexExistsAlready(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "WebService")]
     public async Task ItListsIndexes()
     {
         await IndexListTest.ItListsIndexes(this._memory, this.Log);
@@ -49,6 +56,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "WebService")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default");
     }
 
     [Fact]

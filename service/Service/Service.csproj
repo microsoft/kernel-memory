@@ -9,6 +9,31 @@
         <NoWarn>$(NoWarn);CA2007,CA1724,CA2254,CA1031,CS1591,CA1861,CA1303,SKEXP0001</NoWarn>
     </PropertyGroup>
 
+    <ItemGroup>
+        <!-- Microsoft.KernelMemory.Core includes also extensions without external dependencies, e.g. all Azure extensions -->
+
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+
+        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
+
+        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+
+        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.34.240313.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+    </ItemGroup>
+
     <!--
     This dependency is needed only to generate appsetting.development.json when testing
     the code in GitHub for quick demo, e.g. running
@@ -27,29 +52,13 @@
         <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <!-- Microsoft.KernelMemory.Core includes all Azure extensions and extensions without external dependencies -->
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.26.240121.1" />
-        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
-        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.26.240121.1" />
-        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.26.240121.1" />
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.26.240121.1" />
-    </ItemGroup>
-
-<!--    <ItemGroup>-->
-<!--        <ProjectReference Include="..\Core\Core.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj"/>-->
-<!--        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj"/>-->
-<!--    </ItemGroup>-->
-
     <!-- Code Analysis -->
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.9.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -57,18 +66,25 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14">
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.9.0">
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.9.0">
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="setup.sh"/>
+        <Content Include="setup.sh">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

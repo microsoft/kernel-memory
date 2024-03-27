@@ -31,7 +31,7 @@ new ConfigurationBuilder()
 
 var memory = new KernelMemoryBuilder()
     // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithOpenAI(openAICfg)
+    // .WithOpenAI(openAIConfig)
     // .WithLlamaTextGeneration(llamaConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
@@ -39,6 +39,7 @@ var memory = new KernelMemoryBuilder()
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                             // => use Azure Blobs
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))  // => use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333")                                           // => use Qdrant to store memories
+    // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
     .Build<MemoryServerless>();
 
 // Use these boolean to enable/disable parts of the examples below
@@ -81,9 +82,9 @@ if (ingestion)
     toDelete.Add("doc002");
     if (!await memory.IsDocumentReadyAsync(documentId: "doc002"))
     {
-        Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Semantic Kernel");
+        Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Kernel Memory");
         await memory.ImportDocumentAsync(new Document("doc002")
-            .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-SK-Readme.pdf" })
+            .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf" })
             .AddTag("user", "Blake"));
     }
     else
@@ -121,6 +122,18 @@ if (ingestion)
         Console.WriteLine("webPage1 already uploaded.");
     }
 
+    // Working with HTML files
+    toDelete.Add("htmlDoc001");
+    if (!await memory.IsDocumentReadyAsync(documentId: "htmlDoc001"))
+    {
+        Console.WriteLine("Uploading a HTML file about Apache Submarine project");
+        await memory.ImportDocumentAsync(new Document("htmlDoc001").AddFile("file7-submarine.html").AddTag("user", "Ela"));
+    }
+    else
+    {
+        Console.WriteLine("htmlDoc001 already uploaded.");
+    }
+
     // Custom pipelines, e.g. excluding summarization
     toDelete.Add("webPage2");
     if (!await memory.IsDocumentReadyAsync("webPage2"))
@@ -154,7 +167,7 @@ if (retrieval)
     Console.WriteLine("\n====================================\n");
 
     // Another question without filters
-    question = "What's Semantic Kernel?";
+    question = "What's Kernel Memory?";
     Console.WriteLine($"Question: {question}");
 
     answer = await memory.AskAsync(question, minRelevance: 0.76);
@@ -185,6 +198,15 @@ if (retrieval)
                 : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
         }
     }
+
+    Console.WriteLine("\n====================================\n");
+
+    // Question about HTML content
+    question = "What's the latest version of Apache Submarine?";
+    Console.WriteLine($"Question: {question}");
+
+    answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Ela"));
+    Console.WriteLine($"\nAnswer: {answer.Result}");
 
     Console.WriteLine("\n====================================\n");
 
@@ -243,8 +265,7 @@ if (purge)
 
 Uploading text about E=mc^2
 Uploading article file about Carbon
-Uploading Image file with a news about a conference sponsored by Microsoft
-Uploading a text file, a Word doc, and a PDF about Semantic Kernel
+Uploading a text file, a Word doc, and a PDF about Kernel Memory
 Uploading a PDF with a news about NASA and Orion
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md
 Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md
@@ -253,37 +274,26 @@ Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/se
 
 Question: What's E = m*c^2?
 
-Answer: E = m*c^2 is a formula in physics that describes the mass–energy equivalence. This principle, proposed by Albert Einstein, states that the energy of an object (E) is equal to the mass (m) of that object times the speed of light (c) squared. This relationship is observed in a system's rest frame, where mass and energy differ only by a multiplicative constant and the units of measurement.
+Answer: E = m*c^2 is the equation that represents the principle of mass-energy equivalence, which is a fundamental concept in physics. This equation was formulated by the physicist Albert Einstein. In this formula:
+- E stands for energy,
+- m stands for mass, and
+- c stands for the speed of light in a vacuum, which is approximately 299,792,458 meters per second.
+The equation states that the energy (E) of a system in its rest frame is equal to its mass (m) multiplied by the square of the speed of light (c^2). This implies that mass and energy are interchangeable; they are different forms of the same thing. A small amount of mass can be converted into a very large amount of energy because the speed of light squared (c^2) is a very large number. This principle is a cornerstone of modern physics and has important implications in various fields, including nuclear physics, where it explains the large amounts of energy released in nuclear reactions.
 
 ====================================
 
-Question: What's Semantic Kernel?
+Question: What's Kernel Memory?
 
-Answer: Semantic Kernel (SK) is a lightweight Software Development Kit (SDK) that enables the integration of AI Large Language Models (LLMs) with conventional programming languages. It combines natural language semantic functions, traditional code native functions, and embeddings-based memory to unlock new potential and add value to applications with AI.
+Answer: Kernel Memory (KM) is a multi-modal AI Service designed to efficiently index datasets through custom continuous data hybrid pipelines. It supports various advanced features such as Retrieval Augmented Generation (RAG), synthetic memory, prompt engineering, and custom semantic memory processing. KM is equipped with a GPT Plugin, web clients, a .NET library for embedded applications, and is available as a Docker container.
+The service utilizes advanced embeddings and Large Language Models (LLMs) to enable natural language querying, allowing users to obtain answers from indexed data, complete with citations and links to the original sources. KM is designed for seamless integration with other tools and services, such as Semantic Kernel, Microsoft Copilot, and ChatGPT, enhancing data-driven features in applications built for popular AI platforms.
+Kernel Memory is built upon the feedback and lessons learned from the development of Semantic Kernel (SK) and Semantic Memory (SM). It offers several features that simplify tasks such as storing files, extracting text from files, securing user data, and more. The KM codebase is entirely in .NET, which allows it to be used from any language, tool, or platform, including browser extensions and ChatGPT assistants.
+KM supports a wide range of data formats, including web pages, PDFs, images, MS Office documents, Markdown, text, and JSON files. It also integrates with various AI services like Azure OpenAI, OpenAI, and LLama, and supports vector storage solutions such as Azure AI Search, Postgres
 
-SK supports prompt templating, function chaining, vectorized memory, and intelligent planning capabilities. It encapsulates several design patterns from the latest AI research, allowing developers to infuse their applications with plugins like prompt chaining, recursive reasoning, summarization, zero/few-shot learning, contextual memory, long-term memory, embeddings, semantic indexing, planning, retrieval-augmented generation, and accessing external knowledge stores as well as your own data.
+ Sources:
 
-Semantic Kernel is available for use with C# and Python and can be explored and used to build AI-first apps. It is an open-source project, inviting developers to contribute and join in its development.
-
-Sources:
-
-- file4-SK-Readme.pdf  - doc002/a166fd04b91a44cd919a300e84931bdf [Friday, December 8, 2023]
-- content.url  - webPage1/fbcb60da9d5a4ba1a390e108941fc7ad [Friday, December 8, 2023]
-- content.url  - webPage2/79a67b4f470b43549fce1b9a3de21c95 [Friday, December 8, 2023]
-
-====================================
-
-Question: Which conference is Microsoft sponsoring?
-
-Answer: Microsoft is sponsoring the Automotive News World Congress 2023 event, which is taking place in Detroit, Michigan on September 12, 2023.
-
-Sources:
-
-- file6-ANWC-image.jpg  - img001/ac7d8bc0051945a689aa23d1fa9092b2 [Friday, December 8, 2023]
-- file5-NASA-news.pdf  - doc003/be2411fdc3e84c5995a7753beb927ecd [Friday, December 8, 2023]
-- content.url  - webPage1/fbcb60da9d5a4ba1a390e108941fc7ad [Friday, December 8, 2023]
-- file4-SK-Readme.pdf  - doc002/a166fd04b91a44cd919a300e84931bdf [Friday, December 8, 2023]
-- file3-lorem-ipsum.docx  - doc002/a1269887842d4748980cbdd7e1aabc12 [Friday, December 8, 2023]
+ - file4-KM-Readme.pdf  - default/doc002/d2fdf058c00946448d0166879da28a49 [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md [Tuesday, February 27, 2024]
+ - https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md [Tuesday, February 27, 2024]
 
 ====================================
 
@@ -291,24 +301,36 @@ Question: Any news from NASA about Orion?
 
 Blake Answer (none expected): INFO NOT FOUND
 
-Taylor Answer: Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event is scheduled to take place at 11 a.m. PDT on Wednesday, Aug. 2, at Naval Base San Diego. Teams are currently conducting the first in a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. The tests will help prepare the team for Artemis II, NASA’s first crewed mission under Artemis that will send four astronauts in Orion around the Moon to checkout systems ahead of future lunar missions. The Artemis II crew – NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA (Canadian Space Agency) astronaut Jeremy Hansen – will participate in recovery testing at sea next year.
-Sources:
+Taylor Answer: Yes, there is news from NASA regarding the Orion spacecraft. NASA has invited media to view the new test version of the Orion spacecraft and the hardware that will be used to recover the capsule and astronauts upon their return from space during the Artemis II mission. This event is scheduled to take place at 11 a.m. PDT on Wednesday, August 2, at Naval Base San Diego.
+NASA and Department of Defense personnel have been practicing recovery operations aboard the USS John P. Murtha using a crew module test article to verify that the recovery team will be ready to recover the Artemis II crew and the Orion spacecraft. These operations are part of a series of tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions.
+The Artemis II mission will be NASA's first crewed mission under the Artemis program, which will send four astronauts in Orion around the Moon to check out systems ahead of future lunar missions. The Artemis II crew consists of NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, along with CSA (Canadian Space Agency) astronaut Jeremy Hansen. They will participate in recovery testing at sea next year.
+For more information about the Artemis program, NASA has provided a link: https://www.nasa.gov/artemis.
+ Sources:
 
-- file5-NASA-news.pdf  - doc003/be2411fdc3e84c5995a7753beb927ecd [Friday, December 8, 2023]
+ - file5-NASA-news.pdf  - default/doc003/2255254b21a3497180209b2705d3953e [Tuesday, February 27, 2024]
 
 ====================================
+
+Question: What's the latest version of Apache Submarine?
+
+Answer: The latest version of Apache Submarine is 0.8.0, released on 2023-09-23.
+
+====================================
+
 
 Question: What is Orion?
 
 Articles (none expected): INFO NOT FOUND
+warn: Microsoft.KernelMemory.Search.SearchClient[0]
+     No memories available
 
-News: Orion is a spacecraft developed by NASA. It is being used in the Artemis II mission, which is NASA's first crewed mission under the Artemis program. The mission will send four astronauts in the Orion spacecraft around the Moon to check out systems ahead of future lunar missions.
+News: Orion is NASA's spacecraft designed for deep space exploration, including missions to the Moon and potentially Mars in the future. It is part of NASA's Artemis program, which aims to return humans to the Moon and establish a sustainable presence there as a stepping stone for further exploration. The Orion spacecraft is built to carry astronauts beyond low Earth orbit, equipped with life support, propulsion, thermal protection, and avionics systems necessary for extended missions in deep space. It is intended to be used for the Artemis II mission, which will be the first crewed mission of the Artemis program, sending four astronauts around the Moon to test the spacecraft's systems.
 ====================================
-Deleting memories derived from d421ecd8e79747ec8ed5f1db49baba2c202312070451357022920
+Deleting memories derived from d2cd890772d34946bcb8f04caf20dc40202402270112081947080
 Deleting memories derived from doc001
-Deleting memories derived from img001
 Deleting memories derived from doc002
 Deleting memories derived from doc003
 Deleting memories derived from webPage1
 Deleting memories derived from webPage2
+
 */

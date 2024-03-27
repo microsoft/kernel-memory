@@ -46,7 +46,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
     public async Task ItStreamsFromTextModel()
     {
         // Arrange
-        this._config.TextModel = "text-davinci-003";
+        this._config.TextModel = "gpt-3.5-turbo-instruct";
         var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
 
         // Act

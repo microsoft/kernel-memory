@@ -67,15 +67,17 @@ public class TextExtractionHandler : IPipelineStepHandler
 
             var sourceFile = uploadedFile.Name;
             var destFile = $"{uploadedFile.Name}.extract.txt";
+            var destFile2 = $"{uploadedFile.Name}.extract.json";
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
 
             string text = string.Empty;
+            FileContent content = new();
             string extractType = MimeTypes.PlainText;
             bool skipFile = false;
 
             if (fileContent.ToArray().Length > 0)
             {
-                (text, extractType, skipFile) = await this.ExtractTextAsync(uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
+                (text, content, extractType, skipFile) = await this.ExtractTextAsync(uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
             }
 
             // If the handler cannot extract text, we move on. There might be other handlers in the pipeline
@@ -84,9 +86,9 @@ public class TextExtractionHandler : IPipelineStepHandler
             // status to know if a file has been ignored.
             if (!skipFile)
             {
+                // Text file
                 this._log.LogDebug("Saving extracted text file {0}", destFile);
                 await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
-
                 var destFileDetails = new DataPipeline.GeneratedFileDetails
                 {
                     Id = Guid.NewGuid().ToString("N"),
@@ -98,8 +100,23 @@ public class TextExtractionHandler : IPipelineStepHandler
                     Tags = pipeline.Tags,
                 };
                 destFileDetails.MarkProcessedBy(this);
-
                 uploadedFile.GeneratedFiles.Add(destFile, destFileDetails);
+
+                // Structured content (pages)
+                this._log.LogDebug("Saving extracted content {0}", destFile2);
+                await this._orchestrator.WriteFileAsync(pipeline, destFile2, new BinaryData(content), cancellationToken).ConfigureAwait(false);
+                var destFile2Details = new DataPipeline.GeneratedFileDetails
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    ParentId = uploadedFile.Id,
+                    Name = destFile2,
+                    Size = text.Length,
+                    MimeType = extractType,
+                    ArtifactType = DataPipeline.ArtifactTypes.ExtractedContent,
+                    Tags = pipeline.Tags,
+                };
+                destFile2Details.MarkProcessedBy(this);
+                uploadedFile.GeneratedFiles.Add(destFile2, destFile2Details);
             }
 
             uploadedFile.MarkProcessedBy(this);
@@ -108,66 +125,70 @@ public class TextExtractionHandler : IPipelineStepHandler
         return (true, pipeline);
     }
 
-    private async Task<(string text, string extractType, bool skipFile)> ExtractTextAsync(
+    private async Task<(string text, FileContent content, string extractType, bool skipFile)> ExtractTextAsync(
         DataPipeline.FileDetails uploadedFile,
         BinaryData fileContent,
         CancellationToken cancellationToken)
     {
         bool skipFile = false;
-        string text = string.Empty;
+        var content = new FileContent();
         string extractType = MimeTypes.PlainText;
 
         switch (uploadedFile.MimeType)
         {
             case MimeTypes.PlainText:
                 this._log.LogDebug("Extracting text from plain text file {0}", uploadedFile.Name);
-                text = fileContent.ToString();
+                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 break;
 
             case MimeTypes.MarkDown:
                 this._log.LogDebug("Extracting text from MarkDown file {0}", uploadedFile.Name);
-                text = fileContent.ToString();
+                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 extractType = MimeTypes.MarkDown;
                 break;
 
             case MimeTypes.Json:
                 this._log.LogDebug("Extracting text from JSON file {0}", uploadedFile.Name);
-                text = fileContent.ToString();
+                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
                 break;
 
-            case MimeTypes.MsWord:
+            case MimeTypes.MsWordX:
                 this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
-                text = new MsWordDecoder().DocToText(fileContent);
+                content = new MsWordDecoder().ExtractContent(fileContent);
                 break;
 
-            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsPowerPointX:
                 this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
-                text = new MsPowerPointDecoder().DocToText(fileContent,
+                content = new MsPowerPointDecoder().ExtractContent(fileContent,
                     withSlideNumber: true,
                     withEndOfSlideMarker: false,
                     skipHiddenSlides: true);
                 break;
 
-            case MimeTypes.MsExcel:
+            case MimeTypes.MsExcelX:
                 this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
-                text = new MsExcelDecoder().DocToText(fileContent);
+                content = new MsExcelDecoder().ExtractContent(fileContent);
+                break;
+
+            case MimeTypes.MsWord:
+            case MimeTypes.MsPowerPoint:
+            case MimeTypes.MsExcel:
+                skipFile = true;
+                uploadedFile.Log(
+                    this,
+                    "Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx, xlsx or pptx). Ignoring the file."
+                );
+                this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
                 break;
 
             case MimeTypes.Pdf:
                 this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
+                content = new PdfDecoder().ExtractContent(fileContent);
+                break;
 
-                // TODO: carry over page numbers, e.g. using special tokens
-                var pages = new PdfDecoder().DocToText(fileContent);
-                var textBuilder = new StringBuilder();
-                foreach (var page in pages)
-                {
-                    textBuilder.Append(page.Text.Trim());
-                    textBuilder.AppendLine();
-                    textBuilder.AppendLine();
-                }
-
-                text = textBuilder.ToString().Trim();
-
+            case MimeTypes.Html:
+                this._log.LogDebug("Extracting text from HTML file {0}", uploadedFile.Name);
+                content = new HtmlDecoder().ExtractContent(fileContent);
                 break;
 
             case MimeTypes.WebPageUrl:
@@ -198,14 +219,8 @@ public class TextExtractionHandler : IPipelineStepHandler
                     break;
                 }
 
-                text = result.Text;
-                this._log.LogDebug("Web page {0} downloaded, text length: {1}", url, text.Length);
-                break;
-
-            case "":
-                skipFile = true;
-                uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
-                this._log.LogWarning("Empty MIME type, the file will be ignored");
+                content.Sections.Add(new(1, result.Text.Trim(), true));
+                this._log.LogDebug("Web page {0} downloaded, text length: {1}", url, result.Text.Length);
                 break;
 
             case MimeTypes.ImageJpeg:
@@ -217,7 +232,14 @@ public class TextExtractionHandler : IPipelineStepHandler
                     throw new NotSupportedException($"Image extraction not configured: {uploadedFile.Name}");
                 }
 
-                text = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent, cancellationToken).ConfigureAwait(false);
+                var imageText = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent, cancellationToken).ConfigureAwait(false);
+                content.Sections.Add(new(1, imageText.Trim(), true));
+                break;
+
+            case "":
+                skipFile = true;
+                uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
+                this._log.LogWarning("Empty MIME type, the file will be ignored");
                 break;
 
             default:
@@ -227,6 +249,24 @@ public class TextExtractionHandler : IPipelineStepHandler
                 break;
         }
 
-        return (text, extractType, skipFile);
+        var textBuilder = new StringBuilder();
+        foreach (var section in content.Sections)
+        {
+            var sectionContent = section.Content.Trim();
+            if (string.IsNullOrEmpty(sectionContent)) { continue; }
+
+            textBuilder.Append(sectionContent);
+
+            // Add a clean page separation
+            if (section.SentencesAreComplete)
+            {
+                textBuilder.AppendLine();
+                textBuilder.AppendLine();
+            }
+        }
+
+        var text = textBuilder.ToString().Trim();
+
+        return (text, content, extractType, skipFile);
     }
 }

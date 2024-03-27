@@ -13,6 +13,7 @@ public class HttpAuthEndpointFilter : IEndpointFilter
 
     public HttpAuthEndpointFilter(ServiceAuthorizationConfig config)
     {
+        config.Validate();
         this._config = config;
     }
 

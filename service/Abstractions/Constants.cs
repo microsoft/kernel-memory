@@ -22,9 +22,6 @@ public static class Constants
     // Internal file used to track progress of asynchronous pipelines
     public const string PipelineStatusFilename = "__pipeline_status.json";
 
-    // Index name used when none is specified
-    public const string DefaultIndex = "default";
-
     // Tags settings
     public const char ReservedEqualsChar = ':';
     public const string ReservedTagsPrefix = "__";
@@ -33,6 +30,8 @@ public static class Constants
     public const string ReservedDocumentIdTag = $"{ReservedTagsPrefix}document_id";
     public const string ReservedFileIdTag = $"{ReservedTagsPrefix}file_id";
     public const string ReservedFilePartitionTag = $"{ReservedTagsPrefix}file_part";
+    public const string ReservedFilePartitionNumberTag = $"{ReservedTagsPrefix}part_n";
+    public const string ReservedFileSectionNumberTag = $"{ReservedTagsPrefix}sect_n";
     public const string ReservedFileTypeTag = $"{ReservedTagsPrefix}file_type";
     public const string ReservedSyntheticTypeTag = $"{ReservedTagsPrefix}synth";
 

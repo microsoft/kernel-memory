@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// When using KernelMemoryDev there are two references to Abstractions (project + package)
+// because the Elasticsearch extension is available only as a package, which includes a reference to Abstraction package.
+// As a result, the compiler is unable to see either the Abstractions, with a build error, so we allow these
+// tests only when working with packages.
+
+#if !KernelMemoryDev
 using FreeMindLabs.KernelMemory.Elasticsearch;
 using FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
@@ -16,9 +22,10 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._elasticsearchConfig = cfg.GetSection("Services:Elasticsearch").Get<ElasticsearchConfig>()!;
+        this._elasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
@@ -50,6 +57,13 @@ public class DefaultTests : BaseFunctionalTestCase
 
     [Fact]
     [Trait("Category", "Elasticsearch")]
+    public async Task ItDoesntFailIfTheIndexExistsAlready()
+    {
+        await IndexCreationTest.ItDoesntFailIfTheIndexExistsAlready(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItListsIndexes()
     {
         await IndexListTest.ItListsIndexes(this._memory, this.Log);
@@ -60,6 +74,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItNormalizesIndexNames()
     {
         await IndexListTest.ItNormalizesIndexNames(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "Elasticsearch")]
+    public async Task ItUsesDefaultIndexName()
+    {
+        await IndexListTest.ItUsesDefaultIndexName(this._memory, this.Log, "default4tests");
     }
 
     [Fact]
@@ -90,3 +111,6 @@ public class DefaultTests : BaseFunctionalTestCase
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
 }
+
+#endif
+

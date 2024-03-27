@@ -106,8 +106,8 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             TopP = (float)options.TopP,
             PresencePenalty = (float)options.PresencePenalty,
             FrequencyPenalty = (float)options.FrequencyPenalty,
-            AntiPrompts = options.StopSequences.ToList(),
-            LogitBias = options.TokenSelectionBiases,
+            AntiPrompts = options.StopSequences?.ToList() ?? new(),
+            LogitBias = new(),
             // RepeatLastTokensCount = 0, // [int] last n tokens to penalize (0 = disable penalty, -1 = context size)
             // TopK = 0, // [int] The number of highest probability vocabulary tokens to keep for top-k-filtering.
             // MinP = 0, // [float]
@@ -120,6 +120,15 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             // Mirostat = MirostatType.Disable, // see https://github.com/basusourya/mirostat
             // Grammar = null // SafeLLamaGrammarHandle
         };
+
+        if (options.TokenSelectionBiases is { Count: > 0 })
+        {
+            foreach (var (token, bias) in options.TokenSelectionBiases)
+            {
+                settings.LogitBias!.Add(token, bias);
+            }
+        }
+
         return executor.InferAsync(prompt, settings, cancellationToken);
     }
 

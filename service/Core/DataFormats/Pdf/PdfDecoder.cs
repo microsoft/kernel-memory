@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
@@ -12,27 +11,30 @@ namespace Microsoft.KernelMemory.DataFormats.Pdf;
 
 public class PdfDecoder
 {
-    public List<DocumentPage> DocToText(string filename)
+    public FileContent ExtractContent(string filename)
     {
         using var stream = File.OpenRead(filename);
-        return this.DocToText(stream);
+        return this.ExtractContent(stream);
     }
 
-    public List<DocumentPage> DocToText(BinaryData data)
+    public FileContent ExtractContent(BinaryData data)
     {
         using var stream = data.ToStream();
-        return this.DocToText(stream);
+        return this.ExtractContent(stream);
     }
 
-    public List<DocumentPage> DocToText(Stream data)
+    public FileContent ExtractContent(Stream data)
     {
-        var result = new List<DocumentPage>();
-        StringBuilder sb = new();
-        using var pdfDocument = PdfDocument.Open(data);
-        foreach (Page? page in pdfDocument.GetPages())
+        var result = new FileContent();
+
+        using PdfDocument? pdfDocument = PdfDocument.Open(data);
+        if (pdfDocument == null) { return result; }
+
+        foreach (Page? page in pdfDocument.GetPages().Where(x => x != null))
         {
-            string? text = ContentOrderTextExtractor.GetText(page);
-            result.Add(new DocumentPage(text, page.Number));
+            // Note: no trimming, use original spacing
+            string pageContent = (ContentOrderTextExtractor.GetText(page) ?? string.Empty);
+            result.Sections.Add(new FileSection(page.Number, pageContent, false));
         }
 
         return result;

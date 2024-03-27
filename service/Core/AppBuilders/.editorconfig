@@ -1,3 +1,0 @@
-[*.cs]
-dotnet_diagnostic.IDE0130.severity = none # using same ns of target class, easier to find and consume extension methods
-resharper_check_namespace_highlighting = none

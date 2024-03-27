@@ -71,7 +71,7 @@ public class PostgresMemory : IMemoryDb, IDisposable
         catch (Exception e)
         {
             this._log.LogError(e, "DB error while attempting to create index");
-            throw;
+            throw new PostgresException("DB error while attempting to create index", e);
         }
     }
 
@@ -103,11 +103,6 @@ public class PostgresMemory : IMemoryDb, IDisposable
         CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
-        if (string.Equals(index, Constants.DefaultIndex, StringComparison.OrdinalIgnoreCase))
-        {
-            this._log.LogWarning("The default index cannot be deleted");
-            return;
-        }
 
         try
         {
@@ -241,7 +236,7 @@ public class PostgresMemory : IMemoryDb, IDisposable
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            index = Constants.DefaultIndex;
+            throw new ArgumentNullException(nameof(index), "The index name is empty");
         }
 
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);

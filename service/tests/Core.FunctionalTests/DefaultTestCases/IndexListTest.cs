@@ -21,20 +21,27 @@ public static class IndexListTest
         await memory.DeleteIndexAsync(indexNameWithUnderscores);
     }
 
-    public static async Task ItUsesDefaultIndexName(IKernelMemory memory, Action<string> log)
+    public static async Task ItUsesDefaultIndexName(IKernelMemory memory, Action<string> log, string expectedDefault)
     {
         // Arrange
         string emptyIndexName = string.Empty;
 
         // Act
-        await memory.ImportTextAsync("something", index: emptyIndexName);
+        var id = await memory.ImportTextAsync("something", index: emptyIndexName);
+        var count = 0;
+        while (!await memory.IsDocumentReadyAsync(id))
+        {
+            Assert.True(count++ <= 30, "Document import timed out");
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
         var list = (await memory.ListIndexesAsync()).ToList();
 
         // Clean up before exceptions can occur
         await memory.DeleteIndexAsync(emptyIndexName);
 
         // Assert
-        Assert.True(list.Any(x => x.Name == "default"));
+        Assert.True(list.Any(x => x.Name == expectedDefault));
     }
 
     public static async Task ItListsIndexes(IKernelMemory memory, Action<string> log)
@@ -58,25 +65,25 @@ public static class IndexListTest
 
         while (!await memory.IsDocumentReadyAsync(documentId: id1, index: indexName1))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id1: {id1}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id2, index: indexName2))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id2: {id2}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id3, index: indexNameWithDashes))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id3: {id3}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         while (!await memory.IsDocumentReadyAsync(documentId: id4, index: indexNameWithUnderscores))
         {
-            log("Waiting for memory ingestion to complete...");
+            log($"[id4: {id4}] Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
