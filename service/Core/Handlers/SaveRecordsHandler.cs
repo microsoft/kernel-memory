@@ -143,7 +143,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
-                if (!createdIndexes.Contains(pipeline.Index))
+                var key = GetPipelineKeyForSave(client, pipeline.Index);
+
+                if (!createdIndexes.Contains(key))
                 {
                     this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                     await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
@@ -212,7 +214,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
-                        if (!createdIndexes.Contains(pipeline.Index))
+                        var key = GetPipelineKeyForSave(client, pipeline.Index);
+
+                        if (!createdIndexes.Contains(key))
                         {
                             this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                             await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
@@ -281,6 +285,11 @@ public class SaveRecordsHandler : IPipelineStepHandler
         return pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(
                 f2 => f2.Value.ArtifactType == DataPipeline.ArtifactTypes.TextPartition || f2.Value.ArtifactType == DataPipeline.ArtifactTypes.SyntheticData)
             .Select(x => new FileDetailsWithRecordId(pipeline, x.Value)));
+    }
+
+    private static string GetPipelineKeyForSave(IMemoryDb client, string index)
+    {
+        return $"{client.GetType().Name}::{index}";
     }
 
     private async Task<string> GetSourceUrlAsync(
