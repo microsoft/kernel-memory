@@ -172,6 +172,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var partitionsFound = false;
+        var createdIndexes = new HashSet<string>();
 
         // Create records only for partitions (text chunks) and synthetic data
         foreach (FileDetailsWithRecordId file in GetListOfPartitionAndSyntheticFiles(pipeline))
@@ -211,8 +212,12 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
-                        this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                        await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                        if (!createdIndexes.Contains(pipeline.Index))
+                        {
+                            this._log.LogTrace("Creating index '{0}'", pipeline.Index);
+                            await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                            createdIndexes.Add(pipeline.Index);
+                        }
 
                         this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
                         await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
