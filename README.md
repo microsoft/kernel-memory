@@ -50,12 +50,12 @@ or platform, e.g. browser extensions and ChatGPT assistants.**
 
 Here's a few notable differences:
 
-| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                           |
-|------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                 |
-| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                        |
-| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc. |
-| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Chroma |
+| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                                                                                          |
+|------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                                                                                |
+| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                                                                                       |
+| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                |
+| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, MongoDB Atlas, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Azure Cosmos DB for MongoDB vCore, Chroma |
 
 and **features available only in Kernel Memory**:
 
@@ -86,6 +86,7 @@ and **features available only in Kernel Memory**:
   [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models),
   [OpenAI](https://platform.openai.com/docs/models),
   LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp),
+  [LM Studio](https://lmstudio.ai/),
   [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
 * 🧠 Vector storage:
   [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search),
@@ -292,7 +293,7 @@ on macOS/Linux:
 > }
 > ```
 
-You can find a [full example here](examples/002-dotnet-WebClient/README.md).
+You can find a [full example here](examples/001-dotnet-WebClient/README.md).
 
 ## Custom memory ingestion pipelines
 
@@ -347,7 +348,9 @@ running the service locally with OpenAPI enabled.
 16. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
 17. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
 18. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-19. [Expanding chunks retrieving adjacent partitions](examples/206-dotnet-configuration-and-logging)
+19. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+20. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+21. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 
 ## Tools
 
@@ -360,6 +363,7 @@ running the service locally with OpenAPI enabled.
 7. [Script to start MS SQL Server for development tasks](tools/run-mssql.sh)
 8. [Script to start Redis for development tasks](tools/run-redis.sh)
 9. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
+10. [Script to start MongoDB Atlas for development tasks](tools/run-mongodb-atlas.sh)
 
 ### .NET packages
 
@@ -445,3 +449,30 @@ A .NET Web Client and a Semantic Kernel plugin are available, see the nugets pac
 
 A python package with a Web Client and Semantic Kernel plugin will soon be available.
 We also welcome PR contributions to support more languages.
+
+# Contributors
+
+<!--
+githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
+-->
+
+[<img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110">](https://github.com/afederici75) |[<img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110">](https://github.com/alexibraimov) |[<img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110">](https://github.com/alkampfergit) |[<img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110">](https://github.com/amomra) |[<img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110">](https://github.com/anthonypuppo) |[<img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110">](https://github.com/cherchyk) |
+:---: |:---: |:---: |:---: |:---: |:---: |
+[afederici75](https://github.com/afederici75) |[alexibraimov](https://github.com/alexibraimov) |[alkampfergit](https://github.com/alkampfergit) |[amomra](https://github.com/amomra) |[anthonypuppo](https://github.com/anthonypuppo) |[cherchyk](https://github.com/cherchyk) |
+
+[<img alt="crickman" src="https://avatars.githubusercontent.com/u/66376200?v=4&s=110" width="110">](https://github.com/crickman) |[<img alt="dluc" src="https://avatars.githubusercontent.com/u/371009?v=4&s=110" width="110">](https://github.com/dluc) |[<img alt="DM-98" src="https://avatars.githubusercontent.com/u/10290906?v=4&s=110" width="110">](https://github.com/DM-98) |[<img alt="GraemeJones104" src="https://avatars.githubusercontent.com/u/79144786?v=4&s=110" width="110">](https://github.com/GraemeJones104) |[<img alt="kbeaugrand" src="https://avatars.githubusercontent.com/u/9513635?v=4&s=110" width="110">](https://github.com/kbeaugrand) |[<img alt="lecramr" src="https://avatars.githubusercontent.com/u/20584823?v=4&s=110" width="110">](https://github.com/lecramr) |
+:---: |:---: |:---: |:---: |:---: |:---: |
+[crickman](https://github.com/crickman) |[dluc](https://github.com/dluc) |[DM-98](https://github.com/DM-98) |[GraemeJones104](https://github.com/GraemeJones104) |[kbeaugrand](https://github.com/kbeaugrand) |[lecramr](https://github.com/lecramr) |
+
+[<img alt="luismanez" src="https://avatars.githubusercontent.com/u/9392197?v=4&s=110" width="110">](https://github.com/luismanez) |[<img alt="marcominerva" src="https://avatars.githubusercontent.com/u/3522534?v=4&s=110" width="110">](https://github.com/marcominerva) |[<img alt="pascalberger" src="https://avatars.githubusercontent.com/u/2190718?v=4&s=110" width="110">](https://github.com/pascalberger) |[<img alt="pawarsum12" src="https://avatars.githubusercontent.com/u/136417839?v=4&s=110" width="110">](https://github.com/pawarsum12) |[<img alt="qihangnet" src="https://avatars.githubusercontent.com/u/1784873?v=4&s=110" width="110">](https://github.com/qihangnet) |[<img alt="slapointe" src="https://avatars.githubusercontent.com/u/1054412?v=4&s=110" width="110">](https://github.com/slapointe) |
+:---: |:---: |:---: |:---: |:---: |:---: |
+[luismanez](https://github.com/luismanez) |[marcominerva](https://github.com/marcominerva) |[pascalberger](https://github.com/pascalberger) |[pawarsum12](https://github.com/pawarsum12) |[qihangnet](https://github.com/qihangnet) |[slapointe](https://github.com/slapointe) |
+
+[<img alt="slorello89" src="https://avatars.githubusercontent.com/u/42971704?v=4&s=110" width="110">](https://github.com/slorello89) |[<img alt="TaoChenOSU" src="https://avatars.githubusercontent.com/u/12570346?v=4&s=110" width="110">](https://github.com/TaoChenOSU) |[<img alt="teresaqhoang" src="https://avatars.githubusercontent.com/u/125500434?v=4&s=110" width="110">](https://github.com/teresaqhoang) |[<img alt="vicperdana" src="https://avatars.githubusercontent.com/u/7114832?v=4&s=110" width="110">](https://github.com/vicperdana) |[<img alt="xbotter" src="https://avatars.githubusercontent.com/u/3634877?v=4&s=110" width="110">](https://github.com/xbotter) |
+:---: |:---: |:---: |:---: |:---: |
+[slorello89](https://github.com/slorello89) |[TaoChenOSU](https://github.com/TaoChenOSU) |[teresaqhoang](https://github.com/teresaqhoang) |[vicperdana](https://github.com/vicperdana) |[xbotter](https://github.com/xbotter) |
+
+
+
+
+
