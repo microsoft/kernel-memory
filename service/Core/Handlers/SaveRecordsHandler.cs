@@ -149,7 +149,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
                 {
                     this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                     await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-                    createdIndexes.Add(pipeline.Index);
+                    createdIndexes.Add(key);
                 }
 
                 this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
@@ -220,7 +220,7 @@ public class SaveRecordsHandler : IPipelineStepHandler
                         {
                             this._log.LogTrace("Creating index '{0}'", pipeline.Index);
                             await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-                            createdIndexes.Add(pipeline.Index);
+                            createdIndexes.Add(key);
                         }
 
                         this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
