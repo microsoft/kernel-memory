@@ -170,7 +170,7 @@ public static class Program
         return null;
 
         // return new KernelMemoryBuilder()
-        //     .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig
+        //     .WithAzureOpenAITextEmbeddingGeneration(new AzureOpenAIConfig
         //     {
         //         APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
         //         Endpoint = EnvVar("AOAI_ENDPOINT"),

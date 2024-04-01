@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,6 +75,10 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
         this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
+        // Cache embeddings to avoid generating them multiple times for repeated partitioned content
+        // NOTE: Consider moving this into the foreach loop if memory usage is a concern for holding the embeddings
+        Dictionary<string, Embedding> embeddingCache = new();
+
         var partitionsFound = false;
         foreach (var uploadedFile in pipeline.Files)
         {
@@ -139,7 +145,19 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
                             }
 
-                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                            // Calculate the hash of the partition content
+                            string partitionContentHash = BitConverter.ToString(SHA256.HashData(Encoding.UTF8.GetBytes(partitionContent).AsSpan()));
+
+                            if (embeddingCache.TryGetValue(partitionContentHash, out Embedding embedding))
+                            {
+                                this._log.LogDebug("Skip generating embeddings for {0}, already in cache", partitionFile.Name);
+                            }
+                            else // Generate embeddings for the partition content
+                            {
+                                embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                                embeddingCache.Add(partitionContentHash, embedding);
+                            }
+
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
