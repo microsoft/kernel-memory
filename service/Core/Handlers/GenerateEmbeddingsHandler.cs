@@ -105,7 +105,6 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
                 partitionsFound = true;
 
-                // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
                 switch (partitionFile.MimeType)
                 {
                     case MimeTypes.PlainText:
