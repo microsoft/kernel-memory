@@ -8,7 +8,7 @@ var memory = new KernelMemoryBuilder()
     // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))            => use Azure AI Search
     // .WithQdrant("http://127.0.0.1:6333")                                                     => use Qdrant docker
     // .WithAzureAIDocIntel(Env.Var("AZDOCINTEL_ENDPOINT"), Env.Var("AZDOCINTEL_API_KEY"))      => use Azure AI Document Intelligence OCR
-    // .WithAzureOpenAITextEmbeddingGeneration(new AzureOpenAIConfig                                => use Azure OpenAI for embedding generation
+    // .WithAzureOpenAITextEmbeddingGeneration(new AzureOpenAIConfig                            => use Azure OpenAI for embedding generation
     // {
     //     APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
     //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
