@@ -9,7 +9,6 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.Pipeline;
@@ -37,7 +36,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     // Services required to build the memory client class
     private readonly IServiceCollection _memoryServiceCollection;
 
-    // Services of the host application, when hosting pipeline handlers, e.g. in service mode
+    // Services of the host application
     private readonly IServiceCollection? _hostServiceCollection;
 
     // List of all the embedding generators to use during ingestion
@@ -213,73 +212,22 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         try
         {
-            // Add handlers to DI service collection
-            if (this._useDefaultHandlers)
-            {
-                this._memoryServiceCollection.AddTransient<TextExtractionHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<TextExtractionHandler>(serviceProvider, "extract"));
-
-                this._memoryServiceCollection.AddTransient<TextPartitioningHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<TextPartitioningHandler>(serviceProvider, "partition"));
-
-                this._memoryServiceCollection.AddTransient<SummarizationHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SummarizationHandler>(serviceProvider, "summarize"));
-
-                this._memoryServiceCollection.AddTransient<GenerateEmbeddingsHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<GenerateEmbeddingsHandler>(serviceProvider, "gen_embeddings"));
-
-                this._memoryServiceCollection.AddTransient<SaveRecordsHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<SaveRecordsHandler>(serviceProvider, "save_records"));
-
-                this._memoryServiceCollection.AddTransient<DeleteDocumentHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteDocumentHandler>(serviceProvider, Constants.PipelineStepsDeleteDocument));
-
-                this._memoryServiceCollection.AddTransient<DeleteIndexHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteIndexHandler>(serviceProvider, Constants.PipelineStepsDeleteIndex));
-
-                this._memoryServiceCollection.AddTransient<DeleteGeneratedFilesHandler>(serviceProvider
-                    => ActivatorUtilities.CreateInstance<DeleteGeneratedFilesHandler>(serviceProvider, Constants.PipelineStepsDeleteGeneratedFiles));
-            }
-
-            foreach (var customHandler in this._customHandlers)
-            {
-                this._memoryServiceCollection.AddTransient(serviceProvider => ActivatorUtilities.CreateInstance(serviceProvider, customHandler.Value, customHandler.Key));
-            }
-
-            var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
+            ServiceProvider serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
             this.CompleteServerlessClient(serviceProvider);
 
             // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
             this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
             this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
+            this.CheckForMissingDependencies();
 
             // Recreate the service provider, in order to have the latest dependencies just configured
             serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
-            var orchestrator = serviceProvider.GetService<InProcessPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-            var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-
-            this.CheckForMissingDependencies();
-
-            var memoryClientInstance = new MemoryServerless(orchestrator, searchClient);
+            var memoryClientInstance = ActivatorUtilities.CreateInstance<MemoryServerless>(serviceProvider);
 
             // Load handlers in the memory client
             if (this._useDefaultHandlers)
             {
-                memoryClientInstance.AddHandler(serviceProvider.GetService<TextExtractionHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextExtractionHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<TextPartitioningHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(TextPartitioningHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SummarizationHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SummarizationHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<GenerateEmbeddingsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(GenerateEmbeddingsHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<SaveRecordsHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(SaveRecordsHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteDocumentHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteDocumentHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteIndexHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteIndexHandler)));
-                memoryClientInstance.AddHandler(serviceProvider.GetService<DeleteGeneratedFilesHandler>() ?? throw new ConfigurationException("Unable to build " + nameof(DeleteGeneratedFilesHandler)));
-            }
-
-            foreach (var customHandler in this._customHandlers)
-            {
-                memoryClientInstance.AddHandler((IPipelineStepHandler)serviceProvider.GetService(customHandler.Value) ?? throw new ConfigurationException("Unable to build " + customHandler.Value.Name));
+                memoryClientInstance.Orchestrator.AddDefaultHandlers();
             }
 
             return memoryClientInstance;
@@ -293,45 +241,30 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
     private MemoryService BuildAsyncClient()
     {
+        // Add handlers to DI service collection
+        if (this._useDefaultHandlers)
+        {
+            if (this._hostServiceCollection == null)
+            {
+                throw new ConfigurationException("When using the Asynchronous Memory, Pipeline Handlers require a hosting application " +
+                                                 "(IHost, e.g. Host or WebApplication) to run as services (IHostedService). " +
+                                                 "Please instantiate KernelMemoryBuilder passing the host application ServiceCollection.");
+            }
+
+            this.WithDefaultHandlersAsHostedServices(this._hostServiceCollection);
+        }
+
         ServiceProvider serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
         this.CompleteAsyncClient(serviceProvider);
 
         // In case the user didn't set the embedding generator and memory DB to use for ingestion, use the values set for retrieval
         this.ReuseRetrievalEmbeddingGeneratorIfNecessary(serviceProvider);
         this.ReuseRetrievalMemoryDbIfNecessary(serviceProvider);
+        this.CheckForMissingDependencies();
 
         // Recreate the service provider, in order to have the latest dependencies just configured
         serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-
-        var orchestrator = serviceProvider.GetService<DistributedPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
-        var searchClient = serviceProvider.GetService<ISearchClient>() ?? throw new ConfigurationException("Unable to build search client");
-
-        if (this._useDefaultHandlers)
-        {
-            if (this._hostServiceCollection == null)
-            {
-                const string ClassName = nameof(KernelMemoryBuilder);
-                const string MethodName = nameof(this.WithoutDefaultHandlers);
-                throw new ConfigurationException("Host service collection not available: unable to register default handlers. " +
-                                                 $"If you'd like using the default handlers use `new {ClassName}(<your service collection provider>)`, " +
-                                                 $"otherwise use `new {ClassName}(...).{MethodName}()` to manage the list of handlers manually.");
-            }
-
-            // Handlers - Register these handlers to run as hosted services in the caller app.
-            // At start each hosted handler calls IPipelineOrchestrator.AddHandlerAsync() to register in the orchestrator.
-            this._hostServiceCollection.AddHandlerAsHostedService<TextExtractionHandler>(Constants.PipelineStepsExtract);
-            this._hostServiceCollection.AddHandlerAsHostedService<TextPartitioningHandler>(Constants.PipelineStepsPartition);
-            this._hostServiceCollection.AddHandlerAsHostedService<GenerateEmbeddingsHandler>(Constants.PipelineStepsGenEmbeddings);
-            this._hostServiceCollection.AddHandlerAsHostedService<SaveRecordsHandler>(Constants.PipelineStepsSaveRecords);
-            this._hostServiceCollection.AddHandlerAsHostedService<SummarizationHandler>(Constants.PipelineStepsSummarize);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.PipelineStepsDeleteDocument);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
-            this._hostServiceCollection.AddHandlerAsHostedService<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
-        }
-
-        this.CheckForMissingDependencies();
-
-        return new MemoryService(orchestrator, searchClient);
+        return ActivatorUtilities.CreateInstance<MemoryService>(serviceProvider);
     }
 
     private KernelMemoryBuilder CompleteServerlessClient(ServiceProvider serviceProvider)
