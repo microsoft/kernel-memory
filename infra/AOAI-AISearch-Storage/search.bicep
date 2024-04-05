@@ -1,5 +1,6 @@
-
 param salt string = uniqueString(resourceGroup().id)
+
+param managedIdentityId string
 
 @description('Service name must only contain lowercase letters, digits or dashes, cannot use dash as the first two or last one characters, cannot contain consecutive dashes, and is limited between 2 and 60 characters in length.')
 @minLength(2)
@@ -55,30 +56,6 @@ resource search 'Microsoft.Search/searchServices@2020-08-01' = {
     partitionCount: partitionCount
     hostingMode: hostingMode
   }
-  
-}
-
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: 'search-identity-${salt}'
-  location: location
-}
-
-var bootstrapRoleAssignmentId = guid('${resourceGroup().id}contributor')
-var contributorRoleDefinitionId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
-
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-01-preview' = {
-  name: bootstrapRoleAssignmentId
-  properties: {
-    roleDefinitionId: contributorRoleDefinitionId
-    principalId: reference(managedIdentity.id, '2018-11-30').principalId
-    scope: resourceGroup().id
-    principalType: 'ServicePrincipal'
-  }
 }
 
 resource scriptWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
@@ -88,7 +65,7 @@ resource scriptWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentity.id}': {}
+      '${managedIdentityId}': {}
     }
   }
   properties: {
@@ -140,7 +117,7 @@ EOF
     echo "{\"queryKey\": \"$queryKey\", \"adminKey\": \"$adminKey\"}" > $AZ_SCRIPTS_OUTPUT_PATH
   '''
     // timeout: 'PT15M'
-    cleanupPreference: 'OnExpiration'
+    cleanupPreference: 'OnSuccess'
     retentionInterval: 'PT1H'
   }
   dependsOn: [
@@ -148,10 +125,8 @@ EOF
   ]
 }
 
-
 output adminKey string = scriptWait.properties.outputs.adminKey
 output queryKey string = scriptWait.properties.outputs.queryKey
-
 
 output searchName string = search.name
 output searchObj object = search

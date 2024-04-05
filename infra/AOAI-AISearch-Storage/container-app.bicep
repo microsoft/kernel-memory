@@ -8,6 +8,8 @@ param salt string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
 
+param managedIdentityId string
+
 // param subscriptionId string
 param kmServiceName string = 'km-service-${salt}'
 
@@ -47,6 +49,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
         additionalPortMappings: []
       }
     }
+
     template: {
       containers: [
         {
@@ -79,6 +82,10 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
       }
     }
     // workloadProfileName: 'Consumption'
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: managedIdentityId
   }
 }
 

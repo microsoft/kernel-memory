@@ -13,13 +13,13 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @description('The name of the Azure Storage Account.')
-param storageAccountName string = 'storage${salt}' //'storage${uniqueString(resourceGroup().id)}'
+param storageAccountName string = 'kmstorage${salt}' //'storage${uniqueString(resourceGroup().id)}'
 
 @description('The name of the Container in Azure Storage.')
-param storageBlobContainerName string = 'container${salt}'
+param storageBlobContainerName string = 'km-container-${salt}'
 
 @description('The name of the Queue in Azure Storage.')
-param externalTasksQueueName string = 'queue${salt}'
+param externalTasksQueueName string = 'km-queue-${salt}'
 
 // ------------------
 // RESOURCES
