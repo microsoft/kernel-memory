@@ -79,22 +79,21 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            await Parallel.ForEachAsync(uploadedFile.GeneratedFiles, cancellationToken, async (generatedFile, token) =>
             {
                 var partitionFile = generatedFile.Value;
                 if (partitionFile.AlreadyProcessedBy(this))
                 {
                     partitionsFound = true;
                     this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
-                    continue;
+                    return;
                 }
 
                 // Calc embeddings only for partitions (text chunks) and synthetic data
-                if (partitionFile.ArtifactType != DataPipeline.ArtifactTypes.TextPartition
-                    && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
+                if (partitionFile.ArtifactType != DataPipeline.ArtifactTypes.TextPartition && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
                 {
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
-                    continue;
+                    return;
                 }
 
                 partitionsFound = true;
@@ -131,7 +130,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             }
 
                             // TODO: handle Azure.RequestFailedException - BlobNotFound
-                            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
+                            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, token).ConfigureAwait(false);
 
                             var inputTokenCount = generator.CountTokens(partitionContent);
                             if (inputTokenCount > generator.MaxTokens)
@@ -139,14 +138,14 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
                             }
 
-                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, token).ConfigureAwait(false);
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
 
                             this._log.LogDebug("Saving embedding file {0}", embeddingFileName);
                             string text = JsonSerializer.Serialize(embeddingData);
-                            await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, token).ConfigureAwait(false);
 
                             var embeddingFileNameDetails = new DataPipeline.GeneratedFileDetails
                             {
@@ -162,18 +161,22 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 Tags = partitionFile.Tags,
                             };
                             embeddingFileNameDetails.MarkProcessedBy(this);
-                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+
+                            lock (newFiles)
+                            {
+                                newFiles.Add(embeddingFileName, embeddingFileNameDetails);
+                            }
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
-                        continue;
+                        return;
                 }
 
                 partitionFile.MarkProcessedBy(this);
-            }
+            }).ConfigureAwait(false);
 
             // Add new files to pipeline status
             foreach (var file in newFiles)
