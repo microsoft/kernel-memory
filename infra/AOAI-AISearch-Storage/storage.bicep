@@ -16,7 +16,7 @@ param tags object = {}
 param storageAccountName string = 'kmstorage${salt}' //'storage${uniqueString(resourceGroup().id)}'
 
 @description('The name of the Container in Azure Storage.')
-param storageBlobContainerName string = 'km-container-${salt}'
+param storageBlobContainerName string = 'smemory'
 
 @description('The name of the Queue in Azure Storage.')
 param externalTasksQueueName string = 'km-queue-${salt}'

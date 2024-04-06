@@ -62,16 +62,93 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
           }
           env: [
             {
-              name: 'ApplicationInsights__InstrumentationKey'
-              secretRef: 'appinsights-key'
+              name: 'KernelMemory__Service__OpenApiEnabled'
+              value: 'true'
+              //secretRef: 'appinsights-key'
             }
             {
-              name: 'envVar1Name'
-              value: 'envVar1Value'
+              name: 'KernelMemory__ContentStorageType'
+              value: 'AzureBlobs'
             }
             {
-              name: 'envVar2Name'
-              value: 'envVar2Value'
+              name: 'KernelMemory__TextGeneratorType'
+              value: 'AzureOpenAIText'
+            }
+            {
+              name: 'KernelMemory__DefaultIndexName'
+              value: 'default'
+            }
+            {
+              name: 'KernelMemory__ServiceAuthorization__Enabled'
+              value: 'true'
+            }
+            {
+              name: 'KernelMemory__ServiceAuthorization__AuthenticationType'
+              value: 'APIKey'
+            }
+            {
+              name: 'KernelMemory__ServiceAuthorization__HttpHeaderName'
+              value: 'Authorization'
+            }
+            {
+              name: 'KernelMemory__ServiceAuthorization__AccessKey1'
+              value: 'ApiKey1ValueApiKey1ValueApiKey1Value'
+            }
+            {
+              name: 'KernelMemory__ServiceAuthorization__AccessKey2'
+              value: 'ApiKey2ValueApiKey2ValueApiKey2Value'
+            }
+            {
+              name: 'KernelMemory__DataIngestion__DistributedOrchestration__QueueType'
+              value: 'AzureQueues'
+            }
+            {
+              name: 'KernelMemory__DataIngestion__EmbeddingGeneratorTypes'
+              value: '["AzureOpenAIEmbedding"]'
+            }
+            {
+              name: 'KernelMemory__DataIngestion__MemoryDbTypes'
+              value: '["AzureAISearch"]'
+            }
+            {
+              name: 'KernelMemory__Retrieval__EmbeddingGeneratorType'
+              value: 'AzureOpenAIEmbedding'
+            }
+            {
+              name: 'KernelMemory__Retrieval__MemoryDbType'
+              value: 'AzureAISearch'
+            }
+            {
+              name: 'KernelMemory__Services__AzureBlobs_Account'
+              value: '3333333333333333333333333333333333333333333333333333333333333333'
+            }
+            {
+              name: 'KernelMemory__Services__AzureQueues_Account'
+              value: '3333333333333333333333333333333333333333333333333333333333333333'
+            }
+            {
+              name: 'KernelMemory__Services__AzureQueues_QueueName'
+              value: '3333333333333333333333333333333333333333333333333333333333333333'
+            }
+            {
+              name: 'KernelMemory__Services__AzureAISearch_Endpoint'
+              value: '3333333333333333333333333333333333333333333333333333333333333333'
+            }
+            {
+              name: 'KernelMemory__Services__AzureOpenAIText_Endpoint'
+              value: '3333333333333333333'
+            }
+            {
+              name: '11111111111111111111'
+              value: '3333333333333333333'
+            }
+            {
+              name: '11111111111111111111'
+              value: '3333333333333333333'
+            }
+            {
+              name: '44444444444444444444'
+              value: '5555555555555555555'
             }
           ]
         }
