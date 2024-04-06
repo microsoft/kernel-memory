@@ -11,7 +11,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 // //------- Managed Identity
 
 module managedidentity 'managedidentity.bicep' = {
-  name: 'managedidentity'
+  name: 'managedidentity-${salt}'
   scope: rg
   params: {
     location: location
@@ -22,7 +22,7 @@ module managedidentity 'managedidentity.bicep' = {
 // //------- Storage Account Module
 
 module storage 'storage.bicep' = {
-  name: 'storage'
+  name: 'storage-${salt}'
   scope: rg
   params: {
     location: location
@@ -38,7 +38,7 @@ var storageOutput = {
 //------- Search Module
 
 module search 'search.bicep' = {
-  name: 'search'
+  name: 'search-${salt}'
   scope: rg
   params: {
     location: location
@@ -125,7 +125,7 @@ var openAiDeployments = [
 var openAiServiceName = 'km-openai-${salt}'
 
 module openAi 'cognitiveservices.bicep' = {
-  name: 'openai'
+  name: 'openai-${salt}'
   scope: rg
   params: {
     name: openAiServiceName
@@ -147,7 +147,7 @@ var aoaiOutput = {
 //------- Container Apps Environment Module
 
 module containerAppsEnvironment 'container-apps-environment.bicep' = {
-  name: 'containerAppsEnvironment'
+  name: 'containerAppsEnvironment-${salt}'
   scope: rg
   params: {
     location: location
@@ -166,7 +166,7 @@ var containerAppsEnvironmentOutput = {
 // //------- Container Apps Module
 
 module containerAppService 'container-app.bicep' = {
-  name: 'containerAppService'
+  name: 'containerAppService-${salt}'
   scope: rg
   params: {
     location: location
