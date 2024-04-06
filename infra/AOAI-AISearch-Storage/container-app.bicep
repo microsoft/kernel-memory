@@ -16,6 +16,15 @@ param kmServiceName string = 'km-service-${salt}'
 param containerAppsEnvironmentId string
 param appInsightsInstrumentationKey string
 
+param AzureBlobs_Account string
+param AzureQueues_Account string
+param AzureQueues_QueueName string
+param AzureAISearch_Endpoint string
+param AzureOpenAIText_Endpoint string
+param AzureOpenAIText_Deployment string
+param AzureOpenAIEmbedding_Endpoint string
+param AzureOpenAIEmbedding_Deployment string
+
 // ------------------
 // RESOURCES
 // ------------------
@@ -120,35 +129,35 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
             }
             {
               name: 'KernelMemory__Services__AzureBlobs_Account'
-              value: '3333333333333333333333333333333333333333333333333333333333333333'
+              value: AzureBlobs_Account
             }
             {
               name: 'KernelMemory__Services__AzureQueues_Account'
-              value: '3333333333333333333333333333333333333333333333333333333333333333'
+              value: AzureQueues_Account
             }
             {
               name: 'KernelMemory__Services__AzureQueues_QueueName'
-              value: '3333333333333333333333333333333333333333333333333333333333333333'
+              value: AzureQueues_QueueName
             }
             {
               name: 'KernelMemory__Services__AzureAISearch_Endpoint'
-              value: '3333333333333333333333333333333333333333333333333333333333333333'
+              value: AzureAISearch_Endpoint
             }
             {
               name: 'KernelMemory__Services__AzureOpenAIText_Endpoint'
-              value: '3333333333333333333'
+              value: AzureOpenAIText_Endpoint
             }
             {
               name: 'KernelMemory__Services__AzureOpenAIText_Deployment'
-              value: '3333333333333333333'
+              value: AzureOpenAIText_Deployment
             }
             {
               name: 'KernelMemory__Services__AzureOpenAIEmbedding_Endpoint'
-              value: '3333333333333333333'
+              value: AzureOpenAIEmbedding_Endpoint
             }
             {
               name: 'KernelMemory__Services__AzureOpenAIEmbedding_Deployment'
-              value: '3333333333333333333'
+              value: AzureOpenAIEmbedding_Deployment
             }
           ]
         }
@@ -162,7 +171,9 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
   }
   identity: {
     type: 'UserAssigned'
-    userAssignedIdentities: managedIdentityId
+    userAssignedIdentities: {
+      '${managedIdentityId}': {}
+    }
   }
 }
 

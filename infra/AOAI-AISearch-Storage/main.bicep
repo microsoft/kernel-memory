@@ -50,9 +50,6 @@ module search 'search.bicep' = {
 
 var searchOutput = {
   searchName: search.outputs.searchName
-  searchIndexName: search.outputs.searchObj
-  adminKey: search.outputs.adminKey
-  queryKey: search.outputs.queryKey
 }
 
 //------- Search Module
@@ -177,6 +174,15 @@ module containerAppService 'container-app.bicep' = {
     containerAppsEnvironmentId: containerAppsEnvironmentOutput.containerAppsEnvironmentId
     appInsightsInstrumentationKey: containerAppsEnvironmentOutput.applicationInsightsInstrumentationKey
     managedIdentityId: managedidentity.outputs.managedIdentityId
+
+    AzureAISearch_Endpoint: 'https://${searchOutput.searchName}.search.windows.net'
+    AzureBlobs_Account: storageOutput.storageAccountName
+    AzureQueues_Account: storageOutput.storageAccountName
+    AzureQueues_QueueName: storageOutput.queueName
+    AzureOpenAIEmbedding_Deployment: embedding.deploymentName
+    AzureOpenAIEmbedding_Endpoint: openAi.outputs.endpoint
+    AzureOpenAIText_Deployment: chatGpt.deploymentName
+    AzureOpenAIText_Endpoint: openAi.outputs.endpoint
   }
 }
 

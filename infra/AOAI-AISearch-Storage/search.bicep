@@ -89,7 +89,7 @@ resource scriptWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 indexJson=$(cat <<EOF
 { 
-  "name": "hotels", 
+  "name": "default", 
   "fields": [ 
     { "name": "HotelId", "type": "Edm.String", "key": true, "retrievable": true, "searchable": true, "filterable": true }, 
     { "name": "HotelName", "type": "Edm.String", "retrievable": true, "searchable": true, "filterable": false, "sortable": true, "facetable": false }, 
@@ -125,9 +125,7 @@ EOF
   ]
 }
 
-output adminKey string = scriptWait.properties.outputs.adminKey
-output queryKey string = scriptWait.properties.outputs.queryKey
+// output adminKey string = scriptWait.properties.outputs.adminKey
+// output queryKey string = scriptWait.properties.outputs.queryKey
 
 output searchName string = search.name
-output searchObj object = search
-// output searchIndexName string = searchIndex.name
