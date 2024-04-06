@@ -139,16 +139,16 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
               value: '3333333333333333333'
             }
             {
-              name: '11111111111111111111'
+              name: 'KernelMemory__Services__AzureOpenAIText_Deployment'
               value: '3333333333333333333'
             }
             {
-              name: '11111111111111111111'
+              name: 'KernelMemory__Services__AzureOpenAIEmbedding_Endpoint'
               value: '3333333333333333333'
             }
             {
-              name: '44444444444444444444'
-              value: '5555555555555555555'
+              name: 'KernelMemory__Services__AzureOpenAIEmbedding_Deployment'
+              value: '3333333333333333333'
             }
           ]
         }
