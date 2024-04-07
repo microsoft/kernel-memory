@@ -33,7 +33,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
   name: kmServiceName
   location: location
   tags: {
-    CreateContainerApp1Tag: 'CreateContainerApp1TagValue'
+    // CreateContainerApp1Tag: 'CreateContainerApp1TagValue'
   }
   // kind: 'containerapps'
   properties: {
@@ -62,7 +62,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
     template: {
       containers: [
         {
-          name: 'con3app3km3service'
+          name: 'kernelmemory-service'
           image: 'docker.io/kernelmemory/service:latest'
           command: []
           resources: {
@@ -71,9 +71,13 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
           }
           env: [
             {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: 'Production'
+              //secretRef: 'appinsights-key'
+            }
+            {
               name: 'KernelMemory__Service__OpenApiEnabled'
               value: 'true'
-              //secretRef: 'appinsights-key'
             }
             {
               name: 'KernelMemory__ContentStorageType'

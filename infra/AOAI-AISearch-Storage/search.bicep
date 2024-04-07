@@ -59,7 +59,7 @@ resource search 'Microsoft.Search/searchServices@2020-08-01' = {
 }
 
 resource scriptWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
-  name: '${search.name}-wait'
+  name: '${search.name}-index'
   location: location
   kind: 'AzureCLI'
   identity: {
