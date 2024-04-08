@@ -26,6 +26,6 @@ ResourceGroup="km$RANDOM"
 
 az deployment sub create -f main.bicep --location=$Location --parameters location=$Location resourceGroupName=$ResourceGroup -c
 
-az deployment sub create -f main.bicep --location=$Location --parameters location=$Location salt=$RANDOM -c
+az deployment sub create -f main.bicep --location=$Location --parameters location=$Location suffix=$RANDOM -c
 
 # jq -n -c --arg st "Hello ${name}" \'{"text": $st}\' > $AZ_SCRIPTS_OUTPUT_PATH

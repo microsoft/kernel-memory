@@ -2,35 +2,35 @@ targetScope = 'subscription'
 
 param location string
 
-@description('Prefix to create uniqute resource names. 4-6 symbols. Default is random 6 symbols.')
+@description('Suffix to create uniqute resource names. 4-6 symbols. Default is random 6 symbols.')
 @minLength(4)
 @maxLength(6)
-param prefix string = substring(newGuid(), 0, 6)
+param suffix string = substring(newGuid(), 0, 6)
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: 'km-rg-${prefix}'
+  name: 'km-rg-${suffix}'
   location: location
 }
 
 // //------- Managed Identity
 
 module managedidentity 'managedidentity.bicep' = {
-  name: 'managedidentity-${prefix}'
+  name: 'managedidentity-${suffix}'
   scope: rg
   params: {
     location: location
-    prefix: prefix
+    suffix: suffix
   }
 }
 
 // //------- Storage Account Module
 
 module storage 'storage.bicep' = {
-  name: 'storage-${prefix}'
+  name: 'storage-${suffix}'
   scope: rg
   params: {
     location: location
-    prefix: prefix
+    suffix: suffix
   }
 }
 
@@ -42,12 +42,12 @@ var storageOutput = {
 //------- Search Module
 
 module search 'search.bicep' = {
-  name: 'search-${prefix}'
+  name: 'search-${suffix}'
   scope: rg
   params: {
     location: location
-    name: 'km-search-${prefix}'
-    prefix: prefix
+    name: 'km-search-${suffix}'
+    suffix: suffix
     managedIdentityId: managedidentity.outputs.managedIdentityId
   }
 }
@@ -59,12 +59,12 @@ var searchOutput = {
 //------- Search Module
 
 // module aoai 'aoai.bicep' = {
-//   name: 'aoai-${salt}'
+//   name: 'aoai-${suffix}'
 //   scope: rg
 //   params: {
 //     location: location
-//     name: 'aoai-${salt}'
-//     salt: '${salt}'
+//     name: 'aoai-${suffix}'
+//     suffix: '${suffix}'
 //   }
 // }
 
@@ -126,10 +126,10 @@ var openAiDeployments = [
   }
 ]
 
-var openAiServiceName = 'km-openai-${prefix}'
+var openAiServiceName = 'km-openai-${suffix}'
 
 module openAi 'cognitiveservices.bicep' = {
-  name: 'openai-${prefix}'
+  name: 'openai-${suffix}'
   scope: rg
   params: {
     name: openAiServiceName
@@ -151,11 +151,11 @@ var aoaiOutput = {
 //------- Container Apps Environment Module
 
 module containerAppsEnvironment 'container-apps-environment.bicep' = {
-  name: 'containerAppsEnvironment-${prefix}'
+  name: 'containerAppsEnvironment-${suffix}'
   scope: rg
   params: {
     location: location
-    prefix: prefix
+    suffix: suffix
   }
 }
 
@@ -171,11 +171,11 @@ var containerAppsEnvironmentOutput = {
 // //------- Container Apps Module
 
 module containerAppService 'container-app.bicep' = {
-  name: 'containerAppService-${prefix}'
+  name: 'containerAppService-${suffix}'
   scope: rg
   params: {
     location: location
-    prefix: prefix
+    suffix: suffix
     containerAppsEnvironmentId: containerAppsEnvironmentOutput.containerAppsEnvironmentId
     appInsightsInstrumentationKey: containerAppsEnvironmentOutput.applicationInsightsInstrumentationKey
     applicationInsightsConnectionString: containerAppsEnvironmentOutput.applicationInsightsConnectionString

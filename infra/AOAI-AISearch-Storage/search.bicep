@@ -1,4 +1,4 @@
-param prefix string = uniqueString(resourceGroup().id)
+param suffix string = uniqueString(resourceGroup().id)
 
 param managedIdentityId string
 

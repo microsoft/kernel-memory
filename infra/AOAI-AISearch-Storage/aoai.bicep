@@ -6,11 +6,11 @@ targetScope = 'resourceGroup'
 //    PARAMETERS
 // ------------------
 
-param salt string = uniqueString(resourceGroup().id)
+param suffix string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
 
-param name string = 'km-aoai-${salt}'
+param name string = 'km-aoai-${suffix}'
 param sku string = 'S0'
 
 resource open_ai 'Microsoft.CognitiveServices/accounts@2022-03-01' = {

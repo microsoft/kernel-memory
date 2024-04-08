@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 //    PARAMETERS
 // ------------------
 
-param prefix string = uniqueString(resourceGroup().id)
+param suffix string = uniqueString(resourceGroup().id)
 
 @description('The location where the resources will be created.')
 param location string = resourceGroup().location
