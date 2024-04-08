@@ -161,6 +161,7 @@ var containerAppsEnvironmentOutput = {
   logAnalyticsWorkspaceName: containerAppsEnvironment.outputs.logAnalyticsWorkspaceName
   applicationInsightsName: containerAppsEnvironment.outputs.applicationInsightsName
   applicationInsightsInstrumentationKey: containerAppsEnvironment.outputs.applicationInsightsInstrumentationKey
+  applicationInsightsConnectionString: containerAppsEnvironment.outputs.applicationInsightsConnectionString
 }
 
 // //------- Container Apps Module
@@ -173,7 +174,9 @@ module containerAppService 'container-app.bicep' = {
     salt: salt
     containerAppsEnvironmentId: containerAppsEnvironmentOutput.containerAppsEnvironmentId
     appInsightsInstrumentationKey: containerAppsEnvironmentOutput.applicationInsightsInstrumentationKey
+    applicationInsightsConnectionString: containerAppsEnvironmentOutput.applicationInsightsConnectionString
     managedIdentityId: managedidentity.outputs.managedIdentityId
+    managedIdentityClientId: managedidentity.outputs.managedIdentityClientId
 
     AzureAISearch_Endpoint: 'https://${searchOutput.searchName}.search.windows.net'
     AzureBlobs_Account: storageOutput.storageAccountName

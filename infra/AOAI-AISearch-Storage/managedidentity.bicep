@@ -3,7 +3,7 @@ param salt string = uniqueString(resourceGroup().id)
 @description('Managed Identity name.')
 @minLength(2)
 @maxLength(60)
-param name string = 'km-identity-${salt}'
+param name string = 'km-UAidentity-${salt}'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
@@ -12,7 +12,7 @@ param location string = resourceGroup().location
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: name
   location: location
 }
@@ -20,14 +20,15 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-
 var bootstrapRoleAssignmentId = guid('${resourceGroup().id}contributor')
 var contributorRoleDefinitionId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
 
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2021-04-01-preview' = {
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: bootstrapRoleAssignmentId
   properties: {
     roleDefinitionId: contributorRoleDefinitionId
-    principalId: reference(managedIdentity.id, '2018-11-30').principalId
+    principalId: managedIdentity.properties.principalId
     scope: resourceGroup().id
     principalType: 'ServicePrincipal'
   }
 }
 
 output managedIdentityId string = managedIdentity.id
+output managedIdentityClientId string = managedIdentity.properties.clientId

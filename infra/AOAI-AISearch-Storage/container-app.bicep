@@ -9,12 +9,14 @@ param salt string = uniqueString(resourceGroup().id)
 param location string = resourceGroup().location
 
 param managedIdentityId string
+param managedIdentityClientId string
 
 // param subscriptionId string
 param kmServiceName string = 'km-service-${salt}'
 
 param containerAppsEnvironmentId string
 param appInsightsInstrumentationKey string
+param applicationInsightsConnectionString string
 
 param AzureBlobs_Account string
 param AzureQueues_Account string
@@ -76,6 +78,15 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
               //secretRef: 'appinsights-key'
             }
             {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: applicationInsightsConnectionString
+            }
+
+            {
+              name: 'AZURE_CLIENT_ID'
+              value: managedIdentityClientId
+            }
+            {
               name: 'KernelMemory__Service__OpenApiEnabled'
               value: 'true'
             }
@@ -132,35 +143,35 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
               value: 'AzureAISearch'
             }
             {
-              name: 'KernelMemory__Services__AzureBlobs_Account'
+              name: 'KernelMemory__Services__AzureBlobs__Account'
               value: AzureBlobs_Account
             }
             {
-              name: 'KernelMemory__Services__AzureQueues_Account'
+              name: 'KernelMemory__Services__AzureQueues__Account'
               value: AzureQueues_Account
             }
             {
-              name: 'KernelMemory__Services__AzureQueues_QueueName'
+              name: 'KernelMemory__Services__AzureQueues__QueueName'
               value: AzureQueues_QueueName
             }
             {
-              name: 'KernelMemory__Services__AzureAISearch_Endpoint'
+              name: 'KernelMemory__Services__AzureAISearch__Endpoint'
               value: AzureAISearch_Endpoint
             }
             {
-              name: 'KernelMemory__Services__AzureOpenAIText_Endpoint'
+              name: 'KernelMemory__Services__AzureOpenAIText__Endpoint'
               value: AzureOpenAIText_Endpoint
             }
             {
-              name: 'KernelMemory__Services__AzureOpenAIText_Deployment'
+              name: 'KernelMemory__Services__AzureOpenAIText__Deployment'
               value: AzureOpenAIText_Deployment
             }
             {
-              name: 'KernelMemory__Services__AzureOpenAIEmbedding_Endpoint'
+              name: 'KernelMemory__Services__AzureOpenAIEmbedding__Endpoint'
               value: AzureOpenAIEmbedding_Endpoint
             }
             {
-              name: 'KernelMemory__Services__AzureOpenAIEmbedding_Deployment'
+              name: 'KernelMemory__Services__AzureOpenAIEmbedding__Deployment'
               value: AzureOpenAIEmbedding_Deployment
             }
           ]
