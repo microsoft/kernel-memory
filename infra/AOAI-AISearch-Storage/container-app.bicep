@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 //    PARAMETERS
 // ------------------
 
-param salt string = uniqueString(resourceGroup().id)
+param prefix string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
 
@@ -12,7 +12,7 @@ param managedIdentityId string
 param managedIdentityClientId string
 
 // param subscriptionId string
-param kmServiceName string = 'km-service-${salt}'
+param kmServiceName string = 'km-service-${prefix}'
 
 param containerAppsEnvironmentId string
 param appInsightsInstrumentationKey string

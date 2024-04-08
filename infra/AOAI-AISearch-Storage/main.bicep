@@ -1,32 +1,36 @@
 targetScope = 'subscription'
 
 param location string
-param salt string
+
+@description('Prefix to create uniqute resource names. 4-6 symbols. Default is random 6 symbols.')
+@minLength(4)
+@maxLength(6)
+param prefix string = substring(newGuid(), 0, 6)
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: 'km-rg-${salt}'
+  name: 'km-rg-${prefix}'
   location: location
 }
 
 // //------- Managed Identity
 
 module managedidentity 'managedidentity.bicep' = {
-  name: 'managedidentity-${salt}'
+  name: 'managedidentity-${prefix}'
   scope: rg
   params: {
     location: location
-    salt: salt
+    prefix: prefix
   }
 }
 
 // //------- Storage Account Module
 
 module storage 'storage.bicep' = {
-  name: 'storage-${salt}'
+  name: 'storage-${prefix}'
   scope: rg
   params: {
     location: location
-    salt: salt
+    prefix: prefix
   }
 }
 
@@ -38,12 +42,12 @@ var storageOutput = {
 //------- Search Module
 
 module search 'search.bicep' = {
-  name: 'search-${salt}'
+  name: 'search-${prefix}'
   scope: rg
   params: {
     location: location
-    name: 'km-search-${salt}'
-    salt: salt
+    name: 'km-search-${prefix}'
+    prefix: prefix
     managedIdentityId: managedidentity.outputs.managedIdentityId
   }
 }
@@ -65,15 +69,15 @@ var searchOutput = {
 // }
 
 //https://github.com/Azure-Samples/azure-search-openai-demo/blob/main/infra/main.bicep
-@allowed(['azure', 'openai', 'azure_custom'])
-param openAiHost string = 'azure'
+// @allowed(['azure', 'openai', 'azure_custom'])
+var openAiHost = 'azure'
 
-param openAiSkuName string = 'S0'
+var openAiSkuName = 'S0'
 
-param chatGptModelName string = ''
-param chatGptDeploymentName string = ''
-param chatGptDeploymentVersion string = ''
-param chatGptDeploymentCapacity int = 0
+var chatGptModelName = ''
+var chatGptDeploymentName = ''
+var chatGptDeploymentVersion = ''
+var chatGptDeploymentCapacity = 0
 var chatGpt = {
   modelName: !empty(chatGptModelName)
     ? chatGptModelName
@@ -83,11 +87,11 @@ var chatGpt = {
   deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 29
 }
 
-param embeddingModelName string = ''
-param embeddingDeploymentName string = ''
-param embeddingDeploymentVersion string = ''
-param embeddingDeploymentCapacity int = 0
-param embeddingDimensions int = 0
+var embeddingModelName = ''
+var embeddingDeploymentName = ''
+var embeddingDeploymentVersion = ''
+var embeddingDeploymentCapacity = 0
+var embeddingDimensions = 0
 var embedding = {
   modelName: !empty(embeddingModelName) ? embeddingModelName : 'text-embedding-ada-002'
   deploymentName: !empty(embeddingDeploymentName) ? embeddingDeploymentName : 'embedding'
@@ -122,10 +126,10 @@ var openAiDeployments = [
   }
 ]
 
-var openAiServiceName = 'km-openai-${salt}'
+var openAiServiceName = 'km-openai-${prefix}'
 
 module openAi 'cognitiveservices.bicep' = {
-  name: 'openai-${salt}'
+  name: 'openai-${prefix}'
   scope: rg
   params: {
     name: openAiServiceName
@@ -147,11 +151,11 @@ var aoaiOutput = {
 //------- Container Apps Environment Module
 
 module containerAppsEnvironment 'container-apps-environment.bicep' = {
-  name: 'containerAppsEnvironment-${salt}'
+  name: 'containerAppsEnvironment-${prefix}'
   scope: rg
   params: {
     location: location
-    salt: salt
+    prefix: prefix
   }
 }
 
@@ -167,11 +171,11 @@ var containerAppsEnvironmentOutput = {
 // //------- Container Apps Module
 
 module containerAppService 'container-app.bicep' = {
-  name: 'containerAppService-${salt}'
+  name: 'containerAppService-${prefix}'
   scope: rg
   params: {
     location: location
-    salt: salt
+    prefix: prefix
     containerAppsEnvironmentId: containerAppsEnvironmentOutput.containerAppsEnvironmentId
     appInsightsInstrumentationKey: containerAppsEnvironmentOutput.applicationInsightsInstrumentationKey
     applicationInsightsConnectionString: containerAppsEnvironmentOutput.applicationInsightsConnectionString

@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 //    PARAMETERS
 // ------------------
 
-param salt string = uniqueString(resourceGroup().id)
+param prefix string = uniqueString(resourceGroup().id)
 
 // @description('The location where the resources will be created.')
 param location string = resourceGroup().location
@@ -13,13 +13,13 @@ param location string = resourceGroup().location
 param tags object = {}
 
 @description('The name of the Azure Storage Account.')
-param storageAccountName string = 'kmstorage${salt}' //'storage${uniqueString(resourceGroup().id)}'
+param storageAccountName string = 'kmstorage${prefix}' //'storage${uniqueString(resourceGroup().id)}'
 
 @description('The name of the Container in Azure Storage.')
 param storageBlobContainerName string = 'smemory'
 
 @description('The name of the Queue in Azure Storage.')
-param externalTasksQueueName string = 'km-queue-${salt}'
+param externalTasksQueueName string = 'km-queue-${prefix}'
 
 // ------------------
 // RESOURCES

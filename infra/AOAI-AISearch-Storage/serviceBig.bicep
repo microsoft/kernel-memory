@@ -4,7 +4,7 @@ targetScope = 'resourceGroup'
 //    PARAMETERS
 // ------------------
 
-param salt string = uniqueString(resourceGroup().id)
+param prefix string = uniqueString(resourceGroup().id)
 
 @description('The location where the resources will be created.')
 param location string = resourceGroup().location
@@ -46,7 +46,7 @@ resource frontendWebAppService 'Microsoft.App/containerApps@2022-06-01-preview' 
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-        '${containerRegistryUserAssignedIdentityId}': {}
+      '${containerRegistryUserAssignedIdentityId}': {}
     }
   }
   properties: {
@@ -71,12 +71,14 @@ resource frontendWebAppService 'Microsoft.App/containerApps@2022-06-01-preview' 
           value: appInsightsInstrumentationKey
         }
       ]
-      registries: !empty(containerRegistryName) ? [
-        {
-          server: '${containerRegistryName}.azurecr.io'
-          identity: containerRegistryUserAssignedIdentityId
-        }
-      ] : []
+      registries: !empty(containerRegistryName)
+        ? [
+            {
+              server: '${containerRegistryName}.azurecr.io'
+              identity: containerRegistryUserAssignedIdentityId
+            }
+          ]
+        : []
     }
     template: {
       containers: [

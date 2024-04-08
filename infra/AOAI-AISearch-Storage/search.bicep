@@ -1,4 +1,4 @@
-param salt string = uniqueString(resourceGroup().id)
+param prefix string = uniqueString(resourceGroup().id)
 
 param managedIdentityId string
 

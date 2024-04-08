@@ -5,78 +5,46 @@
     "_generator": {
       "name": "bicep",
       "version": "0.23.1.45101",
-      "templateHash": "4719043784632671292"
+      "templateHash": "6647865980970880747"
     }
   },
   "parameters": {
     "location": {
       "type": "string"
     },
-    "salt": {
-      "type": "string"
-    },
-    "openAiHost": {
+    "prefix": {
       "type": "string",
-      "defaultValue": "azure",
-      "allowedValues": [
-        "azure",
-        "openai",
-        "azure_custom"
-      ]
-    },
-    "openAiSkuName": {
-      "type": "string",
-      "defaultValue": "S0"
-    },
-    "chatGptModelName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "chatGptDeploymentName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "chatGptDeploymentVersion": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "chatGptDeploymentCapacity": {
-      "type": "int",
-      "defaultValue": 0
-    },
-    "embeddingModelName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "embeddingDeploymentName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "embeddingDeploymentVersion": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "embeddingDeploymentCapacity": {
-      "type": "int",
-      "defaultValue": 0
-    },
-    "embeddingDimensions": {
-      "type": "int",
-      "defaultValue": 0
+      "defaultValue": "[substring(newGuid(), 0, 6)]",
+      "minLength": 4,
+      "maxLength": 6,
+      "metadata": {
+        "description": "Prefix to create uniqute resource names. 4-6 symbols. Default is random 6 symbols."
+      }
     }
   },
   "variables": {
+    "openAiHost": "azure",
+    "openAiSkuName": "S0",
+    "chatGptModelName": "",
+    "chatGptDeploymentName": "",
+    "chatGptDeploymentVersion": "",
+    "chatGptDeploymentCapacity": 0,
     "chatGpt": {
-      "modelName": "[if(not(empty(parameters('chatGptModelName'))), parameters('chatGptModelName'), if(startsWith(parameters('openAiHost'), 'azure'), 'gpt-35-turbo', 'gpt-3.5-turbo'))]",
-      "deploymentName": "[if(not(empty(parameters('chatGptDeploymentName'))), parameters('chatGptDeploymentName'), 'chat')]",
-      "deploymentVersion": "[if(not(empty(parameters('chatGptDeploymentVersion'))), parameters('chatGptDeploymentVersion'), '0613')]",
-      "deploymentCapacity": "[if(not(equals(parameters('chatGptDeploymentCapacity'), 0)), parameters('chatGptDeploymentCapacity'), 29)]"
+      "modelName": "[if(not(empty(variables('chatGptModelName'))), variables('chatGptModelName'), if(startsWith(variables('openAiHost'), 'azure'), 'gpt-35-turbo', 'gpt-3.5-turbo'))]",
+      "deploymentName": "[if(not(empty(variables('chatGptDeploymentName'))), variables('chatGptDeploymentName'), 'chat')]",
+      "deploymentVersion": "[if(not(empty(variables('chatGptDeploymentVersion'))), variables('chatGptDeploymentVersion'), '0613')]",
+      "deploymentCapacity": "[if(not(equals(variables('chatGptDeploymentCapacity'), 0)), variables('chatGptDeploymentCapacity'), 29)]"
     },
+    "embeddingModelName": "",
+    "embeddingDeploymentName": "",
+    "embeddingDeploymentVersion": "",
+    "embeddingDeploymentCapacity": 0,
+    "embeddingDimensions": 0,
     "embedding": {
-      "modelName": "[if(not(empty(parameters('embeddingModelName'))), parameters('embeddingModelName'), 'text-embedding-ada-002')]",
-      "deploymentName": "[if(not(empty(parameters('embeddingDeploymentName'))), parameters('embeddingDeploymentName'), 'embedding')]",
-      "deploymentVersion": "[if(not(empty(parameters('embeddingDeploymentVersion'))), parameters('embeddingDeploymentVersion'), '2')]",
-      "deploymentCapacity": "[if(not(equals(parameters('embeddingDeploymentCapacity'), 0)), parameters('embeddingDeploymentCapacity'), 29)]"
+      "modelName": "[if(not(empty(variables('embeddingModelName'))), variables('embeddingModelName'), 'text-embedding-ada-002')]",
+      "deploymentName": "[if(not(empty(variables('embeddingDeploymentName'))), variables('embeddingDeploymentName'), 'embedding')]",
+      "deploymentVersion": "[if(not(empty(variables('embeddingDeploymentVersion'))), variables('embeddingDeploymentVersion'), '2')]",
+      "deploymentCapacity": "[if(not(equals(variables('embeddingDeploymentCapacity'), 0)), variables('embeddingDeploymentCapacity'), 29)]"
     },
     "openAiDeployments": [
       {
@@ -104,20 +72,20 @@
         }
       }
     ],
-    "openAiServiceName": "[format('km-openai-{0}', parameters('salt'))]"
+    "openAiServiceName": "[format('km-openai-{0}', parameters('prefix'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2021-04-01",
-      "name": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('km-rg-{0}', parameters('prefix'))]",
       "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('managedidentity-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('managedidentity-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -127,8 +95,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "salt": {
-            "value": "[parameters('salt')]"
+          "prefix": {
+            "value": "[parameters('prefix')]"
           }
         },
         "template": {
@@ -138,17 +106,17 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "12633626171752025300"
+              "templateHash": "1518651883064889504"
             }
           },
           "parameters": {
-            "salt": {
+            "prefix": {
               "type": "string",
               "defaultValue": "[uniqueString(resourceGroup().id)]"
             },
             "name": {
               "type": "string",
-              "defaultValue": "[format('km-UAidentity-{0}', parameters('salt'))]",
+              "defaultValue": "[format('km-UAidentity-{0}', parameters('prefix'))]",
               "minLength": 2,
               "maxLength": 60,
               "metadata": {
@@ -202,14 +170,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('storage-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('storage-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -219,8 +187,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "salt": {
-            "value": "[parameters('salt')]"
+          "prefix": {
+            "value": "[parameters('prefix')]"
           }
         },
         "template": {
@@ -230,11 +198,11 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "4037839384843090284"
+              "templateHash": "12895560271336334505"
             }
           },
           "parameters": {
-            "salt": {
+            "prefix": {
               "type": "string",
               "defaultValue": "[uniqueString(resourceGroup().id)]"
             },
@@ -251,7 +219,7 @@
             },
             "storageAccountName": {
               "type": "string",
-              "defaultValue": "[format('kmstorage{0}', parameters('salt'))]",
+              "defaultValue": "[format('kmstorage{0}', parameters('prefix'))]",
               "metadata": {
                 "description": "The name of the Azure Storage Account."
               }
@@ -265,7 +233,7 @@
             },
             "externalTasksQueueName": {
               "type": "string",
-              "defaultValue": "[format('km-queue-{0}', parameters('salt'))]",
+              "defaultValue": "[format('km-queue-{0}', parameters('prefix'))]",
               "metadata": {
                 "description": "The name of the Queue in Azure Storage."
               }
@@ -342,14 +310,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('search-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('search-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -360,13 +328,13 @@
             "value": "[parameters('location')]"
           },
           "name": {
-            "value": "[format('km-search-{0}', parameters('salt'))]"
+            "value": "[format('km-search-{0}', parameters('prefix'))]"
           },
-          "salt": {
-            "value": "[parameters('salt')]"
+          "prefix": {
+            "value": "[parameters('prefix')]"
           },
           "managedIdentityId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('salt'))), '2022-09-01').outputs.managedIdentityId.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('prefix'))), '2022-09-01').outputs.managedIdentityId.value]"
           }
         },
         "template": {
@@ -376,11 +344,11 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "5506240587089064331"
+              "templateHash": "7306773939275652208"
             }
           },
           "parameters": {
-            "salt": {
+            "prefix": {
               "type": "string",
               "defaultValue": "[uniqueString(resourceGroup().id)]"
             },
@@ -511,15 +479,15 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('salt')))]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]"
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('prefix')))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('openai-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('openai-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -534,7 +502,7 @@
           },
           "sku": {
             "value": {
-              "name": "[parameters('openAiSkuName')]"
+              "name": "[variables('openAiSkuName')]"
             }
           },
           "deployments": {
@@ -654,14 +622,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('containerAppsEnvironment-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('containerAppsEnvironment-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -671,8 +639,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "salt": {
-            "value": "[parameters('salt')]"
+          "prefix": {
+            "value": "[parameters('prefix')]"
           }
         },
         "template": {
@@ -682,11 +650,11 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "10527121551821011096"
+              "templateHash": "1292219102605577382"
             }
           },
           "parameters": {
-            "salt": {
+            "prefix": {
               "type": "string",
               "defaultValue": "[uniqueString(resourceGroup().id)]"
             },
@@ -706,21 +674,21 @@
             },
             "containerAppsEnvironmentName": {
               "type": "string",
-              "defaultValue": "[format('km-cae-{0}', parameters('salt'))]",
+              "defaultValue": "[format('km-cae-{0}', parameters('prefix'))]",
               "metadata": {
                 "description": "The name of the container apps environment. If set, it overrides the name generated by the template."
               }
             },
             "logAnalyticsWorkspaceName": {
               "type": "string",
-              "defaultValue": "[format('km-log-{0}', parameters('salt'))]",
+              "defaultValue": "[format('km-log-{0}', parameters('prefix'))]",
               "metadata": {
                 "description": "The name of the log analytics workspace. If set, it overrides the name generated by the template."
               }
             },
             "applicationInsightsName": {
               "type": "string",
-              "defaultValue": "[format('km-appins-{0}', parameters('salt'))]",
+              "defaultValue": "[format('km-appins-{0}', parameters('prefix'))]",
               "metadata": {
                 "description": " The name of the application insights. If set, it overrides the name generated by the template."
               }
@@ -815,14 +783,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
-      "name": "[format('containerAppService-{0}', parameters('salt'))]",
-      "resourceGroup": "[format('km-rg-{0}', parameters('salt'))]",
+      "name": "[format('containerAppService-{0}', parameters('prefix'))]",
+      "resourceGroup": "[format('km-rg-{0}', parameters('prefix'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -832,47 +800,47 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "salt": {
-            "value": "[parameters('salt')]"
+          "prefix": {
+            "value": "[parameters('prefix')]"
           },
           "containerAppsEnvironmentId": {
-            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).containerAppsEnvironmentId]"
+            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).containerAppsEnvironmentId]"
           },
           "appInsightsInstrumentationKey": {
-            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).applicationInsightsInstrumentationKey]"
+            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).applicationInsightsInstrumentationKey]"
           },
           "applicationInsightsConnectionString": {
-            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).applicationInsightsConnectionString]"
+            "value": "[createObject('containerAppsEnvironmentId', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentId.value, 'containerAppsEnvironmentName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentName.value, 'logAnalyticsWorkspaceName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value, 'applicationInsightsName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsName.value, 'applicationInsightsInstrumentationKey', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value, 'applicationInsightsConnectionString', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsConnectionString.value).applicationInsightsConnectionString]"
           },
           "managedIdentityId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('salt'))), '2022-09-01').outputs.managedIdentityId.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('prefix'))), '2022-09-01').outputs.managedIdentityId.value]"
           },
           "managedIdentityClientId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('salt'))), '2022-09-01').outputs.managedIdentityClientId.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('prefix'))), '2022-09-01').outputs.managedIdentityClientId.value]"
           },
           "AzureAISearch_Endpoint": {
-            "value": "[format('https://{0}.search.windows.net', createObject('searchName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('salt'))), '2022-09-01').outputs.searchName.value).searchName)]"
+            "value": "[format('https://{0}.search.windows.net', createObject('searchName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('prefix'))), '2022-09-01').outputs.searchName.value).searchName)]"
           },
           "AzureBlobs_Account": {
-            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.queueName.value).storageAccountName]"
+            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.queueName.value).storageAccountName]"
           },
           "AzureQueues_Account": {
-            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.queueName.value).storageAccountName]"
+            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.queueName.value).storageAccountName]"
           },
           "AzureQueues_QueueName": {
-            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.queueName.value).queueName]"
+            "value": "[createObject('storageAccountName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.storageAccountName.value, 'queueName', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.queueName.value).queueName]"
           },
           "AzureOpenAIEmbedding_Deployment": {
             "value": "[variables('embedding').deploymentName]"
           },
           "AzureOpenAIEmbedding_Endpoint": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt'))), '2022-09-01').outputs.endpoint.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix'))), '2022-09-01').outputs.endpoint.value]"
           },
           "AzureOpenAIText_Deployment": {
             "value": "[variables('chatGpt').deploymentName]"
           },
           "AzureOpenAIText_Endpoint": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt'))), '2022-09-01').outputs.endpoint.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix'))), '2022-09-01').outputs.endpoint.value]"
           }
         },
         "template": {
@@ -882,11 +850,11 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "8076937492635525586"
+              "templateHash": "10924686289344609195"
             }
           },
           "parameters": {
-            "salt": {
+            "prefix": {
               "type": "string",
               "defaultValue": "[uniqueString(resourceGroup().id)]"
             },
@@ -902,7 +870,7 @@
             },
             "kmServiceName": {
               "type": "string",
-              "defaultValue": "[format('km-service-{0}', parameters('salt'))]"
+              "defaultValue": "[format('km-service-{0}', parameters('prefix'))]"
             },
             "containerAppsEnvironmentId": {
               "type": "string"
@@ -1108,12 +1076,12 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('salt')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt')))]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('salt')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('salt')))]",
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt')))]"
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('prefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix')))]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('km-rg-{0}', parameters('prefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('prefix')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix')))]"
       ]
     }
   ],
@@ -1121,40 +1089,40 @@
     "storageOutput": {
       "type": "object",
       "value": {
-        "storageAccountName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.storageAccountName.value]",
-        "queueName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('salt'))), '2022-09-01').outputs.queueName.value]"
+        "storageAccountName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.storageAccountName.value]",
+        "queueName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('storage-{0}', parameters('prefix'))), '2022-09-01').outputs.queueName.value]"
       }
     },
     "searchOutput": {
       "type": "object",
       "value": {
-        "searchName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('salt'))), '2022-09-01').outputs.searchName.value]"
+        "searchName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('search-{0}', parameters('prefix'))), '2022-09-01').outputs.searchName.value]"
       }
     },
     "containerAppsEnvironmentOutput": {
       "type": "object",
       "value": {
-        "containerAppsEnvironmentId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentId.value]",
-        "containerAppsEnvironmentName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.containerAppsEnvironmentName.value]",
-        "logAnalyticsWorkspaceName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value]",
-        "applicationInsightsName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsName.value]",
-        "applicationInsightsInstrumentationKey": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value]",
-        "applicationInsightsConnectionString": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('salt'))), '2022-09-01').outputs.applicationInsightsConnectionString.value]"
+        "containerAppsEnvironmentId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentId.value]",
+        "containerAppsEnvironmentName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.containerAppsEnvironmentName.value]",
+        "logAnalyticsWorkspaceName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.logAnalyticsWorkspaceName.value]",
+        "applicationInsightsName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsName.value]",
+        "applicationInsightsInstrumentationKey": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsInstrumentationKey.value]",
+        "applicationInsightsConnectionString": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('prefix'))), '2022-09-01').outputs.applicationInsightsConnectionString.value]"
       }
     },
     "serviceOutput": {
       "type": "object",
       "value": {
-        "kmServiceId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppService-{0}', parameters('salt'))), '2022-09-01').outputs.kmServiceId.value]",
-        "kmServiceName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('containerAppService-{0}', parameters('salt'))), '2022-09-01').outputs.kmServiceName.value]"
+        "kmServiceId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppService-{0}', parameters('prefix'))), '2022-09-01').outputs.kmServiceId.value]",
+        "kmServiceName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('containerAppService-{0}', parameters('prefix'))), '2022-09-01').outputs.kmServiceName.value]"
       }
     },
     "aoaiOutput": {
       "type": "object",
       "value": {
-        "aoaiEndpoint": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt'))), '2022-09-01').outputs.endpoint.value]",
-        "aoaiId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt'))), '2022-09-01').outputs.id.value]",
-        "aoaiName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('salt'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('salt'))), '2022-09-01').outputs.name.value]"
+        "aoaiEndpoint": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix'))), '2022-09-01').outputs.endpoint.value]",
+        "aoaiId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix'))), '2022-09-01').outputs.id.value]",
+        "aoaiName": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('km-rg-{0}', parameters('prefix'))), 'Microsoft.Resources/deployments', format('openai-{0}', parameters('prefix'))), '2022-09-01').outputs.name.value]"
       }
     }
   }

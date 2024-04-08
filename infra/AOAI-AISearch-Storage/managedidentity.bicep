@@ -1,9 +1,9 @@
-param salt string = uniqueString(resourceGroup().id)
+param prefix string = uniqueString(resourceGroup().id)
 
 @description('Managed Identity name.')
 @minLength(2)
 @maxLength(60)
-param name string = 'km-UAidentity-${salt}'
+param name string = 'km-UAidentity-${prefix}'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
