@@ -15,7 +15,7 @@ public class MsExcelDecoder
     private const string DefaultRowPrefix = "";
     private const string DefaultColumnSeparator = ", ";
     private const string DefaultRowSuffix = "";
-    private const string DefaultBlankCellValue = "Blank";
+    private const string DefaultBlankCellValue = "";
 
     private readonly bool _withWorksheetNumber;
     private readonly bool _withEndOfWorksheetMarker;
