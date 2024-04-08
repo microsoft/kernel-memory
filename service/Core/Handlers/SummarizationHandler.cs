@@ -63,7 +63,13 @@ public class SummarizationHandler : IPipelineStepHandler
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
 
-            await Parallel.ForEachAsync(uploadedFile.GeneratedFiles, cancellationToken, async (generatedFile, token) =>
+            var options = new ParallelOptions()
+            {
+                CancellationToken = cancellationToken,
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+
+            await Parallel.ForEachAsync(uploadedFile.GeneratedFiles, options, async (generatedFile, token) =>
             {
                 var file = generatedFile.Value;
 
