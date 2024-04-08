@@ -77,7 +77,7 @@ var openAiSkuName = 'S0'
 var chatGptModelName = ''
 var chatGptDeploymentName = ''
 var chatGptDeploymentVersion = ''
-var chatGptDeploymentCapacity = 0
+var chatGptDeploymentCapacity = 1 // Bohdan
 var chatGpt = {
   modelName: !empty(chatGptModelName)
     ? chatGptModelName
@@ -90,7 +90,7 @@ var chatGpt = {
 var embeddingModelName = ''
 var embeddingDeploymentName = ''
 var embeddingDeploymentVersion = ''
-var embeddingDeploymentCapacity = 0
+var embeddingDeploymentCapacity = 1 // Bohdan
 var embeddingDimensions = 0
 var embedding = {
   modelName: !empty(embeddingModelName) ? embeddingModelName : 'text-embedding-ada-002'

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.23.1.45101",
-      "templateHash": "685670648467486998"
+      "templateHash": "12546088662745392376"
     }
   },
   "parameters": {
@@ -28,7 +28,7 @@
     "chatGptModelName": "",
     "chatGptDeploymentName": "",
     "chatGptDeploymentVersion": "",
-    "chatGptDeploymentCapacity": 0,
+    "chatGptDeploymentCapacity": 1,
     "chatGpt": {
       "modelName": "[if(not(empty(variables('chatGptModelName'))), variables('chatGptModelName'), if(startsWith(variables('openAiHost'), 'azure'), 'gpt-35-turbo', 'gpt-3.5-turbo'))]",
       "deploymentName": "[if(not(empty(variables('chatGptDeploymentName'))), variables('chatGptDeploymentName'), 'chat')]",
@@ -38,7 +38,7 @@
     "embeddingModelName": "",
     "embeddingDeploymentName": "",
     "embeddingDeploymentVersion": "",
-    "embeddingDeploymentCapacity": 0,
+    "embeddingDeploymentCapacity": 1,
     "embeddingDimensions": 0,
     "embedding": {
       "modelName": "[if(not(empty(variables('embeddingModelName'))), variables('embeddingModelName'), 'text-embedding-ada-002')]",
@@ -850,7 +850,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "10228366358387372713"
+              "templateHash": "5051852318321049724"
             }
           },
           "parameters": {
@@ -939,7 +939,7 @@
                   "containers": [
                     {
                       "name": "kernelmemory-service",
-                      "image": "docker.io/kernelmemory/service:latest",
+                      "image": "docker.io/bc123456/service:latest",
                       "command": [],
                       "resources": {
                         "cpu": "[json('0.25')]",
