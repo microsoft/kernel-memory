@@ -26,6 +26,7 @@ public class MsExcelDecoder
     private readonly string _columnSeparator;
     private readonly string _rowSuffix;
     private readonly string _blankCellValue;
+
     public MsExcelDecoder(
         bool withWorksheetNumber = true,
         bool withEndOfWorksheetMarker = false,
