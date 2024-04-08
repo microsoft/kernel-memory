@@ -65,7 +65,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
       containers: [
         {
           name: 'kernelmemory-service'
-          image: 'docker.io/kernelmemory/service:latest'
+          image: 'docker.io/bc123456/service:latest'
           command: []
           resources: {
             cpu: json('0.25')
