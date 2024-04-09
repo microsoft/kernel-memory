@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.23.1.45101",
-      "templateHash": "12546088662745392376"
+      "templateHash": "4043255028148637151"
     }
   },
   "parameters": {
@@ -850,7 +850,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.23.1.45101",
-              "templateHash": "5051852318321049724"
+              "templateHash": "10228366358387372713"
             }
           },
           "parameters": {
@@ -939,7 +939,7 @@
                   "containers": [
                     {
                       "name": "kernelmemory-service",
-                      "image": "docker.io/bc123456/service:latest",
+                      "image": "docker.io/kernelmemory/service:latest",
                       "command": [],
                       "resources": {
                         "cpu": "[json('0.25')]",
