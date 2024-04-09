@@ -1,20 +1,16 @@
-// targetScope = 'subscription'
+targetScope = 'subscription'
 
-var rg = resourceGroup()
-
-var location = resourceGroup().location
+param location string
 
 @description('Suffix to create uniqute resource names. 4-6 symbols. Default is random 6 symbols.')
 @minLength(4)
 @maxLength(6)
 param suffix string = substring(newGuid(), 0, 6)
 
-// resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-//   name: 'km-rg-${suffix}'
-//   location: location
-// }
-
-/////////////////////////////////////////////////////////////////////////////////////////
+resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+  name: 'km-rg-${suffix}'
+  location: location
+}
 
 // //------- Managed Identity
 

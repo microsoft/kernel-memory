@@ -1,0 +1,490 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ResourcePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "provide a 2-13 character prefix for all resources."
+      }
+    },
+    "AzureCognitiveSearch": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-search')]",
+      "metadata": {
+        "description": "Azure Cognitive Search Resource"
+      }
+    },
+    "AzureCognitiveSearchSku": {
+      "type": "string",
+      "defaultValue": "standard",
+      "allowedValues": [
+        "free",
+        "basic",
+        "standard",
+        "standard2",
+        "standard3"
+      ],
+      "metadata": {
+        "description": "The SKU of the search service you want to create. E.g. free or standard"
+      }
+    },
+    "HostingPlanName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-plan')]",
+      "metadata": {
+        "description": "Name of App Service plan"
+      }
+    },
+    "HostingPlanSku": {
+      "type": "string",
+      "defaultValue": "B3",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "The pricing tier for the App Service plan"
+      }
+    },
+    "StorageAccountName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), 'str')]",
+      "metadata": {
+        "description": "Name of Storage Account"
+      }
+    },
+    "WebsiteName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-site')]",
+      "metadata": {
+        "description": "Name of Web App"
+      }
+    },
+    "FunctionName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-batchfunc')]",
+      "metadata": {
+        "description": "Name of Function App for Batch document processing"
+      }
+    },
+    "ApplicationInsightsName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-appinsights')]",
+      "metadata": {
+        "description": "Name of Application Insights"
+      }
+    },
+    "FormRecognizerName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-formrecog')]",
+      "metadata": {
+        "description": "Azure Form Recognizer Name"
+      }
+    },
+    "TranslatorName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('ResourcePrefix'), '-translator')]",
+      "metadata": {
+        "description": "Azure Translator Name"
+      }
+    },
+    "OpenAIName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of OpenAI Resource"
+      }
+    },
+    "OpenAIKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "OpenAI API Key"
+      }
+    },
+    "OpenAIEngine": {
+      "type": "string",
+      "defaultValue": "text-davinci-003",
+      "metadata": {
+        "description": "OpenAI Engine"
+      }
+    },
+    "OpenAIDeploymentType": {
+      "type": "string",
+      "defaultValue": "Text",
+      "metadata": {
+        "description": "OpenAI Deployment Type. Text for an Instructions based deployment (text-davinci-003). Chat for a Chat based deployment (gpt-35-turbo or gpt-4-32k or gpt-4)."
+      }
+    },
+    "OpenAIEmbeddingsEngineDoc": {
+      "type": "string",
+      "defaultValue": "text-embedding-ada-002",
+      "metadata": {
+        "description": "OpenAI Embeddings Engine for Documents"
+      }
+    },
+    "OpenAIEmbeddingsEngineQuery": {
+      "type": "string",
+      "defaultValue": "text-embedding-ada-002",
+      "metadata": {
+        "description": "OpenAI Embeddings Engine for Queries"
+      }
+    },
+    "newGuid": {
+      "type": "string",
+      "defaultValue": "[newGuid()]"
+    }
+  },
+  "variables": {
+    "WebAppImageName": "DOCKER|fruocco/oai-embeddings",
+    "BlobContainerName": "documents",
+    "QueueName": "doc-processing",
+    "ClientKey": "[concat(uniqueString(guid(resourceGroup().id, deployment().name)), parameters('newGuid'), 'Tg2%')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-19",
+      "name": "[parameters('AzureCognitiveSearch')]",
+      "type": "Microsoft.Search/searchServices",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[parameters('AzureCognitiveSearchSku')]"
+      },
+      "properties": {
+        "replicaCount": 1,
+        "partitionCount": 1
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2022-12-01",
+      "name": "[parameters('FormRecognizerName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "FormRecognizer",
+      "identity": {
+        "type": "None"
+      },
+      "properties": {
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "virtualNetworkRules": [],
+          "ipRules": []
+        },
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2022-12-01",
+      "name": "[parameters('TranslatorName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "S1"
+      },
+      "kind": "TextTranslation",
+      "identity": {
+        "type": "None"
+      },
+      "properties": {
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "virtualNetworkRules": [],
+          "ipRules": []
+        },
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('HostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[parameters('HostingPlanSku')]"
+      },
+      "properties": {
+        "name": "[parameters('HostingPlanName')]",
+        "reserved": true
+      },
+      "kind": "linux"
+    },
+    {
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('WebsiteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('HostingPlanName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[parameters('HostingPlanName')]",
+        "siteConfig": {
+          "linuxFxVersion": "[variables('WebAppImageName')]"
+        }
+      }
+    },
+    {
+      "name": "[parameters('StorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-08-01",
+      "location": "[resourceGroup().location]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_GRS"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2021-08-01",
+      "name": "[concat(parameters('StorageAccountName'), '/default/', variables('BlobContainerName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ],
+      "properties": {
+        "publicAccess": "None"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/queueServices",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('StorageAccountName'), '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ],
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('StorageAccountName'), '/default/doc-processing')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('StorageAccountName'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ],
+      "properties": {
+        "metadata": {}
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('StorageAccountName'), '/default/doc-processing-poison')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('StorageAccountName'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName'))]"
+      ],
+      "properties": {
+        "metadata": {}
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[parameters('ApplicationInsightsName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "[concat('hidden-link:', resourceId('Microsoft.Web/sites', parameters('ApplicationInsightsName')))]": "Resource"
+      },
+      "properties": {
+        "Application_Type": "web"
+      },
+      "kind": "web"
+    },
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('FunctionName')]",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp,linux",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', parameters('HostingPlanName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('StorageAccountName'))]",
+        "[concat('Microsoft.Insights/components/', parameters('ApplicationInsightsName'))]"
+      ],
+      "properties": {
+        "name": "[parameters('FunctionName')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+              "value": "false"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
+            },
+            {
+              "name": "OPENAI_ENGINE",
+              "value": "[parameters('OpenAIEngine')]"
+            },
+            {
+              "name": "OPENAI_DEPLOYMENT_TYPE",
+              "value": "[parameters('OpenAIDeploymentType')]"
+            },            
+            {
+              "name": "OPENAI_EMBEDDINGS_ENGINE_DOC",
+              "value": "[parameters('OpenAIEmbeddingsEngineDoc')]"
+            },           
+            {
+              "name": "OPENAI_EMBEDDINGS_ENGINE_QUERY",
+              "value": "[parameters('OpenAIEmbeddingsEngineQuery')]"
+            },
+            {
+              "name": "OPENAI_API_BASE",
+              "value": "[concat('https://', parameters('OpenAIName'), '.openai.azure.com/')]"
+            },
+            {
+              "name": "OPENAI_API_KEY",
+              "value": "[parameters('OpenAIKey')]"
+            },
+            {
+              "name": "BLOB_ACCOUNT_NAME",
+              "value": "[parameters('StorageAccountName')]"
+            },
+            {
+              "name": "BLOB_ACCOUNT_KEY",
+              "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value]"
+            },
+            {
+              "name": "BLOB_CONTAINER_NAME",
+              "value": "[variables('BlobContainerName')]"
+            },
+            {
+              "name": "FORM_RECOGNIZER_ENDPOINT",
+              "value": "[concat('https://',resourceGroup().location,'.api.cognitive.microsoft.com/')]"
+            },
+            {
+              "name": "FORM_RECOGNIZER_KEY",
+              "value": "[listKeys(concat('Microsoft.CognitiveServices/accounts/', parameters('FormRecognizerName')), '2023-05-01').key1]"
+            },
+            {
+              "name": "VECTOR_STORE_TYPE",
+              "value": "AzureSearch"
+            },
+            {
+              "name": "AZURE_SEARCH_SERVICE_NAME",
+              "value": "[concat('https://',parameters('AzureCognitiveSearch'),'.search.windows.net')]"
+            },
+            {
+              "name": "AZURE_SEARCH_ADMIN_KEY",
+              "value": "[listAdminKeys(concat('Microsoft.Search/searchServices/', parameters('AzureCognitiveSearch')), '2021-04-01-preview').primaryKey]"
+            },
+            {
+              "name": "TRANSLATE_ENDPOINT",
+              "value": "https://api.cognitive.microsofttranslator.com/"
+            },
+            {
+              "name": "TRANSLATE_KEY",
+              "value": "[listKeys(concat('Microsoft.CognitiveServices/accounts/', parameters('TranslatorName')), '2023-05-01').key1]"
+            },
+            {
+              "name": "TRANSLATE_REGION",
+              "value": "[resourceGroup().location]"
+            },
+            {
+              "name": "QUEUE_NAME",
+              "value": "[variables('QueueName')]"
+            }
+          ],
+          "cors": {
+            "allowedOrigins": [ "https://portal.azure.com" ]
+          },
+          "use32BitWorkerProcess": false,
+          "linuxFxVersion": "DOCKER|fruocco/oai-batch:latest",
+          "appCommandLine": "",
+          "alwaysOn": true
+        },
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('HostingPlanName'))]",
+        "clientAffinityEnabled": false,
+        "virtualNetworkSubnetId": null,
+        "httpsOnly": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/host/functionKeys",
+      "apiVersion": "2018-11-01",
+      "name": "[concat(parameters('FunctionName'), '/default/clientKey')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('FunctionName'))]",
+        "WaitFunctionDeploymentSection"
+      ],
+      "properties": {
+        "name": "ClientKey",
+        "value": "[variables('ClientKey')]"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', parameters('WebsiteName'), 'appsettings')]",
+      "kind": "string",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('WebsiteName'))]",
+        "[concat('Microsoft.Insights/components/', parameters('ApplicationInsightsName'))]"
+      ],
+      "properties": {
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('ApplicationInsightsName')), '2015-05-01').InstrumentationKey]",
+        "OPENAI_ENGINE": "[parameters('OpenAIEngine')]",
+        "OPENAI_DEPLOYMENT_TYPE": "[parameters('OpenAIDeploymentType')]",
+        "OPENAI_EMBEDDINGS_ENGINE_DOC": "[parameters('OpenAIEmbeddingsEngineDoc')]",
+        "OPENAI_EMBEDDINGS_ENGINE_QUERY": "[parameters('OpenAIEmbeddingsEngineQuery')]",
+        "VECTOR_STORE_TYPE": "AzureSearch",
+        "AZURE_SEARCH_SERVICE_NAME": "[concat('https://',parameters('AzureCognitiveSearch'),'.search.windows.net')]",
+        "AZURE_SEARCH_ADMIN_KEY": "[listAdminKeys(concat('Microsoft.Search/searchServices/', parameters('AzureCognitiveSearch')), '2021-04-01-preview').primaryKey]",
+        "OPENAI_API_BASE": "[concat('https://', parameters('OpenAIName'),'.openai.azure.com/')]",
+        "OPENAI_API_KEY": "[parameters('OpenAIKey')]",
+        "BLOB_ACCOUNT_NAME": "[parameters('StorageAccountName')]",
+        "BLOB_ACCOUNT_KEY": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccountName')), '2015-05-01-preview').key1]",
+        "BLOB_CONTAINER_NAME": "[variables('BlobContainerName')]",
+        "FORM_RECOGNIZER_ENDPOINT": "[concat('https://',resourceGroup().location,'.api.cognitive.microsoft.com/')]",
+        "FORM_RECOGNIZER_KEY": "[listKeys(concat('Microsoft.CognitiveServices/accounts/', parameters('FormRecognizerName')), '2023-05-01').key1]",
+        "TRANSLATE_ENDPOINT": "https://api.cognitive.microsofttranslator.com/",
+        "TRANSLATE_KEY": "[listKeys(concat('Microsoft.CognitiveServices/accounts/', parameters('TranslatorName')), '2023-05-01').key1]",
+        "TRANSLATE_REGION": "[resourceGroup().location]",
+        "CONVERT_ADD_EMBEDDINGS_URL": "[concat('https://', parameters('FunctionName') , '.azurewebsites.net/api/BatchStartProcessing?code=', variables('ClientKey'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "kind": "AzurePowerShell",
+      "name": "WaitFunctionDeploymentSection",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('FunctionName'))]"
+      ],
+      "properties": {
+        "azPowerShellVersion": "3.0",
+        "scriptContent": "start-sleep -Seconds 300",
+        "cleanupPreference": "Always",
+        "retentionInterval": "PT1H"
+      }
+    }
+  ]
+}
