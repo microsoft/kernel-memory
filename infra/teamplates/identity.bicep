@@ -8,22 +8,15 @@ param name string = 'km-UAidentity-${suffix}'
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: name
   location: location
 }
 
-var bootstrapRoleAssignmentId = guid('${resourceGroup().id}contributor')
-var contributorRoleDefinitionId = '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
-
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: bootstrapRoleAssignmentId
+  name: guid('${resourceGroup().id}contributor')
   properties: {
-    roleDefinitionId: contributorRoleDefinitionId
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c'
     principalId: managedIdentity.properties.principalId
     scope: resourceGroup().id
     principalType: 'ServicePrincipal'
@@ -31,4 +24,5 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 }
 
 output managedIdentityId string = managedIdentity.id
+output managedIdentityPrincipalId string = managedIdentity.properties.principalId
 output managedIdentityClientId string = managedIdentity.properties.clientId

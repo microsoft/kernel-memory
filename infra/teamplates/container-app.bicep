@@ -1,9 +1,5 @@
 targetScope = 'resourceGroup'
 
-// ------------------
-//    PARAMETERS
-// ------------------
-
 param suffix string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
@@ -27,17 +23,12 @@ param AzureOpenAIText_Deployment string
 param AzureOpenAIEmbedding_Endpoint string
 param AzureOpenAIEmbedding_Deployment string
 
-// ------------------
-// RESOURCES
-// ------------------
+var KernelMemory__ServiceAuthorization__AccessKey1 = 'KernelMemoryServiceAuthorizationAccessKey1' //  guid(suffix, '1')
+var KernelMemory__ServiceAuthorization__AccessKey2 = 'KernelMemoryServiceAuthorizationAccessKey2' // guid(suffix, '2')
 
 resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
   name: kmServiceName
   location: location
-  tags: {
-    // CreateContainerApp1Tag: 'CreateContainerApp1TagValue'
-  }
-  // kind: 'containerapps'
   properties: {
     environmentId: containerAppsEnvironmentId
     configuration: {
@@ -75,7 +66,6 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
             {
               name: 'ASPNETCORE_ENVIRONMENT'
               value: 'Production'
-              //secretRef: 'appinsights-key'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -116,23 +106,23 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
             }
             {
               name: 'KernelMemory__ServiceAuthorization__AccessKey1'
-              value: 'ApiKey1ValueApiKey1ValueApiKey1Value'
+              value: KernelMemory__ServiceAuthorization__AccessKey1
             }
             {
               name: 'KernelMemory__ServiceAuthorization__AccessKey2'
-              value: 'ApiKey2ValueApiKey2ValueApiKey2Value'
+              value: KernelMemory__ServiceAuthorization__AccessKey2
             }
             {
               name: 'KernelMemory__DataIngestion__DistributedOrchestration__QueueType'
               value: 'AzureQueues'
             }
             {
-              name: 'KernelMemory__DataIngestion__EmbeddingGeneratorTypes'
-              value: '["AzureOpenAIEmbedding"]'
+              name: 'KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0'
+              value: 'AzureOpenAIEmbedding'
             }
             {
-              name: 'KernelMemory__DataIngestion__MemoryDbTypes'
-              value: '["AzureAISearch"]'
+              name: 'KernelMemory__DataIngestion__MemoryDbTypes__0'
+              value: 'AzureAISearch'
             }
             {
               name: 'KernelMemory__Retrieval__EmbeddingGeneratorType'
@@ -182,7 +172,6 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
         maxReplicas: 1
       }
     }
-    // workloadProfileName: 'Consumption'
   }
   identity: {
     type: 'UserAssigned'
@@ -194,3 +183,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
 
 output kmServiceName string = kmService.name
 output kmServiceId string = kmService.id
+output kmServiceAccessKey1 string = KernelMemory__ServiceAuthorization__AccessKey1
+output kmServiceAccessKey2 string = KernelMemory__ServiceAuthorization__AccessKey2
+@description('The FQDN of the frontend web app service.')
+output kmServiceFQDN string = kmService.properties.configuration.ingress.fqdn
