@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.IO;
@@ -15,6 +15,7 @@ public class MsExcelDecoder
     private const string DefaultRowPrefix = "";
     private const string DefaultColumnSeparator = ", ";
     private const string DefaultRowSuffix = "";
+    private const string DefaultBlankCellValue = "";
 
     private readonly bool _withWorksheetNumber;
     private readonly bool _withEndOfWorksheetMarker;
@@ -24,6 +25,7 @@ public class MsExcelDecoder
     private readonly string _rowPrefix;
     private readonly string _columnSeparator;
     private readonly string _rowSuffix;
+    private readonly string _blankCellValue;
 
     public MsExcelDecoder(
         bool withWorksheetNumber = true,
@@ -33,7 +35,8 @@ public class MsExcelDecoder
         string? endOfWorksheetMarkerTemplate = null,
         string? rowPrefix = null,
         string? columnSeparator = null,
-        string? rowSuffix = null)
+        string? rowSuffix = null,
+        string? blankCellValue = null)
     {
         this._withWorksheetNumber = withWorksheetNumber;
         this._withEndOfWorksheetMarker = withEndOfWorksheetMarker;
@@ -45,6 +48,7 @@ public class MsExcelDecoder
         this._rowPrefix = rowPrefix ?? DefaultRowPrefix;
         this._columnSeparator = columnSeparator ?? DefaultColumnSeparator;
         this._rowSuffix = rowSuffix ?? DefaultRowSuffix;
+        this._blankCellValue = blankCellValue ?? DefaultBlankCellValue;
     }
 
     public FileContent ExtractContent(string filename)
@@ -79,7 +83,7 @@ public class MsExcelDecoder
             {
                 if (row == null) { continue; }
 
-                var cells = row.CellsUsed().ToList();
+                var cells = row.Cells().ToList();
 
                 sb.Append(this._rowPrefix);
                 for (var i = 0; i < cells.Count; i++)
@@ -94,7 +98,7 @@ public class MsExcelDecoder
                     }
                     else
                     {
-                        sb.Append(cell.Value);
+                        sb.Append(cell.Value.IsBlank ? this._blankCellValue : cell.Value);
                     }
 
                     if (i < cells.Count - 1)
