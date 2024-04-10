@@ -1,42 +1,59 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace Microsoft.KernelMemory.DataFormats.Pdf;
 
-public class PdfDecoder
+public class PdfDecoder : IContentDecoder
 {
-    public FileContent ExtractContent(string filename)
+    private readonly ILogger<PdfDecoder> _log;
+
+    public IEnumerable<string> SupportedMimeTypes => [MimeTypes.Pdf];
+
+    public PdfDecoder(ILogger<PdfDecoder>? log = null)
+    {
+        this._log = log ?? DefaultLogger<PdfDecoder>.Instance;
+    }
+
+    public Task<FileContent?> ExtractContentAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(BinaryData data)
+    public Task<FileContent?> ExtractContentAsync(string name, BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream);
+        return this.ExtractContentAsync(name, stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(Stream data)
+    public Task<FileContent?> ExtractContentAsync(string name, Stream data, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Extracting text from PDF file {0}", name);
+
         var result = new FileContent();
 
         using PdfDocument? pdfDocument = PdfDocument.Open(data);
-        if (pdfDocument == null) { return result; }
+        if (pdfDocument == null) { return Task.FromResult(result)!; }
 
         foreach (Page? page in pdfDocument.GetPages().Where(x => x != null))
         {
             // Note: no trimming, use original spacing
-            string pageContent = (ContentOrderTextExtractor.GetText(page) ?? string.Empty);
+            string pageContent = ContentOrderTextExtractor.GetText(page) ?? string.Empty;
             result.Sections.Add(new FileSection(page.Number, pageContent, false));
         }
 
-        return result;
+        return Task.FromResult(result)!;
     }
 }

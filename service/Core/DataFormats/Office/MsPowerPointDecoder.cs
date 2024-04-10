@@ -1,80 +1,58 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Presentation;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsPowerPointDecoder
+public class MsPowerPointDecoder : IContentDecoder
 {
-    private readonly string _slideNumberTemplate;
-    private readonly string _endOfSlideMarkerTemplate;
+    private readonly MsPowerPointConfig _config;
+    private readonly IMimeTypeDetection _mimeTypeDetection;
+    private readonly ILogger<MsPowerPointDecoder> _log;
 
-    /// <param name="slideNumberTemplate">Template used for the optional slide number added at the start of each slide</param>
-    /// <param name="endOfSlideMarkerTemplate">Template used for the optional text added at the end of each slide</param>
-    public MsPowerPointDecoder(
-        string slideNumberTemplate = "# Slide {number}",
-        string endOfSlideMarkerTemplate = "# End of slide {number}")
+    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsPowerPointX, MimeTypes.MsPowerPoint];
+
+    public MsPowerPointDecoder(MsPowerPointConfig? config = null, IMimeTypeDetection? mimeTypeDetection = null, ILogger<MsPowerPointDecoder>? log = null)
     {
-        this._slideNumberTemplate = slideNumberTemplate;
-        this._endOfSlideMarkerTemplate = endOfSlideMarkerTemplate;
+        this._config = config ?? new MsPowerPointConfig();
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
+        this._log = log ?? DefaultLogger<MsPowerPointDecoder>.Instance;
     }
 
-    /// <summary>
-    /// Return the text contained by the powerpoint presentation
-    /// </summary>
-    /// <param name="filename">File name</param>
-    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
-    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
-    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
-    /// <returns>The text extracted from the presentation</returns>
-    public FileContent ExtractContent(
-        string filename,
-        bool withSlideNumber = true,
-        bool withEndOfSlideMarker = false,
-        bool skipHiddenSlides = true)
+    public Task<FileContent?> ExtractContentAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, cancellationToken);
     }
 
-    /// <summary>
-    /// Return the text contained by the powerpoint presentation
-    /// </summary>
-    /// <param name="data">File content in binary form</param>
-    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
-    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
-    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
-    /// <returns>The text extracted from the presentation</returns>
-    public FileContent ExtractContent(
-        BinaryData data,
-        bool withSlideNumber = true,
-        bool withEndOfSlideMarker = false,
-        bool skipHiddenSlides = true)
+    public Task<FileContent?> ExtractContentAsync(string name, BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream, skipHiddenSlides: skipHiddenSlides, withEndOfSlideMarker: withEndOfSlideMarker, withSlideNumber: withSlideNumber);
+        return this.ExtractContentAsync(name, stream, cancellationToken);
     }
 
-    /// <summary>
-    /// Return the text contained by the powerpoint presentation
-    /// </summary>
-    /// <param name="data">File content in stream form</param>
-    /// <param name="withSlideNumber">Whether to include the slide number before the text</param>
-    /// <param name="withEndOfSlideMarker">Whether to add a marker after the text of each slide</param>
-    /// <param name="skipHiddenSlides">Whether to skip hidden slides</param>
-    /// <returns>The text extracted from the presentation</returns>
-    public FileContent ExtractContent(
-        Stream data,
-        bool withSlideNumber = true,
-        bool withEndOfSlideMarker = false,
-        bool skipHiddenSlides = true)
+    public Task<FileContent?> ExtractContentAsync(string name, Stream data, CancellationToken cancellationToken = default)
     {
+        var mimeType = this._mimeTypeDetection.GetFileType(name);
+        if (mimeType == MimeTypes.MsPowerPoint)
+        {
+            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
+            return Task.FromResult<FileContent?>(null);
+        }
+
+        this._log.LogDebug("Extracting text from MS PowerPoint file {0}", name);
+
         var result = new FileContent();
 
         using PresentationDocument presentationDocument = PresentationDocument.Open(data, false);
@@ -103,7 +81,7 @@ public class MsPowerPointDecoder
                     // - Show is false: the slide is hidden
                     // - Show is true: the slide is visible
                     bool isVisible = slidePart.Slide.Show ?? true;
-                    if (skipHiddenSlides && !isVisible) { continue; }
+                    if (this._config.SkipHiddenSlides && !isVisible) { continue; }
 
                     var currentSlideContent = new StringBuilder();
                     for (var i = 0; i < texts.Count; i++)
@@ -120,18 +98,18 @@ public class MsPowerPointDecoder
                     if (currentSlideContent.Length < 1) { continue; }
 
                     // Prepend slide number before the slide text
-                    if (withSlideNumber)
+                    if (this._config.WithSlideNumber)
                     {
-                        sb.AppendLine(this._slideNumberTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
+                        sb.AppendLine(this._config.SlideNumberTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
 
                     sb.Append(currentSlideContent);
                     sb.AppendLine();
 
                     // Append the end of slide marker
-                    if (withEndOfSlideMarker)
+                    if (this._config.WithEndOfSlideMarker)
                     {
-                        sb.AppendLine(this._endOfSlideMarkerTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
+                        sb.AppendLine(this._config.EndOfSlideMarkerTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
                 }
 
@@ -141,6 +119,6 @@ public class MsPowerPointDecoder
             }
         }
 
-        return result;
+        return Task.FromResult(result)!;
     }
 }

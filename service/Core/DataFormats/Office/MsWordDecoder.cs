@@ -4,27 +4,52 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsWordDecoder
+public class MsWordDecoder : IContentDecoder
 {
-    public FileContent ExtractContent(string filename)
+    private readonly ILogger<MsWordDecoder> _log;
+    private readonly IMimeTypeDetection _mimeTypeDetection;
+
+    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsWordX];
+
+    public MsWordDecoder(IMimeTypeDetection? mimeTypeDetection = null, ILogger<MsWordDecoder>? log = null)
+    {
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
+        this._log = log ?? DefaultLogger<MsWordDecoder>.Instance;
+    }
+
+    public Task<FileContent?> ExtractContentAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(BinaryData data)
+    public Task<FileContent?> ExtractContentAsync(string name, BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream);
+        return this.ExtractContentAsync(name, stream, cancellationToken = default);
     }
 
-    public FileContent ExtractContent(Stream data)
+    public Task<FileContent?> ExtractContentAsync(string name, Stream data, CancellationToken cancellationToken = default)
     {
+        var mimeType = this._mimeTypeDetection.GetFileType(name);
+        if (mimeType == MimeTypes.MsPowerPoint)
+        {
+            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
+            return Task.FromResult<FileContent?>(null);
+        }
+
+        this._log.LogDebug("Extracting text from MS Word file {0}", name);
+
         var result = new FileContent();
 
         var wordprocessingDocument = WordprocessingDocument.Open(data, false);
@@ -68,7 +93,7 @@ public class MsWordDecoder
             var lastPageContent = sb.ToString().Trim();
             result.Sections.Add(new FileSection(pageNumber, lastPageContent, true));
 
-            return result;
+            return Task.FromResult(result)!;
         }
         finally
         {

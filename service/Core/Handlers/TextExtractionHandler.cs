@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,8 +23,8 @@ namespace Microsoft.KernelMemory.Handlers;
 public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
+    private readonly IEnumerable<IContentDecoder> _decoders;
     private readonly WebScraper _webScraper;
-    private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -34,17 +36,17 @@ public class TextExtractionHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="ocrEngine">The ocr engine to use for parsing image files</param>
+    /// <param name="decoders">The list of content decoders for extracting content</param>
     /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        IOcrEngine? ocrEngine = null,
+        IEnumerable<IContentDecoder> decoders,
         ILogger<TextExtractionHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._ocrEngine = ocrEngine;
+        this._decoders = decoders;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
         this._webScraper = new WebScraper(this._log);
 
@@ -133,6 +135,16 @@ public class TextExtractionHandler : IPipelineStepHandler
         bool skipFile = false;
         var content = new FileContent();
         string extractType = MimeTypes.PlainText;
+
+        var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
+        if (decoder is not null)
+        {
+            var textContent = await decoder.ExtractContentAsync(uploadedFile.Name, fileContent, cancellationToken).ConfigureAwait(false);
+            if (textContent is null)
+            {
+
+            }
+        }
 
         switch (uploadedFile.MimeType)
         {
