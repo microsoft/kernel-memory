@@ -8,10 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.DataFormats;
-using Microsoft.KernelMemory.DataFormats.Image;
-using Microsoft.KernelMemory.DataFormats.Office;
-using Microsoft.KernelMemory.DataFormats.Pdf;
-using Microsoft.KernelMemory.DataFormats.WebPages;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
 
@@ -24,7 +20,6 @@ public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly IEnumerable<IContentDecoder> _decoders;
-    private readonly WebScraper _webScraper;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -48,7 +43,6 @@ public class TextExtractionHandler : IPipelineStepHandler
         this._orchestrator = orchestrator;
         this._decoders = decoders;
         this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
-        this._webScraper = new WebScraper(this._log);
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -136,129 +130,32 @@ public class TextExtractionHandler : IPipelineStepHandler
         var content = new FileContent();
         string extractType = MimeTypes.PlainText;
 
-        var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
-        if (decoder is not null)
+        if (string.IsNullOrEmpty(uploadedFile.MimeType))
         {
-            var textContent = await decoder.ExtractContentAsync(uploadedFile.Name, fileContent, cancellationToken).ConfigureAwait(false);
-            if (textContent is null)
-            {
-
-            }
+            skipFile = true;
+            uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
+            this._log.LogWarning("Empty MIME type, the file will be ignored");
         }
-
-        switch (uploadedFile.MimeType)
+        else
         {
-            case MimeTypes.PlainText:
-                this._log.LogDebug("Extracting text from plain text file {0}", uploadedFile.Name);
-                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
-                break;
-
-            case MimeTypes.MarkDown:
-                this._log.LogDebug("Extracting text from MarkDown file {0}", uploadedFile.Name);
-                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
-                extractType = MimeTypes.MarkDown;
-                break;
-
-            case MimeTypes.Json:
-                this._log.LogDebug("Extracting text from JSON file {0}", uploadedFile.Name);
-                content.Sections.Add(new(1, fileContent.ToString().Trim(), true));
-                break;
-
-            case MimeTypes.MsWordX:
-                this._log.LogDebug("Extracting text from MS Word file {0}", uploadedFile.Name);
-                content = new MsWordDecoder().ExtractContent(fileContent);
-                break;
-
-            case MimeTypes.MsPowerPointX:
-                this._log.LogDebug("Extracting text from MS PowerPoint file {0}", uploadedFile.Name);
-                content = new MsPowerPointDecoder().ExtractContent(fileContent,
-                    withSlideNumber: true,
-                    withEndOfSlideMarker: false,
-                    skipHiddenSlides: true);
-                break;
-
-            case MimeTypes.MsExcelX:
-                this._log.LogDebug("Extracting text from MS Excel file {0}", uploadedFile.Name);
-                content = new MsExcelDecoder().ExtractContent(fileContent);
-                break;
-
-            case MimeTypes.MsWord:
-            case MimeTypes.MsPowerPoint:
-            case MimeTypes.MsExcel:
-                skipFile = true;
-                uploadedFile.Log(
-                    this,
-                    "Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx, xlsx or pptx). Ignoring the file."
-                );
-                this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
-                break;
-
-            case MimeTypes.Pdf:
-                this._log.LogDebug("Extracting text from PDF file {0}", uploadedFile.Name);
-                content = new PdfDecoder().ExtractContent(fileContent);
-                break;
-
-            case MimeTypes.Html:
-                this._log.LogDebug("Extracting text from HTML file {0}", uploadedFile.Name);
-                content = new HtmlDecoder().ExtractContent(fileContent);
-                break;
-
-            case MimeTypes.WebPageUrl:
-                var url = fileContent.ToString();
-                this._log.LogDebug("Downloading web page specified in {0} and extracting text from {1}", uploadedFile.Name, url);
-                if (string.IsNullOrWhiteSpace(url))
+            var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
+            if (decoder is not null)
+            {
+                var textContent = await decoder.ExtractContentAsync(this.StepName, uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
+                if (textContent is null)
                 {
+                    // If the decoder returns null, it means it could not extract text from the file, so the file must be skipped.
                     skipFile = true;
-                    uploadedFile.Log(this, "The web page URL is empty");
-                    this._log.LogWarning("The web page URL is empty");
-                    break;
                 }
 
-                var result = await this._webScraper.GetTextAsync(url).ConfigureAwait(false);
-                if (!result.Success)
-                {
-                    skipFile = true;
-                    uploadedFile.Log(this, $"Download error: {result.Error}");
-                    this._log.LogWarning("Web page download error: {0}", result.Error);
-                    break;
-                }
-
-                if (string.IsNullOrEmpty(result.Text))
-                {
-                    skipFile = true;
-                    uploadedFile.Log(this, "The web page has no text content, skipping it");
-                    this._log.LogWarning("The web page has no text content, skipping it");
-                    break;
-                }
-
-                content.Sections.Add(new(1, result.Text.Trim(), true));
-                this._log.LogDebug("Web page {0} downloaded, text length: {1}", url, result.Text.Length);
-                break;
-
-            case MimeTypes.ImageJpeg:
-            case MimeTypes.ImagePng:
-            case MimeTypes.ImageTiff:
-                this._log.LogDebug("Extracting text from image file {0}", uploadedFile.Name);
-                if (this._ocrEngine == null)
-                {
-                    throw new NotSupportedException($"Image extraction not configured: {uploadedFile.Name}");
-                }
-
-                var imageText = await new ImageDecoder().ImageToTextAsync(this._ocrEngine, fileContent, cancellationToken).ConfigureAwait(false);
-                content.Sections.Add(new(1, imageText.Trim(), true));
-                break;
-
-            case "":
-                skipFile = true;
-                uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
-                this._log.LogWarning("Empty MIME type, the file will be ignored");
-                break;
-
-            default:
+                content = textContent ?? new FileContent();
+            }
+            else
+            {
                 skipFile = true;
                 uploadedFile.Log(this, $"File MIME type not supported: {uploadedFile.MimeType}. Ignoring the file.");
                 this._log.LogWarning("File MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
-                break;
+            }
         }
 
         var textBuilder = new StringBuilder();

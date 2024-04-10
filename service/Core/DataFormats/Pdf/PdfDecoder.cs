@@ -26,21 +26,21 @@ public class PdfDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<PdfDecoder>.Instance;
     }
 
-    public Task<FileContent?> ExtractContentAsync(string filename, CancellationToken cancellationToken = default)
+    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(Path.GetFileName(filename), stream, cancellationToken);
+        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string name, BinaryData data, CancellationToken cancellationToken = default)
+    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(name, stream, cancellationToken);
+        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string name, Stream data, CancellationToken cancellationToken = default)
+    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from PDF file {0}", name);
+        this._log.LogDebug("Extracting text from PDF file {0}", file.Name);
 
         var result = new FileContent();
 

@@ -95,6 +95,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         // Default dependencies, can be overridden
         this.WithDefaultMimeTypeDetection();
         this.WithDefaultPromptProvider();
+        this.WithDefaultContentDecoders();
     }
 
     ///<inheritdoc />
