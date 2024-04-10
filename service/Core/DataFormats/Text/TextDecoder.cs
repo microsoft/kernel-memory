@@ -30,7 +30,7 @@ public class TextDecoder : IContentDecoder
 
     public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from text file {0}", file.Name);
+        this._log.LogDebug("Extracting text from {0} file {1}", file.MimeType, file.Name);
 
         var result = new FileContent();
         result.Sections.Add(new(1, data.ToString().Trim(), true));

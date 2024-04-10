@@ -18,7 +18,7 @@ public class MsWordDecoder : IContentDecoder
 {
     private readonly ILogger<MsWordDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsWordX];
+    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsWordX, MimeTypes.MsWord];
 
     public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
     {
@@ -39,7 +39,7 @@ public class MsWordDecoder : IContentDecoder
 
     public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
     {
-        if (file.MimeType == MimeTypes.MsPowerPoint)
+        if (file.MimeType == MimeTypes.MsWord)
         {
             file.Log(
                 handlerStepName,

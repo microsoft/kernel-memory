@@ -127,55 +127,57 @@ public class TextExtractionHandler : IPipelineStepHandler
         CancellationToken cancellationToken)
     {
         bool skipFile = false;
-        var content = new FileContent();
+        FileContent? content = null;
         string extractType = MimeTypes.PlainText;
 
         if (string.IsNullOrEmpty(uploadedFile.MimeType))
         {
             skipFile = true;
-            uploadedFile.Log(this, "File MIME type is empty, ignoring the file");
-            this._log.LogWarning("Empty MIME type, the file will be ignored");
+            uploadedFile.Log(this, $"File MIME type is empty, ignoring the file {uploadedFile.Name}");
+            this._log.LogWarning("Empty MIME type, the file {0} will be ignored", uploadedFile.Name);
         }
         else
         {
+            // Checks if there is a decoder that supports the file MIME type. If multiple decoders support this type, it means that
+            // the decoder has been redefined, so it takes the last one.
             var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
             if (decoder is not null)
             {
-                var textContent = await decoder.ExtractContentAsync(this.StepName, uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
-                if (textContent is null)
+                content = await decoder.ExtractContentAsync(this.StepName, uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
+                if (content is null)
                 {
                     // If the decoder returns null, it means it could not extract text from the file, so the file must be skipped.
                     skipFile = true;
                 }
-
-                content = textContent ?? new FileContent();
             }
             else
             {
                 skipFile = true;
-                uploadedFile.Log(this, $"File MIME type not supported: {uploadedFile.MimeType}. Ignoring the file.");
-                this._log.LogWarning("File MIME type not supported: {0} - ignoring the file", uploadedFile.MimeType);
+                uploadedFile.Log(this, $"File MIME type not supported: {uploadedFile.MimeType}. Ignoring the file {uploadedFile.Name}.");
+                this._log.LogWarning("File MIME type not supported: {0} - ignoring the file {1}", uploadedFile.MimeType, uploadedFile.Name);
             }
         }
 
         var textBuilder = new StringBuilder();
-        foreach (var section in content.Sections)
+        if (content is not null)
         {
-            var sectionContent = section.Content.Trim();
-            if (string.IsNullOrEmpty(sectionContent)) { continue; }
-
-            textBuilder.Append(sectionContent);
-
-            // Add a clean page separation
-            if (section.SentencesAreComplete)
+            foreach (var section in content.Sections)
             {
-                textBuilder.AppendLine();
-                textBuilder.AppendLine();
+                var sectionContent = section.Content.Trim();
+                if (string.IsNullOrEmpty(sectionContent)) { continue; }
+
+                textBuilder.Append(sectionContent);
+
+                // Add a clean page separation
+                if (section.SentencesAreComplete)
+                {
+                    textBuilder.AppendLine();
+                    textBuilder.AppendLine();
+                }
             }
         }
 
         var text = textBuilder.ToString().Trim();
-
-        return (text, content, extractType, skipFile);
+        return (text, content!, extractType, skipFile);
     }
 }

@@ -161,7 +161,6 @@ public sealed class DataPipeline
         public void Log(string handlerStepName, string text)
         {
             this.LogEntries ??= new List<PipelineLogEntry>();
-
             this.LogEntries.Add(new PipelineLogEntry(source: handlerStepName, text: text));
         }
     }

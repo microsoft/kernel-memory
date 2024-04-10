@@ -38,7 +38,6 @@ public class WebScraperDecoder : IContentDecoder
     public async Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
     {
         // In case of WebScaper, the filename is the URL of the web page.
-
         this._log.LogDebug("Downloading web page specified in {0} and extracting text from {1}", file.Name, filename);
         if (string.IsNullOrWhiteSpace(filename))
         {
