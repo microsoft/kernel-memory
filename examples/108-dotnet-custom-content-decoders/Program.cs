@@ -24,12 +24,12 @@ new ConfigurationBuilder()
     .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig);
 
 var memory = new KernelMemoryBuilder()
-    // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    // .WithOpenAI(openAIConfig)
+    //.WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    //.WithOpenAI(openAIConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     .With(new MsExcelConfig { BlankCellValue = "NO-VALUE" })    // Customize the default Excel decoder
-    .WithContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder    
+    .WithContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder
     .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync("file5-NASA-news.pdf");
