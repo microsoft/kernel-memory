@@ -20,7 +20,7 @@ public class MsPowerPointDecoder : IContentDecoder
     private readonly MsPowerPointConfig _config;
     private readonly ILogger<MsPowerPointDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsPowerPointX, MimeTypes.MsPowerPoint];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsPowerPointX, MimeTypes.MsPowerPoint };
 
     public MsPowerPointDecoder(MsPowerPointConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
     {

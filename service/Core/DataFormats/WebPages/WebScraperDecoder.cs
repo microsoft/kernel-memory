@@ -28,7 +28,7 @@ public class WebScraperDecoder : IContentDecoder
 
     private readonly ILogger<WebScraperDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.WebPageUrl];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.WebPageUrl };
 
     public WebScraperDecoder(ILogger<WebScraperDecoder>? log = null)
     {
@@ -48,19 +48,19 @@ public class WebScraperDecoder : IContentDecoder
         var result = await this.GetTextAsync(filename, cancellationToken).ConfigureAwait(false);
         if (!result.Success)
         {
-            this._log.LogWarning("Web page download for {Url} error: {Error}", filename, result.Error);
-            throw new UnsupportedContentException($"Download error: {result.Error}");
+            this._log.LogWarning("Web page download for {0} error: {1}", filename, result.Error);
+            throw new UnsupportedContentException($"Download error for {filename}: {result.Error}");
         }
 
         if (string.IsNullOrEmpty(result.Text))
         {
-            this._log.LogWarning("The web page {Url }has no text content, skipping it", filename);
+            this._log.LogWarning("The web page {0} has no text content, skipping it", filename);
             throw new UnsupportedContentException($"The web page {filename} has no text content, skipping it");
         }
 
         var content = new FileContent();
         content.Sections.Add(new(1, result.Text.Trim(), true));
-        this._log.LogDebug("Web page {Url} downloaded, text length: {Length}", filename, result.Text.Length);
+        this._log.LogDebug("Web page {0} downloaded, text length: {1}", filename, result.Text.Length);
 
         return content;
     }

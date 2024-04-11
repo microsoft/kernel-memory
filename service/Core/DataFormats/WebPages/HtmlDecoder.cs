@@ -16,7 +16,7 @@ public class HtmlDecoder : IContentDecoder
 {
     private readonly ILogger<HtmlDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.Html];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.Html };
 
     public HtmlDecoder(ILogger<HtmlDecoder>? log = null)
     {
@@ -50,6 +50,6 @@ public class HtmlDecoder : IContentDecoder
 
         result.Sections.Add(new FileSection(1, doc.DocumentNode.InnerText.Trim(), true));
 
-        return Task.FromResult(result)!;
+        return Task.FromResult(result);
     }
 }

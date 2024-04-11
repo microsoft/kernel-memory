@@ -15,7 +15,7 @@ public class TextDecoder : IContentDecoder
 {
     private readonly ILogger<TextDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.PlainText, MimeTypes.MarkDown, MimeTypes.Json];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.PlainText, MimeTypes.MarkDown, MimeTypes.Json };
 
     public TextDecoder(ILogger<TextDecoder>? log = null)
     {

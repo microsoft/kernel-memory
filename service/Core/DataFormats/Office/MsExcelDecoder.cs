@@ -19,7 +19,7 @@ public class MsExcelDecoder : IContentDecoder
     private readonly MsExcelConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsExcelX, MimeTypes.MsExcel];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX, MimeTypes.MsExcel };
 
     public MsExcelDecoder(MsExcelConfig? config = null, ILogger<MsExcelDecoder>? log = null)
     {

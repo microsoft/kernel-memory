@@ -18,7 +18,7 @@ public class MsWordDecoder : IContentDecoder
 {
     private readonly ILogger<MsWordDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.MsWordX, MimeTypes.MsWord];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsWordX, MimeTypes.MsWord };
 
     public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
     {

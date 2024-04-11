@@ -19,7 +19,7 @@ public class PdfDecoder : IContentDecoder
 {
     private readonly ILogger<PdfDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes => [MimeTypes.Pdf];
+    public IEnumerable<string> SupportedMimeTypes => new[] { MimeTypes.Pdf };
 
     public PdfDecoder(ILogger<PdfDecoder>? log = null)
     {

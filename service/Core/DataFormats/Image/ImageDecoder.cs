@@ -16,7 +16,7 @@ public class ImageDecoder : IContentDecoder
     private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<ImageDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = [MimeTypes.ImageJpeg, MimeTypes.ImagePng, MimeTypes.ImageTiff];
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.ImageJpeg, MimeTypes.ImagePng, MimeTypes.ImageTiff };
 
     public ImageDecoder(IOcrEngine? ocrEngine = null, ILogger<ImageDecoder>? log = null)
     {
@@ -37,7 +37,7 @@ public class ImageDecoder : IContentDecoder
 
     public async Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from image file", name);
+        this._log.LogDebug("Extracting text from image file {0}", name);
 
         var result = new FileContent();
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
