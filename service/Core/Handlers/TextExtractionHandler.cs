@@ -128,7 +128,11 @@ public class TextExtractionHandler : IPipelineStepHandler
     {
         bool skipFile = false;
         FileContent? content = null;
-        string extractType = MimeTypes.PlainText;
+        string extractType = uploadedFile.MimeType switch
+        {
+            MimeTypes.MarkDown => MimeTypes.MarkDown,    // MarkDown is a special format of plain text, so the text chunker needs to know this.
+            _ => MimeTypes.PlainText,
+        };
 
         if (string.IsNullOrEmpty(uploadedFile.MimeType))
         {

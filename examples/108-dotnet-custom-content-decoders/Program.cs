@@ -29,6 +29,7 @@ var memory = new KernelMemoryBuilder()
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     .With(new MsExcelConfig { BlankCellValue = "NO-VALUE" })    // Customize the default Excel decoder
+    .With(new MsPowerPointConfig { SkipHiddenSlides = false, WithSlideNumber = true })   // Customize the default PowerPoint decoder
     .WithContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder
     .Build<MemoryServerless>();
 
