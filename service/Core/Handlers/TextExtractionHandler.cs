@@ -127,12 +127,7 @@ public class TextExtractionHandler : IPipelineStepHandler
         CancellationToken cancellationToken)
     {
         bool skipFile = false;
-        FileContent? content = null;
-        string extractType = uploadedFile.MimeType switch
-        {
-            MimeTypes.MarkDown => MimeTypes.MarkDown,    // MarkDown is a special format of plain text, so the text chunker needs to know this.
-            _ => MimeTypes.PlainText,
-        };
+        var content = new FileContent();
 
         if (string.IsNullOrEmpty(uploadedFile.MimeType))
         {
@@ -147,11 +142,14 @@ public class TextExtractionHandler : IPipelineStepHandler
             var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
             if (decoder is not null)
             {
-                content = await decoder.ExtractContentAsync(this.StepName, uploadedFile, fileContent, cancellationToken).ConfigureAwait(false);
-                if (content is null)
+                try
                 {
-                    // If the decoder returns null, it means it could not extract text from the file, so the file must be skipped.
+                    content = await decoder.ExtractContentAsync(uploadedFile.Name, fileContent, uploadedFile.MimeType, cancellationToken).ConfigureAwait(false);
+                }
+                catch (UnsupportedContentException ex)
+                {
                     skipFile = true;
+                    uploadedFile.Log(this, ex.Message);
                 }
             }
             else
@@ -163,25 +161,23 @@ public class TextExtractionHandler : IPipelineStepHandler
         }
 
         var textBuilder = new StringBuilder();
-        if (content is not null)
+        foreach (var section in content.Sections)
         {
-            foreach (var section in content.Sections)
+            var sectionContent = section.Content.Trim();
+            if (string.IsNullOrEmpty(sectionContent)) { continue; }
+
+            textBuilder.Append(sectionContent);
+
+            // Add a clean page separation
+            if (section.SentencesAreComplete)
             {
-                var sectionContent = section.Content.Trim();
-                if (string.IsNullOrEmpty(sectionContent)) { continue; }
-
-                textBuilder.Append(sectionContent);
-
-                // Add a clean page separation
-                if (section.SentencesAreComplete)
-                {
-                    textBuilder.AppendLine();
-                    textBuilder.AppendLine();
-                }
+                textBuilder.AppendLine();
+                textBuilder.AppendLine();
             }
         }
 
         var text = textBuilder.ToString().Trim();
-        return (text, content!, extractType, skipFile);
+
+        return (text, content, content.MimeType, skipFile);
     }
 }

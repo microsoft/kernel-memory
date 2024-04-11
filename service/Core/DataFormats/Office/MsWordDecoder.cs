@@ -25,32 +25,27 @@ public class MsWordDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<MsWordDecoder>.Instance;
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken = default);
+        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        if (file.MimeType == MimeTypes.MsWord)
+        if (mimeType == MimeTypes.MsWord)
         {
-            file.Log(
-                handlerStepName,
-                "Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx). Ignoring the file."
-            );
-
-            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", file.MimeType, file.Name);
-            return Task.FromResult<FileContent?>(null);
+            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
+            throw new UnsupportedContentException($"Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx). Ignoring the file {name}.");
         }
 
-        this._log.LogDebug("Extracting text from MS Word file {0}", file.Name);
+        this._log.LogDebug("Extracting text from MS Word file {0}", name);
 
         var result = new FileContent();
 
@@ -95,7 +90,7 @@ public class MsWordDecoder : IContentDecoder
             var lastPageContent = sb.ToString().Trim();
             result.Sections.Add(new FileSection(pageNumber, lastPageContent, true));
 
-            return Task.FromResult(result)!;
+            return Task.FromResult(result);
         }
         finally
         {

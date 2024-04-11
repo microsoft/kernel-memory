@@ -149,19 +149,9 @@ public sealed class DataPipeline
         /// <param name="text">Text to store for the end user</param>
         public void Log(IPipelineStepHandler handler, string text)
         {
-            this.Log(handler.StepName, text);
-        }
-
-        /// <summary>
-        /// Add a new log entry, with some important information for the end user.
-        /// DO NOT STORE PII OR SECRETS here.
-        /// </summary>
-        /// <param name="handlerStepName">Step name of the handler sending the information to log</param>
-        /// <param name="text">Text to store for the end user</param>
-        public void Log(string handlerStepName, string text)
-        {
             this.LogEntries ??= new List<PipelineLogEntry>();
-            this.LogEntries.Add(new PipelineLogEntry(source: handlerStepName, text: text));
+
+            this.LogEntries.Add(new PipelineLogEntry(source: handler.StepName, text: text));
         }
     }
 

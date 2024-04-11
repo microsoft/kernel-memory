@@ -14,13 +14,8 @@ Console.WriteLine("=== Text in mswordfile.docx ===");
 Console.WriteLine("===============================");
 
 var msWordWecoder = new MsWordDecoder();
-content = await msWordWecoder.ExtractContentAsync("extract",
-    new DataPipeline.FileDetails()
-    {
-        Name = "mswordfile.docx",
-        MimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    },
-    "mswordfile.docx");
+content = await msWordWecoder.ExtractContentAsync("mswordfile.docx",
+    MimeTypes.MsWordX);
 
 foreach (FileSection section in content!.Sections)
 {
@@ -40,13 +35,8 @@ Console.WriteLine("=== Text in mspowerpointfile.pptx ===");
 Console.WriteLine("===============================");
 
 var msPowerPointDecoder = new MsPowerPointDecoder();
-content = await msPowerPointDecoder.ExtractContentAsync("extract",
-    new DataPipeline.FileDetails()
-    {
-        Name = "mspowerpointfile.pptx",
-        MimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    },
-    "mspowerpointfile.pptx");
+content = await msPowerPointDecoder.ExtractContentAsync("mspowerpointfile.pptx",
+    MimeTypes.MsPowerPointX);
 
 foreach (FileSection section in content!.Sections)
 {
@@ -66,13 +56,8 @@ Console.WriteLine("=== Text in msexcelfile.xlsx ===");
 Console.WriteLine("===============================");
 
 var msExcelDecoder = new MsExcelDecoder();
-content = await msExcelDecoder.ExtractContentAsync("extract",
-    new DataPipeline.FileDetails()
-    {
-        Name = "msexcelfile.pptx",
-        MimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    },
-    "msexcelfile.xlsx");
+content = await msExcelDecoder.ExtractContentAsync("msexcelfile.xlsx",
+    MimeTypes.MsExcelX);
 
 foreach (FileSection section in content!.Sections)
 {
@@ -92,13 +77,8 @@ Console.WriteLine("=== Text in file1.pdf ===");
 Console.WriteLine("=========================");
 
 var pdfDecoder = new PdfDecoder();
-content = await pdfDecoder.ExtractContentAsync("extract",
-    new DataPipeline.FileDetails()
-    {
-        Name = "file1.pdf",
-        MimeType = "application/pdf"
-    },
-    "file1.pdf");
+content = await pdfDecoder.ExtractContentAsync("file1.pdf",
+    MimeTypes.Pdf);
 
 foreach (FileSection section in content!.Sections)
 {
@@ -117,13 +97,8 @@ Console.WriteLine("=========================");
 Console.WriteLine("=== Text in file2.pdf ===");
 Console.WriteLine("=========================");
 
-content = await pdfDecoder.ExtractContentAsync("extract",
-    new DataPipeline.FileDetails()
-    {
-        Name = "file2.pdf",
-        MimeType = "application/pdf"
-    },
-    "file2.pdf");
+content = await pdfDecoder.ExtractContentAsync("file2.pdf",
+    MimeTypes.Pdf);
 
 foreach (FileSection section in content!.Sections)
 {

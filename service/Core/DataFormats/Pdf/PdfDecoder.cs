@@ -26,26 +26,26 @@ public class PdfDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<PdfDecoder>.Instance;
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
+        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from PDF file {0}", file.Name);
+        this._log.LogDebug("Extracting text from PDF file {0}", name);
 
         var result = new FileContent();
 
         using PdfDocument? pdfDocument = PdfDocument.Open(data);
-        if (pdfDocument == null) { return Task.FromResult(result)!; }
+        if (pdfDocument == null) { return Task.FromResult(result); }
 
         foreach (Page? page in pdfDocument.GetPages().Where(x => x != null))
         {
@@ -54,6 +54,6 @@ public class PdfDecoder : IContentDecoder
             result.Sections.Add(new FileSection(page.Number, pageContent, false));
         }
 
-        return Task.FromResult(result)!;
+        return Task.FromResult(result);
     }
 }

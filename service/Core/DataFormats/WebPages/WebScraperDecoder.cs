@@ -35,53 +35,47 @@ public class WebScraperDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<WebScraperDecoder>.Instance;
     }
 
-    public async Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
+    public async Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
     {
         // In case of WebScraper, the filename is the URL of the web page.
-        this._log.LogDebug("Downloading web page specified in {0} and extracting text from {1}", file.Name, filename);
+        this._log.LogDebug("Downloading web page specified in {0} and extracting text", filename);
         if (string.IsNullOrWhiteSpace(filename))
         {
-            file.Log(handlerStepName, "The web page URL is empty");
             this._log.LogWarning("The web page URL is empty");
-
-            return null;
+            throw new UnsupportedContentException("The web page URL is empty");
         }
 
         var result = await this.GetTextAsync(filename, cancellationToken).ConfigureAwait(false);
         if (!result.Success)
         {
-            file.Log(handlerStepName, $"Download error: {result.Error}");
-            this._log.LogWarning("Web page download error: {0}", result.Error);
-
-            return null;
+            this._log.LogWarning("Web page download for {Url} error: {Error}", filename, result.Error);
+            throw new UnsupportedContentException($"Download error: {result.Error}");
         }
 
         if (string.IsNullOrEmpty(result.Text))
         {
-            file.Log(handlerStepName, "The web page has no text content, skipping it");
-            this._log.LogWarning("The web page has no text content, skipping it");
-
-            return null;
+            this._log.LogWarning("The web page {Url }has no text content, skipping it", filename);
+            throw new UnsupportedContentException($"The web page {filename} has no text content, skipping it");
         }
 
         var content = new FileContent();
         content.Sections.Add(new(1, result.Text.Trim(), true));
-        this._log.LogDebug("Web page {0} downloaded, text length: {1}", filename, result.Text.Length);
+        this._log.LogDebug("Web page {Url} downloaded, text length: {Length}", filename, result.Text.Length);
 
         return content;
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
     {
-        return this.ExtractContentAsync(handlerStepName, file, data.ToString(), cancellationToken);
+        return this.ExtractContentAsync(data.ToString(), mimeType, cancellationToken);
     }
 
-    public async Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
+    public async Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-        return await this.ExtractContentAsync(handlerStepName, file, content, cancellationToken).ConfigureAwait(false);
+        return await this.ExtractContentAsync(content, mimeType, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Result> GetTextAsync(string url, CancellationToken cancellationToken = default)

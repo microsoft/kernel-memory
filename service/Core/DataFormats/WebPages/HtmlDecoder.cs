@@ -23,26 +23,31 @@ public class HtmlDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<HtmlDecoder>.Instance;
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, string filename, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
+        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, BinaryData data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(handlerStepName, file, stream, cancellationToken);
+        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
     }
 
-    public Task<FileContent?> ExtractContentAsync(string handlerStepName, DataPipeline.FileDetails file, Stream data, CancellationToken cancellationToken = default)
+    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from HTML file {0}", file.Name);
+        this._log.LogDebug("Extracting text from HTML file {0}", name);
 
         var doc = new HtmlDocument();
         doc.Load(data);
 
         var result = new FileContent();
+        if (mimeType == MimeTypes.MarkDown)
+        {
+            result.MimeType = MimeTypes.MarkDown;
+        }
+
         result.Sections.Add(new FileSection(1, doc.DocumentNode.InnerText.Trim(), true));
 
         return Task.FromResult(result)!;
