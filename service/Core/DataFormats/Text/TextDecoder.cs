@@ -43,12 +43,15 @@ public class TextDecoder : IContentDecoder
         this._log.LogDebug("Extracting text from {0} file {1}", mimeType, name);
 
         var result = new FileContent();
+        if (mimeType == MimeTypes.MarkDown)
+        {
+            result.MimeType = MimeTypes.MarkDown;
+        }
 
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync().ConfigureAwait(false);
 
         result.Sections.Add(new(1, content.Trim(), true));
-
         return result;
     }
 }

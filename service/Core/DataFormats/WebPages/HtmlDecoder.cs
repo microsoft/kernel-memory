@@ -39,14 +39,10 @@ public class HtmlDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from HTML file {0}", name);
 
+        var result = new FileContent();
+
         var doc = new HtmlDocument();
         doc.Load(data);
-
-        var result = new FileContent();
-        if (mimeType == MimeTypes.MarkDown)
-        {
-            result.MimeType = MimeTypes.MarkDown;
-        }
 
         result.Sections.Add(new FileSection(1, doc.DocumentNode.InnerText.Trim(), true));
 
