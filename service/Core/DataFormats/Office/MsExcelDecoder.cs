@@ -19,7 +19,7 @@ public class MsExcelDecoder : IContentDecoder
     private readonly MsExcelConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX, MimeTypes.MsExcel };
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX };
 
     public MsExcelDecoder(MsExcelConfig? config = null, ILogger<MsExcelDecoder>? log = null)
     {
@@ -41,12 +41,6 @@ public class MsExcelDecoder : IContentDecoder
 
     public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        if (mimeType == MimeTypes.MsExcel)
-        {
-            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
-            throw new UnsupportedContentException($"Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (xlsx). Ignoring the file {name}.");
-        }
-
         this._log.LogDebug("Extracting text from MS Excel file {0}", name);
 
         var result = new FileContent();

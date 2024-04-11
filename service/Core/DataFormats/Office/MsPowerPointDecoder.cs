@@ -20,7 +20,7 @@ public class MsPowerPointDecoder : IContentDecoder
     private readonly MsPowerPointConfig _config;
     private readonly ILogger<MsPowerPointDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsPowerPointX, MimeTypes.MsPowerPoint };
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsPowerPointX };
 
     public MsPowerPointDecoder(MsPowerPointConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
     {
@@ -42,12 +42,6 @@ public class MsPowerPointDecoder : IContentDecoder
 
     public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        if (mimeType == MimeTypes.MsPowerPoint)
-        {
-            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
-            throw new UnsupportedContentException($"Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (pptx). Ignoring the file {name}.");
-        }
-
         this._log.LogDebug("Extracting text from MS PowerPoint file {0}", name);
 
         var result = new FileContent();

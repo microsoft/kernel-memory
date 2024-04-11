@@ -18,7 +18,7 @@ public class MsWordDecoder : IContentDecoder
 {
     private readonly ILogger<MsWordDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsWordX, MimeTypes.MsWord };
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsWordX };
 
     public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
     {
@@ -39,12 +39,6 @@ public class MsWordDecoder : IContentDecoder
 
     public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
     {
-        if (mimeType == MimeTypes.MsWord)
-        {
-            this._log.LogWarning("Office 97-2003 file MIME type not supported: {0} - ignoring the file {1}", mimeType, name);
-            throw new UnsupportedContentException($"Office 97-2003 format not supported. It is recommended to migrate to the newer OpenXML format (docx). Ignoring the file {name}.");
-        }
-
         this._log.LogDebug("Extracting text from MS Word file {0}", name);
 
         var result = new FileContent();
