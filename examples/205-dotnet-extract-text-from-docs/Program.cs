@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.DataFormats.Office;
 using Microsoft.KernelMemory.DataFormats.Pdf;
 using Microsoft.KernelMemory.Pipeline;
 
-var content = new FileContent();
+FileContent content = new();
 
 // ===================================================================================================================
 // MS Word example
