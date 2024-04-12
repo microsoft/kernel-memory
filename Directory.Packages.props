@@ -4,16 +4,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.4" />
+    <PackageVersion Include="Azure.Identity" Version="1.11.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
     <PackageVersion Include="ClosedXML" Version="0.102.1" />
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.59" />
-    <PackageVersion Include="LLamaSharp" Version="0.10.0" />
-    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.10.0" />
-    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.10.0" />
+    <PackageVersion Include="LLamaSharp" Version="0.11.2" />
+    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.11.2" />
+    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.11.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -44,8 +44,8 @@
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.6.2" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.6.2" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.7.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.7.1" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -72,15 +72,15 @@
   <!-- Tests -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="9.0.1" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="9.1.0" />
     <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="9.0.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="xunit" Version="2.7.0" />
+    <PackageVersion Include="xunit" Version="2.7.1" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7">
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
