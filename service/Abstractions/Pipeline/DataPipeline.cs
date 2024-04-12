@@ -149,7 +149,10 @@ public sealed class DataPipeline
         /// <param name="text">Text to store for the end user</param>
         public void Log(IPipelineStepHandler handler, string text)
         {
-            this.LogEntries ??= new List<PipelineLogEntry>();
+            if (this.LogEntries == null)
+            {
+                this.LogEntries = new List<PipelineLogEntry>();
+            }
 
             this.LogEntries.Add(new PipelineLogEntry(source: handler.StepName, text: text));
         }
