@@ -9,7 +9,12 @@ namespace Microsoft.KernelMemory.Pipeline;
 public static class MimeTypes
 {
     public const string PlainText = "text/plain";
-    public const string MarkDown = "text/plain-markdown";
+
+    // Multiple values have been used over the years.
+    public const string MarkDown = "text/markdown";
+    public const string MarkDownOld1 = "text/x-markdown";
+    public const string MarkDownOld2 = "text/plain-markdown";
+
     public const string Html = "text/html";
     public const string MsWord = "application/msword";
     public const string MsWordX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";

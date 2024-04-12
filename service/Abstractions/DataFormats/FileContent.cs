@@ -12,5 +12,7 @@ public class FileContent
     [JsonPropertyName("sections")]
     public List<FileSection> Sections { get; set; } = new();
 
+    [JsonPropertyOrder(1)]
+    [JsonPropertyName("mimeType")]
     public string MimeType { get; set; } = MimeTypes.PlainText;
 }

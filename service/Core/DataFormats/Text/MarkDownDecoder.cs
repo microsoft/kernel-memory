@@ -11,13 +11,13 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
-public class TextDecoder : IContentDecoder
+public class MarkDownDecoder : IContentDecoder
 {
     private readonly ILogger<TextDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.PlainText, MimeTypes.Json };
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MarkDown };
 
-    public TextDecoder(ILogger<TextDecoder>? log = null)
+    public MarkDownDecoder(ILogger<TextDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<TextDecoder>.Instance;
     }
@@ -32,7 +32,7 @@ public class TextDecoder : IContentDecoder
     /// <inheritdoc />
     public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from file");
+        this._log.LogDebug("Extracting text from markdown file");
 
         var result = new FileContent();
         result.Sections.Add(new(1, data.ToString().Trim(), true));
@@ -47,7 +47,7 @@ public class TextDecoder : IContentDecoder
 
         var result = new FileContent
         {
-            MimeType = MimeTypes.PlainText
+            MimeType = MimeTypes.MarkDown
         };
 
         using var reader = new StreamReader(data);

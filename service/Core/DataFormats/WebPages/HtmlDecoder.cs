@@ -16,6 +16,7 @@ public class HtmlDecoder : IContentDecoder
 {
     private readonly ILogger<HtmlDecoder> _log;
 
+    /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.Html };
 
     public HtmlDecoder(ILogger<HtmlDecoder>? log = null)
@@ -23,21 +24,24 @@ public class HtmlDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<HtmlDecoder>.Instance;
     }
 
-    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from HTML file {0}", name);
+        this._log.LogDebug("Extracting text from HTML file");
 
         var result = new FileContent();
 

@@ -16,6 +16,7 @@ public class ImageDecoder : IContentDecoder
     private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<ImageDecoder> _log;
 
+    /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.ImageJpeg, MimeTypes.ImagePng, MimeTypes.ImageTiff };
 
     public ImageDecoder(IOcrEngine? ocrEngine = null, ILogger<ImageDecoder>? log = null)
@@ -24,7 +25,8 @@ public class ImageDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<ImageDecoder>.Instance;
     }
 
-    public async Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Extracting text from image file {0}", filename);
 
@@ -35,9 +37,10 @@ public class ImageDecoder : IContentDecoder
         return result;
     }
 
-    public async Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from image file {0}", name);
+        this._log.LogDebug("Extracting text from image file");
 
         var result = new FileContent();
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
@@ -46,9 +49,10 @@ public class ImageDecoder : IContentDecoder
         return result;
     }
 
-    public async Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from image file {0}", name);
+        this._log.LogDebug("Extracting text from image file");
 
         var result = new FileContent();
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);

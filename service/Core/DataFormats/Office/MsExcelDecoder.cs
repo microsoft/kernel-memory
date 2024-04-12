@@ -19,6 +19,7 @@ public class MsExcelDecoder : IContentDecoder
     private readonly MsExcelConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
+    /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX };
 
     public MsExcelDecoder(MsExcelConfig? config = null, ILogger<MsExcelDecoder>? log = null)
@@ -27,21 +28,24 @@ public class MsExcelDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<MsExcelDecoder>.Instance;
     }
 
-    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from MS Excel file {0}", name);
+        this._log.LogDebug("Extracting text from MS Excel file");
 
         var result = new FileContent();
 

@@ -20,6 +20,7 @@ public class MsPowerPointDecoder : IContentDecoder
     private readonly MsPowerPointConfig _config;
     private readonly ILogger<MsPowerPointDecoder> _log;
 
+    /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsPowerPointX };
 
     public MsPowerPointDecoder(MsPowerPointConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
@@ -28,21 +29,24 @@ public class MsPowerPointDecoder : IContentDecoder
         this._log = log ?? DefaultLogger<MsPowerPointDecoder>.Instance;
     }
 
-    public Task<FileContent> ExtractContentAsync(string filename, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContentAsync(Path.GetFileName(filename), stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, BinaryData data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContentAsync(name, stream, mimeType, cancellationToken);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public Task<FileContent> ExtractContentAsync(string name, Stream data, string mimeType, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from MS PowerPoint file {0}", name);
+        this._log.LogDebug("Extracting text from MS PowerPoint file");
 
         var result = new FileContent();
 

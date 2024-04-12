@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.Office;
 using Microsoft.KernelMemory.DataFormats.Pdf;
-using Microsoft.KernelMemory.Pipeline;
 
 FileContent content = new();
 
@@ -13,9 +12,8 @@ Console.WriteLine("===============================");
 Console.WriteLine("=== Text in mswordfile.docx ===");
 Console.WriteLine("===============================");
 
-var msWordWecoder = new MsWordDecoder();
-content = await msWordWecoder.ExtractContentAsync("mswordfile.docx",
-    MimeTypes.MsWordX);
+var msWordDecoder = new MsWordDecoder();
+content = await msWordDecoder.DecodeAsync("mswordfile.docx");
 
 foreach (FileSection section in content.Sections)
 {
@@ -35,8 +33,7 @@ Console.WriteLine("=== Text in mspowerpointfile.pptx ===");
 Console.WriteLine("===============================");
 
 var msPowerPointDecoder = new MsPowerPointDecoder();
-content = await msPowerPointDecoder.ExtractContentAsync("mspowerpointfile.pptx",
-    MimeTypes.MsPowerPointX);
+content = await msPowerPointDecoder.DecodeAsync("mspowerpointfile.pptx");
 
 foreach (FileSection section in content.Sections)
 {
@@ -56,8 +53,7 @@ Console.WriteLine("=== Text in msexcelfile.xlsx ===");
 Console.WriteLine("===============================");
 
 var msExcelDecoder = new MsExcelDecoder();
-content = await msExcelDecoder.ExtractContentAsync("msexcelfile.xlsx",
-    MimeTypes.MsExcelX);
+content = await msExcelDecoder.DecodeAsync("msexcelfile.xlsx");
 
 foreach (FileSection section in content.Sections)
 {
@@ -77,8 +73,7 @@ Console.WriteLine("=== Text in file1.pdf ===");
 Console.WriteLine("=========================");
 
 var pdfDecoder = new PdfDecoder();
-content = await pdfDecoder.ExtractContentAsync("file1.pdf",
-    MimeTypes.Pdf);
+content = await pdfDecoder.DecodeAsync("file1.pdf");
 
 foreach (FileSection section in content.Sections)
 {
@@ -97,8 +92,7 @@ Console.WriteLine("=========================");
 Console.WriteLine("=== Text in file2.pdf ===");
 Console.WriteLine("=========================");
 
-content = await pdfDecoder.ExtractContentAsync("file2.pdf",
-    MimeTypes.Pdf);
+content = await pdfDecoder.DecodeAsync("file2.pdf");
 
 foreach (FileSection section in content.Sections)
 {
