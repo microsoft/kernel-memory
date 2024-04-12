@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -297,6 +298,52 @@ public class MemoryWebClient : IKernelMemory
 
         var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<string> AskStreamingAsync(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        MemoryQuery request = new()
+        {
+            Index = index,
+            Question = question,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance
+        };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, Constants.HttpAskStreamEndpoint);
+        httpRequest.Content = content;
+
+        HttpResponseMessage response = await this._client.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+        while (!reader.EndOfStream)
+        {
+            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+            if (line is null || line.Length <= 0)
+            {
+                continue;
+            }
+
+            yield return line;
+        }
     }
 
     #region private

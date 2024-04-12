@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -331,7 +332,120 @@ public class SearchClient : ISearchClient
         return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
+    /// <inheritdoc />
+    public async IAsyncEnumerable<string> AskStreamingAsync(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(question))
+        {
+            this._log.LogWarning("No question provided");
+            yield return this._config.EmptyAnswer;
+            yield break;
+        }
+
+        var facts = new StringBuilder();
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
+        var tokensAvailable = maxTokens
+                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(question)
+                              - this._config.AnswerTokens;
+
+        var factsUsedCount = 0;
+        var factsAvailableCount = 0;
+
+        this._log.LogTrace("Fetching relevant memories");
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+            index: index,
+            text: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: this._config.MaxMatchesCount,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
+
+        // Memories are sorted by relevance, starting from the most relevant
+        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+        {
+            string fileName = memory.GetFileName(this._log);
+
+            var partitionText = memory.GetPartitionText(this._log).Trim();
+            if (string.IsNullOrEmpty(partitionText))
+            {
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
+                continue;
+            }
+
+            factsAvailableCount++;
+
+            // TODO: add file age in days, to push relevance of newer documents
+            var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
+
+            // Use the partition/chunk only if there's room for it
+            var size = this._textGenerator.CountTokens(fact);
+            if (size >= tokensAvailable)
+            {
+                // Stop after reaching the max number of tokens
+                break;
+            }
+
+            factsUsedCount++;
+            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
+
+            facts.Append(fact);
+            tokensAvailable -= size;
+        }
+
+        if (factsAvailableCount > 0 && factsUsedCount == 0)
+        {
+            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
+            yield return this._config.EmptyAnswer;
+            yield break;
+        }
+
+        if (factsUsedCount == 0)
+        {
+            this._log.LogWarning("No memories available");
+            yield return this._config.EmptyAnswer;
+            yield break;
+        }
+
+        var charsGenerated = 0;
+        var watch = Stopwatch.StartNew();
+        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
+                           .WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (x is null || x.Length == 0)
+            {
+                continue;
+            }
+
+            if (charsGenerated == 0 && ValueIsEquivalentTo(x, this._config.EmptyAnswer))
+            {
+                this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
+                yield return this._config.EmptyAnswer;
+                yield break;
+            }
+
+            charsGenerated += x.Length;
+            yield return x;
+
+            if (this._log.IsEnabled(LogLevel.Trace) && charsGenerated >= 30)
+            {
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
+        }
+
+        watch.Stop();
+        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
+    }
+
+    private IAsyncEnumerable<string?> GenerateAnswerAsync(string question, string facts)
     {
         var prompt = this._answerPrompt;
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);

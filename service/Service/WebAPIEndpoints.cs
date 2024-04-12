@@ -31,6 +31,7 @@ internal static class WebAPIEndpoints
         app.UseDeleteIndexesEndpoint(authFilter);
         app.UseDeleteDocumentsEndpoint(authFilter);
         app.UseAskEndpoint(authFilter);
+        app.UseAskStreamEndpoint(authFilter);
         app.UseSearchEndpoint(authFilter);
         app.UseUploadStatusEndpoint(authFilter);
     }
@@ -217,6 +218,30 @@ internal static class WebAPIEndpoints
                     return Results.Ok(answer);
                 })
             .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void UseAskStreamEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    {
+        // Ask streaming endpoint
+        var route = app.MapPost(Constants.HttpAskStreamEndpoint, IAsyncEnumerable<string> (
+                MemoryQuery query,
+                IKernelMemory service,
+                ILogger<WebAPIEndpoint> log,
+                CancellationToken cancellationToken) =>
+            {
+                log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+                return service.AskStreamingAsync(
+                    question: query.Question,
+                    index: query.Index,
+                    filters: query.Filters,
+                    minRelevance: query.MinRelevance,
+                    cancellationToken: cancellationToken);
+            })
+            .Produces<IAsyncEnumerable<string>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
