@@ -56,6 +56,12 @@ internal static class Program
 
         // Usual .NET web app builder with settings from appsettings.json, appsettings.<ENV>.json, and env vars
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
+
+        if (Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING") != null)
+        {
+            appBuilder.Services.AddApplicationInsightsTelemetry();
+        }
+
         appBuilder.Configuration.AddKMConfigurationSources();
 
         // Read KM settings, needed before building the app.
