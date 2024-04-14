@@ -34,7 +34,10 @@ public class MarkDownDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from markdown file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.MarkDown
+        };
         result.Sections.Add(new(1, data.ToString().Trim(), true));
 
         return Task.FromResult(result)!;
