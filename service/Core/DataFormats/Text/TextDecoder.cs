@@ -34,7 +34,10 @@ public class TextDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
         result.Sections.Add(new(1, data.ToString().Trim(), true));
 
         return Task.FromResult(result)!;
