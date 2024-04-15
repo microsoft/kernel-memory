@@ -234,6 +234,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "107-dotnet-SemanticKernel-T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "208-dotnet-lmstudio", "examples\208-dotnet-lmstudio\208-dotnet-lmstudio.csproj", "{BC8057DA-CB40-4308-96FB-EF0100822BAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "108-dotnet-custom-content-decoders", "examples\108-dotnet-custom-content-decoders\108-dotnet-custom-content-decoders.csproj", "{A5D7FC55-C9AB-493C-83FD-1966A86542FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -304,6 +306,7 @@ Global
 		{8A602227-B291-4F1B-ACB8-237F49501B6A} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{494B8590-F0B2-4D40-A895-F9D7BDF26250} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{A5D7FC55-C9AB-493C-83FD-1966A86542FB} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -498,5 +501,8 @@ Global
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D7FC55-C9AB-493C-83FD-1966A86542FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D7FC55-C9AB-493C-83FD-1966A86542FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D7FC55-C9AB-493C-83FD-1966A86542FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

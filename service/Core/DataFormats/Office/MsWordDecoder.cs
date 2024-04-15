@@ -4,29 +4,51 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsWordDecoder
+public class MsWordDecoder : IContentDecoder
 {
-    public FileContent ExtractContent(string filename)
+    private readonly ILogger<MsWordDecoder> _log;
+
+    public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
+    {
+        this._log = log ?? DefaultLogger<MsWordDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.MsWordX, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(BinaryData data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(Stream data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        var result = new FileContent();
+        this._log.LogDebug("Extracting text from MS Word file");
 
+        var result = new FileContent(MimeTypes.PlainText);
         var wordprocessingDocument = WordprocessingDocument.Open(data, false);
         try
         {
@@ -68,7 +90,7 @@ public class MsWordDecoder
             var lastPageContent = sb.ToString().Trim();
             result.Sections.Add(new FileSection(pageNumber, lastPageContent, true));
 
-            return result;
+            return Task.FromResult(result);
         }
         finally
         {

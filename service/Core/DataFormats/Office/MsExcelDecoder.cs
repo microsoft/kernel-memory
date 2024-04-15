@@ -4,69 +4,52 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using ClosedXML.Excel;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsExcelDecoder
+public class MsExcelDecoder : IContentDecoder
 {
-    private const string DefaultSheetNumberTemplate = "\n# Worksheet {number}\n";
-    private const string DefaultEndOfSheetTemplate = "\n# End of worksheet {number}";
-    private const string DefaultRowPrefix = "";
-    private const string DefaultColumnSeparator = ", ";
-    private const string DefaultRowSuffix = "";
-    private const string DefaultBlankCellValue = "";
+    private readonly MsExcelDecoderConfig _config;
+    private readonly ILogger<MsExcelDecoder> _log;
 
-    private readonly bool _withWorksheetNumber;
-    private readonly bool _withEndOfWorksheetMarker;
-    private readonly bool _withQuotes;
-    private readonly string _worksheetNumberTemplate;
-    private readonly string _endOfWorksheetMarkerTemplate;
-    private readonly string _rowPrefix;
-    private readonly string _columnSeparator;
-    private readonly string _rowSuffix;
-    private readonly string _blankCellValue;
-
-    public MsExcelDecoder(
-        bool withWorksheetNumber = true,
-        bool withEndOfWorksheetMarker = false,
-        bool withQuotes = true,
-        string? worksheetNumberTemplate = null,
-        string? endOfWorksheetMarkerTemplate = null,
-        string? rowPrefix = null,
-        string? columnSeparator = null,
-        string? rowSuffix = null,
-        string? blankCellValue = null)
+    public MsExcelDecoder(MsExcelDecoderConfig? config = null, ILogger<MsExcelDecoder>? log = null)
     {
-        this._withWorksheetNumber = withWorksheetNumber;
-        this._withEndOfWorksheetMarker = withEndOfWorksheetMarker;
-        this._withQuotes = withQuotes;
-
-        this._worksheetNumberTemplate = worksheetNumberTemplate ?? DefaultSheetNumberTemplate;
-        this._endOfWorksheetMarkerTemplate = endOfWorksheetMarkerTemplate ?? DefaultEndOfSheetTemplate;
-
-        this._rowPrefix = rowPrefix ?? DefaultRowPrefix;
-        this._columnSeparator = columnSeparator ?? DefaultColumnSeparator;
-        this._rowSuffix = rowSuffix ?? DefaultRowSuffix;
-        this._blankCellValue = blankCellValue ?? DefaultBlankCellValue;
+        this._config = config ?? new MsExcelDecoderConfig();
+        this._log = log ?? DefaultLogger<MsExcelDecoder>.Instance;
     }
 
-    public FileContent ExtractContent(string filename)
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.MsExcelX, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(BinaryData data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(Stream data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        var result = new FileContent();
+        this._log.LogDebug("Extracting text from MS Excel file");
 
+        var result = new FileContent(MimeTypes.PlainText);
         using var workbook = new XLWorkbook(data);
         var sb = new StringBuilder();
 
@@ -74,9 +57,9 @@ public class MsExcelDecoder
         foreach (var worksheet in workbook.Worksheets)
         {
             worksheetNumber++;
-            if (this._withWorksheetNumber)
+            if (this._config.WithWorksheetNumber)
             {
-                sb.AppendLine(this._worksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
+                sb.AppendLine(this._config.WorksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
             foreach (IXLRangeRow? row in worksheet.RangeUsed().RowsUsed())
@@ -85,12 +68,12 @@ public class MsExcelDecoder
 
                 var cells = row.Cells().ToList();
 
-                sb.Append(this._rowPrefix);
+                sb.Append(this._config.RowPrefix);
                 for (var i = 0; i < cells.Count; i++)
                 {
                     IXLCell? cell = cells[i];
 
-                    if (this._withQuotes && cell is { Value.IsText: true })
+                    if (this._config.WithQuotes && cell is { Value.IsText: true })
                     {
                         sb.Append('"')
                             .Append(cell.Value.GetText().Replace("\"", "\"\"", StringComparison.Ordinal))
@@ -98,21 +81,21 @@ public class MsExcelDecoder
                     }
                     else
                     {
-                        sb.Append(cell.Value.IsBlank ? this._blankCellValue : cell.Value);
+                        sb.Append(cell.Value.IsBlank ? this._config.BlankCellValue : cell.Value);
                     }
 
                     if (i < cells.Count - 1)
                     {
-                        sb.Append(this._columnSeparator);
+                        sb.Append(this._config.ColumnSeparator);
                     }
                 }
 
-                sb.AppendLine(this._rowSuffix);
+                sb.AppendLine(this._config.RowSuffix);
             }
 
-            if (this._withEndOfWorksheetMarker)
+            if (this._config.WithEndOfWorksheetMarker)
             {
-                sb.AppendLine(this._endOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
+                sb.AppendLine(this._config.EndOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
             string worksheetContent = sb.ToString().Trim();
@@ -120,6 +103,6 @@ public class MsExcelDecoder
             result.Sections.Add(new FileSection(worksheetNumber, worksheetContent, true));
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 }

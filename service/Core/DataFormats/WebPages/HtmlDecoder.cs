@@ -2,31 +2,55 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
-public class HtmlDecoder
+public class HtmlDecoder : IContentDecoder
 {
-    public FileContent ExtractContent(string filename)
+    private readonly ILogger<HtmlDecoder> _log;
+
+    public HtmlDecoder(ILogger<HtmlDecoder>? log = null)
+    {
+        this._log = log ?? DefaultLogger<HtmlDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.Html, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(BinaryData data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(BinaryData data, CancellationToken cancellationToken = default)
     {
         using var stream = data.ToStream();
-        return this.ExtractContent(stream);
+        return this.DecodeAsync(stream, cancellationToken);
     }
 
-    public FileContent ExtractContent(Stream data)
+    /// <inheritdoc />
+    public Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Extracting text from HTML file");
+
+        var result = new FileContent(MimeTypes.PlainText);
         var doc = new HtmlDocument();
         doc.Load(data);
 
-        var result = new FileContent();
         result.Sections.Add(new FileSection(1, doc.DocumentNode.InnerText.Trim(), true));
-        return result;
+
+        return Task.FromResult(result);
     }
 }

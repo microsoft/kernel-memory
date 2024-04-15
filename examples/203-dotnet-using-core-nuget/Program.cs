@@ -5,8 +5,8 @@ using Microsoft.KernelMemory;
 var memory = new KernelMemoryBuilder()
     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                       => use Azure Blobs
-    // .WithAzureAISearch(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))            => use Azure AI Search
-    // .WithQdrant("http://127.0.0.1:6333")                                                     => use Qdrant docker
+    // .WithAzureAISearchMemoryDb(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))    => use Azure AI Search
+    // .WithQdrantMemoryDb("http://127.0.0.1:6333")                                             => use Qdrant docker
     // .WithAzureAIDocIntel(Env.Var("AZDOCINTEL_ENDPOINT"), Env.Var("AZDOCINTEL_API_KEY"))      => use Azure AI Document Intelligence OCR
     // .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig                                => use Azure OpenAI for embedding generation
     // {

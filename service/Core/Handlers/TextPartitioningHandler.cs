@@ -108,6 +108,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                 List<string> partitions;
                 List<string> sentences;
                 BinaryData partitionContent = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                string partitionsMimeType = MimeTypes.PlainText;
 
                 // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
                 if (partitionContent.ToArray().Length == 0) { continue; }
@@ -128,6 +129,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     {
                         this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
                         string content = partitionContent.ToString();
+                        partitionsMimeType = MimeTypes.MarkDown;
                         sentences = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitMarkdownParagraphs(
                             sentences, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
@@ -165,7 +167,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                         ParentId = uploadedFile.Id,
                         Name = destFile,
                         Size = text.Length,
-                        MimeType = MimeTypes.PlainText,
+                        MimeType = partitionsMimeType,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
                         PartitionNumber = partitionNumber,
                         SectionNumber = sectionNumber,
