@@ -6,6 +6,7 @@ using Microsoft.KernelMemory.AI.OpenAI;
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
 #pragma warning disable CS8602 // memory is initialized before usage
+#pragma warning disable CS0162 // unreachable code is managed via boolean settings
 public static class Program
 {
     private static MemoryServerless? s_memory;
