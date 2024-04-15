@@ -13,13 +13,13 @@ namespace Microsoft.KernelMemory.DataFormats.Text;
 
 public class MarkDownDecoder : IContentDecoder
 {
-    private readonly ILogger<TextDecoder> _log;
+    private readonly ILogger<MarkDownDecoder> _log;
 
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MarkDown };
 
-    public MarkDownDecoder(ILogger<TextDecoder>? log = null)
+    public MarkDownDecoder(ILogger<MarkDownDecoder>? log = null)
     {
-        this._log = log ?? DefaultLogger<TextDecoder>.Instance;
+        this._log = log ?? DefaultLogger<MarkDownDecoder>.Instance;
     }
 
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public class MarkDownDecoder : IContentDecoder
     /// <inheritdoc />
     public async Task<FileContent> DecodeAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from file");
+        this._log.LogDebug("Extracting text from markdown file");
 
         var result = new FileContent
         {

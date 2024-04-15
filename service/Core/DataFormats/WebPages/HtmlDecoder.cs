@@ -43,7 +43,10 @@ public class HtmlDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from HTML file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
 
         var doc = new HtmlDocument();
         doc.Load(data);

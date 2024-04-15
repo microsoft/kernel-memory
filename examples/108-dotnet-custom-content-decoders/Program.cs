@@ -28,8 +28,8 @@ var memory = new KernelMemoryBuilder()
     //.WithOpenAI(openAIConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
-    .With(new MsExcelConfig { BlankCellValue = "NO-VALUE" }) // Customize the default Excel decoder
-    .With(new MsPowerPointConfig { SkipHiddenSlides = false, WithSlideNumber = true }) // Customize the default PowerPoint decoder
+    .With(new MsExcelDecoderConfig { BlankCellValue = "NO-VALUE" }) // Customize the default Excel decoder
+    .With(new MsPowerPointDecoderConfig { SkipHiddenSlides = false, WithSlideNumber = true }) // Customize the default PowerPoint decoder
     .WithContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder
     .Build<MemoryServerless>();
 

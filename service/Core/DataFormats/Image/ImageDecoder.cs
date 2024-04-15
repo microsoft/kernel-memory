@@ -17,7 +17,12 @@ public class ImageDecoder : IContentDecoder
     private readonly ILogger<ImageDecoder> _log;
 
     /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.ImageJpeg, MimeTypes.ImagePng, MimeTypes.ImageTiff };
+    public IEnumerable<string> SupportedMimeTypes { get; } = new[]
+    {
+        MimeTypes.ImageJpeg,
+        MimeTypes.ImagePng,
+        MimeTypes.ImageTiff
+    };
 
     public ImageDecoder(IOcrEngine? ocrEngine = null, ILogger<ImageDecoder>? log = null)
     {
@@ -28,9 +33,12 @@ public class ImageDecoder : IContentDecoder
     /// <inheritdoc />
     public async Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Extracting text from image file {0}", filename);
+        this._log.LogDebug("Extracting text from image file '{0}'", filename);
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
         var content = await this.ImageToTextAsync(filename, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 
@@ -42,7 +50,10 @@ public class ImageDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from image file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 
@@ -54,7 +65,10 @@ public class ImageDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from image file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 

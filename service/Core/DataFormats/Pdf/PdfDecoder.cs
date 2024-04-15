@@ -46,7 +46,10 @@ public class PdfDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from PDF file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
 
         using PdfDocument? pdfDocument = PdfDocument.Open(data);
         if (pdfDocument == null) { return Task.FromResult(result); }

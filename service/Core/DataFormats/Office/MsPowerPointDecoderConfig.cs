@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsPowerPointConfig
+public class MsPowerPointDecoderConfig
 {
     /// <summary>
     /// Template used for the optional slide number added at the start of each slide.

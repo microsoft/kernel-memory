@@ -45,7 +45,10 @@ public class MsWordDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from MS Word file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
 
         var wordprocessingDocument = WordprocessingDocument.Open(data, false);
         try

@@ -16,15 +16,15 @@ namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsExcelDecoder : IContentDecoder
 {
-    private readonly MsExcelConfig _config;
+    private readonly MsExcelDecoderConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX };
 
-    public MsExcelDecoder(MsExcelConfig? config = null, ILogger<MsExcelDecoder>? log = null)
+    public MsExcelDecoder(MsExcelDecoderConfig? config = null, ILogger<MsExcelDecoder>? log = null)
     {
-        this._config = config ?? new MsExcelConfig();
+        this._config = config ?? new MsExcelDecoderConfig();
         this._log = log ?? DefaultLogger<MsExcelDecoder>.Instance;
     }
 
@@ -47,7 +47,10 @@ public class MsExcelDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from MS Excel file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
 
         using var workbook = new XLWorkbook(data);
         var sb = new StringBuilder();

@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsExcelConfig
+public class MsExcelDecoderConfig
 {
     public bool WithWorksheetNumber { get; set; } = true;
 

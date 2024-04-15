@@ -17,15 +17,15 @@ namespace Microsoft.KernelMemory.DataFormats.Office;
 
 public class MsPowerPointDecoder : IContentDecoder
 {
-    private readonly MsPowerPointConfig _config;
+    private readonly MsPowerPointDecoderConfig _config;
     private readonly ILogger<MsPowerPointDecoder> _log;
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsPowerPointX };
 
-    public MsPowerPointDecoder(MsPowerPointConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
+    public MsPowerPointDecoder(MsPowerPointDecoderConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
     {
-        this._config = config ?? new MsPowerPointConfig();
+        this._config = config ?? new MsPowerPointDecoderConfig();
         this._log = log ?? DefaultLogger<MsPowerPointDecoder>.Instance;
     }
 
@@ -48,7 +48,10 @@ public class MsPowerPointDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from MS PowerPoint file");
 
-        var result = new FileContent();
+        var result = new FileContent
+        {
+            MimeType = MimeTypes.PlainText
+        };
 
         using PresentationDocument presentationDocument = PresentationDocument.Open(data, false);
         var sb = new StringBuilder();

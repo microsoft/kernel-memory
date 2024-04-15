@@ -14,5 +14,15 @@ public class FileContent
 
     [JsonPropertyOrder(1)]
     [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; } = MimeTypes.PlainText;
+    public string MimeType { get; set; }
+
+    public FileContent(string mimeType)
+    {
+        this.MimeType = mimeType;
+    }
+
+    public FileContent()
+    {
+        this.MimeType = MimeTypes.PlainText;
+    }
 }
