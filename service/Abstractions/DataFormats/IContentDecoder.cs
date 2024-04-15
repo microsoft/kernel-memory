@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +13,11 @@ namespace Microsoft.KernelMemory.DataFormats;
 public interface IContentDecoder
 {
     /// <summary>
-    /// List of types supported by the extractor.
-    /// A decoder is called only to process files of supported types.
+    /// Returns true if the decoder supports the given MIME type
     /// </summary>
-    IEnumerable<string> SupportedMimeTypes { get; }
+    /// <param name="mimeType">MIME type string (e.g. content type without encoding details)</param>
+    /// <returns>Whether the MIME type is supported</returns>
+    bool SupportsMimeType(string mimeType);
 
     /// <summary>
     /// Extract content from the given file.
