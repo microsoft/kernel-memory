@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,13 +18,16 @@ public class MsExcelDecoder : IContentDecoder
     private readonly MsExcelDecoderConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
-    /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsExcelX };
-
     public MsExcelDecoder(MsExcelDecoderConfig? config = null, ILogger<MsExcelDecoder>? log = null)
     {
         this._config = config ?? new MsExcelDecoderConfig();
         this._log = log ?? DefaultLogger<MsExcelDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.MsExcelX, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -47,11 +49,7 @@ public class MsExcelDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from MS Excel file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
-
+        var result = new FileContent(MimeTypes.PlainText);
         using var workbook = new XLWorkbook(data);
         var sb = new StringBuilder();
 

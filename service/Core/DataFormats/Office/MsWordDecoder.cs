@@ -18,12 +18,15 @@ public class MsWordDecoder : IContentDecoder
 {
     private readonly ILogger<MsWordDecoder> _log;
 
-    /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MsWordX };
-
     public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<MsWordDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.MsWordX, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -45,11 +48,7 @@ public class MsWordDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from MS Word file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
-
+        var result = new FileContent(MimeTypes.PlainText);
         var wordprocessingDocument = WordprocessingDocument.Open(data, false);
         try
         {

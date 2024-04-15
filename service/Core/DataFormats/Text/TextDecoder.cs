@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,15 +14,18 @@ public class TextDecoder : IContentDecoder
 {
     private readonly ILogger<TextDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[]
-    {
-        MimeTypes.PlainText,
-        MimeTypes.Json
-    };
-
     public TextDecoder(ILogger<TextDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<TextDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && (
+            mimeType.StartsWith(MimeTypes.PlainText, StringComparison.OrdinalIgnoreCase) ||
+            mimeType.StartsWith(MimeTypes.Json, StringComparison.OrdinalIgnoreCase)
+        );
     }
 
     /// <inheritdoc />
@@ -38,10 +40,7 @@ public class TextDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
+        var result = new FileContent(MimeTypes.PlainText);
         result.Sections.Add(new(1, data.ToString().Trim(), true));
 
         return Task.FromResult(result)!;
@@ -52,11 +51,7 @@ public class TextDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
-
+        var result = new FileContent(MimeTypes.PlainText);
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync().ConfigureAwait(false);
 

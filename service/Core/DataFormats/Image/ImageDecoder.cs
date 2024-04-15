@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,14 +15,6 @@ public class ImageDecoder : IContentDecoder
     private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<ImageDecoder> _log;
 
-    /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[]
-    {
-        MimeTypes.ImageJpeg,
-        MimeTypes.ImagePng,
-        MimeTypes.ImageTiff
-    };
-
     public ImageDecoder(IOcrEngine? ocrEngine = null, ILogger<ImageDecoder>? log = null)
     {
         this._ocrEngine = ocrEngine;
@@ -31,14 +22,21 @@ public class ImageDecoder : IContentDecoder
     }
 
     /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && (
+            mimeType.StartsWith(MimeTypes.ImageJpeg, StringComparison.OrdinalIgnoreCase) ||
+            mimeType.StartsWith(MimeTypes.ImagePng, StringComparison.OrdinalIgnoreCase) ||
+            mimeType.StartsWith(MimeTypes.ImageTiff, StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    /// <inheritdoc />
     public async Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Extracting text from image file '{0}'", filename);
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
+        var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(filename, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 
@@ -50,10 +48,7 @@ public class ImageDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from image file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
+        var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 
@@ -65,10 +60,7 @@ public class ImageDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from image file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
+        var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
         result.Sections.Add(new(1, content.Trim(), true));
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,12 +15,15 @@ public class HtmlDecoder : IContentDecoder
 {
     private readonly ILogger<HtmlDecoder> _log;
 
-    /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.Html };
-
     public HtmlDecoder(ILogger<HtmlDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<HtmlDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.Html, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -43,11 +45,7 @@ public class HtmlDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from HTML file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
-
+        var result = new FileContent(MimeTypes.PlainText);
         var doc = new HtmlDocument();
         doc.Load(data);
 

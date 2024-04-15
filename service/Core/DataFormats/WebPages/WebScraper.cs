@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Pipeline;
 using Polly;
 
@@ -68,10 +69,12 @@ public class WebScraper
         this._log.LogDebug("URL '{0}' fetched, content type: {1}", url.AbsoluteUri, contentType);
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        // Read all bytes to avoid System.InvalidOperationException exception "Timeouts are not supported on this stream"
+        var bytes = content.ReadAllBytes();
         return new Result
         {
             Success = true,
-            Content = new BinaryData(content),
+            Content = new BinaryData(bytes),
             ContentType = contentType
         };
     }

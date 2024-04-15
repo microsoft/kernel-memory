@@ -3,8 +3,9 @@
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.Office;
 using Microsoft.KernelMemory.DataFormats.Pdf;
+using Microsoft.KernelMemory.Pipeline;
 
-FileContent content = new();
+FileContent content = new(MimeTypes.PlainText);
 
 // ===================================================================================================================
 // MS Word example

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -70,7 +71,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, sourceFile, cancellationToken).ConfigureAwait(false);
 
             string text = string.Empty;
-            FileContent content = new();
+            FileContent content = new(MimeTypes.PlainText);
             bool skipFile = false;
 
             if (fileContent.ToArray().Length > 0)
@@ -162,7 +163,13 @@ public class TextExtractionHandler : IPipelineStepHandler
             return (uploadedFile, fileContent, skip: true);
         }
 
-        var result = uploadedFile;
+        // IMPORTANT: copy by value to avoid editing the source var
+        DataPipeline.FileDetails? result = JsonSerializer.Deserialize<DataPipeline.FileDetails>(JsonSerializer.Serialize(uploadedFile));
+        if (result == null)
+        {
+            throw new ArgumentNullException(nameof(result), "File details cloning failure");
+        }
+
         result.MimeType = urlDownloadResult.ContentType;
         result.Size = urlDownloadResult.Content.Length;
 
@@ -175,7 +182,7 @@ public class TextExtractionHandler : IPipelineStepHandler
         CancellationToken cancellationToken)
     {
         // Define default empty content
-        var content = new FileContent { MimeType = MimeTypes.PlainText };
+        var content = new FileContent(MimeTypes.PlainText);
 
         if (string.IsNullOrEmpty(uploadedFile.MimeType))
         {
@@ -186,7 +193,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
         // Checks if there is a decoder that supports the file MIME type. If multiple decoders support this type, it means that
         // the decoder has been redefined, so it takes the last one.
-        var decoder = this._decoders.LastOrDefault(d => d.SupportedMimeTypes.Contains(uploadedFile.MimeType));
+        var decoder = this._decoders.LastOrDefault(d => d.SupportsMimeType(uploadedFile.MimeType));
         if (decoder is not null)
         {
             this._log.LogDebug("Extracting text from file '{0}' mime type '{1}' using extractor '{2}'",

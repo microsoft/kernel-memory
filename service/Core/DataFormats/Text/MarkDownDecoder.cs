@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,11 +14,15 @@ public class MarkDownDecoder : IContentDecoder
 {
     private readonly ILogger<MarkDownDecoder> _log;
 
-    public IEnumerable<string> SupportedMimeTypes { get; } = new[] { MimeTypes.MarkDown };
-
     public MarkDownDecoder(ILogger<MarkDownDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<MarkDownDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.MarkDown, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -34,10 +37,7 @@ public class MarkDownDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from markdown file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.MarkDown
-        };
+        var result = new FileContent(MimeTypes.MarkDown);
         result.Sections.Add(new(1, data.ToString().Trim(), true));
 
         return Task.FromResult(result)!;
@@ -48,11 +48,7 @@ public class MarkDownDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from markdown file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.MarkDown
-        };
-
+        var result = new FileContent(MimeTypes.MarkDown);
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync().ConfigureAwait(false);
 

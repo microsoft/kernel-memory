@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,12 +18,15 @@ public class PdfDecoder : IContentDecoder
 {
     private readonly ILogger<PdfDecoder> _log;
 
-    /// <inheritdoc />
-    public IEnumerable<string> SupportedMimeTypes => new[] { MimeTypes.Pdf };
-
     public PdfDecoder(ILogger<PdfDecoder>? log = null)
     {
         this._log = log ?? DefaultLogger<PdfDecoder>.Instance;
+    }
+
+    /// <inheritdoc />
+    public bool SupportsMimeType(string mimeType)
+    {
+        return mimeType != null && mimeType.StartsWith(MimeTypes.Pdf, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -46,11 +48,7 @@ public class PdfDecoder : IContentDecoder
     {
         this._log.LogDebug("Extracting text from PDF file");
 
-        var result = new FileContent
-        {
-            MimeType = MimeTypes.PlainText
-        };
-
+        var result = new FileContent(MimeTypes.PlainText);
         using PdfDocument? pdfDocument = PdfDocument.Open(data);
         if (pdfDocument == null) { return Task.FromResult(result); }
 
