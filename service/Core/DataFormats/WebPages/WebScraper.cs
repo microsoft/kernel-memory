@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -58,43 +59,47 @@ public class WebScraper
         }
 
         var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
-        this._log.LogDebug("'{0}' content type: {1}", url.AbsoluteUri, contentType);
+        if (string.IsNullOrEmpty(contentType))
+        {
+            return new Result { Success = false, Error = "No content type available" };
+        }
+
+        contentType = FixContentType(contentType, url);
+        this._log.LogDebug("URL '{0}' fetched, content type: {1}", url.AbsoluteUri, contentType);
 
         var content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = new Result { Success = true, Content = new BinaryData(content), ContentType = string.Empty };
-
-        // TODO: refactor to automatically support all mime types known by KM
-        if (contentType.Contains(MimeTypes.PlainText, StringComparison.OrdinalIgnoreCase))
+        return new Result
         {
-            // Most web servers, e.g. GitHub, return "text/plain" also for markdown files
-            result.ContentType = url.AbsolutePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-                ? MimeTypes.MarkDown
-                : MimeTypes.PlainText;
-        }
-        else if (contentType.Contains(MimeTypes.MarkDown, StringComparison.OrdinalIgnoreCase)
-                 || contentType.Contains(MimeTypes.MarkDownOld1, StringComparison.OrdinalIgnoreCase)
-                 || contentType.Contains(MimeTypes.MarkDownOld2, StringComparison.OrdinalIgnoreCase))
-        {
-            result.ContentType = MimeTypes.MarkDown;
-        }
-        else if (contentType.Contains(MimeTypes.Html, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.Html; }
-        else if (contentType.Contains(MimeTypes.MsWord, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsWord; }
-        else if (contentType.Contains(MimeTypes.MsWordX, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsWordX; }
-        else if (contentType.Contains(MimeTypes.MsPowerPoint, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsPowerPoint; }
-        else if (contentType.Contains(MimeTypes.MsPowerPointX, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsPowerPointX; }
-        else if (contentType.Contains(MimeTypes.MsExcel, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsExcel; }
-        else if (contentType.Contains(MimeTypes.MsExcelX, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.MsExcelX; }
-        else if (contentType.Contains(MimeTypes.Pdf, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.Pdf; }
-        else if (contentType.Contains(MimeTypes.Json, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.Json; }
-        else if (contentType.Contains(MimeTypes.ImageBmp, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.ImageBmp; }
-        else if (contentType.Contains(MimeTypes.ImageGif, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.ImageGif; }
-        else if (contentType.Contains(MimeTypes.ImageJpeg, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.ImageJpeg; }
-        else if (contentType.Contains(MimeTypes.ImagePng, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.ImagePng; }
-        else if (contentType.Contains(MimeTypes.ImageTiff, StringComparison.OrdinalIgnoreCase)) { result.ContentType = MimeTypes.ImageTiff; }
+            Success = true,
+            Content = new BinaryData(content),
+            ContentType = contentType
+        };
+    }
 
-        return string.IsNullOrEmpty(result.ContentType)
-            ? new Result { Success = false, Error = $"Unsupported content type: {contentType}" }
-            : result;
+    private static string FixContentType(string contentType, Uri url)
+    {
+        // Change type to Markdown if necessary. Most web servers, e.g. GitHub, return "text/plain" also for markdown files
+        if (contentType.Contains(MimeTypes.PlainText, StringComparison.OrdinalIgnoreCase)
+            && url.AbsolutePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+        {
+            return MimeTypes.MarkDown;
+        }
+
+        // Use new Markdown type
+        if (contentType.Contains(MimeTypes.MarkDownOld1, StringComparison.OrdinalIgnoreCase)
+            || contentType.Contains(MimeTypes.MarkDownOld2, StringComparison.OrdinalIgnoreCase))
+        {
+            return MimeTypes.MarkDown;
+        }
+
+        // Use proper XML type
+        if (contentType.Contains(MimeTypes.XML2, StringComparison.OrdinalIgnoreCase))
+        {
+            return MimeTypes.XML;
+        }
+
+        // Return only the first part, e.g. leaving out encoding
+        return new ContentType(contentType).MediaType;
     }
 
     private static ResiliencePipeline<HttpResponseMessage> RetryLogic()
