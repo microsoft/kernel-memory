@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats;
 
@@ -14,5 +13,10 @@ public class FileContent
 
     [JsonPropertyOrder(1)]
     [JsonPropertyName("mimeType")]
-    public string MimeType { get; set; } = MimeTypes.PlainText;
+    public string MimeType { get; set; }
+
+    public FileContent(string mimeType)
+    {
+        this.MimeType = mimeType;
+    }
 }
