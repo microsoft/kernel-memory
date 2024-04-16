@@ -33,6 +33,27 @@ public static partial class KernelMemoryBuilderExtensions
         builder.Services.AddDefaultContentDecoders();
         return builder;
     }
+
+    public static IKernelMemoryBuilder WithDefaultWebScraper(
+        this IKernelMemoryBuilder builder)
+    {
+        builder.Services.AddDefaultWebScraper();
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomWebScraper(
+        this IKernelMemoryBuilder builder, IWebScraper webScraper)
+    {
+        builder.Services.AddCustomWebScraper(webScraper);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomWebScraper<T>(
+        this IKernelMemoryBuilder builder) where T : class, IWebScraper
+    {
+        builder.Services.AddCustomWebScraper<T>();
+        return builder;
+    }
 }
 
 public static partial class DependencyInjection
@@ -63,6 +84,27 @@ public static partial class DependencyInjection
         services.AddSingleton<IContentDecoder, MsPowerPointDecoder>();
         services.AddSingleton<IContentDecoder, MsWordDecoder>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddDefaultWebScraper(
+        this IServiceCollection services)
+    {
+        services.AddSingleton<IWebScraper, WebScraper>();
+        return services;
+    }
+
+    public static IServiceCollection AddCustomWebScraper(
+        this IServiceCollection services, IWebScraper webScraper)
+    {
+        services.AddSingleton<IWebScraper>(webScraper);
+        return services;
+    }
+
+    public static IServiceCollection AddCustomWebScraper<T>(
+        this IServiceCollection services) where T : class, IWebScraper
+    {
+        services.AddSingleton<IWebScraper, T>();
         return services;
     }
 }
