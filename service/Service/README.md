@@ -61,7 +61,8 @@ Configuration settings can be saved in multiple places, each source can also ove
 5. using **env vars**: preferred method for credentials. Any setting in appsettings.json can be overridden by env vars.
    The env var name corresponds to the configuration key name, using `__` (double underscore) as a separator instead of `:`. For instance:
    - `Logging:LogLevel:Default` is set with `Logging__LogLevel__Default`.
-   - `KernelMemory:DataIngestion:EmbeddingGeneratorTypes` in an array and for setting it's first value use `KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0` For instance if the array contains 2 elements, the second would be \_\_1, and so on.
+   - `KernelMemory:DataIngestion:EmbeddingGeneratorTypes` is an array and for setting its first value use `KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0`.
+     If the array contains 2 elements the second would be `__1`, and so on.
 
 # ▶️ Start the service from source
 
