@@ -238,6 +238,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "108-dotnet-custom-content-d
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "109-dotnet-custom-webscraper", "examples\109-dotnet-custom-webscraper\109-dotnet-custom-webscraper.csproj", "{8FB12876-013D-44CB-9F0D-E926D9F0F4E3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{B488168B-AD86-4CC5-9D89-324B6EB743D9}"
+	ProjectSection(SolutionItems) = preProject
+		infra\main.bicep = infra\main.bicep
+		infra\main.json = infra\main.json
+		infra\README.md = infra\README.md
+		infra\build-main.json.sh = infra\build-main.json.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{C2D3A947-B6F9-4306-BD42-21D8D1F42750}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\ai-search.bicep = infra\modules\ai-search.bicep
+		infra\modules\cognitive-services.bicep = infra\modules\cognitive-services.bicep
+		infra\modules\container-app.bicep = infra\modules\container-app.bicep
+		infra\modules\container-apps-environment.bicep = infra\modules\container-apps-environment.bicep
+		infra\modules\managed-identity.bicep = infra\modules\managed-identity.bicep
+		infra\modules\storage.bicep = infra\modules\storage.bicep
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -310,6 +328,7 @@ Global
 		{BC8057DA-CB40-4308-96FB-EF0100822BAD} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{A5D7FC55-C9AB-493C-83FD-1966A86542FB} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{C2D3A947-B6F9-4306-BD42-21D8D1F42750} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
