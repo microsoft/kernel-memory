@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.23.1.45101",
-      "templateHash": "2806087316647984219"
+      "version": "0.26.170.59819",
+      "templateHash": "12294581750482242115"
     }
   },
   "parameters": {
@@ -24,7 +24,7 @@
       "minValue": 1,
       "maxValue": 40,
       "metadata": {
-        "description": "gpt-35-turbo-16k deployment model's Tokens-Per-Minute (TPM) capacity, measured in thousands. The default capacity is 30,000 TPM. For model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota."
+        "description": "gpt-35-turbo-16k deployment model\\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.\nThe default capacity is 30,000 TPM. \nFor model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.\n"
       }
     },
     "embeddingDeploymentCapacity": {
@@ -33,7 +33,7 @@
       "minValue": 1,
       "maxValue": 40,
       "metadata": {
-        "description": "text-embedding-ada-002 deployment model's Tokens-Per-Minute (TPM) capacity, measured in thousands. The default capacity is 30,000 TPM. For model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota."
+        "description": "text-embedding-ada-002 deployment model\\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.\nThe default capacity is 30,000 TPM.\nFor model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.\n"
       }
     }
   },
@@ -103,8 +103,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "17653866389939569322"
+              "version": "0.26.170.59819",
+              "templateHash": "4713381298345265502"
             }
           },
           "parameters": {
@@ -194,8 +194,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "6862959297700912005"
+              "version": "0.26.170.59819",
+              "templateHash": "14742036814785320307"
             }
           },
           "parameters": {
@@ -412,8 +412,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "10764103510437359717"
+              "version": "0.26.170.59819",
+              "templateHash": "15134117034134936130"
             }
           },
           "parameters": {
@@ -587,8 +587,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "12744215924664234576"
+              "version": "0.26.170.59819",
+              "templateHash": "13674510112509251109"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -755,8 +755,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "4614917084751365821"
+              "version": "0.26.170.59819",
+              "templateHash": "15906627962917124587"
             }
           },
           "parameters": {
@@ -951,8 +951,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "5175410973209027794"
+              "version": "0.26.170.59819",
+              "templateHash": "5987660451158578956"
             }
           },
           "parameters": {
@@ -1014,7 +1014,7 @@
           },
           "resources": [
             {
-              "type": "Microsoft.App/containerapps",
+              "type": "Microsoft.App/containerApps",
               "apiVersion": "2023-11-02-preview",
               "name": "[parameters('kmServiceName')]",
               "location": "[parameters('location')]",
@@ -1175,7 +1175,7 @@
             },
             "kmServiceId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.App/containerapps', parameters('kmServiceName'))]"
+              "value": "[resourceId('Microsoft.App/containerApps', parameters('kmServiceName'))]"
             },
             "kmServiceAccessKey1": {
               "type": "string",
@@ -1190,7 +1190,7 @@
               "metadata": {
                 "description": "The FQDN of the frontend web app service."
               },
-              "value": "[reference(resourceId('Microsoft.App/containerapps', parameters('kmServiceName')), '2023-11-02-preview').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('kmServiceName')), '2023-11-02-preview').configuration.ingress.fqdn]"
             }
           }
         }
