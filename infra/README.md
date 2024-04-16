@@ -36,24 +36,30 @@ After the deployment is complete, you will see the following resources in your r
 You can start using Kernel Memory immediately after deployment. Use `Application Url` from Container App instance page
 as Kernel Memory's endpoint. Refer [to this screenshot](./images/ACA-ApplicationUrl.png) if you need help finding Application Url value.
 
-Kernel Memory infrastructure that is deployed requires the AuthenticationType using 'APIKey'. The default API keys are `KernelMemoryServiceAuthorizationAccessKey1` and `KernelMemoryServiceAuthorizationAccessKey2`.
+Kernel Memory web service is deployed with `AuthenticationType` set to `APIKey` and default API keys
+are `KernelMemoryServiceAuthorizationAccessKey1` and `KernelMemoryServiceAuthorizationAccessKey2`. Each request
+requires the `Authorization` HTTP header, passing one of the two keys.
 
+> [!WARNING]
+> It is highly recommended to change the default API keys after deployment. You can do this by updating the
+> `KernelMemory__ServiceAuthorization__AccessKey1` and `KernelMemory__ServiceAuthorization__AccessKey2`
+> **environment variables** in the Container App.
+>
+> Refer [to this screenshot](./images/ACA-EnvVar.png) or to the documentation
+> page: [Manage environment variables on Azure Container Apps](https://learn.microsoft.com/azure/container-apps/environment-variables?tabs=portal)
+> if you need help finding and changing environment variables.
+
+> [!TIP]
 > The easiest way to start using Kernel Memory API is to use Swagger UI. You can access it by navigating to
 > `{Application Url}/swagger/index.html` in your browser. Replace `km-service-example.example.azurecontainerapps.io`
 > with your Application Url value.
-
-> It is highly recommended to change the default API keys after deployment. You can do this by updating the
-> `KernelMemory__ServiceAuthorization__AccessKey1` and `KernelMemory__ServiceAuthorization__AccessKey2` environment
-> variables for the deployed Container App. Refer [to this screenshot](./images/ACA-EnvVar.png) or to the documentation
-> page: [Manage environment variables on Azure Container Apps](https://learn.microsoft.com/azure/container-apps/environment-variables?tabs=portal)
-> if you need help finding and changing environment variables.
 
 Here is an example of how to create a `MemoryWebClient` instance and start using Kernel Memory web service:
 
 ```csharp
 var memory = new MemoryWebClient(
     "https://km-service-example.example.azurecontainerapps.io",
-    apiKey: "...KernelMemoryServiceAuthorizationAccessKey1...");
+    apiKey: "KernelMemoryServiceAuthorizationAccessKey1");
 ```
 
 We recommend reviewing the [examples](../examples/) included in the repository, e.g. starting from
