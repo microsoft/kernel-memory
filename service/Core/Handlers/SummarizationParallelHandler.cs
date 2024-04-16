@@ -15,12 +15,12 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class SummarizationHandler : IPipelineStepHandler
+public class SummarizationParallelHandler : IPipelineStepHandler
 {
     private const int MinLength = 50;
 
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly ILogger<SummarizationHandler> _log;
+    private readonly ILogger<SummarizationParallelHandler> _log;
     private readonly string _summarizationPrompt;
 
     /// <inheritdoc />
@@ -35,11 +35,11 @@ public class SummarizationHandler : IPipelineStepHandler
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
     /// <param name="log">Application logger</param>
-    public SummarizationHandler(
+    public SummarizationParallelHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         IPromptProvider? promptProvider = null,
-        ILogger<SummarizationHandler>? log = null)
+        ILogger<SummarizationParallelHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -47,7 +47,7 @@ public class SummarizationHandler : IPipelineStepHandler
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
 
-        this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
+        this._log = log ?? DefaultLogger<SummarizationParallelHandler>.Instance;
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -63,21 +63,27 @@ public class SummarizationHandler : IPipelineStepHandler
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
             Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            var options = new ParallelOptions()
+            {
+                CancellationToken = cancellationToken,
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+
+            await Parallel.ForEachAsync(uploadedFile.GeneratedFiles, options, async (generatedFile, token) =>
             {
                 var file = generatedFile.Value;
 
                 if (file.AlreadyProcessedBy(this))
                 {
                     this._log.LogTrace("File {0} already processed by this handler", file.Name);
-                    continue;
+                    return;
                 }
 
                 // Summarize only the original content
                 if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
                 {
                     this._log.LogTrace("Skipping file {0}", file.Name);
-                    continue;
+                    return;
                 }
 
                 switch (file.MimeType)
@@ -85,36 +91,39 @@ public class SummarizationHandler : IPipelineStepHandler
                     case MimeTypes.PlainText:
                     case MimeTypes.MarkDown:
                         this._log.LogDebug("Summarizing text file {0}", file.Name);
-                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
+                        string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, token).ConfigureAwait(false)).ToString();
                         (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
                         if (success)
                         {
                             var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, token).ConfigureAwait(false);
 
-                            summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+                            lock (summaryFiles)
                             {
-                                Id = Guid.NewGuid().ToString("N"),
-                                ParentId = uploadedFile.Id,
-                                Name = destFile,
-                                Size = summary.Length,
-                                MimeType = MimeTypes.PlainText,
-                                ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
-                                Tags = pipeline.Tags.Clone().AddSyntheticTag(Constants.TagsSyntheticSummary),
-                                ContentSHA256 = summaryData.CalculateSHA256(),
-                            });
+                                summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
+                                {
+                                    Id = Guid.NewGuid().ToString("N"),
+                                    ParentId = uploadedFile.Id,
+                                    Name = destFile,
+                                    Size = summary.Length,
+                                    MimeType = MimeTypes.PlainText,
+                                    ArtifactType = DataPipeline.ArtifactTypes.SyntheticData,
+                                    Tags = pipeline.Tags.Clone().AddSyntheticTag(Constants.TagsSyntheticSummary),
+                                    ContentSHA256 = summaryData.CalculateSHA256(),
+                                });
+                            }
                         }
 
                         break;
 
                     default:
                         this._log.LogWarning("File {0} cannot be summarized, type not supported", file.Name);
-                        continue;
+                        return;
                 }
 
                 file.MarkProcessedBy(this);
-            }
+            }).ConfigureAwait(false);
 
             // Add new files to pipeline status
             foreach (var file in summaryFiles)

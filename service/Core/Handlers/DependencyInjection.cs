@@ -40,6 +40,10 @@ public static partial class DependencyInjection
         syncOrchestrator.AddHandler<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
         syncOrchestrator.AddHandler<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
 
+        // Experimental handlers using parallelism
+        syncOrchestrator.AddHandler<GenerateEmbeddingsParallelHandler>("gen_embeddings_parallel");
+        syncOrchestrator.AddHandler<SummarizationParallelHandler>("summarize_parallel");
+
         return syncOrchestrator;
     }
 
@@ -57,6 +61,10 @@ public static partial class DependencyInjection
         services.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.PipelineStepsDeleteDocument);
         services.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
         services.AddHandlerAsHostedService<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
+
+        // Experimental handlers using parallelism
+        services.AddHandlerAsHostedService<GenerateEmbeddingsParallelHandler>("gen_embeddings_parallel");
+        services.AddHandlerAsHostedService<SummarizationParallelHandler>("summarize_parallel");
 
         return services;
     }

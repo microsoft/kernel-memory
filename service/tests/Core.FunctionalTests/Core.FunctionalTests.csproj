@@ -38,7 +38,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Remove="file1-NASA-news.pdf"/>
         <Content Include="file1-NASA-news.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file2-largePDF.pdf" />
+        <Content Include="file2-largePDF.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
