@@ -73,11 +73,13 @@ public class MsExcelDecoder : IContentDecoder
                 {
                     IXLCell? cell = cells[i];
 
-                    if (this._config.WithQuotes && cell is { Value.IsText: true })
+                    if (this._config.WithQuotes)
                     {
-                        sb.Append('"')
-                            .Append(cell.Value.GetText().Replace("\"", "\"\"", StringComparison.Ordinal))
-                            .Append('"');
+                        sb.Append('"');
+                        sb.Append(cell is { Value.IsText: true }
+                            ? cell.Value.GetText().Replace("\"", "\"\"", StringComparison.Ordinal)
+                            : this._config.BlankCellValue);
+                        sb.Append('"');
                     }
                     else
                     {

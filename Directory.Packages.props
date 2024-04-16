@@ -10,7 +10,7 @@
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
     <PackageVersion Include="ClosedXML" Version="0.102.1" />
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.59" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.60" />
     <PackageVersion Include="LLamaSharp" Version="0.11.2" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.11.2" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.11.2" />
@@ -24,7 +24,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0" />
-    <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.24.0" />
+    <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.25.0" />
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
@@ -60,11 +60,11 @@
     </PackageVersion>
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28" />
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.0">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.0">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>

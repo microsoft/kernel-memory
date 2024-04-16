@@ -16,7 +16,7 @@ public class MsExcelDecoderConfig
 
     public string RowPrefix { get; set; } = string.Empty;
 
-    public string ColumnSeparator { get; set; } = string.Empty;
+    public string ColumnSeparator { get; set; } = ", ";
 
     public string RowSuffix { get; set; } = string.Empty;
 
