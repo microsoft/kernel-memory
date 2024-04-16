@@ -1,30 +1,34 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
-
+// ReSharper disable RedundantUsingDirective
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
+
 #pragma warning disable CS8602 // memory is initialized before usage
 #pragma warning disable CS0162 // unreachable code is managed via boolean settings
+
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
+
+/* Use MemoryServerlessClient to run the default import pipeline
+ * in the same process, without distributed queues.
+ *
+ * The pipeline might use settings in appsettings.json, but uses
+ * 'InProcessPipelineOrchestrator' explicitly.
+ *
+ * Note: no web service required, each file is processed in this process. */
 public static class Program
 {
     private static MemoryServerless? s_memory;
     private static readonly List<string> s_toDelete = new();
 
-    // Changet this to True and configure Azure Document Intelligence to test OCR and support for images
+    // Change this to True and configure Azure Document Intelligence to test OCR and support for images
     private const bool imageSupportDemoEnabled = false;
 
     public static async Task Main()
     {
-        /* Use MemoryServerlessClient to run the default import pipeline
-         * in the same process, without distributed queues.
-         *
-         * The pipeline might use settings in appsettings.json, but uses
-         * 'InProcessPipelineOrchestrator' explicitly.
-         *
-         * Note: no web service required, each file is processed in this process. */
-
         var openAIConfig = new OpenAIConfig();
         var azureOpenAITextConfig = new AzureOpenAIConfig();
         var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
@@ -71,6 +75,8 @@ public static class Program
         await StoreHTMLFile();
         await StoreWithCustomPipeline();
         await StoreImage();
+        await StoreExcel();
+        await StoreJson();
 
         // =======================
         // === RETRIEVAL =========
@@ -82,6 +88,8 @@ public static class Program
         await AskQuestionUsingFilter();
         await AskQuestionsFilteringByUser();
         await AskQuestionsFilteringByTypeTag();
+        await AskQuestionsAboutExcelData();
+        await AskQuestionsAboutJsonFile();
 
         // =======================
         // === PURGE =============
@@ -211,6 +219,38 @@ public static class Program
         }
 
         s_toDelete.Add("webPage2");
+    }
+
+    // Extract memory from Excel file
+    private static async Task StoreExcel()
+    {
+        if (!await s_memory.IsDocumentReadyAsync(documentId: "xls01"))
+        {
+            Console.WriteLine("Uploading Excel file with some empty cells");
+            await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(new[] { "file8-data.xlsx" }));
+        }
+        else
+        {
+            Console.WriteLine("xls01 already uploaded.");
+        }
+
+        s_toDelete.Add("xls01");
+    }
+
+    // Extract memory from JSON file
+    private static async Task StoreJson()
+    {
+        if (!await s_memory.IsDocumentReadyAsync(documentId: "json01"))
+        {
+            Console.WriteLine("Uploading JSON file");
+            await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(new[] { "file9-settings.json" }));
+        }
+        else
+        {
+            Console.WriteLine("json01 already uploaded.");
+        }
+
+        s_toDelete.Add("json01");
     }
 
     // =======================
@@ -423,7 +463,49 @@ public static class Program
         necessary for crew safety during long-duration missions. The Artemis II mission mentioned in the document will be the first crewed mission of the Artemis
         program, utilizing the Orion spacecraft to send four astronauts around the Moon to test its systems in preparation for future lunar missions.
 
-         */
+        */
+    }
+
+    private static async Task AskQuestionsAboutExcelData()
+    {
+        var question = "Which countries don't have a long name set (explain rationale)?";
+        Console.WriteLine($"Question: {question}");
+
+        var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByDocument("xls01"));
+        Console.WriteLine($"\nAnswer: {answer.Result}");
+
+        Console.WriteLine("\n====================================\n");
+
+        /* OUTPUT
+
+        Question: Which countries don't have a long name set (explain rationale)?
+
+        Answer: Based on the information provided in the worksheet from the file "file8-data.xlsx," the countries that don't have a long name set are "Italia" and
+        "Japan." This is evident from the data in the "Long Name" column, where the corresponding entries for these countries are empty, indicating that the long
+        name for these countries has not been provided or set in the worksheet. In contrast, the "U.S.A." has a long name set, which is "United States of America."
+
+        */
+    }
+
+    private static async Task AskQuestionsAboutJsonFile()
+    {
+        var question = "What authentication mechanisms can I use with Azure Embeddings?";
+        Console.WriteLine($"Question: {question}");
+
+        var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByDocument("json01"));
+        Console.WriteLine($"\nAnswer: {answer.Result}");
+
+        Console.WriteLine("\n====================================\n");
+
+        /* OUTPUT
+
+        Question: What authentication mechanisms can I use with Azure Embeddings?
+
+        Answer: For Azure Embeddings, you can use either an "APIKey" or "AzureIdentity" as authentication mechanisms. The "AzureIdentity" option utilizes an automatic
+        Azure Active Directory (AAD) authentication mechanism. To test this locally, you can set the environment variables AZURE_TENANT_ID, AZURE_CLIENT_ID, and
+        AZURE_CLIENT_SECRET. If you choose to use an "APIKey", you would need to provide the actual API key in the configuration.
+
+        */
     }
 
     // =======================

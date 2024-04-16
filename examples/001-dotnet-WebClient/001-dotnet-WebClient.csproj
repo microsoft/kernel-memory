@@ -37,7 +37,15 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <None Remove="file6-ANWC-image.jpg"/>
-        <Content Update="file6-ANWC-image.jpg">
+        <Content Include="file6-ANWC-image.jpg">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file7-submarine.html"/>
+        <Content Include="file7-submarine.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file8-data.xlsx"/>
+        <Content Include="file8-data.xlsx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

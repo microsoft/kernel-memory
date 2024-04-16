@@ -49,6 +49,10 @@
         <Content Include="file7-submarine.html">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="file8-data.xlsx"/>
+        <Content Include="file8-data.xlsx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
