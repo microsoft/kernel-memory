@@ -35,6 +35,7 @@ public class TextExtractionHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="decoders">The list of content decoders for extracting content</param>
+    /// <param name="webScraper">Web scraper instance used to fetch web pages</param>
     /// <param name="log">Application logger</param>
     public TextExtractionHandler(
         string stepName,

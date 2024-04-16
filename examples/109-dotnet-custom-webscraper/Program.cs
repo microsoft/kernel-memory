@@ -3,37 +3,36 @@
 // ReSharper disable InconsistentNaming
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.DataFormats.WebPages;
 
-public class MyWebScraper : IWebScraper
-{
-    public Task<WebScraperResult> GetContentAsync(string url, CancellationToken cancellationToken = default)
-    {
-        // Sample code
-        Console.WriteLine($"Processing page {url} with {nameof(MyWebScraper)}...");
-
-        // Your logic here
-        var content = new BinaryData("...content page here...");
-
-        // recommended: leave encoding out, include just the MIME/media type
-        var contentType = "text/html";
-
-        return Task.FromResult(new WebScraperResult
-        {
-            Content = content,
-            ContentType = contentType,
-            Success = true,
-            Error = string.Empty
-        });
-    }
-}
+// public class MyWebScraper : IWebScraper
+// {
+//     public Task<WebScraperResult> GetContentAsync(string url, CancellationToken cancellationToken = default)
+//     {
+//         // Sample code
+//         Console.WriteLine($"Processing page {url} with {nameof(MyWebScraper)}...");
+//
+//         // Your logic here
+//         var content = new BinaryData("...content page here...");
+//
+//         // recommended: leave encoding out, include just the MIME/media type
+//         var contentType = "text/html";
+//
+//         return Task.FromResult(new WebScraperResult
+//         {
+//             Content = content,
+//             ContentType = contentType,
+//             Success = true,
+//             Error = string.Empty
+//         });
+//     }
+// }
 
 public static class Program
 {
     public static async Task Main(string[] args)
     {
         var memory = new KernelMemoryBuilder()
-            .WithCustomWebScraper<MyWebScraper>()
+            // .WithCustomWebScraper<MyWebScraper>()
             .WithOpenAIDefaults("no key")
             .Build();
 
