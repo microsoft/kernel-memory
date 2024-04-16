@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
+/// <summary>
+/// Interface used by web scraper classes used to fetch external web pages.
+/// </summary>
 public interface IWebScraper
 {
     /// <summary>

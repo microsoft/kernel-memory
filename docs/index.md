@@ -30,18 +30,12 @@ and links to the original sources.
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/c5f0f6c3-814f-45bf-b055-063f23ed80ea)
 
 Kernel Memory is designed for seamless integration with any programming language, providing a
-web service that can also be consumed as an [OpenAPI endpoint for ChatGPT](https://openai.com/blog/chatgpt-plugins),
+**web service** that can also be consumed as an [OpenAPI endpoint for ChatGPT](https://openai.com/blog/chatgpt-plugins),
 web clients ready to use, and a Plugin
 for [Microsoft Copilot](https://www.microsoft.com/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot)
 and [Semantic Kernel](https://github.com/microsoft/semantic-kernel).
 
 ## Kernel Memory (KM) and Semantic Memory (SM)
-
-**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
-to databases and supports vector search. It was developed as part of the Semantic
-Kernel (SK) project and serves as the first public iteration of long-term memory.
-The core library is maintained in three languages, while the list of supported
-storage engines (known as "connectors") varies across languages.
 
 **Kernel Memory (KM) is a service** built on the feedback received and lessons learned
 from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
@@ -50,6 +44,12 @@ extracting text from files, providing a framework to secure users' data, etc.
 The KM codebase is entirely in .NET, which eliminates the need to write and maintain
 features in multiple languages. As a service, **KM can be used from any language, tool,
 or platform, e.g. browser extensions and ChatGPT assistants.**
+
+**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
+to databases and supports vector search. It was developed as part of the Semantic
+Kernel (SK) project and serves as the first public iteration of long-term memory.
+The core library is maintained in three languages, while the list of supported
+storage engines (known as "connectors") varies across languages.
 
 Here's a few notable differences:
 

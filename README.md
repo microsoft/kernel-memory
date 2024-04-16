@@ -9,9 +9,10 @@ hybrid pipelines, with support for
 **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
 synthetic memory, prompt engineering, and custom semantic memory processing.
 
-KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
-**web clients**, a .NET library for embedded applications, and as a
-[Docker container](https://hub.docker.com/r/kernelmemory/service).
+KM is available as a **Web Service**,
+as a **[Docker container](https://hub.docker.com/r/kernelmemory/service)**,
+a **[Plugin](https://learn.microsoft.com/copilot/plugins/overview)**
+for ChatGPT/Copilot/Semantic Kernel, and as a .NET library for embedded applications.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
