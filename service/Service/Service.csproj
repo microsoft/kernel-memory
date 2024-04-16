@@ -13,21 +13,21 @@
     <ItemGroup>
         <!-- Microsoft.KernelMemory.Core includes also extensions without external dependencies, e.g. all Azure extensions -->
 
-        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.36.240415.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.36.240416.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
         <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
 
-        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.36.240415.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.36.240416.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.36.240415.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.36.240416.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
-        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.36.240415.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.36.240416.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.36.240415.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.36.240416.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
