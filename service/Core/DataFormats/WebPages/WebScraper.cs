@@ -16,34 +16,38 @@ using Polly;
 
 namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
-public class WebScraper
+public interface IWebScraper
 {
-    public class Result
-    {
-        public bool Success { get; set; } = false;
-        public string Error { get; set; } = string.Empty;
-        public BinaryData Content { get; set; } = new(string.Empty);
-        public string ContentType { get; set; } = string.Empty;
-    }
+    /// <summary>
+    /// Fetch the content of a web page
+    /// </summary>
+    /// <param name="url">Web page URL</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Web page content</returns>
+    Task<WebScraperResult> GetContentAsync(string url, CancellationToken cancellationToken = default);
+}
 
+public class WebScraper : IWebScraper
+{
     private readonly ILogger _log;
 
-    public WebScraper(ILogger? log = null)
+    public WebScraper(ILogger<WebScraper>? log = null)
     {
         this._log = log ?? DefaultLogger<WebScraper>.Instance;
     }
 
-    public async Task<Result> GetTextAsync(string url, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<WebScraperResult> GetContentAsync(string url, CancellationToken cancellationToken = default)
     {
         return await this.GetAsync(new Uri(url), cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Result> GetAsync(Uri url, CancellationToken cancellationToken = default)
+    private async Task<WebScraperResult> GetAsync(Uri url, CancellationToken cancellationToken = default)
     {
         var scheme = url.Scheme.ToUpperInvariant();
         if ((scheme != "HTTP") && (scheme != "HTTPS"))
         {
-            return new Result { Success = false, Error = $"Unknown URL protocol: {url.Scheme}" };
+            return new WebScraperResult { Success = false, Error = $"Unknown URL protocol: {url.Scheme}" };
         }
 
         // TODO: perf/TCP ports/reuse client
@@ -56,13 +60,13 @@ public class WebScraper
         if (!response.IsSuccessStatusCode)
         {
             this._log.LogError("Error while fetching page {0}, status code: {1}", url.AbsoluteUri, response.StatusCode);
-            return new Result { Success = false, Error = $"HTTP error, status code: {response.StatusCode}" };
+            return new WebScraperResult { Success = false, Error = $"HTTP error, status code: {response.StatusCode}" };
         }
 
         var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
         if (string.IsNullOrEmpty(contentType))
         {
-            return new Result { Success = false, Error = "No content type available" };
+            return new WebScraperResult { Success = false, Error = "No content type available" };
         }
 
         contentType = FixContentType(contentType, url);
@@ -71,7 +75,7 @@ public class WebScraper
         var content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         // Read all bytes to avoid System.InvalidOperationException exception "Timeouts are not supported on this stream"
         var bytes = content.ReadAllBytes();
-        return new Result
+        return new WebScraperResult
         {
             Success = true,
             Content = new BinaryData(bytes),

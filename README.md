@@ -345,14 +345,15 @@ running the service locally with OpenAPI enabled.
 13. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
 14. [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
 15. [Using custom content decoders](examples/108-dotnet-custom-content-decoders)
-16. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
-17. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
-18. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
-19. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-20. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-21. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
-22. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
-23. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
+16. [Using a custom web scraper to fetch web pages](examples/109-dotnet-custom-webscraper)
+17. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
+18. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+19. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+20. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+21. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+22. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+23. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+24. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 
 ## Tools
 

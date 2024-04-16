@@ -21,8 +21,8 @@ namespace Microsoft.KernelMemory.Handlers;
 public class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
-    private readonly WebScraper _webScraper;
     private readonly IEnumerable<IContentDecoder> _decoders;
+    private readonly IWebScraper _webScraper;
     private readonly ILogger<TextExtractionHandler> _log;
 
     /// <inheritdoc />
@@ -40,13 +40,14 @@ public class TextExtractionHandler : IPipelineStepHandler
         string stepName,
         IPipelineOrchestrator orchestrator,
         IEnumerable<IContentDecoder> decoders,
+        IWebScraper? webScraper = null,
         ILogger<TextExtractionHandler>? log = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
         this._decoders = decoders;
-        this._webScraper = new WebScraper(this._log);
+        this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
+        this._webScraper = webScraper ?? new WebScraper();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -148,7 +149,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             return (uploadedFile, fileContent, skip: true);
         }
 
-        var urlDownloadResult = await this._webScraper.GetTextAsync(url, cancellationToken).ConfigureAwait(false);
+        var urlDownloadResult = await this._webScraper.GetContentAsync(url, cancellationToken).ConfigureAwait(false);
         if (!urlDownloadResult.Success)
         {
             uploadedFile.Log(this, $"Web page download error: {urlDownloadResult.Error}");
