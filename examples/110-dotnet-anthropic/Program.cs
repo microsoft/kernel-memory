@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if KernelMemoryDev
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.Anthropic;
 using Microsoft.KernelMemory.AI.OpenAI;
@@ -54,4 +55,8 @@ var answer = await memory.AskAsync(question);
 Console.WriteLine($"Question: {question}");
 Console.WriteLine($"Answer: {answer.Result}");
 
-Console.ReadKey();
+#else
+
+Console.WriteLine("KernelMemoryDev.sln required");
+
+#endif
