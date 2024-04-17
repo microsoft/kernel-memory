@@ -62,7 +62,10 @@ resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   name: guid('Cognitive Services OpenAI Contributor-${suffix}')
   scope: account
   properties: {
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/a001fd3d-188f-4b5d-821b-7da978bf7442'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'a001fd3d-188f-4b5d-821b-7da978bf7442'
+    )
     principalId: managedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }
@@ -73,7 +76,10 @@ resource roleAssignment2 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   name: guid('Cognitive Services OpenAI User-${suffix}')
   scope: account
   properties: {
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    )
     principalId: managedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }

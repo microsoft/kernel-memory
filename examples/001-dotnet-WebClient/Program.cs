@@ -23,7 +23,7 @@ public static class Program
     private static readonly List<string> s_toDelete = new();
 
     // Change this to True and configure Azure Document Intelligence to test OCR and support for images
-    private const bool imageSupportDemoEnabled = true;
+    private const bool ImageSupportDemoEnabled = true;
 
     public static async Task Main()
     {
@@ -100,7 +100,7 @@ public static class Program
     // Extract memory from images (OCR required)
     private static async Task StoreImage()
     {
-        if (!imageSupportDemoEnabled) { return; }
+        if (!ImageSupportDemoEnabled) { return; }
 
         Console.WriteLine("Uploading Image file with a news about a conference sponsored by Microsoft");
         await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(new[] { "file6-ANWC-image.jpg" }));
@@ -314,7 +314,7 @@ public static class Program
 
         var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
 
-        Console.WriteLine(imageSupportDemoEnabled
+        Console.WriteLine(ImageSupportDemoEnabled
             ? $"\nAnswer: {answer.Result}\n\n  Sources:\n"
             : $"\nAnswer (none expected): {answer.Result}\n\n  Sources:\n");
 

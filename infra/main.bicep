@@ -21,6 +21,26 @@ For model limits specific to your region, refer to the documentation at https://
 @maxValue(40)
 param embeddingDeploymentCapacity int = 30
 
+@description('''
+PLEASE CHOOSE A SECURE AND SECRET KEY ! -
+Kernel Memory Service Authorization AccessKey 1.
+The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
+''')
+@minLength(16)
+@maxLength(64)
+@secure()
+param WebServiceAuthorizationKey1 string
+
+@description('''
+PLEASE CHOOSE A SECURE AND SECRET KEY ! -
+Kernel Memory Service Authorization AccessKey 2.
+The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
+''')
+@minLength(16)
+@maxLength(64)
+@secure()
+param WebServiceAuthorizationKey2 string
+
 var rg = resourceGroup()
 
 var location = resourceGroup().location
@@ -170,6 +190,9 @@ module containerAppService 'modules/container-app.bicep' = {
     applicationInsightsConnectionString: containerAppsEnvironment.outputs.applicationInsightsConnectionString
     managedIdentityId: managedidentity.outputs.managedIdentityId
     managedIdentityClientId: managedidentity.outputs.managedIdentityClientId
+
+    KernelMemory__ServiceAuthorization__AccessKey1: WebServiceAuthorizationKey1
+    KernelMemory__ServiceAuthorization__AccessKey2: WebServiceAuthorizationKey2
 
     AzureAISearch_Endpoint: 'https://${search.outputs.searchName }.search.windows.net'
     AzureBlobs_Account: storage.outputs.storageAccountName

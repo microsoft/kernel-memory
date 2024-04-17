@@ -18,8 +18,9 @@ reuse and customize the Bicep files starting from [infra/main.bicep](main.bicep)
 > make changes to `main.bicep` file.
 >
 > You can use the `az bicep build -f main.bicep` command to compile the Bicep file to a json file.
-> * [Click here](https://learn.microsoft.com/cli/azure/install-azure-cli) for `az` install instructions
-> * [Click here](https://learn.microsoft.com/azure/azure-resource-manager/bicep/bicep-cli) for Bicep CLI commands
+>
+> - [Click here](https://learn.microsoft.com/cli/azure/install-azure-cli) for `az` install instructions
+> - [Click here](https://learn.microsoft.com/azure/azure-resource-manager/bicep/bicep-cli) for Bicep CLI commands
 
 </details>
 
@@ -33,17 +34,13 @@ After the deployment is complete, you will see the following resources in your r
 - Managed Identity
 - Storage account
 
-You can start using Kernel Memory immediately after deployment. Use `Application Url` from Container App instance page
-as Kernel Memory's endpoint. Refer [to this screenshot](./images/ACA-ApplicationUrl.png) if you need help finding Application Url value.
+You can start using Kernel Memory immediately after deployment. Use `Application Url` from Container App instance page as Kernel Memory's endpoint. Refer [to this screenshot](./images/ACA-ApplicationUrl.png) if you need help finding Application Url value.
 
-Kernel Memory web service is deployed with `AuthenticationType` set to `APIKey` and default API keys
-are `KernelMemoryServiceAuthorizationAccessKey1` and `KernelMemoryServiceAuthorizationAccessKey2`. Each request
-requires the `Authorization` HTTP header, passing one of the two keys.
+Kernel Memory web service is deployed with `AuthenticationType` set to `APIKey` and default API keys are random GUIDs. Each request requires the `Authorization` HTTP header, passing one of the two keys.
 
 > [!WARNING]
 > It is highly recommended to change the default API keys after deployment. You can do this by updating the
-> `KernelMemory__ServiceAuthorization__AccessKey1` and `KernelMemory__ServiceAuthorization__AccessKey2`
-> **environment variables** in the Container App.
+> `KernelMemory__ServiceAuthorization__AccessKey1` and `KernelMemory__ServiceAuthorization__AccessKey2` > **environment variables** in the Container App.
 >
 > Refer [to this screenshot](./images/ACA-EnvVar.png) or to the documentation
 > page: [Manage environment variables on Azure Container Apps](https://learn.microsoft.com/azure/container-apps/environment-variables?tabs=portal)
@@ -59,7 +56,7 @@ Here is an example of how to create a `MemoryWebClient` instance and start using
 ```csharp
 var memory = new MemoryWebClient(
     "https://km-service-example.example.azurecontainerapps.io",
-    apiKey: "KernelMemoryServiceAuthorizationAccessKey1");
+    apiKey: "...your WebServiceAuthorizationKey1...");
 ```
 
 We recommend reviewing the [examples](../examples/) included in the repository, e.g. starting from
