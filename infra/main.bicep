@@ -31,7 +31,9 @@ and is required to authenticate HTTP requests to KM web service.
 param KernelMemoryServiceAuthorizationAccessKey1 string = 'KernelMemoryServiceAuthorizationAccessKey1'
 
 @description('''
-Kernel Memory Service Authorization AccessKey2. It will be passed to the Kernel Memory Service container as an environment variable.
+Kernel Memory Service Authorization AccessKey2.
+It's passed to the Kernel Memory Service container as an environment variable
+and is required to authenticate HTTP requests to KM web service.
 ''')
 @minLength(16)
 @maxLength(42)
