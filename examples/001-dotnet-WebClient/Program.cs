@@ -23,7 +23,7 @@ public static class Program
     private static readonly List<string> s_toDelete = new();
 
     // Change this to True and configure Azure Document Intelligence to test OCR and support for images
-    private const bool ImageSupportDemoEnabled = false;
+    private const bool ImageSupportDemoEnabled = true;
 
     public static async Task Main()
     {
