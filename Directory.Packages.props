@@ -12,7 +12,6 @@
     <PackageVersion Include="LLamaSharp" Version="0.11.2" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.11.2" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.11.2" />
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
