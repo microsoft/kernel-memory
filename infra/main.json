@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.26.170.59819",
-      "templateHash": "12294581750482242115"
+      "version": "0.23.1.45101",
+      "templateHash": "3277158942989842974"
     }
   },
   "parameters": {
@@ -34,6 +34,24 @@
       "maxValue": 40,
       "metadata": {
         "description": "text-embedding-ada-002 deployment model\\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.\nThe default capacity is 30,000 TPM.\nFor model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.\n"
+      }
+    },
+    "KernelMemoryServiceAuthorizationAccessKey1": {
+      "type": "string",
+      "defaultValue": "KernelMemoryServiceAuthorizationAccessKey1",
+      "minLength": 16,
+      "maxLength": 42,
+      "metadata": {
+        "description": "Kernel Memory Service Authorization AccessKey1. It will be passed to the Kernel Memory Service container as an environment variable.\n"
+      }
+    },
+    "KernelMemoryServiceAuthorizationAccessKey2": {
+      "type": "string",
+      "defaultValue": "KernelMemoryServiceAuthorizationAccessKey2",
+      "minLength": 16,
+      "maxLength": 42,
+      "metadata": {
+        "description": "Kernel Memory Service Authorization AccessKey2. It will be passed to the Kernel Memory Service container as an environment variable.\n"
       }
     }
   },
@@ -103,8 +121,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "4713381298345265502"
+              "version": "0.23.1.45101",
+              "templateHash": "12509279653912239876"
             }
           },
           "parameters": {
@@ -141,9 +159,8 @@
               "apiVersion": "2022-04-01",
               "name": "[guid(format('{0}contributor', resourceGroup().id))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('name')), '2023-01-31').principalId]",
-                "scope": "[resourceGroup().id]",
                 "principalType": "ServicePrincipal"
               },
               "dependsOn": [
@@ -194,8 +211,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "14742036814785320307"
+              "version": "0.23.1.45101",
+              "templateHash": "15295743344225113666"
             }
           },
           "parameters": {
@@ -257,7 +274,7 @@
               "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
               "name": "[guid(format('Storage Queue Data Contributor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/974c5e8b-45b9-4653-ba55-5f855dd0fb88', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -271,7 +288,7 @@
               "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
               "name": "[guid(format('Storage Blob Data Contributor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -285,7 +302,7 @@
               "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
               "name": "[guid(format('Storage Blob Data Owner-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -299,7 +316,7 @@
               "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
               "name": "[guid(format('Storage Queue Data Message Sender-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/c6a89b2d-59bc-44d0-9896-0f6e12d7b80a', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -313,7 +330,7 @@
               "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
               "name": "[guid(format('// Storage Queue Data Message Processor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/8a0f0c08-91a1-4084-bc3d-661d67233fed', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8a0f0c08-91a1-4084-bc3d-661d67233fed')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -412,8 +429,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "15134117034134936130"
+              "version": "0.23.1.45101",
+              "templateHash": "976700098691988707"
             }
           },
           "parameters": {
@@ -515,7 +532,7 @@
               "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('name'))]",
               "name": "[guid(format('Search Index Data Contributor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/8ebe5a00-799e-43f5-93ac-243d3dce84a7', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8ebe5a00-799e-43f5-93ac-243d3dce84a7')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -529,7 +546,7 @@
               "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('name'))]",
               "name": "[guid(format('Search Service Contributor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/7ca78c08-252a-4471-8644-bb5ff32d4ba0', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7ca78c08-252a-4471-8644-bb5ff32d4ba0')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -587,8 +604,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "13674510112509251109"
+              "version": "0.23.1.45101",
+              "templateHash": "5104723369899864913"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -689,7 +706,7 @@
               "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('name'))]",
               "name": "[guid(format('Cognitive Services OpenAI Contributor-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/a001fd3d-188f-4b5d-821b-7da978bf7442', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a001fd3d-188f-4b5d-821b-7da978bf7442')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -703,7 +720,7 @@
               "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('name'))]",
               "name": "[guid(format('Cognitive Services OpenAI User-{0}', parameters('suffix')))]",
               "properties": {
-                "roleDefinitionId": "[format('/subscriptions/{0}/providers/Microsoft.Authorization/roleDefinitions/5e0bd9bd-7b93-4f28-af87-19fc36ad61bd', subscription().subscriptionId)]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')]",
                 "principalId": "[parameters('managedIdentityPrincipalId')]",
                 "principalType": "ServicePrincipal"
               },
@@ -755,8 +772,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "15906627962917124587"
+              "version": "0.23.1.45101",
+              "templateHash": "4614917084751365821"
             }
           },
           "parameters": {
@@ -920,6 +937,12 @@
           "managedIdentityClientId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('suffix'))), '2022-09-01').outputs.managedIdentityClientId.value]"
           },
+          "KernelMemory__ServiceAuthorization__AccessKey1": {
+            "value": "[parameters('KernelMemoryServiceAuthorizationAccessKey1')]"
+          },
+          "KernelMemory__ServiceAuthorization__AccessKey2": {
+            "value": "[parameters('KernelMemoryServiceAuthorizationAccessKey2')]"
+          },
           "AzureAISearch_Endpoint": {
             "value": "[format('https://{0}.search.windows.net', reference(resourceId('Microsoft.Resources/deployments', format('search-{0}', parameters('suffix'))), '2022-09-01').outputs.searchName.value)]"
           },
@@ -951,8 +974,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.26.170.59819",
-              "templateHash": "5987660451158578956"
+              "version": "0.23.1.45101",
+              "templateHash": "6548788440216470296"
             }
           },
           "parameters": {
@@ -1006,16 +1029,18 @@
             },
             "AzureOpenAIEmbedding_Deployment": {
               "type": "string"
+            },
+            "KernelMemory__ServiceAuthorization__AccessKey1": {
+              "type": "string"
+            },
+            "KernelMemory__ServiceAuthorization__AccessKey2": {
+              "type": "string"
             }
-          },
-          "variables": {
-            "KernelMemory__ServiceAuthorization__AccessKey1": "KernelMemoryServiceAuthorizationAccessKey1",
-            "KernelMemory__ServiceAuthorization__AccessKey2": "KernelMemoryServiceAuthorizationAccessKey2"
           },
           "resources": [
             {
               "type": "Microsoft.App/containerApps",
-              "apiVersion": "2023-11-02-preview",
+              "apiVersion": "2023-05-01",
               "name": "[parameters('kmServiceName')]",
               "location": "[parameters('location')]",
               "properties": {
@@ -1036,8 +1061,7 @@
                     "targetPort": 9001,
                     "stickySessions": {
                       "affinity": "none"
-                    },
-                    "additionalPortMappings": []
+                    }
                   }
                 },
                 "template": {
@@ -1093,11 +1117,11 @@
                         },
                         {
                           "name": "KernelMemory__ServiceAuthorization__AccessKey1",
-                          "value": "[variables('KernelMemory__ServiceAuthorization__AccessKey1')]"
+                          "value": "[parameters('KernelMemory__ServiceAuthorization__AccessKey1')]"
                         },
                         {
                           "name": "KernelMemory__ServiceAuthorization__AccessKey2",
-                          "value": "[variables('KernelMemory__ServiceAuthorization__AccessKey2')]"
+                          "value": "[parameters('KernelMemory__ServiceAuthorization__AccessKey2')]"
                         },
                         {
                           "name": "KernelMemory__DataIngestion__DistributedOrchestration__QueueType",
@@ -1179,18 +1203,18 @@
             },
             "kmServiceAccessKey1": {
               "type": "string",
-              "value": "[variables('KernelMemory__ServiceAuthorization__AccessKey1')]"
+              "value": "[parameters('KernelMemory__ServiceAuthorization__AccessKey1')]"
             },
             "kmServiceAccessKey2": {
               "type": "string",
-              "value": "[variables('KernelMemory__ServiceAuthorization__AccessKey2')]"
+              "value": "[parameters('KernelMemory__ServiceAuthorization__AccessKey2')]"
             },
             "kmServiceFQDN": {
               "type": "string",
               "metadata": {
                 "description": "The FQDN of the frontend web app service."
               },
-              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('kmServiceName')), '2023-11-02-preview').configuration.ingress.fqdn]"
+              "value": "[reference(resourceId('Microsoft.App/containerApps', parameters('kmServiceName')), '2023-05-01').configuration.ingress.fqdn]"
             }
           }
         }
