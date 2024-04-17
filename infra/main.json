@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.23.1.45101",
-      "templateHash": "3277158942989842974"
+      "version": "0.26.170.59819",
+      "templateHash": "10445085385122129218"
     }
   },
   "parameters": {
@@ -38,20 +38,20 @@
     },
     "KernelMemoryServiceAuthorizationAccessKey1": {
       "type": "string",
-      "defaultValue": "KernelMemoryServiceAuthorizationAccessKey1",
+      "defaultValue": "[guid(resourceGroup().id, 'AccessKey1')]",
       "minLength": 16,
-      "maxLength": 42,
+      "maxLength": 36,
       "metadata": {
-        "description": "Kernel Memory Service Authorization AccessKey1. It will be passed to the Kernel Memory Service container as an environment variable.\n"
+        "description": "Kernel Memory Service Authorization AccessKey1. Default value is a random GUID.\nIt's passed to the Kernel Memory Service container as an environment variable\nand is required to authenticate HTTP requests to KM web service.\n"
       }
     },
     "KernelMemoryServiceAuthorizationAccessKey2": {
       "type": "string",
-      "defaultValue": "KernelMemoryServiceAuthorizationAccessKey2",
+      "defaultValue": "[guid(resourceGroup().id, 'AccessKey2')]",
       "minLength": 16,
-      "maxLength": 42,
+      "maxLength": 36,
       "metadata": {
-        "description": "Kernel Memory Service Authorization AccessKey2. It will be passed to the Kernel Memory Service container as an environment variable.\n"
+        "description": "Kernel Memory Service Authorization AccessKey2. Default value is a random GUID.\nIt's passed to the Kernel Memory Service container as an environment variable\nand is required to authenticate HTTP requests to KM web service.\n"
       }
     }
   },
@@ -121,8 +121,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "12509279653912239876"
+              "version": "0.26.170.59819",
+              "templateHash": "10309523882387137109"
             }
           },
           "parameters": {
@@ -211,8 +211,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "15295743344225113666"
+              "version": "0.26.170.59819",
+              "templateHash": "2779259654581077397"
             }
           },
           "parameters": {
@@ -429,8 +429,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "976700098691988707"
+              "version": "0.26.170.59819",
+              "templateHash": "16481486745226370443"
             }
           },
           "parameters": {
@@ -604,8 +604,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "5104723369899864913"
+              "version": "0.26.170.59819",
+              "templateHash": "7253571891387474171"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -772,8 +772,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "4614917084751365821"
+              "version": "0.26.170.59819",
+              "templateHash": "15906627962917124587"
             }
           },
           "parameters": {
@@ -974,8 +974,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.23.1.45101",
-              "templateHash": "6548788440216470296"
+              "version": "0.26.170.59819",
+              "templateHash": "15536334349632985650"
             }
           },
           "parameters": {

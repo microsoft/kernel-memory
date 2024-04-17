@@ -22,22 +22,22 @@ For model limits specific to your region, refer to the documentation at https://
 param embeddingDeploymentCapacity int = 30
 
 @description('''
-Kernel Memory Service Authorization AccessKey1. 
+Kernel Memory Service Authorization AccessKey1. Default value is a random GUID.
 It's passed to the Kernel Memory Service container as an environment variable
 and is required to authenticate HTTP requests to KM web service.
 ''')
 @minLength(16)
-@maxLength(42)
-param KernelMemoryServiceAuthorizationAccessKey1 string = 'KernelMemoryServiceAuthorizationAccessKey1'
+@maxLength(36)
+param KernelMemoryServiceAuthorizationAccessKey1 string = guid(resourceGroup().id, 'AccessKey1')
 
 @description('''
-Kernel Memory Service Authorization AccessKey2.
+Kernel Memory Service Authorization AccessKey2. Default value is a random GUID.
 It's passed to the Kernel Memory Service container as an environment variable
 and is required to authenticate HTTP requests to KM web service.
 ''')
 @minLength(16)
-@maxLength(42)
-param KernelMemoryServiceAuthorizationAccessKey2 string = 'KernelMemoryServiceAuthorizationAccessKey2'
+@maxLength(36)
+param KernelMemoryServiceAuthorizationAccessKey2 string = guid(resourceGroup().id, 'AccessKey2')
 
 var rg = resourceGroup()
 
