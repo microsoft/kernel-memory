@@ -15,7 +15,8 @@ extend-exclude = [
     "encoder.json",
     "appsettings.development.json",
     "appsettings.Development.json",
-    "AzureAISearchFilteringTest.cs"
+    "AzureAISearchFilteringTest.cs",
+    "cl100k_base.tiktoken"
 ]
 
 [default.extend-words]
