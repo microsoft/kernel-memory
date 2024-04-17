@@ -40,9 +40,6 @@
         <Content Include="file1-NASA-news.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="National-Planning-Policy-Framework.pdf">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 
 </Project>
