@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "10445085385122129218"
+      "templateHash": "17051155085968787115"
     }
   },
   "parameters": {
@@ -36,22 +36,20 @@
         "description": "text-embedding-ada-002 deployment model\\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.\nThe default capacity is 30,000 TPM.\nFor model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.\n"
       }
     },
-    "KernelMemoryServiceAuthorizationAccessKey1": {
-      "type": "string",
-      "defaultValue": "[guid(resourceGroup().id, 'AccessKey1')]",
+    "WebServiceAuthorizationKey1": {
+      "type": "securestring",
       "minLength": 16,
-      "maxLength": 36,
+      "maxLength": 64,
       "metadata": {
-        "description": "Kernel Memory Service Authorization AccessKey1. Default value is a random GUID.\nIt's passed to the Kernel Memory Service container as an environment variable\nand is required to authenticate HTTP requests to KM web service.\n"
+        "description": "PLEASE CHOOSE A SECURE AND SECRET KEY ! -\nKernel Memory Service Authorization AccessKey 1.\nThe value is stored as an environment variable and is required by the web service to authenticate HTTP requests.\n"
       }
     },
-    "KernelMemoryServiceAuthorizationAccessKey2": {
-      "type": "string",
-      "defaultValue": "[guid(resourceGroup().id, 'AccessKey2')]",
+    "WebServiceAuthorizationKey2": {
+      "type": "securestring",
       "minLength": 16,
-      "maxLength": 36,
+      "maxLength": 64,
       "metadata": {
-        "description": "Kernel Memory Service Authorization AccessKey2. Default value is a random GUID.\nIt's passed to the Kernel Memory Service container as an environment variable\nand is required to authenticate HTTP requests to KM web service.\n"
+        "description": "PLEASE CHOOSE A SECURE AND SECRET KEY ! -\nKernel Memory Service Authorization AccessKey 2.\nThe value is stored as an environment variable and is required by the web service to authenticate HTTP requests.\n"
       }
     }
   },
@@ -938,10 +936,10 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('suffix'))), '2022-09-01').outputs.managedIdentityClientId.value]"
           },
           "KernelMemory__ServiceAuthorization__AccessKey1": {
-            "value": "[parameters('KernelMemoryServiceAuthorizationAccessKey1')]"
+            "value": "[parameters('WebServiceAuthorizationKey1')]"
           },
           "KernelMemory__ServiceAuthorization__AccessKey2": {
-            "value": "[parameters('KernelMemoryServiceAuthorizationAccessKey2')]"
+            "value": "[parameters('WebServiceAuthorizationKey2')]"
           },
           "AzureAISearch_Endpoint": {
             "value": "[format('https://{0}.search.windows.net', reference(resourceId('Microsoft.Resources/deployments', format('search-{0}', parameters('suffix'))), '2022-09-01').outputs.searchName.value)]"

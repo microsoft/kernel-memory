@@ -56,7 +56,7 @@ Here is an example of how to create a `MemoryWebClient` instance and start using
 ```csharp
 var memory = new MemoryWebClient(
     "https://km-service-example.example.azurecontainerapps.io",
-    apiKey: "KernelMemoryServiceAuthorizationAccessKey1");
+    apiKey: "...your WebServiceAuthorizationKey1...");
 ```
 
 We recommend reviewing the [examples](../examples/) included in the repository, e.g. starting from

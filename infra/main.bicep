@@ -22,22 +22,24 @@ For model limits specific to your region, refer to the documentation at https://
 param embeddingDeploymentCapacity int = 30
 
 @description('''
-Kernel Memory Service Authorization AccessKey1. Default value is a random GUID.
-It's passed to the Kernel Memory Service container as an environment variable
-and is required to authenticate HTTP requests to KM web service.
+PLEASE CHOOSE A SECURE AND SECRET KEY ! -
+Kernel Memory Service Authorization AccessKey 1.
+The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
 ''')
 @minLength(16)
-@maxLength(36)
-param KernelMemoryServiceAuthorizationAccessKey1 string = guid(resourceGroup().id, 'AccessKey1')
+@maxLength(64)
+@secure()
+param WebServiceAuthorizationKey1 string
 
 @description('''
-Kernel Memory Service Authorization AccessKey2. Default value is a random GUID.
-It's passed to the Kernel Memory Service container as an environment variable
-and is required to authenticate HTTP requests to KM web service.
+PLEASE CHOOSE A SECURE AND SECRET KEY ! -
+Kernel Memory Service Authorization AccessKey 2.
+The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
 ''')
 @minLength(16)
-@maxLength(36)
-param KernelMemoryServiceAuthorizationAccessKey2 string = guid(resourceGroup().id, 'AccessKey2')
+@maxLength(64)
+@secure()
+param WebServiceAuthorizationKey2 string
 
 var rg = resourceGroup()
 
@@ -189,8 +191,8 @@ module containerAppService 'modules/container-app.bicep' = {
     managedIdentityId: managedidentity.outputs.managedIdentityId
     managedIdentityClientId: managedidentity.outputs.managedIdentityClientId
 
-    KernelMemory__ServiceAuthorization__AccessKey1: KernelMemoryServiceAuthorizationAccessKey1
-    KernelMemory__ServiceAuthorization__AccessKey2: KernelMemoryServiceAuthorizationAccessKey2
+    KernelMemory__ServiceAuthorization__AccessKey1: WebServiceAuthorizationKey1
+    KernelMemory__ServiceAuthorization__AccessKey2: WebServiceAuthorizationKey2
 
     AzureAISearch_Endpoint: 'https://${search.outputs.searchName }.search.windows.net'
     AzureBlobs_Account: storage.outputs.storageAccountName
