@@ -49,6 +49,7 @@
     <PackageVersion Include="System.Memory.Data" Version="8.0.0" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.3" />
+    <PackageVersion Include="TiktokenSharp" Version="1.1.0" />
   </ItemGroup>
   <!-- OpenXml blocked, do not upgrade these -->
   <ItemGroup>
