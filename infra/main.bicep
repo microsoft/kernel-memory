@@ -22,7 +22,9 @@ For model limits specific to your region, refer to the documentation at https://
 param embeddingDeploymentCapacity int = 30
 
 @description('''
-Kernel Memory Service Authorization AccessKey1. It will be passed to the Kernel Memory Service container as an environment variable.
+Kernel Memory Service Authorization AccessKey1. 
+It's passed to the Kernel Memory Service container as an environment variable
+and is required to authenticate HTTP requests to KM web service.
 ''')
 @minLength(16)
 @maxLength(42)
