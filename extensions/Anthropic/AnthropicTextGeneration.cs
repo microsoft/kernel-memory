@@ -1,33 +1,39 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using SemanticMemory.Extensions.Anthropic;
+using Microsoft.KernelMemory.AI.Anthropic.Client;
 using TiktokenSharp;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
 
 internal sealed class AnthropicTextGeneration : ITextGenerator
 {
-    private readonly AnthropicTextGenerationConfiguration _config;
-    private readonly RawAnthropicClient _client;
-
     private static readonly TikToken s_tokenizer = TikToken.GetEncoding("cl100k_base");
+
+    private readonly RawAnthropicClient _client;
+    private readonly string _modelName;
 
     public AnthropicTextGeneration(
         IHttpClientFactory httpClientFactory,
-        AnthropicTextGenerationConfiguration config)
+        AnthropicConfiguration config)
     {
-        this._config = config;
-        this._client = new RawAnthropicClient(this._config.ApiKey, httpClientFactory, this._config.HttpClientName);
+        this._modelName = config.TextModelName;
+        this.MaxTokenTotal = config.MaxTokenTotal;
+
+        this._client = new RawAnthropicClient(
+            config.ApiKey,
+            config.Endpoint,
+            config.EndpointVersion,
+            httpClientFactory,
+            config.HttpClientName);
     }
 
     /// <inheritdoc />
-    public int MaxTokenTotal => this._config.MaxTokenTotal;
+    public int MaxTokenTotal { get; private set; }
 
     /// <inheritdoc />
     public int CountTokens(string text)
@@ -41,11 +47,10 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        CallClaudeStreamingParams parameters = new(this._config.ModelName, prompt)
+        CallClaudeStreamingParams parameters = new(this._modelName, prompt)
         {
-            ModelName = this._config.ModelName,
+            System = "You are an assistant that will answer user query based on a context",
             Temperature = options.Temperature,
-            System = "You are an assistant that will answer user query based on a context"
         };
         var streamedResponse = this._client.CallClaudeStreamingAsync(parameters);
 

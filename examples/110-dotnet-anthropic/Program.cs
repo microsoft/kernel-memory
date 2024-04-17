@@ -7,7 +7,6 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using SemanticMemory.Extensions.Anthropic;
 
 var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 
@@ -21,11 +20,11 @@ new ConfigurationBuilder()
     .Build()
     .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig);
 
-var anthropicTextGenerationConfiguration = new AnthropicTextGenerationConfiguration();
+var anthropicTextGenerationConfiguration = new AnthropicConfiguration();
 
 anthropicTextGenerationConfiguration.MaxTokenTotal = 2048;
 anthropicTextGenerationConfiguration.ApiKey = "";
-anthropicTextGenerationConfiguration.ModelName = AnthropicTextGenerationConfiguration.HaikuModelName;
+anthropicTextGenerationConfiguration.TextModelName = AnthropicConfiguration.HaikuModelName;
 
 var memory = new KernelMemoryBuilder(services)
     .WithAnthropicTextGeneration(anthropicTextGenerationConfiguration)
@@ -56,7 +55,6 @@ Console.WriteLine($"Question: {question}");
 Console.WriteLine($"Answer: {answer.Result}");
 
 #else
-
 Console.WriteLine("KernelMemoryDev.sln required");
 
 #endif

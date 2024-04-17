@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.Anthropic</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.Anthropic</RootNamespace>
-        <NoWarn>$(NoWarn);CA1812;</NoWarn>
+        <NoWarn>$(NoWarn);CA1724;CS1591;CA1812;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

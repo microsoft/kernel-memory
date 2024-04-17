@@ -6,23 +6,27 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Microsoft.KernelMemory.AI.Anthropic;
+namespace Microsoft.KernelMemory.AI.Anthropic.Client;
 
 internal sealed class RawAnthropicClient
 {
     private readonly string _apiKey;
+    private readonly string _endpoint;
+    private readonly string _endpointVersion;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string? _httpClientName;
-    private readonly string _baseUrl = "https://api.anthropic.com";
 
     internal RawAnthropicClient(
         string apiKey,
+        string endpoint,
+        string endpointVersion,
         IHttpClientFactory httpClientFactory,
         string? httpClientName)
     {
         this._apiKey = apiKey;
+        this._endpoint = endpoint.TrimEnd('/');
+        this._endpointVersion = endpointVersion;
         this._httpClientFactory = httpClientFactory;
         this._httpClientName = httpClientName;
     }
@@ -50,9 +54,9 @@ internal sealed class RawAnthropicClient
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
         content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
         content.Headers.Add("x-api-key", this._apiKey);
-        content.Headers.Add("anthropic-version", "2023-06-01");
+        content.Headers.Add("anthropic-version", this._endpointVersion);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._baseUrl}/v1/messages")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._endpoint}/v1/messages")
         {
             Content = content,
         };
@@ -67,6 +71,7 @@ internal sealed class RawAnthropicClient
             var responseError = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             throw new KernelMemoryException($"Failed to send request: {response.StatusCode} - {responseError}");
         }
+
         response.EnsureSuccessStatusCode();
         var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
@@ -115,96 +120,7 @@ internal sealed class RawAnthropicClient
         {
             return this._httpClientFactory.CreateClient();
         }
+
         return this._httpClientFactory.CreateClient(this._httpClientName);
     }
-}
-
-internal sealed class CallClaudeStreamingParams
-{
-    public CallClaudeStreamingParams(string modelName, string prompt)
-    {
-        this.ModelName = modelName;
-        this.Prompt = prompt;
-    }
-
-    /// <summary>
-    /// Name of the model
-    /// </summary>
-    public string ModelName { get; init; }
-
-    public string Prompt { get; init; }
-
-    public string? System { get; init; }
-
-    public double Temperature { get; init; } = 0;
-
-    public int MaxTokens { get; init; } = 2048;
-}
-
-internal sealed class MessageRequest
-{
-    [JsonPropertyName("model")]
-    public string? Model { get; set; }
-
-    [JsonPropertyName("stream")]
-    public bool Stream { get; set; }
-
-    [JsonPropertyName("max_tokens")]
-    public int MaxTokens { get; set; }
-
-    [JsonPropertyName("temperature")]
-    public double Temperature { get; set; }
-
-    [JsonPropertyName("system")]
-    public string? System { get; set; }
-
-    [JsonPropertyName("messages")]
-    public Message[]? Messages { get; set; }
-}
-
-internal sealed class Message
-{
-    [JsonPropertyName("role")]
-    public string? Role { get; set; }
-
-    [JsonPropertyName("content")]
-    public string? Content { get; set; }
-}
-
-internal sealed class MessageResponse
-{
-    [JsonPropertyName("content")]
-    public ContentResponse[]? Content { get; set; }
-}
-
-internal sealed class ContentResponse
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("text")]
-    public string? Text { get; set; }
-}
-
-internal abstract class StreamingResponseMessage { }
-
-internal sealed class ContentBlockDelta : StreamingResponseMessage
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-
-    [JsonPropertyName("delta")]
-    public Delta Delta { get; set; } = null!;
-}
-
-internal sealed class Delta
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("text")]
-    public string Text { get; set; } = null!;
 }
