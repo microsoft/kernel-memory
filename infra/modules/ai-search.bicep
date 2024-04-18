@@ -66,7 +66,10 @@ resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   name: guid('Search Index Data Contributor-${suffix}')
   scope: search
   properties: {
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+    )
     principalId: managedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }
@@ -77,7 +80,10 @@ resource roleAssignment2 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   name: guid('Search Service Contributor-${suffix}')
   scope: search
   properties: {
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7ca78c08-252a-4471-8644-bb5ff32d4ba0'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '7ca78c08-252a-4471-8644-bb5ff32d4ba0'
+    )
     principalId: managedIdentityPrincipalId
     principalType: 'ServicePrincipal'
   }

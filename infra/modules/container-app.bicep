@@ -22,10 +22,10 @@ param AzureOpenAIText_Deployment string
 param AzureOpenAIEmbedding_Endpoint string
 param AzureOpenAIEmbedding_Deployment string
 
-var KernelMemory__ServiceAuthorization__AccessKey1 = 'KernelMemoryServiceAuthorizationAccessKey1' //  guid(suffix, '1')
-var KernelMemory__ServiceAuthorization__AccessKey2 = 'KernelMemoryServiceAuthorizationAccessKey2' // guid(suffix, '2')
+param KernelMemory__ServiceAuthorization__AccessKey1 string
+param KernelMemory__ServiceAuthorization__AccessKey2 string
 
-resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
+resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
   name: kmServiceName
   location: location
   properties: {
@@ -47,7 +47,7 @@ resource kmService 'Microsoft.App/containerapps@2023-11-02-preview' = {
         stickySessions: {
           affinity: 'none'
         }
-        additionalPortMappings: []
+        // additionalPortMappings: []
       }
     }
 
