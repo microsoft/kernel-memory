@@ -5,24 +5,28 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
-using TiktokenSharp;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
 
 internal sealed class AnthropicTextGeneration : ITextGenerator
 {
-    private static readonly TikToken s_tokenizer = TikToken.GetEncoding("cl100k_base");
-
     private readonly RawAnthropicClient _client;
     private readonly string _modelName;
+    private readonly ITextTokenizer _textTokenizer;
+    private readonly ILogger<AnthropicTextGeneration> _log;
 
     public AnthropicTextGeneration(
         IHttpClientFactory httpClientFactory,
-        AnthropicConfiguration config)
+        AnthropicConfiguration config,
+        ITextTokenizer? textTokenizer = null,
+        ILogger<AnthropicTextGeneration>? log = null)
     {
         this._modelName = config.TextModelName;
         this.MaxTokenTotal = config.MaxTokenTotal;
+        this._log = log ?? DefaultLogger<AnthropicTextGeneration>.Instance;
 
         this._client = new RawAnthropicClient(
             config.ApiKey,
@@ -30,6 +34,16 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
             config.EndpointVersion,
             httpClientFactory,
             config.HttpClientName);
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(TitokenTokenizer));
+            textTokenizer = new TitokenTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
     }
 
     /// <inheritdoc />
@@ -38,7 +52,7 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
     /// <inheritdoc />
     public int CountTokens(string text)
     {
-        return s_tokenizer.Encode(text).Count;
+        return this._textTokenizer.CountTokens(text);
     }
 
     /// <inheritdoc />
