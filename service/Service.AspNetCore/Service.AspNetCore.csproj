@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Service.AspNetCore</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Service.AspNetCore</RootNamespace>
+        <NoWarn>$(NoWarn);CA1031;CA2254;CS1591;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.KernelMemory.Core" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
+        <Product>Kernel Memory HTTP service components</Product>
+        <Description>Kernel Memory is a Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. This package contains some of the HTTP service components.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+</Project>

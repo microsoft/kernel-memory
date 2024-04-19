@@ -26,8 +26,8 @@ PLEASE CHOOSE A SECURE AND SECRET KEY ! -
 Kernel Memory Service Authorization AccessKey 1.
 The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
 ''')
-@minLength(16)
-@maxLength(64)
+@minLength(32)
+@maxLength(128)
 @secure()
 param WebServiceAuthorizationKey1 string
 
@@ -36,8 +36,8 @@ PLEASE CHOOSE A SECURE AND SECRET KEY ! -
 Kernel Memory Service Authorization AccessKey 2.
 The value is stored as an environment variable and is required by the web service to authenticate HTTP requests.
 ''')
-@minLength(16)
-@maxLength(64)
+@minLength(32)
+@maxLength(128)
 @secure()
 param WebServiceAuthorizationKey2 string
 
