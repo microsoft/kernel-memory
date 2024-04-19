@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <NoWarn>CA1724,NU5104,CA1308</NoWarn>
         <AssemblyName>Microsoft.KernelMemory.Postgres</AssemblyName>
