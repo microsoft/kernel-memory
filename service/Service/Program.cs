@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,9 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Service.AspNetCore;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.AspNetCore.Mvc;
 
 // KM Configuration:
 //
@@ -42,6 +45,8 @@ namespace Microsoft.KernelMemory.Service;
 
 internal static class Program
 {
+    private static readonly DateTimeOffset s_start = DateTimeOffset.UtcNow;
+
     public static void Main(string[] args)
     {
         // *************************** CONFIG WIZARD ***************************
@@ -71,24 +76,41 @@ internal static class Program
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
-        // Prepare memory builder, sharing the service collection used by the hosting service
-        var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services).WithoutDefaultHandlers();
-
-        // When using distributed orchestration, handlers are hosted in the current app
-        var asyncHandlersCount = AddHandlersToHostingApp(config, memoryBuilder, appBuilder);
-
-        // Build the memory client and make it available for dependency injection
-        var memory = memoryBuilder.FromAppSettings().Build();
-        appBuilder.Services.AddSingleton<IKernelMemory>(memory);
-
-        // When using in process orchestration, handlers are hosted by the memory orchestrator
-        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
+        // Prepare memory instance using configuration settings
+        int asyncHandlersCount = 0;
+        appBuilder.AddKernelMemory(builder =>
+        {
+            IKernelMemoryBuilder mb = builder.FromAppSettings().WithoutDefaultHandlers();
+            asyncHandlersCount = AddHandlersToHostingApp(config, mb, appBuilder);
+            return mb;
+        });
 
         // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
 
-        // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-        app.ConfigureMinimalAPI(config);
+        var memory = app.Services.GetRequiredService<IKernelMemory>();
+        // When using in process orchestration, handlers are hosted by the memory orchestrator
+        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
+
+        if (config.Service.RunWebService)
+        {
+            app.UseSwagger(config);
+
+            var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
+
+            app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
+                                             "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                                                           - s_start.ToUnixTimeSeconds()) + " secs " +
+                                             $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+                .AddEndpointFilter(authFilter)
+                .Produces<string>(StatusCodes.Status200OK)
+                .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+                .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+            // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
+            app.AddKernelMemoryEndpoints()
+                .AddEndpointFilter(authFilter);
+        }
 
         // *************************** START ***********************************
 
