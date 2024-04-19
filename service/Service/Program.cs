@@ -108,8 +108,7 @@ internal static class Program
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-            app.AddKernelMemoryEndpoints()
-                .AddEndpointFilter(authFilter);
+            app.AddKernelMemoryEndpoints("/", authFilter);
         }
 
         // *************************** START ***********************************

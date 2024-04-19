@@ -8,11 +8,11 @@ namespace Microsoft.KernelMemory.Service.AspNetCore;
 
 public static class ServicesRegistration
 {
-    public static WebApplicationBuilder AddKernelMemory(this WebApplicationBuilder appBuilder, Func<IKernelMemoryBuilder, IKernelMemoryBuilder> configure)
+    public static WebApplicationBuilder AddKernelMemory(
+        this WebApplicationBuilder appBuilder, Func<IKernelMemoryBuilder, IKernelMemoryBuilder> configure)
     {
-        IServiceCollection services = appBuilder.Services;
-        IKernelMemoryBuilder builder = configure(new KernelMemoryBuilder(services));
-        services.AddSingleton<IKernelMemory>(builder.Build());
+        IKernelMemoryBuilder builder = configure(new KernelMemoryBuilder(appBuilder.Services));
+        appBuilder.Services.AddSingleton<IKernelMemory>(builder.Build());
         return appBuilder;
     }
 }

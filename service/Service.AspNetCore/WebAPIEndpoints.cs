@@ -13,17 +13,34 @@ using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
-public static class EndpointRegistration
+public static class WebAPIEndpoints
 {
-    public static RouteGroupBuilder AddKernelMemoryEndpoints(this WebApplication app, string apiPrefix = "/")
+    public static IEndpointRouteBuilder AddKernelMemoryEndpoints(
+        this IEndpointRouteBuilder builder,
+        string apiPrefix = "/",
+        IEndpointFilter? authFilter = null)
     {
-        RouteGroupBuilder group = app.MapGroup(apiPrefix);
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter);
+        builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
+        builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
+        builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
+        builder.AddAskEndpoint(apiPrefix, authFilter);
+        builder.AddSearchEndpoint(apiPrefix, authFilter);
+        builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
+
+        return builder;
+    }
+
+    public static void AddPostUploadEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
         // File upload endpoint
-        group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
+        var route = group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 IKernelMemory service,
-                ILogger<IKernelMemory> log,
+                ILogger<KernelMemoryWebAPI> log,
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
@@ -70,11 +87,19 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddGetIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // List of indexes endpoint
-        group.MapGet(Constants.HttpIndexesEndpoint,
+        var route = group.MapGet(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     IKernelMemory service,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New index list HTTP request");
@@ -94,13 +119,21 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddDeleteIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Delete index endpoint
-        group.MapDelete(Constants.HttpIndexesEndpoint,
+        var route = group.MapDelete(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     IKernelMemory service,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request, index '{0}'", index);
@@ -118,15 +151,23 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddDeleteDocumentsEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Delete document endpoint
-        group.MapDelete(Constants.HttpDocumentsEndpoint,
+        var route = group.MapDelete(Constants.HttpDocumentsEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory service,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request, index '{0}'", index);
@@ -146,12 +187,20 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddAskEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Ask endpoint
-        group.MapPost(Constants.HttpAskEndpoint,
+        var route = group.MapPost(Constants.HttpAskEndpoint,
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
@@ -168,12 +217,20 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddSearchEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Search endpoint
-        group.MapPost(Constants.HttpSearchEndpoint,
+        var route = group.MapPost(Constants.HttpSearchEndpoint,
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search HTTP request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
@@ -191,15 +248,23 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddUploadStatusEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Document status endpoint
-        group.MapGet(Constants.HttpUploadStatusEndpoint,
+        var route = group.MapGet(Constants.HttpUploadStatusEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory memoryClient,
-                    ILogger<IKernelMemory> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New document status HTTP request");
@@ -228,51 +293,14 @@ public static class EndpointRegistration
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
 
-        group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
-                HttpRequest request,
-                IKernelMemory service,
-                ILogger log,
-                CancellationToken cancellationToken) =>
-            {
-                log.LogTrace("New upload HTTP request");
-
-                // Note: .NET doesn't yet support binding multipart forms including data and files
-                (HttpDocumentUploadRequest input, bool isValid, string errMsg)
-                    = await HttpDocumentUploadRequest.BindHttpRequestAsync(request, cancellationToken)
-                        .ConfigureAwait(false);
-
-                if (!isValid)
-                {
-                    log.LogError(errMsg);
-                    return Results.Problem(detail: errMsg, statusCode: 400);
-                }
-
-                try
-                {
-                    // UploadRequest => Document
-                    var documentId = await service.ImportDocumentAsync(input.ToDocumentUploadRequest(), cancellationToken)
-                        .ConfigureAwait(false);
-                    var url = Constants.HttpUploadStatusEndpointWithParams
-                        .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
-                        .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.Ordinal);
-                    return Results.Accepted(url, new UploadAccepted
-                    {
-                        DocumentId = documentId,
-                        Index = input.Index,
-                        Message = "Document upload completed, ingestion pipeline started"
-                    });
-                }
-                catch (Exception e)
-                {
-                    return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
-                }
-            })
-            .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
-            .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
-
-        return group;
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
+
+    // Class used to tag log entries and allow log filtering
+    // ReSharper disable once ClassNeverInstantiated.Local
+#pragma warning disable CA1812 // used by logger, can't be static
+    private sealed class KernelMemoryWebAPI
+    {
+    }
+#pragma warning restore CA1812
 }
