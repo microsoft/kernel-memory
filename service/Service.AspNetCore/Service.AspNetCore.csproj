@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <OutputType>Library</OutputType>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Service.AspNetCore</AssemblyName>
@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
         <Product>Kernel Memory HTTP service components</Product>
         <Description>Kernel Memory is a Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. This package contains some of the HTTP service components.</Description>

@@ -50,7 +50,7 @@ public class MarkDownDecoder : IContentDecoder
 
         var result = new FileContent(MimeTypes.MarkDown);
         using var reader = new StreamReader(data);
-        var content = await reader.ReadToEndAsync().ConfigureAwait(false);
+        var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
         result.Sections.Add(new(1, content.Trim(), true));
         return result;

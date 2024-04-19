@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <!-- Avoid using the ".Service" file extension, which would cause the app to hang on macOS, and use ".ServiceAssembly" instead -->
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
