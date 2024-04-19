@@ -59,6 +59,10 @@ internal static class Program
 
         // *************************** APP BUILD *******************************
 
+        int asyncHandlersCount = 0;
+        int syncHandlersCount = 0;
+        string memoryType = string.Empty;
+
         // Usual .NET web app builder with settings from appsettings.json, appsettings.<ENV>.json, and env vars
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
 
@@ -76,28 +80,30 @@ internal static class Program
         // Some OpenAPI Explorer/Swagger dependencies
         appBuilder.ConfigureSwagger(config);
 
-        // Prepare memory instance using configuration settings
-        int asyncHandlersCount = 0;
-        appBuilder.AddKernelMemory(builder =>
-        {
-            IKernelMemoryBuilder mb = builder.FromAppSettings().WithoutDefaultHandlers();
-            asyncHandlersCount = AddHandlersToHostingApp(config, mb, appBuilder);
-            return mb;
-        });
+        // Prepare memory builder, sharing the service collection used by the hosting service
+        // Internally build the memory client and make it available for dependency injection
+        appBuilder.AddKernelMemory(memoryBuilder =>
+            {
+                memoryBuilder.FromAppSettings().WithoutDefaultHandlers();
+
+                // When using distributed orchestration, handlers are hosted in the current app and need to be con
+                asyncHandlersCount = AddHandlersAsHostedServices(config, memoryBuilder, appBuilder);
+            },
+            memory =>
+            {
+                // When using in process orchestration, handlers are hosted by the memory orchestrator
+                syncHandlersCount = AddHandlersToServerlessMemory(config, memory);
+
+                memoryType = ((memory is MemoryServerless) ? "Sync - " : "Async - ") + memory.GetType().FullName;
+            });
 
         // Build .NET web app as usual
         WebApplication app = appBuilder.Build();
 
-        var memory = app.Services.GetRequiredService<IKernelMemory>();
-        // When using in process orchestration, handlers are hosted by the memory orchestrator
-        var syncHandlersCount = AddHandlersToOrchestrator(config, memory);
-
         if (config.Service.RunWebService)
         {
             app.UseSwagger(config);
-
             var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
-
             app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                              "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                                                            - s_start.ToUnixTimeSeconds()) + " secs " +
@@ -121,7 +127,7 @@ internal static class Program
 
         Console.WriteLine("***************************************************************************************************************************");
         Console.WriteLine("* Environment         : " + (string.IsNullOrEmpty(env) ? "WARNING: ASPNETCORE_ENVIRONMENT env var not defined" : env));
-        Console.WriteLine("* Memory type         : " + ((memory is MemoryServerless) ? "Sync - " : "Async - ") + memory.GetType().FullName);
+        Console.WriteLine("* Memory type         : " + memoryType);
         Console.WriteLine("* Pipeline handlers   : " + $"{syncHandlersCount} synchronous / {asyncHandlersCount} asynchronous");
         Console.WriteLine("* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
         Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
@@ -148,7 +154,7 @@ internal static class Program
     /// <summary>
     /// Register handlers as asynchronous hosted services
     /// </summary>
-    private static int AddHandlersToHostingApp(
+    private static int AddHandlersAsHostedServices(
         KernelMemoryConfig config,
         IKernelMemoryBuilder memoryBuilder,
         WebApplicationBuilder appBuilder)
@@ -177,7 +183,7 @@ internal static class Program
     /// <summary>
     /// Register handlers instances inside the synchronous orchestrator
     /// </summary>
-    private static int AddHandlersToOrchestrator(
+    private static int AddHandlersToServerlessMemory(
         KernelMemoryConfig config, IKernelMemory memory)
     {
         if (memory is not MemoryServerless) { return 0; }
