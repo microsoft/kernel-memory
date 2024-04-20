@@ -279,6 +279,8 @@ public class SearchClient : ISearchClient
             {
                 Text = partitionText,
                 Relevance = (float)relevance,
+                PartitionNumber = memory.GetPartitionNumber(this._log),
+                SectionNumber = memory.GetSectionNumber(),
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
