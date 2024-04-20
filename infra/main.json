@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "11319910612296821360"
+      "templateHash": "1331474399750243741"
     }
   },
   "parameters": {
@@ -750,6 +750,136 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
+      "name": "[format('docIntel-{0}', parameters('suffix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "suffix": {
+            "value": "[parameters('suffix')]"
+          },
+          "managedIdentityPrincipalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('suffix'))), '2022-09-01').outputs.managedIdentityPrincipalId.value]"
+          },
+          "name": {
+            "value": "[format('km-docIntel-{0}', parameters('suffix'))]"
+          },
+          "location": {
+            "value": "[variables('location')]"
+          },
+          "sku": {
+            "value": {
+              "name": "S0"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.26.170.59819",
+              "templateHash": "3584343383825170510"
+            },
+            "description": "Creates an Azure Document Intelligence (form recognizer) instance."
+          },
+          "parameters": {
+            "suffix": {
+              "type": "string",
+              "defaultValue": "[uniqueString(resourceGroup().id)]"
+            },
+            "managedIdentityPrincipalId": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "customSubDomainName": {
+              "type": "string",
+              "defaultValue": "[parameters('name')]",
+              "metadata": {
+                "description": "The custom subdomain name used to access the API. Defaults to the value of the name parameter."
+              }
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "FormRecognizer"
+            },
+            "publicNetworkAccess": {
+              "type": "string",
+              "defaultValue": "Enabled",
+              "allowedValues": [
+                "Enabled",
+                "Disabled"
+              ]
+            },
+            "sku": {
+              "type": "object",
+              "defaultValue": {
+                "name": "S0"
+              }
+            },
+            "allowedIpRules": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "networkAcls": {
+              "type": "object",
+              "defaultValue": "[if(empty(parameters('allowedIpRules')), createObject('defaultAction', 'Allow'), createObject('ipRules', parameters('allowedIpRules'), 'defaultAction', 'Deny'))]"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2023-05-01",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "kind": "[parameters('kind')]",
+              "properties": {
+                "customSubDomainName": "[parameters('customSubDomainName')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "networkAcls": "[parameters('networkAcls')]",
+                "disableLocalAuth": true
+              },
+              "sku": "[parameters('sku')]"
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.CognitiveServices/accounts/{0}', parameters('name'))]",
+              "name": "[guid(format('Cognitive Services User-{0}', parameters('suffix')))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a97b65f3-24c7-4388-baec-2e87135dc908')]",
+                "principalId": "[parameters('managedIdentityPrincipalId')]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', parameters('name')), '2023-05-01').endpoint]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('suffix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
       "name": "[format('containerAppsEnvironment-{0}', parameters('suffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -964,6 +1094,9 @@
           },
           "AzureOpenAIText_Endpoint": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('openai-{0}', parameters('suffix'))), '2022-09-01').outputs.endpoint.value]"
+          },
+          "AzureAIDocIntel_Endpoint": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('docIntel-{0}', parameters('suffix'))), '2022-09-01').outputs.endpoint.value]"
           }
         },
         "template": {
@@ -973,7 +1106,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.26.170.59819",
-              "templateHash": "15536334349632985650"
+              "templateHash": "1087801445927599681"
             }
           },
           "parameters": {
@@ -1026,6 +1159,9 @@
               "type": "string"
             },
             "AzureOpenAIEmbedding_Deployment": {
+              "type": "string"
+            },
+            "AzureAIDocIntel_Endpoint": {
               "type": "string"
             },
             "KernelMemory__ServiceAuthorization__AccessKey1": {
@@ -1134,6 +1270,10 @@
                           "value": "AzureAISearch"
                         },
                         {
+                          "name": "KernelMemory__DataIngestion__ImageOcrType",
+                          "value": "AzureAIDocIntel"
+                        },
+                        {
                           "name": "KernelMemory__Retrieval__EmbeddingGeneratorType",
                           "value": "AzureOpenAIEmbedding"
                         },
@@ -1172,6 +1312,10 @@
                         {
                           "name": "KernelMemory__Services__AzureOpenAIEmbedding__Deployment",
                           "value": "[parameters('AzureOpenAIEmbedding_Deployment')]"
+                        },
+                        {
+                          "name": "KernelMemory__Services__AzureAIDocIntel__Endpoint",
+                          "value": "[parameters('AzureAIDocIntel_Endpoint')]"
                         }
                       ]
                     }
@@ -1219,6 +1363,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', format('containerAppsEnvironment-{0}', parameters('suffix')))]",
+        "[resourceId('Microsoft.Resources/deployments', format('docIntel-{0}', parameters('suffix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('managedidentity-{0}', parameters('suffix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('openai-{0}', parameters('suffix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('search-{0}', parameters('suffix')))]",

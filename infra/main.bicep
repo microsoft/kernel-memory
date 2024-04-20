@@ -143,7 +143,7 @@ module search 'modules/ai-search.bicep' = {
   
   Azure OpenAI is used to generate text embeddings, and to generate text from memories (answers and summaries)
 */
-module openAi 'modules/cognitive-services.bicep' = {
+module openAi 'modules/cognitive-services-openAI.bicep' = {
   name: 'openai-${suffix}'
   scope: rg
   params: {
@@ -151,11 +151,29 @@ module openAi 'modules/cognitive-services.bicep' = {
     managedIdentityPrincipalId: managedidentity.outputs.managedIdentityPrincipalId
     name: 'km-openai-${suffix}'
     location: location
-    // ags: []
     sku: {
       name: 'S0'
     }
     deployments: openAiDeployments
+  }
+}
+
+/*
+  Module to create a Azure Document Intelligence service
+  See https://azure.microsoft.com/products/ai-services/ai-document-intelligence
+  Azure Document Intelligence is used to extract text from images
+*/
+module docIntel 'modules/cognitive-services-docIntel.bicep' = {
+  name: 'docIntel-${suffix}'
+  scope: rg
+  params: {
+    suffix: suffix
+    managedIdentityPrincipalId: managedidentity.outputs.managedIdentityPrincipalId
+    name: 'km-docIntel-${suffix}'
+    location: location
+    sku: {
+      name: 'S0'
+    }
   }
 }
 
@@ -202,6 +220,7 @@ module containerAppService 'modules/container-app.bicep' = {
     AzureOpenAIEmbedding_Endpoint: openAi.outputs.endpoint
     AzureOpenAIText_Deployment: chatGpt.deploymentName
     AzureOpenAIText_Endpoint: openAi.outputs.endpoint
+    AzureAIDocIntel_Endpoint: docIntel.outputs.endpoint
   }
 }
 
