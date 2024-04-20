@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "5581729423822993287"
+      "templateHash": "1331474399750243741"
     }
   },
   "parameters": {
@@ -782,9 +782,9 @@
             "_generator": {
               "name": "bicep",
               "version": "0.26.170.59819",
-              "templateHash": "14465996236027195242"
+              "templateHash": "3584343383825170510"
             },
-            "description": "Creates an Azure Cognitive Services instance."
+            "description": "Creates an Azure Document Intelligence (form recognizer) instance."
           },
           "parameters": {
             "suffix": {
