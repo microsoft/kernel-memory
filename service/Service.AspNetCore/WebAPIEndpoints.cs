@@ -1,4 +1,4 @@
-﻿﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Service.AspNetCore.Models;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
