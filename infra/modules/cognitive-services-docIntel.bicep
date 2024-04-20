@@ -1,7 +1,7 @@
 param suffix string = uniqueString(resourceGroup().id)
 param managedIdentityPrincipalId string
 
-metadata description = 'Creates an Azure Cognitive Services instance.'
+metadata description = 'Creates an Azure Document Intelligence (form recognizer) instance.'
 
 param name string
 param location string = resourceGroup().location
