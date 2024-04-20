@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
@@ -275,17 +274,9 @@ public static class WebAPIEndpoints
 
                     DataPipelineStatus? pipeline = await memoryClient.GetDocumentStatusAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
-                    if (pipeline == null)
-                    {
-                        return Results.Problem(detail: "Document not found", statusCode: 404);
-                    }
-
-                    if (pipeline.Empty)
-                    {
-                        return Results.Problem(detail: "Empty pipeline", statusCode: 404);
-                    }
-
-                    return Results.Ok(pipeline);
+                    return pipeline == null
+                        ? Results.Problem(detail: "Document not found", statusCode: 404)
+                        : pipeline.Empty ? Results.Problem(detail: "Empty pipeline", statusCode: 404) : Results.Ok(pipeline);
                 })
             .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)

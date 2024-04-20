@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+
+// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.KernelMemory.WebService;
+namespace Microsoft.KernelMemory.Service.AspNetCore;
 
 // Note: this class is designed to avoid using Asp.Net IForm
 // and avoiding dependencies on Asp.Net HTTP that would lead
