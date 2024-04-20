@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.WebService;
+using Microsoft.KernelMemory.Service.AspNetCore.Models;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 

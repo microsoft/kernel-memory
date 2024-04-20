@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.KernelMemory.WebService;
+namespace Microsoft.KernelMemory.Service.AspNetCore.Models;
 
 // Note: this class is designed to avoid using Asp.Net IForm
 // and avoiding dependencies on Asp.Net HTTP that would lead
