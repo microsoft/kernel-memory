@@ -11,51 +11,36 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.WebService;
 
-namespace Microsoft.KernelMemory.Service;
+namespace Microsoft.KernelMemory.Service.AspNetCore;
 
-internal static class WebAPIEndpoints
+public static class WebAPIEndpoints
 {
-    private static readonly DateTimeOffset s_start = DateTimeOffset.UtcNow;
-
-    public static void ConfigureMinimalAPI(this WebApplication app, KernelMemoryConfig config)
+    public static IEndpointRouteBuilder AddKernelMemoryEndpoints(
+        this IEndpointRouteBuilder builder,
+        string apiPrefix = "/",
+        IEndpointFilter? authFilter = null)
     {
-        if (!config.Service.RunWebService) { return; }
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter);
+        builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
+        builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
+        builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
+        builder.AddAskEndpoint(apiPrefix, authFilter);
+        builder.AddSearchEndpoint(apiPrefix, authFilter);
+        builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
 
-        app.UseSwagger(config);
-
-        var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
-
-        app.UseGetStatusEndpoint(authFilter);
-        app.UsePostUploadEndpoint(authFilter);
-        app.UseGetIndexesEndpoint(authFilter);
-        app.UseDeleteIndexesEndpoint(authFilter);
-        app.UseDeleteDocumentsEndpoint(authFilter);
-        app.UseAskEndpoint(authFilter);
-        app.UseSearchEndpoint(authFilter);
-        app.UseUploadStatusEndpoint(authFilter);
+        return builder;
     }
 
-    public static void UseGetStatusEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddPostUploadEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
-        // Simple ping endpoint
-        var route = app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
-                                                     "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-                                                                   - s_start.ToUnixTimeSeconds()) + " secs " +
-                                                     $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
-            .Produces<string>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
-    }
-
-    public static void UsePostUploadEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
-    {
         // File upload endpoint
-        var route = app.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
+        var route = group.MapPost(Constants.HttpUploadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 IKernelMemory service,
-                ILogger<WebAPIEndpoint> log,
+                ILogger<KernelMemoryWebAPI> log,
                 CancellationToken cancellationToken) =>
             {
                 log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
@@ -105,13 +90,16 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseGetIndexesEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddGetIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // List of indexes endpoint
-        var route = app.MapGet(Constants.HttpIndexesEndpoint,
+        var route = group.MapGet(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     IKernelMemory service,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New index list HTTP request");
@@ -134,15 +122,18 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseDeleteIndexesEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddDeleteIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Delete index endpoint
-        var route = app.MapDelete(Constants.HttpIndexesEndpoint,
+        var route = group.MapDelete(Constants.HttpIndexesEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     IKernelMemory service,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request, index '{0}'", index);
@@ -163,17 +154,20 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseDeleteDocumentsEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddDeleteDocumentsEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Delete document endpoint
-        var route = app.MapDelete(Constants.HttpDocumentsEndpoint,
+        var route = group.MapDelete(Constants.HttpDocumentsEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory service,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New delete document HTTP request, index '{0}'", index);
@@ -196,14 +190,17 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseAskEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddAskEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Ask endpoint
-        var route = app.MapPost(Constants.HttpAskEndpoint,
+        var route = group.MapPost(Constants.HttpAskEndpoint,
                 async Task<IResult> (
                     MemoryQuery query,
                     IKernelMemory service,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
@@ -223,14 +220,17 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseSearchEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddSearchEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Search endpoint
-        var route = app.MapPost(Constants.HttpSearchEndpoint,
+        var route = group.MapPost(Constants.HttpSearchEndpoint,
                 async Task<IResult> (
                     SearchQuery query,
                     IKernelMemory service,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New search HTTP request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
@@ -251,17 +251,20 @@ internal static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseUploadStatusEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddUploadStatusEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // Document status endpoint
-        var route = app.MapGet(Constants.HttpUploadStatusEndpoint,
+        var route = group.MapGet(Constants.HttpUploadStatusEndpoint,
                 async Task<IResult> (
                     [FromQuery(Name = Constants.WebServiceIndexField)]
                     string? index,
                     [FromQuery(Name = Constants.WebServiceDocumentIdField)]
                     string documentId,
                     IKernelMemory memoryClient,
-                    ILogger<WebAPIEndpoint> log,
+                    ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
                     log.LogTrace("New document status HTTP request");
@@ -296,7 +299,7 @@ internal static class WebAPIEndpoints
     // Class used to tag log entries and allow log filtering
     // ReSharper disable once ClassNeverInstantiated.Local
 #pragma warning disable CA1812 // used by logger, can't be static
-    private sealed class WebAPIEndpoint
+    private sealed class KernelMemoryWebAPI
     {
     }
 #pragma warning restore CA1812

@@ -209,8 +209,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public Task StopAllPipelinesAsync()
     {
-        this.CancellationTokenSource.Cancel();
-        return Task.CompletedTask;
+        return this.CancellationTokenSource.CancelAsync();
     }
 
     ///<inheritdoc />

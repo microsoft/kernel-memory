@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "10036185532848045733"
+      "templateHash": "11319910612296821360"
     }
   },
   "parameters": {
@@ -38,7 +38,7 @@
     },
     "WebServiceAuthorizationKey1": {
       "type": "securestring",
-      "minLength": 32,
+      "minLength": 16,
       "maxLength": 64,
       "metadata": {
         "description": "PLEASE CHOOSE A SECURE AND SECRET KEY ! -\nKernel Memory Service Authorization AccessKey 1.\nThe value is stored as an environment variable and is required by the web service to authenticate HTTP requests.\n"
@@ -46,7 +46,7 @@
     },
     "WebServiceAuthorizationKey2": {
       "type": "securestring",
-      "minLength": 32,
+      "minLength": 16,
       "maxLength": 64,
       "metadata": {
         "description": "PLEASE CHOOSE A SECURE AND SECRET KEY ! -\nKernel Memory Service Authorization AccessKey 2.\nThe value is stored as an environment variable and is required by the web service to authenticate HTTP requests.\n"

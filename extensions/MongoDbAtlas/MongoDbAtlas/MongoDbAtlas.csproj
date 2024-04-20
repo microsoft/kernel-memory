@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
@@ -26,7 +26,7 @@
     <Import Project="../../../nuget-package.props"/>
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
         <Product>MongoDb Atlas connector for Kernel Memory</Product>
         <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>
