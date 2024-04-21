@@ -32,8 +32,8 @@
         <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.37.240420.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
 
-        <!-- There isn't a NuGet package for the other project so not including that here -->
-        <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj"/>
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.37.240420.2" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
+        <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
     <ItemGroup>
