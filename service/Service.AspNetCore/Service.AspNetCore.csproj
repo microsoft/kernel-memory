@@ -14,6 +14,10 @@
         <ProjectReference Include="..\Core\Core.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
     </ItemGroup>
 
+    <Import Project="../../code-analysis.props"/>
+
+    <Import Project="../../nuget-package.props"/>
+
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
@@ -21,5 +25,9 @@
         <Description>Kernel Memory is a Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. This package contains some of the HTTP service components.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+    </ItemGroup>
 
 </Project>
