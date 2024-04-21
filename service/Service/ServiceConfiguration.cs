@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Postgres;
 
@@ -161,6 +162,10 @@ internal sealed class ServiceConfiguration
                                                                ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
+            case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddMongoDbAtlasAsContentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
+                break;
+
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
                 break;
@@ -249,10 +254,10 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
-                case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
+                        s => s.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"))
                     );
                     builder.AddIngestionMemoryDb(instance);
                     break;
@@ -262,6 +267,15 @@ internal sealed class ServiceConfiguration
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
                         s => s.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
+                case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
                     );
                     builder.AddIngestionMemoryDb(instance);
                     break;
@@ -332,12 +346,16 @@ internal sealed class ServiceConfiguration
                 builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
                 break;
 
-            case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"));
+            case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
 
             case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"));
+                break;
+
+            case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"));
                 break;
 
             case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
