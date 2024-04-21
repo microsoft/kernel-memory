@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 /// <summary>
 /// Handle settings stored in appsettings.development.json
 /// </summary>
-public static class AppSettings
+internal static class AppSettings
 {
     private const string DefaultSettingsFile = "appsettings.json";
     private const string DevelopmentSettingsFile = "appsettings.Development.json";
