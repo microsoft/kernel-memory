@@ -13,8 +13,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="xunit"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -27,7 +27,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\AzureAISearch\AzureAISearch.csproj"/>
+        <ProjectReference Include="..\AzureAISearch\AzureAISearch.csproj" />
     </ItemGroup>
 
 </Project>
