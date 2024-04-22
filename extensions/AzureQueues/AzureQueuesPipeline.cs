@@ -325,10 +325,10 @@ public sealed class AzureQueuesPipeline : IQueue
 
         var poisonMsg = new
         {
-            message.MessageText,
+            MessageText = message.MessageText,
             Id = message.MessageId,
-            message.InsertedOn,
-            message.DequeueCount,
+            InsertedOn = message.InsertedOn,
+            DequeueCount = message.DequeueCount,
         };
 
         var neverExpire = TimeSpan.FromSeconds(-1);
