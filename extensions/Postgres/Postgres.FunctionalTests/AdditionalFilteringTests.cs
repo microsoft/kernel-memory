@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 
-namespace Postgres.FunctionalTests;
+namespace Microsoft.Postgres.FunctionalTests;
 
 public class AdditionalFilteringTests : BaseFunctionalTestCase
 {

@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess;
+namespace Microsoft.Core.FunctionalTests.ServerLess;
 
 public class OpenAIDependencyInjectionTest : BaseFunctionalTestCase
 {

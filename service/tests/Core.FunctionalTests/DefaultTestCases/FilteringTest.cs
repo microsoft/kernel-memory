@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 
-namespace FunctionalTests.DefaultTestCases;
+namespace Microsoft.Core.FunctionalTests.DefaultTestCases;
 
 public static class FilteringTest
 {

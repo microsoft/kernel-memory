@@ -7,11 +7,11 @@
 
 #if !KernelMemoryDev
 using FreeMindLabs.KernelMemory.Elasticsearch;
-using FunctionalTests.DefaultTestCases;
+using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 
-namespace Elasticsearch.FunctionalTests;
+namespace Microsoft.Elasticsearch.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {

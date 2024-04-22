@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Redis.FunctionalTests;
+namespace Microsoft.Redis.FunctionalTests;
 
 public class RedisSpecificTests : BaseFunctionalTestCase
 {

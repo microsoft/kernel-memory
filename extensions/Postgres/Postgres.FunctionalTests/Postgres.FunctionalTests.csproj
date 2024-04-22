@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <RootNamespace>Microsoft.Postres.FunctionalTests</RootNamespace>
+        <RootNamespace>Microsoft.Postgres.FunctionalTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

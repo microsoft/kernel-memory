@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace ServiceFunctionalTests;
+namespace Microsoft.Service.FunctionalTests;
 
 public class SKPluginTest : BaseFunctionalTestCase
 {

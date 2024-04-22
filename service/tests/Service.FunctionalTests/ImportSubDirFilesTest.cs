@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace ServiceFunctionalTests;
+namespace Microsoft.Service.FunctionalTests;
 
 public class ImportSubDirFilesTest : BaseFunctionalTestCase
 {

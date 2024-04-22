@@ -4,7 +4,7 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess.AIClients;
+namespace Microsoft.Core.FunctionalTests.ServerLess.AIClients;
 
 // ReSharper disable StringLiteralTypo
 public sealed class OpenAITextEmbeddingGeneratorTest : BaseFunctionalTestCase

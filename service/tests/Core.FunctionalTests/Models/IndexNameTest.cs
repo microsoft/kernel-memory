@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory.Models;
 
-namespace FunctionalTests.Models;
+namespace Microsoft.Core.FunctionalTests.Models;
 
 public class IndexNameTest
 {
