@@ -5,15 +5,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <NoWarn>$(NoWarn);CS8625,CA1050</NoWarn>
+        <NoWarn>$(NoWarn);CS8625;CA1050;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj"/>
+        <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
 </Project>

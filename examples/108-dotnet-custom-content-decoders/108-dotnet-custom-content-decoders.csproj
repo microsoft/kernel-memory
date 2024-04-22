@@ -6,8 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <UserSecretsId>6ee042b0-aba3-4f08-8d32-33d1a6f8fed1</UserSecretsId>
-        <NoWarn>$(NoWarn);CA1050</NoWarn>
+        <NoWarn>$(NoWarn);CA1050;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
