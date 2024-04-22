@@ -30,6 +30,13 @@ public static partial class KernelMemoryBuilderExtensions
         builder.Services.AddCustomSearchClient(instance);
         return builder;
     }
+
+    public static IKernelMemoryBuilder WithCustomSearchClient<T>(
+        this IKernelMemoryBuilder builder) where T : class, ISearchClient
+    {
+        builder.Services.AddCustomSearchClient<T>();
+        return builder;
+    }
 }
 
 public static partial class DependencyInjection
@@ -45,6 +52,12 @@ public static partial class DependencyInjection
         this IServiceCollection services, ISearchClient instance)
     {
         return services.AddSingleton<ISearchClient>(instance);
+    }
+
+    public static IServiceCollection AddCustomSearchClient<T>(
+        this IServiceCollection services) where T : class, ISearchClient
+    {
+        return services.AddSingleton<ISearchClient, T>();
     }
 
     public static IServiceCollection AddSearchClientConfig(
