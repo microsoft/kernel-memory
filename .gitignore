@@ -433,6 +433,7 @@ launchSettings.json
 config.development.yaml
 *.development.config
 *.development.json
+*.development.json*
 appsettings.*.json
 
 .DS_Store

@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.11.2" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
@@ -36,9 +36,9 @@
   <!-- OpenXml blocked, do not upgrade these -->
   <ItemGroup>
     <!-- see https://github.com/microsoft/kernel-memory/issues/265 -->
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0"/>
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <!-- see https://github.com/ClosedXML/ClosedXML/releases/tag/0.102.2 -->
-    <PackageVersion Include="ClosedXML" Version="0.102.2"/>
+    <PackageVersion Include="ClosedXML" Version="0.102.2" />
   </ItemGroup>
   <!-- Kernel Memory -->
   <ItemGroup>
