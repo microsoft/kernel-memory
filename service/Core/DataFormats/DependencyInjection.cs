@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.Image;
@@ -13,17 +15,35 @@ namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions
 {
+
+    [Obsolete("This method is obsolete and will be removed in a future version. Use WithCustomContentDecoder<T> instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static IKernelMemoryBuilder WithContentDecoder<T>(
         this IKernelMemoryBuilder builder) where T : class, IContentDecoder
     {
-        builder.Services.AddContentDecoder<T>();
-        return builder;
+        return WithCustomContentDecoder<T>(builder);
     }
+
+    [Obsolete("This method is obsolete and will be removed in a future version. Use WithCustomContentDecoder instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
 
     public static IKernelMemoryBuilder WithContentDecoder(
         this IKernelMemoryBuilder builder, IContentDecoder decoder)
     {
-        builder.Services.AddContentDecoder(decoder);
+        return WithCustomContentDecoder(builder, decoder);
+    }
+
+    public static IKernelMemoryBuilder WithCustomContentDecoder<T>(
+        this IKernelMemoryBuilder builder) where T : class, IContentDecoder
+    {
+        builder.Services.AddCustomContentDecoder<T>();
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomContentDecoder(
+        this IKernelMemoryBuilder builder, IContentDecoder decoder)
+    {
+        builder.Services.AddCustomContentDecoder(decoder);
         return builder;
     }
 
@@ -58,14 +78,30 @@ public static partial class KernelMemoryBuilderExtensions
 
 public static partial class DependencyInjection
 {
+    [Obsolete("This method is obsolete and will be removed in a future version. Use AddCustomContentDecoder<T> instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static IServiceCollection AddContentDecoder<T>(
+        this IServiceCollection services) where T : class, IContentDecoder
+    {
+        return AddCustomContentDecoder<T>(services);
+    }
+
+    [Obsolete("This method is obsolete and will be removed in a future version. Use AddCustomContentDecoder instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static IServiceCollection AddContentDecoder(
+        this IServiceCollection services, IContentDecoder decoder)
+    {
+        return AddCustomContentDecoder(services, decoder);
+    }
+
+    public static IServiceCollection AddCustomContentDecoder<T>(
         this IServiceCollection services) where T : class, IContentDecoder
     {
         services.AddSingleton<IContentDecoder, T>();
         return services;
     }
 
-    public static IServiceCollection AddContentDecoder(
+    public static IServiceCollection AddCustomContentDecoder(
         this IServiceCollection services, IContentDecoder decoder)
     {
         services.AddSingleton<IContentDecoder>(decoder);

@@ -30,7 +30,7 @@ var memory = new KernelMemoryBuilder()
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     .With(new MsExcelDecoderConfig { BlankCellValue = "NO-VALUE" }) // Customize the default Excel decoder
     .With(new MsPowerPointDecoderConfig { SkipHiddenSlides = false, WithSlideNumber = true }) // Customize the default PowerPoint decoder
-    .WithContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder
+    .WithCustomContentDecoder<CustomPdfDecoder>() // Register a custom PDF decoder
     .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync("file5-NASA-news.pdf");
