@@ -35,6 +35,31 @@ public class AzureQueuesConfig
     public string AccountKey { get; set; } = "";
     public string EndpointSuffix { get; set; } = "core.windows.net";
 
+    /// <summary>
+    /// How often to check if there are new messages.
+    /// </summary>
+    public int PollDelayMsecs { get; set; } = 100;
+
+    /// <summary>
+    /// How many messages to fetch at a time.
+    /// </summary>
+    public int FetchBatchSize { get; set; } = 3;
+
+    /// <summary>
+    /// How long to lock messages once fetched. Azure Queue default is 30 secs.
+    /// </summary>
+    public int FetchLockSeconds { get; set; } = 300;
+
+    /// <summary>
+    /// How many times to dequeue a messages and process before moving it to a poison queue.
+    /// </summary>
+    public int MaxRetriesBeforePoisonQueue { get; set; } = 20;
+
+    /// <summary>
+    /// Suffix used for the poison queues.
+    /// </summary>
+    public string PoisonQueueSuffix { get; set; } = "-poison";
+
     public void SetCredential(StorageSharedKeyCredential credential)
     {
         this.Auth = AuthTypes.ManualStorageSharedKeyCredential;
