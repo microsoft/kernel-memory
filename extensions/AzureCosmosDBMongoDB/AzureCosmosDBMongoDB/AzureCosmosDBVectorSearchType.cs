@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
 using Newtonsoft.Json;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;

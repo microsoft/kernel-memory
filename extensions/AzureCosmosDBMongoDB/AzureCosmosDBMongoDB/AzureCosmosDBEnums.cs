@@ -7,7 +7,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
 public class AzureCosmosDBEnums
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AzureCosmosDBSimilarityType Similarity { get; set; }
+    public AzureCosmosDBSimilarityTypes Similarity { get; set; }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public AzureCosmosDBVectorSearchType SearchType { get; set; }
