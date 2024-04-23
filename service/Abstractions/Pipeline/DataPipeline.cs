@@ -392,13 +392,13 @@ public sealed class DataPipeline
             // Rule exception: when deleting an index, the document ID is empty
             if (!this.IsIndexDeletionPipeline())
             {
-                throw new ArgumentException("The pipeline ID is empty", nameof(this.DocumentId));
+                throw new ArgumentException("Data pipeline: the pipeline ID is empty", nameof(this.DocumentId));
             }
         }
 
         if (string.IsNullOrEmpty(this.Index))
         {
-            throw new ArgumentException("The index name is empty", nameof(this.Index));
+            throw new ArgumentException("Data pipeline: the index name is empty", nameof(this.Index));
         }
 
         string previous = string.Empty;
@@ -406,13 +406,13 @@ public sealed class DataPipeline
         {
             if (string.IsNullOrEmpty(step))
             {
-                throw new ArgumentException("The pipeline contains a step with empty name", nameof(this.Steps));
+                throw new ArgumentException("Data pipeline: the pipeline contains a step with empty name", nameof(this.Steps));
             }
 
             // This scenario is not allowed, to ensure execution consistency
             if (string.Equals(step, previous, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("The pipeline contains two consecutive steps with the same name", nameof(this.Steps));
+                throw new ArgumentException("Data pipeline: the pipeline contains two consecutive steps with the same name", nameof(this.Steps));
             }
 
             previous = step;

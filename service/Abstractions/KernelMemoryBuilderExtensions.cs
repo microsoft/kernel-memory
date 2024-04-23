@@ -74,7 +74,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomIngestionQueueClientFactory(
         this IKernelMemoryBuilder builder, QueueClientFactory service)
     {
-        service = service ?? throw new ConfigurationException("The ingestion queue client factory instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the ingestion queue client factory instance is NULL");
         builder.AddSingleton<QueueClientFactory>(service);
         return builder;
     }
@@ -82,7 +82,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomIngestionQueueClientFactory<T>(
         this IKernelMemoryBuilder builder, T service) where T : QueueClientFactory
     {
-        service = service ?? throw new ConfigurationException("The ingestion queue client factory instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the ingestion queue client factory instance is NULL");
         builder.AddSingleton<QueueClientFactory, T>();
         return builder;
     }
@@ -90,7 +90,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomStorage(
         this IKernelMemoryBuilder builder, IContentStorage service)
     {
-        service = service ?? throw new ConfigurationException("The content storage instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the content storage instance is NULL");
         builder.AddSingleton<IContentStorage>(service);
         return builder;
     }
@@ -98,7 +98,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomStorage<T>(
         this IKernelMemoryBuilder builder, T service) where T : class, IContentStorage
     {
-        service = service ?? throw new ConfigurationException("The content storage instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the content storage instance is NULL");
         builder.AddSingleton<IContentStorage, T>();
         return builder;
     }
@@ -106,7 +106,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomMimeTypeDetection(
         this IKernelMemoryBuilder builder, IMimeTypeDetection service)
     {
-        service = service ?? throw new ConfigurationException("The MIME type detection instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the MIME type detection instance is NULL");
         builder.AddSingleton<IMimeTypeDetection>(service);
         return builder;
     }
@@ -114,7 +114,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomMimeTypeDetection<T>(
         this IKernelMemoryBuilder builder, T service) where T : class, IMimeTypeDetection
     {
-        service = service ?? throw new ConfigurationException("The MIME type detection instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the MIME type detection instance is NULL");
         builder.AddSingleton<IMimeTypeDetection, T>();
         return builder;
     }
@@ -125,7 +125,7 @@ public static partial class KernelMemoryBuilderExtensions
         bool useForIngestion = true,
         bool useForRetrieval = true)
     {
-        service = service ?? throw new ConfigurationException("The embedding generator instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the embedding generator instance is NULL");
 
         if (useForRetrieval)
         {
@@ -146,7 +146,7 @@ public static partial class KernelMemoryBuilderExtensions
         bool useForIngestion = true,
         bool useForRetrieval = true)
     {
-        service = service ?? throw new ConfigurationException("The memory DB instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the memory DB instance is NULL");
 
         if (useForRetrieval)
         {
@@ -165,7 +165,7 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         ITextGenerator service)
     {
-        service = service ?? throw new ConfigurationException("The text generator instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the text generator instance is NULL");
         builder.AddSingleton<ITextGenerator>(service);
         return builder;
     }
@@ -174,7 +174,7 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         T service) where T : class, ITextGenerator
     {
-        service = service ?? throw new ConfigurationException("The text generator instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the text generator instance is NULL");
         builder.AddSingleton<ITextGenerator, T>();
         return builder;
     }
@@ -183,7 +183,7 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         IOcrEngine service)
     {
-        service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the OCR engine instance is NULL");
         builder.AddSingleton<IOcrEngine>(service);
         return builder;
     }
@@ -192,7 +192,7 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         T service) where T : class, IOcrEngine
     {
-        service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the OCR engine instance is NULL");
         builder.AddSingleton<IOcrEngine, T>();
         return builder;
     }
@@ -200,7 +200,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomPromptProvider(
         this IKernelMemoryBuilder builder, IPromptProvider service)
     {
-        service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the prompt provider instance is NULL");
         builder.AddSingleton<IPromptProvider>(service);
         return builder;
     }
@@ -208,7 +208,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomPromptProvider<T>(
         this IKernelMemoryBuilder builder, T service) where T : class, IPromptProvider
     {
-        service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
+        service = service ?? throw new ConfigurationException("Memory Builder: the prompt provider instance is NULL");
         builder.AddSingleton<IPromptProvider, T>();
         return builder;
     }
@@ -221,7 +221,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomTextPartitioningOptions(
         this IKernelMemoryBuilder builder, TextPartitioningOptions options)
     {
-        options = options ?? throw new ConfigurationException("The given options are NULL");
+        options = options ?? throw new ConfigurationException("Memory Builder: the given text partitioning options are NULL");
         builder.With<TextPartitioningOptions>(options);
         return builder;
     }

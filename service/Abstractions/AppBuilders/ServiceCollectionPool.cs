@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AppBuilders;
 
@@ -50,11 +51,7 @@ public class ServiceCollectionPool : IServiceCollection
     /// <param name="primaryCollection">The primary service collection</param>
     public ServiceCollectionPool(IServiceCollection primaryCollection)
     {
-        if (primaryCollection == null)
-        {
-            throw new ArgumentNullException(nameof(primaryCollection), "The primary service collection cannot be NULL");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNull(primaryCollection, nameof(primaryCollection), "The primary service collection cannot be NULL");
         this._poolSizeLocked = false;
         this._primaryCollection = primaryCollection;
         this._pool = new List<IServiceCollection> { primaryCollection };

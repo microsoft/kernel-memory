@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory;
 
@@ -29,11 +29,7 @@ public static class TagCollectionExtensions
     /// <returns>The tag collection instance</returns>
     public static TagCollection AddSyntheticTag(this TagCollection tagCollection, string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentNullException(nameof(value), "The tag value cannot be empty");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(value, nameof(value), "The tag value cannot be empty");
         tagCollection.Add(Constants.ReservedSyntheticTypeTag, value);
         return tagCollection;
     }
