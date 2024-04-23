@@ -24,6 +24,7 @@ public class AzureAISearchConfig
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
+    public bool UseHybridSearch { get; set; } = false;
 
     public void SetCredential(TokenCredential credential)
     {

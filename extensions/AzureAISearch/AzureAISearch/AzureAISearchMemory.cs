@@ -34,6 +34,7 @@ public class AzureAISearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
+    private readonly AzureAISearchConfig _config;
 
     /// <summary>
     /// Create a new instance
@@ -46,6 +47,7 @@ public class AzureAISearchMemory : IMemoryDb
         ITextEmbeddingGenerator embeddingGenerator,
         ILogger<AzureAISearchMemory>? log = null)
     {
+        this._config = config;
         this._embeddingGenerator = embeddingGenerator;
         this._log = log ?? DefaultLogger<AzureAISearchMemory>.Instance;
 
@@ -184,8 +186,9 @@ public class AzureAISearchMemory : IMemoryDb
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
+            var keyword = this._config.UseHybridSearch ? text : null;
             searchResult = await client
-                .SearchAsync<AzureAISearchMemoryRecord>(null, options, cancellationToken: cancellationToken)
+                .SearchAsync<AzureAISearchMemoryRecord>(keyword, options, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (RequestFailedException e) when (e.Status == 404)
@@ -196,14 +199,15 @@ public class AzureAISearchMemory : IMemoryDb
 
         if (searchResult == null) { yield break; }
 
-        var minDistance = CosineSimilarityToScore(minRelevance);
+        var minDistance = this._config.UseHybridSearch ? minRelevance : CosineSimilarityToScore(minRelevance);
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             if (doc == null || doc.Score < minDistance) { continue; }
 
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
-            yield return (memoryRecord, ScoreToCosineSimilarity(doc.Score ?? 0));
+            var documentScore = this._config.UseHybridSearch ? doc.Score ?? 0 : ScoreToCosineSimilarity(doc.Score ?? 0);
+            yield return (memoryRecord, documentScore);
         }
     }
 
