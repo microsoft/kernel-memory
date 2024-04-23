@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.TestHelpers;
 
-namespace Postgres.FunctionalTests;
+namespace Microsoft.Postgres.FunctionalTests;
 
 public class ConcurrencyTests : BaseFunctionalTestCase
 {

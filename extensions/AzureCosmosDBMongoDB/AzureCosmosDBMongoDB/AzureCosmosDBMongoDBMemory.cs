@@ -15,7 +15,8 @@ using MongoDB.Driver;
 namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
 
 /// <summary>
-/// Azure CosmosDB Mongo vCore connector for Kernel Memory, read more about Mongo vCore and vector search using Mongo vCore here.
+/// Azure Cosmos DB for MongoDB connector for Kernel Memory,
+/// Read more about Azure Cosmos DB for MongoDB and vector search here:
 /// https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/
 /// https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
@@ -32,10 +33,11 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     /// <summary>
     /// Create a new instance
     /// </summary>
-    /// <param name="config"> Azure Cosmos DB Mongo vCore configuration</param>
+    /// <param name="config">Azure Cosmos DB for MongoDB configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="databaseName">Database name for Mongo vCore DB</param>
-    /// <param name="collectionName">Collection name for Mongo vCore DBr</param>
+    /// <param name="mongoClient">MongoClient for the MongoDB cluster</param>
+    /// <param name="databaseName">Database name for MongoDB</param>
+    /// <param name="collectionName">Collection name for MongoDB</param>
     /// <param name="log">Application logger</param>
     public AzureCosmosDBMongoDBMemory(
         AzureCosmosDBMongoDBConfig config,
@@ -51,8 +53,8 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
 
         if (string.IsNullOrEmpty(config.ConnectionString))
         {
-            this._log.LogCritical("Azure Cosmos DB Mongo vCore connection string is empty.");
-            throw new AzureCosmosDBMongoDBMemoryException("Azure Cosmos DB Mongo vCore connection string is empty.");
+            this._log.LogCritical("Azure Cosmos DB for MongoDB connection string is empty.");
+            throw new AzureCosmosDBMongoDBMemoryException("Azure Cosmos DB for MongoDB connection string is empty.");
         }
 
         if (this._embeddingGenerator == null)
@@ -179,7 +181,7 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // TODO: Add logic for search with filters, once it is released in MongoDB vCore.
+        // TODO: Add logic for search with filters, once it is released in Azure Cosmos DB for MongoDB.
         // For now this method returns an empty list.
         yield break;
     }

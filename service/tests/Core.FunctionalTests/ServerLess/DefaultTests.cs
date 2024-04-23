@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.DefaultTestCases;
+using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess;
+namespace Microsoft.Core.FunctionalTests.ServerLess;
 
 public class DefaultTests : BaseFunctionalTestCase
 {

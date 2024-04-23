@@ -1,7 +1,7 @@
 ﻿<Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.36.0</Version>
+        <Version>0.37.0</Version>
 
         <!-- These are set at the project level-->
         <IsPackable>false</IsPackable>
@@ -39,11 +39,11 @@
     <ItemGroup>
         <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
         <!-- https://github.com/dotnet/sourcelink -->
-        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="$(RepoRoot)/packages/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="$(RepoRoot)/packages/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

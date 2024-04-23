@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.DefaultTestCases;
+using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 
-namespace Postgres.FunctionalTests;
+namespace Microsoft.Postgres.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {

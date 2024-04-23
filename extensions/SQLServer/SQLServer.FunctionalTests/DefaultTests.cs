@@ -6,12 +6,12 @@
 // tests only when working with packages.
 
 #if !KernelMemoryDev
-using FunctionalTests.DefaultTestCases;
 using KernelMemory.MemoryStorage.SqlServer;
+using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
 using Microsoft.TestHelpers;
 
-namespace SQLServer.FunctionalTests;
+namespace Microsoft.SQLServer.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {

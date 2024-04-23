@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.KernelMemory.WebService;
+namespace Microsoft.KernelMemory.Service.AspNetCore.Models;
 
 // Note: use multiform part serialization
 public class HttpDocumentUploadRequest

@@ -433,6 +433,7 @@ launchSettings.json
 config.development.yaml
 *.development.config
 *.development.json
+*.development.json*
 appsettings.*.json
 
 .DS_Store
@@ -499,3 +500,5 @@ playwright-report/
 swa-cli.config.json
 **/copilot-chat-app/webapp/build
 **/copilot-chat-app/webapp/node_modules
+
+*.orig

@@ -8,7 +8,7 @@ using Microsoft.KernelMemory.AI.OpenAI.GPT3;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace LlamaSharp.FunctionalTests;
+namespace Microsoft.LlamaSharp.FunctionalTests;
 
 public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 {

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <IsTestProject>true</IsTestProject>
         <AssemblyName>Microsoft.TestHelpers</AssemblyName>
         <RootNamespace>Microsoft.TestHelpers</RootNamespace>
@@ -17,8 +17,13 @@
         <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
+<<<<<<< HEAD
         <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj"/>
         <ProjectReference Include="..\..\..\extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.csproj"/>
+=======
+        <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\..\extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.csproj" />
+>>>>>>> 03dec41cd1becf5b49999fa84871e677a33a70f9
     </ItemGroup>
 
     <ItemGroup>

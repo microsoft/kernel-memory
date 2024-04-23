@@ -21,6 +21,7 @@ param AzureOpenAIText_Endpoint string
 param AzureOpenAIText_Deployment string
 param AzureOpenAIEmbedding_Endpoint string
 param AzureOpenAIEmbedding_Deployment string
+param AzureAIDocIntel_Endpoint string
 
 param KernelMemory__ServiceAuthorization__AccessKey1 string
 param KernelMemory__ServiceAuthorization__AccessKey2 string
@@ -124,6 +125,10 @@ resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
               value: 'AzureAISearch'
             }
             {
+              name: 'KernelMemory__DataIngestion__ImageOcrType'
+              value: 'AzureAIDocIntel'
+            }
+            {
               name: 'KernelMemory__Retrieval__EmbeddingGeneratorType'
               value: 'AzureOpenAIEmbedding'
             }
@@ -162,6 +167,10 @@ resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'KernelMemory__Services__AzureOpenAIEmbedding__Deployment'
               value: AzureOpenAIEmbedding_Deployment
+            }
+            {
+              name: 'KernelMemory__Services__AzureAIDocIntel__Endpoint'
+              value: AzureAIDocIntel_Endpoint
             }
           ]
         }

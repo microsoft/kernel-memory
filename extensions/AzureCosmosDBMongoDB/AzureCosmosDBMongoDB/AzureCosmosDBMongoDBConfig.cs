@@ -7,12 +7,14 @@ using Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
 namespace Microsoft.KernelMemory;
 
 /// <summary>
-/// Get more details about Azure Cosmos Mongo vCore and these configs https://learn.microsoft.com/azure/cosmos-db/mongodb/vcore/vector-search
+/// Get more details about Azure Cosmos DB for MongoDB and these configs
+/// at https://learn.microsoft.com/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
 public class AzureCosmosDBMongoDBConfig
 {
     /// <summary>
-    /// Connection string required to connect to Azure Cosmos Mongo vCore, https://learn.microsoft.com/azure/cosmos-db/mongodb/vcore/quickstart-portal
+    /// Connection string required to connect to Azure Cosmos DB for MongoDB
+    /// see https://learn.microsoft.com/azure/cosmos-db/mongodb/vcore/quickstart-portal
     /// </summary>
     public string ConnectionString { get; set; }
 
@@ -23,6 +25,7 @@ public class AzureCosmosDBMongoDBConfig
 
     /// <summary>
     /// Index name for the Mongo vCore DB
+    /// Index name for the MongoDB
     /// </summary>
     public string IndexName { get; set; }
 
@@ -50,7 +53,7 @@ public class AzureCosmosDBMongoDBConfig
     ///         - L2 (Euclidean distance), and
     ///         - IP (inner product).
     /// </summary>
-    public AzureCosmosDBSimilarityType Similarity { get; set; }
+    public AzureCosmosDBSimilarityTypes Similarity { get; set; }
 
     /// <summary>
     /// NumberOfConnections: The max number of connections per layer (16 by default, minimum value is 2, maximum value is
@@ -79,7 +82,7 @@ public class AzureCosmosDBMongoDBConfig
         this.IndexName = "default_index";
         this.Kind = AzureCosmosDBVectorSearchType.VectorHNSW;
         this.NumLists = 1;
-        this.Similarity = AzureCosmosDBSimilarityType.Cosine;
+        this.Similarity = AzureCosmosDBSimilarityTypes.Cosine;
         this.NumberOfConnections = 16;
         this.EfConstruction = 64;
         this.EfSearch = 40;

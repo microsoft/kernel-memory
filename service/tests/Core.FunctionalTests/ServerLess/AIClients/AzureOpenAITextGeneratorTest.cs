@@ -6,7 +6,7 @@ using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess.AIClients;
+namespace Microsoft.Core.FunctionalTests.ServerLess.AIClients;
 
 public class AzureOpenAITextGeneratorTest : BaseFunctionalTestCase
 {

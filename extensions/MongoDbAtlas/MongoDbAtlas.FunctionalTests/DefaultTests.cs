@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using FunctionalTests.DefaultTestCases;
+using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.TestHelpers;
 
-namespace MongoDbAtlas.FunctionalTests;
+namespace Microsoft.MongoDbAtlas.FunctionalTests;
 
 public class DefaultTestsSingleCollection : DefaultTests
 {

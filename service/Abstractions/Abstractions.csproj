@@ -4,28 +4,28 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Abstractions</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);CA1711,CS1591,CS1574,NU5104,SKEXP0001</NoWarn>
+        <NoWarn>$(NoWarn);CA1711;CS1591;CS1574;NU5104;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
-        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
-        <PackageReference Include="System.Memory.Data"/>
-        <PackageReference Include="System.Numerics.Tensors"/>
-        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
+        <PackageReference Include="System.Memory.Data" />
+        <PackageReference Include="System.Numerics.Tensors" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.Abstractions.UnitTests"/>
+        <InternalsVisibleTo Include="Microsoft.Abstractions.UnitTests" />
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props"/>
+    <Import Project="../../code-analysis.props" />
 
-    <Import Project="../../nuget-package.props"/>
+    <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
@@ -36,7 +36,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@
 /* IMPORTANT: the Startup class must be at the root of the namespace and
  * the namespace must match exactly (required by Xunit.DependencyInjection) */
 
-namespace Redis.FunctionalTests;
+namespace Microsoft.Redis.FunctionalTests;
 
 public class Startup
 {

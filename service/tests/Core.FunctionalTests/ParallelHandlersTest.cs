@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests;
+namespace Microsoft.Core.FunctionalTests;
 
 public class ParallelHandlersTest : BaseFunctionalTestCase
 {
