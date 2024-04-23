@@ -66,6 +66,8 @@ public sealed class AzureQueuesPipeline : IQueue
         ILogger<AzureQueuesPipeline>? log = null)
     {
         this._config = config;
+        this._config.Validate();
+
         this._log = log ?? DefaultLogger<AzureQueuesPipeline>.Instance;
 
         switch (config.Auth)
@@ -325,10 +327,10 @@ public sealed class AzureQueuesPipeline : IQueue
 
         var poisonMsg = new
         {
-            MessageText = message.MessageText,
+            message.MessageText,
             Id = message.MessageId,
-            InsertedOn = message.InsertedOn,
-            DequeueCount = message.DequeueCount,
+            message.InsertedOn,
+            message.DequeueCount,
         };
 
         var neverExpire = TimeSpan.FromSeconds(-1);
