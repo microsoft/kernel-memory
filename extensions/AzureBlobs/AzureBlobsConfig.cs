@@ -57,18 +57,18 @@ public class AzureBlobsConfig
     public StorageSharedKeyCredential GetStorageSharedKeyCredential()
     {
         return this._storageSharedKeyCredential
-               ?? throw new ConfigurationException("StorageSharedKeyCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._storageSharedKeyCredential)} not defined");
     }
 
     public AzureSasCredential GetAzureSasCredential()
     {
         return this._azureSasCredential
-               ?? throw new ConfigurationException("AzureSasCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._azureSasCredential)} not defined");
     }
 
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._tokenCredential)} not defined");
     }
 }

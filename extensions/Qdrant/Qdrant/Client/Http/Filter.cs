@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 
@@ -30,7 +32,11 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            if (this.Clauses == null)
+            {
+                throw new ArgumentException($"Qdrant: {nameof(this.Clauses)} (filter clauses) cannot be null");
+            }
+
             foreach (var x in this.Clauses)
             {
                 switch (x)
@@ -74,7 +80,11 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            if (this.Clauses == null)
+            {
+                throw new ArgumentException($"Qdrant: {nameof(this.Clauses)} (filter clauses) cannot be null");
+            }
+
             foreach (var x in this.Clauses)
             {
                 switch (x)
@@ -117,8 +127,8 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Key, "The filter key is NULL");
-            Verify.NotNull(this.Match, "The filter match is NULL");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Key, nameof(this.Key), "Match filter key cannot be null");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Match, nameof(this.Match), "Match filter value cannot be null");
         }
     }
 

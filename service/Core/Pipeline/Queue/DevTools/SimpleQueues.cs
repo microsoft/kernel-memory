@@ -97,11 +97,7 @@ public sealed class SimpleQueues : IQueue
     /// <inheritdoc />
     public async Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(queueName))
-        {
-            throw new ArgumentOutOfRangeException(nameof(queueName), "The queue name is empty");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
         if (!string.IsNullOrEmpty(this._queueName))
         {
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");

@@ -339,7 +339,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     {
         this._log.LogTrace("Searching top {0} nearest vectors", limit);
 
-        Verify.NotNull(target, "The given vector is NULL");
+        ArgumentNullExceptionEx.ThrowIfNull(target, nameof(target), $"The target vector cannot be null");
 
         using HttpRequestMessage request = SearchVectorsRequest
             .Create(collectionName)

@@ -187,7 +187,7 @@ public class OpenAITextGenerator : ITextGenerator
     {
         if (string.IsNullOrEmpty(config.TextModel))
         {
-            throw new ConfigurationException("The OpenAI model name is empty");
+            throw new ConfigurationException($"OpenAI: {nameof(config.TextModel)} is empty");
         }
 
         this._model = config.TextModel;
@@ -204,7 +204,7 @@ public class OpenAITextGenerator : ITextGenerator
                 this._useTextCompletionProtocol = false;
                 break;
             default:
-                throw new ArgumentOutOfRangeException($"Unsupported text completion type '{config.TextGenerationType:G}'");
+                throw new ArgumentOutOfRangeException(nameof(config.TextGenerationType), $"Unsupported text completion type '{config.TextGenerationType:G}'");
         }
     }
 

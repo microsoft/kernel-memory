@@ -33,7 +33,7 @@ public static partial class KernelMemoryBuilderExtensions
         ITextTokenizer? tokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        if (service == null) { throw new ConfigurationException("The semantic kernel text generation service instance is NULL"); }
+        if (service == null) { throw new ConfigurationException("Memory Builder: the semantic kernel text generation service instance is NULL"); }
 
         return builder.AddSingleton<ITextGenerator>(new SemanticKernelTextGenerator(service, config, tokenizer, loggerFactory));
     }
@@ -57,7 +57,7 @@ public static partial class KernelMemoryBuilderExtensions
         ILoggerFactory? loggerFactory = null,
         bool onlyForRetrieval = false)
     {
-        if (service == null) { throw new ConfigurationException("The semantic kernel text embedding generation service instance is NULL"); }
+        if (service == null) { throw new ConfigurationException("Memory Builder: the semantic kernel text embedding generation service instance is NULL"); }
 
         var generator = new SemanticKernelTextEmbeddingGenerator(service, config, tokenizer, loggerFactory);
         builder.AddSingleton<ITextEmbeddingGenerator>(generator);

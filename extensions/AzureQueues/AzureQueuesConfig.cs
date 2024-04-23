@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Azure;
@@ -62,14 +61,7 @@ public class AzureQueuesConfig
     /// <summary>
     /// Suffix used for the poison queues.
     /// </summary>
-    private string? _poisonQueueSuffix = "-poison";
-
-    public string PoisonQueueSuffix
-    {
-        get => this._poisonQueueSuffix!;
-        // Queue names must be lowercase.
-        set => this._poisonQueueSuffix = value?.ToLowerInvariant() ?? string.Empty;
-    }
+    public string PoisonQueueSuffix { get; set; } = "-poison";
 
     public void SetCredential(StorageSharedKeyCredential credential)
     {
@@ -92,19 +84,19 @@ public class AzureQueuesConfig
     public StorageSharedKeyCredential GetStorageSharedKeyCredential()
     {
         return this._storageSharedKeyCredential
-               ?? throw new ConfigurationException("StorageSharedKeyCredential not defined");
+               ?? throw new ConfigurationException("Azure Queues: StorageSharedKeyCredential not defined");
     }
 
     public AzureSasCredential GetAzureSasCredential()
     {
         return this._azureSasCredential
-               ?? throw new ConfigurationException("AzureSasCredential not defined");
+               ?? throw new ConfigurationException("Azure Queues: AzureSasCredential not defined");
     }
 
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException("Azure Queues: TokenCredential not defined");
     }
 
     /// <summary>
@@ -112,11 +104,35 @@ public class AzureQueuesConfig
     /// </summary>
     public void Validate()
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(this.PollDelayMsecs);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(this.FetchBatchSize);
-        ArgumentOutOfRangeException.ThrowIfLessThan(this.FetchLockSeconds, 30);
-        ArgumentOutOfRangeException.ThrowIfNegative(this.MaxRetriesBeforePoisonQueue);
-        ArgumentException.ThrowIfNullOrWhiteSpace(this.PoisonQueueSuffix);
+        if (this.PollDelayMsecs < 1)
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.PollDelayMsecs)} must be a positive number");
+        }
+
+        if (this.FetchBatchSize < 1)
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.FetchBatchSize)} must be a positive number");
+        }
+
+        if (this.FetchLockSeconds < 30)
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.FetchLockSeconds)} cannot be less than 30 (seconds)");
+        }
+
+        if (this.MaxRetriesBeforePoisonQueue < 0)
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.FetchBatchSize)} cannot be a negative number");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix))
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.PoisonQueueSuffix)} is empty");
+        }
+
+        if (string.CompareOrdinal(this.PoisonQueueSuffix, this.PoisonQueueSuffix.ToLowerInvariant()) != 0)
+        {
+            throw new ConfigurationException($"Azure Queues: {nameof(this.PoisonQueueSuffix)} value must be lower case");
+        }
 
         // Queue names must follow the rules described at
         // https://learn.microsoft.com/rest/api/storageservices/naming-queues-and-metadata#queue-names.
@@ -126,7 +142,7 @@ public class AzureQueuesConfig
         // of 30, so there is room for the other name part.
         if (!s_validPoisonQueueSuffixRegex.IsMatch(this.PoisonQueueSuffix))
         {
-            throw new ArgumentException($"Invalid {nameof(this.PoisonQueueSuffix)} format.", nameof(this.PoisonQueueSuffix));
+            throw new ConfigurationException($"Azure Queues: {nameof(this.PoisonQueueSuffix)} is too long or contains invalid chars");
         }
     }
 }

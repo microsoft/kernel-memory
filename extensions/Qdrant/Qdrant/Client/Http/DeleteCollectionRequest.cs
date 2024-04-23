@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 
@@ -26,6 +27,6 @@ internal sealed class DeleteCollectionRequest
 
     private void Validate()
     {
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(this._collectionName, nameof(this._collectionName), "The collection name is empty");
     }
 }

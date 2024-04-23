@@ -35,6 +35,6 @@ public class AzureAISearchConfig
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException($"Azure AI Search: {nameof(this._tokenCredential)} not defined");
     }
 }

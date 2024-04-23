@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 
@@ -49,10 +50,10 @@ internal sealed class SearchVectorsRequest
         return this;
     }
 
-    public SearchVectorsRequest HavingExternalId(string id)
+    public SearchVectorsRequest HavingExternalId(string externalId)
     {
-        Verify.NotNull(id, "External ID is NULL");
-        this.Filters.AndValue(QdrantConstants.PayloadIdField, id);
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(externalId, nameof(externalId), "External ID cannot be empty");
+        this.Filters.AndValue(QdrantConstants.PayloadIdField, externalId);
         return this;
     }
 
@@ -148,9 +149,10 @@ internal sealed class SearchVectorsRequest
 
     private void Validate()
     {
-        Verify.NotNull(this.StartingVector, "Missing target, either provide a vector or a vector size");
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
-        Verify.That(this.Limit > 0, "The number of vectors must be greater than zero");
+        ArgumentNullExceptionEx.ThrowIfNull(this.StartingVector, nameof(this.StartingVector), "Qdrant: missing target vector, either provide a vector or vector size");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(this._collectionName, nameof(this._collectionName), "Qdrant: the collection name cannot be empty");
+        ArgumentOutOfRangeExceptionEx.ThrowIfZeroOrNegative(this.Limit, nameof(this.Limit), "Qdrant: the max number of vectors to retrieve must be greater than zero");
+
         this.Filters.Validate();
     }
 
