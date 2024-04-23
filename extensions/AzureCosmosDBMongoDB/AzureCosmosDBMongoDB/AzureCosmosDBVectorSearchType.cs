@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 // ReSharper disable InconsistentNaming
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
 
 public enum AzureCosmosDBVectorSearchType
 {
-    [JsonProperty("vector_ivf")]
+    [JsonPropertyName("vector_ivf")]
     VectorIVF,
 
     [JsonProperty("vector_hnsw")]
-    VectorHNSW
+    JsonPropertyName
 }

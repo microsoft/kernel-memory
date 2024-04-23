@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <PackageReference Include="Newtonsoft.Json" />
         <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
     </ItemGroup>
 
@@ -28,7 +27,7 @@
     <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB</PackageId>
         <Product>Azure CosmosDB Mongo vCore connector for Kernel Memory</Product>
         <Description>Azure CosmosDB Mongo vCore connector for Microsoft Kernel Memory, to store and search memory using Azure AI Search vector indexing and semantic features.</Description>

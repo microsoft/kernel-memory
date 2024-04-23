@@ -40,6 +40,7 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     public AzureCosmosDBMongoDBMemory(
         AzureCosmosDBMongoDBConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
+        IMongoClient mongoClient,
         string databaseName,
         string collectionName,
         ILogger<AzureCosmosDBMongoDBMemory>? log = null)
@@ -59,7 +60,16 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
             throw new AzureCosmosDBMongoDBMemoryException("Embedding generator not configured");
         }
 
-        MongoClientSettings settings = MongoClientSettings.FromConnectionString(config.ConnectionString);
+        if (mongoClient == null && config.ConnectionString == null) {
+            throw new AzureCosmosDBMongoDBMemoryException("You need to provide either the MongoClient or the Connection String for the MongoDB Cluster.");
+        }
+
+        if (mongoClient != null) {
+            MongoClientSettings settings = mongoClient.Settings;
+        } else {
+            MongoClientSettings settings = MongoClientSettings.FromConnectionString(config.ConnectionString);
+        }
+        
         settings.ApplicationName = config.ApplicationName;
         this._cosmosDBMongoClient = new MongoClient(settings);
         this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
