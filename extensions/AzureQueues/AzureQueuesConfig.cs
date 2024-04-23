@@ -63,6 +63,7 @@ public class AzureQueuesConfig
     /// Suffix used for the poison queues.
     /// </summary>
     private string? _poisonQueueSuffix = "-poison";
+
     public string PoisonQueueSuffix
     {
         get => this._poisonQueueSuffix!;
