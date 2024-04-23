@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory;
@@ -118,15 +119,8 @@ public class Document
     /// </summary>
     public static string ValidateId(string? id)
     {
-        if (string.IsNullOrEmpty(id))
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "The document ID is empty");
-        }
-
-        if (!IsValid(id))
-        {
-            throw new ArgumentOutOfRangeException(nameof(id), "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(id, nameof(id), "The document ID is empty");
+        ArgumentOutOfRangeExceptionEx.ThrowIfNot(IsValid(id), nameof(id), "The document ID contains invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
 
         return id!;
     }
