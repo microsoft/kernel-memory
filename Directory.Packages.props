@@ -42,15 +42,15 @@
   </ItemGroup>
   <!-- Kernel Memory -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.36.240416.1" />
-    <PackageVersion Include="Microsoft.KernelMemory.Core" Version="0.36.240416.1" />
+    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.37.240423.2" />
+    <PackageVersion Include="Microsoft.KernelMemory.Core" Version="0.37.240420.2" />
     <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.6.3" />
     <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.7.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.7.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.8.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.8.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -65,11 +65,11 @@
     </PackageVersion>
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28" />
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.1">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.1">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>

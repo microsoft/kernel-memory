@@ -2,7 +2,6 @@
 
 using System.IO;
 using System.Reflection;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.AI.OpenAI.GPT3;
 

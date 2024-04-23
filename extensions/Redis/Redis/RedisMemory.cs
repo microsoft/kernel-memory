@@ -399,10 +399,7 @@ public sealed class RedisMemory : IMemoryDb
     /// </summary>
     private static string NormalizeIndexName(string index, string? prefix = null)
     {
-        if (string.IsNullOrWhiteSpace(index))
-        {
-            throw new ArgumentNullException(nameof(index), "The index name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(index, nameof(index), "The index name is empty");
 
         var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;
 

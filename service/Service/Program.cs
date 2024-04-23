@@ -115,6 +115,11 @@ internal static class Program
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
             app.AddKernelMemoryEndpoints("/", authFilter);
+
+            if (config.ServiceAuthorization.Enabled && config.ServiceAuthorization.AccessKey1 == config.ServiceAuthorization.AccessKey2)
+            {
+                app.Logger.LogError("KM Web Service: Access keys 1 and 2 have the same value. Keys should be different to allow rotation.");
+            }
         }
 
         // *************************** START ***********************************

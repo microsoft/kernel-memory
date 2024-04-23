@@ -30,17 +30,17 @@ public class AzureAIDocIntelConfig
     {
         if (this.Auth == AuthTypes.APIKey && string.IsNullOrWhiteSpace(this.APIKey))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The API Key is empty");
+            throw new ConfigurationException($"Azure AI Document Intelligence: {nameof(this.APIKey)} is empty");
         }
 
         if (string.IsNullOrWhiteSpace(this.Endpoint))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value is empty");
+            throw new ConfigurationException($"Azure AI Document Intelligence: {nameof(this.Endpoint)} is empty");
         }
 
         if (!this.Endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Endpoint), "The endpoint value must start with https://");
+            throw new ConfigurationException($"Azure AI Document Intelligence: {nameof(this.Endpoint)} must start with https://");
         }
     }
 }

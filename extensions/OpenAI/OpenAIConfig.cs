@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -76,19 +75,17 @@ public class OpenAIConfig
     {
         if (string.IsNullOrWhiteSpace(this.APIKey))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The API Key is empty");
+            throw new ConfigurationException($"OpenAI: {nameof(this.APIKey)} is empty");
         }
 
         if (this.TextModelMaxTokenTotal < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.TextModelMaxTokenTotal),
-                $"{nameof(this.TextModelMaxTokenTotal)} cannot be less than 1");
+            throw new ConfigurationException($"OpenAI: {nameof(this.TextModelMaxTokenTotal)} cannot be less than 1");
         }
 
         if (this.EmbeddingModelMaxTokenTotal < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.EmbeddingModelMaxTokenTotal),
-                $"{nameof(this.EmbeddingModelMaxTokenTotal)} cannot be less than 1");
+            throw new ConfigurationException($"OpenAI: {nameof(this.EmbeddingModelMaxTokenTotal)} cannot be less than 1");
         }
     }
 }

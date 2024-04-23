@@ -132,15 +132,11 @@ public sealed class AzureQueuesPipeline : IQueue
         queueName = CleanQueueName(queueName);
         this._log.LogTrace("Connecting to queue name: {0}", queueName);
 
-        if (string.IsNullOrEmpty(queueName))
-        {
-            this._log.LogError("The queue name is empty");
-            throw new ArgumentOutOfRangeException(nameof(queueName), "The queue name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
-            this._log.LogError("The queue name has already been set");
+            this._log.LogError("The queue name has already been set, already connected to {0}", this._queueName);
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
         }
 
@@ -186,7 +182,8 @@ public sealed class AzureQueuesPipeline : IQueue
     {
         this.Received += async (object sender, MessageEventArgs args) =>
         {
-            QueueMessage message = args.Message!;
+            ArgumentNullExceptionEx.ThrowIfNull(args.Message, nameof(args.Message), "The message received is NULL");
+            QueueMessage message = args.Message;
 
             this._log.LogInformation("Message '{0}' received, expires at {1}", message.MessageId, message.ExpiresOn);
 

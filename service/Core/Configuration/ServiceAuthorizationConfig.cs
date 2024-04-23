@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 
 namespace Microsoft.KernelMemory.Configuration;
@@ -9,6 +8,13 @@ public class ServiceAuthorizationConfig
 {
     public const string APIKeyAuthType = "APIKey";
     public const int AccessKeyMinLength = 32;
+
+    public static readonly char[] ValidChars =
+    {
+        ',', '.', ';', ':', '_', '-',
+        '!', '@', '#', '$', '^', '*', '~', '=', '|',
+        '[', ']', '{', '}', '(', ')'
+    };
 
     /// <summary>
     /// Whether clients must provide some credentials to interact with the HTTP API.
@@ -46,43 +52,38 @@ public class ServiceAuthorizationConfig
 
         if (this.AuthenticationType != APIKeyAuthType)
         {
-            throw new ConfigurationException($"The authorization type '{this.AuthenticationType}' is not supported. Please use '{APIKeyAuthType}'.");
+            throw new ConfigurationException($"KM Web Service: authorization type '{this.AuthenticationType}' is not supported. Please use '{APIKeyAuthType}'.");
         }
 
         if (string.IsNullOrWhiteSpace(this.HttpHeaderName))
         {
-            throw new ConfigurationException("The HTTP header name cannot be empty");
+            throw new ConfigurationException("KM Web Service: the HTTP header name cannot be empty");
         }
 
         ValidateAccessKey(this.AccessKey1, 1);
         ValidateAccessKey(this.AccessKey2, 2);
-
-        if (string.Equals(this.AccessKey1, this.AccessKey2, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConfigurationException("Access keys 1 and 2 are the same. Please use two different keys.");
-        }
     }
 
     private static void ValidateAccessKey(string key, int keyNumber)
     {
         if (string.IsNullOrEmpty(key))
         {
-            throw new ConfigurationException($"Memory Web Service Access Key {keyNumber} is empty.");
+            throw new ConfigurationException($"KM Web Service: Access Key {keyNumber} is empty.");
         }
 
         if (key.Length < AccessKeyMinLength)
         {
-            throw new ConfigurationException($"Memory Web Service Access Key {keyNumber} is too short, use at least {AccessKeyMinLength} chars.");
+            throw new ConfigurationException($"KM Web Service: Access Key {keyNumber} is too short, use at least {AccessKeyMinLength} chars.");
         }
 
         if (!key.All(IsValidChar))
         {
-            throw new ConfigurationException($"Memory Web Service Access Key {keyNumber} contains some invalid chars (allowed: A-B, a-b, 0-9, '.', '_', '-')");
+            throw new ConfigurationException($"KM Web Service: Access Key {keyNumber} contains some invalid chars (allowed: A-B, a-b, 0-9, '{string.Join("', '", ValidChars)}')");
         }
     }
 
     private static bool IsValidChar(char c)
     {
-        return char.IsLetterOrDigit(c) || c == '.' || c == '_' || c == '-';
+        return char.IsLetterOrDigit(c) || ValidChars.Contains(c);
     }
 }
