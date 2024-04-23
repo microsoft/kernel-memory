@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AppBuilders;
 

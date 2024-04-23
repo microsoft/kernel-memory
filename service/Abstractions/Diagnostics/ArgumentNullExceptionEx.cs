@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.KernelMemory.Diagnostics;
+// ReSharper disable CheckNamespace
+namespace Microsoft.KernelMemory;
 
 #pragma warning disable CS8777
 public static class ArgumentNullExceptionEx

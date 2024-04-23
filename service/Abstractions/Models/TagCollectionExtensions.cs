@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory.Diagnostics;
-
 namespace Microsoft.KernelMemory;
 
 /// <summary>
