@@ -219,31 +219,34 @@ public static class WebAPIEndpoints
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
-
-    public static void UseAskStreamEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddAskStreamEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
-        // Ask streaming endpoint
-        var route = app.MapPost(Constants.HttpAskStreamEndpoint, IAsyncEnumerable<string> (
-                MemoryQuery query,
-                IKernelMemory service,
-                ILogger<WebAPIEndpoint> log,
-                CancellationToken cancellationToken) =>
-            {
-                log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
-                return service.AskStreamingAsync(
-                    question: query.Question,
-                    index: query.Index,
-                    filters: query.Filters,
-                    minRelevance: query.MinRelevance,
-                    cancellationToken: cancellationToken);
-            })
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
+        // Ask endpoint
+        var route = group.MapPost(Constants.HttpAskStreamEndpoint,
+                async IAsyncEnumerable<string> (
+                    MemoryQuery query,
+                    IKernelMemory service,
+                    ILogger<KernelMemoryWebAPI> log,
+                    CancellationToken cancellationToken) =>
+                {
+                    log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+                    return service.AskStreamingAsync(
+                        question: query.Question,
+                        index: query.Index,
+                        filters: query.Filters,
+                        minRelevance: query.MinRelevance,
+                        cancellationToken: cancellationToken);
+                })
             .Produces<IAsyncEnumerable<string>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
-    
+
     public static void AddSearchEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
