@@ -143,17 +143,21 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
-                var key = GetPipelineKeyForSave(client, pipeline.Index);
-
-                if (!createdIndexes.Contains(key))
+                try
                 {
-                    this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                    await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-                    createdIndexes.Add(key);
-                }
+                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                    this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                }
+                catch (IndexNotFound e)
+                {
+                    this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
+                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
+
+                    this._log.LogTrace("Retry: Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             embeddingFile.File.MarkProcessedBy(this);
@@ -214,17 +218,21 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
-                        var key = GetPipelineKeyForSave(client, pipeline.Index);
-
-                        if (!createdIndexes.Contains(key))
+                        try
                         {
-                            this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                            await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-                            createdIndexes.Add(key);
-                        }
+                            await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                        this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                        await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                            this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                            await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (IndexNotFound e)
+                        {
+                            this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
+                            await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
+
+                            this._log.LogTrace("Retry: saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                            await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                        }
                     }
 
                     break;
@@ -287,9 +295,22 @@ public class SaveRecordsHandler : IPipelineStepHandler
             .Select(x => new FileDetailsWithRecordId(pipeline, x.Value)));
     }
 
-    private static string GetPipelineKeyForSave(IMemoryDb client, string index)
+    private async Task CreateIndexOnceAsync(
+        IMemoryDb client,
+        HashSet<string> createdIndexes,
+        string indexName,
+        int vectorLength,
+        CancellationToken cancellationToken,
+        bool force = false)
     {
-        return $"{client.GetType().Name}::{index}";
+        // TODO: add support for the same client being used multiple times with different models with the same vectorLength
+        var key = $"{client.GetType().Name}::{indexName}::{vectorLength}";
+
+        if (!force && createdIndexes.Contains(key)) { return; }
+
+        this._log.LogTrace("Creating index '{0}'", indexName);
+        await client.CreateIndexAsync(indexName, vectorLength, cancellationToken).ConfigureAwait(false);
+        createdIndexes.Add(key);
     }
 
     private async Task<string> GetSourceUrlAsync(

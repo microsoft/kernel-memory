@@ -129,10 +129,20 @@ public class AzureAISearchMemory : IMemoryDb
         var client = this.GetSearchClient(index);
         AzureAISearchMemoryRecord localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
 
-        await client.IndexDocumentsAsync(
-            IndexDocumentsBatch.Upload(new[] { localRecord }),
-            new IndexDocumentsOptions { ThrowOnAnyError = true },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await client.IndexDocumentsAsync(
+                IndexDocumentsBatch.Upload(new[] { localRecord }),
+                new IndexDocumentsOptions { ThrowOnAnyError = true },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e)
+            when (e.Status == 404
+                  && e.Message.Contains("index", StringComparison.OrdinalIgnoreCase)
+                  && e.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new IndexNotFound(e.Message, e);
+        }
 
         return record.Id;
     }
