@@ -30,6 +30,6 @@ public sealed class FakeEmbeddingGenerator : ITextEmbeddingGenerator
             return Task.FromResult(mock);
         }
 
-        throw new ArgumentOutOfRangeException($"Test input '{text}' not supported");
+        throw new ArgumentOutOfRangeException(nameof(text), $"Test input '{text}' not supported");
     }
 }

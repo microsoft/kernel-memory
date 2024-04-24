@@ -16,8 +16,8 @@ public static class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var config = cfg.GetSection("KernelMemory:Services:Qdrant").Get<QdrantConfig>()
-                     ?? throw new ArgumentNullException(message: "Qdrant config not found", null);
+        var config = cfg.GetSection("KernelMemory:Services:Qdrant").Get<QdrantConfig>();
+        ArgumentNullExceptionEx.ThrowIfNull(config, nameof(config), "Qdrant config not found");
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 

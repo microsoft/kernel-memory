@@ -16,7 +16,6 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -53,12 +52,12 @@ public class AzureAISearchMemory : IMemoryDb
         if (string.IsNullOrEmpty(config.Endpoint))
         {
             this._log.LogCritical("Azure AI Search Endpoint is empty");
-            throw new ConfigurationException("Azure AI Search Endpoint is empty");
+            throw new ConfigurationException($"Azure AI Search: {nameof(config.Endpoint)} is empty");
         }
 
         if (this._embeddingGenerator == null)
         {
-            throw new AzureAISearchMemoryException("Embedding generator not configured");
+            throw new ConfigurationException($"Azure AI Search: {nameof(this._embeddingGenerator)} is not configured");
         }
 
         switch (config.Auth)
@@ -74,7 +73,7 @@ public class AzureAISearchMemory : IMemoryDb
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
                     this._log.LogCritical("Azure AI Search API key is empty");
-                    throw new ConfigurationException("Azure AI Search API key is empty");
+                    throw new ConfigurationException($"Azure AI Search: {nameof(config.APIKey)} is empty");
                 }
 
                 this._adminClient = new SearchIndexClient(
@@ -431,10 +430,7 @@ public class AzureAISearchMemory : IMemoryDb
     /// <returns>Normalized name</returns>
     private string NormalizeIndexName(string index)
     {
-        if (string.IsNullOrWhiteSpace(index))
-        {
-            throw new ArgumentNullException(nameof(index), "The index name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(index, nameof(index), "The index name is empty");
 
         if (index.Length > 128)
         {

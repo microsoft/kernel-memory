@@ -167,10 +167,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
         // IMPORTANT: copy by value to avoid editing the source var
         DataPipeline.FileDetails? result = JsonSerializer.Deserialize<DataPipeline.FileDetails>(JsonSerializer.Serialize(uploadedFile));
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result), "File details cloning failure");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(result, nameof(result), "File details cloning failure");
 
         result.MimeType = urlDownloadResult.ContentType;
         result.Size = urlDownloadResult.Content.Length;

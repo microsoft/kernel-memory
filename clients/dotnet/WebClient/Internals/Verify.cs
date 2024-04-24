@@ -24,10 +24,7 @@ internal static class Verify
                    host.StartsWith("255.255.255.255", StringComparison.Ordinal);
         }
 
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("The URL is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(url, nameof(url), "The URL is empty");
 
         if (requireHttps && url.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
         {

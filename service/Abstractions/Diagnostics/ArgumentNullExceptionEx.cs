@@ -31,13 +31,6 @@ public static class ArgumentNullExceptionEx
         throw new ArgumentNullException(paramName, message);
     }
 
-    public static void ThrowIfNotNullOrEmpty([NotNull] string? argument, string? paramName = null, string message = "")
-    {
-        if (string.IsNullOrEmpty(argument)) { return; }
-
-        throw new ArgumentNullException(paramName, message);
-    }
-
     public static void ThrowIfEmpty<T>([NotNull] IList<T>? argument, string? paramName = null, string message = "")
     {
         if (argument is { Count: > 0 }) { return; }

@@ -33,7 +33,7 @@ internal sealed class ScrollVectorsRequest
 
     public ScrollVectorsRequest HavingExternalId(string id)
     {
-        Verify.NotNull(id, "External ID is NULL");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(id, nameof(id), "External ID is empty");
         this.Filters.AndValue(QdrantConstants.PayloadIdField, id);
         return this;
     }
@@ -124,8 +124,9 @@ internal sealed class ScrollVectorsRequest
 
     private void Validate()
     {
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
-        Verify.That(this.Limit > 0, "The number of vectors must be greater than zero");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(this._collectionName, nameof(this._collectionName), "The collection name cannot be empty");
+        ArgumentOutOfRangeExceptionEx.ThrowIfZeroOrNegative(this.Limit, nameof(this.Limit), "The max number of vectors to retrieve must be greater than zero");
+
         this.Filters.Validate();
     }
 

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -117,7 +116,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                                                 $"and other configuration methods before calling {nameof(this.Build)}(...)");
 
             default:
-                throw new ArgumentOutOfRangeException($"Unsupported memory type '{type}'");
+                throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported memory type '{type}'");
         }
     }
 
@@ -191,7 +190,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     public IPipelineOrchestrator GetOrchestrator()
     {
         var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
+        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Memory Builder: unable to build orchestrator");
     }
 
     #region internals
@@ -296,7 +295,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (this.IsEmbeddingGeneratorEnabled() && this._embeddingGenerators.Count == 0)
         {
-            throw new ConfigurationException("No embedding generators configured for memory ingestion. Check 'EmbeddingGeneratorTypes' setting.");
+            throw new ConfigurationException("Memory Builder: no embedding generators configured for memory ingestion. Check 'EmbeddingGeneratorTypes' setting.");
         }
     }
 
@@ -304,7 +303,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (this._memoryDbs.Count == 0)
         {
-            throw new ConfigurationException("Memory DBs for ingestion not configured");
+            throw new ConfigurationException("Memory Builder: memory DBs for ingestion not configured");
         }
     }
 
@@ -312,7 +311,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (!this._memoryServiceCollection.HasService<IMemoryDb>())
         {
-            throw new ConfigurationException("Memory DBs for retrieval not configured");
+            throw new ConfigurationException("Memory Builder: memory DBs for retrieval not configured");
         }
     }
 
@@ -329,7 +328,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>())
         {
             this._embeddingGenerators.Add(serviceProvider.GetService<ITextEmbeddingGenerator>()
-                                          ?? throw new ConfigurationException("Unable to build embedding generator"));
+                                          ?? throw new ConfigurationException("Memory Builder: unable to build embedding generator"));
         }
     }
 
@@ -338,7 +337,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         if (this._memoryDbs.Count == 0 && this._memoryServiceCollection.HasService<IMemoryDb>())
         {
             this._memoryDbs.Add(serviceProvider.GetService<IMemoryDb>()
-                                ?? throw new ConfigurationException("Unable to build memory DB instance"));
+                                ?? throw new ConfigurationException("Memory Builder: unable to build memory DB instance"));
         }
     }
 
@@ -372,7 +371,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
         if (!hasTextGenerator) { missing.Add("Text generator"); }
 
-        throw new ConfigurationException("Cannot build Memory client, some dependencies are not defined: " + string.Join(", ", missing));
+        throw new ConfigurationException("Memory Builder: cannot build Memory client, some dependencies are not defined: " + string.Join(", ", missing));
     }
 
     /// <summary>

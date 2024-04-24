@@ -39,11 +39,13 @@ internal sealed class CreateCollectionRequest
 
         internal void Validate()
         {
-            Verify.That(this.Size > 0, "The vector size must be greater than zero");
-            Verify.NotNull(this._distanceType, "The distance type has not been defined");
-            Verify.That(
+            ArgumentNullExceptionEx.ThrowIfNull(this.Size, nameof(this.Size), "The vector size cannot be null");
+            ArgumentOutOfRangeExceptionEx.ThrowIfZeroOrNegative(this.Size!.Value, nameof(this.Size), "The vector size must be greater than zero");
+            ArgumentNullExceptionEx.ThrowIfNull(this._distanceType, nameof(this._distanceType), "The distance type has not been defined");
+            ArgumentOutOfRangeExceptionEx.ThrowIfNot(
                 this._distanceType is QdrantDistanceType.Cosine or QdrantDistanceType.DotProduct or QdrantDistanceType.Euclidean or QdrantDistanceType.Manhattan,
-                $"Distance type {this._distanceType:G} not supported.");
+                nameof(this._distanceType),
+                $"Distance type {this._distanceType:G} not supported");
         }
     }
 

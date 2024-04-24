@@ -2,7 +2,6 @@
 
 using System.Text.Json.Serialization;
 using Azure.Core;
-using Microsoft.KernelMemory.Configuration;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -35,6 +34,6 @@ public class AzureAISearchConfig
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException($"Azure AI Search: {nameof(this._tokenCredential)} not defined");
     }
 }
