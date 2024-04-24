@@ -415,7 +415,7 @@ public class SearchClient : ISearchClient
             yield break;
         }
 
-        var charsGenerated = 0;
+        StringBuilder bufferedAnswer = new();
         var watch = Stopwatch.StartNew();
         await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
                            .WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -425,19 +425,19 @@ public class SearchClient : ISearchClient
                 continue;
             }
 
-            if (charsGenerated == 0 && ValueIsEquivalentTo(x, this._config.EmptyAnswer))
-            {
-                this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
-                yield return this._config.EmptyAnswer;
-                yield break;
-            }
-
-            charsGenerated += x.Length;
+            bufferedAnswer.Append(x);
             yield return x;
 
-            if (this._log.IsEnabled(LogLevel.Trace) && charsGenerated >= 30)
+            int currentLength = bufferedAnswer.Length;
+            if (currentLength <= this._config.EmptyAnswer.Length && ValueIsEquivalentTo(bufferedAnswer.ToString(), this._config.EmptyAnswer))
             {
-                this._log.LogTrace("{0} chars generated", charsGenerated);
+                this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
+                break;
+            }
+
+            if (this._log.IsEnabled(LogLevel.Trace) && currentLength >= 30)
+            {
+                this._log.LogTrace("{0} chars generated", currentLength);
             }
         }
 
