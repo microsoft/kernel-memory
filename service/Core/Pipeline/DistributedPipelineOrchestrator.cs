@@ -67,7 +67,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             return this._queues.Keys.OrderBy(x => x).ToList();
         }
     }
-
+    
     ///<inheritdoc />
     public override async Task AddHandlerAsync(
         IPipelineStepHandler handler,
@@ -220,21 +220,44 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
 
         string currentStepName = pipeline.RemainingSteps.First();
 
-        // Execute the business logic - exceptions are automatically handled by IQueue
-        (bool success, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        if (success)
+        var success = false;
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
         {
-            pipeline = updatedPipeline;
-            pipeline.LastUpdate = DateTimeOffset.UtcNow;
+            // Execute the business logic - exceptions are automatically handled by IQueue
+            (success, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
+            if (success)
+            {
+                pipeline = updatedPipeline;
+                pipeline.LastUpdate = DateTimeOffset.UtcNow;
 
-            this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
-            pipeline.MoveToNextStep();
-            await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
+                // If the pipeline succedds, resets the failed step and the failure reason that could be set by a previous failure.
+                pipeline.FailedStep = pipeline.FailureReason = null;
+
+                this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
+                pipeline.MoveToNextStep();
+                await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
+            // Gets the exception and its inner message, that is some cases is more descriptive.
+            var failureReson = ex.Message;
+            if (ex.InnerException is not null)
+            {
+                failureReson += $" ({ex.InnerException.Message})";
+            }
+
+            pipeline.LastUpdate = DateTimeOffset.UtcNow;
+            pipeline.FailedStep = currentStepName;
+            pipeline.FailureReason = failureReson;
+            await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         // Note: returning True, the message is removed from the queue
         // Note: returning False, the message is put back in the queue and processed again

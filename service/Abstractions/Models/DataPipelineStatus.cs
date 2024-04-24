@@ -67,4 +67,18 @@ public class DataPipelineStatus
     [JsonPropertyOrder(17)]
     [JsonPropertyName("completed_steps")]
     public List<string> CompletedSteps { get; set; } = new();
+
+    /// <summary>
+    /// The failed step, if any.
+    /// </summary>
+    [JsonPropertyOrder(18)]
+    [JsonPropertyName("failed_step")]
+    public string? FailedStep { get; set; } = null;
+
+    /// <summary>
+    /// The error that caused the pipeline to fail, if any.
+    /// </summary>
+    [JsonPropertyOrder(19)]
+    [JsonPropertyName("failure_reason")]
+    public string? FailureReason { get; set; } = null;
 }
