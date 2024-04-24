@@ -328,21 +328,21 @@ public class MemoryWebClient : IKernelMemory
         using var httpRequest = new HttpRequestMessage(HttpMethod.Post, Constants.HttpAskStreamEndpoint);
         httpRequest.Content = content;
 
-        HttpResponseMessage response = await this._client.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this._client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
+        using var reader = new StreamReader(stream);
 
         while (!reader.EndOfStream)
         {
-            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-            if (line is null || line.Length <= 0)
+            var character = reader.Read();
+            if (character == -1)
             {
-                continue;
+                break;
             }
 
-            yield return line;
+            yield return ((char)character).ToString();
         }
     }
 
