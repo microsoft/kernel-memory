@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.KernelMemory.Diagnostics;
+// ReSharper disable CheckNamespace
+namespace Microsoft.KernelMemory;
 
 public static class ArgumentOutOfRangeExceptionEx
 {

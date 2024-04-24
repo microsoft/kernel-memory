@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using Microsoft.KernelMemory.Diagnostics;
+// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.KernelMemory;
 

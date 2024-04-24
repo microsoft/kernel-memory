@@ -3,7 +3,6 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Diagnostics;
 
