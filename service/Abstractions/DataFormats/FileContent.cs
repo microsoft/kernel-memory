@@ -10,4 +10,13 @@ public class FileContent
     [JsonPropertyOrder(0)]
     [JsonPropertyName("sections")]
     public List<FileSection> Sections { get; set; } = new();
+
+    [JsonPropertyOrder(1)]
+    [JsonPropertyName("mimeType")]
+    public string MimeType { get; set; }
+
+    public FileContent(string mimeType)
+    {
+        this.MimeType = mimeType;
+    }
 }

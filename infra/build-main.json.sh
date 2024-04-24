@@ -1,0 +1,1 @@
+az bicep build -f main.bicep

@@ -3,7 +3,7 @@
 /* IMPORTANT: the Startup class must be at the root of the namespace and
  * the namespace must match exactly (required by Xunit.DependencyInjection) */
 
-namespace AzureAISearch.FunctionalTests;
+namespace Microsoft.AzureAISearch.FunctionalTests;
 
 public class Startup
 {

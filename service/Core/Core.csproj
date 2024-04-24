@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
@@ -27,7 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions"/>
         <PackageReference Include="ClosedXML"/>
         <PackageReference Include="DocumentFormat.OpenXml"/>
         <PackageReference Include="HtmlAgilityPack"/>
@@ -59,7 +58,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>

@@ -21,14 +21,14 @@ internal sealed class DeleteVectorsRequest
 
     public DeleteVectorsRequest DeleteVector(Guid qdrantPointId)
     {
-        Verify.NotNull(qdrantPointId, "The point ID is NULL");
+        ArgumentNullExceptionEx.ThrowIfNull(qdrantPointId, nameof(qdrantPointId), "The point ID is NULL");
         this.Ids.Add(qdrantPointId);
         return this;
     }
 
     public DeleteVectorsRequest DeleteRange(IEnumerable<Guid> qdrantPointIds)
     {
-        Verify.NotNull(qdrantPointIds, "The point ID collection is NULL");
+        ArgumentNullExceptionEx.ThrowIfNull(qdrantPointIds, nameof(qdrantPointIds), "The collection of points' ID  is NULL");
         this.Ids.AddRange(qdrantPointIds);
         return this;
     }
@@ -49,7 +49,7 @@ internal sealed class DeleteVectorsRequest
 
     private void Validate()
     {
-        Verify.NotNullOrEmpty(this._collectionName, "The collection name is empty");
-        Verify.NotNullOrEmpty(this.Ids, "The list of vectors to delete is NULL or empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(this._collectionName, nameof(this._collectionName), "The collection name is empty");
+        ArgumentNullExceptionEx.ThrowIfEmpty(this.Ids, nameof(this.Ids), "The list of vectors to delete is NULL or empty");
     }
 }

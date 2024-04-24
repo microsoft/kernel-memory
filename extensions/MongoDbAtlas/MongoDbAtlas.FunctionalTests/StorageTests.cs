@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.TestHelpers;
 
-namespace MongoDbAtlas.FunctionalTests;
+namespace Microsoft.MongoDbAtlas.FunctionalTests;
 
 public class StorageTestsSingleCollection : StorageTests
 {

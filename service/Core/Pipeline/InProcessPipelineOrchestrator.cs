@@ -67,10 +67,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
         if (this._handlers.ContainsKey(handler.StepName)) { return Task.CompletedTask; }
 
@@ -145,22 +142,13 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <param name="handler">Pipeline handler instance</param>
     public void AddHandler(IPipelineStepHandler handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler), "The handler is NULL");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(handler, nameof(handler), "The handler is NULL");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
-
-        if (this._handlers.ContainsKey(handler.StepName))
+        if (!this._handlers.TryAdd(handler.StepName, handler))
         {
             throw new ArgumentException($"There is already a handler for step '{handler.StepName}'");
         }
-
-        this._handlers[handler.StepName] = handler;
     }
 
     ///<inheritdoc />

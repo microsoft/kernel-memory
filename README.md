@@ -9,9 +9,10 @@ hybrid pipelines, with support for
 **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
 synthetic memory, prompt engineering, and custom semantic memory processing.
 
-KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
-**web clients**, a .NET library for embedded applications, and as a
-[Docker container](https://hub.docker.com/r/kernelmemory/service).
+KM is available as a **Web Service**,
+as a **[Docker container](https://hub.docker.com/r/kernelmemory/service)**,
+a **[Plugin](https://learn.microsoft.com/copilot/plugins/overview)**
+for ChatGPT/Copilot/Semantic Kernel, and as a .NET library for embedded applications.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -34,12 +35,6 @@ demonstration** and is **not an officially supported** Microsoft offering.
 
 ## Kernel Memory (KM) and Semantic Memory (SM)
 
-**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
-to databases and supports vector search. It was developed as part of the Semantic
-Kernel (SK) project and serves as the first public iteration of long-term memory.
-The core library is maintained in three languages, while the list of supported
-storage engines (known as "connectors") varies across languages.
-
 **Kernel Memory (KM) is a service** built on the feedback received and lessons learned
 from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
 features that would otherwise have to be developed manually, such as storing files,
@@ -48,71 +43,42 @@ The KM codebase is entirely in .NET, which eliminates the need to write and main
 features in multiple languages. As a service, **KM can be used from any language, tool,
 or platform, e.g. browser extensions and ChatGPT assistants.**
 
-Here's a few notable differences:
+**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
+to databases and supports vector search. It was developed as part of the Semantic
+Kernel (SK) project and serves as the first public iteration of long-term memory.
+The core library is maintained in three languages, while the list of supported
+storage engines (known as "connectors") varies across languages.
 
-| Feature          | Semantic Memory                                                                                              | Kernel Memory                                                                                                                                                          |
-|------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Data formats     | Text only                                                                                                    | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, more being added                                                                                |
-| Search           | Cosine similarity                                                                                            | Cosine similarity, Hybrid search with filters, AND/OR conditions                                                                                                       |
-| Language support | C#, Python, Java                                                                                             | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                |
-| Storage engines  | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate | Azure AI Search, Elasticsearch, MongoDB Atlas, Postgres, Qdrant, Redis, SQL Server, In memory KNN, On disk KNN. In progress: Azure Cosmos DB for MongoDB vCore, Chroma |
+Here's comparison table:
 
-and **features available only in Kernel Memory**:
-
-* RAG (Retrieval Augmented Generation)
-* RAG sources lookup
-* Summarization
-* Security Filters (filter memory by users and groups)
-* Long running ingestion, large documents, with retry logic and durable queues
-* Custom tokenization
-* Document storage
-* OCR via Azure Document Intelligence
-* LLMs (Large Language Models) with dedicated tokenization
-* Cloud deployment
-* OpenAPI
-* Custom storage schema (partially implemented/work in progress)
-* Short Term Memory (partially implemented/work in progress)
-* Concurrent write to multiple vector DBs
-
-# Supported Data formats and Backends
-
-* 📝 MS Office: Word, Excel, PowerPoint
-* 📃 PDF documents
-* 🌐 Fetch web pages and HTML files
-* 🖼️ JPG/PNG/TIFF Images with text via OCR
-* 📄 MarkDown and Raw plain text
-* 💻 JSON files
-* 💡 AI:
-  [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models),
-  [OpenAI](https://platform.openai.com/docs/models),
-  LLama - thanks to [llama.cpp](https://github.com/ggerganov/llama.cpp) and [LLamaSharp](https://github.com/SciSharp/LLamaSharp),
-  [LM Studio](https://lmstudio.ai/),
-  [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)
-* 🧠 Vector storage:
-  [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search),
-  [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres),
-  [Qdrant](https://qdrant.tech),
-  [MSSQL Server (third party)](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer),
-  [Elasticsearch (third party)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch),
-  [Redis](https://redis.io),
-  [Chroma (work in progress)](https://www.trychroma.com),
-  KNN vectors in memory (volatile),
-  KNN vectors on disk (persistent).
-* 🗂 Content storage: [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction),
-  Local file system,
-  In memory content (volatile).
-* ⏳ Orchestration: [Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction),
-  [RabbitMQ](https://www.rabbitmq.com),
-  Local file based queues,
-  In memory queues (volatile).
+| Feature                                 | Kernel Memory                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Semantic Memory                                                                                              |
+|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| Data formats                            | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, HTML                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Text only                                                                                                    |
+| Search                                  | Cosine similarity, Hybrid search with filters (AND/OR conditions)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Cosine similarity                                                                                            | 
+| Language support                        | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | C#, Python, Java                                                                                             |
+| Storage engines                         | [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search), [Elasticsearch](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch), [MongoDB Atlas](https://www.mongodb.com/atlas/database), [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres), [Qdrant](https://qdrant.tech), [Redis](https://redis.io), [MSSQL Server](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer), In memory KNN, On disk KNN. In progress: Azure Cosmos DB for MongoDB vCore, [Chroma](https://www.trychroma.com) | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate |
+| File storage                            | Disk, [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction), [MongoDB Atlas](https://www.mongodb.com/atlas/database), In memory (volatile)                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                            |
+| RAG                                     | Yes, with sources lookup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | -                                                                                                            |
+| Summarization                           | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| OCR                                     | Yes via [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | -                                                                                                            |
+| Security Filters                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| Large document ingestion                | Yes, including async processing using queues ([Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction), [RabbitMQ](https://www.rabbitmq.com), File based or In memory queues)                                                                                                                                                                                                                                                                                                                                                                    | -                                                                                                            |
+| Document storage                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| Custom storage schema                   | some DBs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | -                                                                                                            |
+| Vector DBs with internal embedding      | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| Concurrent write to multiple vector DBs | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| LLMs                                    | [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models), [OpenAI](https://platform.openai.com/docs/models), [LLamaSharp](https://github.com/SciSharp/LLamaSharp) via [llama.cpp](https://github.com/ggerganov/llama.cpp), [LM Studio](https://lmstudio.ai/), Anthropic, Semantic Kernel connectors                                                                                                                                                                                                                                                      | Azure OpenAI, OpenAI, Gemini, Hugging Face, ONNX, custom ones, etc.                                          
+| LLMs with dedicated tokenization        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | No                                                                                                           |
+| Cloud deployment                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
+| Web service with OpenAPI                | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
 
 # Kernel Memory in serverless mode
 
-Kernel Memory works and scales at best when running as a service, allowing to
+Kernel Memory works and scales at best when running as a **Web Service**, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Kernel Memory also serverless, embedding the `MemoryServerless`
-class in your app.
+However, you can use Kernel Memory also in serverless mode, embedding the `MemoryServerless`
+class in your .NET app.
 
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
@@ -221,7 +187,7 @@ sending documents and asking questions using the **MemoryWebClient**.
 about [how to run the Kernel Memory service](service/Service/README.md).
 
 ## Quick test using the Docker image
- 
+
 If you want to give the service a quick test, use the following command
 to **start the Kernel Memory Service** using OpenAI:
 
@@ -343,14 +309,17 @@ running the service locally with OpenAPI enabled.
 11. [Using custom LLMs](examples/104-dotnet-custom-LLM)
 12. [Using LLama](examples/105-dotnet-serverless-llamasharp)
 13. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
-14. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
-15. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
-16. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
-17. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-18. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-19. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
-20. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
-21. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
+14. [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
+15. [Using custom content decoders](examples/108-dotnet-custom-content-decoders)
+16. [Using a custom web scraper to fetch web pages](examples/109-dotnet-custom-webscraper)
+17. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
+18. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+19. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+20. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+21. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+22. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+23. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+24. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 
 ## Tools
 

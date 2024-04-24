@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.SemanticKernelPlugin</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
-        <NoWarn>$(NoWarn);CS1591,NU5104</NoWarn>
+        <NoWarn>$(NoWarn);CS1591;NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,12 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel.Abstractions"/>
+        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
     </ItemGroup>
 
-    <Import Project="../../../code-analysis.props"/>
+    <Import Project="../../../code-analysis.props" />
 
-    <Import Project="../../../nuget-package.props"/>
+    <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
@@ -28,7 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="../../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>

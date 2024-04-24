@@ -39,7 +39,7 @@ await memory.ImportDocumentAsync(new Document("doc1")
 // Fetch the list of summaries. The API returns one summary for each file.
 var results = await memory.SearchSummariesAsync(filter: MemoryFilters.ByDocument("doc1"));
 
-// Print the summaries!
+// Print the summaries
 foreach (var result in results)
 {
     Console.WriteLine($"== {result.SourceName} summary ==\n{result.Partitions.First().Text}\n");

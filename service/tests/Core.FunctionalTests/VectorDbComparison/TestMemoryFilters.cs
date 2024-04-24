@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 // ReSharper disable MissingBlankLines
 
-namespace FunctionalTests.VectorDbComparison;
+namespace Microsoft.Core.FunctionalTests.VectorDbComparison;
 
 public class TestMemoryFilters : BaseFunctionalTestCase
 {

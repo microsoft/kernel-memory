@@ -13,6 +13,8 @@ public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithAzureQueuesOrchestration(this IKernelMemoryBuilder builder, AzureQueuesConfig config)
     {
+        config.Validate();
+
         builder.Services.AddAzureQueuesOrchestration(config);
         return builder;
     }
@@ -22,6 +24,8 @@ public static partial class DependencyInjection
 {
     public static IServiceCollection AddAzureQueuesOrchestration(this IServiceCollection services, AzureQueuesConfig config)
     {
+        config.Validate();
+
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<AzureQueuesPipeline>()

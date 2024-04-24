@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'"/>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'"/>
+        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
     </ItemGroup>
 
     <ItemGroup>
@@ -18,15 +18,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="MongoDbAtlas.FunctionalTests"/>
+        <InternalsVisibleTo Include="MongoDbAtlas.FunctionalTests" />
     </ItemGroup>
 
-    <Import Project="../../../code-analysis.props"/>
+    <Import Project="../../../code-analysis.props" />
 
-    <Import Project="../../../nuget-package.props"/>
+    <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
         <Product>MongoDb Atlas connector for Kernel Memory</Product>
         <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>
@@ -34,7 +34,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false"/>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>

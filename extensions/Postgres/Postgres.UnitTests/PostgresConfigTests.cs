@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Postgres.UnitTests;
 

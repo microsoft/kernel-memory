@@ -40,6 +40,10 @@ public static partial class DependencyInjection
         syncOrchestrator.AddHandler<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
         syncOrchestrator.AddHandler<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
 
+        // Experimental handlers using parallelism
+        syncOrchestrator.AddHandler<GenerateEmbeddingsParallelHandler>("gen_embeddings_parallel");
+        syncOrchestrator.AddHandler<SummarizationParallelHandler>("summarize_parallel");
+
         return syncOrchestrator;
     }
 
@@ -57,6 +61,10 @@ public static partial class DependencyInjection
         services.AddHandlerAsHostedService<DeleteDocumentHandler>(Constants.PipelineStepsDeleteDocument);
         services.AddHandlerAsHostedService<DeleteIndexHandler>(Constants.PipelineStepsDeleteIndex);
         services.AddHandlerAsHostedService<DeleteGeneratedFilesHandler>(Constants.PipelineStepsDeleteGeneratedFiles);
+
+        // Experimental handlers using parallelism
+        services.AddHandlerAsHostedService<GenerateEmbeddingsParallelHandler>("gen_embeddings_parallel");
+        services.AddHandlerAsHostedService<SummarizationParallelHandler>("summarize_parallel");
 
         return services;
     }
@@ -93,11 +101,7 @@ public static partial class DependencyInjection
             throw new ArgumentException($"'{tHandler.FullName}' doesn't implement interface '{nameof(IPipelineStepHandler)}'", nameof(tHandler));
         }
 
-        if (tHandler == null)
-        {
-            throw new ArgumentNullException(nameof(tHandler), $"Handler type for '{stepName}' is NULL");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNull(tHandler, nameof(tHandler), $"Handler type for '{stepName}' is NULL");
         services.AddTransient(tHandler, serviceProvider => ActivatorUtilities.CreateInstance(serviceProvider, tHandler, stepName));
 
         // Build generic type: HandlerAsAHostedService<THandler>

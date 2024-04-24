@@ -84,50 +84,42 @@ public class SearchClientConfig
     {
         if (this.MaxAskPromptSize is > 0 and < 1024)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.MaxAskPromptSize),
-                $"{nameof(this.MaxAskPromptSize)} cannot be less than 1024");
+            throw new ConfigurationException($"SearchClient: {nameof(this.MaxAskPromptSize)} cannot be less than 1024");
         }
 
         if (this.MaxMatchesCount < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.MaxMatchesCount),
-                $"{nameof(this.MaxMatchesCount)} cannot be less than 1");
+            throw new ConfigurationException($"SearchClient: {nameof(this.MaxMatchesCount)} cannot be less than 1");
         }
 
         if (this.AnswerTokens < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.AnswerTokens),
-                $"{nameof(this.AnswerTokens)} cannot be less than 1");
+            throw new ConfigurationException($"SearchClient: {nameof(this.AnswerTokens)} cannot be less than 1");
         }
 
         if (this.EmptyAnswer.Length > 256)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.EmptyAnswer),
-                $"{nameof(this.EmptyAnswer)} is too long, consider something shorter");
+            throw new ConfigurationException($"SearchClient: {nameof(this.EmptyAnswer)} is too long, consider something shorter");
         }
 
         if (this.Temperature is < 0 or > 2)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.Temperature),
-                $"{nameof(this.Temperature)} must be between 0 and 2");
+            throw new ConfigurationException($"SearchClient: {nameof(this.Temperature)} must be between 0 and 2");
         }
 
         if (this.TopP is < 0 or > 2)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.TopP),
-                $"{nameof(this.TopP)} must be between 0 and 2");
+            throw new ConfigurationException($"SearchClient: {nameof(this.TopP)} must be between 0 and 2");
         }
 
         if (this.PresencePenalty is < -2 or > 2)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.PresencePenalty),
-                $"{nameof(this.PresencePenalty)} must be between -2 and 2");
+            throw new ConfigurationException($"SearchClient: {nameof(this.PresencePenalty)} must be between -2 and 2");
         }
 
         if (this.FrequencyPenalty is < -2 or > 2)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.FrequencyPenalty),
-                $"{nameof(this.FrequencyPenalty)} must be between -2 and 2");
+            throw new ConfigurationException($"SearchClient: {nameof(this.FrequencyPenalty)} must be between -2 and 2");
         }
     }
 }

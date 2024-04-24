@@ -12,7 +12,7 @@ using Microsoft.TestHelpers;
 using StackExchange.Redis;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.VectorDbComparison;
+namespace Microsoft.Core.FunctionalTests.VectorDbComparison;
 
 public class TestCosineSimilarity : BaseFunctionalTestCase
 {

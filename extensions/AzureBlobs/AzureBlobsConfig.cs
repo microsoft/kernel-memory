@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using Azure;
 using Azure.Core;
 using Azure.Storage;
-using Microsoft.KernelMemory.Configuration;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -57,18 +56,18 @@ public class AzureBlobsConfig
     public StorageSharedKeyCredential GetStorageSharedKeyCredential()
     {
         return this._storageSharedKeyCredential
-               ?? throw new ConfigurationException("StorageSharedKeyCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._storageSharedKeyCredential)} not defined");
     }
 
     public AzureSasCredential GetAzureSasCredential()
     {
         return this._azureSasCredential
-               ?? throw new ConfigurationException("AzureSasCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._azureSasCredential)} not defined");
     }
 
     public TokenCredential GetTokenCredential()
     {
         return this._tokenCredential
-               ?? throw new ConfigurationException("TokenCredential not defined");
+               ?? throw new ConfigurationException($"Azure Blobs: {nameof(this._tokenCredential)} not defined");
     }
 }

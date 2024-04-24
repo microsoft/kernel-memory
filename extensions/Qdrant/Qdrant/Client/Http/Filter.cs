@@ -30,7 +30,8 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Clauses, nameof(this.Clauses), "Filter clauses cannot be null");
+
             foreach (var x in this.Clauses)
             {
                 switch (x)
@@ -74,7 +75,7 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Clauses, "Filter clauses are NULL");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Clauses, nameof(this.Clauses), "Filter clauses cannot be null");
             foreach (var x in this.Clauses)
             {
                 switch (x)
@@ -117,8 +118,8 @@ internal sealed class Filter
 
         internal void Validate()
         {
-            Verify.NotNull(this.Key, "The filter key is NULL");
-            Verify.NotNull(this.Match, "The filter match is NULL");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Key, nameof(this.Key), "Match filter key cannot be null");
+            ArgumentNullExceptionEx.ThrowIfNull(this.Match, nameof(this.Match), "Match filter value cannot be null");
         }
     }
 

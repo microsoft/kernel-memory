@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace FunctionalTests.ServerLess.AIClients;
+namespace Microsoft.Core.FunctionalTests.ServerLess.AIClients;
 
 public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
 {

@@ -82,7 +82,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
                     .Build<MemoryServerless>();
 
             default:
-                throw new ArgumentOutOfRangeException($"{memoryType} not supported");
+                throw new ArgumentOutOfRangeException(nameof(memoryType), $"{memoryType} not supported");
         }
     }
 

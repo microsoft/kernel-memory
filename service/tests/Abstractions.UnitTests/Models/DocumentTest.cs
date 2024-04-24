@@ -19,8 +19,8 @@ public class DocumentTest
         Assert.Equal("-_.", Document.ValidateId("-_."));
 
         // Assert - Empty strings
-        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(""));
-        Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId(null));
+        Assert.Throws<ArgumentNullException>(() => Document.ValidateId(""));
+        Assert.Throws<ArgumentNullException>(() => Document.ValidateId(null));
 
         // Assert - special chars
         Assert.Throws<ArgumentOutOfRangeException>(() => Document.ValidateId("a b.txt"));

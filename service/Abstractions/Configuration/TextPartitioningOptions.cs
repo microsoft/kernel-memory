@@ -32,27 +32,27 @@ public class TextPartitioningOptions
     {
         if (this.MaxTokensPerParagraph < 1)
         {
-            throw new ConfigurationException("The number of tokens per paragraph cannot be less than 1");
+            throw new ConfigurationException($"Text partitioning: {nameof(this.MaxTokensPerParagraph)} cannot be less than 1");
         }
 
         if (this.MaxTokensPerLine < 1)
         {
-            throw new ConfigurationException("The number of tokens per line cannot be less than 1");
+            throw new ConfigurationException($"Text partitioning: {nameof(this.MaxTokensPerLine)} cannot be less than 1");
         }
 
         if (this.OverlappingTokens < 0)
         {
-            throw new ConfigurationException("The number of overlapping tokens cannot be less than 0");
+            throw new ConfigurationException($"Text partitioning: {nameof(this.OverlappingTokens)} cannot be less than 0");
         }
 
         if (this.MaxTokensPerLine > this.MaxTokensPerParagraph)
         {
-            throw new ConfigurationException("The number of tokens per line cannot be more than the tokens per paragraph");
+            throw new ConfigurationException($"Text partitioning: {nameof(this.MaxTokensPerLine)} cannot be more than {nameof(this.MaxTokensPerParagraph)}");
         }
 
         if (this.OverlappingTokens >= this.MaxTokensPerParagraph)
         {
-            throw new ConfigurationException("The number of overlapping tokens must be less than the tokens per paragraph");
+            throw new ConfigurationException($"Text partitioning: {nameof(this.OverlappingTokens)} must be less than {nameof(this.MaxTokensPerParagraph)}");
         }
     }
 }
