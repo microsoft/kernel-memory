@@ -42,15 +42,15 @@
   </ItemGroup>
   <!-- Kernel Memory -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.37.240423.2" />
+    <PackageVersion Include="Microsoft.KernelMemory.Abstractions" Version="0.38.240424.1" />
     <PackageVersion Include="Microsoft.KernelMemory.Core" Version="0.38.240423.1" />
     <PackageVersion Include="KernelMemory.MemoryStorage.SqlServer" Version="1.6.3" />
     <PackageVersion Include="FreeMindLabs.KernelMemory.Elasticsearch" Version="0.9.5" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.8.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.8.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.9.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.9.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -77,7 +77,7 @@
   <!-- Tests -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="9.1.0" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="9.2.1" />
     <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="9.0.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
