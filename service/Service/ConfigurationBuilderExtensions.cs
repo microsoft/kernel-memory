@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Service;
 
