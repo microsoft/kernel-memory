@@ -432,7 +432,7 @@ public class SearchClient : ISearchClient
             if (currentLength <= this._config.EmptyAnswer.Length && ValueIsEquivalentTo(bufferedAnswer.ToString(), this._config.EmptyAnswer))
             {
                 this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
-                break;
+                yield break;
             }
 
             if (this._log.IsEnabled(LogLevel.Trace) && currentLength >= 30)
