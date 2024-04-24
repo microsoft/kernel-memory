@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -331,18 +332,14 @@ public class MemoryWebClient : IKernelMemory
         using HttpResponseMessage response = await this._client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream);
-
-        while (!reader.EndOfStream)
+        await foreach (var responsePart in response.Content.ReadFromJsonAsAsyncEnumerable<string>(cancellationToken))
         {
-            var character = reader.Read();
-            if (character == -1)
+            if (responsePart is null || responsePart.Length == 0)
             {
-                break;
+                continue;
             }
 
-            yield return ((char)character).ToString();
+            yield return responsePart;
         }
     }
 
