@@ -136,10 +136,7 @@ public class AzureAISearchMemory : IMemoryDb
                 new IndexDocumentsOptions { ThrowOnAnyError = true },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (RequestFailedException e)
-            when (e.Status == 404
-                  && e.Message.Contains("index", StringComparison.OrdinalIgnoreCase)
-                  && e.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+        catch (RequestFailedException e) when (IsIndexNotFoundException(e))
         {
             throw new IndexNotFound(e.Message, e);
         }
@@ -408,6 +405,13 @@ public class AzureAISearchMemory : IMemoryDb
         }
 
         return client;
+    }
+
+    private static bool IsIndexNotFoundException(RequestFailedException e)
+    {
+        return e.Status == 404
+               && e.Message.Contains("index", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("not found", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ValidateSchema(MemoryDbSchema schema)

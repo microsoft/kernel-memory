@@ -45,6 +45,7 @@ public interface IMemoryDb
     /// <param name="record">Vector + payload to save</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>Record ID</returns>
+    /// <exception cref="IndexNotFound">Error returned if the index where to write doesn't exist</exception>
     Task<string> UpsertAsync(
         string index,
         MemoryRecord record,

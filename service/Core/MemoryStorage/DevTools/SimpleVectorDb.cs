@@ -84,6 +84,7 @@ public class SimpleVectorDb : IMemoryDb
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        // Note: if the index doesn't exist, it's automatically created (the index is just a folder)
         index = NormalizeIndexName(index);
         await this._fileSystem.WriteFileAsync(index, "", EncodeId(record.Id), JsonSerializer.Serialize(record), cancellationToken).ConfigureAwait(false);
         return record.Id;

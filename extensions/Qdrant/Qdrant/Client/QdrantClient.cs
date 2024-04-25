@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
+using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client;
 
@@ -177,7 +178,11 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         var (response, content) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
         this.ValidateResponse(response, content, nameof(this.UpsertVectorsAsync));
 
-        if (JsonSerializer.Deserialize<UpsertVectorResponse>(content)?.Status != "ok")
+        UpsertVectorResponse? qdrantResponse = JsonSerializer.Deserialize<UpsertVectorResponse>(content);
+        ArgumentNullExceptionEx.ThrowIfNull(qdrantResponse, nameof(qdrantResponse), "Qdrant response is NULL");
+        ArgumentNullExceptionEx.ThrowIfNull(qdrantResponse.Status, nameof(qdrantResponse.Status), "Qdrant response status is NULL");
+
+        if (qdrantResponse.Status != "ok")
         {
             this._log.LogWarning("Vector upserts failed");
         }
@@ -423,6 +428,12 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         }
         else
         {
+            if (response.StatusCode == HttpStatusCode.NotFound && responseContent.Contains("Not found: Collection", StringComparison.OrdinalIgnoreCase))
+            {
+                this._log.LogWarning("Qdrant collection not found: {0}, {1}", response.StatusCode, responseContent);
+                throw new IndexNotFound(responseContent);
+            }
+
             if (!responseContent.Contains("already exists", StringComparison.OrdinalIgnoreCase))
             {
                 this._log.LogWarning("Qdrant responded with error: {0}, {1}", response.StatusCode, responseContent);
