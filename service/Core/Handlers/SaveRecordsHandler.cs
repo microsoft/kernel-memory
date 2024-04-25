@@ -101,6 +101,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var embeddingsFound = false;
+
+        // TODO: replace with ConditionalWeakTable indexing on this._memoryDbs
         var createdIndexes = new HashSet<string>();
 
         // For each embedding file => For each Memory DB => Upsert record
@@ -178,6 +180,8 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var partitionsFound = false;
+
+        // TODO: replace with ConditionalWeakTable indexing on this._memoryDbs
         var createdIndexes = new HashSet<string>();
 
         // Create records only for partitions (text chunks) and synthetic data
