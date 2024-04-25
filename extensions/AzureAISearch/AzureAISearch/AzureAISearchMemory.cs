@@ -129,10 +129,17 @@ public class AzureAISearchMemory : IMemoryDb
         var client = this.GetSearchClient(index);
         AzureAISearchMemoryRecord localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
 
-        await client.IndexDocumentsAsync(
-            IndexDocumentsBatch.Upload(new[] { localRecord }),
-            new IndexDocumentsOptions { ThrowOnAnyError = true },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await client.IndexDocumentsAsync(
+                IndexDocumentsBatch.Upload(new[] { localRecord }),
+                new IndexDocumentsOptions { ThrowOnAnyError = true },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException e) when (IsIndexNotFoundException(e))
+        {
+            throw new IndexNotFound(e.Message, e);
+        }
 
         return record.Id;
     }
@@ -398,6 +405,13 @@ public class AzureAISearchMemory : IMemoryDb
         }
 
         return client;
+    }
+
+    private static bool IsIndexNotFoundException(RequestFailedException e)
+    {
+        return e.Status == 404
+               && e.Message.Contains("index", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("not found", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ValidateSchema(MemoryDbSchema schema)

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryStorage;
 using Npgsql;
 using NpgsqlTypes;
 using Pgvector;
@@ -289,7 +290,7 @@ internal sealed class PostgresDbClient : IDisposable
                 this._log.LogTrace("Deleting table. SQL: {0}", cmd.CommandText);
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Npgsql.PostgresException e) when (IsNotFoundException(e))
+            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
             {
                 this._log.LogTrace("Table not found: {0}", tableName);
             }
@@ -315,12 +316,14 @@ internal sealed class PostgresDbClient : IDisposable
 
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        try
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
+            await using (connection)
+            {
+                using NpgsqlCommand cmd = connection.CreateCommand();
 
 #pragma warning disable CA2100 // SQL reviewed
-            cmd.CommandText = $@"
+                cmd.CommandText = $@"
                 INSERT INTO {tableName}
                     ({this._colId}, {this._colEmbedding}, {this._colTags}, {this._colContent}, {this._colPayload})
                     VALUES
@@ -333,16 +336,25 @@ internal sealed class PostgresDbClient : IDisposable
                     {this._colPayload}   = @payload
             ";
 
-            cmd.Parameters.AddWithValue("@id", record.Id);
-            cmd.Parameters.AddWithValue("@embedding", record.Embedding);
-            cmd.Parameters.AddWithValue("@tags", NpgsqlDbType.Array | NpgsqlDbType.Text, record.Tags.ToArray() ?? emptyTags);
-            cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, record.Content ?? EmptyContent);
-            cmd.Parameters.AddWithValue("@payload", NpgsqlDbType.Jsonb, record.Payload ?? EmptyPayload);
+                cmd.Parameters.AddWithValue("@id", record.Id);
+                cmd.Parameters.AddWithValue("@embedding", record.Embedding);
+                cmd.Parameters.AddWithValue("@tags", NpgsqlDbType.Array | NpgsqlDbType.Text, record.Tags.ToArray() ?? emptyTags);
+                cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, record.Content ?? EmptyContent);
+                cmd.Parameters.AddWithValue("@payload", NpgsqlDbType.Jsonb, record.Payload ?? EmptyPayload);
 #pragma warning restore CA2100
 
-            this._log.LogTrace("Upserting record '{0}' in table '{1}'", record.Id, tableName);
+                this._log.LogTrace("Upserting record '{0}' in table '{1}'", record.Id, tableName);
 
-            await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
+        {
+            throw new IndexNotFound(e.Message, e);
+        }
+        catch (Exception e)
+        {
+            throw new PostgresException(e.Message, e);
         }
     }
 
@@ -436,7 +448,7 @@ internal sealed class PostgresDbClient : IDisposable
                     result.Add((this.ReadEntry(dataReader, withEmbeddings), similarity));
                 }
             }
-            catch (Npgsql.PostgresException e) when (IsNotFoundException(e))
+            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
             {
                 this._log.LogTrace("Table not found: {0}", tableName);
             }
@@ -530,7 +542,7 @@ internal sealed class PostgresDbClient : IDisposable
                     result.Add(this.ReadEntry(dataReader, withEmbeddings));
                 }
             }
-            catch (Npgsql.PostgresException e) when (IsNotFoundException(e))
+            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
             {
                 this._log.LogTrace("Table not found: {0}", tableName);
             }
@@ -572,7 +584,7 @@ internal sealed class PostgresDbClient : IDisposable
             {
                 await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Npgsql.PostgresException e) when (IsNotFoundException(e))
+            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
             {
                 this._log.LogTrace("Table not found: {0}", tableName);
             }
@@ -637,7 +649,7 @@ internal sealed class PostgresDbClient : IDisposable
         return $"{this._tableNamePrefix}{tableName}";
     }
 
-    private static bool IsNotFoundException(Npgsql.PostgresException e)
+    private static bool IsTableNotFoundException(Npgsql.PostgresException e)
     {
         return (e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
     }

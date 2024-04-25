@@ -102,6 +102,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
     {
         var embeddingsFound = false;
 
+        // TODO: replace with ConditionalWeakTable indexing on this._memoryDbs
+        var createdIndexes = new HashSet<string>();
+
         // For each embedding file => For each Memory DB => Upsert record
         foreach (FileDetailsWithRecordId embeddingFile in GetListOfEmbeddingFiles(pipeline))
         {
@@ -142,11 +145,21 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
             foreach (IMemoryDb client in this._memoryDbs)
             {
-                this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                    this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                }
+                catch (IndexNotFound e)
+                {
+                    this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
+                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
+
+                    this._log.LogTrace("Retry: Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             embeddingFile.File.MarkProcessedBy(this);
@@ -167,6 +180,9 @@ public class SaveRecordsHandler : IPipelineStepHandler
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         var partitionsFound = false;
+
+        // TODO: replace with ConditionalWeakTable indexing on this._memoryDbs
+        var createdIndexes = new HashSet<string>();
 
         // Create records only for partitions (text chunks) and synthetic data
         foreach (FileDetailsWithRecordId file in GetListOfPartitionAndSyntheticFiles(pipeline))
@@ -206,11 +222,21 @@ public class SaveRecordsHandler : IPipelineStepHandler
 
                     foreach (IMemoryDb client in this._memoryDbs)
                     {
-                        this._log.LogTrace("Creating index '{0}'", pipeline.Index);
-                        await client.CreateIndexAsync(pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
+                        try
+                        {
+                            await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
 
-                        this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                        await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                            this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                            await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch (IndexNotFound e)
+                        {
+                            this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
+                            await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
+
+                            this._log.LogTrace("Retry: saving record {0} in index '{1}'", record.Id, pipeline.Index);
+                            await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
+                        }
                     }
 
                     break;
@@ -271,6 +297,24 @@ public class SaveRecordsHandler : IPipelineStepHandler
         return pipeline.Files.SelectMany(f1 => f1.GeneratedFiles.Where(
                 f2 => f2.Value.ArtifactType == DataPipeline.ArtifactTypes.TextPartition || f2.Value.ArtifactType == DataPipeline.ArtifactTypes.SyntheticData)
             .Select(x => new FileDetailsWithRecordId(pipeline, x.Value)));
+    }
+
+    private async Task CreateIndexOnceAsync(
+        IMemoryDb client,
+        HashSet<string> createdIndexes,
+        string indexName,
+        int vectorLength,
+        CancellationToken cancellationToken,
+        bool force = false)
+    {
+        // TODO: add support for the same client being used multiple times with different models with the same vectorLength
+        var key = $"{client.GetType().Name}::{indexName}::{vectorLength}";
+
+        if (!force && createdIndexes.Contains(key)) { return; }
+
+        this._log.LogTrace("Creating index '{0}'", indexName);
+        await client.CreateIndexAsync(indexName, vectorLength, cancellationToken).ConfigureAwait(false);
+        createdIndexes.Add(key);
     }
 
     private async Task<string> GetSourceUrlAsync(

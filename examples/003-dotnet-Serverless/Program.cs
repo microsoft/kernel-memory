@@ -11,6 +11,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
+using Microsoft.KernelMemory.Postgres;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -36,6 +37,7 @@ public static class Program
         var searchClientConfig = new SearchClientConfig();
         var azDocIntelConfig = new AzureAIDocIntelConfig();
         var azureAISearchConfig = new AzureAISearchConfig();
+        var postgresConfig = new PostgresConfig();
 
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -47,6 +49,7 @@ public static class Program
             .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
             .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
+            .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
         s_memory = new KernelMemoryBuilder()
@@ -60,6 +63,7 @@ public static class Program
             // .WithAzureBlobsStorage(new AzureBlobsConfig {...})           // Store files in Azure Blobs
             // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
             // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
+            // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
             // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
             .Build<MemoryServerless>();
 
