@@ -34,7 +34,7 @@ public class AzureAISearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
-    private readonly AzureAISearchConfig _config;
+    private readonly bool _useHybridSearch;
 
     /// <summary>
     /// Create a new instance
@@ -47,9 +47,9 @@ public class AzureAISearchMemory : IMemoryDb
         ITextEmbeddingGenerator embeddingGenerator,
         ILogger<AzureAISearchMemory>? log = null)
     {
-        this._config = config;
         this._embeddingGenerator = embeddingGenerator;
         this._log = log ?? DefaultLogger<AzureAISearchMemory>.Instance;
+        this._useHybridSearch = config.UseHybridSearch;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -186,7 +186,7 @@ public class AzureAISearchMemory : IMemoryDb
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
         {
-            var keyword = this._config.UseHybridSearch ? text : null;
+            var keyword = this._useHybridSearch ? text : null;
             searchResult = await client
                 .SearchAsync<AzureAISearchMemoryRecord>(keyword, options, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -199,14 +199,18 @@ public class AzureAISearchMemory : IMemoryDb
 
         if (searchResult == null) { yield break; }
 
-        var minDistance = this._config.UseHybridSearch ? minRelevance : CosineSimilarityToScore(minRelevance);
+        var minDistance = this._useHybridSearch ? minRelevance : CosineSimilarityToScore(minRelevance);
+        var count = 0;
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
             if (doc == null || doc.Score < minDistance) { continue; }
 
+            // In cases where Azure Search is returning too many records
+            if (++count > limit) { break; }
+
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
-            var documentScore = this._config.UseHybridSearch ? doc.Score ?? 0 : ScoreToCosineSimilarity(doc.Score ?? 0);
+            var documentScore = this._useHybridSearch ? doc.Score ?? 0 : ScoreToCosineSimilarity(doc.Score ?? 0);
             yield return (memoryRecord, documentScore);
         }
     }

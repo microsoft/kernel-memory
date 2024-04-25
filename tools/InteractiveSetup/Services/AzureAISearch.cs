@@ -21,6 +21,7 @@ internal static class AzureAISearch
                 { "Auth", "ApiKey" },
                 { "Endpoint", "" },
                 { "APIKey", "" },
+                { "UseHybridSearch", false },
             };
         }
 
@@ -29,6 +30,7 @@ internal static class AzureAISearch
             { "Auth", "ApiKey" },
             { "Endpoint", SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()) },
             { "APIKey", SetupUI.AskPassword("Azure AI Search <API Key>", config["APIKey"].ToString()) },
+            { "UseHybridSearch", SetupUI.AskBoolean("Use hybrid search (yes/no)?", (bool)config["UseHybridSearch"]) },
         });
     }
 }

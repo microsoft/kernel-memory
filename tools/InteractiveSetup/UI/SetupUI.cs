@@ -1,28 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 
-public static class DictionaryExtensions
-{
-    public static string TryGet(this Dictionary<string, object> data, string key)
-    {
-        return data.TryGetValue(key, out object? value) ? value.ToString() ?? string.Empty : string.Empty;
-    }
-
-    public static string TryGetOr(this Dictionary<string, object> data, string key, string fallbackValue)
-    {
-        return data.TryGetValue(key, out object? value) ? value.ToString() ?? string.Empty : fallbackValue;
-    }
-}
-
-public static class SetupUI
+internal static class SetupUI
 {
     public static string AskPassword(string question, string? defaultValue, bool trim = true, bool optional = false)
     {
         return AskOpenQuestion(question: question, defaultValue: defaultValue, trim: trim, optional: optional, isPassword: true);
+    }
+
+    public static bool AskBoolean(string question, bool defaultValue)
+    {
+        string[] yes = { "YES", "Y" };
+        string[] no = { "NO", "N" };
+        while (true)
+        {
+            var answer = AskOpenQuestion(question: question, defaultValue: defaultValue ? "Yes" : "No", optional: false).ToUpperInvariant();
+            if (yes.Contains(answer)) { return true; }
+
+            if (no.Contains(answer)) { return false; }
+        }
     }
 
     public static string AskOptionalOpenQuestion(string question, string? defaultValue)
