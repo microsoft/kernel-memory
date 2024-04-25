@@ -163,6 +163,12 @@ public class SearchClient : ISearchClient
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
+
+            // In cases where a buggy storage connector is returning too many records
+            if (result.Results.Count >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
         }
 
         if (result.Results.Count == 0)
@@ -284,6 +290,12 @@ public class SearchClient : ISearchClient
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
+
+            // In cases where a buggy storage connector is returning too many records
+            if (factsUsedCount >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)

@@ -258,6 +258,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{C2D3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.AspNetCore", "service\Service.AspNetCore\Service.AspNetCore.csproj", "{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "111-dotnet-azure-ai-hybrid-search", "examples\111-dotnet-azure-ai-hybrid-search\111-dotnet-azure-ai-hybrid-search.csproj", "{28534545-CB39-446A-9EB9-A5ABBFE0CFD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -332,6 +334,7 @@ Global
 		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{C2D3A947-B6F9-4306-BD42-21D8D1F42750} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
 		{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69} = {87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}
+		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -532,10 +535,12 @@ Global
 		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FB12876-013D-44CB-9F0D-E926D9F0F4E3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A46B0BE1-03F2-4520-A3DA-FD845BA1FD69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

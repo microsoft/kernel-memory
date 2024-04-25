@@ -25,6 +25,12 @@ public class AzureAISearchConfig
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Important: when using hybrid search, relevance scores a very
+    /// different from when using just vector search.
+    /// </summary>
+    public bool UseHybridSearch { get; set; } = false;
+
     public void SetCredential(TokenCredential credential)
     {
         this.Auth = AuthTypes.ManualTokenCredential;
