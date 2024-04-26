@@ -13,8 +13,6 @@ public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithAzureQueuesOrchestration(this IKernelMemoryBuilder builder, AzureQueuesConfig config)
     {
-        config.Validate();
-
         builder.Services.AddAzureQueuesOrchestration(config);
         return builder;
     }
