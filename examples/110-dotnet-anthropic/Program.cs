@@ -13,7 +13,7 @@ var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 var services = new ServiceCollection();
 services.AddHttpClient();
 
-var anthropicTextGenerationConfiguration = new AnthropicConfiguration();
+var anthropicConfig = new AnthropicConfiguration();
 
 new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -21,10 +21,10 @@ new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .Build()
     .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-    .BindSection("KernelMemory:Services:Anthropic", anthropicTextGenerationConfiguration);
+    .BindSection("KernelMemory:Services:Anthropic", anthropicConfig);
 
 var memory = new KernelMemoryBuilder(services)
-    .WithAnthropicTextGeneration(anthropicTextGenerationConfiguration)
+    .WithAnthropicTextGeneration(anthropicConfig)
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
     .WithSimpleFileStorage(new SimpleFileStorageConfig()
     {

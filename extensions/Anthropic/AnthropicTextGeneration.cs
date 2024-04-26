@@ -25,7 +25,10 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
         ILogger<AnthropicTextGeneration>? log = null)
     {
         this._modelName = config.TextModelName;
-        this.MaxTokenTotal = config.MaxTokenTotal;
+
+        // Using the smallest value for now - KM support MaxTokenIn and MaxTokenOut TODO
+        this.MaxTokenTotal = config.MaxTokenOut;
+
         this._log = log ?? DefaultLogger<AnthropicTextGeneration>.Instance;
 
         this._client = new RawAnthropicClient(
@@ -39,8 +42,8 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(TitokenTokenizer));
-            textTokenizer = new TitokenTokenizer();
+                nameof(TikTokenTokenizer));
+            textTokenizer = new TikTokenTokenizer();
         }
 
         this._textTokenizer = textTokenizer;
@@ -76,6 +79,7 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
                 case ContentBlockDelta blockDelta:
                     yield return blockDelta.Delta.Text;
                     break;
+
                 default:
                     //do nothing we simple want to use delta text.
                     break;

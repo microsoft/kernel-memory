@@ -3,7 +3,8 @@
 using TiktokenSharp;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
-internal class TitokenTokenizer : ITextTokenizer
+
+internal class TikTokenTokenizer : ITextTokenizer
 {
     private static readonly TikToken s_tokenizer = TikToken.GetEncoding("cl100k_base");
 

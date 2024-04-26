@@ -3,8 +3,12 @@
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Anthropic;
 
-namespace Microsoft.KernelMemory.AI.Anthropic;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Allows configuration for Anthropic text generation
@@ -15,10 +19,9 @@ public static partial class KernelMemoryBuilderExtensions
     /// Configure Kernel Memory to use Anthropic text generation to answer
     /// RAG questions.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="config"></param>
+    /// <param name="builder">KernelMemory builder</param>
+    /// <param name="config">Anthropic configuration</param>
     /// <param name="textTokenizer">Optional tokenizer, default one will be used if passed null.</param>
-    /// <returns></returns>
     public static IKernelMemoryBuilder WithAnthropicTextGeneration(
         this IKernelMemoryBuilder builder,
         AnthropicConfiguration config,
@@ -38,10 +41,10 @@ public static partial class DependencyInjection
     {
         services.AddSingleton(config);
         return services
-           .AddSingleton<ITextGenerator>(serviceProvider => new AnthropicTextGeneration(
-               httpClientFactory: serviceProvider.GetService<IHttpClientFactory>()!,
-               config: config,
-               textTokenizer: textTokenizer,
-               log: serviceProvider.GetService<ILogger<AnthropicTextGeneration>>()));
+            .AddSingleton<ITextGenerator>(serviceProvider => new AnthropicTextGeneration(
+                httpClientFactory: serviceProvider.GetService<IHttpClientFactory>()!,
+                config: config,
+                textTokenizer: textTokenizer,
+                log: serviceProvider.GetService<ILogger<AnthropicTextGeneration>>()));
     }
 }
