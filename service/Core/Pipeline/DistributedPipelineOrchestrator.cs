@@ -67,7 +67,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             return this._queues.Keys.OrderBy(x => x).ToList();
         }
     }
-    
+
     ///<inheritdoc />
     public override async Task AddHandlerAsync(
         IPipelineStepHandler handler,
@@ -226,13 +226,15 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         {
             // Execute the business logic - exceptions are automatically handled by IQueue
             (success, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+            pipeline = updatedPipeline;
+            pipeline.LastUpdate = DateTimeOffset.UtcNow;
+
             if (success)
             {
-                pipeline = updatedPipeline;
-                pipeline.LastUpdate = DateTimeOffset.UtcNow;
-
                 // If the pipeline succedds, resets the failed step and the failure reason that could be set by a previous failure.
-                pipeline.FailedStep = pipeline.FailureReason = null;
+                pipeline.Failed = false;
+                pipeline.Logs = null;
 
                 this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
                 pipeline.MoveToNextStep();
@@ -240,6 +242,9 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
             }
             else
             {
+                pipeline.Failed = true;
+                pipeline.Logs = string.Join(", ", pipeline.Files.Where(f => f.LogEntries is not null).SelectMany(f => f.LogEntries!).Select(l => $"{l.Source}: {l.Text}"));
+
                 this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
             }
         }
@@ -252,9 +257,8 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
                 failureReson += $" ({ex.InnerException.Message})";
             }
 
-            pipeline.LastUpdate = DateTimeOffset.UtcNow;
-            pipeline.FailedStep = currentStepName;
-            pipeline.FailureReason = failureReson;
+            pipeline.Failed = true;
+            pipeline.Logs = failureReson;
             await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
         }
 #pragma warning restore CA1031 // Do not catch general exception types

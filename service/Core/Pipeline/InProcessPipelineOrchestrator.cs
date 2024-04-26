@@ -54,7 +54,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
             return this._handlers.Keys.OrderBy(x => x).ToList();
         }
     }
-    
+
     ///<inheritdoc />
     public override Task AddHandlerAsync(
         IPipelineStepHandler handler,
@@ -165,7 +165,13 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
 
             if (!this._handlers.TryGetValue(currentStepName, out var stepHandler))
             {
-                throw new OrchestrationException($"No handlers found for step '{currentStepName}'");
+                pipeline.LastUpdate = DateTimeOffset.UtcNow;
+                pipeline.Failed = true;
+                pipeline.Logs = $"No handler found for step '{currentStepName}'";
+                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+                this.Log.LogError("No handler found for step '{0}'", currentStepName);
+                throw new OrchestrationException($"No handler found for step '{currentStepName}'");
             }
 
             try
@@ -175,16 +181,21 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
                     .InvokeAsync(pipeline, this.CancellationTokenSource.Token)
                     .ConfigureAwait(false);
 
+                pipeline = updatedPipeline;
+                pipeline.LastUpdate = DateTimeOffset.UtcNow;
+
                 if (success)
                 {
-                    pipeline = updatedPipeline;
-                    pipeline.LastUpdate = DateTimeOffset.UtcNow;
                     this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
                     pipeline.MoveToNextStep();
                     await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
+                    pipeline.Failed = true;
+                    pipeline.Logs = string.Join(", ", pipeline.Files.Where(f => f.LogEntries is not null).SelectMany(f => f.LogEntries!).Select(l => $"{l.Source}: {l.Text}"));
+                    await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
                     this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                     throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
                 }
@@ -199,10 +210,11 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
                 }
 
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                pipeline.FailedStep = currentStepName;
-                pipeline.FailureReason = failureReson;
-                this.Log.LogError(ex, "Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
+                pipeline.Failed = true;
+                pipeline.Logs = failureReson;
                 await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+
+                this.Log.LogError(ex, "Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                 throw new OrchestrationException($"Pipeline error, step {currentStepName} failed", ex);
             }
         }

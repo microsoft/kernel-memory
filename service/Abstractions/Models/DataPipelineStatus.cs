@@ -79,6 +79,6 @@ public class DataPipelineStatus
     /// The error that caused the pipeline to fail, if any.
     /// </summary>
     [JsonPropertyOrder(19)]
-    [JsonPropertyName("failure_reason")]
-    public string? FailureReason { get; set; } = null;
+    [JsonPropertyName("logs")]
+    public string? Logs { get; set; } = null;
 }
