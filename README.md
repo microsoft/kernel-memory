@@ -369,6 +369,16 @@ running the service locally with OpenAPI enabled.
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Qdrant)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Qdrant/)
 
+* **Microsoft.KernelMemory.MemoryDb.Redis:** Memory storage using
+  **[Redis](extensions/Redis)**.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Redis)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Redis/)
+
+* **Microsoft.KernelMemory.MongoDbAtlas:** Memory and Files storage using
+  **[MongoDb Atlas](extensions/MongoDbAtlas)**.
+
+  [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MongoDbAtlas)](https://www.nuget.org/packages/Microsoft.KernelMemory.MongoDbAtlas/)
+
 * **Microsoft.KernelMemory.AI.AzureOpenAI:** Integration with **[Azure OpenAI](extensions/OpenAI)** LLMs.
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.AI.AzureOpenAI)](https://www.nuget.org/packages/Microsoft.KernelMemory.AI.AzureOpenAI/)
@@ -386,24 +396,23 @@ running the service locally with OpenAPI enabled.
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.DataFormats.AzureAIDocIntel)](https://www.nuget.org/packages/Microsoft.KernelMemory.DataFormats.AzureAIDocIntel/)
 
-* **Microsoft.KernelMemory.Orchestration.AzureQueues:** Ingestion and synthetic memory
-  pipelines via [Azure Queue Storage](extensions/AzureQueues).
+* **Microsoft.KernelMemory.Orchestration.AzureQueues:** Ingestion and synthetic memory pipelines
+  via [Azure Queue Storage](extensions/AzureQueues).
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.Orchestration.AzureQueues)](https://www.nuget.org/packages/Microsoft.KernelMemory.Orchestration.AzureQueues/)
 
-* **Microsoft.KernelMemory.Orchestration.RabbitMQ:** Ingestion and synthetic memory
-  pipelines via [RabbitMQ](extensions/RabbitMQ).
+* **Microsoft.KernelMemory.Orchestration.RabbitMQ:** Ingestion and synthetic memory pipelines
+  via [RabbitMQ](extensions/RabbitMQ).
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.Orchestration.RabbitMQ)](https://www.nuget.org/packages/Microsoft.KernelMemory.Orchestration.RabbitMQ/)
 
-* **Microsoft.KernelMemory.ContentStorage.AzureBlobs:** Used to store content on
-  [Azure Storage Blobs](extensions/AzureBlobs).
+* **Microsoft.KernelMemory.ContentStorage.AzureBlobs:** Used to store files
+  in [Azure Storage Blobs](extensions/AzureBlobs).
 
   [![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.ContentStorage.AzureBlobs)](https://www.nuget.org/packages/Microsoft.KernelMemory.ContentStorage.AzureBlobs/)
 
-* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom
-  pipelines and handlers, and contains a serverless client to use memory in a
-  synchronous way, without the web service. .NET 6+.
+* **Microsoft.KernelMemory.Core:** The core library, can be used to build custom pipelines and handlers, and contains
+  a serverless client to use memory in a synchronous way, without the web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
