@@ -21,6 +21,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.22.0-preview.24179.1" />
     <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.25.0" />
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
@@ -76,18 +77,19 @@
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="9.2.1" />
-    <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="9.0.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="xunit" Version="2.7.1" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
+    <PackageVersion Include="xunit.extensibility.core" Version="2.7.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Xunit.DependencyInjection" Version="9.2.1" />
+    <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="9.0.0" />
   </ItemGroup>
 </Project>
