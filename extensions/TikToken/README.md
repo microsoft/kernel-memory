@@ -4,4 +4,4 @@
 
 This project contains
 the [TikToken](https://github.com/openai/tiktoken)
-tokenizer for Kernel Memory.
+tokenizers for Kernel Memory.
