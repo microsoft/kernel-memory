@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <IsPackable>false</IsPackable>
+        <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.Anthropic</PackageId>
         <Product>Anthropic LLM connector for Kernel Memory</Product>
         <Description>Provide access to Anthropic LLM models in Kernel Memory</Description>
