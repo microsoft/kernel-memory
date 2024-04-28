@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
+using Microsoft.KernelMemory.AI.TikToken;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
@@ -14,9 +15,9 @@ namespace Microsoft.KernelMemory.AI.Anthropic;
 internal sealed class AnthropicTextGeneration : ITextGenerator
 {
     private readonly RawAnthropicClient _client;
-    private readonly string _modelName;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AnthropicTextGeneration> _log;
+    private readonly string _modelName;
 
     public AnthropicTextGeneration(
         IHttpClientFactory httpClientFactory,
@@ -42,8 +43,8 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(TikTokenTokenizer));
-            textTokenizer = new TikTokenTokenizer();
+                nameof(TikTokenGPT4Tokenizer));
+            textTokenizer = new TikTokenGPT4Tokenizer();
         }
 
         this._textTokenizer = textTokenizer;
@@ -64,14 +65,17 @@ internal sealed class AnthropicTextGeneration : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this._log.LogTrace("Sending text generation request");
+
         CallClaudeStreamingParams parameters = new(this._modelName, prompt)
         {
             System = "You are an assistant that will answer user query based on a context",
             Temperature = options.Temperature,
         };
-        var streamedResponse = this._client.CallClaudeStreamingAsync(parameters);
 
-        await foreach (var response in streamedResponse.WithCancellation(cancellationToken))
+        IAsyncEnumerable<StreamingResponseMessage> streamedResponse = this._client.CallClaudeStreamingAsync(parameters);
+
+        await foreach (StreamingResponseMessage response in streamedResponse.WithCancellation(cancellationToken))
         {
             //now we simply yield the response
             switch (response)

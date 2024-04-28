@@ -11,10 +11,10 @@ namespace Microsoft.KernelMemory.AI.Anthropic.Client;
 
 internal sealed class RawAnthropicClient
 {
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _apiKey;
     private readonly string _endpoint;
     private readonly string _endpointVersion;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string? _httpClientName;
 
     internal RawAnthropicClient(
@@ -90,7 +90,7 @@ internal sealed class RawAnthropicClient
                 var eventMessage = line.Split(":")[1].Trim();
 
                 //now read the message
-                line = await reader.ReadLineAsync().ConfigureAwait(false)!;
+                line = await reader.ReadLineAsync().ConfigureAwait(false);
 
                 if (line == null)
                 {
@@ -99,9 +99,15 @@ internal sealed class RawAnthropicClient
 
                 if (eventMessage == "content_block_delta")
                 {
-                    var data = line.Substring("data: ".Length).Trim();
-                    var messageDelta = JsonSerializer.Deserialize<ContentBlockDelta>(data);
-                    yield return messageDelta!;
+                    string data = line.Substring("data: ".Length).Trim();
+                    ContentBlockDelta? messageDelta = JsonSerializer.Deserialize<ContentBlockDelta>(data);
+                    if (messageDelta == null)
+                    {
+                        // TODO: log error, throw exception?
+                        continue;
+                    }
+
+                    yield return messageDelta;
                 }
                 else if (eventMessage == "message_stop")
                 {

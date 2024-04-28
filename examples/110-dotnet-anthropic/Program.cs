@@ -3,7 +3,6 @@
 #if KernelMemoryDev
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.Anthropic;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -25,7 +24,7 @@ new ConfigurationBuilder()
 
 var memory = new KernelMemoryBuilder(services)
     .WithAnthropicTextGeneration(anthropicConfig)
-    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     .WithSimpleFileStorage(new SimpleFileStorageConfig()
     {
         Directory = "c:\\temp\\km\\storage",

@@ -16,8 +16,7 @@ namespace Microsoft.KernelMemory;
 public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
-    /// Configure Kernel Memory to use Anthropic text generation to answer
-    /// RAG questions.
+    /// Configure Kernel Memory to use Anthropic text generation.
     /// </summary>
     /// <param name="builder">KernelMemory builder</param>
     /// <param name="config">Anthropic configuration</param>
@@ -32,8 +31,17 @@ public static partial class KernelMemoryBuilderExtensions
     }
 }
 
+/// <summary>
+/// Allows configuration for Anthropic text generation
+/// </summary>
 public static partial class DependencyInjection
 {
+    /// <summary>
+    /// Configure Kernel Memory to use Anthropic text generation.
+    /// </summary>
+    /// <param name="services">Application services collection</param>
+    /// <param name="config">Anthropic settings</param>
+    /// <param name="textTokenizer">Tokenizer to measure content size</param>
     public static IServiceCollection AddAnthropicTextGeneration(
         this IServiceCollection services,
         AnthropicConfiguration config,
