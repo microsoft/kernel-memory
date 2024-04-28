@@ -24,6 +24,7 @@
         <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
         <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj"/>
         <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\extensions\TikToken\TikToken\TikToken.csproj" />
     </ItemGroup>
 
     <ItemGroup>
