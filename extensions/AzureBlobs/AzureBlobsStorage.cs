@@ -189,6 +189,18 @@ public class AzureBlobsStorage : IContentStorage
         return this.InternalWriteAsync(directoryName, fileName, streamContent, cancellationToken);
     }
 
+#if KernelMemoryDev
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+#else
     /// <inheritdoc />
     public async Task<BinaryData> ReadFileAsync(
         string index,
@@ -220,6 +232,7 @@ public class AzureBlobsStorage : IContentStorage
             throw new ContentStorageFileNotFoundException("File not found", e);
         }
     }
+#endif
 
     #region private
 

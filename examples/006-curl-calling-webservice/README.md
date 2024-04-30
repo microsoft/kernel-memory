@@ -18,7 +18,7 @@ Content of [upload-example.sh](upload-example.sh):
 ```bash
 ../../tools/upload-file.sh -f test.pdf \
                            -s http://127.0.0.1:9001 \
-                           -u curlUser \
+                           -p curlUser \
                            -t "type:test" \
                            -i curlExample01
 ```
@@ -33,7 +33,7 @@ Content of [ask-example.sh](ask-example.sh):
 
 ```bash
 ../../tools/ask.sh -s http://127.0.0.1:9001 \
-                   -u curlUser \
+                   -p curlUser \
                    -q "tell me about Semantic Kernel" \
                    -f '"type":["test"]'
 ```

@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.TikToken</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.TikToken</RootNamespace>
-        <NoWarn>$(NoWarn);</NoWarn>
+        <NoWarn>$(NoWarn);NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

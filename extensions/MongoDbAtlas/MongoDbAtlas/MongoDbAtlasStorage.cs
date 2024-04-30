@@ -124,6 +124,19 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         return Task.CompletedTask;
     }
 
+#if KernelMemoryDev
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+#else
+    /// <inheritdoc />
     public async Task<BinaryData> ReadFileAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true,
         CancellationToken cancellationToken = new CancellationToken())
     {
@@ -189,6 +202,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
             return new BinaryData(memoryStream.ToArray());
         }
     }
+#endif
 
     private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)
     {

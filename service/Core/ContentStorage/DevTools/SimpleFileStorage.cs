@@ -91,6 +91,18 @@ public class SimpleFileStorage : IContentStorage
         await this._fileSystem.WriteFileAsync(volume: index, relPath: documentId, fileName: fileName, streamContent: streamContent, cancellationToken).ConfigureAwait(false);
     }
 
+#if KernelMemoryDev
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+#else
     /// <inheritdoc />
     public async Task<BinaryData> ReadFileAsync(
         string index,
@@ -113,4 +125,5 @@ public class SimpleFileStorage : IContentStorage
             throw new ContentStorageFileNotFoundException("File not found");
         }
     }
+#endif
 }
