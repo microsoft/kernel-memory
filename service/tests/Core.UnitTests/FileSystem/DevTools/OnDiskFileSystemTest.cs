@@ -149,8 +149,8 @@ public class OnDiskFileSystemTest : BaseUnitTestCase
 
         // Act
         var contentFile = await this._target.ReadFileInfoAsync(Vol, "sub1/sub2", "file.txt");
-        BinaryData? data = null;
-        using (Stream stream = await contentFile.StreamAsync())
+        BinaryData? data;
+        await using (Stream stream = await contentFile.StreamAsync())
         {
             data = new BinaryData(stream.ReadAllBytes());
             stream.Close();

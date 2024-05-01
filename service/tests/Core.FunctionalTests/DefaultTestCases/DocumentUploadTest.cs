@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
@@ -34,6 +32,40 @@ public static class DocumentUploadTest
 
         // Assert
         Assert.Contains("spacecraft", answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Cleanup
+        log("Deleting memories extracted from the document");
+        await memory.DeleteDocumentAsync(Id);
+    }
+
+    public static async Task ItDownloadsPDFDocs(IKernelMemory memory, Action<string> log)
+    {
+        // Arrange
+        const string fileName = "file1-NASA-news.pdf";
+        const string Id = "ItUploadsPDFDocsAndDeletes-file1-NASA-news.pdf";
+        var expectedChecksum = ComputeChecksum(await File.ReadAllBytesAsync(fileName));
+        log("Uploading document");
+        await memory.ImportDocumentAsync(
+            fileName,
+            documentId: Id,
+            steps: Constants.PipelineWithoutSummary);
+
+        var count = 0;
+        while (!await memory.IsDocumentReadyAsync(documentId: Id))
+        {
+            Assert.True(count++ <= 30, "Document import timed out");
+            log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+        // Act
+        var streamAbleFileInfo = await memory.ExportFileAsync(documentId: Id, fileName: fileName);
+        var pdfBytes = (await streamAbleFileInfo.StreamAsync()).ReadAllBytes();
+        log($"Export {streamAbleFileInfo.FileName}, size: {streamAbleFileInfo.FileSize}");
+
+        // Assert
+        var actualChecksum = ComputeChecksum(pdfBytes);
+        Assert.Equal(expectedChecksum, actualChecksum);
 
         // Cleanup
         log("Deleting memories extracted from the document");
@@ -102,52 +134,8 @@ public static class DocumentUploadTest
         Assert.Contains("NOT FOUND", answer4.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    public static async Task ItDownloadsPDFDocs(IKernelMemory memory, Action<string> log)
-    {
-        // Arrange
-        const string fileName = "file1-NASA-news.pdf";
-        const string Id = "ItUploadsPDFDocsAndDeletes-file1-NASA-news.pdf";
-        log("Uploading document");
-        await memory.ImportDocumentAsync(
-            fileName,
-            documentId: Id,
-            steps: Constants.PipelineWithoutSummary);
-
-        var count = 0;
-        while (!await memory.IsDocumentReadyAsync(documentId: Id))
-        {
-            Assert.True(count++ <= 30, "Document import timed out");
-            log("Waiting for memory ingestion to complete...");
-            await Task.Delay(TimeSpan.FromSeconds(1));
-        }
-
-        // Act
-        var streamAbleFileInfo = await memory.ExportFileAsync(documentId: Id, fileName: fileName);
-        var pdfBytes = (await streamAbleFileInfo.StreamAsync()).ReadAllBytes();
-        log($"Export {streamAbleFileInfo.FileName}, size: {streamAbleFileInfo.FileSize}");
-
-        // Assert
-        var expected = ComputeChecksum(await File.ReadAllBytesAsync(fileName));
-        var actual = ComputeChecksum(pdfBytes);
-        Assert.Equal(expected, actual);
-
-        // Cleanup
-        log("Deleting memories extracted from the document");
-        await memory.DeleteDocumentAsync(Id);
-    }
-
     private static string ComputeChecksum(byte[] bytes)
     {
-        // Compute and return a checksum for the specified byte array
-        byte[] computedHash = SHA256.HashData(bytes);
-
-        // Convert byte array to a string
-        StringBuilder builder = new();
-        for (int i = 0; i < computedHash.Length; i++)
-        {
-            builder.Append(computedHash[i].ToString("x2", CultureInfo.CurrentCulture));
-        }
-
-        return builder.ToString();
+        return Convert.ToHexString(SHA256.HashData(bytes)).ToUpperInvariant();
     }
 }
