@@ -45,6 +45,10 @@
         <Content Include="file2-largePDF.pdf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="file3-data.xlsx" />
+        <Content Include="file3-data.xlsx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

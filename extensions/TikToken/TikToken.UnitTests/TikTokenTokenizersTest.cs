@@ -15,6 +15,8 @@ public class TikTokenTokenizers : BaseUnitTestCase
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
+    [Trait("Category", "AI")]
     public void TheyCountTokens()
     {
         const string text = "{'bos_token': '<|endoftext|>',\n 'eos_token': '<|endoftext|>',\n 'unk_token': '<|endoftext|>'}";
