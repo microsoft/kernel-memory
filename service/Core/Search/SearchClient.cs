@@ -152,7 +152,7 @@ public class SearchClient : ISearchClient
             citation.Link = linkToFile;
             citation.SourceContentType = memory.GetFileContentType(this._log);
             citation.SourceName = memory.GetFileName(this._log);
-            citation.SourceUrl = memory.GetWebPageUrl();
+            citation.SourceUrl = memory.GetWebPageUrl(index);
 
             citation.Partitions.Add(new Citation.Partition
             {
@@ -279,7 +279,7 @@ public class SearchClient : ISearchClient
             citation.Link = linkToFile;
             citation.SourceContentType = memory.GetFileContentType(this._log);
             citation.SourceName = fileName;
-            citation.SourceUrl = memory.GetWebPageUrl();
+            citation.SourceUrl = memory.GetWebPageUrl(index);
 
             citation.Partitions.Add(new Citation.Partition
             {
