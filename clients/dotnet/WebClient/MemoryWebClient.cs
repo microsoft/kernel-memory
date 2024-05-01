@@ -233,6 +233,13 @@ public class MemoryWebClient : IKernelMemory
         return status;
     }
 
+#if KernelMemoryDev
+    public Task<StreamableFileContent> ExportFileAsync(string documentId, string fileName, string? index = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+#endif
+
     /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(
         string query,

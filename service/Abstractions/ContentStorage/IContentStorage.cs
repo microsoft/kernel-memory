@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,7 +83,7 @@ public interface IContentStorage
     /// <param name="logErrIfNotFound">Whether to log an error if the file does not exist. An exception will be raised anyway.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>File content</returns>
-    Task<BinaryData> ReadFileAsync(
+    Task<StreamableFileContent> ReadFileAsync(
         string index,
         string documentId,
         string fileName,

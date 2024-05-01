@@ -168,6 +168,14 @@ public class MemoryService : IKernelMemory
         return this._orchestrator.ReadPipelineSummaryAsync(index: index, documentId, cancellationToken);
     }
 
+#if KernelMemoryDev
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ExportFileAsync(string documentId, string fileName, string? index = null, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+#endif
+
     /// <inheritdoc />
     public Task<SearchResult> SearchAsync(
         string query,

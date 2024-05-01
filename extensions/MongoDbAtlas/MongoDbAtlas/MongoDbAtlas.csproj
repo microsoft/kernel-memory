@@ -6,6 +6,7 @@
         <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
         <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
+        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
