@@ -87,7 +87,7 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
         doc.AddFile(Path.Join(this._fixturesPath, "Doc1.txt"));
         doc.AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt"));
 
-        // Act - Assert no exception occurs
+        // Act
         await this._memory.ImportDocumentAsync(document: doc);
         SearchResult result = await this._memory.SearchAsync("Document one");
 
