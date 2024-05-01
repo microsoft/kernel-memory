@@ -142,9 +142,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebClient", "clients\dotnet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "001-dotnet-WebClient", "examples\001-dotnet-WebClient\001-dotnet-WebClient.csproj", "{A77F639B-EA35-4519-9DBF-54687E5AC895}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-SemanticKernel-plugin", "examples\002-dotnet-SemanticKernel-plugin\002-dotnet-SemanticKernel-plugin.csproj", "{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "002-dotnet-Serverless", "examples\002-dotnet-Serverless\002-dotnet-Serverless.csproj", "{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "003-dotnet-Serverless", "examples\003-dotnet-Serverless\003-dotnet-Serverless.csproj", "{6627ACE2-14FA-4A8E-A03C-0E4710B5411E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "003-dotnet-SemanticKernel-plugin", "examples\003-dotnet-SemanticKernel-plugin\003-dotnet-SemanticKernel-plugin.csproj", "{BCBEE522-6B4F-4C79-9E91-A34F4CCBF036}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "004-dotnet-serverless-custom-pipeline", "examples\004-dotnet-serverless-custom-pipeline\004-dotnet-serverless-custom-pipeline.csproj", "{158F5D5D-818B-4346-9A79-1C27C2F2144D}"
 EndProject

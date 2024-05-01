@@ -27,7 +27,7 @@ customizations you can apply.
 
     For more details, see the [service documentation](../dotnet/Service/README.md).
 
-    [Here](../examples/002-dotnet-WebClient/README.md) you can find an example
+    [Here](../examples/001-dotnet-WebClient/README.md) you can find an example
     showing the web client interacting with the service.
 
 2. Alternatively, you can **embed Kernel Memory directly into your .NET
@@ -39,7 +39,7 @@ customizations you can apply.
     **The serverless memory API is the same** offered by the service, so it's
     possible to switch from Service to Serverless changing only few lines code.
 
-    [Here](../examples/001-dotnet-Serverless/README.md) you can find an example
+    [Here](../examples/002-dotnet-Serverless/README.md) you can find an example
     showing the serverless client.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/83d6487f-75f2-42d9-9ab5-ea6aed65231b)

@@ -298,8 +298,8 @@ running the service locally with OpenAPI enabled.
 
 1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
-3. [Using KM Plugin for Semantic Kernel](examples/002-dotnet-SemanticKernel-plugin)
-4. [Importing files and asking question without running the service (serverless mode)](examples/003-dotnet-Serverless)
+4. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
+3. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
 5. [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
 6. [Processing files with custom logic (custom handlers) in asynchronous mode](examples/005-dotnet-AsyncMemoryCustomPipeline)
 7. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
@@ -340,7 +340,7 @@ running the service locally with OpenAPI enabled.
   a running instance of the Memory web service. .NET Standard 2.0 compatible.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-WebClient)
 
 * **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
   replacing the original Semantic Memory available in SK. .NET Standard 2.0 compatible.
@@ -415,7 +415,7 @@ running the service locally with OpenAPI enabled.
   a serverless client to use memory in a synchronous way, without the web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
 
 ### Packages for Python, Java and other languages
 

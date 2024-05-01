@@ -81,7 +81,7 @@ public static class MemoryRecordExtensions
         var fileDownloadUrl = HTTPDownloadEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, indexName, StringComparison.Ordinal)
             .Replace(Constants.HttpDocumentIdPlaceholder, record.GetDocumentId(), StringComparison.Ordinal)
-            .Replace(Constants.HttpFilenamePlaceholder, record.GetFileName(), StringComparison.Ordinal);
+            .Replace(HttpFilenamePlaceholder, record.GetFileName(), StringComparison.Ordinal);
 
         var webPageUrl = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
 
