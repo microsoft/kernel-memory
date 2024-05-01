@@ -82,11 +82,11 @@ public sealed class SimpleQueues : IQueue
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, null, this._log);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, this._log);
                 break;
 
             default:

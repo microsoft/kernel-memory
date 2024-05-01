@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -233,12 +234,42 @@ public class MemoryWebClient : IKernelMemory
         return status;
     }
 
-#if KernelMemoryDev
-    public Task<StreamableFileContent> ExportFileAsync(string documentId, string fileName, string? index = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<StreamableFileContent> ExportFileAsync(
+        string documentId,
+        string fileName,
+        string? index = null,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        string indexParam = index != null ? $"index={index}&" : "";
+        string requestUri = $"{Constants.HttpDownloadEndpoint}?{indexParam}documentId ={documentId}&filename={fileName}";
+        HttpResponseMessage? response = await this._client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        // Header example: Content-Type: text/csv
+        response.Headers.TryGetValues("Content-Type", out IEnumerable<string> contentTypeValues);
+        string contentType = (from x in contentTypeValues select x).FirstOrDefault() ?? "application/octet-stream";
+
+        // Header example: Content-Disposition: attachment; filename=data.csv; filename*=UTF-8''data.csv
+        response.Headers.TryGetValues("Content-Disposition", out IEnumerable<string> contentDispositionValues);
+        var disposition = ContentDispositionHeaderValue.Parse(contentDispositionValues.FirstOrDefault());
+
+        // Header example: Last-Modified: Wed, 01 May 2024 04:56:10 GMT
+        response.Headers.TryGetValues("Last-Modified", out IEnumerable<string> lastModifiedValues);
+        if (!DateTimeOffset.TryParse((from x in lastModifiedValues select x).FirstOrDefault(), out DateTimeOffset lastModifiedValue))
+        {
+            lastModifiedValue = DateTimeOffset.MinValue;
+        }
+
+        StreamableFileContent result = new(
+            fileName: disposition.FileName ?? "file.bin",
+            fileSize: disposition.Size.GetValueOrDefault(),
+            fileType: contentType,
+            lastWriteTimeUtc: lastModifiedValue,
+            asyncStreamDelegate: response.Content.ReadAsStreamAsync);
+        return result;
     }
-#endif
 
     /// <inheritdoc />
     public async Task<SearchResult> SearchAsync(

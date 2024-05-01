@@ -17,13 +17,13 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
     {
     }
 
-    public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = new CancellationToken())
+    public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = new CancellationToken())
+    public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
         // get the bucket related to this index ant then drop it.
         var bucket = this.GetBucketForIndex(index);
@@ -32,8 +32,9 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         await this.Database.DropCollectionAsync(index, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task EmptyDocumentDirectoryAsync(string index, string documentId,
-        CancellationToken cancellationToken = new CancellationToken())
+    /// <inheritdoc />
+    public async Task EmptyDocumentDirectoryAsync(
+        string index, string documentId, CancellationToken cancellationToken = default)
     {
         // delete all document in GridFS that have index as metadata
         var bucket = this.GetBucketForIndex(index);
@@ -53,14 +54,15 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         await collection.DeleteManyAsync(filter2, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task DeleteDocumentDirectoryAsync(string index, string documentId,
-        CancellationToken cancellationToken = new CancellationToken())
+    /// <inheritdoc />
+    public Task DeleteDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         return this.EmptyDocumentDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    public async Task WriteFileAsync(string index, string documentId, string fileName, Stream streamContent,
-        CancellationToken cancellationToken = new CancellationToken())
+    /// <inheritdoc />
+    public async Task WriteFileAsync(
+        string index, string documentId, string fileName, Stream streamContent, CancellationToken cancellationToken = default)
     {
         // txt files are extracted text, and are stored in mongodb in the collection
         // we need to come up with a unique id for the document
@@ -117,32 +119,26 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         }
     }
 
-    public Task CreateDocumentDirectoryAsync(string index, string documentId,
-        CancellationToken cancellationToken = new CancellationToken())
+    /// <inheritdoc />
+    public Task CreateDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         //no need to create anything for the document
         return Task.CompletedTask;
     }
 
-#if KernelMemoryDev
     /// <inheritdoc />
-    public Task<StreamableFileContent> ReadFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        bool logErrIfNotFound = true,
-        CancellationToken cancellationToken = default)
+    public async Task<StreamableFileContent> ReadFileAsync(
+        string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-#else
-    /// <inheritdoc />
-    public async Task<BinaryData> ReadFileAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true,
-        CancellationToken cancellationToken = new CancellationToken())
-    {
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
+
         // Read from mongodb but you need to check extension to load correctly
         var extension = Path.GetExtension(fileName);
         var id = $"{documentId}/{fileName}";
+
+        // TODO: fix code duplication and inconsistencies of file timestamp
         if (extension == ".txt")
         {
             var collection = this.GetCollection(index);
@@ -159,7 +155,15 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException(error);
             }
 
-            return new BinaryData(doc["content"].AsString);
+            BinaryData docData = new(doc["content"].AsString);
+            Task<Stream> AsyncStreamDelegate() => Task.FromResult(docData.ToStream());
+            StreamableFileContent file = new(
+                fileName,
+                docData.Length,
+                doc["contentType"].AsString,
+                DateTimeOffset.UtcNow,
+                AsyncStreamDelegate);
+            return file;
         }
         else if (extension == ".text_embedding")
         {
@@ -176,7 +180,15 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException("File not found");
             }
 
-            return new BinaryData(doc["content"].AsString);
+            BinaryData docData = new(doc["content"].AsString);
+            Task<Stream> AsyncStreamDelegate() => Task.FromResult(docData.ToStream());
+            StreamableFileContent file = new(
+                fileName,
+                docData.Length,
+                doc["contentType"].AsString,
+                DateTimeOffset.UtcNow,
+                AsyncStreamDelegate);
+            return file;
         }
         else
         {
@@ -195,14 +207,17 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException("File not found");
             }
 
-            using var stream = await bucket.OpenDownloadStreamAsync(file.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-            memoryStream.Position = 0;
-            return new BinaryData(memoryStream.ToArray());
+            async Task<Stream> AsyncStreamDelegate() => await bucket.OpenDownloadStreamAsync(file.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            StreamableFileContent streamableFile = new(
+                file.Filename,
+                file.Length,
+                file.Metadata["contentType"].AsString,
+                file.UploadDateTime,
+                AsyncStreamDelegate);
+            return streamableFile;
         }
     }
-#endif
 
     private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)
     {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.ContentStorage.DevTools;
 
@@ -15,17 +16,20 @@ public class SimpleFileStorage : IContentStorage
     private readonly ILogger<SimpleFileStorage> _log;
     private readonly IFileSystem _fileSystem;
 
-    public SimpleFileStorage(SimpleFileStorageConfig config, ILogger<SimpleFileStorage>? log = null)
+    public SimpleFileStorage(
+        SimpleFileStorageConfig config,
+        IMimeTypeDetection? mimeTypeDetection = null,
+        ILogger<SimpleFileStorage>? log = null)
     {
         this._log = log ?? DefaultLogger<SimpleFileStorage>.Instance;
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, mimeTypeDetection, this._log);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, mimeTypeDetection, this._log);
                 break;
 
             default:
@@ -91,29 +95,21 @@ public class SimpleFileStorage : IContentStorage
         await this._fileSystem.WriteFileAsync(volume: index, relPath: documentId, fileName: fileName, streamContent: streamContent, cancellationToken).ConfigureAwait(false);
     }
 
-#if KernelMemoryDev
     /// <inheritdoc />
-    public Task<StreamableFileContent> ReadFileAsync(
+    public async Task<StreamableFileContent> ReadFileAsync(
         string index,
         string documentId,
         string fileName,
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-#else
-    /// <inheritdoc />
-    public async Task<BinaryData> ReadFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        bool logErrIfNotFound = true,
-        CancellationToken cancellationToken = default)
-    {
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
+
         try
         {
-            return await this._fileSystem.ReadFileAsBinaryAsync(volume: index, relPath: documentId, fileName: fileName, cancellationToken).ConfigureAwait(false);
+            return await this._fileSystem.ReadFileInfoAsync(volume: index, relPath: documentId, fileName: fileName, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
         {
@@ -125,5 +121,4 @@ public class SimpleFileStorage : IContentStorage
             throw new ContentStorageFileNotFoundException("File not found");
         }
     }
-#endif
 }

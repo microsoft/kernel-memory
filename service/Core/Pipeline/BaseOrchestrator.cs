@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable RedundantUsingDirective
-#pragma warning disable CS0162 // temp
-#pragma warning disable CS1998 // temp
-#pragma warning disable IDE0005 // temp
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,15 +147,20 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-#if KernelMemoryDev
-        throw new NotImplementedException();
-#else
         index = IndexName.CleanName(index, this._defaultIndexName);
 
         try
         {
-            BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
-                .ConfigureAwait(false));
+            StreamableFileContent? streamableContent = await this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (streamableContent == null)
+            {
+                throw new InvalidPipelineDataException("The pipeline data is not found");
+            }
+
+            BinaryData? content = await BinaryData.FromStreamAsync(await streamableContent.StreamAsync().ConfigureAwait(false), cancellationToken)
+                .ConfigureAwait(false);
 
             if (content == null)
             {
@@ -180,7 +180,6 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         {
             throw new PipelineNotFoundException("Pipeline/Document not found");
         }
-#endif
     }
 
     ///<inheritdoc />
@@ -221,12 +220,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         return this.CancellationTokenSource.CancelAsync();
     }
 
-#if KernelMemoryDev
-    public Task<StreamableFileContent> ReadFileAsStreamAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    ///<inheritdoc />
+    public async Task<StreamableFileContent> ReadFileAsStreamAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
+        return await this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken)
+            .ConfigureAwait(false);
     }
-#endif
 
     ///<inheritdoc />
     public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
@@ -236,14 +236,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    public async Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
-#if KernelMemoryDev
-        throw new NotImplementedException();
-#else
-        return this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken);
-#endif
+        StreamableFileContent streamableContent = await this.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
+        return await BinaryData.FromStreamAsync(await streamableContent.StreamAsync().ConfigureAwait(false), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc />

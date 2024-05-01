@@ -31,6 +31,7 @@ public class FileCollectionTest
         Assert.Equal(2, target.GetStreams().ToList().Count);
     }
 
+#if !OS_WINDOWS // does not allow 2 open streams to the same file
     [Fact]
     [Trait("Category", "UnitTest")]
     public void ItDoesntDeDupeStreams()
@@ -67,4 +68,5 @@ public class FileCollectionTest
         // Assert
         Assert.Equal(9, target.GetStreams().ToList().Count);
     }
+#endif
 }

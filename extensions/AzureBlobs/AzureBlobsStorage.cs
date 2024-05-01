@@ -12,6 +12,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
@@ -24,11 +25,14 @@ public class AzureBlobsStorage : IContentStorage
     private readonly BlobContainerClient _containerClient;
     private readonly string _containerName;
     private readonly ILogger<AzureBlobsStorage> _log;
+    private readonly IMimeTypeDetection _mimeTypeDetection;
 
     public AzureBlobsStorage(
         AzureBlobsConfig config,
+        IMimeTypeDetection? mimeTypeDetection = null,
         ILogger<AzureBlobsStorage>? log = null)
     {
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this._log = log ?? DefaultLogger<AzureBlobsStorage>.Instance;
 
         BlobServiceClient client;
@@ -186,40 +190,43 @@ public class AzureBlobsStorage : IContentStorage
         CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, streamContent, cancellationToken);
+        var fileType = this._mimeTypeDetection.GetFileType(fileName);
+        return this.InternalWriteAsync(
+            directoryName: directoryName,
+            fileName: fileName,
+            fileType: fileType,
+            content: streamContent,
+            cancellationToken);
     }
 
-#if KernelMemoryDev
     /// <inheritdoc />
-    public Task<StreamableFileContent> ReadFileAsync(
+    public async Task<StreamableFileContent> ReadFileAsync(
         string index,
         string documentId,
         string fileName,
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-    }
-#else
-    /// <inheritdoc />
-    public async Task<BinaryData> ReadFileAsync(
-        string index,
-        string documentId,
-        string fileName,
-        bool logErrIfNotFound = true,
-        CancellationToken cancellationToken = default)
-    {
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
+        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
+
         var directoryName = JoinPaths(index, documentId);
         var blobName = $"{directoryName}/{fileName}";
         BlobClient blobClient = this.GetBlobClient(blobName);
 
         try
         {
-            Response<BlobDownloadResult>? content = await blobClient.DownloadContentAsync(cancellationToken).ConfigureAwait(false);
-
-            if (content != null && content.HasValue)
+            bool exists = await blobClient.ExistsAsync(cancellationToken).ConfigureAwait(false);
+            if (exists)
             {
-                return content.Value.Content;
+                var properties = (await blobClient.GetPropertiesAsync(null, cancellationToken).ConfigureAwait(false)).Value;
+                return new StreamableFileContent(
+                    blobClient.Name,
+                    properties.ContentLength,
+                    properties.ContentType,
+                    properties.LastModified,
+                    async () => (await blobClient.DownloadStreamingAsync(null, cancellationToken).ConfigureAwait(false)).Value.Content);
             }
 
             if (logErrIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
@@ -232,7 +239,6 @@ public class AzureBlobsStorage : IContentStorage
             throw new ContentStorageFileNotFoundException("File not found", e);
         }
     }
-#endif
 
     #region private
 
@@ -247,7 +253,12 @@ public class AzureBlobsStorage : IContentStorage
         return $"{index}/{documentId}";
     }
 
-    private async Task InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
+    private async Task InternalWriteAsync(
+        string directoryName,
+        string fileName,
+        string fileType,
+        object content,
+        CancellationToken cancellationToken)
     {
         var blobName = $"{directoryName}/{fileName}";
 
@@ -262,6 +273,8 @@ public class AzureBlobsStorage : IContentStorage
             lease = await this.LeaseBlobAsync(blobLeaseClient, cancellationToken).ConfigureAwait(false);
             options = new BlobUploadOptions { Conditions = new BlobRequestConditions { LeaseId = lease.LeaseId } };
         }
+
+        options.HttpHeaders = new BlobHttpHeaders { ContentType = fileType };
 
         this._log.LogTrace("Writing blob {0} ...", blobName);
 

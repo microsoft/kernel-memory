@@ -101,4 +101,11 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log, true);
     }
+
+    [Fact]
+    [Trait("Category", "AzAISearch")]
+    public async Task ItDownloadsPDFDocs()
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this._memory, this.Log);
+    }
 }
