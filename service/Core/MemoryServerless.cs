@@ -44,7 +44,6 @@ public class MemoryServerless : IKernelMemory
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
-        // this._exportValidationService = exportValidationService ?? throw new ConfigurationException("The export validation service is NULL");
 
         // A non-null config object is required in order to get a non-empty default index name
         config ??= new KernelMemoryConfig();
