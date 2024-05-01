@@ -99,4 +99,11 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
+
+    [Fact]
+    [Trait("Category", "Redis")]
+    public async Task ItDownloadsPDFDocs()
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this._memory, this.Log);
+    }
 }

@@ -101,4 +101,14 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         await DocumentUploadTest.ItSupportsTags(this.GetServerlessMemory(memoryType), this.Log);
     }
+
+    [Theory]
+    [Trait("Category", "Serverless")]
+    [InlineData("default")]
+    [InlineData("simple_on_disk")]
+    [InlineData("simple_volatile")]
+    public async Task ItDownloadsPDFDocs(string memoryType)
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this.GetServerlessMemory(memoryType), this.Log);
+    }
 }

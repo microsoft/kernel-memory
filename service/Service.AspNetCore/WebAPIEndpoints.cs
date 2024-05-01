@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable RedundantUsingDirective
+
+#pragma warning disable IDE0005 // temp
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,7 +13,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
+using System.IO;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
@@ -27,6 +34,9 @@ public static class WebAPIEndpoints
         builder.AddAskEndpoint(apiPrefix, authFilter);
         builder.AddSearchEndpoint(apiPrefix, authFilter);
         builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
+#if KernelMemoryDev
+        builder.AddGetDownloadEndpoint(apiPrefix, authFilter);
+#endif
 
         return builder;
     }
@@ -295,6 +305,89 @@ public static class WebAPIEndpoints
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
+
+#if KernelMemoryDev
+    public static void AddGetDownloadEndpoint(this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
+        // File download endpoint
+        var route = group.MapGet(Constants.HttpDownloadEndpoint, async Task<IResult> (
+                [FromQuery(Name = Constants.WebServiceIndexField)]
+                string? index,
+                [FromQuery(Name = Constants.WebServiceDocumentIdField)]
+                string documentId,
+                [FromQuery(Name = Constants.WebServiceFilenameField)]
+                string filename,
+                HttpContext httpContext,
+                IKernelMemory service,
+                ILogger<KernelMemoryWebAPI> log,
+                CancellationToken cancellationToken) =>
+            {
+                var isValid = !(
+                    string.IsNullOrWhiteSpace(documentId) ||
+                    string.IsNullOrWhiteSpace(filename));
+                var errMsg = "Missing required parameter";
+
+                log.LogTrace("New download file HTTP request, index {0}, documentId {1}, fileName {3}", index, documentId, filename);
+
+                if (!isValid)
+                {
+                    log.LogError(errMsg);
+                    return Results.Problem(detail: errMsg, statusCode: 400);
+                }
+
+                try
+                {
+                    // DownloadRequest => Document
+                    var file = await service.ExportFileAsync(
+                            documentId: documentId,
+                            fileName: filename,
+                            index: index,
+                            cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+
+                    if (file == null)
+                    {
+                        log.LogWarning("Returned file is NULL, file not found");
+                        return Results.Problem(title: "File not found", statusCode: 404);
+                    }
+
+                    log.LogTrace("Downloading file '{0}', size '{1}', type '{2}'", filename, file.FileSize, file.FileType);
+                    Stream resultingFileStream = await file.StreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+                    var response = Results.Stream(
+                        resultingFileStream,
+                        contentType: file.FileType,
+                        fileDownloadName: filename,
+                        lastModified: file.LastWrite,
+                        enableRangeProcessing: true);
+
+                    // Add content length header if missing
+                    if (response is FileStreamHttpResult { FileLength: null or 0 })
+                    {
+                        httpContext.Response.Headers.ContentLength = file.FileSize;
+                    }
+
+                    return response;
+                }
+                catch (ContentStorageFileNotFoundException e)
+                {
+                    return Results.Problem(title: "File not found", detail: e.Message, statusCode: 404);
+                }
+                catch (Exception e)
+                {
+                    return Results.Problem(title: "File download failed", detail: e.Message, statusCode: 503);
+                }
+            })
+            .Produces<StreamableFileContent>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+            .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+#endif
 
     // Class used to tag log entries and allow log filtering
     // ReSharper disable once ClassNeverInstantiated.Local

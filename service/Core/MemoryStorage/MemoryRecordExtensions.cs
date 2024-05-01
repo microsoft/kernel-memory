@@ -68,10 +68,24 @@ public static class MemoryRecordExtensions
     /// <summary>
     /// Get web page URL, if the document was a web page
     /// </summary>
-    public static string? GetWebPageUrl(this MemoryRecord record, ILogger? log = null)
+    public static string GetWebPageUrl(this MemoryRecord record, string indexName, ILogger? log = null)
     {
-        var result = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
-        return string.IsNullOrWhiteSpace(result) ? null : result;
+        // TODO: remove on next Abstractions release and use Constants
+        // TODO: support custom API path prefix
+        const string HttpFilenamePlaceholder = "{filename}";
+        const string HTTPDownloadEndpointWithParams = $"{Constants.HttpDownloadEndpoint}" +
+                                                      $"?{Constants.WebServiceIndexField}={Constants.HttpIndexPlaceholder}" +
+                                                      $"&{Constants.WebServiceDocumentIdField}={Constants.HttpDocumentIdPlaceholder}" +
+                                                      $"&{Constants.WebServiceFilenameField}={HttpFilenamePlaceholder}";
+
+        var fileDownloadUrl = HTTPDownloadEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, indexName, StringComparison.Ordinal)
+            .Replace(Constants.HttpDocumentIdPlaceholder, record.GetDocumentId(), StringComparison.Ordinal)
+            .Replace(Constants.HttpFilenamePlaceholder, record.GetFileName(), StringComparison.Ordinal);
+
+        var webPageUrl = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
+
+        return string.IsNullOrWhiteSpace(webPageUrl) ? fileDownloadUrl : webPageUrl;
     }
 
     /// <summary>

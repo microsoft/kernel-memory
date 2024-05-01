@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
@@ -29,13 +30,15 @@ internal sealed class VolatileFileSystem : IFileSystem
     private static readonly ConcurrentDictionary<string, VolatileFileSystem> s_singletons = new();
 
     private readonly ILogger _log;
+    private readonly IMimeTypeDetection _mimeTypeDetection;
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, BinaryData>> _volumes = new();
 
     /// <summary>
     /// Ctor accessible to unit tests only.
     /// </summary>
-    internal VolatileFileSystem(ILogger? log = null)
+    internal VolatileFileSystem(IMimeTypeDetection? mimeTypeDetection = null, ILogger? log = null)
     {
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this._log = log ?? DefaultLogger<VolatileFileSystem>.Instance;
     }
 
@@ -44,13 +47,13 @@ internal sealed class VolatileFileSystem : IFileSystem
     /// (directories and files) across clients. E.g. the simple queue requires a shared
     /// instance to work properly.
     /// </summary>
-    public static VolatileFileSystem GetInstance(string directory, ILogger? log = null)
+    public static VolatileFileSystem GetInstance(string directory, IMimeTypeDetection? mimeTypeDetection = null, ILogger? log = null)
     {
         directory = directory.Trim('/').Trim('\\').ToLowerInvariant();
         if (!s_singletons.ContainsKey(directory))
         {
             // s_singletons[directory] = new VolatileFileSystem(log);
-            s_singletons.AddOrUpdate(directory, _ => new VolatileFileSystem(log), (_, _) => new VolatileFileSystem(log));
+            s_singletons.AddOrUpdate(directory, _ => new VolatileFileSystem(mimeTypeDetection, log), (_, _) => new VolatileFileSystem(mimeTypeDetection, log));
         }
 
         return s_singletons[directory];
@@ -209,6 +212,41 @@ internal sealed class VolatileFileSystem : IFileSystem
         }
 
         return Task.FromResult(result);
+    }
+
+    public Task<StreamableFileContent> ReadFileInfoAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        volume = ValidateVolumeName(volume);
+        StreamableFileContent result = new();
+
+        if (this._volumes.TryGetValue(volume, out ConcurrentDictionary<string, BinaryData>? volumeData))
+        {
+            relPath = ValidatePath(relPath);
+            fileName = ValidateFileName(fileName);
+            var dirPath = JoinPaths(relPath, "");
+            var filePath = JoinPaths(relPath, fileName);
+            if (!volumeData.Keys.Any(x => x.StartsWith(dirPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new DirectoryNotFoundException($"Directory not found: {dirPath}");
+            }
+
+            BinaryData file = new(string.Empty);
+            if (!volumeData.TryGetValue(filePath, out file!))
+            {
+                this._log.LogError("File not found: {0}", filePath);
+                throw new FileNotFoundException($"File not found: {filePath}");
+            }
+
+            var fileType = this._mimeTypeDetection.GetFileType(fileName);
+            Task<Stream> AsyncStreamDelegate() => Task.FromResult<Stream>(file.ToStream());
+            result = new(fileName, file.Length, fileType, DateTime.UtcNow, AsyncStreamDelegate);
+        }
+        else
+        {
+            this.ThrowVolumeNotFound(volume);
+        }
+
+        return Task.FromResult<StreamableFileContent>(result);
     }
 
     /// <inheritdoc />

@@ -61,8 +61,10 @@ public static class Constants
     public const string HttpDeleteDocumentEndpointWithParams = $"{HttpDocumentsEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
     public const string HttpDeleteIndexEndpointWithParams = $"{HttpIndexesEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}";
     public const string HttpUploadStatusEndpointWithParams = $"{HttpUploadStatusEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpDownloadEndpointWithParams = $"{HttpDownloadEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}&{WebServiceFilenameField}={HttpFilenamePlaceholder}";
     public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
+    public const string HttpFilenamePlaceholder = "{filename}";
 
     // Pipeline Handlers, Step names
     public const string PipelineStepsExtract = "extract";

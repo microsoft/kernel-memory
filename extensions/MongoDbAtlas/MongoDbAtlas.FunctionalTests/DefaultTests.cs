@@ -140,4 +140,11 @@ public abstract class DefaultTests : BaseFunctionalTestCase
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
+
+    [Fact]
+    [Trait("Category", "MongoDbAtlas")]
+    public async Task ItDownloadsPDFDocs()
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this._memory, this.Log);
+    }
 }

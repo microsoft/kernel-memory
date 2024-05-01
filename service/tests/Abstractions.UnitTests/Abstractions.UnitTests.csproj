@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -10,6 +10,9 @@
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591;CA1861;</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>OS_WINDOWS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
