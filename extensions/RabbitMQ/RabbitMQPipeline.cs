@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,11 +90,16 @@ public sealed class RabbitMQPipeline : IQueue
 
         this._log.LogDebug("Sending message...");
 
+        var properties = this._channel.CreateBasicProperties();
+        properties.Persistent = true;
+        properties.MessageId = Guid.NewGuid().ToString();
+        properties.Expiration = "3600000"; // 1 hour TODO: make it configurable
+
         this._channel.BasicPublish(
             routingKey: this._queueName,
             body: Encoding.UTF8.GetBytes(message),
             exchange: string.Empty,
-            basicProperties: null);
+            basicProperties: properties);
 
         this._log.LogDebug("Message sent");
 
@@ -107,7 +113,8 @@ public sealed class RabbitMQPipeline : IQueue
         {
             try
             {
-                this._log.LogDebug("Message '{0}' received, expires at {1}", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
+                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId,
+                    TimeSpan.FromMilliseconds(Convert.ToDouble(args.BasicProperties.Expiration, CultureInfo.InvariantCulture)).TotalMilliseconds);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
