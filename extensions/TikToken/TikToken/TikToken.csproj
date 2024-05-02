@@ -16,10 +16,6 @@
         <PackageReference Include="Microsoft.ML.Tokenizers" />
     </ItemGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
-    </ItemGroup>
-
     <Import Project="../../../code-analysis.props" />
 
     <Import Project="../../../nuget-package.props" />

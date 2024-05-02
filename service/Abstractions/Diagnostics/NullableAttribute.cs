@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if NETSTANDARD2_0
-
 // ReSharper disable CheckNamespace
 namespace System.Diagnostics.CodeAnalysis;
 

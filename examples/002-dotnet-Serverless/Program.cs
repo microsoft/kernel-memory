@@ -53,7 +53,7 @@ public static class Program
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
         s_memory = new KernelMemoryBuilder()
-            // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
             // .WithOpenAI(openAIConfig)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())

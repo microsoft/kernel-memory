@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MongoDbAtlas;
-using Microsoft.TestHelpers;
+using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.MongoDbAtlas.FunctionalTests;
 

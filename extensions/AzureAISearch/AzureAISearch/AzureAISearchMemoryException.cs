@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
-public class AzureAISearchMemoryException : KernelMemoryException
+public sealed class AzureAISearchMemoryException : KernelMemoryException
 {
     /// <inheritdoc />
     public AzureAISearchMemoryException()

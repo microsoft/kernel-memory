@@ -30,7 +30,7 @@ var host = new HostApplicationBuilder();
 var memoryBuilder = new KernelMemoryBuilder(host.Services)
     .WithoutDefaultHandlers() // remove default handlers, add our custom ones below
     .WithSimpleQueuesPipeline()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);
 
 /*********************************************************
  * Define custom handlers

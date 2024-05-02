@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace Microsoft.KernelMemory.MemoryStorage;
 /// Extensions of <see cref="MemoryRecord"/>
 /// </summary>
 #pragma warning disable CA1055 // working with simple types
+[Experimental("KMEXP00")]
 public static class MemoryRecordExtensions
 {
     /// <summary>

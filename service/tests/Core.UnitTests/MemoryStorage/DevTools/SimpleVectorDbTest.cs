@@ -10,7 +10,7 @@ using Microsoft.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.MemoryStorage.DevTools;
+namespace Microsoft.KM.Core.UnitTests.MemoryStorage.DevTools;
 
 public class SimpleVectorDbTest : BaseUnitTestCase
 {

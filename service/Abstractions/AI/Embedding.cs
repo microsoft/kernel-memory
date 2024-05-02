@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -19,6 +20,7 @@ namespace Microsoft.KernelMemory;
 ///     [JsonConverter(typeof(Embedding.JsonConverter))]
 ///     public Embedding Vector { get; set; }
 /// </summary>
+[Experimental("KMEXP00")]
 public struct Embedding : IEquatable<Embedding>
 {
     /// <summary>

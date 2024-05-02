@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,8 @@ using MongoDB.Driver.GridFS;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
+[Experimental("KMEXP03")]
+public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
 {
     public MongoDbAtlasStorage(MongoDbAtlasConfig config) : base(config)
     {

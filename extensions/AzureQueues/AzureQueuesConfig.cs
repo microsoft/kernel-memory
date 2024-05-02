@@ -11,7 +11,7 @@ using Azure.Storage;
 namespace Microsoft.KernelMemory;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
-public class AzureQueuesConfig
+public sealed class AzureQueuesConfig
 {
     private StorageSharedKeyCredential? _storageSharedKeyCredential;
     private AzureSasCredential? _azureSasCredential;

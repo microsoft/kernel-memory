@@ -18,7 +18,7 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
 /// </summary>
-public class TextExtractionHandler : IPipelineStepHandler
+public sealed class TextExtractionHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly IEnumerable<IContentDecoder> _decoders;

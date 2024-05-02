@@ -7,7 +7,7 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// Base exception for all the exceptions thrown by the Postgres connector for KernelMemory
 /// </summary>
-public class PostgresException : KernelMemoryException
+public sealed class PostgresException : KernelMemoryException
 {
     /// <inheritdoc />
     public PostgresException() { }

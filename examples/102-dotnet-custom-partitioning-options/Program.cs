@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Configuration;
 
 var memory = new KernelMemoryBuilder()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
     .WithCustomTextPartitioningOptions(new TextPartitioningOptions
     {
         // Max 99 tokens per sentence

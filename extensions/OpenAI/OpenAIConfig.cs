@@ -9,7 +9,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// OpenAI settings.
 /// </summary>
-public class OpenAIConfig
+public sealed class OpenAIConfig
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TextGenerationTypes

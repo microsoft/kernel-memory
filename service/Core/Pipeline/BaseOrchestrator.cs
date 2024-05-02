@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -16,6 +17,7 @@ using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
+[Experimental("KMEXP04")]
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
     private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };

@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.KernelMemory.AI.OpenAI.GPT3;
+namespace Microsoft.KernelMemory.AI.OpenAI;
 
 /// <summary>
 /// Port of GPT3 Javascript tokenizer recommended by OpenAI.
 /// See https://platform.openai.com/tokenizer and
 /// https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
 /// </summary>
-public static class GPT3Tokenizer
+internal static class GPT3Tokenizer
 {
     private static readonly ConcurrentDictionary<string, string> s_bpeCache = new();
 

@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Microsoft.KernelMemory.Internals;
 
 namespace Microsoft.KernelMemory;
+
+#pragma warning disable CA2234 // using string URIs is ok
 
 public class MemoryWebClient : IKernelMemory
 {
@@ -143,7 +145,7 @@ public class MemoryWebClient : IKernelMemory
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var data = JsonSerializer.Deserialize<IndexCollection>(json, s_caseInsensitiveJsonOptions) ?? new IndexCollection();
 
         return data.Results;
@@ -152,8 +154,7 @@ public class MemoryWebClient : IKernelMemory
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
-        var url = Constants.HttpDeleteIndexEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index);
+        var url = Constants.HttpDeleteIndexEndpointWithParams.Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
         // No error if the index doesn't exist
@@ -181,8 +182,8 @@ public class MemoryWebClient : IKernelMemory
         }
 
         var url = Constants.HttpDeleteDocumentEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index)
-            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase);
         HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
         // No error if the document doesn't exist
@@ -218,8 +219,8 @@ public class MemoryWebClient : IKernelMemory
         CancellationToken cancellationToken = default)
     {
         var url = Constants.HttpUploadStatusEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index)
-            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase);
         HttpResponseMessage? response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -228,7 +229,7 @@ public class MemoryWebClient : IKernelMemory
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
 
         return status;
@@ -247,24 +248,38 @@ public class MemoryWebClient : IKernelMemory
 
         response.EnsureSuccessStatusCode();
 
-        // Header example: Content-Type: text/csv
-        response.Headers.TryGetValues("Content-Type", out IEnumerable<string> contentTypeValues);
-        string contentType = (from x in contentTypeValues select x).FirstOrDefault() ?? "application/octet-stream";
+        string contentType = "application/octet-stream";
+        long contentLength = 0;
+        DateTimeOffset lastModifiedValue = DateTimeOffset.MinValue;
 
-        // Header example: Content-Disposition: attachment; filename=data.csv; filename*=UTF-8''data.csv
-        response.Headers.TryGetValues("Content-Disposition", out IEnumerable<string> contentDispositionValues);
-        var disposition = ContentDispositionHeaderValue.Parse(contentDispositionValues.FirstOrDefault());
+        // Headers example:
+        // - Content-Type: text/csv
+        // - Content-Length: 123
+        // - Last-Modified: Wed, 01 May 2024 04:56:10 GMT
+        // - Content-Disposition: attachment; filename=data.csv; filename*=UTF-8''data.csv
+        response.Headers.TryGetValues("Content-Type", out IEnumerable<string>? contentTypeValues);
+        response.Headers.TryGetValues("Content-Length", out IEnumerable<string>? contentLengthValues);
+        response.Headers.TryGetValues("Last-Modified", out IEnumerable<string>? lastModifiedValues);
+        // response.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositionValues);
 
-        // Header example: Last-Modified: Wed, 01 May 2024 04:56:10 GMT
-        response.Headers.TryGetValues("Last-Modified", out IEnumerable<string> lastModifiedValues);
-        if (!DateTimeOffset.TryParse((from x in lastModifiedValues select x).FirstOrDefault(), out DateTimeOffset lastModifiedValue))
+        if (contentTypeValues != null && contentTypeValues.Any())
+        {
+            contentType = contentTypeValues.First();
+        }
+
+        if (contentLengthValues != null && contentLengthValues.Any())
+        {
+            contentLength = long.Parse(contentLengthValues.First(), CultureInfo.CurrentCulture);
+        }
+
+        if (!DateTimeOffset.TryParse((from x in lastModifiedValues select x).FirstOrDefault(), out lastModifiedValue))
         {
             lastModifiedValue = DateTimeOffset.MinValue;
         }
 
         StreamableFileContent result = new(
-            fileName: disposition.FileName ?? "file.bin",
-            fileSize: disposition.Size.GetValueOrDefault(),
+            fileName: fileName,
+            fileSize: contentLength,
             fileType: contentType,
             lastWriteTimeUtc: lastModifiedValue,
             asyncStreamDelegate: response.Content.ReadAsStreamAsync);
@@ -301,7 +316,7 @@ public class MemoryWebClient : IKernelMemory
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<SearchResult>(json, s_caseInsensitiveJsonOptions) ?? new SearchResult();
     }
 
@@ -333,7 +348,7 @@ public class MemoryWebClient : IKernelMemory
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
     }
 

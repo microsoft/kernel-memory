@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Orchestration.AzureQueues</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Orchestration.AzureQueues</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP04;CA1724;CS1591;CA1308;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,10 +15,6 @@
     <ItemGroup>
         <PackageReference Include="Azure.Identity" />
         <PackageReference Include="Azure.Storage.Queues" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
     </ItemGroup>
 
     <Import Project="../../code-analysis.props" />

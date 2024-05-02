@@ -6,7 +6,7 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.FileSystem.DevTools;
+namespace Microsoft.KM.Core.UnitTests.FileSystem.DevTools;
 
 public class OnDiskFileSystemTest : BaseUnitTestCase
 {

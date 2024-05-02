@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.Core.FunctionalTests.DefaultTestCases;
+namespace Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 
 public static class DocumentUploadTest
 {

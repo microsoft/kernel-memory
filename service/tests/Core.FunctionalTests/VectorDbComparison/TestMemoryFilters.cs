@@ -7,12 +7,13 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
+using Microsoft.KM.TestHelpers;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
 // ReSharper disable MissingBlankLines
 
-namespace Microsoft.Core.FunctionalTests.VectorDbComparison;
+namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
 public class TestMemoryFilters : BaseFunctionalTestCase
 {

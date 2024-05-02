@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,8 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
-public class AzureBlobsStorage : IContentStorage
+[Experimental("KMEXP03")]
+public sealed class AzureBlobsStorage : IContentStorage
 {
     private const string DefaultContainerName = "smemory";
     private const string DefaultEndpointSuffix = "core.windows.net";

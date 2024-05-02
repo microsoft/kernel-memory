@@ -6,7 +6,7 @@ using System.Text.Json;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class QdrantConfig
+public sealed class QdrantConfig
 {
     internal static readonly JsonSerializerOptions JSONOptions = new()
     {

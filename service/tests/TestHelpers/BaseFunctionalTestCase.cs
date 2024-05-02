@@ -7,9 +7,10 @@ using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
+using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.TestHelpers;
+namespace Microsoft.KM.TestHelpers;
 
 public abstract class BaseFunctionalTestCase : IDisposable
 {

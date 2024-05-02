@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
-public class InProcessPipelineOrchestrator : BaseOrchestrator
+[Experimental("KMEXP04")]
+public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
 {
     private readonly Dictionary<string, IPipelineStepHandler> _handlers = new(StringComparer.InvariantCultureIgnoreCase);
 

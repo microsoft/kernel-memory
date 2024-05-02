@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.
 /// </summary>
-public class GenerateEmbeddingsHandler : IPipelineStepHandler
+public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;

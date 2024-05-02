@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory.SemanticKernel;
 
-internal class SemanticKernelTextGenerator : ITextGenerator
+internal sealed class SemanticKernelTextGenerator : ITextGenerator
 {
     private readonly ITextGenerationService _service;
     private readonly ITextTokenizer _tokenizer;

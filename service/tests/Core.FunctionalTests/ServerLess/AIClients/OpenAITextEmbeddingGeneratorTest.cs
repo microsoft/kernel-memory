@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.ServerLess.AIClients;
+namespace Microsoft.KM.Core.FunctionalTests.ServerLess.AIClients;
 
 // ReSharper disable StringLiteralTypo
 public sealed class OpenAITextEmbeddingGeneratorTest : BaseFunctionalTestCase

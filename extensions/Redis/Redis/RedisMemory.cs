@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Redis;
 /// <summary>
 /// Implementation of an IMemoryDb using Redis.
 /// </summary>
+[Experimental("KMEXP03")]
 public sealed class RedisMemory : IMemoryDb
 {
     private readonly IDatabase _db;

@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.MemoryDb.Redis;
 
-public class RedisException : KernelMemoryException
+public sealed class RedisException : KernelMemoryException
 {
     /// <inheritdoc />
     public RedisException() { }

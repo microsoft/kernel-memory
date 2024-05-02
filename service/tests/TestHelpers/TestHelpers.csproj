@@ -3,12 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <IsTestProject>true</IsTestProject>
-        <AssemblyName>Microsoft.TestHelpers</AssemblyName>
-        <RootNamespace>Microsoft.TestHelpers</RootNamespace>
+        <AssemblyName>Microsoft.KM.TestHelpers</AssemblyName>
+        <RootNamespace>Microsoft.KM.TestHelpers</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CS1591;CA1861;CA1051;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CS1591;CA1861;CA1051;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

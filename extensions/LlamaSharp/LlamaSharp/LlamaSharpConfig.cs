@@ -6,7 +6,7 @@ using System.IO;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class LlamaSharpConfig
+public sealed class LlamaSharpConfig
 {
     /// <summary>
     /// Path to the *.gguf file.

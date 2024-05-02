@@ -4,7 +4,7 @@ using Microsoft.KernelMemory.Extensions;
 using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.Extensions;
+namespace Microsoft.KM.Core.UnitTests.Extensions;
 
 // ReSharper disable StringLiteralTypo
 public class BinaryDataExtensionsTest : BaseUnitTestCase

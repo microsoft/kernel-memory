@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,8 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
-public class TextDecoder : IContentDecoder
+[Experimental("KMEXP00")]
+public sealed class TextDecoder : IContentDecoder
 {
     private readonly ILogger<TextDecoder> _log;
 

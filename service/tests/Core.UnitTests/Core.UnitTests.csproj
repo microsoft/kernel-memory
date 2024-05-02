@@ -3,13 +3,14 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.Core.UnitTests</AssemblyName>
+        <AssemblyName>Microsoft.KM.Core.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CS1591;CA1861;CA1031;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;CS1591;CA1861;CA1031;</NoWarn>
+        <RootNamespace>Microsoft.KM.Core.UnitTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

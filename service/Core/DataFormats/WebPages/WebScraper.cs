@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,7 +17,8 @@ using Polly;
 
 namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
-public class WebScraper : IWebScraper
+[Experimental("KMEXP00")]
+public sealed class WebScraper : IWebScraper
 {
     private readonly ILogger _log;
 

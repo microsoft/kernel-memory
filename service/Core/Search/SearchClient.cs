@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-public class SearchClient : ISearchClient
+internal sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;

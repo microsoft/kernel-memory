@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbAtlasException : KernelMemoryException
+public sealed class MongoDbAtlasException : KernelMemoryException
 {
     /// <inheritdoc />
     public MongoDbAtlasException() { }

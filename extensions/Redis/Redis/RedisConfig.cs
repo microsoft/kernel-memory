@@ -9,7 +9,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Lays out the tag fields that you want redis to index.
 /// </summary>
-public class RedisConfig
+public sealed class RedisConfig
 {
     /// <summary>
     /// The default prefix to be used for index names.

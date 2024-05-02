@@ -8,11 +8,12 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
+using Microsoft.KM.TestHelpers;
 using Microsoft.TestHelpers;
 using StackExchange.Redis;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.VectorDbComparison;
+namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
 public class TestCosineSimilarity : BaseFunctionalTestCase
 {

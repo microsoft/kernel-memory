@@ -10,7 +10,7 @@ internal static class Program
     public static async Task Main()
     {
         var memory = new KernelMemoryBuilder()
-            .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
             .Build<MemoryServerless>();
 
         memory.Orchestrator.AddHandler<MyHandler>("my_step");

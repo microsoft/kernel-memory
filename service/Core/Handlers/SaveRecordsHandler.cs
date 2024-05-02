@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class SaveRecordsHandler : IPipelineStepHandler
+public sealed class SaveRecordsHandler : IPipelineStepHandler
 {
     private class FileDetailsWithRecordId
     {

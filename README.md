@@ -84,7 +84,7 @@ class in your .NET app.
 >
 > ```csharp
 > var memory = new KernelMemoryBuilder()
->     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+>     .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
 >     .Build<MemoryServerless>();
 >
 > // Import a file
@@ -270,7 +270,7 @@ customize the steps, which will be handled by your custom business logic:
 // Memory setup, e.g. how to calculate and where to store embeddings
 var memoryBuilder = new KernelMemoryBuilder()
     .WithoutDefaultHandlers()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
 
 var memory = memoryBuilder.Build();
 

@@ -11,7 +11,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Azure OpenAI settings.
 /// </summary>
-public class AzureOpenAIConfig
+public sealed class AzureOpenAIConfig
 {
     private TokenCredential? _tokenCredential;
 

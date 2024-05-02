@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,12 +12,14 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
-public class AzureOpenAITextGenerator : ITextGenerator
+[Experimental("KMEXP01")]
+public sealed class AzureOpenAITextGenerator : ITextGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;

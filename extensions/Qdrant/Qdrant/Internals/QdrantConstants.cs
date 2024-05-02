@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 
-public static class QdrantConstants
+internal static class QdrantConstants
 {
     // Qdrant points properties
     public const string PointIdField = "id";

@@ -4,7 +4,7 @@
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class RabbitMqConfig
+public sealed class RabbitMqConfig
 {
     public string Host { get; set; } = "";
     public int Port { get; set; } = 0;

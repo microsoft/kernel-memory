@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -19,7 +20,8 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 /// <summary>
 /// Implementation of <see cref="IMemoryDb"/> based on MongoDB Atlas.
 /// </summary>
-public class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
+[Experimental("KMEXP03")]
+public sealed class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
 {
     private const string ConnectionNamePrefix = "_ix_";
 

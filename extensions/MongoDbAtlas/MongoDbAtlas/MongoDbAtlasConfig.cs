@@ -8,7 +8,7 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 /// <summary>
 /// Represents configuration for MongoDB Atlas memory storage and vector storage.
 /// </summary>
-public class MongoDbAtlasConfig
+public sealed class MongoDbAtlasConfig
 {
     /// <summary>
     /// Full connection string to a valid instance of MongoDB Atlas. It can contain

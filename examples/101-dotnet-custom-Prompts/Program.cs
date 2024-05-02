@@ -24,7 +24,7 @@ public static class Program
 
         var memory = new KernelMemoryBuilder()
             .WithCustomPromptProvider(new MyPromptProvider())
-            // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
             // .WithOpenAI(openAICfg)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)

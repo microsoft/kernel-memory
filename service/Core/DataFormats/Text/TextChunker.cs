@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.KernelMemory.AI.OpenAI;
@@ -14,6 +15,7 @@ namespace Microsoft.KernelMemory.DataFormats.Text;
 /// For plain text, split looking at new lines first, then periods, and so on.
 /// For markdown, split looking at punctuation first, and so on.
 /// </summary>
+[Experimental("KMEXP00")]
 public static class TextChunker
 {
     /// <summary>

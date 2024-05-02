@@ -3,10 +3,10 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.ServerLess.AIClients;
+namespace Microsoft.KM.Core.FunctionalTests.ServerLess.AIClients;
 
 public class AzureOpenAITextGeneratorTest : BaseFunctionalTestCase
 {

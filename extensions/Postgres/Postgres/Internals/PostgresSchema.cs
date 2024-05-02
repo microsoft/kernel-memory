@@ -2,7 +2,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.KernelMemory.Postgres.Db;
+namespace Microsoft.KernelMemory.Postgres;
 
 internal static class PostgresSchema
 {

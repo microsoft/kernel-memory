@@ -23,7 +23,7 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 var memory = new KernelMemoryBuilder(appBuilder.Services)
     .WithoutDefaultHandlers()
     .WithSimpleQueuesPipeline() // Queues are required by handlers hosted as a service
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
     .Build();
 
 // Console.WriteLine("Memory type: " + memory.GetType().FullName);

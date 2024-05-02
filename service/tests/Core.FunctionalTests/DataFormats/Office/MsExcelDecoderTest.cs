@@ -2,10 +2,10 @@
 
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.Office;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.DataFormats.Office;
+namespace Microsoft.KM.Core.FunctionalTests.DataFormats.Office;
 
 public class MsExcelDecoderTest : BaseFunctionalTestCase
 {

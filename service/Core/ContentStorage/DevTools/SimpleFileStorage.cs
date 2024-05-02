@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.ContentStorage.DevTools;
 
+[Experimental("KMEXP03")]
 public class SimpleFileStorage : IContentStorage
 {
     private readonly ILogger<SimpleFileStorage> _log;

@@ -11,7 +11,7 @@ using Microsoft.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests;
+namespace Microsoft.KM.Core.UnitTests;
 
 public class KernelMemoryBuilderTest : BaseUnitTestCase
 {
