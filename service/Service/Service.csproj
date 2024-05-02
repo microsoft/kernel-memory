@@ -8,32 +8,10 @@
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CA2007;CA1724;CA2254;CA1031;CS1591;CA1861;CA1303;SKEXP0001;</NoWarn>
-        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Microsoft.KernelMemory.Core is imported via Microsoft.KernelMemory.Service.AspNetCore. 
-             Microsoft.KernelMemory.Core includes also extensions without external dependencies, e.g. all Azure extensions -->
-
-        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
-
-        <!-- These extensions are used by ServiceConfiguration to support third party dependencies -->
-
-        <PackageReference Include="Microsoft.KernelMemory.AI.LlamaSharp" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
-
-        <PackageReference Include="Microsoft.KernelMemory.MongoDbAtlas" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
-
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
-
-        <PackageReference Include="Microsoft.KernelMemory.Orchestration.RabbitMQ" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
-
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Redis" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>

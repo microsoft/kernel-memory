@@ -9,12 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\OpenAI\OpenAI.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,7 +27,7 @@
     <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.AzureOpenAI</PackageId>
         <Product>Azure OpenAI LLM connector for Kernel Memory</Product>
         <Description>Provide access to Azure OpenAI LLM models in Kernel Memory to generate embeddings and text</Description>

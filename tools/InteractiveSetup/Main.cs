@@ -29,7 +29,7 @@ public static class Main
             // Orchestration
             QueuesTypeSetup(ctx);
             AzureQueue.Setup(ctx);
-            RabbitMQ.Setup(ctx);
+            Services.RabbitMQ.Setup(ctx);
             SimpleQueues.Setup(ctx);
 
             // Storage
@@ -51,7 +51,7 @@ public static class Main
             MemoryDbTypeSetup(ctx);
             AzureAISearch.Setup(ctx);
             MongoDbAtlasMemoryDb.Setup(ctx);
-            Postgres.Setup(ctx);
+            Services.Postgres.Setup(ctx);
             Qdrant.Setup(ctx);
             Redis.Setup(ctx);
             SimpleVectorDb.Setup(ctx);
@@ -123,7 +123,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
-                    Postgres.Setup(ctx, true);
+                    Services.Postgres.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
@@ -131,7 +131,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    RabbitMQ.Setup(ctx, true);
+                    Services.RabbitMQ.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
