@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,8 +112,7 @@ public sealed class RabbitMQPipeline : IQueue
         {
             try
             {
-                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId,
-                    TimeSpan.FromMilliseconds(Convert.ToDouble(args.BasicProperties.Expiration, CultureInfo.InvariantCulture)).TotalMilliseconds);
+                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
