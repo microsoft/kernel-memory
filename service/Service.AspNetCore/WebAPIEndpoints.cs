@@ -351,7 +351,7 @@ public static class WebAPIEndpoints
                     }
 
                     log.LogTrace("Downloading file '{0}', size '{1}', type '{2}'", filename, file.FileSize, file.FileType);
-                    Stream resultingFileStream = await file.StreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Stream resultingFileStream = await file.GetStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
                     var response = Results.Stream(
                         resultingFileStream,
                         contentType: file.FileType,

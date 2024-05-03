@@ -60,7 +60,7 @@ public static class DocumentUploadTest
 
         // Act
         var streamAbleFileInfo = await memory.ExportFileAsync(documentId: Id, fileName: fileName);
-        var pdfBytes = (await streamAbleFileInfo.StreamAsync()).ReadAllBytes();
+        var pdfBytes = (await streamAbleFileInfo.GetStreamAsync()).ReadAllBytes();
         log($"Export {streamAbleFileInfo.FileName}, size: {streamAbleFileInfo.FileSize}");
 
         // Assert

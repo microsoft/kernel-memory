@@ -199,7 +199,7 @@ public class InMemoryFileSystemTest : BaseUnitTestCase
         // Act
         var contentFile = await this._target.ReadFileInfoAsync(Vol, "sub1/sub2", "file.txt");
         BinaryData? data;
-        await using (Stream stream = await contentFile.StreamAsync())
+        await using (Stream stream = await contentFile.GetStreamAsync())
         {
             data = new BinaryData(stream.ReadAllBytes());
             stream.Close();

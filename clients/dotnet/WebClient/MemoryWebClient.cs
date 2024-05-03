@@ -242,48 +242,23 @@ public class MemoryWebClient : IKernelMemory
         string? index = null,
         CancellationToken cancellationToken = default)
     {
-        string indexParam = index != null ? $"index={index}&" : "";
-        string requestUri = $"{Constants.HttpDownloadEndpoint}?{indexParam}documentId ={documentId}&filename={fileName}";
-        HttpResponseMessage? response = await this._client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
+        string requestUri = Constants.HttpDownloadEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpFilenamePlaceholder, fileName, StringComparison.OrdinalIgnoreCase);
 
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage httpResponse = await this._client.GetAsync(requestUri, cancellationToken).ConfigureAwait(false);
+        ArgumentNullExceptionEx.ThrowIfNull(httpResponse, nameof(httpResponse), "KernelMemory HTTP response is NULL");
 
-        string contentType = "application/octet-stream";
-        long contentLength = 0;
-        DateTimeOffset lastModifiedValue = DateTimeOffset.MinValue;
+        httpResponse.EnsureSuccessStatusCode();
+        (string contentType, long contentLength, DateTimeOffset lastModified) = GetFileDetails(httpResponse);
 
-        // Headers example:
-        // - Content-Type: text/csv
-        // - Content-Length: 123
-        // - Last-Modified: Wed, 01 May 2024 04:56:10 GMT
-        // - Content-Disposition: attachment; filename=data.csv; filename*=UTF-8''data.csv
-        response.Headers.TryGetValues("Content-Type", out IEnumerable<string>? contentTypeValues);
-        response.Headers.TryGetValues("Content-Length", out IEnumerable<string>? contentLengthValues);
-        response.Headers.TryGetValues("Last-Modified", out IEnumerable<string>? lastModifiedValues);
-        // response.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositionValues);
-
-        if (contentTypeValues != null && contentTypeValues.Any())
-        {
-            contentType = contentTypeValues.First();
-        }
-
-        if (contentLengthValues != null && contentLengthValues.Any())
-        {
-            contentLength = long.Parse(contentLengthValues.First(), CultureInfo.CurrentCulture);
-        }
-
-        if (!DateTimeOffset.TryParse((from x in lastModifiedValues select x).FirstOrDefault(), out lastModifiedValue))
-        {
-            lastModifiedValue = DateTimeOffset.MinValue;
-        }
-
-        StreamableFileContent result = new(
+        return new StreamableFileContent(
             fileName: fileName,
             fileSize: contentLength,
             fileType: contentType,
-            lastWriteTimeUtc: lastModifiedValue,
-            asyncStreamDelegate: response.Content.ReadAsStreamAsync);
-        return result;
+            lastWriteTimeUtc: lastModified,
+            asyncStreamDelegate: httpResponse.Content.ReadAsStreamAsync);
     }
 
     /// <inheritdoc />
@@ -353,6 +328,47 @@ public class MemoryWebClient : IKernelMemory
     }
 
     #region private
+
+    private static (string contentType, long contentLength, DateTimeOffset lastModified) GetFileDetails(HttpResponseMessage response)
+    {
+        string contentType = "application/octet-stream";
+        long contentLength = 0;
+        DateTimeOffset lastModified = DateTimeOffset.MinValue;
+
+        // Headers example:
+        // - HTTP/1.1 200 OK
+        // - Content-Length: 96195
+        // - Content-Type: text/plain
+        // - Date: Fri, 13 May 2044 10:09:30 GMT
+        // - Server: Kestrel
+        // - Accept-Ranges: bytes
+        // - Last-Modified: Fri, 03 May 2044 09:10:30 GMT
+        // - Content-Disposition: attachment; filename=file1.pdf; filename*=UTF-8''file1.pdf
+        response.Content.Headers.TryGetValues("Content-Type", out IEnumerable<string>? contentTypeValues);
+        response.Content.Headers.TryGetValues("Content-Length", out IEnumerable<string>? contentLengthValues);
+        response.Content.Headers.TryGetValues("Last-Modified", out IEnumerable<string>? lastModifiedValues);
+        // response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositionValues);
+
+        if (contentTypeValues != null && contentTypeValues.Any())
+        {
+            contentType = contentTypeValues.First();
+        }
+
+        if (contentLengthValues != null && contentLengthValues.Any())
+        {
+            contentLength = long.Parse(contentLengthValues.First(), CultureInfo.CurrentCulture);
+        }
+
+        if (lastModifiedValues != null && lastModifiedValues.Any())
+        {
+            if (!DateTimeOffset.TryParse(lastModifiedValues.First(), out lastModified))
+            {
+                lastModified = DateTimeOffset.MinValue;
+            }
+        }
+
+        return (contentType, contentLength, lastModified);
+    }
 
     /// <returns>Document ID</returns>
     private async Task<string> ImportInternalAsync(
