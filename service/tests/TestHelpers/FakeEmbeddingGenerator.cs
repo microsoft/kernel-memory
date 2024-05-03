@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 
-namespace Microsoft.TestHelpers;
+namespace Microsoft.KM.TestHelpers;
 
 public sealed class FakeEmbeddingGenerator : ITextEmbeddingGenerator
 {

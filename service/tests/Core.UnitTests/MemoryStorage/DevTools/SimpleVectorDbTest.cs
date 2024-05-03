@@ -6,7 +6,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 

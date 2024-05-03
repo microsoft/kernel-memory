@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory.Extensions;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.UnitTests.Extensions;

@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 

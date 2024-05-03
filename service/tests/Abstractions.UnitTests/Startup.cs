@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace Abstractions.UnitTests;
+namespace Microsoft.KM.Abstractions.UnitTests;
 
 public class Startup
 {
