@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public sealed class AzureAIDocIntelConfig
+public class AzureAIDocIntelConfig
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AuthTypes

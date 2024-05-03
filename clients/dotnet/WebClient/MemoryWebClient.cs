@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory;
 
 #pragma warning disable CA2234 // using string URIs is ok
 
-public class MemoryWebClient : IKernelMemory
+public sealed class MemoryWebClient : IKernelMemory
 {
     private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
 

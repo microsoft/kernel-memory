@@ -10,7 +10,7 @@ using Azure.Storage;
 namespace Microsoft.KernelMemory;
 
 #pragma warning disable CA1024 // properties would need to require serializer cfg to ignore them
-public sealed class AzureBlobsConfig
+public class AzureBlobsConfig
 {
     private StorageSharedKeyCredential? _storageSharedKeyCredential;
     private AzureSasCredential? _azureSasCredential;

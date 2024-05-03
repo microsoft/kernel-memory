@@ -20,7 +20,7 @@ namespace Microsoft.KernelMemory.AppBuilders;
 /// through the complete list of service descriptors.
 /// </summary>
 [Experimental("KMEXP00")]
-public class ServiceCollectionPool : IServiceCollection
+public sealed class ServiceCollectionPool : IServiceCollection
 {
     /// <summary>
     /// Collection of service collections, ie the pool.

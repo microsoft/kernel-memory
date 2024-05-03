@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 
-public sealed class QdrantException : KernelMemoryException
+public class QdrantException : KernelMemoryException
 {
     /// <inheritdoc />
     public QdrantException() { }

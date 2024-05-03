@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Postgres configuration
 /// </summary>
-public sealed class PostgresConfig
+public class PostgresConfig
 {
     /// <summary>
     /// Key for the Columns dictionary
