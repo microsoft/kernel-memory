@@ -43,7 +43,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="$(RepoRoot)/packages/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
+        <None Include="icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
