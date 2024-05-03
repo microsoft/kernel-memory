@@ -2,14 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.KernelMemory.AI;
 
 /// <summary>
 /// Settings for a text completion request.
 /// </summary>
-[Experimental("KMEXP00")]
 public class TextGenerationOptions
 {
     /// <summary>

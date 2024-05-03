@@ -18,6 +18,7 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
+// TODO: optionally use one container per index
 [Experimental("KMEXP03")]
 public sealed class AzureBlobsStorage : IContentStorage
 {
