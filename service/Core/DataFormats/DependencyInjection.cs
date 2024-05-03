@@ -91,6 +91,7 @@ public static partial class DependencyInjection
         this IServiceCollection services)
     {
         services.AddSingleton<IWebScraper, WebScraper>();
+        services.AddHttpClient<IWebScraper, WebScraper>();
         return services;
     }
 

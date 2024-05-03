@@ -32,6 +32,7 @@
         <PackageReference Include="DocumentFormat.OpenXml" />
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Http" />
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
