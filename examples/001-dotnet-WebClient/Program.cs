@@ -264,7 +264,7 @@ public static class Program
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         // Show sources / citations
