@@ -27,7 +27,6 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// Azure AI Search connector for Kernel Memory
 /// TODO:
 /// * support semantic search
-/// * support hybrid search
 /// * support custom schema
 /// * support custom Azure AI Search logic
 /// </summary>
