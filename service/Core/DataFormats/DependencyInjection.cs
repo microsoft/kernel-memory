@@ -91,7 +91,10 @@ public static partial class DependencyInjection
         this IServiceCollection services)
     {
         services.AddSingleton<IWebScraper, WebScraper>();
-        services.AddHttpClient<IWebScraper, WebScraper>();
+
+        // TODO - if you need typed clients, for now inject them outside KernelMemoryBuilder
+        // services.AddHttpClient<IWebScraper, WebScraper>();
+
         return services;
     }
 
