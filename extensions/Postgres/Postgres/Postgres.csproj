@@ -5,12 +5,11 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Postgres</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Postgres</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;NU5104;CA1308;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1724;NU5104;CA1308;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +22,7 @@
     <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.MemoryDb.Postgres</PackageId>
         <Product>Kernel Memory extension for Postgres</Product>
         <Description>Postgres(with pgvector extension) connector for Microsoft Kernel Memory, to store and search memory using Postgres vector indexing and Postgres features.</Description>

@@ -26,7 +26,7 @@ using Microsoft.KernelMemory.Handlers;
 
 var memoryBuilder = new KernelMemoryBuilder()
     .WithoutDefaultHandlers() // remove default handlers, added manually below
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);
 
 var memory = memoryBuilder.Build<MemoryServerless>();
 

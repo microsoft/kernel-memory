@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,8 @@ namespace Microsoft.KernelMemory.DataFormats.AzureAIDocIntel;
 /// <summary>
 /// OCR engine based on Azure AI Document Intelligence
 /// </summary>
-public class AzureAIDocIntelEngine : IOcrEngine
+[Experimental("KMEXP02")]
+public sealed class AzureAIDocIntelEngine : IOcrEngine
 {
     private readonly DocumentAnalysisClient _recognizerClient;
     private readonly ILogger<AzureAIDocIntelEngine> _log;

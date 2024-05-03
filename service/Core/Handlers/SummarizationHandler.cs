@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class SummarizationHandler : IPipelineStepHandler
+public sealed class SummarizationHandler : IPipelineStepHandler
 {
     private const int MinLength = 50;
 

@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-        <NoWarn>$(NoWarn);CA1303;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CA1303;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

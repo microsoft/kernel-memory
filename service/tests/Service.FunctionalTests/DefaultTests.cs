@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Service.FunctionalTests;
+namespace Microsoft.KM.Service.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {

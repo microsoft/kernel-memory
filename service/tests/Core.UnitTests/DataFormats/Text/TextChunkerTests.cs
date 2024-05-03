@@ -3,7 +3,7 @@
 using System.Text;
 using Microsoft.KernelMemory.DataFormats.Text;
 
-namespace Core.UnitTests.DataFormats.Text;
+namespace Microsoft.KM.Core.UnitTests.DataFormats.Text;
 
 public sealed class TextChunkerTests
 {

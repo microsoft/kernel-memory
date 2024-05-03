@@ -3,10 +3,10 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.FileSystem.DevTools;
+namespace Microsoft.KM.Core.UnitTests.FileSystem.DevTools;
 
 public class OnDiskFileSystemTest : BaseUnitTestCase
 {
@@ -150,7 +150,7 @@ public class OnDiskFileSystemTest : BaseUnitTestCase
         // Act
         var contentFile = await this._target.ReadFileInfoAsync(Vol, "sub1/sub2", "file.txt");
         BinaryData? data;
-        await using (Stream stream = await contentFile.StreamAsync())
+        await using (Stream stream = await contentFile.GetStreamAsync())
         {
             data = new BinaryData(stream.ReadAllBytes());
             stream.Close();

@@ -34,9 +34,7 @@ public static class WebAPIEndpoints
         builder.AddAskEndpoint(apiPrefix, authFilter);
         builder.AddSearchEndpoint(apiPrefix, authFilter);
         builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
-#if KernelMemoryDev
         builder.AddGetDownloadEndpoint(apiPrefix, authFilter);
-#endif
 
         return builder;
     }
@@ -306,7 +304,6 @@ public static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-#if KernelMemoryDev
     public static void AddGetDownloadEndpoint(this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
@@ -354,7 +351,7 @@ public static class WebAPIEndpoints
                     }
 
                     log.LogTrace("Downloading file '{0}', size '{1}', type '{2}'", filename, file.FileSize, file.FileType);
-                    Stream resultingFileStream = await file.StreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Stream resultingFileStream = await file.GetStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
                     var response = Results.Stream(
                         resultingFileStream,
                         contentType: file.FileType,
@@ -387,7 +384,6 @@ public static class WebAPIEndpoints
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
-#endif
 
     // Class used to tag log entries and allow log filtering
     // ReSharper disable once ClassNeverInstantiated.Local

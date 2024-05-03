@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace Microsoft.KernelMemory.Extensions;
 
-public static class BinaryDataExtensions
+internal static class BinaryDataExtensions
 {
     public static string CalculateSHA256(this BinaryData binaryData)
     {

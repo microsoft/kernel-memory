@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,8 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsExcelDecoder : IContentDecoder
+[Experimental("KMEXP00")]
+public sealed class MsExcelDecoder : IContentDecoder
 {
     private readonly MsExcelDecoderConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;

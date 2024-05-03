@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 /// without dependencies on embedding generators.
 /// This is NOT meant for real scenarios, only for code development.
 /// </summary>
+[Experimental("KMEXP03")]
 public class SimpleTextDb : IMemoryDb
 {
     private readonly IFileSystem _fileSystem;

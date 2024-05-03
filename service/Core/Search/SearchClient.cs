@@ -15,7 +15,7 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-public class SearchClient : ISearchClient
+internal sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
@@ -124,7 +124,7 @@ public class SearchClient : ISearchClient
             // Identify the file in case there are multiple files
             string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file in content storage
+            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
             var partitionText = memory.GetPartitionText(this._log).Trim();
@@ -233,7 +233,7 @@ public class SearchClient : ISearchClient
             // Identify the file in case there are multiple files
             string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file in content storage
+            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileName = memory.GetFileName(this._log);

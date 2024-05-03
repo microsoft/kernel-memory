@@ -11,7 +11,7 @@ using Microsoft.KernelMemory.MemoryStorage;
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
 // TODO: support bring your own index schema
-public sealed class AzureAISearchMemoryRecord
+internal sealed class AzureAISearchMemoryRecord
 {
     internal const string IdField = "id";
     internal const string VectorField = "embedding";

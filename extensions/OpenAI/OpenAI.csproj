@@ -5,12 +5,11 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.OpenAI</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.OpenAI</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CS1591;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,17 +21,12 @@
         <EmbeddedResource Include="GPT3\vocab.bpe" />
     </ItemGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
-        <InternalsVisibleTo Include="Microsoft.KernelMemory.AI.AzureOpenAI" />
-    </ItemGroup>
-
     <Import Project="../../code-analysis.props" />
 
     <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.OpenAI</PackageId>
         <Product>OpenAI LLM connector for Kernel Memory</Product>
         <Description>Provide access to OpenAI LLM models in Kernel Memory to generate embeddings and text</Description>

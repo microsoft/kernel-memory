@@ -7,7 +7,7 @@ using Azure.Core.Pipeline;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
-internal class ChangeEndpointPolicy : HttpPipelinePolicy
+internal sealed class ChangeEndpointPolicy : HttpPipelinePolicy
 {
     internal const string DefaultEndpoint = "https://api.openai.com/v1";
     private readonly string _endpoint;

@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Service;
 
-public class HttpAuthEndpointFilter : IEndpointFilter
+public sealed class HttpAuthEndpointFilter : IEndpointFilter
 {
     private readonly ServiceAuthorizationConfig _config;
 

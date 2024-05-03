@@ -4,12 +4,14 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 /// <summary>
 /// Base storage class for both memory and vector storage classes
 /// </summary>
+[Experimental("KMEXP03")]
 public abstract class MongoDbAtlasBaseStorage
 {
     /// <summary>

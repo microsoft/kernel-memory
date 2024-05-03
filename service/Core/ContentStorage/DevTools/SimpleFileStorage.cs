@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.ContentStorage.DevTools;
 
+[Experimental("KMEXP03")]
 public class SimpleFileStorage : IContentStorage
 {
     private readonly ILogger<SimpleFileStorage> _log;
@@ -103,8 +105,8 @@ public class SimpleFileStorage : IContentStorage
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
+        // IMPORTANT: documentId can be empty, e.g. when deleting an index
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
-        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
 
         try

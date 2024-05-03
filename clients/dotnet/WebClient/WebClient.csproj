@@ -1,16 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.WebClient</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <NoWarn>$(NoWarn);CS1591;NU5104;</NoWarn>
-        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <Import Project="../../../code-analysis.props" />

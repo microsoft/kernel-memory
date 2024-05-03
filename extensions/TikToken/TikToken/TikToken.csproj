@@ -9,16 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.ML.Tokenizers" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
     </ItemGroup>
 
     <Import Project="../../../code-analysis.props" />
@@ -26,7 +21,7 @@
     <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.TikToken</PackageId>
         <Product>TikToken tokenizers for Kernel Memory</Product>
         <Description>Provide TikToken tokenizers in Kernel Memory</Description>

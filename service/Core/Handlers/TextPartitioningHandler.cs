@@ -14,7 +14,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class TextPartitioningHandler : IPipelineStepHandler
+public sealed class TextPartitioningHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly TextPartitioningOptions _options;

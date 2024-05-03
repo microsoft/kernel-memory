@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,7 +15,8 @@ using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace Microsoft.KernelMemory.DataFormats.Pdf;
 
-public class PdfDecoder : IContentDecoder
+[Experimental("KMEXP00")]
+public sealed class PdfDecoder : IContentDecoder
 {
     private readonly ILogger<PdfDecoder> _log;
 

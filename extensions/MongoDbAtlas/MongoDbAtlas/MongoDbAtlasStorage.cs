@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,8 @@ using MongoDB.Driver.GridFS;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
+[Experimental("KMEXP03")]
+public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
 {
     public MongoDbAtlasStorage(MongoDbAtlasConfig config) : base(config)
     {
@@ -130,8 +132,8 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
     public async Task<StreamableFileContent> ReadFileAsync(
         string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
     {
+        // IMPORTANT: documentId can be empty, e.g. when deleting an index
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
-        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
 
         // Read from mongodb but you need to check extension to load correctly

@@ -11,7 +11,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class DeleteDocumentHandler : IPipelineStepHandler
+public sealed class DeleteDocumentHandler : IPipelineStepHandler
 {
     private readonly List<IMemoryDb> _memoryDbs;
     private readonly IContentStorage _contentStorage;

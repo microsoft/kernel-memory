@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 
-namespace Microsoft.Core.FunctionalTests.DefaultTestCases;
+namespace Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 
 public static class IndexCreationTest
 {

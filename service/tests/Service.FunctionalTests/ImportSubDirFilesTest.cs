@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Service.FunctionalTests;
+namespace Microsoft.KM.Service.FunctionalTests;
 
 public class ImportSubDirFilesTest : BaseFunctionalTestCase
 {

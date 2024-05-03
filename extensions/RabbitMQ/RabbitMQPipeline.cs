@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using RabbitMQ.Client.Events;
 
 namespace Microsoft.KernelMemory.Orchestration.RabbitMQ;
 
+[Experimental("KMEXP04")]
 public sealed class RabbitMQPipeline : IQueue
 {
     private readonly ILogger<RabbitMQPipeline> _log;

@@ -7,7 +7,7 @@ using System.Text.Json;
 using Microsoft.KernelMemory.MemoryStorage;
 using Pgvector;
 
-namespace Microsoft.KernelMemory.Postgres.Db;
+namespace Microsoft.KernelMemory.Postgres;
 
 /// <summary>
 /// Postgres record schema

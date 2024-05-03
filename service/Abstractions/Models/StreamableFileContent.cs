@@ -14,11 +14,11 @@ public sealed class StreamableFileContent : IDisposable
     public long FileSize { get; } = 0;
     public string FileType { get; } = string.Empty;
     public DateTimeOffset LastWrite { get; } = default;
-    public Func<Task<Stream>> StreamAsync { get; }
+    public Func<Task<Stream>> GetStreamAsync { get; }
 
     public StreamableFileContent()
     {
-        this.StreamAsync = () => Task.FromResult<Stream>(new MemoryStream());
+        this.GetStreamAsync = () => Task.FromResult<Stream>(new MemoryStream());
     }
 
     public StreamableFileContent(
@@ -36,7 +36,7 @@ public sealed class StreamableFileContent : IDisposable
         this.FileSize = fileSize;
         this.FileType = fileType;
         this.LastWrite = lastWriteTimeUtc;
-        this.StreamAsync = async () =>
+        this.GetStreamAsync = async () =>
         {
             this._stream = await asyncStreamDelegate().ConfigureAwait(false);
             return this._stream;

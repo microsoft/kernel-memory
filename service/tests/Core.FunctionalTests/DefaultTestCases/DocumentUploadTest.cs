@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.Core.FunctionalTests.DefaultTestCases;
+namespace Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 
 public static class DocumentUploadTest
 {
@@ -60,7 +60,7 @@ public static class DocumentUploadTest
 
         // Act
         var streamAbleFileInfo = await memory.ExportFileAsync(documentId: Id, fileName: fileName);
-        var pdfBytes = (await streamAbleFileInfo.StreamAsync()).ReadAllBytes();
+        var pdfBytes = (await streamAbleFileInfo.GetStreamAsync()).ReadAllBytes();
         log($"Export {streamAbleFileInfo.FileName}, size: {streamAbleFileInfo.FileSize}");
 
         // Assert

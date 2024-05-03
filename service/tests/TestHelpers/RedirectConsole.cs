@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 using Xunit.Abstractions;
 
-namespace Microsoft.TestHelpers;
+namespace Microsoft.KM.TestHelpers;
 
 internal sealed class RedirectConsole : TextWriter
 {

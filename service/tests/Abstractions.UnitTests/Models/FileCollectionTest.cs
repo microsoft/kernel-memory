@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory.Models;
 
-namespace Abstractions.UnitTests.Models;
+namespace Microsoft.KM.Abstractions.UnitTests.Models;
 
 public class FileCollectionTest
 {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,8 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Image;
 
-public class ImageDecoder : IContentDecoder
+[Experimental("KMEXP00")]
+public sealed class ImageDecoder : IContentDecoder
 {
     private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<ImageDecoder> _log;

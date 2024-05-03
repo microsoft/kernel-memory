@@ -5,13 +5,11 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.MongoDbAtlas</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MongoDbAtlas</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;CS1591;CA1308;</NoWarn>
-        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
+        <NoWarn>$(NoWarn);KMEXP03;CA1724;CS1591;CA1308;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,7 +25,7 @@
     <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
         <Product>MongoDb Atlas connector for Kernel Memory</Product>
         <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>

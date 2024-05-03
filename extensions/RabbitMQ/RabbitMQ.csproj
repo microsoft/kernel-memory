@@ -5,20 +5,15 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Orchestration.RabbitMQ</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Orchestration.RabbitMQ</RootNamespace>
-        <NoWarn>$(NoWarn);CS1591;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP04;CS1591;CA1724;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="RabbitMQ.Client" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
     </ItemGroup>
 
     <Import Project="../../code-analysis.props" />
@@ -26,7 +21,7 @@
     <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.Orchestration.RabbitMQ</PackageId>
         <Product>RabbitMQ connector for Kernel Memory</Product>
         <Description>RabbitMQ connector for Microsoft Kernel Memory, to run asynchronous pipelines via RabbitMQ queues.</Description>

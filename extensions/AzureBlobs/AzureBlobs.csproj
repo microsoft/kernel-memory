@@ -5,13 +5,11 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.ContentStorage.AzureBlobs</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.ContentStorage.AzureBlobs</RootNamespace>
-        <NoWarn>$(NoWarn);CA1724;CS1591;</NoWarn>
-        <DefineConstants Condition="'$(SolutionName)' == 'KernelMemoryDev'">$(DefineConstants);KernelMemoryDev</DefineConstants>
+        <NoWarn>$(NoWarn);KMEXP03;CA1724;CS1591;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,16 +17,12 @@
         <PackageReference Include="Azure.Storage.Blobs" />
     </ItemGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
-    </ItemGroup>
-
     <Import Project="../../code-analysis.props" />
 
     <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.ContentStorage.AzureBlobs</PackageId>
         <Product>Azure Blob Storage for Kernel Memory content storage</Product>
         <Description>Azure Blob Storage adapter allowing Kernel Memory to upload documents and maintain their state in Azure Blobs</Description>

@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.AI.TikToken;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 

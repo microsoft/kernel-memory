@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,9 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
-public class AzureBlobsStorage : IContentStorage
+// TODO: optionally use one container per index
+[Experimental("KMEXP03")]
+public sealed class AzureBlobsStorage : IContentStorage
 {
     private const string DefaultContainerName = "smemory";
     private const string DefaultEndpointSuffix = "core.windows.net";
@@ -207,8 +210,8 @@ public class AzureBlobsStorage : IContentStorage
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
+        // IMPORTANT: documentId can be empty, e.g. when deleting an index
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(index, nameof(index), "Index name is empty");
-        ArgumentNullExceptionEx.ThrowIfNullOrEmpty(documentId, nameof(documentId), "Document Id is empty");
         ArgumentNullExceptionEx.ThrowIfNullOrEmpty(fileName, nameof(fileName), "Filename is empty");
 
         var directoryName = JoinPaths(index, documentId);

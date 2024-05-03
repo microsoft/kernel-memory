@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.AzureAISearch.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

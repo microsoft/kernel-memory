@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 /// Basic implementation of a file based queue for local testing.
 /// This is not meant for production scenarios, only to avoid spinning up additional services.
 /// </summary>
+[Experimental("KMEXP04")]
 public sealed class SimpleQueues : IQueue
 {
     private sealed class MessageEventArgs : EventArgs

@@ -14,7 +14,7 @@ using Npgsql;
 using NpgsqlTypes;
 using Pgvector;
 
-namespace Microsoft.KernelMemory.Postgres.Db;
+namespace Microsoft.KernelMemory.Postgres;
 
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.

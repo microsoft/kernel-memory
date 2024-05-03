@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
-public class MemoryDbField
+internal class MemoryDbField
 {
 #pragma warning disable CA1720
     public enum FieldType

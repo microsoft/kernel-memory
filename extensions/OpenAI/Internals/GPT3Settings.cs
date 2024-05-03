@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.KernelMemory.AI.OpenAI.GPT3;
 
-namespace Microsoft.KernelMemory.AI.OpenAI.GPT3;
+namespace Microsoft.KernelMemory.AI.OpenAI;
 
 internal static class GPT3Settings
 {

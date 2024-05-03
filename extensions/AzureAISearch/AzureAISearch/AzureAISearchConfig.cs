@@ -26,8 +26,8 @@ public class AzureAISearchConfig
     public string APIKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Important: when using hybrid search, relevance scores a very
-    /// different from when using just vector search.
+    /// Important: when using hybrid search, relevance scores
+    /// are very different (e.g. lower) from when using just vector search.
     /// </summary>
     public bool UseHybridSearch { get; set; } = false;
 

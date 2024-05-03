@@ -11,9 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
         <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
-
-        <PackageReference Include="Microsoft.KernelMemory.MemoryDb.Postgres" Version="0.40.240501.1" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -2,7 +2,7 @@
 
 using System.Text.Json;
 using Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
 namespace Qdrant.UnitTests;

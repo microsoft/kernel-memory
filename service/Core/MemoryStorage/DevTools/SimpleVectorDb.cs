@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,6 +22,7 @@ namespace Microsoft.KernelMemory.MemoryStorage.DevTools;
 /// Basic vector db implementation, designed for tests and demos only.
 /// When searching, uses brute force comparing against all stored records.
 /// </summary>
+[Experimental("KMEXP03")]
 public class SimpleVectorDb : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -20,7 +21,8 @@ namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 /// TODO:
 /// * allow using more Qdrant specific filtering logic
 /// </summary>
-public class QdrantMemory : IMemoryDb
+[Experimental("KMEXP03")]
+public sealed class QdrantMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;

@@ -3,13 +3,14 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.Abstractions.UnitTests</AssemblyName>
+        <AssemblyName>Microsoft.KM.Abstractions.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CS1591;CA1861;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CS1591;CA1861;</NoWarn>
+        <RootNamespace>Microsoft.KM.Abstractions.UnitTests</RootNamespace>
     </PropertyGroup>
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
         <DefineConstants>OS_WINDOWS</DefineConstants>

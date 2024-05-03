@@ -18,7 +18,7 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
 /// </summary>
-public class TextExtractionHandler : IPipelineStepHandler
+public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly IEnumerable<IContentDecoder> _decoders;
@@ -136,6 +136,13 @@ public class TextExtractionHandler : IPipelineStepHandler
         }
 
         return (true, pipeline);
+    }
+
+    public void Dispose()
+    {
+        if (this._webScraper is not IDisposable x) { return; }
+
+        x.Dispose();
     }
 
     private async Task<(DataPipeline.FileDetails downloadedPage, BinaryData pageContent, bool skip)> DownloadContentAsync(

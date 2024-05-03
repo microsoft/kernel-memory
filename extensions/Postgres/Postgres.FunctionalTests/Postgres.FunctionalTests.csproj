@@ -9,7 +9,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CA1859;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1859;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

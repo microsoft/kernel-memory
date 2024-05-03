@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable RedundantUsingDirective
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
 
@@ -66,6 +65,7 @@ public static class Program
         await AskQuestionsFilteringByTypeTag();
         await AskQuestionsAboutExcelData();
         await AskQuestionsAboutJsonFile();
+        await DownloadFile();
 
         // =======================
         // === PURGE =============
@@ -264,7 +264,7 @@ public static class Program
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         // Show sources / citations
@@ -482,6 +482,28 @@ public static class Program
         AZURE_CLIENT_SECRET. If you choose to use an "APIKey", you would need to provide the actual API key in the configuration.
 
         */
+    }
+
+    // Download file and print details
+    private static async Task DownloadFile()
+    {
+        const string filename = "file1-Wikipedia-Carbon.txt";
+
+        Console.WriteLine("Downloading file");
+        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: filename);
+        var stream = new MemoryStream();
+        await (await result.GetStreamAsync()).CopyToAsync(stream);
+        var bytes = stream.ToArray();
+
+        Console.WriteLine();
+        Console.WriteLine("Original File name : " + filename);
+        Console.WriteLine("Original File size : " + new FileInfo(filename).Length);
+        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(filename)).Length);
+        Console.WriteLine();
+        Console.WriteLine("Downloaded File name : " + result.FileName);
+        Console.WriteLine("Downloaded File type : " + result.FileType);
+        Console.WriteLine("Downloaded File size : " + result.FileSize);
+        Console.WriteLine("Downloaded Bytes count: " + bytes.Length);
     }
 
     // =======================

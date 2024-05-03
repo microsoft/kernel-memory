@@ -4,9 +4,9 @@ using System;
 using Azure;
 using Azure.Core;
 
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 
-internal class SequentialDelayStrategy : DelayStrategy
+internal sealed class SequentialDelayStrategy : DelayStrategy
 {
     private static readonly TimeSpan[] s_pollingSequence =
     {

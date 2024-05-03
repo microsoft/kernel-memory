@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Abstractions</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);CA1711;CS1591;CS1574;NU5104;SKEXP0001;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1591;CS1574;NU5104;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,16 +19,12 @@
         <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.Abstractions.UnitTests" />
-    </ItemGroup>
-
     <Import Project="../../code-analysis.props" />
 
     <Import Project="../../nuget-package.props" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
+        <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
         <Product>Kernel Memory Interfaces and Modules</Product>
         <Description>Kernel Memory is a Copilot/Semantic Kernel Plugin and Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. The package contains the interfaces and models shared by all Kernel Memory packages.</Description>

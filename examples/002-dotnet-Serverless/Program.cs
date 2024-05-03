@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable RedundantUsingDirective
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
 
@@ -9,9 +8,6 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.KernelMemory.Postgres;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -53,7 +49,7 @@ public static class Program
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
         s_memory = new KernelMemoryBuilder()
-            // .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
             // .WithOpenAI(openAIConfig)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
@@ -94,6 +90,7 @@ public static class Program
         await AskQuestionsFilteringByTypeTag();
         await AskQuestionsAboutExcelData();
         await AskQuestionsAboutJsonFile();
+        await DownloadFile();
 
         // =======================
         // === PURGE =============
@@ -510,6 +507,28 @@ public static class Program
         AZURE_CLIENT_SECRET. If you choose to use an "APIKey", you would need to provide the actual API key in the configuration.
 
         */
+    }
+
+    // Download file and print details
+    private static async Task DownloadFile()
+    {
+        const string filename = "file1-Wikipedia-Carbon.txt";
+
+        Console.WriteLine("Downloading file");
+        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: filename);
+        var stream = new MemoryStream();
+        await (await result.GetStreamAsync()).CopyToAsync(stream);
+        var bytes = stream.ToArray();
+
+        Console.WriteLine();
+        Console.WriteLine("Original File name : " + filename);
+        Console.WriteLine("Original File size : " + new FileInfo(filename).Length);
+        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(filename)).Length);
+        Console.WriteLine();
+        Console.WriteLine("Downloaded File name : " + result.FileName);
+        Console.WriteLine("Downloaded File type : " + result.FileType);
+        Console.WriteLine("Downloaded File size : " + result.FileSize);
+        Console.WriteLine("Downloaded Bytes count: " + bytes.Length);
     }
 
     // =======================
