@@ -3,8 +3,8 @@
 ARG BUILD_IMAGE_TAG="8.0-jammy"
 ARG RUN_IMAGE_TAG="8.0-alpine"
 
-#ARG PLATFORM=$BUILDPLATFORM
-ARG PLATFORM=$TARGETPLATFORM
+ARG PLATFORM=$BUILDPLATFORM
+#ARG PLATFORM=$TARGETPLATFORM
 
 #########################################################################
 # .NET build
