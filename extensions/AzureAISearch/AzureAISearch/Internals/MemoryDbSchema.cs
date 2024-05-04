@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
-internal class MemoryDbSchema
+internal sealed class MemoryDbSchema
 {
     public List<MemoryDbField> Fields { get; set; } = new();
 

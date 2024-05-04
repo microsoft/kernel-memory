@@ -14,8 +14,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj" />
-        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\Redis\Redis.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.MongoDbAtlas.FunctionalTests</AssemblyName>
         <RootNamespace>Microsoft.MongoDbAtlas.FunctionalTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -14,7 +15,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj" />
-        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>

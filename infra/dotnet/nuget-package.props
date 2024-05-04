@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
+        <None Include="$(RepoRoot)/infra/dotnet/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -57,23 +57,4 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
-
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <PropertyGroup>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeProjectReferenceDlls</TargetsForTfmSpecificBuildOutput>
-        <NoWarn>$(NoWarn);NU5131;</NoWarn>
-    </PropertyGroup>
-
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <ItemGroup>
-        <!-- Add a ref folder to the package which only exposes the library so that the referenced class library doesn't get exposed. -->
-        <None Include="$(TargetPath)" PackagePath="ref/$(TargetFramework)" Pack="true" Condition="'$(TargetFramework)' != ''" />
-    </ItemGroup>
-
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <Target Name="IncludeProjectReferenceDlls" DependsOnTargets="BuildOnlySettings;ResolveReferences">
-        <ItemGroup>
-            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />
-        </ItemGroup>
-    </Target>
 </Project>

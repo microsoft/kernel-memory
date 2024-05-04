@@ -231,7 +231,7 @@ internal sealed class MongoDbAtlasSearchHelper
         }
     }
 
-    public record IndexInfo(bool Exists, string Status, Boolean Queryable);
+    public sealed record IndexInfo(bool Exists, string Status, Boolean Queryable);
 
     /// <summary>
     /// Verify CreateIndexSettingsAnalysisDescriptor for mapper 7

@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public sealed class SaveRecordsHandler : IPipelineStepHandler
 {
-    private class FileDetailsWithRecordId
+    private sealed class FileDetailsWithRecordId
     {
         public string RecordId { get; set; }
 

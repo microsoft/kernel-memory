@@ -76,8 +76,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
-		nuget-package.props = nuget-package.props
-		code-analysis.props = code-analysis.props
 		nuget.config = nuget.config
 		Dockerfile = Dockerfile
 		.dockerignore = .dockerignore
@@ -264,6 +262,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TikToken", "extensions\TikT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TikToken.UnitTests", "extensions\TikToken\TikToken.UnitTests\TikToken.UnitTests.csproj", "{8ADA17CD-B779-4817-B10A-E9D7B019088D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{2165A553-E07E-4FF7-90DA-3F3643EA690D}"
+	ProjectSection(SolutionItems) = preProject
+		infra\dotnet\code-analysis.props = infra\dotnet\code-analysis.props
+		infra\dotnet\icon.png = infra\dotnet\icon.png
+		infra\dotnet\nuget-package.props = infra\dotnet\nuget-package.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +346,8 @@ Global
 		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{91757AC4-4FE3-40FE-96D6-1DDEDFB4A830} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{B488168B-AD86-4CC5-9D89-324B6EB743D9} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
+		{2165A553-E07E-4FF7-90DA-3F3643EA690D} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

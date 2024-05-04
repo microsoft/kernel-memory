@@ -10,19 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
-        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
-        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
-        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
-        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
-        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
-        <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj" />
     </ItemGroup>
 
@@ -31,7 +18,7 @@
         <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props" />
+    <Import Project="../../infra/dotnet/code-analysis.props" />
 
     <!--
     This dependency is needed only to generate appsetting.development.json via
