@@ -38,6 +38,11 @@
 
         <!-- Embed C# sources in PDB -->
         <EmbedAllSources>true</EmbedAllSources>
+        <!-- CA1016: CSC : warning CA1016: Mark assemblies with assembly version (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1016) -->
+        <!-- CA1812: warning CA1812: 'XYZ' is an internal class that is apparently never instantiated -->
+<!--        <NoWarn>$(NoWarn);CA1016;CA1812;</NoWarn>-->
+        <!-- Disable version to allow using dates (> 65534) -->
+<!--        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>-->
     </PropertyGroup>
 
     <ItemGroup>
@@ -47,7 +52,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
+        <None Include="$(RepoRoot)/infra/dotnet/icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -58,22 +63,22 @@
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <PropertyGroup>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeProjectReferenceDlls</TargetsForTfmSpecificBuildOutput>
-        <NoWarn>$(NoWarn);NU5131;</NoWarn>
-    </PropertyGroup>
+    <!--    &lt;!&ndash; See https://github.com/nuget/home/issues/3891#issuecomment-377319939&ndash;&gt;-->
+    <!--    <PropertyGroup>-->
+    <!--        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeProjectReferenceDlls</TargetsForTfmSpecificBuildOutput>-->
+    <!--        <NoWarn>$(NoWarn);NU5131;</NoWarn>-->
+    <!--    </PropertyGroup>-->
 
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <ItemGroup>
-        <!-- Add a ref folder to the package which only exposes the library so that the referenced class library doesn't get exposed. -->
-        <None Include="$(TargetPath)" PackagePath="ref/$(TargetFramework)" Pack="true" Condition="'$(TargetFramework)' != ''" />
-    </ItemGroup>
+    <!--    &lt;!&ndash; See https://github.com/nuget/home/issues/3891#issuecomment-377319939&ndash;&gt;-->
+    <!--    <ItemGroup>-->
+    <!--        &lt;!&ndash; Add a ref folder to the package which only exposes the library so that the referenced class library doesn't get exposed. &ndash;&gt;-->
+    <!--        <None Include="$(TargetPath)" PackagePath="ref/$(TargetFramework)" Pack="true" Condition="'$(TargetFramework)' != ''" />-->
+    <!--    </ItemGroup>-->
 
-    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
-    <Target Name="IncludeProjectReferenceDlls" DependsOnTargets="BuildOnlySettings;ResolveReferences">
-        <ItemGroup>
-            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />
-        </ItemGroup>
-    </Target>
+    <!--    &lt;!&ndash; See https://github.com/nuget/home/issues/3891#issuecomment-377319939&ndash;&gt;-->
+    <!--    <Target Name="IncludeProjectReferenceDlls" DependsOnTargets="BuildOnlySettings;ResolveReferences">-->
+    <!--        <ItemGroup>-->
+    <!--            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />-->
+    <!--        </ItemGroup>-->
+    <!--    </Target>-->
 </Project>

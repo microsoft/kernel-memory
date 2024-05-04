@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KM.Core.FunctionalTests</AssemblyName>
         <RootNamespace>Microsoft.KM.Core.FunctionalTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -10,7 +11,6 @@
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;IDE1006;CA1303;CA1307;CA1859;CA2007;CA2201;CS1591;CA1861;CA2000;SKEXP0001;</NoWarn>
-        <AssemblyName>Microsoft.KM.Core.FunctionalTests</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

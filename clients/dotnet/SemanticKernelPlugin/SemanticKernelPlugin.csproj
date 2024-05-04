@@ -9,17 +9,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\WebClient\WebClient.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\WebClient\WebClient.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
     </ItemGroup>
 
-    <Import Project="../../../code-analysis.props" />
+    <Import Project="../../../infra/dotnet/code-analysis.props" />
 
-    <Import Project="../../../nuget-package.props" />
+    <Import Project="../../../infra/dotnet/nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>

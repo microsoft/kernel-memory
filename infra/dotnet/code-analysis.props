@@ -1,4 +1,15 @@
 <Project>
+
+<!--    <PropertyGroup>-->
+<!--        &lt;!&ndash; Embed C# sources in PDB &ndash;&gt;-->
+<!--        <EmbedAllSources>true</EmbedAllSources>-->
+<!--        &lt;!&ndash; CA1016: CSC : warning CA1016: Mark assemblies with assembly version (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1016) &ndash;&gt;-->
+<!--        &lt;!&ndash; CA1812: warning CA1812: 'XYZ' is an internal class that is apparently never instantiated &ndash;&gt;-->
+<!--        <NoWarn>$(NoWarn);CA1016;CA1812;</NoWarn>-->
+<!--        &lt;!&ndash; Disable version to allow using dates (> 65534) &ndash;&gt;-->
+<!--        <GenerateAssemblyInfo>False</GenerateAssemblyInfo>-->
+<!--    </PropertyGroup>-->
+
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
             <PrivateAssets>all</PrivateAssets>

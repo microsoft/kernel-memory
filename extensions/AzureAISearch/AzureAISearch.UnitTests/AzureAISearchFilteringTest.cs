@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace AzureAISearch.UnitTests;
+namespace Microsoft.AzureAISearch.UnitTests;
 
 public class AzureAISearchFilteringTest : BaseUnitTestCase
 {
