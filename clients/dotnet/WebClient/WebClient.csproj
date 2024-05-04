@@ -2,13 +2,14 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.WebClient</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
         <NoWarn>$(NoWarn);CS1591;NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" PrivateAssets="All" />
     </ItemGroup>
 
     <Import Project="../../../code-analysis.props" />
@@ -19,7 +20,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.WebClient</PackageId>
         <Product>Kernel Memory Web Client</Product>
-        <Description>Kernel Memory Web Client allows to connect to the Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
+        <Description>Kernel Memory Web Client allows to connect to Kernel Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
     </PropertyGroup>
 

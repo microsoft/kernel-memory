@@ -2,13 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.SemanticKernelPlugin</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
         <NoWarn>$(NoWarn);CS1591;NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\WebClient\WebClient.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\WebClient\WebClient.csproj" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>

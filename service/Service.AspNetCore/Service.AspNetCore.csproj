@@ -10,7 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\Core\Core.csproj" PrivateAssets="All" />
     </ItemGroup>
 
     <Import Project="../../code-analysis.props" />
@@ -20,8 +21,8 @@
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
-        <Product>Kernel Memory HTTP service components</Product>
-        <Description>Kernel Memory is a Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. This package contains some of the HTTP service components.</Description>
+        <Product>Kernel Memory for custom ASP.NET applications, including KM builder and KM endpoints</Product>
+        <Description>This package provide helpers to integrate Kernel Memory into ASP.NET applications, such as builders, web endpoints, HTTP models</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
     </PropertyGroup>
 

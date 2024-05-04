@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI.csproj" />
         <ProjectReference Include="..\Postgres\Postgres.csproj" />
     </ItemGroup>
 
