@@ -9,22 +9,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Abstractions\Abstractions.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\clients\dotnet\WebClient\WebClient.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\..\extensions\TikToken\TikToken\TikToken.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
+        <ProjectReference Include="..\..\extensions\TikToken\TikToken\TikToken.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -48,9 +46,9 @@
         <InternalsVisibleTo Include="Microsoft.KM.Core.FunctionalTests" />
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props" />
+    <Import Project="../../infra/dotnet/code-analysis.props" />
 
-    <Import Project="../../nuget-package.props" />
+    <Import Project="../../infra/dotnet/nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>

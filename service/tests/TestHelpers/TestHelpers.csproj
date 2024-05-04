@@ -12,6 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
         <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
         <ProjectReference Include="..\..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
         <ProjectReference Include="..\..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
@@ -21,7 +23,6 @@
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
         <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
-        <ProjectReference Include="..\..\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

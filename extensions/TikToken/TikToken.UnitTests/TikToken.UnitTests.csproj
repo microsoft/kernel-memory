@@ -14,7 +14,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\TikToken\TikToken.csproj" />
     </ItemGroup>
 
     <ItemGroup>

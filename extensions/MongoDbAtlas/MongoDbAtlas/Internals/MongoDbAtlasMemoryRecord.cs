@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
-internal class MongoDbAtlasMemoryRecord
+internal sealed class MongoDbAtlasMemoryRecord
 {
     public string Id { get; set; } = null!;
 
@@ -16,7 +16,7 @@ internal class MongoDbAtlasMemoryRecord
 
     public List<Payload> Payloads { get; set; } = new();
 
-    internal class Payload
+    internal sealed class Payload
     {
         public Payload(string key, object value)
         {
@@ -28,7 +28,7 @@ internal class MongoDbAtlasMemoryRecord
         public object Value { get; set; }
     }
 
-    internal class Tag
+    internal sealed class Tag
     {
         public Tag(string key, string?[] values)
         {

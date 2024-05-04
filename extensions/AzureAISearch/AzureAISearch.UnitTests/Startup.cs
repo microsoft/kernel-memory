@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace AzureAISearch.UnitTests;
+namespace Microsoft.AzureAISearch.UnitTests;
 
 public class Startup
 {
