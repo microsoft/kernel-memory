@@ -10,13 +10,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Abstractions\Abstractions.csproj" PrivateAssets="All" />
-        <ProjectReference Include="..\Core\Core.csproj" PrivateAssets="All" />
+        <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props" />
+    <Import Project="../../infra/dotnet/code-analysis.props" />
 
-    <Import Project="../../nuget-package.props" />
+    <Import Project="../../infra/dotnet/nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>

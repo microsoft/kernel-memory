@@ -17,9 +17,23 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="MongoDbAtlas.FunctionalTests" />
+        <InternalsVisibleTo Include="Microsoft.MongoDbAtlas.FunctionalTests" />
     </ItemGroup>
 
-    <Import Project="../../../code-analysis.props" />
+    <Import Project="../../../infra/dotnet/code-analysis.props" />
+
+    <Import Project="../../../infra/dotnet/nuget-package.props" />
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.MongoDbAtlas</PackageId>
+        <Product>MongoDb Atlas connector for Kernel Memory</Product>
+        <Description>MongoDb Atlas connector for Microsoft Kernel Memory, to store and search memory records with embeddings, and files.</Description>
+        <PackageTags>Memory, RAG, Kernel Memory, MongoDb, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
 
 </Project>

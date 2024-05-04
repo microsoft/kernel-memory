@@ -13,7 +13,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\Qdrant\Qdrant.csproj" />
     </ItemGroup>
 
 </Project>

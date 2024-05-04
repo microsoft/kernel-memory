@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.AzureAISearch.UnitTests</AssemblyName>
+        <RootNamespace>Microsoft.AzureAISearch.UnitTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -10,6 +12,10 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591;CS8600;CS8604;</NoWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -22,11 +28,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\AzureAISearch\AzureAISearch.csproj" />
     </ItemGroup>
 
 </Project>

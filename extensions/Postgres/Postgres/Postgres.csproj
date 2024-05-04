@@ -17,6 +17,20 @@
         <PackageReference Include="Pgvector" />
     </ItemGroup>
 
-    <Import Project="../../../code-analysis.props" />
+    <Import Project="../../../infra/dotnet/code-analysis.props" />
+
+    <Import Project="../../../infra/dotnet/nuget-package.props" />
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.MemoryDb.Postgres</PackageId>
+        <Product>Kernel Memory extension for Postgres</Product>
+        <Description>Postgres(with pgvector extension) connector for Microsoft Kernel Memory, to store and search memory using Postgres vector indexing and Postgres features.</Description>
+        <PackageTags>Copilot, Memory, RAG, Kernel Memory, Postgres, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
 
 </Project>

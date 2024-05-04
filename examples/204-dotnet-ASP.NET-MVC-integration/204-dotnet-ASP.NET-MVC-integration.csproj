@@ -9,14 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.50.240502.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.50.240504.7" />
     </ItemGroup>
 
 </Project>

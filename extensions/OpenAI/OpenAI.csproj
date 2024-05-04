@@ -21,6 +21,20 @@
         <EmbeddedResource Include="GPT3\vocab.bpe" />
     </ItemGroup>
 
-    <Import Project="../../code-analysis.props" />
+    <Import Project="../../infra/dotnet/code-analysis.props" />
+
+    <Import Project="../../infra/dotnet/nuget-package.props" />
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.AI.OpenAI</PackageId>
+        <Product>OpenAI LLM connector for Kernel Memory</Product>
+        <Description>Provide access to OpenAI LLM models in Kernel Memory to generate embeddings and text</Description>
+        <PackageTags>OpenAI, Plugin, Memory, RAG, Kernel Memory, Azure Blob, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
 
 </Project>

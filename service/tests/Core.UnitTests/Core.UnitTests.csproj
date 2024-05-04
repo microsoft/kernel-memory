@@ -14,7 +14,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core.csproj" />
         <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 

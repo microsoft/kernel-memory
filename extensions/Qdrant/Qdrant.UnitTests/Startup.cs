@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace Qdrant.UnitTests;
+namespace Microsoft.Qdrant.UnitTests;
 
 public class Startup
 {
