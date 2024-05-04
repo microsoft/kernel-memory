@@ -1,18 +1,19 @@
 ﻿<Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.50.0</Version>
+        <Version>0.50.1</Version>
 
-        <!-- These are set at the project level-->
+        <!-- Set at project level. -->
         <IsPackable>false</IsPackable>
-        <PackageId>Undefined</PackageId>
 
         <!-- Default description and tags. Packages can override. -->
+        <PackageId>Undefined</PackageId>
+        <OutputType>Library</OutputType>
         <Authors>Microsoft</Authors>
         <Company>Microsoft</Company>
         <Product>Kernel Memory</Product>
-        <Description>Copilot Memory Plugin and Memory Service to index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
-        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <Description>Memory Service and Plugin to index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Memory, RAG, Plugin, Semantic Memory, Episodic Memory, Declarative Memory, Copilot, AI, Kernel Memory, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
 
         <!-- Required license, copyright, and repo information. Packages can override. -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -34,6 +35,9 @@
 
         <!-- Include the XML documentation file in the NuGet package. -->
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+
+        <!-- Embed C# sources in PDB -->
+        <EmbedAllSources>true</EmbedAllSources>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,4 +57,23 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
+
+    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
+    <PropertyGroup>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeProjectReferenceDlls</TargetsForTfmSpecificBuildOutput>
+        <NoWarn>$(NoWarn);NU5131;</NoWarn>
+    </PropertyGroup>
+
+    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
+    <ItemGroup>
+        <!-- Add a ref folder to the package which only exposes the library so that the referenced class library doesn't get exposed. -->
+        <None Include="$(TargetPath)" PackagePath="ref/$(TargetFramework)" Pack="true" Condition="'$(TargetFramework)' != ''" />
+    </ItemGroup>
+
+    <!-- See https://github.com/nuget/home/issues/3891#issuecomment-377319939-->
+    <Target Name="IncludeProjectReferenceDlls" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'All'))" />
+        </ItemGroup>
+    </Target>
 </Project>

@@ -9,11 +9,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.50.240502.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
+        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

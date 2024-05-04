@@ -9,6 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 

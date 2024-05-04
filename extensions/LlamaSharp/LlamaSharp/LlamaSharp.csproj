@@ -21,18 +21,4 @@
 
     <Import Project="../../../code-analysis.props" />
 
-    <Import Project="../../../nuget-package.props" />
-
-    <PropertyGroup>
-        <IsPackable>false</IsPackable>
-        <PackageId>Microsoft.KernelMemory.AI.LlamaSharp</PackageId>
-        <Product>LLama models connector for Kernel Memory</Product>
-        <Description>Provide access to OpenAI LLM models in Kernel Memory to generate text</Description>
-        <PackageTags>LLama, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
-    </ItemGroup>
-
 </Project>

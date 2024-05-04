@@ -6,22 +6,35 @@
         <!-- Avoid using the ".Service" file extension, which would cause the app to hang on macOS, and use ".ServiceAssembly" instead -->
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
-        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CA2007;CA1724;CA2254;CA1031;CS1591;CA1861;CA1303;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
+        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
+        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\Service.AspNetCore\Service.AspNetCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 
+    <Import Project="../../code-analysis.props" />
+
     <!--
-    This dependency is needed only to generate appsetting.development.json when testing
-    the code in GitHub for quick demo, e.g. running
+    This dependency is needed only to generate appsetting.development.json via
 
     "dotnet run setup"
 
@@ -35,34 +48,6 @@
     -->
     <ItemGroup>
         <ProjectReference Include="..\..\tools\InteractiveSetup\InteractiveSetup.csproj" />
-    </ItemGroup>
-
-    <!-- Code Analysis -->
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.9.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.9.28">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.2">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
