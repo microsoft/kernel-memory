@@ -10,22 +10,22 @@ public class SqlServerConfig
     /// <summary>
     /// The default SQL Server collections table name.
     /// </summary>
-    internal const string DefaultMemoryCollectionTableName = "SKMemoryCollections";
+    internal const string DefaultMemoryCollectionTableName = "KMCollections";
 
     /// <summary>
     /// The default SQL Server memories table name.
     /// </summary>
-    internal const string DefaultMemoryTableName = "SKMemories";
+    internal const string DefaultMemoryTableName = "KMMemories";
 
     /// <summary>
     /// The default SQL Server embeddings table name.
     /// </summary>
-    internal const string DefaultEmbeddingsTableName = "SKEmbeddings";
+    internal const string DefaultEmbeddingsTableName = "KMEmbeddings";
 
     /// <summary>
     /// The default SQL Server tags table name.
     /// </summary>
-    internal const string DefaultTagsTableName = "SKMemoriesTags";
+    internal const string DefaultTagsTableName = "KMMemoriesTags";
 
     /// <summary>
     /// The default schema used by the SQL Server memory store.

@@ -11,11 +11,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Data.SqlClient" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
-  <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" />
+    </ItemGroup>
+
+    <Import Project="../../../infra/dotnet/code-analysis.props" />
+
+    <Import Project="../../../infra/dotnet/nuget-package.props" />
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.MemoryDb.SQLServer</PackageId>
+        <Product>MS SQLServer connector for Kernel Memory</Product>
+        <Description>MS SQLServer connector for Microsoft Kernel Memory, to store and search memory using MSSQL.</Description>
+        <PackageTags>MS SQLServer, RAG, Kernel Memory, Redis, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
 
 </Project>

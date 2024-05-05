@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory.MemoryDb.SQLServer;
 /// Represents a memory store implementation that uses a SQL Server database as its backing store.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
-                                                   Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
+    Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
 public class SqlServerMemory : IMemoryDb
 {
     /// <summary>
@@ -42,9 +42,9 @@ public class SqlServerMemory : IMemoryDb
     /// <param name="embeddingGenerator">The text embedding generator.</param>
     /// <param name="log">The logger.</param>
     public SqlServerMemory(
-            SqlServerConfig config,
-            ITextEmbeddingGenerator embeddingGenerator,
-            ILogger<SqlServerMemory>? log = null)
+        SqlServerConfig config,
+        ITextEmbeddingGenerator embeddingGenerator,
+        ILogger<SqlServerMemory>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._log = log ?? DefaultLogger<SqlServerMemory>.Instance;
@@ -80,21 +80,21 @@ public class SqlServerMemory : IMemoryDb
 
                     INSERT INTO {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id])
                     VALUES (@index);
-                    
+
                     IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}', N'U') IS NULL
                     CREATE TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
-                    (   
+                    (
                         [memory_id] UNIQUEIDENTIFIER NOT NULL,
                         [vector_value_id] [int] NOT NULL,
                         [vector_value] [float] NOT NULL
                         FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._config.MemoryTableName)}([id])
                     );
-                    
+
                     IF OBJECT_ID(N'[{this._config.Schema}.IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]', N'U') IS NULL
                     CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]
                     ON {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
-                    { (this.GetSqlServerMajorVersionNumber() >= 16 ? "ORDER ([memory_id])" : "")};
-                    
+                    {(this.GetSqlServerMajorVersionNumber() >= 16 ? "ORDER ([memory_id])" : "")};
+
                     IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.TagsTableName}_{index}")}', N'U') IS NULL
                     CREATE TABLE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")}
                     (
@@ -110,7 +110,7 @@ public class SqlServerMemory : IMemoryDb
             command.Parameters.AddWithValue("@index", index);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        };
+        }
     }
 
     /// <inheritdoc/>
@@ -135,26 +135,25 @@ public class SqlServerMemory : IMemoryDb
             DELETE [embeddings]
             FROM {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} [embeddings]
             INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [embeddings].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
-            WHERE 
+            WHERE
                 {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
             AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;
-            
+
             DELETE [tags]
             FROM {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} [tags]
             INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [tags].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
-            WHERE 
+            WHERE
                 {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-            AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;    
+            AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;
 
             DELETE FROM {this.GetFullTableName(this._config.MemoryTableName)} WHERE [collection] = @index AND [key]=@key;
-            
+
             COMMIT;";
 
             command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@key", record.Id);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
         }
     }
 
@@ -179,7 +178,7 @@ public class SqlServerMemory : IMemoryDb
 
                     DROP TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")};
                     DROP TABLE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")};
-                      
+
                     DELETE FROM {this.GetFullTableName(this._config.MemoryCollectionTableName)}
                                      WHERE [id] = @index;
 
@@ -188,7 +187,7 @@ public class SqlServerMemory : IMemoryDb
             command.Parameters.AddWithValue("@index", index);
 
             await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-        };
+        }
     }
 
     /// <inheritdoc/>
@@ -209,7 +208,7 @@ public class SqlServerMemory : IMemoryDb
             {
                 indexes.Add(dataReader.GetString(dataReader.GetOrdinal("id")));
             }
-        };
+        }
 
         return indexes;
     }
@@ -245,16 +244,16 @@ public class SqlServerMemory : IMemoryDb
             var tagFilters = new TagCollection();
 
             command.CommandText = $@"
-            WITH [filters] AS 
+            WITH [filters] AS
 		    (
-			    SELECT 
+			    SELECT
 				    cast([filters].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [name],
 				    cast([filters].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [value]
 			    FROM openjson(@filters) [filters]
 		    )
             SELECT TOP (@limit)
                 {queryColumns}
-            FROM 
+            FROM
                 {this.GetFullTableName(this._config.MemoryTableName)}
 		    WHERE 1=1
             AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
@@ -270,7 +269,6 @@ public class SqlServerMemory : IMemoryDb
             {
                 yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
             }
-
         }
     }
 
@@ -302,29 +300,29 @@ public class SqlServerMemory : IMemoryDb
             var generatedFilters = this.GenerateFilters(index, command.Parameters, filters);
 
             command.CommandText = $@"
-        WITH 
+        WITH
         [embedding] as
         (
-            SELECT 
+            SELECT
                 cast([key] AS INT) AS [vector_value_id],
                 cast([value] AS FLOAT) AS [vector_value]
-            FROM 
+            FROM
                 openjson(@vector)
         ),
         [similarity] AS
         (
             SELECT TOP (@limit)
-            {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[memory_id], 
-            SUM([embedding].[vector_value] * {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[vector_value]) / 
+            {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[memory_id],
+            SUM([embedding].[vector_value] * {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[vector_value]) /
             (
-                SQRT(SUM([embedding].[vector_value] * [embedding].[vector_value])) 
-                * 
+                SQRT(SUM([embedding].[vector_value] * [embedding].[vector_value]))
+                *
                 SQRT(SUM({this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[vector_value] * {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[vector_value]))
             ) AS cosine_similarity
             -- sum([embedding].[vector_value] * {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[vector_value]) as cosine_distance -- Optimized as per https://platform.openai.com/docs/guides/embeddings/which-distance-function-should-i-use
-        FROM 
+        FROM
             [embedding]
-        INNER JOIN 
+        INNER JOIN
             {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} ON [embedding].vector_value_id = {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.vector_value_id
         INNER JOIN
             {this.GetFullTableName(this._config.MemoryTableName)} ON {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}.[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
@@ -337,13 +335,13 @@ public class SqlServerMemory : IMemoryDb
         )
         SELECT DISTINCT
             {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-            {this.GetFullTableName(this._config.MemoryTableName)}.[key],    
+            {this.GetFullTableName(this._config.MemoryTableName)}.[key],
             {this.GetFullTableName(this._config.MemoryTableName)}.[payload],
             {this.GetFullTableName(this._config.MemoryTableName)}.[tags],
             [similarity].[cosine_similarity]
-        FROM 
-            [similarity] 
-        INNER JOIN 
+        FROM
+            [similarity]
+        INNER JOIN
             {this.GetFullTableName(this._config.MemoryTableName)} ON [similarity].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
         WHERE 1=1
         AND [cosine_similarity] >= @min_relevance_score
@@ -393,12 +391,12 @@ public class SqlServerMemory : IMemoryDb
                     INSERT ([id], [key], [collection], [payload], [tags], [embedding])
                     VALUES (NEWID(), @key, @index, @payload, @tags, @embedding);
 
-                MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]  
+                MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]
                 USING (
-                    SELECT 
+                    SELECT
                         {this.GetFullTableName(this._config.MemoryTableName)}.[id],
                         cast([vector].[key] AS INT) AS [vector_value_id],
-                        cast([vector].[value] AS FLOAT) AS [vector_value] 
+                        cast([vector].[value] AS FLOAT) AS [vector_value]
                     FROM {this.GetFullTableName(this._config.MemoryTableName)}
                     CROSS APPLY
                         openjson(@embedding) [vector]
@@ -410,8 +408,8 @@ public class SqlServerMemory : IMemoryDb
                     UPDATE SET [tgt].[vector_value] = [src].[vector_value]
                 WHEN NOT MATCHED THEN
                     INSERT ([memory_id], [vector_value_id], [vector_value])
-                    VALUES ([src].[id], 
-                            [src].[vector_value_id], 
+                    VALUES ([src].[id],
+                            [src].[vector_value_id],
                             [src].[vector_value] );
 
 				DELETE FROM [tgt]
@@ -420,14 +418,14 @@ public class SqlServerMemory : IMemoryDb
 				WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
                         AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index;
 
-                MERGE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]  
+                MERGE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
                 USING (
-                    SELECT 
+                    SELECT
                         {this.GetFullTableName(this._config.MemoryTableName)}.[id],
                         cast([tags].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [tag_name],
-                        [tag_value].[value] AS [value] 
+                        [tag_value].[value] AS [value]
                     FROM {this.GetFullTableName(this._config.MemoryTableName)}
-                    CROSS APPLY openjson(@tags) [tags]                    
+                    CROSS APPLY openjson(@tags) [tags]
                     CROSS APPLY openjson(cast([tags].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS) [tag_value]
                     WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
                         AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
@@ -437,10 +435,10 @@ public class SqlServerMemory : IMemoryDb
                     UPDATE SET [tgt].[value] = [src].[value]
                 WHEN NOT MATCHED THEN
                     INSERT ([memory_id], [name], [value])
-                    VALUES ([src].[id], 
-                            [src].[tag_name], 
+                    VALUES ([src].[id],
+                            [src].[tag_name],
                             [src].[value]);
-                
+
                 COMMIT;";
 
             command.Parameters.AddWithValue("@index", index);
@@ -454,6 +452,8 @@ public class SqlServerMemory : IMemoryDb
             return record.Id;
         }
     }
+
+    #region private ================================================================================
 
     /// <summary>
     /// Creates the SQL Server tables if they do not exist.
@@ -505,7 +505,7 @@ public class SqlServerMemory : IMemoryDb
         CancellationToken cancellationToken = default)
     {
         var collections = await this.GetIndexesAsync(cancellationToken)
-                                    .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         foreach (var item in collections)
         {
@@ -544,8 +544,7 @@ public class SqlServerMemory : IMemoryDb
             return string.Empty;
         }
 
-        filterBuilder.Append($@"AND (
-                ");
+        filterBuilder.Append("AND ( ");
 
         for (int i = 0; i < filters.Count; i++)
         {
@@ -562,17 +561,16 @@ public class SqlServerMemory : IMemoryDb
 
                 if (j > 0)
                 {
-                    filterBuilder.Append(@" AND 
-                        ");
+                    filterBuilder.Append(" AND ");
                 }
 
                 filterBuilder.Append(" ( ");
 
-                filterBuilder.Append($@"EXISTS (
+                filterBuilder.Append(CultureInfo.CurrentCulture, $@"EXISTS (
                          SELECT
-	                        1 
+	                        1
                         FROM {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tags]
-                        WHERE 
+                        WHERE
 	                        [tags].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
                             AND [name] = @filter_{i}_{j}_name
                             AND [value] = @filter_{i}_{j}_value
@@ -586,8 +584,7 @@ public class SqlServerMemory : IMemoryDb
             }
         }
 
-        filterBuilder.Append(@"
-            )");
+        filterBuilder.Append(" )");
 
         return filterBuilder.ToString();
     }
@@ -626,7 +623,6 @@ public class SqlServerMemory : IMemoryDb
 
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
 
-
         return index;
     }
 
@@ -644,4 +640,6 @@ public class SqlServerMemory : IMemoryDb
             return Convert.ToInt32(result, CultureInfo.InvariantCulture);
         }
     }
+
+    #endregion
 }

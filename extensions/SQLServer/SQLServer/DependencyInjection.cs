@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 /// <summary>
@@ -16,7 +18,9 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="config">SqlServer configuration</param>
-    public static IKernelMemoryBuilder WithSqlServerMemoryDb(this IKernelMemoryBuilder builder, SqlServerConfig config)
+    public static IKernelMemoryBuilder WithSqlServerMemoryDb(
+        this IKernelMemoryBuilder builder,
+        SqlServerConfig config)
     {
         builder.Services.AddSqlServerAsMemoryDb(config);
         return builder;
@@ -27,7 +31,9 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="connString">SqlServer connection string</param>
-    public static IKernelMemoryBuilder WithSqlServerMemoryDb(this IKernelMemoryBuilder builder, string connString)
+    public static IKernelMemoryBuilder WithSqlServerMemoryDb(
+        this IKernelMemoryBuilder builder,
+        string connString)
     {
         builder.Services.AddSqlServerAsMemoryDb(connString);
         return builder;
@@ -44,7 +50,9 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="config">Postgres configuration</param>
-    public static IServiceCollection AddSqlServerAsMemoryDb(this IServiceCollection services, SqlServerConfig config)
+    public static IServiceCollection AddSqlServerAsMemoryDb(
+        this IServiceCollection services,
+        SqlServerConfig config)
     {
         return services
             .AddSingleton<SqlServerConfig>(config)
@@ -56,7 +64,9 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="connString">Postgres connection string</param>
-    public static IServiceCollection AddSqlServerAsMemoryDb(this IServiceCollection services, string connString)
+    public static IServiceCollection AddSqlServerAsMemoryDb(
+        this IServiceCollection services,
+        string connString)
     {
         var config = new SqlServerConfig { ConnectionString = connString };
         return services.AddSqlServerAsMemoryDb(config);
