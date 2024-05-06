@@ -2,9 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CA1050;CA2000;CA1707;CA1303;CA2007;CA1724;CA1861;</NoWarn>
     </PropertyGroup>
 
@@ -26,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Memory.Data" Version="8.0.0" />
+        <PackageReference Include="System.Memory.Data" />
     </ItemGroup>
 
     <ItemGroup>
