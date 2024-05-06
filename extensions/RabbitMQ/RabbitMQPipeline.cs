@@ -21,6 +21,7 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly IModel _channel;
     private readonly AsyncEventingBasicConsumer _consumer;
     private string _queueName = string.Empty;
+    private readonly int _messageTTLMsecs;
 
     /// <summary>
     /// Create a new RabbitMQ queue instance
@@ -40,6 +41,7 @@ public sealed class RabbitMQPipeline : IQueue
             DispatchConsumersAsync = true
         };
 
+        this._messageTTLMsecs = config.MessageTTLSecs * 1000;
         this._connection = factory.CreateConnection();
         this._channel = this._connection.CreateModel();
         this._channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
@@ -87,12 +89,12 @@ public sealed class RabbitMQPipeline : IQueue
             throw new InvalidOperationException("The client must be connected to a queue first");
         }
 
-        this._log.LogDebug("Sending message...");
-
         var properties = this._channel.CreateBasicProperties();
         properties.Persistent = true;
-        properties.MessageId = Guid.NewGuid().ToString();
-        properties.Expiration = "3600000"; // 1 hour TODO: make it configurable
+        properties.MessageId = Guid.NewGuid().ToString("N");
+        properties.Expiration = $"{this._messageTTLMsecs}";
+
+        this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, this._messageTTLMsecs / 1000);
 
         this._channel.BasicPublish(
             routingKey: this._queueName,
@@ -100,7 +102,7 @@ public sealed class RabbitMQPipeline : IQueue
             exchange: string.Empty,
             basicProperties: properties);
 
-        this._log.LogDebug("Message sent");
+        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, this._messageTTLMsecs / 1000);
 
         return Task.CompletedTask;
     }
