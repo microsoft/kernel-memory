@@ -285,11 +285,15 @@ public class SqlServerMemory : IMemoryDb
 
         Embedding embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
 
-        string queryColumns = "[id], [payload], [tags]";
+        string queryColumns = $"{this.GetFullTableName(this._config.MemoryTableName)}.[id]," +
+                              $"{this.GetFullTableName(this._config.MemoryTableName)}.[key]," +
+                              $"{this.GetFullTableName(this._config.MemoryTableName)}.[payload]," +
+                              $"{this.GetFullTableName(this._config.MemoryTableName)}.[tags]";
 
         if (withEmbeddings)
         {
-            queryColumns += ", [embedding]";
+            queryColumns += $"," +
+                            $"{this.GetFullTableName(this._config.MemoryTableName)}.[embedding]";
         }
 
         using var connection = new SqlConnection(this._config.ConnectionString);
@@ -334,10 +338,7 @@ public class SqlServerMemory : IMemoryDb
             cosine_similarity DESC
         )
         SELECT DISTINCT
-            {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-            {this.GetFullTableName(this._config.MemoryTableName)}.[key],
-            {this.GetFullTableName(this._config.MemoryTableName)}.[payload],
-            {this.GetFullTableName(this._config.MemoryTableName)}.[tags],
+            {queryColumns},
             [similarity].[cosine_similarity]
         FROM
             [similarity]
