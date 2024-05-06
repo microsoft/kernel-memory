@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
@@ -306,6 +307,15 @@ internal sealed class ServiceConfiguration
                     builder.AddIngestionMemoryDb(instance);
                     break;
                 }
+
+                case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
             }
         }
     }
@@ -367,6 +377,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"));
+                break;
+
+            case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"));
                 break;
 
             default:

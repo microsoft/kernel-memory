@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{371BB479-AA1C-41CB-BF07-24C363601289}"
@@ -269,6 +269,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{2165A5
 		infra\dotnet\nuget-package.props = infra\dotnet\nuget-package.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLServer", "extensions\SQLServer\SQLServer\SQLServer.csproj", "{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -348,6 +350,7 @@ Global
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{B488168B-AD86-4CC5-9D89-324B6EB743D9} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{2165A553-E07E-4FF7-90DA-3F3643EA690D} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
+		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -562,5 +565,9 @@ Global
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
