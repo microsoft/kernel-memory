@@ -2,9 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <NoWarn>$(NoWarn);CA1050;CA1303;CS4014;CA1861;</NoWarn>
     </PropertyGroup>
 
