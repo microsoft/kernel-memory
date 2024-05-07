@@ -9,8 +9,6 @@ using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 namespace Microsoft.KernelMemory;
 
-// TODO: rename/refactor with KernelMemoryBuilderExtensions style stuff and IKernelMemoryBuilder
-
 /// <summary>
 /// The builder for ElasticsearchConfig.
 /// </summary>

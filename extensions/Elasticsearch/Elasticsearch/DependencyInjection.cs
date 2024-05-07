@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// DI pipelines for Elasticsearch Memory.
 /// </summary>
-public static partial class DependencyInjection
+public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
     /// Kernel Memory Builder extension method to add the Elasticsearch memory connector.
@@ -20,7 +20,7 @@ public static partial class DependencyInjection
     public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
         ElasticsearchConfig configuration)
     {
-        builder.Services.AddElasticsearchAsVectorDb(configuration);
+        builder.Services.AddElasticsearchAsMemoryDb(configuration);
 
         return builder;
     }
@@ -39,7 +39,7 @@ public static partial class DependencyInjection
         var cfg = new ElasticsearchConfigBuilder();
         configure(cfg);
 
-        builder.Services.AddElasticsearchAsVectorDb(cfg.Build());
+        builder.Services.AddElasticsearchAsMemoryDb(cfg.Build());
         return builder;
     }
 }
@@ -52,7 +52,7 @@ public static partial class DependencyInjection
     /// <summary>
     /// Inject Elasticsearch as the default implementation of IMemoryDb
     /// </summary>
-    public static IServiceCollection AddElasticsearchAsVectorDb(this IServiceCollection services,
+    public static IServiceCollection AddElasticsearchAsMemoryDb(this IServiceCollection services,
         ElasticsearchConfig esConfig)
     {
         ArgumentNullException.ThrowIfNull(esConfig, nameof(esConfig));
@@ -75,7 +75,7 @@ public static partial class DependencyInjection
     /// <summary>
     /// Inject Elasticsearch as the default implementation of IMemoryDb
     /// </summary>
-    public static IServiceCollection AddElasticsearchAsVectorDb(this IServiceCollection services,
+    public static IServiceCollection AddElasticsearchAsMemoryDb(this IServiceCollection services,
                Action<ElasticsearchConfigBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure, nameof(configure));
@@ -83,6 +83,6 @@ public static partial class DependencyInjection
         var cfg = new ElasticsearchConfigBuilder();
         configure(cfg);
 
-        return services.AddElasticsearchAsVectorDb(cfg.Build());
+        return services.AddElasticsearchAsMemoryDb(cfg.Build());
     }
 }
