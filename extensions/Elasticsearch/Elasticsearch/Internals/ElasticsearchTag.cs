@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
-/// An elasticsearch tag.
+/// An Elasticsearch tag.
 /// </summary>
 public class ElasticsearchTag
 {
