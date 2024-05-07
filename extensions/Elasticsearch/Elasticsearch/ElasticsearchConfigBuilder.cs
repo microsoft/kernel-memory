@@ -1,8 +1,15 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Elasticsearch.Internal;
+
+namespace Microsoft.KernelMemory;
+
+// TODO: rename/refactor with KernelMemoryBuilderExtensions style stuff and IKernelMemoryBuilder
 
 /// <summary>
 /// The builder for ElasticsearchConfig.
@@ -103,22 +110,22 @@ public class ElasticsearchConfigBuilder
 
         if (string.IsNullOrWhiteSpace(this._config.Endpoint))
         {
-            throw new ConfigurationException(Prefix + $"{nameof(ElasticsearchConfig.Endpoint)}.");
+            throw new Exceptions(Prefix + $"{nameof(ElasticsearchConfig.Endpoint)}.");
         }
 
         if (string.IsNullOrWhiteSpace(this._config.UserName))
         {
-            throw new ConfigurationException(Prefix + $"{nameof(ElasticsearchConfig.UserName)}.");
+            throw new Exceptions(Prefix + $"{nameof(ElasticsearchConfig.UserName)}.");
         }
 
         if (string.IsNullOrWhiteSpace(this._config.Password))
         {
-            throw new ConfigurationException(Prefix + $"{nameof(ElasticsearchConfig.Password)}.");
+            throw new Exceptions(Prefix + $"{nameof(ElasticsearchConfig.Password)}.");
         }
 
         if (string.IsNullOrWhiteSpace(this._config.CertificateFingerPrint))
         {
-            throw new ConfigurationException(Prefix + $"{nameof(ElasticsearchConfig.CertificateFingerPrint)}");
+            throw new Exceptions(Prefix + $"{nameof(ElasticsearchConfig.CertificateFingerPrint)}");
         }
 
         return this;
@@ -136,7 +143,7 @@ public class ElasticsearchConfigBuilder
         var kmSvcEsSection = configuration.GetSection(SectionPath);
         if (!kmSvcEsSection.Exists())
         {
-            throw new ConfigurationException($"Missing configuration section {SectionPath}.");
+            throw new Exceptions($"Missing configuration section {SectionPath}.");
         }
 
         this._config = new ElasticsearchConfig();

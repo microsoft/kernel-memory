@@ -2,7 +2,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// An elasticsearch tag.

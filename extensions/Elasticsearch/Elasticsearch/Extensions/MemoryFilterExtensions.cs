@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-namespace Microsoft.KernelMemory;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Extensions methods for MemoryFilter.

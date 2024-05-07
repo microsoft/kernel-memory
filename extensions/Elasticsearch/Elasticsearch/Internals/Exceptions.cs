@@ -1,22 +1,25 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
+
+// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+
 using Microsoft.KernelMemory;
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Exception thrown when the Elasticsearch configuration is invalid in appSettings, secrets, etc.
 /// </summary>
-public class ConfigurationException : ElasticsearchException
+public class Exceptions : ElasticsearchException
 {
     /// <inheritdoc />
-    public ConfigurationException() { }
+    public Exceptions() { }
 
     /// <inheritdoc />
-    public ConfigurationException(string message) : base(message) { }
+    public Exceptions(string message) : base(message) { }
 
     /// <inheritdoc />
-    public ConfigurationException(string message, Exception? innerException) : base(message, innerException) { }
+    public Exceptions(string message, Exception? innerException) : base(message, innerException) { }
 }
 
 /// <summary>

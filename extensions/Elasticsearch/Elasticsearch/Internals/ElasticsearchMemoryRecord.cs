@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Elasticsearch record.
@@ -120,7 +120,7 @@ public sealed class ElasticsearchMemoryRecord
 
         foreach (var tag in record.Tags)
         {
-            if ((tag.Value == null) || (tag.Value.Count == 0))
+            if (tag.Value == null || tag.Value.Count == 0)
             {
                 // Key only, with no values
                 result.Tags.Add(new ElasticsearchTag(name: tag.Key));

@@ -1,16 +1,56 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-using Elastic.Clients.Elasticsearch;
-using FreeMindLabs.KernelMemory.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.Elasticsearch;
+using Microsoft.Extensions.DependencyInjection;
+using Elastic.Clients.Elasticsearch;
+using Microsoft.KernelMemory.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Elasticsearch.Internal;
+using FreeMindLabs.KernelMemory.Elasticsearch;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
-/// Extensions for KernelMemoryBuilder and generic DI
+/// DI pipelines for Elasticsearch Memory.
 /// </summary>
-public static partial class ServiceCollectionExtensions
+public static partial class DependencyInjection
+{
+    /// <summary>
+    /// Kernel Memory Builder extension method to add the Elasticsearch memory connector.
+    /// </summary>
+    /// <param name="builder">The IKernelMemoryBuilder instance</param>
+    /// <param name="configuration">The application configuration</param>"
+    public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
+        ElasticsearchConfig configuration)
+    {
+        builder.Services.AddElasticsearchAsVectorDb(configuration);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Extension method to add the Elasticsearch memory connector.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="configure"></param>
+    /// <returns></returns>
+    public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
+        Action<ElasticsearchConfigBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+
+        var cfg = new ElasticsearchConfigBuilder();
+        configure(cfg);
+
+        builder.Services.AddElasticsearchAsVectorDb(cfg.Build());
+        return builder;
+    }
+}
+
+/// <summary>
+/// Setup Elasticsearch memory within the semantic kernel.
+/// </summary>
+public static partial class DependencyInjection
 {
     /// <summary>
     /// Inject Elasticsearch as the default implementation of IMemoryDb

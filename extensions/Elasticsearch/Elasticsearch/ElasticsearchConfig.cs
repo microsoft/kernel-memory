@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
 using Elastic.Clients.Elasticsearch.Mapping;
+using FreeMindLabs.KernelMemory.Elasticsearch;
+using Microsoft.KernelMemory.Elasticsearch.Internal;
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// The configuration for the Elasticsearch connector.

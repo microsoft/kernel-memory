@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// A utility class to help with Elasticsearch index names.

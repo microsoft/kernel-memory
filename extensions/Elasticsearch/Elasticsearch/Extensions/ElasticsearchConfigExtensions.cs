@@ -2,9 +2,8 @@
 
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
-using Microsoft.KernelMemory.Elasticsearch;
 
-namespace FreeMindLabs.KernelMemory.Elasticsearch.Extensions;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Elasticsearch configuration extensions.

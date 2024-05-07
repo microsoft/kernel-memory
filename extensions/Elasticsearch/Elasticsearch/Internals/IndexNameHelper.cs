@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-namespace Microsoft.KernelMemory.Elasticsearch;
+using Microsoft.KernelMemory.Elasticsearch;
+
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <inheritdoc />
 public class IndexNameHelper : IIndexNameHelper
