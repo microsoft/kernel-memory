@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
-using Microsoft.KernelMemory.Elasticsearch;
-
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <inheritdoc />

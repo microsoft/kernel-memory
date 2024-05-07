@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
 using Elastic.Clients.Elasticsearch.Mapping;
-using FreeMindLabs.KernelMemory.Elasticsearch;
-using Microsoft.KernelMemory.Elasticsearch.Internal;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 namespace Microsoft.KernelMemory;
 
