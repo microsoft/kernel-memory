@@ -64,7 +64,13 @@ public sealed class MsExcelDecoder : IContentDecoder
                 sb.AppendLine(this._config.WorksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
-            foreach (IXLRangeRow? row in worksheet.RangeUsed().RowsUsed())
+            var rowsUsed = worksheet.RangeUsed()?.RowsUsed();
+            if (rowsUsed == null)
+            {
+                continue;
+            }
+
+            foreach (IXLRangeRow? row in rowsUsed)
             {
                 if (row == null) { continue; }
 
