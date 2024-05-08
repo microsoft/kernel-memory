@@ -17,6 +17,7 @@
         <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
         <ProjectReference Include="..\..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
         <ProjectReference Include="..\..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
         <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
         <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
         <ProjectReference Include="..\..\..\extensions\OpenAI\OpenAI.csproj" />

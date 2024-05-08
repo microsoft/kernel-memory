@@ -1,4 +1,4 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 
@@ -9,10 +9,8 @@ namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 /// </summary>
 public class ElasticsearchTag
 {
-    /// <inheritdoc/>
     public const string NameField = "name";
 
-    /// <inheritdoc/>
     public const string ValueField = "value";
 
     /// <summary>
@@ -23,7 +21,9 @@ public class ElasticsearchTag
     /// <exception cref="ArgumentNullException"></exception>
     public ElasticsearchTag(string name, string? value = default)
     {
-        this.Name = name ?? throw new ArgumentNullException(nameof(name));
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(name, nameof(name), "The tag name is NULL");
+
+        this.Name = name;
         this.Value = value;
     }
 

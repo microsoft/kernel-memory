@@ -1,38 +1,6 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
-
-using Microsoft.KernelMemory;
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-
-/// <summary>
-/// Base exception for all the exceptions thrown by the Elasticsearch connector for KernelMemory
-/// </summary>
-public class ElasticsearchException : KernelMemoryException
-{
-    /// <inheritdoc />
-    public ElasticsearchException() { }
-
-    /// <inheritdoc />
-    public ElasticsearchException(string message) : base(message) { }
-
-    /// <inheritdoc />
-    public ElasticsearchException(string message, Exception? innerException) : base(message, innerException) { }
-}
-
-/// <summary>
-/// Exception thrown when the Elasticsearch configuration is invalid in appSettings, secrets, etc.
-/// </summary>
-public class ConfigurationException : ElasticsearchException
-{
-    /// <inheritdoc />
-    public ConfigurationException() { }
-
-    /// <inheritdoc />
-    public ConfigurationException(string message) : base(message) { }
-
-    /// <inheritdoc />
-    public ConfigurationException(string message, Exception? innerException) : base(message, innerException) { }
-}
 
 /// <summary>
 /// Exception thrown when an index name does pass Elasticsearch validation.
@@ -51,7 +19,6 @@ public class InvalidIndexNameException : ElasticsearchException
     public InvalidIndexNameException(
         (string IndexName, IEnumerable<string> Errors) conversionResult,
         Exception? innerException = default)
-
         => (this.IndexName, this.Errors) = conversionResult;
 
     /// <summary>
@@ -64,4 +31,3 @@ public class InvalidIndexNameException : ElasticsearchException
     /// </summary>
     public IEnumerable<string> Errors { get; }
 }
-

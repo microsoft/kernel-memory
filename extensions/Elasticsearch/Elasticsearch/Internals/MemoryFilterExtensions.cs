@@ -1,11 +1,11 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
 /// <summary>
 /// Extensions methods for MemoryFilter.
 /// </summary>
-public static class MemoryFilterExtensions
+internal static class MemoryFilterExtensions
 {
     /// <summary>
     /// Displays the MemoryFilter in a human-readable format.

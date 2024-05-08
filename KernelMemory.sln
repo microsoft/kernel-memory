@@ -272,7 +272,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer", "extensions\SQL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch", "extensions\Elasticsearch\Elasticsearch\Elasticsearch.csproj", "{2E10420F-BF96-411C-8FE0-F6268F2EEB67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.UnitTests", "extensions\Elasticsearch\Elasticsearch.UnitTests\Elasticsearch.UnitTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.UnitTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -500,7 +500,6 @@ Global
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

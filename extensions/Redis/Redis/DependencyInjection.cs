@@ -42,7 +42,7 @@ public static partial class KernelMemoryBuilderExtensions
 }
 
 /// <summary>
-/// setup Redis memory within the semantic kernel
+/// Setup Redis memory within the DI service collection
 /// </summary>
 public static partial class DependencyInjection
 {

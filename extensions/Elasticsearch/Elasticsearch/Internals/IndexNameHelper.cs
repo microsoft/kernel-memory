@@ -1,11 +1,10 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
 /// <inheritdoc />
-public class IndexNameHelper : IIndexNameHelper
+internal sealed class IndexNameHelper : IIndexNameHelper
 {
-    /// <inheritdoc />
     public IndexNameHelper(ElasticsearchConfig config)
     {
         this.IndexPrefix = config.IndexPrefix;
@@ -24,7 +23,7 @@ public class IndexNameHelper : IIndexNameHelper
         indexName = (this.IndexPrefix + indexName)
             .Replace("_", "-", StringComparison.Ordinal)
             .Trim()
-            .ToLower();
+            .ToLowerInvariant();
 
         // Check for null or whitespace
         if (string.IsNullOrWhiteSpace(indexName))

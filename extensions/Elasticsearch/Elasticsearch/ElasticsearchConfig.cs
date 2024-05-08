@@ -1,8 +1,10 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Elastic.Clients.Elasticsearch.Mapping;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 /// <summary>
@@ -11,14 +13,14 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public class ElasticsearchConfig
 {
-    /// <inheritdoc />
     public ElasticsearchConfig()
-    { }
+    {
+    }
 
     /// <summary>
     /// The certificate fingerprint for the Elasticsearch instance.
     /// See <see href="https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-stack-security.html#_use_the_ca_fingerprint_5"/>.
-    /// </summary>    
+    /// </summary>
     public string CertificateFingerPrint { get; set; } = string.Empty;
 
     /// <summary>

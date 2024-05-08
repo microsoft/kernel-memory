@@ -1,8 +1,7 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
@@ -17,11 +16,12 @@ public sealed class ElasticsearchMemoryRecord
 
     /// <inheritdoc/>
     public const string TagsField = "tags";
-    /// <inheritdoc/>
-    internal static readonly string Tags_Name = TagsField + "." + nameof(ElasticsearchTag.Name).ToLower();
-    /// <inheritdoc/>
-    internal static readonly string Tags_Value = TagsField + "." + nameof(ElasticsearchTag.Value).ToLower();
 
+    /// <inheritdoc/>
+    internal static readonly string TagsName = TagsField + "." + nameof(ElasticsearchTag.Name).ToLowerInvariant();
+
+    /// <inheritdoc/>
+    internal static readonly string TagsValue = TagsField + "." + nameof(ElasticsearchTag.Value).ToLowerInvariant();
 
     private const string PayloadField = "payload";
     private const string ContentField = "content";
@@ -100,7 +100,7 @@ public sealed class ElasticsearchMemoryRecord
     /// <returns></returns>
     public static ElasticsearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
-        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullExceptionEx.ThrowIfNull(record, nameof(record), "The record is NULL");
 
         // TODO: remove magic strings
         string content = record.Payload["text"]?.ToString() ?? string.Empty;

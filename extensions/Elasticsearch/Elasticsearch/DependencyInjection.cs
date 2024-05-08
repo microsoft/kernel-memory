@@ -1,10 +1,13 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.DependencyInjection;
 using Elastic.Clients.Elasticsearch;
-using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
+using Microsoft.KernelMemory.MemoryStorage;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 /// <summary>
@@ -15,9 +18,10 @@ public static partial class KernelMemoryBuilderExtensions
     /// <summary>
     /// Kernel Memory Builder extension method to add the Elasticsearch memory connector.
     /// </summary>
-    /// <param name="builder">The IKernelMemoryBuilder instance</param>
-    /// <param name="configuration">The application configuration</param>"
-    public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
+    /// <param name="builder">KM builder instance</param>
+    /// <param name="configuration">Elasticsearch configuration</param>"
+    public static IKernelMemoryBuilder WithElasticsearch(
+        this IKernelMemoryBuilder builder,
         ElasticsearchConfig configuration)
     {
         builder.Services.AddElasticsearchAsMemoryDb(configuration);
@@ -28,13 +32,13 @@ public static partial class KernelMemoryBuilderExtensions
     /// <summary>
     /// Extension method to add the Elasticsearch memory connector.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="configure"></param>
-    /// <returns></returns>
-    public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
+    /// <param name="builder">KM builder instance</param>
+    /// <param name="configure">Action to configure Elasticsearch</param>
+    public static IKernelMemoryBuilder WithElasticsearch(
+        this IKernelMemoryBuilder builder,
         Action<ElasticsearchConfigBuilder> configure)
     {
-        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+        ArgumentNullExceptionEx.ThrowIfNull(configure, nameof(configure), "The configure action is NULL");
 
         var cfg = new ElasticsearchConfigBuilder();
         configure(cfg);
@@ -45,20 +49,21 @@ public static partial class KernelMemoryBuilderExtensions
 }
 
 /// <summary>
-/// Setup Elasticsearch memory within the semantic kernel.
+/// Setup Elasticsearch memory within the DI service collection.
 /// </summary>
 public static partial class DependencyInjection
 {
     /// <summary>
     /// Inject Elasticsearch as the default implementation of IMemoryDb
     /// </summary>
-    public static IServiceCollection AddElasticsearchAsMemoryDb(this IServiceCollection services,
-        ElasticsearchConfig esConfig)
+    public static IServiceCollection AddElasticsearchAsMemoryDb(
+        this IServiceCollection services,
+        ElasticsearchConfig config)
     {
-        ArgumentNullException.ThrowIfNull(esConfig, nameof(esConfig));
+        ArgumentNullExceptionEx.ThrowIfNull(config, nameof(config), "The configuration is NULL");
 
         // The ElasticsearchClient type is thread-safe and can be shared and
-        // reused across multiple threads in consuming applications. 
+        // reused across multiple threads in consuming applications.
         // See https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/recommendations.html
         services.AddSingleton(sp =>
         {
@@ -68,17 +73,18 @@ public static partial class DependencyInjection
 
         return services
             .AddSingleton<IIndexNameHelper, IndexNameHelper>()
-            .AddSingleton(esConfig)
+            .AddSingleton(config)
             .AddSingleton<IMemoryDb, ElasticsearchMemory>();
     }
 
     /// <summary>
     /// Inject Elasticsearch as the default implementation of IMemoryDb
     /// </summary>
-    public static IServiceCollection AddElasticsearchAsMemoryDb(this IServiceCollection services,
-               Action<ElasticsearchConfigBuilder> configure)
+    public static IServiceCollection AddElasticsearchAsMemoryDb(
+        this IServiceCollection services,
+        Action<ElasticsearchConfigBuilder> configure)
     {
-        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+        ArgumentNullExceptionEx.ThrowIfNull(configure, nameof(configure), "The configuration action is NULL");
 
         var cfg = new ElasticsearchConfigBuilder();
         configure(cfg);
