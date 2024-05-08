@@ -67,7 +67,6 @@ public static partial class DependencyInjection
         });
 
         return services
-            .AddSingleton<IIndexNameHelper, IndexNameHelper>()
             .AddSingleton(esConfig)
             .AddSingleton<IMemoryDb, ElasticsearchMemory>();
     }

@@ -1,22 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Elastic.Clients.Elasticsearch;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryStorage;
-using UnitTests;
+using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Elasticsearch.FunctionalTests._notported;
+namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class IndexManagementTests : ElasticsearchTestBase
+public class IndexManagementTests : BaseFunctionalTestCase
 {
-    public IndexManagementTests(ITestOutputHelper output, IMemoryDb memoryDb, ElasticsearchClient client, IIndexNameHelper indexNameHelper)
-        : base(output, client, indexNameHelper)
+    public IndexManagementTests(
+        IConfiguration cfg,
+        ITestOutputHelper output)
+        : base(cfg, output)
     {
-        this.MemoryDb = memoryDb ?? throw new ArgumentNullException(nameof(memoryDb));
+        this.Output = output;
+
+#pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var textEmbeddingGenerator = new OpenAITextEmbeddingGenerator(
+            config: base.OpenAiConfig,
+            textTokenizer: default,
+            loggerFactory: default);
+#pragma warning restore KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        this.Client = new ElasticsearchClient(base.ElasticsearchConfig.ToElasticsearchClientSettings());
+        this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.Client, textEmbeddingGenerator, default);
     }
 
+    public ITestOutputHelper Output { get; }
+    public ElasticsearchClient Client { get; }
     public IMemoryDb MemoryDb { get; }
 
     [Fact]
@@ -30,7 +45,8 @@ public class IndexManagementTests : ElasticsearchTestBase
                            .ConfigureAwait(false);
 
         // Verifies the index is created using the ES client
-        var actualIndexName = this.IndexNameHelper.Convert(nameof(CanCreateAndDeleteIndexAsync));
+        var idxHelper = new IndexNameHelper(base.ElasticsearchConfig);
+        var actualIndexName = idxHelper.Convert(nameof(CanCreateAndDeleteIndexAsync));
         var resp = await this.Client.Indices.ExistsAsync(actualIndexName)
                                             .ConfigureAwait(false);
         Assert.True(resp.Exists);
@@ -50,10 +66,11 @@ public class IndexManagementTests : ElasticsearchTestBase
     [Fact]
     public async Task CanGetIndicesAsync()
     {
+        var idxNameHelper = new IndexNameHelper(base.ElasticsearchConfig);
         var indexNames = new[]
         {
-            this.IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-First"),
-            this.IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-Second")
+            idxNameHelper.Convert(nameof(CanGetIndicesAsync) + "-First"),
+            idxNameHelper.Convert(nameof(CanGetIndicesAsync) + "-Second")
         };
 
         // Creates the indices using IMemoryDb

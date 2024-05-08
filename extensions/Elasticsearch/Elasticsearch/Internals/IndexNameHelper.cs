@@ -3,12 +3,12 @@
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <inheritdoc />
-public class IndexNameHelper : IIndexNameHelper
+public class IndexNameHelper
 {
     /// <inheritdoc />
     public IndexNameHelper(ElasticsearchConfig config)
     {
-        this.IndexPrefix = config.IndexPrefix;
+        this.IndexPrefix = config.IndexPrefix ?? string.Empty;
     }
 
     /// <summary>
@@ -19,12 +19,17 @@ public class IndexNameHelper : IIndexNameHelper
     /// <inheritdoc />
     public bool TryConvert(string indexName, out (string ActualIndexName, IEnumerable<string> Errors) result)
     {
+        indexName = indexName ?? throw new ArgumentNullException(nameof(indexName));
+
         // Convert to lowercase and replace underscores with hyphens to
         // have a consistent behavior with other storage types supported by Kernel Memory. (see #18)
+        // TODO: I am not sure why it's necessary... Should look into this...
+#pragma warning disable CA1304 // Specify CultureInfo
         indexName = (this.IndexPrefix + indexName)
             .Replace("_", "-", StringComparison.Ordinal)
             .Trim()
             .ToLower();
+#pragma warning restore CA1304 // Specify CultureInfo
 
         // Check for null or whitespace
         if (string.IsNullOrWhiteSpace(indexName))

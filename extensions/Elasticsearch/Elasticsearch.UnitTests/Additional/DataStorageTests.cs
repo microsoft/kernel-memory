@@ -3,6 +3,7 @@ using System.Globalization;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -10,20 +11,30 @@ using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Elasticsearch.FunctionalTests._notported;
+namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
 public class DataStorageTests : BaseFunctionalTestCase
-{
-    public DataStorageTests(IConfiguration cfg, ITestOutputHelper output,
-        ITextEmbeddingGenerator textEmbeddingGenerator,
-        ElasticsearchClient client,
-        IIndexNameHelper indexNameHelper)
+{    
+    public DataStorageTests(
+        IConfiguration cfg,
+        ITestOutputHelper output)
         : base(cfg, output)
     {
-        this.MemoryDb = memoryDb ?? throw new ArgumentNullException(nameof(memoryDb));
-        this.TextEmbeddingGenerator = textEmbeddingGenerator ?? throw new ArgumentNullException(nameof(textEmbeddingGenerator));
+        this.Output = output;
+
+#pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        this.TextEmbeddingGenerator = new OpenAITextEmbeddingGenerator(
+            config: base.OpenAiConfig,
+            textTokenizer: default,
+            loggerFactory: default);
+#pragma warning restore KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        this.Client = new ElasticsearchClient(base.ElasticsearchConfig.ToElasticsearchClientSettings());
+        this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.Client, this.TextEmbeddingGenerator, default);
     }
 
+    public ITestOutputHelper Output { get; }
+    public ElasticsearchClient Client { get; }
     public IMemoryDb MemoryDb { get; }
     public ITextEmbeddingGenerator TextEmbeddingGenerator { get; }
 
@@ -53,8 +64,9 @@ public class DataStorageTests : BaseFunctionalTestCase
                                .ConfigureAwait(false);
         }
 
-        // Verfies that the documents are gone
-        var indexName = this.IndexNameHelper.Convert(nameof(CanUpsertOneTextDocumentAndDeleteAsync));
+        // Verifies that the documents are gone
+        var idxHelper = new IndexNameHelper(base.ElasticsearchConfig);
+        var indexName = idxHelper.Convert(nameof(CanUpsertOneTextDocumentAndDeleteAsync));
         var res = await this.Client.CountAsync(r => r.Index(indexName))
                          .ConfigureAwait(false);
         Assert.Equal(0, res.Count);
@@ -138,7 +150,7 @@ public class DataStorageTests : BaseFunctionalTestCase
             foreach (var paragraph in paragraphs)
             {
                 var embedding = await textEmbeddingGenerator.GenerateEmbeddingAsync(paragraph)
-                                                                 .ConfigureAwait(false);
+                                                            .ConfigureAwait(false);
 
                 output.WriteLine($"Indexed paragraph {++paraIdx}/{paragraphs.Count}. {paragraph.Length} characters.");
 

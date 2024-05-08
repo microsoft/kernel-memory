@@ -21,8 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="_notported\DataStorageTests.cs" />
-      <None Include="_notported\IndexManagementTests.cs" />
       <None Include="_notported\KernelMemoryTests.cs" />
       <None Include="_notported\SearchTests.cs" />
     </ItemGroup>

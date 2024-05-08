@@ -18,7 +18,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 public class ElasticsearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
-    private readonly IIndexNameHelper _indexNameHelper;
+    private readonly IndexNameHelper _indexNameHelper;
     private readonly ElasticsearchConfig _config;
     private readonly ILogger<ElasticsearchMemory> _log;
     private readonly ElasticsearchClient _client;
@@ -29,17 +29,15 @@ public class ElasticsearchMemory : IMemoryDb
     /// <param name="config">Elasticsearch configuration</param>
     /// <param name="client">Elasticsearch client</param>
     /// <param name="log">Application logger</param>
-    /// <param name="embeddingGenerator">Embedding generator</param>
-    /// <param name="indexNameHelper">Index name helper</param>
+    /// <param name="embeddingGenerator">Embedding generator</param>    
     public ElasticsearchMemory(
         ElasticsearchConfig config,
         ElasticsearchClient client,
         ITextEmbeddingGenerator embeddingGenerator,
-        IIndexNameHelper indexNameHelper,
         ILogger<ElasticsearchMemory>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
-        this._indexNameHelper = indexNameHelper ?? throw new ArgumentNullException(nameof(indexNameHelper));
+        this._indexNameHelper = new IndexNameHelper(config);
         this._config = config ?? throw new ArgumentNullException(nameof(config));
         this._client = client;// new ElasticsearchClient(this._config.ToElasticsearchClientSettings()); // TODO: inject
         this._log = log ?? DefaultLogger<ElasticsearchMemory>.Instance;

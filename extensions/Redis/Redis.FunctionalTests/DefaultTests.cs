@@ -11,7 +11,8 @@ public class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
 
-    public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
+    public DefaultTests(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 

@@ -1,19 +1,21 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace UnitTests;
+namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class IndexnameTests
+public class IndexnameTests : BaseFunctionalTestCase
 {
     private readonly ITestOutputHelper _output;
-    private readonly IIndexNameHelper _indexNameHelper;
+    private readonly IndexNameHelper _indexNameHelper;
 
-    public IndexnameTests(ITestOutputHelper output, IIndexNameHelper indexNameHelper)
+    public IndexnameTests(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output)
     {
         this._output = output ?? throw new ArgumentNullException(nameof(output));
-        this._indexNameHelper = indexNameHelper ?? throw new ArgumentNullException(nameof(indexNameHelper));
+        this._indexNameHelper = new IndexNameHelper(base.ElasticsearchConfig);
     }
 
     [Theory]
