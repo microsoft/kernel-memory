@@ -17,7 +17,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">The IKernelMemoryBuilder instance</param>
     /// <param name="configuration">The application configuration</param>"
-    public static IKernelMemoryBuilder WithElasticsearch(this IKernelMemoryBuilder builder,
+    public static IKernelMemoryBuilder WithElasticsearchMemoryDb(this IKernelMemoryBuilder builder,
         ElasticsearchConfig configuration)
     {
         builder.Services.AddElasticsearchAsMemoryDb(configuration);

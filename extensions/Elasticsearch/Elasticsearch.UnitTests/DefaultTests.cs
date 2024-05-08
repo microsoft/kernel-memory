@@ -11,21 +11,16 @@ namespace Microsoft.Elasticsearch.FunctionalTests;
 public class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
-    private readonly ElasticsearchConfig _esConfig;
-
+    
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
-
-        this._esConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
-            // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
-            // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithElasticsearch(this._esConfig)
+            .WithElasticsearchMemoryDb(this.ElasticsearchConfig)
             .Build<MemoryServerless>();
     }
 

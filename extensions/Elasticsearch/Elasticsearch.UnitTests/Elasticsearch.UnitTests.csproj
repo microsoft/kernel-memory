@@ -14,6 +14,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="_notported\DataStorageTests.cs" />
+      <Compile Remove="_notported\IndexManagementTests.cs" />
+      <Compile Remove="_notported\KernelMemoryTests.cs" />
+      <Compile Remove="_notported\SearchTests.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="_notported\DataStorageTests.cs" />
+      <None Include="_notported\IndexManagementTests.cs" />
+      <None Include="_notported\KernelMemoryTests.cs" />
+      <None Include="_notported\SearchTests.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj" />
         <ProjectReference Include="..\Elasticsearch\Elasticsearch.csproj" />
     </ItemGroup>
@@ -31,6 +45,27 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\file1-Wikipedia-Carbon.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file2-Wikipedia-Moon.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file3-lorem-ipsum.docx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file4-SK-Readme.pdf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file5-NASA-news.pdf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file6-ANWC-image.jpg">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
