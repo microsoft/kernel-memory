@@ -1,7 +1,7 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 
-// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
