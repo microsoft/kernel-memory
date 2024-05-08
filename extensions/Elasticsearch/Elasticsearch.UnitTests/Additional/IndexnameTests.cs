@@ -1,4 +1,5 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KM.TestHelpers;
 using Xunit;

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Elasticsearch.FunctionalTests.Additional;
 using Microsoft.KernelMemory;
