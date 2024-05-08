@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 
 using System.Reflection;
 using Elastic.Clients.Elasticsearch;

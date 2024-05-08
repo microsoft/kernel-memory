@@ -18,9 +18,9 @@ namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 /// deleted before and after the tests. This ensures that Elasticsearch is left in a clean state
 /// or that subsequent tests don't fail because of left-over indices.
 /// </summary>
-public abstract class MemoryDbTestBase : BaseFunctionalTestCase//, IAsyncLifetime
+public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLifetime
 {
-    protected MemoryDbTestBase(IConfiguration cfg, ITestOutputHelper output)//, ElasticsearchClient client)
+    protected MemoryDbFunctionalTest(IConfiguration cfg, ITestOutputHelper output)
         : base(cfg, output)
     {
         this.Output = output ?? throw new ArgumentNullException(nameof(output));
@@ -45,31 +45,29 @@ public abstract class MemoryDbTestBase : BaseFunctionalTestCase//, IAsyncLifetim
     public ITextEmbeddingGenerator TextEmbeddingGenerator { get; }
 
 
-    //public async Task InitializeAsync()
-    //{
-    //    // Within a single test class, the tests are executed sequentially by default so
-    //    // there is no chance for a method to finish and delete indices of other methods before the next
-    //    // method starts executing.
-    //    //var delIndexResponse = await this.Client.Indices.DeleteAsync(indices: this.con)
-    //    //                                                .ConfigureAwait(false);
-    //
-    //    var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), this.IndexNameHelper).ConfigureAwait(false);
-    //
-    //    if (indicesFound.Any())
-    //    {
-    //        this.Output.WriteLine($"Deleted left-over test indices: {string.Join(", ", indicesFound)}");
-    //        this.Output.WriteLine("");
-    //    }
-    //}
-    //
-    //public async Task DisposeAsync()
-    //{
-    //    var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), this.IndexNameHelper).ConfigureAwait(false);
-    //
-    //    if (indicesFound.Any())
-    //    {
-    //        this.Output.WriteLine($"Deleted test indices: {string.Join(", ", indicesFound)}");
-    //        this.Output.WriteLine("");
-    //    }
-    //}
+    public async Task InitializeAsync()
+    {
+        // Within a single test class, the tests are executed sequentially by default so
+        // there is no chance for a method to finish and delete indices of other methods before the next
+        // method starts executing.
+
+        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), new IndexNameHelper(base.ElasticsearchConfig)).ConfigureAwait(false);
+
+        if (indicesFound.Any())
+        {
+            this.Output.WriteLine($"Deleted left-over test indices: {string.Join(", ", indicesFound)}");
+            this.Output.WriteLine("");
+        }
+    }
+
+    public async Task DisposeAsync()
+    {
+        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), new IndexNameHelper(base.ElasticsearchConfig)).ConfigureAwait(false);
+
+        if (indicesFound.Any())
+        {
+            this.Output.WriteLine($"Deleted test indices: {string.Join(", ", indicesFound)}");
+            this.Output.WriteLine("");
+        }
+    }
 }

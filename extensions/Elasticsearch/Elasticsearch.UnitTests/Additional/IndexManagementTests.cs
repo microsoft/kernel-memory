@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class IndexManagementTests : MemoryDbTestBase
+public class IndexManagementTests : MemoryDbFunctionalTest
 {
     public IndexManagementTests(
         IConfiguration cfg,

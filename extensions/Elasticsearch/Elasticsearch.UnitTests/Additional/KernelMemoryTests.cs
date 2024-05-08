@@ -8,7 +8,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
-public class KernelMemoryTests : MemoryDbTestBase
+public class KernelMemoryTests : MemoryDbFunctionalTest
 {
     private const string NoAnswer = "INFO NOT FOUND";
 

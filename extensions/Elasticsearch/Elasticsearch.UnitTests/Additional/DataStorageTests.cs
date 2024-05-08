@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class DataStorageTests : MemoryDbTestBase
+public class DataStorageTests : MemoryDbFunctionalTest
 {
     public DataStorageTests(
         IConfiguration cfg,
