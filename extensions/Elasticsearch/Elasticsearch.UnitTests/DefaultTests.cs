@@ -4,6 +4,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KM.TestHelpers;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests;
