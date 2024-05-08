@@ -13,7 +13,7 @@ namespace Microsoft.KernelMemory;
 public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
-    /// Kernel Memory Builder extension method to add the Elasticsearch memory connector.
+    /// Kernel Memory Builder extension method to add the Elasticsearch memory db.
     /// </summary>
     /// <param name="builder">The IKernelMemoryBuilder instance</param>
     /// <param name="configuration">The application configuration</param>"
@@ -26,7 +26,7 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
-    /// Extension method to add the Elasticsearch memory connector.
+    /// Extension method to add the Elasticsearch memory db.
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="configure"></param>
