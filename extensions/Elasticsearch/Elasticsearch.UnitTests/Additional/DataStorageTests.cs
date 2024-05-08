@@ -48,9 +48,8 @@ public class DataStorageTests : MemoryDbFunctionalTest
                                .ConfigureAwait(false);
         }
 
-        // Verifies that the documents are gone
-        var idxHelper = new IndexNameHelper(base.ElasticsearchConfig);
-        var indexName = idxHelper.Convert(nameof(CanUpsertOneTextDocumentAndDeleteAsync));
+        // Verifies that the documents are gone        
+        var indexName = IndexNameHelper.Convert(nameof(CanUpsertOneTextDocumentAndDeleteAsync), base.ElasticsearchConfig);
         var res = await this.Client.CountAsync(r => r.Index(indexName))
                          .ConfigureAwait(false);
         Assert.Equal(0, res.Count);

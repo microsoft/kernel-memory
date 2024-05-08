@@ -2,6 +2,7 @@
 
 using System.Reflection;
 using Elastic.Clients.Elasticsearch;
+using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Xunit;
 
@@ -16,11 +17,11 @@ internal static class TestsHelper
     /// Deletes all indices that are created by all test methods of the given class.
     /// Indices must have the same name of a test method to be automatically deleted.
     /// </summary>
-    public static async Task<IEnumerable<string>> DeleteIndicesOfTestAsync(this ElasticsearchClient client, Type unitTestType, IndexNameHelper indexNameHelper)
+    public static async Task<IEnumerable<string>> DeleteIndicesOfTestAsync(this ElasticsearchClient client, Type unitTestType, ElasticsearchConfig config)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(unitTestType);
-        ArgumentNullException.ThrowIfNull(indexNameHelper);
+        ArgumentNullException.ThrowIfNull(config);
 
         // Iterates thru all method names of the test class and deletes the indices with the same name
         var methods = unitTestType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -38,7 +39,7 @@ internal static class TestsHelper
         var result = new List<string>();
         foreach (var method in methods)
         {
-            var indexName = indexNameHelper.Convert(method.Name);
+            var indexName = IndexNameHelper.Convert(method.Name, config);
             var delResp = await client.Indices.DeleteAsync(indices: indexName)
                                       .ConfigureAwait(false);
 

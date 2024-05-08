@@ -3,29 +3,22 @@
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <inheritdoc />
-public class IndexNameHelper
+public static class IndexNameHelper
 {
-    /// <inheritdoc />
-    public IndexNameHelper(ElasticsearchConfig config)
-    {
-        this.IndexPrefix = config.IndexPrefix ?? string.Empty;
-    }
-
     /// <summary>
-    /// The prefix to use for all index names.
-    /// </summary>
-    public string IndexPrefix { get; }
-
-    /// <inheritdoc />
-    public bool TryConvert(string indexName, out (string ActualIndexName, IEnumerable<string> Errors) result)
+    /// Tries to convert the given index name to a valid Elasticsearch index name.
+    /// </summary>    
+    public static bool TryConvert(string indexName, ElasticsearchConfig config, out (string ActualIndexName, IEnumerable<string> Errors) result)
     {
         indexName = indexName ?? throw new ArgumentNullException(nameof(indexName));
+        var indexPrefix = config?.IndexPrefix ?? string.Empty;
+
 
         // Convert to lowercase and replace underscores with hyphens to
         // have a consistent behavior with other storage types supported by Kernel Memory. (see #18)
         // TODO: I am not sure why it's necessary... Should look into this...
 #pragma warning disable CA1304 // Specify CultureInfo
-        indexName = (this.IndexPrefix + indexName)
+        indexName = (indexPrefix + indexName)
             .Replace("_", "-", StringComparison.Ordinal)
             .Trim()
             .ToLower();
@@ -74,10 +67,14 @@ public class IndexNameHelper
         return true;
     }
 
-    /// <inheritdoc />
-    public string Convert(string indexName)
+    /// <summary>
+    /// Converts the given index name to a valid Elasticsearch index name.
+    /// Throws an exception if the index name is invalid.
+    /// </summary>
+    /// <exception cref="InvalidIndexNameException"></exception>
+    public static string Convert(string indexName, ElasticsearchConfig config)
     {
-        if (!this.TryConvert(indexName, out var result))
+        if (!TryConvert(indexName, config, out var result))
         {
             throw new InvalidIndexNameException(result);
         }

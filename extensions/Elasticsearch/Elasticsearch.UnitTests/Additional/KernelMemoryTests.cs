@@ -255,9 +255,8 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
         this.Output.WriteLine($"Indexed document with id '{id}'.");
 
-        // Waits for the documents to be saved
-        var idxNameHelper = new IndexNameHelper(this.ElasticsearchConfig);
-        var actualIndexName = idxNameHelper.Convert(indexName);
+        // Waits for the documents to be saved        
+        var actualIndexName = IndexNameHelper.Convert(indexName, base.ElasticsearchConfig);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 2)
         //          .ConfigureAwait(false);
 
@@ -304,9 +303,8 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
         this.Output.WriteLine($"Indexed {docId}");
 
-        // Waits for the documents to be saved
-        var idxNameHelper = new IndexNameHelper(this.ElasticsearchConfig);
-        var actualIndexName = idxNameHelper.Convert(indexName);
+        // Waits for the documents to be saved        
+        var actualIndexName = IndexNameHelper.Convert(indexName, this.ElasticsearchConfig);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 10)
         //                 .ConfigureAwait(false);
 

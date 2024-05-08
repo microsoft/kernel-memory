@@ -10,13 +10,11 @@ namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 public class IndexnameTests : BaseFunctionalTestCase
 {
     private readonly ITestOutputHelper _output;
-    private readonly IndexNameHelper _indexNameHelper;
 
     public IndexnameTests(IConfiguration cfg, ITestOutputHelper output)
         : base(cfg, output)
     {
         this._output = output ?? throw new ArgumentNullException(nameof(output));
-        this._indexNameHelper = new IndexNameHelper(base.ElasticsearchConfig);
     }
 
     [Theory]
@@ -27,7 +25,7 @@ public class IndexnameTests : BaseFunctionalTestCase
     [InlineData("123numberfirst")]
     public void GoodIndexNamesAreAccepted(string indexName)
     {
-        Assert.True(this._indexNameHelper.TryConvert(indexName, out var convResult));
+        Assert.True(IndexNameHelper.TryConvert(indexName, base.ElasticsearchConfig, out var convResult));
         Assert.Empty(convResult.Errors);
 
         this._output.WriteLine($"The index name '{indexName}' will be translated to '{convResult.ActualIndexName}'.");
@@ -65,7 +63,7 @@ public class IndexnameTests : BaseFunctionalTestCase
         // Creates the index using IMemoryDb
         var exception = Assert.Throws<InvalidIndexNameException>(() =>
         {
-            this._indexNameHelper.Convert(indexName);
+            IndexNameHelper.Convert(indexName, base.ElasticsearchConfig);
         });
 
         this._output.WriteLine(
@@ -82,7 +80,7 @@ public class IndexnameTests : BaseFunctionalTestCase
         var indexName = new string('a', 256);
         var exception = Assert.Throws<InvalidIndexNameException>(() =>
         {
-            this._indexNameHelper.Convert(indexName);
+            IndexNameHelper.Convert(indexName, base.ElasticsearchConfig);
         });
 
         Assert.Equal(1, exception.Errors.Count());

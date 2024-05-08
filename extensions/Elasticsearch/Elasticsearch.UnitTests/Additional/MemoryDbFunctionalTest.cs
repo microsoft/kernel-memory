@@ -51,7 +51,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
         // there is no chance for a method to finish and delete indices of other methods before the next
         // method starts executing.
 
-        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), new IndexNameHelper(base.ElasticsearchConfig)).ConfigureAwait(false);
+        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), base.ElasticsearchConfig).ConfigureAwait(false);
 
         if (indicesFound.Any())
         {
@@ -62,7 +62,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
 
     public async Task DisposeAsync()
     {
-        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), new IndexNameHelper(base.ElasticsearchConfig)).ConfigureAwait(false);
+        var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), base.ElasticsearchConfig).ConfigureAwait(false);
 
         if (indicesFound.Any())
         {

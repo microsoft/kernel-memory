@@ -28,9 +28,8 @@ public class IndexManagementTests : MemoryDbFunctionalTest
         await this.MemoryDb.CreateIndexAsync(indexName, vectorSize)
                            .ConfigureAwait(false);
 
-        // Verifies the index is created using the ES client
-        var idxHelper = new IndexNameHelper(base.ElasticsearchConfig);
-        var actualIndexName = idxHelper.Convert(nameof(CanCreateAndDeleteIndexAsync));
+        // Verifies the index is created using the ES client        
+        var actualIndexName = IndexNameHelper.Convert(nameof(CanCreateAndDeleteIndexAsync), base.ElasticsearchConfig);
         var resp = await this.Client.Indices.ExistsAsync(actualIndexName)
                                             .ConfigureAwait(false);
         Assert.True(resp.Exists);
@@ -50,11 +49,10 @@ public class IndexManagementTests : MemoryDbFunctionalTest
     [Fact]
     public async Task CanGetIndicesAsync()
     {
-        var idxNameHelper = new IndexNameHelper(base.ElasticsearchConfig);
         var indexNames = new[]
         {
-            idxNameHelper.Convert(nameof(CanGetIndicesAsync) + "-First"),
-            idxNameHelper.Convert(nameof(CanGetIndicesAsync) + "-Second")
+            IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-First", base.ElasticsearchConfig),
+            IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-Second", base.ElasticsearchConfig)
         };
 
         // Creates the indices using IMemoryDb

@@ -18,7 +18,6 @@ namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 public class ElasticsearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
-    private readonly IndexNameHelper _indexNameHelper;
     private readonly ElasticsearchConfig _config;
     private readonly ILogger<ElasticsearchMemory> _log;
     private readonly ElasticsearchClient _client;
@@ -37,7 +36,6 @@ public class ElasticsearchMemory : IMemoryDb
         ILogger<ElasticsearchMemory>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator ?? throw new ArgumentNullException(nameof(embeddingGenerator));
-        this._indexNameHelper = new IndexNameHelper(config);
         this._config = config ?? throw new ArgumentNullException(nameof(config));
         this._client = client;// new ElasticsearchClient(this._config.ToElasticsearchClientSettings()); // TODO: inject
         this._log = log ?? DefaultLogger<ElasticsearchMemory>.Instance;
@@ -49,7 +47,7 @@ public class ElasticsearchMemory : IMemoryDb
         int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var existsResponse = await this._client.Indices.ExistsAsync(index, cancellationToken).ConfigureAwait(false);
         if (existsResponse.Exists)
@@ -116,7 +114,7 @@ public class ElasticsearchMemory : IMemoryDb
         string index,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var delResponse = await this._client.Indices.DeleteAsync(
             index,
@@ -138,7 +136,7 @@ public class ElasticsearchMemory : IMemoryDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         record = record ?? throw new ArgumentNullException(nameof(record));
 
@@ -168,7 +166,7 @@ public class ElasticsearchMemory : IMemoryDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var memRec = ElasticsearchMemoryRecord.FromMemoryRecord(record);
 
@@ -210,7 +208,7 @@ public class ElasticsearchMemory : IMemoryDb
             limit = 10;
         }
 
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         this._log.LogTrace("{MethodName}: Searching for '{Text}' on index '{IndexName}' with filters {Filters}. {MinRelevance} {Limit} {WithEmbeddings}",
                            nameof(GetSimilarListAsync), text, index, filters.ToDebugString(), minRelevance, limit, withEmbeddings);
@@ -266,7 +264,7 @@ public class ElasticsearchMemory : IMemoryDb
             limit = 10;
         }
 
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var resp = await this._client.SearchAsync<ElasticsearchMemoryRecord>(s =>
             s.Index(index)
