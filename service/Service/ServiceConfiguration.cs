@@ -11,7 +11,6 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
-using Microsoft.KernelMemory.Postgres;
 
 namespace Microsoft.KernelMemory.Service;
 
