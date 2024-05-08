@@ -1,26 +1,21 @@
 ﻿// Copyright (c) Free Mind Labs, Inc. All rights reserved.
 using Elastic.Clients.Elasticsearch;
+using Microsoft.Elasticsearch.FunctionalTests.Additional;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryStorage;
-using UnitTests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Elasticsearch.FunctionalTests._notported;
+namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class SearchTests : ElasticsearchTestBase
+public class SearchTests : MemoryDbTestBase
 {
-    public SearchTests(ITestOutputHelper output, IMemoryDb memoryDb, ITextEmbeddingGenerator textEmbeddingGenerator, ElasticsearchClient client, IIndexNameHelper indexNameHelper)
-        : base(output, client, indexNameHelper)
+    public SearchTests(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output)
     {
-        this.MemoryDb = memoryDb ?? throw new ArgumentNullException(nameof(memoryDb));
-        this.TextEmbeddingGenerator = textEmbeddingGenerator ?? throw new ArgumentNullException(nameof(textEmbeddingGenerator));
     }
-
-    public IMemoryDb MemoryDb { get; }
-    public ITextEmbeddingGenerator TextEmbeddingGenerator { get; }
 
     [Fact]
     public async Task CanGetListWithTagsAsync()

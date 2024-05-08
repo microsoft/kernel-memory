@@ -37,16 +37,8 @@ public abstract class MemoryDbTestBase : BaseFunctionalTestCase//, IAsyncLifetim
         this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.Client, this.TextEmbeddingGenerator, default);
 
 
-
-        //this.KernelMemory = new KernelMemoryBuilder()
-        //    .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
-        //    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-        //    .WithOpenAI(this.OpenAiConfig)
-        //    .WithElasticsearchMemoryDb(this.ElasticsearchConfig)
-        //    .Build<MemoryServerless>();
     }
 
-    //public IKernelMemory KernelMemory { get; }
     public ITestOutputHelper Output { get; }
     public ElasticsearchClient Client { get; }
     public IMemoryDb MemoryDb { get; }

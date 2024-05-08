@@ -10,29 +10,13 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class IndexManagementTests : BaseFunctionalTestCase
+public class IndexManagementTests : MemoryDbTestBase
 {
     public IndexManagementTests(
         IConfiguration cfg,
         ITestOutputHelper output)
         : base(cfg, output)
-    {
-        this.Output = output;
-
-#pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var textEmbeddingGenerator = new OpenAITextEmbeddingGenerator(
-            config: base.OpenAiConfig,
-            textTokenizer: default,
-            loggerFactory: default);
-#pragma warning restore KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        this.Client = new ElasticsearchClient(base.ElasticsearchConfig.ToElasticsearchClientSettings());
-        this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.Client, textEmbeddingGenerator, default);
-    }
-
-    public ITestOutputHelper Output { get; }
-    public ElasticsearchClient Client { get; }
-    public IMemoryDb MemoryDb { get; }
+    { }
 
     [Fact]
     public async Task CanCreateAndDeleteIndexAsync()

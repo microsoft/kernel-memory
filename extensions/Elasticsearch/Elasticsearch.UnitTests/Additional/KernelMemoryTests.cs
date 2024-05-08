@@ -3,24 +3,27 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-using UnitTests;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Elasticsearch.FunctionalTests._notported;
-public class KernelMemoryTests : ElasticsearchTestBase
+namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
+public class KernelMemoryTests : MemoryDbTestBase
 {
     private const string NoAnswer = "INFO NOT FOUND";
 
-    public KernelMemoryTests(ITestOutputHelper output, IKernelMemory kernelMemory, ElasticsearchClient client, IIndexNameHelper indexNameHelper)
-        : base(output, client, indexNameHelper)
+    public KernelMemoryTests(IConfiguration cfg, ITestOutputHelper output)
+        : base(cfg, output)
     {
-        this.KernelMemory = kernelMemory ?? throw new ArgumentNullException(nameof(kernelMemory));
+        this.KernelMemory = new KernelMemoryBuilder()
+            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+            .WithOpenAI(this.OpenAiConfig)
+            .WithElasticsearchMemoryDb(this.ElasticsearchConfig)
+            .Build<MemoryServerless>();
     }
 
     public IKernelMemory KernelMemory { get; }
-
-    private const string NotFound = "INFO NOT FOUND";
 
     [Fact]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
@@ -253,7 +256,8 @@ public class KernelMemoryTests : ElasticsearchTestBase
         this.Output.WriteLine($"Indexed document with id '{id}'.");
 
         // Waits for the documents to be saved
-        var actualIndexName = this.IndexNameHelper.Convert(indexName);
+        var idxNameHelper = new IndexNameHelper(this.ElasticsearchConfig);
+        var actualIndexName = idxNameHelper.Convert(indexName);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 2)
         //          .ConfigureAwait(false);
 
@@ -301,7 +305,8 @@ public class KernelMemoryTests : ElasticsearchTestBase
         this.Output.WriteLine($"Indexed {docId}");
 
         // Waits for the documents to be saved
-        var actualIndexName = this.IndexNameHelper.Convert(indexName);
+        var idxNameHelper = new IndexNameHelper(this.ElasticsearchConfig);
+        var actualIndexName = idxNameHelper.Convert(indexName);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 10)
         //                 .ConfigureAwait(false);
 
