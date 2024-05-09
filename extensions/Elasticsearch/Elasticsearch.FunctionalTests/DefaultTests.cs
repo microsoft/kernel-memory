@@ -3,6 +3,8 @@
 using Microsoft.KernelMemory;
 using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KM.TestHelpers;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests;
 
@@ -23,7 +25,7 @@ public class DefaultTests : BaseFunctionalTestCase
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithElasticsearch(this._esConfig)
+            .WithElasticsearchMemoryDb(this._esConfig)
             .Build<MemoryServerless>();
     }
 

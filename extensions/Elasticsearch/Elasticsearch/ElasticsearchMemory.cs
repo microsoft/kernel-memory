@@ -7,7 +7,6 @@ using Elastic.Clients.Elasticsearch.QueryDsl;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 

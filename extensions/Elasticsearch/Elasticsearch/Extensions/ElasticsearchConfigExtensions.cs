@@ -3,12 +3,12 @@
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Elasticsearch configuration extensions.
 /// </summary>
-internal static class ElasticsearchConfigExtensions
+public static class ElasticsearchConfigExtensions
 {
     /// <summary>
     /// Converts an ElasticsearchConfig to a ElasticsearchClientSettings that can be used

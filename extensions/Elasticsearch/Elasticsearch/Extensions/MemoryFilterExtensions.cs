@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
 /// Extensions methods for MemoryFilter.
 /// </summary>
-internal static class MemoryFilterExtensions
+public static class MemoryFilterExtensions
 {
     /// <summary>
     /// Displays the MemoryFilter in a human-readable format.
