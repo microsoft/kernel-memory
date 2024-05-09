@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
 /// <summary>
 /// Elasticsearch record.

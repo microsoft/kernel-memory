@@ -7,6 +7,7 @@ using Elastic.Clients.Elasticsearch.QueryDsl;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 
@@ -18,7 +19,6 @@ namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 public class ElasticsearchMemory : IMemoryDb
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
-    private readonly IIndexNameHelper _indexNameHelper;
     private readonly ElasticsearchConfig _config;
     private readonly ILogger<ElasticsearchMemory> _log;
     private readonly ElasticsearchClient _client;
@@ -35,15 +35,12 @@ public class ElasticsearchMemory : IMemoryDb
         ElasticsearchConfig config,
         ElasticsearchClient client,
         ITextEmbeddingGenerator embeddingGenerator,
-        IIndexNameHelper indexNameHelper,
         ILogger<ElasticsearchMemory>? log = null)
     {
         ArgumentNullExceptionEx.ThrowIfNull(embeddingGenerator, nameof(embeddingGenerator), "The embedding generator is NULL");
-        ArgumentNullExceptionEx.ThrowIfNull(indexNameHelper, nameof(indexNameHelper), "The index name helper is NULL");
         ArgumentNullExceptionEx.ThrowIfNull(config, nameof(config), "The configuration is NULL");
 
         this._embeddingGenerator = embeddingGenerator;
-        this._indexNameHelper = indexNameHelper;
         this._config = config;
         this._client = client; // new ElasticsearchClient(this._config.ToElasticsearchClientSettings()); // TODO: inject
         this._log = log ?? DefaultLogger<ElasticsearchMemory>.Instance;
@@ -55,7 +52,7 @@ public class ElasticsearchMemory : IMemoryDb
         int vectorSize,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var existsResponse = await this._client.Indices.ExistsAsync(index, cancellationToken).ConfigureAwait(false);
         if (existsResponse.Exists)
@@ -122,7 +119,7 @@ public class ElasticsearchMemory : IMemoryDb
         string index,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var delResponse = await this._client.Indices.DeleteAsync(
             index,
@@ -145,7 +142,7 @@ public class ElasticsearchMemory : IMemoryDb
         CancellationToken cancellationToken = default)
     {
         ArgumentNullExceptionEx.ThrowIfNull(record, nameof(record), "The record is NULL");
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var delResponse = await this._client.DeleteAsync<ElasticsearchMemoryRecord>(
                 index,
@@ -173,7 +170,7 @@ public class ElasticsearchMemory : IMemoryDb
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var memRec = ElasticsearchMemoryRecord.FromMemoryRecord(record);
 
@@ -215,7 +212,7 @@ public class ElasticsearchMemory : IMemoryDb
             limit = 10;
         }
 
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         this._log.LogTrace("Searching for '{Text}' on index '{IndexName}' with filters {Filters}. {MinRelevance} {Limit} {WithEmbeddings}",
             text, index, filters.ToDebugString(), minRelevance, limit, withEmbeddings);
@@ -270,7 +267,7 @@ public class ElasticsearchMemory : IMemoryDb
             limit = 10;
         }
 
-        index = this._indexNameHelper.Convert(index);
+        index = IndexNameHelper.Convert(index, this._config);
 
         var resp = await this._client.SearchAsync<ElasticsearchMemoryRecord>(s =>
                     s.Index(index)

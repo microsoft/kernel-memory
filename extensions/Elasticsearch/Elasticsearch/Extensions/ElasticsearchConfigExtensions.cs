@@ -3,7 +3,7 @@
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 
 /// <summary>
 /// Elasticsearch configuration extensions.
