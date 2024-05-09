@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj" />
-        <ProjectReference Include="..\Elasticsearch\Elasticsearch.csproj" />
+        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>
