@@ -3,7 +3,6 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 
@@ -21,7 +20,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="configuration">Elasticsearch configuration</param>"
-    public static IKernelMemoryBuilder WithElasticsearch(
+    public static IKernelMemoryBuilder WithElasticsearchMemoryDb(
         this IKernelMemoryBuilder builder,
         ElasticsearchConfig configuration)
     {
