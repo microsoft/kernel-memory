@@ -3,6 +3,7 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 
@@ -72,7 +73,6 @@ public static partial class DependencyInjection
         });
 
         return services
-            .AddSingleton<IIndexNameHelper, IndexNameHelper>()
             .AddSingleton(config)
             .AddSingleton<IMemoryDb, ElasticsearchMemory>();
     }

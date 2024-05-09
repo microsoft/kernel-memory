@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Extensions;
 
 /// <summary>
 /// Extensions methods for MemoryFilter.
