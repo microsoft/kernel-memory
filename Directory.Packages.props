@@ -3,12 +3,14 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-preview.7.24251.11" />
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.11.2" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.1" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.19.1" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.17.1" />
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.11.0" />
+    <PackageVersion Include="Discord.Net" Version="3.14.1" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.61" />
     <PackageVersion Include="LLamaSharp" Version="0.11.2" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.11.2" />
@@ -21,6 +23,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
