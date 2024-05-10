@@ -79,7 +79,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                 { "documentId", documentId },
                 { "fileName", fileName },
                 { "content", new BsonString(await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false)) },
-                { "contentType", "text/plain"}
+                { "contentType", Pipeline.MimeTypes.PlainText}
             };
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
@@ -95,7 +95,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
             doc["documentId"] = documentId;
             doc["fileName"] = fileName;
             doc["content"] = content;
-            doc["contentType"] = "text/plain";
+            doc["contentType"] = Pipeline.MimeTypes.PlainText;
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
         else
@@ -108,7 +108,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     { "index", index },
                     { "documentId", documentId },
                     { "fileName", fileName },
-                    { "contentType", "application/octet-stream"}
+                    { "contentType", (new Pipeline.MimeTypesDetection()).GetFileType(fileName)}
                 }
             };
 
