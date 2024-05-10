@@ -30,8 +30,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// * support custom schema
 /// * support custom Azure AI Search logic
 /// </summary>
-[Experimental("KMEXP03")]
-public sealed class AzureAISearchMemory : IMemoryDb
+public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
@@ -127,13 +126,24 @@ public sealed class AzureAISearchMemory : IMemoryDb
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        var result = this.BatchUpsertAsync(index, new[] { record }, cancellationToken);
+        var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
+        return id;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<string> BatchUpsertAsync(
+        string index,
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         var client = this.GetSearchClient(index);
-        AzureAISearchMemoryRecord localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
+        var localRecords = records.Select(AzureAISearchMemoryRecord.FromMemoryRecord);
 
         try
         {
             await client.IndexDocumentsAsync(
-                IndexDocumentsBatch.Upload(new[] { localRecord }),
+                IndexDocumentsBatch.Upload(localRecords),
                 new IndexDocumentsOptions { ThrowOnAnyError = true },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
@@ -142,7 +152,10 @@ public sealed class AzureAISearchMemory : IMemoryDb
             throw new IndexNotFound(e.Message, e);
         }
 
-        return record.Id;
+        foreach (var record in records)
+        {
+            yield return record.Id;
+        }
     }
 
     /// <inheritdoc />
@@ -352,25 +365,6 @@ public sealed class AzureAISearchMemory : IMemoryDb
         }
 
         return false;
-    }
-
-    private async IAsyncEnumerable<string> UpsertBatchAsync(
-        string index,
-        IEnumerable<MemoryRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var client = this.GetSearchClient(index);
-
-        foreach (MemoryRecord record in records)
-        {
-            var localRecord = AzureAISearchMemoryRecord.FromMemoryRecord(record);
-            await client.IndexDocumentsAsync(
-                IndexDocumentsBatch.Upload(new[] { localRecord }),
-                new IndexDocumentsOptions { ThrowOnAnyError = true },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            yield return record.Id;
-        }
     }
 
     /// <summary>
@@ -625,7 +619,7 @@ public sealed class AzureAISearchMemory : IMemoryDb
 
     private static double ScoreToCosineSimilarity(double score)
     {
-        return 2 - 1 / score;
+        return 2 - (1 / score);
     }
 
     private static double CosineSimilarityToScore(double similarity)

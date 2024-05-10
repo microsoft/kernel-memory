@@ -48,6 +48,8 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
     private readonly ILogger<SaveRecordsHandler> _log;
     private readonly bool _embeddingGenerationEnabled;
 
+    private readonly int _upsertBatchSize;
+
     /// <inheritdoc />
     public string StepName { get; }
 
@@ -57,10 +59,12 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
+    /// <param name="config">Configuration settings</param>
     /// <param name="log">Application logger</param>
     public SaveRecordsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
+        KernelMemoryConfig? config = null,
         ILogger<SaveRecordsHandler>? log = null)
     {
         this.StepName = stepName;
@@ -69,6 +73,8 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
 
         this._orchestrator = orchestrator;
         this._memoryDbs = orchestrator.GetMemoryDbs();
+
+        this._upsertBatchSize = (config ?? new KernelMemoryConfig()).DataIngestion.UpsertBatchSize;
 
         if (this._memoryDbs.Count < 1)
         {
@@ -106,63 +112,56 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         var createdIndexes = new HashSet<string>();
 
         // For each embedding file => For each Memory DB => Upsert record
-        foreach (FileDetailsWithRecordId embeddingFile in GetListOfEmbeddingFiles(pipeline))
+        foreach (FileDetailsWithRecordId[] embeddingFiles in GetListOfEmbeddingFiles(pipeline).Chunk(this._upsertBatchSize))
         {
-            if (embeddingFile.File.AlreadyProcessedBy(this))
+            var records = new List<MemoryRecord>();
+
+            foreach (FileDetailsWithRecordId embeddingFile in embeddingFiles)
             {
+                if (embeddingFile.File.AlreadyProcessedBy(this))
+                {
+                    embeddingsFound = true;
+                    this._log.LogTrace("File {0} already processed by this handler", embeddingFile.File.Name);
+                    continue;
+                }
+
+                string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.File.Name, cancellationToken).ConfigureAwait(false);
+                EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson.RemoveBOM().Trim());
+                if (embeddingData == null)
+                {
+                    throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.File.Name}");
+                }
+
                 embeddingsFound = true;
-                this._log.LogTrace("File {0} already processed by this handler", embeddingFile.File.Name);
-                continue;
+
+                DataPipeline.FileDetails fileDetails = pipeline.GetFile(embeddingFile.File.ParentId);
+                string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
+                string url = await this.GetSourceUrlAsync(pipeline, fileDetails, cancellationToken).ConfigureAwait(false);
+
+                var record = PrepareRecord(
+                    pipeline: pipeline,
+                    recordId: embeddingFile.RecordId,
+                    fileName: fileDetails.Name,
+                    url: url,
+                    fileId: embeddingFile.File.ParentId,
+                    partitionFileId: embeddingFile.File.SourcePartitionId,
+                    partitionContent: partitionContent,
+                    partitionNumber: embeddingFile.File.PartitionNumber,
+                    sectionNumber: embeddingFile.File.SectionNumber,
+                    partitionEmbedding: embeddingData.Vector,
+                    embeddingGeneratorProvider: embeddingData.GeneratorProvider,
+                    embeddingGeneratorName: embeddingData.GeneratorName,
+                    embeddingFile.File.Tags);
+
+                records.Add(record);
             }
 
-            string vectorJson = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingFile.File.Name, cancellationToken).ConfigureAwait(false);
-            EmbeddingFileContent? embeddingData = JsonSerializer.Deserialize<EmbeddingFileContent>(vectorJson.RemoveBOM().Trim());
-            if (embeddingData == null)
+            await this.SaveRecordsAsync(pipeline, createdIndexes, records, cancellationToken).ConfigureAwait(false);
+
+            foreach (FileDetailsWithRecordId embeddingFile in embeddingFiles)
             {
-                throw new OrchestrationException($"Unable to deserialize embedding file {embeddingFile.File.Name}");
+                embeddingFile.File.MarkProcessedBy(this);
             }
-
-            embeddingsFound = true;
-
-            DataPipeline.FileDetails fileDetails = pipeline.GetFile(embeddingFile.File.ParentId);
-            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, embeddingData.SourceFileName, cancellationToken).ConfigureAwait(false);
-            string url = await this.GetSourceUrlAsync(pipeline, fileDetails, cancellationToken).ConfigureAwait(false);
-
-            var record = PrepareRecord(
-                pipeline: pipeline,
-                recordId: embeddingFile.RecordId,
-                fileName: fileDetails.Name,
-                url: url,
-                fileId: embeddingFile.File.ParentId,
-                partitionFileId: embeddingFile.File.SourcePartitionId,
-                partitionContent: partitionContent,
-                partitionNumber: embeddingFile.File.PartitionNumber,
-                sectionNumber: embeddingFile.File.SectionNumber,
-                partitionEmbedding: embeddingData.Vector,
-                embeddingGeneratorProvider: embeddingData.GeneratorProvider,
-                embeddingGeneratorName: embeddingData.GeneratorName,
-                embeddingFile.File.Tags);
-
-            foreach (IMemoryDb client in this._memoryDbs)
-            {
-                try
-                {
-                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-
-                    this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
-                }
-                catch (IndexNotFound e)
-                {
-                    this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
-                    await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
-
-                    this._log.LogTrace("Retry: Saving record {0} in index '{1}'", record.Id, pipeline.Index);
-                    await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
-                }
-            }
-
-            embeddingFile.File.MarkProcessedBy(this);
         }
 
         if (!embeddingsFound)
@@ -185,42 +184,99 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         var createdIndexes = new HashSet<string>();
 
         // Create records only for partitions (text chunks) and synthetic data
-        foreach (FileDetailsWithRecordId file in GetListOfPartitionAndSyntheticFiles(pipeline))
+        foreach (FileDetailsWithRecordId[] files in GetListOfPartitionAndSyntheticFiles(pipeline).Chunk(this._upsertBatchSize))
         {
-            if (file.File.AlreadyProcessedBy(this))
+            var records = new List<MemoryRecord>();
+
+            foreach (FileDetailsWithRecordId file in files)
             {
+                if (file.File.AlreadyProcessedBy(this))
+                {
+                    partitionsFound = true;
+                    this._log.LogTrace("File {0} already processed by this handler", file.File.Name);
+                    continue;
+                }
+
                 partitionsFound = true;
-                this._log.LogTrace("File {0} already processed by this handler", file.File.Name);
-                continue;
+
+                switch (file.File.MimeType)
+                {
+                    case MimeTypes.PlainText:
+                    case MimeTypes.MarkDown:
+
+                        DataPipeline.FileDetails partitionFileDetails = pipeline.GetFile(file.File.ParentId);
+                        string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, file.File.Name, cancellationToken).ConfigureAwait(false);
+                        string url = await this.GetSourceUrlAsync(pipeline, partitionFileDetails, cancellationToken).ConfigureAwait(false);
+
+                        var record = PrepareRecord(
+                            pipeline: pipeline,
+                            recordId: file.RecordId,
+                            fileName: partitionFileDetails.Name,
+                            url: url,
+                            fileId: file.File.ParentId,
+                            partitionFileId: file.File.Id,
+                            partitionContent: partitionContent,
+                            partitionNumber: partitionFileDetails.PartitionNumber,
+                            sectionNumber: partitionFileDetails.SectionNumber,
+                            partitionEmbedding: new Embedding(),
+                            embeddingGeneratorProvider: "",
+                            embeddingGeneratorName: "",
+                            file.File.Tags);
+
+                        records.Add(record);
+                        break;
+
+                    default:
+                        this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", file.File.Name);
+                        continue;
+                }
             }
 
-            partitionsFound = true;
+            await this.SaveRecordsAsync(pipeline, createdIndexes, records, cancellationToken).ConfigureAwait(false);
 
-            switch (file.File.MimeType)
+            foreach (FileDetailsWithRecordId file in files)
             {
-                case MimeTypes.PlainText:
-                case MimeTypes.MarkDown:
+                file.File.MarkProcessedBy(this);
+            }
+        }
 
-                    DataPipeline.FileDetails partitionFileDetails = pipeline.GetFile(file.File.ParentId);
-                    string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, file.File.Name, cancellationToken).ConfigureAwait(false);
-                    string url = await this.GetSourceUrlAsync(pipeline, partitionFileDetails, cancellationToken).ConfigureAwait(false);
+        if (!partitionsFound)
+        {
+            this._log.LogWarning("Pipeline '{0}/{1}': partitions and synthetic records not found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
+        }
 
-                    var record = PrepareRecord(
-                        pipeline: pipeline,
-                        recordId: file.RecordId,
-                        fileName: partitionFileDetails.Name,
-                        url: url,
-                        fileId: file.File.ParentId,
-                        partitionFileId: file.File.Id,
-                        partitionContent: partitionContent,
-                        partitionNumber: partitionFileDetails.PartitionNumber,
-                        sectionNumber: partitionFileDetails.SectionNumber,
-                        partitionEmbedding: new Embedding(),
-                        embeddingGeneratorProvider: "",
-                        embeddingGeneratorName: "",
-                        file.File.Tags);
+        return (true, pipeline);
+    }
 
-                    foreach (IMemoryDb client in this._memoryDbs)
+    private async Task SaveRecordsAsync(DataPipeline pipeline, HashSet<string> createdIndexes, List<MemoryRecord> records, CancellationToken cancellationToken)
+    {
+        if (records.Count != 0)
+        {
+            foreach (IMemoryDb client in this._memoryDbs)
+            {
+                if (client is IMemoryDbBatchUpsert batchClient)
+                {
+                    // Memory supports batch operations, so we can upsert multiple records at once
+                    try
+                    {
+                        await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, records[0].Vector.Length, cancellationToken).ConfigureAwait(false);
+
+                        this._log.LogTrace("Batch saving {0} records in index '{1}'", records.Count, pipeline.Index);
+                        await SaveAndLogRecordsAsync(pipeline, records, batchClient, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (IndexNotFound e)
+                    {
+                        this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
+                        await this.CreateIndexOnceAsync(client, createdIndexes, pipeline.Index, records[0].Vector.Length, cancellationToken, true).ConfigureAwait(false);
+
+                        this._log.LogTrace("Retry: Batch saving {0} records in index '{1}'", records.Count, pipeline.Index);
+                        await SaveAndLogRecordsAsync(pipeline, records, batchClient, cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    // Memory does not support batch operations, so we have to upsert one by one
+                    foreach (var record in records)
                     {
                         try
                         {
@@ -238,23 +294,17 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
                             await client.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
                         }
                     }
-
-                    break;
-
-                default:
-                    this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", file.File.Name);
-                    continue;
+                }
             }
-
-            file.File.MarkProcessedBy(this);
         }
 
-        if (!partitionsFound)
+        async Task SaveAndLogRecordsAsync(DataPipeline pipeline, List<MemoryRecord> records, IMemoryDbBatchUpsert batchClient, CancellationToken cancellationToken)
         {
-            this._log.LogWarning("Pipeline '{0}/{1}': partitions and synthetic records not found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
+            await foreach (var recordId in batchClient.BatchUpsertAsync(pipeline.Index, records, cancellationToken).ConfigureAwait(false))
+            {
+                this._log.LogTrace("Saved record {0} in index '{1}'", recordId, pipeline.Index);
+            }
         }
-
-        return (true, pipeline);
     }
 
     private async Task DeletePreviousRecordsAsync(DataPipeline pipeline, CancellationToken cancellationToken)
