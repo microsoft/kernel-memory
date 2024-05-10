@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Pipeline;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -15,8 +16,12 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 [Experimental("KMEXP03")]
 public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
 {
-    public MongoDbAtlasStorage(MongoDbAtlasConfig config) : base(config)
+    private readonly IMimeTypeDetection _mimeTypeDetection;
+    public MongoDbAtlasStorage(
+        MongoDbAtlasConfig config,
+        IMimeTypeDetection? mimeTypeDetection = null) : base(config)
     {
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
     }
 
     public Task CreateIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
@@ -108,7 +113,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     { "index", index },
                     { "documentId", documentId },
                     { "fileName", fileName },
-                    { "contentType", (new Pipeline.MimeTypesDetection()).GetFileType(fileName)}
+                    { "contentType", this._mimeTypeDetection.GetFileType(fileName)}
                 }
             };
 
