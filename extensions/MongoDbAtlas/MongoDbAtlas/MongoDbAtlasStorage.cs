@@ -17,6 +17,7 @@ namespace Microsoft.KernelMemory.MongoDbAtlas;
 public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
 {
     private readonly IMimeTypeDetection _mimeTypeDetection;
+
     public MongoDbAtlasStorage(
         MongoDbAtlasConfig config,
         IMimeTypeDetection? mimeTypeDetection = null) : base(config)
@@ -78,13 +79,13 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
         if (extension == ".txt")
         {
             using var reader = new StreamReader(streamContent);
-            var doc = new BsonDocument()
+            var doc = new BsonDocument
             {
                 { "_id", id },
                 { "documentId", documentId },
                 { "fileName", fileName },
                 { "content", new BsonString(await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false)) },
-                { "contentType", Pipeline.MimeTypes.PlainText}
+                { "contentType", MimeTypes.PlainText }
             };
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
@@ -100,7 +101,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
             doc["documentId"] = documentId;
             doc["fileName"] = fileName;
             doc["content"] = content;
-            doc["contentType"] = Pipeline.MimeTypes.PlainText;
+            doc["contentType"] = MimeTypes.PlainText;
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
         else
@@ -113,14 +114,14 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     { "index", index },
                     { "documentId", documentId },
                     { "fileName", fileName },
-                    { "contentType", this._mimeTypeDetection.GetFileType(fileName)}
+                    { "contentType", this._mimeTypeDetection.GetFileType(fileName) }
                 }
             };
 
             // Since the pattern of usage is that you can upload a file for a document id and then update, we need to delete
             // any existing file with the same id check if the file exists and delete it
             IAsyncCursor<GridFSFileInfo<string>> existingFile = await GetFromBucketByIdAsync(id, bucket, cancellationToken).ConfigureAwait(false);
-            if (existingFile.Any(cancellationToken))
+            if (await existingFile.AnyAsync(cancellationToken).ConfigureAwait(false))
             {
                 await bucket.DeleteAsync(id, cancellationToken).ConfigureAwait(false);
             }
