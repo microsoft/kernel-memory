@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -100,6 +99,8 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
     /// <inheritdoc />
     public Task CreateIndexAsync(string index, int vectorSize, CancellationToken cancellationToken = default)
     {
+        // Vectors cannot be less than 2 - TODO: use different index schema
+        vectorSize = Math.Max(2, vectorSize);
         return this.CreateIndexAsync(index, AzureAISearchMemoryRecord.GetSchema(vectorSize), cancellationToken);
     }
 
