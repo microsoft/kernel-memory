@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <OutputType>Exe</OutputType>
+        <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>$(NoWarn);CA1050;</NoWarn>
     </PropertyGroup>
 

@@ -16,16 +16,13 @@
         <PackageReference Include="Microsoft.ML.Tokenizers" />
     </ItemGroup>
 
-    <Import Project="../../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.TikToken</PackageId>
         <Product>TikToken tokenizers for Kernel Memory</Product>
         <Description>Provide TikToken tokenizers in Kernel Memory</Description>
         <PackageTags>TikToken, Tokenization, BPE, GPT4, GPT, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

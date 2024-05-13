@@ -9,7 +9,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591;CS8600;CS8604;</NoWarn>
     </PropertyGroup>
 

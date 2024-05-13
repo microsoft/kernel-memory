@@ -19,16 +19,13 @@
         <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
-    <Import Project="../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Abstractions</PackageId>
         <Product>Kernel Memory Interfaces and Modules</Product>
         <Description>Kernel Memory is a Copilot/Semantic Kernel Plugin and Memory Web Service to index and query any data and documents, using LLM and natural language, tracking sources and showing citations. The package contains the interfaces and models shared by all Kernel Memory packages.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

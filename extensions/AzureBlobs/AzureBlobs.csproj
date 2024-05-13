@@ -17,16 +17,13 @@
         <PackageReference Include="Azure.Storage.Blobs" />
     </ItemGroup>
 
-    <Import Project="../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.ContentStorage.AzureBlobs</PackageId>
         <Product>Azure Blob Storage for Kernel Memory content storage</Product>
         <Description>Azure Blob Storage adapter allowing Kernel Memory to upload documents and maintain their state in Azure Blobs</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Azure Blob, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

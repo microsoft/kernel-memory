@@ -20,16 +20,13 @@
         <InternalsVisibleTo Include="Microsoft.Qdrant.UnitTests" />
     </ItemGroup>
 
-    <Import Project="../../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.MemoryDb.Qdrant</PackageId>
         <Product>Qdrant connector for Kernel Memory</Product>
         <Description>Qdrant connector for Microsoft Kernel Memory, to store and search memory using Qdrant vector indexing and Qdrant features.</Description>
         <PackageTags>Memory, RAG, Kernel Memory, Qdrant, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

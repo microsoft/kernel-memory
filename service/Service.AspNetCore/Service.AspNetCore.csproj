@@ -13,16 +13,13 @@
         <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
 
-    <Import Project="../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Service.AspNetCore</PackageId>
         <Product>Kernel Memory for custom ASP.NET applications, including KM builder and KM endpoints</Product>
         <Description>This package provide helpers to integrate Kernel Memory into ASP.NET applications, such as builders, web endpoints, HTTP models</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Semantic Kernel, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

@@ -35,7 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
 	ProjectSection(SolutionItems) = preProject
-		examples\Directory.Build.props = examples\Directory.Build.props
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
@@ -260,13 +259,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TikToken", "extensions\TikToken\TikToken\TikToken.csproj", "{91757AC4-4FE3-40FE-96D6-1DDEDFB4A830}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TikToken.UnitTests", "extensions\TikToken\TikToken.UnitTests\TikToken.UnitTests.csproj", "{8ADA17CD-B779-4817-B10A-E9D7B019088D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet", "dotnet", "{2165A553-E07E-4FF7-90DA-3F3643EA690D}"
-	ProjectSection(SolutionItems) = preProject
-		infra\dotnet\code-analysis.props = infra\dotnet\code-analysis.props
-		infra\dotnet\icon.png = infra\dotnet\icon.png
-		infra\dotnet\nuget-package.props = infra\dotnet\nuget-package.props
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer", "extensions\SQLServer\SQLServer\SQLServer.csproj", "{B9BE1099-F78F-4A5F-A897-BF2C75E19C57}"
 EndProject
@@ -587,7 +579,6 @@ Global
 		{28534545-CB39-446A-9EB9-A5ABBFE0CFD3} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{91757AC4-4FE3-40FE-96D6-1DDEDFB4A830} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
-		{2165A553-E07E-4FF7-90DA-3F3643EA690D} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
 		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{2E10420F-BF96-411C-8FE0-F6268F2EEB67} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732} = {3C17F42B-CFC8-4900-8CFB-88936311E919}

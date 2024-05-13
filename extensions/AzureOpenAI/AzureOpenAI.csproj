@@ -18,16 +18,13 @@
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
     </ItemGroup>
 
-    <Import Project="../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.AI.AzureOpenAI</PackageId>
         <Product>Azure OpenAI LLM connector for Kernel Memory</Product>
         <Description>Provide access to Azure OpenAI LLM models in Kernel Memory to generate embeddings and text</Description>
         <PackageTags>Azure OpenAI, Plugin, Memory, RAG, Kernel Memory, Azure Blob, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

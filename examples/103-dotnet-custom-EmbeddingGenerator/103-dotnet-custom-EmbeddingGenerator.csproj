@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>$(NoWarn);CA1050;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
