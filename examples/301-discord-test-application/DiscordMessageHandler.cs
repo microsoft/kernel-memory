@@ -57,7 +57,9 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
         // exception: System.InvalidOperationException: a second operation was started on this context instance before a previous
         // operation completed. This is usually caused by different threads concurrently using the same instance of DbContext.
         // For more information on how to avoid threading issues with DbContext, see https://go.microsoft.com/fwlink/?linkid=2097913.
-        await using (var db = (this._serviceProvider.GetService<DiscordDbContext>())!)
+        DiscordDbContext? db = this._serviceProvider.GetService<DiscordDbContext>();
+        ArgumentNullExceptionEx.ThrowIfNull(db, nameof(db), "Discord DB context is NULL");
+        await using (db.ConfigureAwait(false))
         {
             foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
             {
