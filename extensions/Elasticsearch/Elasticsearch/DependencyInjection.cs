@@ -3,7 +3,6 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements

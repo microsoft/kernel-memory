@@ -28,12 +28,11 @@ public class ElasticsearchMemory : IMemoryDb
     /// <param name="config">Elasticsearch configuration</param>
     /// <param name="client">Elasticsearch client</param>
     /// <param name="log">Application logger</param>
-    /// <param name="embeddingGenerator">Embedding generator</param>
-    /// <param name="indexNameHelper">Index name helper</param>
+    /// <param name="embeddingGenerator">Embedding generator</param>    
     public ElasticsearchMemory(
         ElasticsearchConfig config,
-        ElasticsearchClient client,
         ITextEmbeddingGenerator embeddingGenerator,
+        ElasticsearchClient? client = null,
         ILogger<ElasticsearchMemory>? log = null)
     {
         ArgumentNullExceptionEx.ThrowIfNull(embeddingGenerator, nameof(embeddingGenerator), "The embedding generator is NULL");
@@ -41,7 +40,7 @@ public class ElasticsearchMemory : IMemoryDb
 
         this._embeddingGenerator = embeddingGenerator;
         this._config = config;
-        this._client = client; // new ElasticsearchClient(this._config.ToElasticsearchClientSettings()); // TODO: inject
+        this._client = client ?? new ElasticsearchClient(this._config.ToElasticsearchClientSettings());
         this._log = log ?? DefaultLogger<ElasticsearchMemory>.Instance;
     }
 
@@ -71,7 +70,7 @@ public class ElasticsearchMemory : IMemoryDb
             },
             cancellationToken).ConfigureAwait(false);
 
-        const int Dimensions = 1536; // TODO: make not hardcoded
+        //int Dimensions = vectorSize; // TODO: make not hardcoded
 
         var np = new NestedProperty()
         {
@@ -89,7 +88,7 @@ public class ElasticsearchMemory : IMemoryDb
                     propDesc.Nested(ElasticsearchMemoryRecord.TagsField, np);
                     propDesc.Text(x => x.Payload, pd => pd.Index(false));
                     propDesc.Text(x => x.Content);
-                    propDesc.DenseVector(x => x.Vector, d => d.Index(true).Dims(Dimensions).Similarity("cosine"));
+                    propDesc.DenseVector(x => x.Vector, d => d.Index(true).Dims(vectorSize).Similarity("cosine"));
 
                     this._config.ConfigureProperties?.Invoke(propDesc);
                 }),
@@ -268,6 +267,12 @@ public class ElasticsearchMemory : IMemoryDb
 
         index = IndexNameHelper.Convert(index, this._config);
 
+        // ES has a limit
+        if (limit > 10000)
+        {
+            limit = 10000;
+        }
+
         var resp = await this._client.SearchAsync<ElasticsearchMemoryRecord>(s =>
                     s.Index(index)
                         .Size(limit)
@@ -316,31 +321,35 @@ public class ElasticsearchMemory : IMemoryDb
             return qd;
         }
 
+        List<Query> super = new ();
+
         foreach (MemoryFilter filter in filters)
         {
-            List<Query> all = new();
+            List<Query> thisMust = new();
 
-            // Each tag collection is an element of a List<string, List<string?>>>
-            foreach (var tagName in filter.Keys)
+            // Each filter is a list of key/value pairs.
+            foreach (var pair in filter.Pairs)
             {
-                List<string?> tagValues = filter[tagName];
-                List<FieldValue> terms = tagValues.Select(x => (FieldValue)(x ?? FieldValue.Null))
-                    .ToList();
-                // ----------------
-                Query newTagQuery = new TermQuery(ElasticsearchMemoryRecord.TagsName) { Value = tagName };
-                newTagQuery &= new TermsQuery()
-                {
-                    Field = ElasticsearchMemoryRecord.TagsValue,
-                    Terms = new TermsQueryField(terms)
-                };
+                Query newTagQuery = new TermQuery(ElasticsearchMemoryRecord.TagsName) { Value = pair.Key };
+                Query termQuery = new TermQuery(ElasticsearchMemoryRecord.TagsValue) { Value = pair.Value ?? string.Empty };
+
+                newTagQuery &= termQuery;
+
                 var nestedQd = new NestedQuery();
                 nestedQd.Path = ElasticsearchMemoryRecord.TagsField;
                 nestedQd.Query = newTagQuery;
 
-                all.Add(nestedQd);
-                qd.Bool(bq => bq.Must(all.ToArray()));
+                thisMust.Add(nestedQd);
             }
+
+            var filterQuery = new BoolQuery();
+            filterQuery.Must = thisMust.ToArray();
+            //filterQuery.MinimumShouldMatch = 1;
+
+            super.Add(filterQuery);
         }
+
+        qd.Bool(bq => bq.Should(super.ToArray()).MinimumShouldMatch(1));
 
         // ---------------------
 
