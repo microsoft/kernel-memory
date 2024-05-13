@@ -1,9 +1,19 @@
 <!-- App Settings -->
 <Project>
     <PropertyGroup>
+        <!-- Central version prefix - applies to all nuget packages. -->
+        <Version>0.51.0</Version>
+
+        <!-- C# lang version, https://learn.microsoft.com/dotnet/csharp/whats-new -->
         <LangVersion>12</LangVersion>
+
+        <!-- https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/nullable-value-types -->
         <Nullable>enable</Nullable>
+
+        <!-- https://devblogs.microsoft.com/dotnet/welcome-to-csharp-10 -->
         <ImplicitUsings>disable</ImplicitUsings>
+
+        <!-- https://learn.microsoft.com/dotnet/core/tools/global-json#rollforward -->
         <RollForward>LatestMajor</RollForward>
     </PropertyGroup>
 
@@ -80,9 +90,6 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.51.0</Version>
-
         <!-- Disable NuGet packaging by default. Projects can override. -->
         <IsPackable>false</IsPackable>
 
