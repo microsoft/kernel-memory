@@ -10,7 +10,8 @@ using Xunit.Abstractions;
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 public class KernelMemoryTests : MemoryDbFunctionalTest
 {
-    private const string NoAnswer = "INFO NOT FOUND";
+    const string NoAnswer = "INFO NOT FOUND";
+
 
     public KernelMemoryTests(IConfiguration cfg, ITestOutputHelper output)
         : base(cfg, output)
@@ -40,7 +41,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine("Uploading document");
         await this.KernelMemory.ImportDocumentAsync(
             new Document(Id)
-                .AddFile("data/file5-NASA-news.pdf")
+                .AddFile(TestsHelper.NASANewsFileName)
                 .AddTag("type", "news")
                 .AddTag("user", "admin")
                 .AddTag("user", "owner"),
@@ -112,7 +113,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         // Arrange
         const string Id = "ItSupportTags-file1-NASA-news.pdf";
         await this.KernelMemory.ImportDocumentAsync(
-            "data/file5-NASA-news.pdf",
+            TestsHelper.NASANewsFileName,
             documentId: Id,
             tags: new TagCollection
             {
@@ -134,7 +135,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         var retries = defaultRetries;
         var answer1 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news")).ConfigureAwait(false);
         this.Output.WriteLine("answer1: " + answer1.Result);
-        while (retries-- > 0 && !answer1.Result.Contains("spacecraft"))
+        while (retries-- > 0 && !answer1.Result.Contains("spacecraft", StringComparison.OrdinalIgnoreCase))
         {
             await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             answer1 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news")).ConfigureAwait(false);
@@ -144,7 +145,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         retries = defaultRetries;
         var answer2 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "test")).ConfigureAwait(false);
         this.Output.WriteLine("answer2: " + answer2.Result);
-        while (retries-- > 0 && !answer2.Result.Contains("spacecraft"))
+        while (retries-- > 0 && !answer2.Result.Contains("spacecraft", StringComparison.OrdinalIgnoreCase))
         {
             await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             answer2 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "test")).ConfigureAwait(false);
@@ -154,7 +155,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         retries = defaultRetries;
         var answer3 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("ext", "pdf")).ConfigureAwait(false);
         this.Output.WriteLine("answer3: " + answer3.Result);
-        while (retries-- > 0 && !answer3.Result.Contains("spacecraft"))
+        while (retries-- > 0 && !answer3.Result.Contains("spacecraft", StringComparison.OrdinalIgnoreCase))
         {
             await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             answer3 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "test")).ConfigureAwait(false);
@@ -183,7 +184,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine("Uploading document");
         await this.KernelMemory.ImportDocumentAsync(
             new Document(Id)
-                .AddFile("data/file5-NASA-news.pdf")
+                .AddFile(TestsHelper.NASANewsFileName)
                 .AddTag("type", "news")
                 .AddTag("user", "admin")
                 .AddTag("user", "owner"),
@@ -244,7 +245,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
         // Imports a document into the index
         var id = await this.KernelMemory.ImportDocumentAsync(
-            filePath: "Data/file1-Wikipedia-Carbon.txt",
+            filePath: TestsHelper.WikipediaCarbonFileName,
             documentId: "doc001",
             tags: new TagCollection
             {
@@ -273,7 +274,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
         // Proceeds
         var docId = await this.KernelMemory.ImportDocumentAsync(
-            "Data/file1-Wikipedia-Carbon.txt",
+            TestsHelper.WikipediaCarbonFileName,
             index: indexName,
             documentId: "doc001").ConfigureAwait(false);
 
@@ -282,9 +283,9 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         docId = await this.KernelMemory.ImportDocumentAsync(
             new Document("doc002")
                 .AddFiles(new[] {
-                    "Data/file2-Wikipedia-Moon.txt",
-                    "Data/file3-lorem-ipsum.docx",
-                    "Data/file4-SK-Readme.pdf" })
+                    TestsHelper.WikipediaMoonFilename,
+                    TestsHelper.LoremIpsumFileName,
+                    TestsHelper.SKReadmeFileName })
                 .AddTag("user", "Blake"),
                 index: indexName)
             .ConfigureAwait(false);
@@ -292,7 +293,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine($"Indexed {docId}");
 
         docId = await this.KernelMemory.ImportDocumentAsync(new Document("doc003")
-            .AddFile("Data/file5-NASA-news.pdf")
+            .AddFile(TestsHelper.NASANewsFileName)
             .AddTag("user", "Taylor")
             .AddTag("collection", "meetings")
             .AddTag("collection", "NASA")

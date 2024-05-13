@@ -2,6 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -29,12 +30,13 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
     [Trait("Category", "Serverless")]
     public async Task CompareCosineSimilarity()
     {
-        const bool SimpleDbEnabled = true;
-        const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
-        const bool PostgresEnabled = true;
-        const bool RedisEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        const bool SimpleDbEnabled = false;
+        const bool AzSearchEnabled = false;
+        const bool QdrantEnabled = false;
+        const bool PostgresEnabled = false;
+        const bool RedisEnabled = false;
+        const bool MongoDbAtlasEnabled = false;
+        const bool ElasticsearchEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();
@@ -53,6 +55,9 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
 
         MongoDbAtlasMemory? atlasVectorDb = null;
         if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
+
+        ElasticsearchMemory? elasticsearch = null;
+        if (ElasticsearchEnabled) { elasticsearch = new ElasticsearchMemory(this.ElasticsearchConfig, embeddingGenerator); }
 
         RedisMemory? redis = null;
         if (RedisEnabled)

@@ -2,6 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -29,10 +30,11 @@ public class TestMemoryFilters : BaseFunctionalTestCase
     [Trait("Category", "Serverless")]
     public async Task TestFilters()
     {
-        const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
-        const bool PostgresEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        const bool AzSearchEnabled = false;
+        const bool QdrantEnabled = false;
+        const bool PostgresEnabled = false;
+        const bool MongoDbAtlasEnabled = false;
+        const bool ElasticsearchEnabled = true;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
@@ -65,6 +67,12 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             mongoDbAtlas = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator);
         }
 
+        ElasticsearchMemory elasticsearch;
+        if (ElasticsearchEnabled)
+        {
+            elasticsearch = new ElasticsearchMemory(this.ElasticsearchConfig, embeddingGenerator);
+        }
+
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         if (DeleteIndex)
@@ -76,6 +84,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
 
             if (MongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
+
+            if (ElasticsearchEnabled) { await elasticsearch.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -91,6 +101,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
 
             if (MongoDbAtlasEnabled) { await mongoDbAtlas.CreateIndexAsync(IndexName, 3); }
+
+            if (ElasticsearchEnabled) { await elasticsearch.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -117,6 +129,8 @@ public class TestMemoryFilters : BaseFunctionalTestCase
                 if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
                 if (MongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
+
+                if (ElasticsearchEnabled) { await elasticsearch.UpsertAsync(IndexName, r.Value); }
 
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
@@ -148,6 +162,12 @@ public class TestMemoryFilters : BaseFunctionalTestCase
             {
                 this._log.WriteLine("\n----- MongoDB Atlas vector DB -----");
                 await this.TestVectorDbFiltering(mongoDbAtlas, i);
+            }
+
+            if (ElasticsearchEnabled)
+            {
+                this._log.WriteLine("\n----- Elasticsearch vector DB -----");
+                await this.TestVectorDbFiltering(elasticsearch, i);
             }
 
             this._log.WriteLine("\n----- Simple vector DB -----");

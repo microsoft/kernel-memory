@@ -33,7 +33,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
            indexName: nameof(CanUpsertOneTextDocumentAndDeleteAsync),
            fileNames: new[]
            {
-               "Data/file1-Wikipedia-Carbon.txt"
+               TestsHelper.WikipediaCarbonFileName
            }).ConfigureAwait(false);
 
         // Deletes the document
@@ -65,8 +65,8 @@ public class DataStorageTests : MemoryDbFunctionalTest
            indexName: nameof(CanUpsertTwoTextFilesAndGetSimilarListAsync),
            fileNames: new[]
            {
-               "Data/file1-Wikipedia-Carbon.txt",
-               "Data/file2-Wikipedia-Moon.txt"
+               TestsHelper.WikipediaCarbonFileName,
+               TestsHelper.WikipediaMoonFilename
            }).ConfigureAwait(false);
 
         // Gets documents that are similar to the word "carbon" .

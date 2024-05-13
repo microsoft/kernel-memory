@@ -31,8 +31,8 @@ public class SearchTests : MemoryDbFunctionalTest
             indexName: nameof(CanGetListWithTagsAsync),
                 fileNames: new[]
                 {
-                    "Data/file1-Wikipedia-Carbon.txt",
-                    "Data/file2-Wikipedia-Moon.txt"
+                    TestsHelper.WikipediaCarbonFileName,
+                    TestsHelper.WikipediaMoonFilename,
                 })
             .ConfigureAwait(false);
 

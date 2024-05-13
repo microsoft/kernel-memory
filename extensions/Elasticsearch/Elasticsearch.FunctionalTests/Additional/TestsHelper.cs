@@ -13,6 +13,12 @@ namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 /// </summary>
 internal static class TestsHelper
 {
+    public const string WikipediaCarbonFileName = "Data/file1-Wikipedia-Carbon.txt";
+    public const string WikipediaMoonFilename = "Data/file2-Wikipedia-Moon.txt";
+    public const string LoremIpsumFileName = "Data/file3-lorem-ipsum.docx";
+    public const string NASANewsFileName = "data/file5-NASA-news.pdf";
+    public const string SKReadmeFileName = "Data/file4-SK-Readme.pdf";
+
     /// <summary>
     /// Deletes all indices that are created by all test methods of the given class.
     /// Indices must have the same name of a test method to be automatically deleted.

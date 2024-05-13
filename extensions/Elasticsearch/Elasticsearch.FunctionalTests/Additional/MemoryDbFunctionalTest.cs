@@ -34,7 +34,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
 #pragma warning restore KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         this.Client = new ElasticsearchClient(base.ElasticsearchConfig.ToElasticsearchClientSettings());
-        this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.Client, this.TextEmbeddingGenerator, default);
+        this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.TextEmbeddingGenerator);
 
 
     }
