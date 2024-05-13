@@ -81,7 +81,7 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.50.1</Version>
+        <Version>0.51.0</Version>
 
         <!-- Disable NuGet packaging by default. Projects can override. -->
         <IsPackable>false</IsPackable>
