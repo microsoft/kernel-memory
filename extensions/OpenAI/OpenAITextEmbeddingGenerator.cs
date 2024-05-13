@@ -50,7 +50,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             openAIClient: openAIClient,
-            loggerFactory: loggerFactory);
+            loggerFactory: loggerFactory,
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <summary>
@@ -99,7 +100,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
-            loggerFactory: loggerFactory);
+            loggerFactory: loggerFactory,
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <summary>
@@ -123,7 +125,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
-            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient));
+            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <inheritdoc/>
