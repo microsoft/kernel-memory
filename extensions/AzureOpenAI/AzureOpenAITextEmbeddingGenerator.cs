@@ -58,7 +58,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: new DefaultAzureCredential(),
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
@@ -67,7 +68,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: config.GetTokenCredential(),
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -76,7 +78,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             default:

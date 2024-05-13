@@ -68,6 +68,11 @@ public class AzureOpenAIConfig
     public int MaxRetries { get; set; } = 10;
 
     /// <summary>
+    /// The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.
+    /// </summary>
+    public int? EmbeddingDimensions { get; set; }
+
+    /// <summary>
     /// Set credentials manually from code
     /// </summary>
     /// <param name="credential">Token credentials</param>
@@ -119,6 +124,11 @@ public class AzureOpenAIConfig
         if (this.MaxTokenTotal < 1)
         {
             throw new ConfigurationException($"Azure OpenAI: {nameof(this.MaxTokenTotal)} cannot be less than 1");
+        }
+
+        if (this.EmbeddingDimensions.HasValue && this.EmbeddingDimensions.Value < 1)
+        {
+            throw new ConfigurationException($"Azure OpenAI: {nameof(this.EmbeddingDimensions)} cannot be less than 1");
         }
     }
 }

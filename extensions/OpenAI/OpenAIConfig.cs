@@ -69,6 +69,11 @@ public class OpenAIConfig
     public int MaxRetries { get; set; } = 10;
 
     /// <summary>
+    /// The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.
+    /// </summary>
+    public int? EmbeddingDimensions { get; set; }
+
+    /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
     public void Validate()
@@ -86,6 +91,11 @@ public class OpenAIConfig
         if (this.EmbeddingModelMaxTokenTotal < 1)
         {
             throw new ConfigurationException($"OpenAI: {nameof(this.EmbeddingModelMaxTokenTotal)} cannot be less than 1");
+        }
+
+        if (this.EmbeddingDimensions.HasValue && this.EmbeddingDimensions.Value < 1)
+        {
+            throw new ConfigurationException($"OpenAI: {nameof(this.EmbeddingDimensions)} cannot be less than 1");
         }
     }
 }
