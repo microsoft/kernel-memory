@@ -153,7 +153,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         try
         {
-            StreamableFileContent? streamableContent = await this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
+            using StreamableFileContent? streamableContent = await this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
                 .ConfigureAwait(false);
 
             if (streamableContent == null)
@@ -240,7 +240,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     ///<inheritdoc />
     public async Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        StreamableFileContent streamableContent = await this.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
+        using StreamableFileContent streamableContent = await this.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
         return await BinaryData.FromStreamAsync(await streamableContent.GetStreamAsync().ConfigureAwait(false), cancellationToken)
             .ConfigureAwait(false);
     }
