@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Service.FunctionalTests;
+namespace Microsoft.KM.Service.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {
@@ -91,5 +91,12 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItSupportsTags()
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "WebService")]
+    public async Task ItDownloadsPDFDocs()
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this._memory, this.Log);
     }
 }

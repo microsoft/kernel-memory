@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace Abstractions.UnitTests.MemoryStorage;
+namespace Microsoft.KM.Abstractions.UnitTests.MemoryStorage;
 
 public class MemoryRecordTest
 {

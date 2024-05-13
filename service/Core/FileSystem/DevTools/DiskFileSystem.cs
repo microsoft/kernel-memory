@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
@@ -23,11 +24,16 @@ internal sealed class DiskFileSystem : IFileSystem
     private static readonly Regex s_invalidCharsRegex = new(@"[\s|\||\\|/|\0|'|\`|""|:|;|,|~|!|?|*|+|=|^|@|#|$|%|&]");
 
     private readonly ILogger _log;
+    private readonly IMimeTypeDetection _mimeTypeDetection;
     private readonly string _dataPath;
 
-    public DiskFileSystem(string directory, ILogger? log = null)
+    public DiskFileSystem(
+        string directory,
+        IMimeTypeDetection? mimeTypeDetection = null,
+        ILogger? log = null)
     {
         this._dataPath = directory;
+        this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
         this._log = log ?? DefaultLogger<DiskFileSystem>.Instance;
         this.CreateDirectory(this._dataPath);
     }
@@ -180,6 +186,35 @@ internal sealed class DiskFileSystem : IFileSystem
     }
 
     /// <inheritdoc />
+    public Task<StreamableFileContent> ReadFileInfoAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        volume = ValidateVolumeName(volume);
+        relPath = ValidatePath(relPath);
+        var path = Path.Join(this._dataPath, volume, relPath);
+        if (!Directory.Exists(path))
+        {
+            throw new DirectoryNotFoundException($"Directory not found: {path}");
+        }
+
+        fileName = ValidateFileName(fileName);
+        path = Path.Join(path, fileName);
+        if (!File.Exists(path))
+        {
+            this._log.LogError("File not found: {0}", path);
+            throw new FileNotFoundException($"File not found: {path}");
+        }
+
+        this._log.LogTrace("File exists, reading {0}", path);
+        FileInfo info = new(path);
+        var fileType = this._mimeTypeDetection.GetFileType(fileName);
+        Task<Stream> AsyncStreamDelegate() => Task.FromResult<Stream>(info.OpenRead());
+        StreamableFileContent result = new(fileName, info.Length, fileType, info.LastWriteTimeUtc, AsyncStreamDelegate);
+
+        this._log.LogTrace("File {0} size: {1} bytes", path, info.Length);
+        return Task.FromResult<StreamableFileContent>(result);
+    }
+
+    /// <inheritdoc />
     public async Task<string> ReadFileAsTextAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
     {
         return (await this.ReadFileAsBinaryAsync(volume: volume, relPath: relPath, fileName: fileName, cancellationToken).ConfigureAwait(false))
@@ -208,7 +243,7 @@ internal sealed class DiskFileSystem : IFileSystem
             }
 
             // Note: the name doesn't include the path
-            // Note: the list doesn't include files in subdir
+            // Note: the list doesn't include files in sub dirs
             result.Add(fileName);
         }
 

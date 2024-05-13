@@ -1,28 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// When using KernelMemoryDev there are two references to Abstractions (project + package)
-// because the Elasticsearch extension is available only as a package, which includes a reference to Abstraction package.
-// As a result, the compiler is unable to see either the Abstractions, with a build error, so we allow these
-// tests only when working with packages.
-
-#if !KernelMemoryDev
-using FreeMindLabs.KernelMemory.Elasticsearch;
-using Microsoft.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.Elasticsearch.FunctionalTests;
 
 public class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
-    private readonly ElasticsearchConfig _elasticsearchConfig;
+    private readonly ElasticsearchConfig _esConfig;
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._elasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
+        this._esConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>()!;
 
         this._memory = new KernelMemoryBuilder()
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
@@ -30,7 +23,7 @@ public class DefaultTests : BaseFunctionalTestCase
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithElasticsearch(this._elasticsearchConfig)
+            .WithElasticsearch(this._esConfig)
             .Build<MemoryServerless>();
     }
 
@@ -111,6 +104,3 @@ public class DefaultTests : BaseFunctionalTestCase
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
 }
-
-#endif
-

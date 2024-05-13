@@ -1,10 +1,9 @@
 # Kernel Memory with Elasticsearch
 
-[![Nuget package](https://img.shields.io/nuget/v/FreeMindLabs.KernelMemory.Elasticsearch)](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch/)
+[![Nuget package](https://img.shields.io/nuget/v/Microsoft.KernelMemory.MemoryDb.Elasticsearch)](https://www.nuget.org/packages/Microsoft.KernelMemory.MemoryDb.Elasticsearch/)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
 
-This folder contains tests for the [Elastisearch](https://www.elastic.co/) extension for Kernel Memory
-maintained by [FreemindLabs](https://github.com/freemindlabsinc/FreeMindLabs.KernelMemory.Elasticsearch).
+This folder contains tests for the [Elastisearch](https://www.elastic.co/) extension for Kernel Memory.
 
 Configuration (appsettings.json):
 
@@ -41,5 +40,4 @@ the values in `appsettings.development.json`. For example:
 
 For more information about the Elasticsearch extension:
 
-- https://github.com/freemindlabsinc/FreeMindLabs.KernelMemory.Elasticsearch
 - https://devblogs.microsoft.com/semantic-kernel/elasticsearch-kernelmemory

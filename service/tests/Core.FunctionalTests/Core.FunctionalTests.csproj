@@ -3,19 +3,16 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <RootNamespace>Microsoft.Core.FunctionalTests</RootNamespace>
+        <AssemblyName>Microsoft.KM.Core.FunctionalTests</AssemblyName>
+        <RootNamespace>Microsoft.KM.Core.FunctionalTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);IDE1006;CA1303;CA1307;CA1859;CA2007;CA2201;CS1591;CA1861;CA2000;SKEXP0001;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;IDE1006;CA1303;CA1307;CA1859;CA2007;CA2201;CS1591;CA1861;CA2000;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core.csproj" />
-        <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
-        <ProjectReference Include="..\..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
         <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
@@ -43,6 +40,10 @@
         </Content>
         <None Remove="file2-largePDF.pdf" />
         <Content Include="file2-largePDF.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file3-data.xlsx" />
+        <Content Include="file3-data.xlsx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

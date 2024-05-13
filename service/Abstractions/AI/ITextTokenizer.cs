@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.KernelMemory.AI;
 
 /// <summary>
 /// Text tokenization interface.
 /// </summary>
+[Experimental("KMEXP00")]
 public interface ITextTokenizer
 {
     /// <summary>

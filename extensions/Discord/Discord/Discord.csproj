@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Sources.DiscordBot</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Sources.DiscordBot</RootNamespace>
+        <NoWarn>$(NoWarn);CS1591;CA1303;</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Sources.Discord</PackageId>
+        <Product>Discord connector for Kernel Memory</Product>
+        <Description>Discord connector for Kernel Memory</Description>
+        <PackageTags>Discord, Kernel Memory, AI, Artificial Intelligence, ETL</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Discord.Net" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

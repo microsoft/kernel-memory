@@ -7,13 +7,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);CA1303;CA1852;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP03;CA1303;CA1852;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-        <ProjectReference Include="..\Qdrant\Qdrant.csproj" />
     </ItemGroup>
 
 </Project>

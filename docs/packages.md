@@ -11,7 +11,7 @@ layout: default
   a running instance of the Memory web service. .NET Standard 2.0 compatible.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-WebClient)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-WebClient)
 
 * **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
   replacing the original Semantic Memory available in SK. .NET Standard 2.0 compatible.
@@ -77,7 +77,7 @@ layout: default
   synchronous way, without the web service. .NET 6+.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-Serverless)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
 
 ### Packages for Python, Java and other languages
 

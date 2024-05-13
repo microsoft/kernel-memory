@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using Timer = System.Timers.Timer;
 
 namespace Microsoft.KernelMemory.Orchestration.AzureQueues;
 
+[Experimental("KMEXP04")]
 public sealed class AzureQueuesPipeline : IQueue
 {
     private const string DefaultEndpointSuffix = "core.windows.net";

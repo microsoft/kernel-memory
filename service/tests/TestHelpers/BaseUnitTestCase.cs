@@ -2,7 +2,7 @@
 
 using Xunit.Abstractions;
 
-namespace Microsoft.TestHelpers;
+namespace Microsoft.KM.TestHelpers;
 
 public abstract class BaseUnitTestCase : IDisposable
 {

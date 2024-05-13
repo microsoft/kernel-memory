@@ -16,7 +16,7 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-public class SearchClient : ISearchClient
+internal sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
@@ -125,7 +125,7 @@ public class SearchClient : ISearchClient
             // Identify the file in case there are multiple files
             string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file in content storage
+            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
             var partitionText = memory.GetPartitionText(this._log).Trim();
@@ -153,7 +153,7 @@ public class SearchClient : ISearchClient
             citation.Link = linkToFile;
             citation.SourceContentType = memory.GetFileContentType(this._log);
             citation.SourceName = memory.GetFileName(this._log);
-            citation.SourceUrl = memory.GetWebPageUrl();
+            citation.SourceUrl = memory.GetWebPageUrl(index);
 
             citation.Partitions.Add(new Citation.Partition
             {
@@ -164,6 +164,12 @@ public class SearchClient : ISearchClient
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
+
+            // In cases where a buggy storage connector is returning too many records
+            if (result.Results.Count >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
         }
 
         if (result.Results.Count == 0)
@@ -228,7 +234,7 @@ public class SearchClient : ISearchClient
             // Identify the file in case there are multiple files
             string fileId = memory.GetFileId(this._log);
 
-            // TODO: URL to access the file in content storage
+            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
             string linkToFile = $"{index}/{documentId}/{fileId}";
 
             string fileName = memory.GetFileName(this._log);
@@ -274,7 +280,7 @@ public class SearchClient : ISearchClient
             citation.Link = linkToFile;
             citation.SourceContentType = memory.GetFileContentType(this._log);
             citation.SourceName = fileName;
-            citation.SourceUrl = memory.GetWebPageUrl();
+            citation.SourceUrl = memory.GetWebPageUrl(index);
 
             citation.Partitions.Add(new Citation.Partition
             {
@@ -285,6 +291,12 @@ public class SearchClient : ISearchClient
                 LastUpdate = memory.GetLastUpdate(),
                 Tags = memory.Tags,
             });
+
+            // In cases where a buggy storage connector is returning too many records
+            if (factsUsedCount >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
         }
 
         if (factsAvailableCount > 0 && factsUsedCount == 0)

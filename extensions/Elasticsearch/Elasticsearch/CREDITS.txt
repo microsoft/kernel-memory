@@ -1,0 +1,6 @@
+Special credits to Free Mind Labs, Inc. and Alessandro Federici
+for their work on the Elasticsearch Memory connector.
+
+The Elasticsearch was originally developed at
+https://github.com/freemindlabsinc/FreeMindLabs.KernelMemory.Elasticsearch
+and kindly submitted to Kernel Memory repository.

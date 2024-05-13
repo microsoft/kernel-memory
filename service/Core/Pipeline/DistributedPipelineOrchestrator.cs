@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -24,7 +25,8 @@ namespace Microsoft.KernelMemory.Pipeline;
 /// - while continuing a pipeline, the system should retry the current step (which must be designed to be idempotent)
 /// - while ending a pipeline, same thing, the last step will be repeated (and should be idempotent).
 /// </summary>
-public class DistributedPipelineOrchestrator : BaseOrchestrator
+[Experimental("KMEXP04")]
+public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
 {
     private readonly QueueClientFactory _queueClientFactory;
 

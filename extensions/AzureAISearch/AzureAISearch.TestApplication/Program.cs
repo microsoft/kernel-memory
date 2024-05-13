@@ -9,7 +9,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace AzureAISearch.TestApplication;
+namespace Microsoft.AzureAISearch.TestApplication;
 
 public static class Program
 {

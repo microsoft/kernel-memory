@@ -24,7 +24,7 @@ new ConfigurationBuilder()
     .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig);
 
 var memory = new KernelMemoryBuilder()
-    //.WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    //.WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
     //.WithOpenAI(openAIConfig)
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.26.170.59819",
-      "templateHash": "1331474399750243741"
+      "templateHash": "14745838150782572756"
     }
   },
   "parameters": {
@@ -210,7 +210,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.26.170.59819",
-              "templateHash": "2779259654581077397"
+              "templateHash": "6577135357063255350"
             }
           },
           "parameters": {
@@ -264,7 +264,11 @@
               "sku": {
                 "name": "Standard_LRS"
               },
-              "kind": "StorageV2"
+              "kind": "StorageV2",
+              "properties": {
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": false
+              }
             },
             {
               "type": "Microsoft.Authorization/roleAssignments",
@@ -603,7 +607,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.26.170.59819",
-              "templateHash": "7253571891387474171"
+              "templateHash": "8195898199308451447"
             },
             "description": "Creates an Azure Cognitive Services instance."
           },
@@ -675,7 +679,8 @@
               "properties": {
                 "customSubDomainName": "[parameters('customSubDomainName')]",
                 "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
-                "networkAcls": "[parameters('networkAcls')]"
+                "networkAcls": "[parameters('networkAcls')]",
+                "disableLocalAuth": true
               },
               "sku": "[parameters('sku')]"
             },

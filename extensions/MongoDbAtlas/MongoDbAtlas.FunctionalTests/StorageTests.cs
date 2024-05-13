@@ -3,7 +3,7 @@
 using System.Text;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.MongoDbAtlas.FunctionalTests;
 

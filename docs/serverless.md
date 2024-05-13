@@ -31,7 +31,7 @@ across multiple executions.
 >
 > ```csharp
 > var memory = new KernelMemoryBuilder()
->     .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+>     .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
 >     .Build<MemoryServerless>();
 >
 > // Import a file

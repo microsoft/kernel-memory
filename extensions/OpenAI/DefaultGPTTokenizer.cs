@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory.AI.OpenAI.GPT3;
-
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
 /// <summary>
 /// Default tokenizer, using GPT3 logic.
 /// </summary>
-public class DefaultGPTTokenizer : ITextTokenizer
+public sealed class DefaultGPTTokenizer : ITextTokenizer
 {
     /// <inheritdoc />
     public int CountTokens(string text)

@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.
 /// </summary>
-public class GenerateEmbeddingsHandler : IPipelineStepHandler
+public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
@@ -115,7 +115,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
                             var generatorProviderClassName = generator.GetType().FullName ?? generator.GetType().Name;
                             embeddingData.GeneratorProvider = string.Join('.', generatorProviderClassName.Split('.').TakeLast(3));
 
-                            // TODO: model name
+                            // TODO: get model name from embedding generator
                             embeddingData.GeneratorName = "TODO";
 
                             this._log.LogTrace("Generating embeddings using {0}, file: {1}", embeddingData.GeneratorProvider, partitionFile.Name);

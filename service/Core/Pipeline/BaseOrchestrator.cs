@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -16,6 +17,7 @@ using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
+[Experimental("KMEXP04")]
 public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 {
     private static readonly JsonSerializerOptions s_indentedJsonOptions = new() { WriteIndented = true };
@@ -151,8 +153,16 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         try
         {
-            BinaryData? content = await (this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
-                .ConfigureAwait(false));
+            using StreamableFileContent? streamableContent = await this._contentStorage.ReadFileAsync(index, documentId, Constants.PipelineStatusFilename, false, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (streamableContent == null)
+            {
+                throw new InvalidPipelineDataException("The pipeline data is not found");
+            }
+
+            BinaryData? content = await BinaryData.FromStreamAsync(await streamableContent.GetStreamAsync().ConfigureAwait(false), cancellationToken)
+                .ConfigureAwait(false);
 
             if (content == null)
             {
@@ -213,6 +223,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
+    public async Task<StreamableFileContent> ReadFileAsStreamAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    {
+        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
+        return await this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    ///<inheritdoc />
     public async Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
         pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
@@ -220,10 +238,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
+    public async Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default)
     {
-        pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
-        return this._contentStorage.ReadFileAsync(pipeline.Index, pipeline.DocumentId, fileName, true, cancellationToken);
+        using StreamableFileContent streamableContent = await this.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken).ConfigureAwait(false);
+        return await BinaryData.FromStreamAsync(await streamableContent.GetStreamAsync().ConfigureAwait(false), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     ///<inheritdoc />

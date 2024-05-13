@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 
 namespace Qdrant.TestApplication;
 

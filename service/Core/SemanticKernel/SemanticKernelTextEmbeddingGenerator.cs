@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.KernelMemory.SemanticKernel;
 
-internal class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGenerator
+internal sealed class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextEmbeddingGenerationService _service;
     private readonly ITextTokenizer _tokenizer;

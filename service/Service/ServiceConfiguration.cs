@@ -6,11 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
-using Microsoft.KernelMemory.Postgres;
 
 namespace Microsoft.KernelMemory.Service;
 
@@ -253,6 +253,15 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
+                case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
                 case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
@@ -306,6 +315,15 @@ internal sealed class ServiceConfiguration
                     builder.AddIngestionMemoryDb(instance);
                     break;
                 }
+
+                case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
             }
         }
     }
@@ -345,6 +363,10 @@ internal sealed class ServiceConfiguration
                 builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
                 break;
 
+            case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"));
+                break;
+
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
@@ -367,6 +389,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"));
+                break;
+
+            case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"));
                 break;
 
             default:

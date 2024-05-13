@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.Postgres.FunctionalTests;
 

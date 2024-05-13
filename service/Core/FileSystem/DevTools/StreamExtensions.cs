@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
-public static class StreamExtensions
+internal static class StreamExtensions
 {
     public static byte[] ReadAllBytes(this Stream stream)
     {

@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.LlamaSharp;
-using Microsoft.KernelMemory.AI.OpenAI.GPT3;
-using Microsoft.TestHelpers;
+using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
 namespace Microsoft.LlamaSharp.FunctionalTests;
@@ -41,7 +41,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 
         // Assert
         Console.WriteLine("Llama token count: " + tokenCount);
-        Console.WriteLine("GPT3 token count: " + GPT3Tokenizer.Encode(text).Count);
+        Console.WriteLine("GPT3 token count: " + DefaultGPTTokenizer.StaticCountTokens(text));
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
 
         // Note: value for llama-2-13b.Q2_K.gguf

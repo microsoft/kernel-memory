@@ -3,24 +3,24 @@
 using Microsoft.KernelMemory;
 
 var memory = new KernelMemoryBuilder()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
     // .WithAzureBlobsStorage(new AzureBlobsConfig {...})                                       => use Azure Blobs
-    // .WithAzureAISearchMemoryDb(Env.Var("AZSEARCH_ENDPOINT"), Env.Var("AZSEARCH_API_KEY"))    => use Azure AI Search
+    // .WithAzureAISearchMemoryDb(Environment.GetEnvironmentVariable("AZSEARCH_ENDPOINT"), Environment.GetEnvironmentVariable("AZSEARCH_API_KEY"))    => use Azure AI Search
     // .WithQdrantMemoryDb("http://127.0.0.1:6333")                                             => use Qdrant docker
-    // .WithAzureAIDocIntel(Env.Var("AZDOCINTEL_ENDPOINT"), Env.Var("AZDOCINTEL_API_KEY"))      => use Azure AI Document Intelligence OCR
+    // .WithAzureAIDocIntel(Environment.GetEnvironmentVariable("AZDOCINTEL_ENDPOINT"), Environment.GetEnvironmentVariable("AZDOCINTEL_API_KEY"))      => use Azure AI Document Intelligence OCR
     // .WithAzureOpenAIEmbeddingGeneration(new AzureOpenAIConfig                                => use Azure OpenAI for embedding generation
     // {
     //     APIType = AzureOpenAIConfig.APITypes.EmbeddingGeneration,
     //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
-    //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
-    //     Deployment = Env.Var("AZURE_OPENAI_EMBED_MODEL")
+    //     Endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT"),
+    //     Deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_EMBED_MODEL")
     // })
     // .WithAzureOpenAITextGeneration(new AzureOpenAIConfig                                     => use Azure OpenAI for text generation
     // {
     //     APIType = AzureOpenAIConfig.APITypes.ChatCompletion,
     //     Auth = AzureOpenAIConfig.AuthTypes.AzureIdentity,
-    //     Endpoint = Env.Var("AZURE_OPENAI_ENDPOINT"),
-    //     Deployment = Env.Var("AZURE_OPENAI_CHAT_MODEL")
+    //     Endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT"),
+    //     Deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_CHAT_MODEL")
     // })
     .Build<MemoryServerless>();
 

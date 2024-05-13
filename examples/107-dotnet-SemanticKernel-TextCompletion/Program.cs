@@ -5,10 +5,10 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
-var endpoint = Env.Var("AOAI_ENDPOINT");
-var apiKey = Env.Var("AOAI_API_KEY");
-var chatDeployment = Env.Var("AOAI_DEPLOYMENT_CHAT");
-var embeddingDeployment = Env.Var("AOAI_DEPLOYMENT_EMBEDDING");
+var endpoint = Environment.GetEnvironmentVariable("AOAI_ENDPOINT")!;
+var apiKey = Environment.GetEnvironmentVariable("AOAI_API_KEY")!;
+var chatDeployment = Environment.GetEnvironmentVariable("AOAI_DEPLOYMENT_CHAT")!;
+var embeddingDeployment = Environment.GetEnvironmentVariable("AOAI_DEPLOYMENT_EMBEDDING")!;
 
 var config = new SemanticKernelConfig();
 var tokenizer = new DefaultGPTTokenizer();

@@ -92,6 +92,15 @@ public interface IPipelineOrchestrator
     Task StopAllPipelinesAsync();
 
     /// <summary>
+    /// Fetch a file from content storage, streaming its content and details
+    /// </summary>
+    /// <param name="pipeline">Pipeline containing the file</param>
+    /// <param name="fileName">Name of the file to fetch</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>File data</returns>
+    Task<StreamableFileContent> ReadFileAsStreamAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Fetch a file from content storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>

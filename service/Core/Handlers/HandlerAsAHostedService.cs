@@ -15,7 +15,7 @@ namespace Microsoft.KernelMemory;
 /// Wrapper of handler classes, allowing to run handlers as services hosted by IHost
 /// </summary>
 /// <typeparam name="T">Handler class</typeparam>
-public class HandlerAsAHostedService<T> : IHostedService where T : IPipelineStepHandler
+public sealed class HandlerAsAHostedService<T> : IHostedService where T : IPipelineStepHandler
 {
     private readonly T _handler;
     private readonly IPipelineOrchestrator _orchestrator;

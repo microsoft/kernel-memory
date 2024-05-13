@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -7,6 +8,7 @@ using System.Linq;
 namespace Microsoft.Extensions.DependencyInjection;
 #pragma warning restore IDE0130
 
+[Experimental("KMEXP00")]
 public static partial class ServiceCollectionExtensions
 {
     /// <summary>

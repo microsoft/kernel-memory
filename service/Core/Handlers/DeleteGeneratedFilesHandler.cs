@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class DeleteGeneratedFilesHandler : IPipelineStepHandler
+public sealed class DeleteGeneratedFilesHandler : IPipelineStepHandler
 {
     private readonly IContentStorage _contentStorage;
     private readonly ILogger<DeleteGeneratedFilesHandler> _log;

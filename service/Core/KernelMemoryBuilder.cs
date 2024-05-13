@@ -19,7 +19,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Kernel Memory builder.
 /// </summary>
-public class KernelMemoryBuilder : IKernelMemoryBuilder
+public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
 {
     private enum ClientTypes
     {

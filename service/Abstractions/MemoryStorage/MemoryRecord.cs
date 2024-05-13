@@ -118,7 +118,7 @@ public class MemoryRecord
         string version = SchemaVersionZero;
         if (this._payload.TryGetValue(Constants.ReservedPayloadSchemaVersionField, out object? versionValue))
         {
-            version = versionValue == null ? string.Empty : versionValue.ToString();
+            version = versionValue == null ? string.Empty : versionValue.ToString()!;
         }
 
         // Upgrade to "20231218A"

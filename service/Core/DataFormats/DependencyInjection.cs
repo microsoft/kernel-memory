@@ -91,6 +91,11 @@ public static partial class DependencyInjection
         this IServiceCollection services)
     {
         services.AddSingleton<IWebScraper, WebScraper>();
+
+        // TODO: support typed clients in KernelMemoryBuilder
+        // To use typed clients in ASP.NET apps, inject them into Services before using KernelMemoryBuilder
+        // services.AddHttpClient<IWebScraper, WebScraper>();
+
         return services;
     }
 

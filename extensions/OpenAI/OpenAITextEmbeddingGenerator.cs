@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// Text embedding generator. The class can be used with any service
 /// supporting OpenAI HTTP schema.
 /// </summary>
-public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
+[Experimental("KMEXP01")]
+public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextEmbeddingGenerationService _client;
     private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
@@ -48,7 +50,8 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             openAIClient: openAIClient,
-            loggerFactory: loggerFactory);
+            loggerFactory: loggerFactory,
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <summary>
@@ -97,7 +100,8 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
-            loggerFactory: loggerFactory);
+            loggerFactory: loggerFactory,
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <summary>
@@ -121,7 +125,8 @@ public class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
-            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient));
+            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
+            dimensions: config.EmbeddingDimensions);
     }
 
     /// <inheritdoc/>

@@ -55,6 +55,12 @@ public class KernelMemoryConfig
         public List<string> MemoryDbTypes { get; set; } = new();
 
         /// <summary>
+        /// How many memory DB records to insert at once when extracting memories
+        /// from uploaded documents (used only if the Memory Db supports batching).
+        /// </summary>
+        public int MemoryDbUpsertBatchSize { get; set; } = 1;
+
+        /// <summary>
         /// The OCR service used to recognize text in images.
         /// </summary>
         public string ImageOcrType { get; set; } = string.Empty;

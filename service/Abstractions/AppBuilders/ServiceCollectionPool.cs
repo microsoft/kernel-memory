@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +19,8 @@ namespace Microsoft.KernelMemory.AppBuilders;
 /// a dependency exists in any of the collections, and to loop
 /// through the complete list of service descriptors.
 /// </summary>
-public class ServiceCollectionPool : IServiceCollection
+[Experimental("KMEXP00")]
+public sealed class ServiceCollectionPool : IServiceCollection
 {
     /// <summary>
     /// Collection of service collections, ie the pool.

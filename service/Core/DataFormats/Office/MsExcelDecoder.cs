@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,8 @@ using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
-public class MsExcelDecoder : IContentDecoder
+[Experimental("KMEXP00")]
+public sealed class MsExcelDecoder : IContentDecoder
 {
     private readonly MsExcelDecoderConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
@@ -62,7 +64,13 @@ public class MsExcelDecoder : IContentDecoder
                 sb.AppendLine(this._config.WorksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
-            foreach (IXLRangeRow? row in worksheet.RangeUsed().RowsUsed())
+            var rowsUsed = worksheet.RangeUsed()?.RowsUsed();
+            if (rowsUsed == null)
+            {
+                continue;
+            }
+
+            foreach (IXLRangeRow? row in rowsUsed)
             {
                 if (row == null) { continue; }
 
@@ -73,12 +81,54 @@ public class MsExcelDecoder : IContentDecoder
                 {
                     IXLCell? cell = cells[i];
 
+                    /* Note: some data types are not well supported; for example the values below
+                     *       are extracted incorrectly regardless of the cell configuration.
+                     *       In this cases using Text cell type might be better.
+                     *
+                     * - Date: "Monday, December 25, 2090"  => "69757"
+                     * - Time: "12:55:00"                   => "0.5381944444444444"
+                     * - Time: "12:55"                      => "12/31/1899"
+                     * - Currency symbols are not extracted
+                     */
                     if (this._config.WithQuotes)
                     {
                         sb.Append('"');
-                        sb.Append(cell is { Value.IsText: true }
-                            ? cell.Value.GetText().Replace("\"", "\"\"", StringComparison.Ordinal)
-                            : this._config.BlankCellValue);
+                        if (cell == null || cell.Value.IsBlank)
+                        {
+                            sb.Append(this._config.BlankCellValue);
+                        }
+                        else if (cell.Value.IsTimeSpan)
+                        {
+                            sb.Append(cell.Value.GetTimeSpan().ToString(this._config.TimeSpanFormat, this._config.TimeSpanProvider));
+                        }
+                        else if (cell.Value.IsDateTime)
+                        {
+                            // TODO: check cell.Style.DateFormat.Format
+                            sb.Append(cell.Value.GetDateTime().ToString(this._config.DateFormat, this._config.DateFormatProvider));
+                        }
+                        else if (cell.Value.IsBoolean)
+                        {
+                            sb.Append(cell.Value.GetBoolean() ? this._config.BooleanTrueValue : this._config.BooleanFalseValue);
+                        }
+                        else if (cell.Value.IsText)
+                        {
+                            var value = cell.Value.GetText().Replace("\"", "\"\"", StringComparison.Ordinal);
+                            sb.Append(string.IsNullOrEmpty(value) ? this._config.BlankCellValue : value);
+                        }
+                        else if (cell.Value.IsNumber)
+                        {
+                            // TODO: check cell.Style.NumberFormat.Format and cell.Style.DateFormat.Format to detect dates, currency symbols, phone numbers
+                            sb.Append(cell.Value.GetNumber());
+                        }
+                        else if (cell.Value.IsUnifiedNumber)
+                        {
+                            sb.Append(cell.Value.GetUnifiedNumber());
+                        }
+                        else if (cell.Value.IsError)
+                        {
+                            sb.Append(cell.Value.GetError().ToString().Replace("\"", "\"\"", StringComparison.Ordinal));
+                        }
+
                         sb.Append('"');
                     }
                     else

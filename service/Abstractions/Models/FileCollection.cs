@@ -111,8 +111,7 @@ public class FileCollection
 #pragma warning disable CA1031 // ok to catch all
         try
         {
-            using SHA256 mySHA256 = SHA256.Create();
-            byteArray = mySHA256.ComputeHash(Encoding.UTF8.GetBytes(value));
+            byteArray = SHA256.HashData(Encoding.UTF8.GetBytes(value));
         }
         catch (Exception)
         {

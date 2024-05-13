@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
-public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
+[Experimental("KMEXP01")]
+public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
@@ -56,7 +58,8 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: new DefaultAzureCredential(),
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
@@ -65,7 +68,8 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: config.GetTokenCredential(),
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -74,7 +78,8 @@ public class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
                     modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
-                    httpClient: httpClient);
+                    httpClient: httpClient,
+                    dimensions: config.EmbeddingDimensions);
                 break;
 
             default:
