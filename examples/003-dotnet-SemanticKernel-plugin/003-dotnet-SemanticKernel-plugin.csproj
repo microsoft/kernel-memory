@@ -2,7 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <NoWarn>$(NoWarn);CA1050;CA1859;CA2000;</NoWarn>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <NoWarn>$(NoWarn);CA1050;CA1859;CA2000;CS1591;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

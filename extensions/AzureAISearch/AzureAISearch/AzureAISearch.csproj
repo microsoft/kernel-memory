@@ -23,16 +23,13 @@
         <InternalsVisibleTo Include="Microsoft.AzureAISearch.TestApplication" />
     </ItemGroup>
 
-    <Import Project="../../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.MemoryDb.AzureAISearch</PackageId>
         <Product>Azure AI Search connector for Kernel Memory</Product>
         <Description>Azure AI Search connector for Microsoft Kernel Memory, to store and search memory using Azure AI Search vector indexing and semantic features.</Description>
         <PackageTags>Memory, RAG, Kernel Memory, Azure AI Search, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

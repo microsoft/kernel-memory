@@ -6,6 +6,8 @@
         <!-- Avoid using the ".Service" file extension, which would cause the app to hang on macOS, and use ".ServiceAssembly" instead -->
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);CA2007;CA1724;CA2254;CA1031;CS1591;CA1861;CA1303;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
@@ -17,8 +19,6 @@
         <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
-
-    <Import Project="../../infra/dotnet/code-analysis.props" />
 
     <!--
     This dependency is needed only to generate appsetting.development.json via

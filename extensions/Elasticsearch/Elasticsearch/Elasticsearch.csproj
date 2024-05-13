@@ -18,16 +18,13 @@
         <PackageReference Include="Elastic.Clients.Elasticsearch" />
     </ItemGroup>
     
-    <Import Project="../../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.MemoryDb.Elasticsearch</PackageId>
         <Product>Elasticsearch connector for Kernel Memory</Product>
         <Description>Elasticsearch connector for Microsoft Kernel Memory, to store and search memory using Elasticsearch vector search and other Elasticsearch features.</Description>
         <PackageTags>Elasticsearch Memory, RAG, Kernel Memory, Elasticsearch, HNSW, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

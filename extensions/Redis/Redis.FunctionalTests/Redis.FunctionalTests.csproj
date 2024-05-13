@@ -8,7 +8,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CA2007;CA1303;IDE0005;IDE1006;IDE0130;</NoWarn>
     </PropertyGroup>
 

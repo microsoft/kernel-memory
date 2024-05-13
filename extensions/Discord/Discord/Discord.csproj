@@ -8,10 +8,6 @@
         <NoWarn>$(NoWarn);CS1591;CA1303;</NoWarn>
     </PropertyGroup>
 
-    <Import Project="../../../infra/dotnet/code-analysis.props" />
-
-    <Import Project="../../../infra/dotnet/nuget-package.props" />
-
     <PropertyGroup>
         <IsPackable>false</IsPackable>
         <PackageId>Microsoft.KernelMemory.Sources.Discord</PackageId>

@@ -7,7 +7,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP03;CA1050;CA2007;CA1826;CA1307;SKEXP0001;</NoWarn>
     </PropertyGroup>
 

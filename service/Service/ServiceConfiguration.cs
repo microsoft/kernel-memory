@@ -253,6 +253,15 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
+                case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
                 case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
@@ -352,6 +361,10 @@ internal sealed class ServiceConfiguration
         {
             case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
+                break;
+
+            case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
