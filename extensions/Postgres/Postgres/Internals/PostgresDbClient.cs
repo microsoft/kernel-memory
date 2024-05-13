@@ -94,13 +94,13 @@ internal sealed class PostgresDbClient : IDisposable
         this._log.LogTrace("Checking if table {0} exists", tableName);
 
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-
+            NpgsqlCommand cmd = connection.CreateCommand();
+            await using (cmd.ConfigureAwait(false))
+            {
 #pragma warning disable CA2100 // SQL reviewed
-            cmd.CommandText = $@"
+                cmd.CommandText = $@"
                 SELECT table_name
                 FROM information_schema.tables
                     WHERE table_schema = @schema
@@ -109,22 +109,26 @@ internal sealed class PostgresDbClient : IDisposable
                 LIMIT 1
             ";
 
-            cmd.Parameters.AddWithValue("@schema", this._schema);
-            cmd.Parameters.AddWithValue("@table", tableName);
+                cmd.Parameters.AddWithValue("@schema", this._schema);
+                cmd.Parameters.AddWithValue("@table", tableName);
 #pragma warning restore CA2100
 
-            this._log.LogTrace("Schema: {0}, Table: {1}, SQL: {2}", this._schema, tableName, cmd.CommandText);
+                this._log.LogTrace("Schema: {0}, Table: {1}, SQL: {2}", this._schema, tableName, cmd.CommandText);
 
-            using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var name = dataReader.GetString(dataReader.GetOrdinal("table_name"));
+                NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await using (dataReader.ConfigureAwait(false))
+                {
+                    if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        var name = dataReader.GetString(dataReader.GetOrdinal("table_name"));
 
-                return string.Equals(name, tableName, StringComparison.OrdinalIgnoreCase);
+                        return string.Equals(name, tableName, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    this._log.LogTrace("Table {0} does not exist", tableName);
+                    return false;
+                }
             }
-
-            this._log.LogTrace("Table {0} does not exist", tableName);
-            return false;
         }
     }
 
@@ -149,25 +153,26 @@ internal sealed class PostgresDbClient : IDisposable
 
         try
         {
-            await using (connection)
+            await using (connection.ConfigureAwait(false))
             {
-                using NpgsqlCommand cmd = connection.CreateCommand();
-
-                var lockId = GenLockId(tableName);
+                NpgsqlCommand cmd = connection.CreateCommand();
+                await using (cmd.ConfigureAwait(false))
+                {
+                    var lockId = GenLockId(tableName);
 
 #pragma warning disable CA2100 // SQL reviewed
-                if (!string.IsNullOrEmpty(this._createTableSql))
-                {
-                    cmd.CommandText = this._createTableSql
-                        .Replace(PostgresConfig.SqlPlaceholdersTableName, tableName, StringComparison.Ordinal)
-                        .Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
-                        .Replace(PostgresConfig.SqlPlaceholdersLockId, $"{lockId}", StringComparison.Ordinal);
+                    if (!string.IsNullOrEmpty(this._createTableSql))
+                    {
+                        cmd.CommandText = this._createTableSql
+                            .Replace(PostgresConfig.SqlPlaceholdersTableName, tableName, StringComparison.Ordinal)
+                            .Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
+                            .Replace(PostgresConfig.SqlPlaceholdersLockId, $"{lockId}", StringComparison.Ordinal);
 
-                    this._log.LogTrace("Creating table with custom SQL: {0}", cmd.CommandText);
-                }
-                else
-                {
-                    cmd.CommandText = $@"
+                        this._log.LogTrace("Creating table with custom SQL: {0}", cmd.CommandText);
+                    }
+                    else
+                    {
+                        cmd.CommandText = $@"
                     BEGIN;
                     SELECT pg_advisory_xact_lock({lockId});
                     CREATE TABLE IF NOT EXISTS {tableName} (
@@ -181,11 +186,12 @@ internal sealed class PostgresDbClient : IDisposable
                     COMMIT;";
 #pragma warning restore CA2100
 
-                    this._log.LogTrace("Creating table with default SQL: {0}", cmd.CommandText);
-                }
+                        this._log.LogTrace("Creating table with default SQL: {0}", cmd.CommandText);
+                    }
 
-                int result = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-                this._log.LogTrace("Table '{0}' creation result: {1}", tableName, result);
+                    int result = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    this._log.LogTrace("Table '{0}' creation result: {1}", tableName, result);
+                }
             }
         }
         catch (Npgsql.PostgresException e) when (VectorTypeDoesNotExists(e))
@@ -243,23 +249,28 @@ internal sealed class PostgresDbClient : IDisposable
     {
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-
-            cmd.CommandText = @"SELECT table_name FROM information_schema.tables
-                                WHERE table_schema = @schema AND table_type = 'BASE TABLE';";
-            cmd.Parameters.AddWithValue("@schema", this._schema);
-
-            this._log.LogTrace("Fetching list of tables. SQL: {0}. Schema: {1}", cmd.CommandText, this._schema);
-
-            using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            NpgsqlCommand cmd = connection.CreateCommand();
+            await using (cmd.ConfigureAwait(false))
             {
-                var tableNameWithPrefix = dataReader.GetString(dataReader.GetOrdinal("table_name"));
-                if (tableNameWithPrefix.StartsWith(this._tableNamePrefix, StringComparison.OrdinalIgnoreCase))
+                cmd.CommandText = @"SELECT table_name FROM information_schema.tables
+                                WHERE table_schema = @schema AND table_type = 'BASE TABLE';";
+                cmd.Parameters.AddWithValue("@schema", this._schema);
+
+                this._log.LogTrace("Fetching list of tables. SQL: {0}. Schema: {1}", cmd.CommandText, this._schema);
+
+                NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await using (dataReader.ConfigureAwait(false))
                 {
-                    yield return tableNameWithPrefix.Remove(0, this._tableNamePrefix.Length);
+                    while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        var tableNameWithPrefix = dataReader.GetString(dataReader.GetOrdinal("table_name"));
+                        if (tableNameWithPrefix.StartsWith(this._tableNamePrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            yield return tableNameWithPrefix.Remove(0, this._tableNamePrefix.Length);
+                        }
+                    }
                 }
             }
         }
@@ -277,18 +288,20 @@ internal sealed class PostgresDbClient : IDisposable
         tableName = this.WithSchemaAndTableNamePrefix(tableName);
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
             try
             {
-                using NpgsqlCommand cmd = connection.CreateCommand();
-
+                NpgsqlCommand cmd = connection.CreateCommand();
+                await using (cmd.ConfigureAwait(false))
+                {
 #pragma warning disable CA2100 // SQL reviewed
-                cmd.CommandText = $"DROP TABLE IF EXISTS {tableName}";
+                    cmd.CommandText = $"DROP TABLE IF EXISTS {tableName}";
 #pragma warning restore CA2100
 
-                this._log.LogTrace("Deleting table. SQL: {0}", cmd.CommandText);
-                await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    this._log.LogTrace("Deleting table. SQL: {0}", cmd.CommandText);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
             {
@@ -318,12 +331,13 @@ internal sealed class PostgresDbClient : IDisposable
 
         try
         {
-            await using (connection)
+            await using (connection.ConfigureAwait(false))
             {
-                using NpgsqlCommand cmd = connection.CreateCommand();
-
+                NpgsqlCommand cmd = connection.CreateCommand();
+                await using (cmd.ConfigureAwait(false))
+                {
 #pragma warning disable CA2100 // SQL reviewed
-                cmd.CommandText = $@"
+                    cmd.CommandText = $@"
                 INSERT INTO {tableName}
                     ({this._colId}, {this._colEmbedding}, {this._colTags}, {this._colContent}, {this._colPayload})
                     VALUES
@@ -336,16 +350,17 @@ internal sealed class PostgresDbClient : IDisposable
                     {this._colPayload}   = @payload
             ";
 
-                cmd.Parameters.AddWithValue("@id", record.Id);
-                cmd.Parameters.AddWithValue("@embedding", record.Embedding);
-                cmd.Parameters.AddWithValue("@tags", NpgsqlDbType.Array | NpgsqlDbType.Text, record.Tags.ToArray() ?? emptyTags);
-                cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, record.Content ?? EmptyContent);
-                cmd.Parameters.AddWithValue("@payload", NpgsqlDbType.Jsonb, record.Payload ?? EmptyPayload);
+                    cmd.Parameters.AddWithValue("@id", record.Id);
+                    cmd.Parameters.AddWithValue("@embedding", record.Embedding);
+                    cmd.Parameters.AddWithValue("@tags", NpgsqlDbType.Array | NpgsqlDbType.Text, record.Tags.ToArray() ?? emptyTags);
+                    cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, record.Content ?? EmptyContent);
+                    cmd.Parameters.AddWithValue("@payload", NpgsqlDbType.Jsonb, record.Payload ?? EmptyPayload);
 #pragma warning restore CA2100
 
-                this._log.LogTrace("Upserting record '{0}' in table '{1}'", record.Id, tableName);
+                    this._log.LogTrace("Upserting record '{0}' in table '{1}'", record.Id, tableName);
 
-                await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
@@ -406,12 +421,13 @@ internal sealed class PostgresDbClient : IDisposable
 
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-
+            NpgsqlCommand cmd = connection.CreateCommand();
+            await using (cmd.ConfigureAwait(false))
+            {
 #pragma warning disable CA2100 // SQL reviewed
-            cmd.CommandText = @$"
+                cmd.CommandText = @$"
                 SELECT {columns}, 1 - ({this._colEmbedding} <=> @embedding) AS {similarityActualValue}
                 FROM {tableName}
                 WHERE {filterSql}
@@ -420,43 +436,47 @@ internal sealed class PostgresDbClient : IDisposable
                 OFFSET @offset
             ";
 
-            cmd.Parameters.AddWithValue("@embedding", target);
-            cmd.Parameters.AddWithValue("@limit", limit);
-            cmd.Parameters.AddWithValue("@offset", offset);
+                cmd.Parameters.AddWithValue("@embedding", target);
+                cmd.Parameters.AddWithValue("@limit", limit);
+                cmd.Parameters.AddWithValue("@offset", offset);
 
-            foreach (KeyValuePair<string, object> kv in sqlUserValues)
-            {
-                cmd.Parameters.AddWithValue(kv.Key, kv.Value);
-            }
+                foreach (KeyValuePair<string, object> kv in sqlUserValues)
+                {
+                    cmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                }
 #pragma warning restore CA2100
 
-            // TODO: rewrite code to stream results (need to combine yield and try-catch)
-            var result = new List<(PostgresMemoryRecord record, double similarity)>();
-            try
-            {
-                using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                var run = true;
-                while (run && await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                // TODO: rewrite code to stream results (need to combine yield and try-catch)
+                var result = new List<(PostgresMemoryRecord record, double similarity)>();
+                try
                 {
-                    double similarity = dataReader.GetDouble(dataReader.GetOrdinal(similarityActualValue));
-                    if (similarity < minSimilarity)
+                    NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                    await using (dataReader.ConfigureAwait(false))
                     {
-                        run = false;
-                        continue;
+                        var run = true;
+                        while (run && await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                        {
+                            double similarity = dataReader.GetDouble(dataReader.GetOrdinal(similarityActualValue));
+                            if (similarity < minSimilarity)
+                            {
+                                run = false;
+                                continue;
+                            }
+
+                            result.Add((this.ReadEntry(dataReader, withEmbeddings), similarity));
+                        }
                     }
-
-                    result.Add((this.ReadEntry(dataReader, withEmbeddings), similarity));
                 }
-            }
-            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
-            {
-                this._log.LogTrace("Table not found: {0}", tableName);
-            }
+                catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
+                {
+                    this._log.LogTrace("Table not found: {0}", tableName);
+                }
 
-            // TODO: rewrite code to stream results (need to combine yield and try-catch)
-            foreach (var x in result)
-            {
-                yield return x;
+                // TODO: rewrite code to stream results (need to combine yield and try-catch)
+                foreach (var x in result)
+                {
+                    yield return x;
+                }
             }
         }
     }
@@ -506,12 +526,13 @@ internal sealed class PostgresDbClient : IDisposable
 
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-
+            NpgsqlCommand cmd = connection.CreateCommand();
+            await using (cmd.ConfigureAwait(false))
+            {
 #pragma warning disable CA2100 // SQL reviewed
-            cmd.CommandText = @$"
+                cmd.CommandText = @$"
                 SELECT {columns} FROM {tableName}
                 WHERE {filterSql}
                 ORDER BY {orderBySql}
@@ -519,38 +540,41 @@ internal sealed class PostgresDbClient : IDisposable
                 OFFSET @offset
             ";
 
-            cmd.Parameters.AddWithValue("@limit", limit);
-            cmd.Parameters.AddWithValue("@offset", offset);
+                cmd.Parameters.AddWithValue("@limit", limit);
+                cmd.Parameters.AddWithValue("@offset", offset);
 
-            if (sqlUserValues != null)
-            {
-                foreach (KeyValuePair<string, object> kv in sqlUserValues)
+                if (sqlUserValues != null)
                 {
-                    cmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                    foreach (KeyValuePair<string, object> kv in sqlUserValues)
+                    {
+                        cmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                    }
                 }
-            }
 #pragma warning restore CA2100
 
-            // TODO: rewrite code to stream results (need to combine yield and try-catch)
-            var result = new List<PostgresMemoryRecord>();
-            try
-            {
-                using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-
-                while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                // TODO: rewrite code to stream results (need to combine yield and try-catch)
+                var result = new List<PostgresMemoryRecord>();
+                try
                 {
-                    result.Add(this.ReadEntry(dataReader, withEmbeddings));
+                    NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                    await using (dataReader.ConfigureAwait(false))
+                    {
+                        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                        {
+                            result.Add(this.ReadEntry(dataReader, withEmbeddings));
+                        }
+                    }
                 }
-            }
-            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
-            {
-                this._log.LogTrace("Table not found: {0}", tableName);
-            }
+                catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
+                {
+                    this._log.LogTrace("Table not found: {0}", tableName);
+                }
 
-            // TODO: rewrite code to stream results (need to combine yield and try-catch)
-            foreach (var x in result)
-            {
-                yield return x;
+                // TODO: rewrite code to stream results (need to combine yield and try-catch)
+                foreach (var x in result)
+                {
+                    yield return x;
+                }
             }
         }
     }
@@ -571,22 +595,24 @@ internal sealed class PostgresDbClient : IDisposable
 
         NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
-        await using (connection)
+        await using (connection.ConfigureAwait(false))
         {
-            using NpgsqlCommand cmd = connection.CreateCommand();
-
+            NpgsqlCommand cmd = connection.CreateCommand();
+            await using (cmd.ConfigureAwait(false))
+            {
 #pragma warning disable CA2100 // SQL reviewed
-            cmd.CommandText = $"DELETE FROM {tableName} WHERE {this._colId}=@id";
-            cmd.Parameters.AddWithValue("@id", id);
+                cmd.CommandText = $"DELETE FROM {tableName} WHERE {this._colId}=@id";
+                cmd.Parameters.AddWithValue("@id", id);
 #pragma warning restore CA2100
 
-            try
-            {
-                await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
-            {
-                this._log.LogTrace("Table not found: {0}", tableName);
+                try
+                {
+                    await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
+                {
+                    this._log.LogTrace("Table not found: {0}", tableName);
+                }
             }
         }
     }

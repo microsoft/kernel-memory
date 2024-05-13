@@ -149,7 +149,7 @@ public sealed class DiscordConnector : IHostedService, IDisposable, IAsyncDispos
             string documentId = $"{msg.ServerId}_{msg.ChannelId}_{msg.MessageId}";
             string content = JsonSerializer.Serialize(msg);
             Stream fileContent = new MemoryStream(Encoding.UTF8.GetBytes(content), false);
-            await using (fileContent)
+            await using (fileContent.ConfigureAwait(false))
             {
                 await this._memory.ImportDocumentAsync(
                     fileContent,
