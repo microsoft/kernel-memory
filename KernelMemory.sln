@@ -270,6 +270,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discord", "extensions\Disco
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "209-dotnet-HuggingFace", "examples\209-dotnet-HuggingFace\209-dotnet-HuggingFace.csproj", "{C13B27F4-1415-45CF-945C-CC49EA421EFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -503,6 +505,9 @@ Global
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C13B27F4-1415-45CF-945C-CC49EA421EFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C13B27F4-1415-45CF-945C-CC49EA421EFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C13B27F4-1415-45CF-945C-CC49EA421EFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -584,6 +589,7 @@ Global
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{C13B27F4-1415-45CF-945C-CC49EA421EFC} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

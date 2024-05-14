@@ -177,9 +177,14 @@ public sealed class OpenAITextGenerator : ITextGenerator
             openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));
 
             StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
+            var totalTokens = 0;
             await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 yield return update.ContentUpdate;
+
+                // Workaround for HuggingFace, to force a stop after max_tokens
+                totalTokens += this._textTokenizer!.CountTokens(update.ContentUpdate);
+                if (totalTokens >= options.MaxTokens) { break; }
             }
         }
     }
