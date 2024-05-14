@@ -13,11 +13,7 @@ var memory = new KernelMemoryBuilder()
     .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync(new Document("doc012")
-    .AddFiles(new[] {
-        "file2.txt",
-        "file3.docx",
-        "file4.pdf"
-    })
+    .AddFiles([ "file2.txt", "file3.docx", "file4.pdf" ])
     .AddTag("user", "Blake"));
 
 string answer = await memory.AskAsync("What's Semantic Kernel?");

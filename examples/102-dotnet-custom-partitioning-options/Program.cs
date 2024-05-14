@@ -17,8 +17,4 @@ var memory = new KernelMemoryBuilder()
     .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync(new Document()
-    .AddFile("mswordfile.docx"), steps: new[]
-{
-    "extract",
-    "partition"
-});
+    .AddFile("mswordfile.docx"), steps: ["extract", "partition"]);

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <IsTestProject>true</IsTestProject>
         <AssemblyName>Microsoft.KM.TestHelpers</AssemblyName>
         <RootNamespace>Microsoft.KM.TestHelpers</RootNamespace>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);KMEXP00;CS1591;CA1861;CA1051;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

@@ -11,11 +11,7 @@ Start `dotnet/Service/Service.csproj`. See `dotnet/Service/README.md` for detail
 var memory = new MemoryWebClient("http://127.0.0.1:9001/");
 
 await memory.ImportDocumentAsync(new Document("doc012")
-    .AddFiles(new[] {
-        "file2.txt",
-        "file3.docx",
-        "file4.pdf"
-    })
+    .AddFiles([ "file2.txt", "file3.docx", "file4.pdf" ])
     .AddTag("user", "Blake"));
 
 while (!await memory.IsDocumentReadyAsync(documentId: "doc012"))

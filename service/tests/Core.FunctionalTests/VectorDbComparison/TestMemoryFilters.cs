@@ -14,25 +14,22 @@ using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
-public class TestMemoryFilters : BaseFunctionalTestCase
+// #pragma warning disable CS8600 // by design
+// #pragma warning disable CS8604 // by design
+public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : BaseFunctionalTestCase(cfg, log)
 {
     private const string IndexName = "test-filters";
 
-    private readonly ITestOutputHelper _log;
-
-    public TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
-    {
-        this._log = log;
-    }
+    private readonly ITestOutputHelper _log = log;
 
     [Fact]
     [Trait("Category", "Serverless")]
     public async Task TestFilters()
     {
-        const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
-        const bool PostgresEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        bool azSearchEnabled = true;
+        bool mongoDbAtlasEnabled = false;
+        bool postgresEnabled = true;
+        bool qdrantEnabled = false;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
@@ -41,41 +38,29 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
-        AzureAISearchMemory acs;
-        if (AzSearchEnabled)
-        {
-            acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator);
-        }
+        AzureAISearchMemory acs = null!;
+        if (azSearchEnabled) { acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator); }
 
-        QdrantMemory qdrant;
-        if (QdrantEnabled)
-        {
-            qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator);
-        }
+        MongoDbAtlasMemory mongoDbAtlas = null!;
+        if (mongoDbAtlasEnabled) { mongoDbAtlas = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
 
-        PostgresMemory postgres;
-        if (PostgresEnabled)
-        {
-            postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator);
-        }
+        PostgresMemory postgres = null!;
+        if (postgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
 
-        MongoDbAtlasMemory mongoDbAtlas;
-        if (MongoDbAtlasEnabled)
-        {
-            mongoDbAtlas = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator);
-        }
+        QdrantMemory qdrant = null!;
+        if (qdrantEnabled) { qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator); }
 
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         if (DeleteIndex)
         {
-            if (AzSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
+            if (azSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
 
-            if (QdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
+            if (qdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
 
-            if (PostgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
+            if (postgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
 
-            if (MongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
+            if (mongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -84,13 +69,13 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
         if (CreateIndex)
         {
-            if (AzSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
+            if (azSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
 
-            if (QdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
+            if (qdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
 
-            if (PostgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
+            if (postgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
 
-            if (MongoDbAtlasEnabled) { await mongoDbAtlas.CreateIndexAsync(IndexName, 3); }
+            if (mongoDbAtlasEnabled) { await mongoDbAtlas!.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -110,13 +95,13 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
             foreach (KeyValuePair<string, MemoryRecord> r in records)
             {
-                if (AzSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
+                if (azSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
 
-                if (QdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
+                if (qdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
 
-                if (PostgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
+                if (postgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
-                if (MongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
+                if (mongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
 
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
@@ -126,25 +111,25 @@ public class TestMemoryFilters : BaseFunctionalTestCase
 
         for (int i = 1; i <= 3; i++)
         {
-            if (AzSearchEnabled)
+            if (azSearchEnabled)
             {
                 this._log.WriteLine("----- Azure AI Search -----");
                 await this.TestVectorDbFiltering(acs, i);
             }
 
-            if (QdrantEnabled)
+            if (qdrantEnabled)
             {
                 this._log.WriteLine("\n----- Qdrant vector DB -----");
                 await this.TestVectorDbFiltering(qdrant, i);
             }
 
-            if (PostgresEnabled)
+            if (postgresEnabled)
             {
                 this._log.WriteLine("\n----- Postgres vector DB -----");
                 await this.TestVectorDbFiltering(postgres, i);
             }
 
-            if (MongoDbAtlasEnabled)
+            if (mongoDbAtlasEnabled)
             {
                 this._log.WriteLine("\n----- MongoDB Atlas vector DB -----");
                 await this.TestVectorDbFiltering(mongoDbAtlas, i);

@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable CommentTypo
-
-#pragma warning disable CS8602 // memory is initialized before usage
-#pragma warning disable CS0162 // unreachable code is managed via boolean settings
-
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
 
@@ -16,13 +10,14 @@ using Microsoft.KernelMemory.AI.OpenAI;
  * 'InProcessPipelineOrchestrator' explicitly.
  *
  * Note: no web service required, each file is processed in this process. */
+#pragma warning disable CS8602 // by design
 public static class Program
 {
     private static MemoryServerless? s_memory;
     private static readonly List<string> s_toDelete = new();
 
-    // Change this to True and configure Azure Document Intelligence to test OCR and support for images
-    private const bool ImageSupportDemoEnabled = true;
+    // Remember to configure Azure Document Intelligence to test OCR and support for images
+    private static bool s_imageSupportDemoEnabled = true;
 
     public static async Task Main()
     {
@@ -50,21 +45,31 @@ public static class Program
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
-        s_memory = new KernelMemoryBuilder()
+        var builder = new KernelMemoryBuilder()
             .AddSingleton(memoryConfiguration)
-            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-            // .WithOpenAI(openAIConfig)
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
-            // .WithLlamaTextGeneration(llamaConfig)
-            // .WithAzureAIDocIntel(azDocIntelConfig)                       // extract text from images with Azure AI Document Intelligence
-            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
-            // .WithAzureBlobsStorage(new AzureBlobsConfig {...})           // Store files in Azure Blobs
-            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
+            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
+            // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
+            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers ans summaries using LLama
             // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
             // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
             // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            .Build<MemoryServerless>();
+            // .WithAzureBlobsStorage(new AzureBlobsConfig {...})           // Store files in Azure Blobs
+            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
+            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
+
+        if (s_imageSupportDemoEnabled)
+        {
+            if (string.IsNullOrWhiteSpace(azDocIntelConfig.APIKey))
+            {
+                Console.WriteLine("Azure AI Document Intelligence API key not found. OCR demo disabled.");
+                s_imageSupportDemoEnabled = false;
+            }
+            else { builder.WithAzureAIDocIntel(azDocIntelConfig); }
+        }
+
+        s_memory = builder.Build<MemoryServerless>();
 
         // =======================
         // === INGESTION =========
@@ -132,10 +137,10 @@ public static class Program
     // Extract memory from images (OCR required)
     private static async Task StoreImage()
     {
-        if (!ImageSupportDemoEnabled) { return; }
+        if (!s_imageSupportDemoEnabled) { return; }
 
         Console.WriteLine("Uploading Image file with a news about a conference sponsored by Microsoft");
-        var docId = await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(new[] { "file6-ANWC-image.jpg" }));
+        var docId = await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(["file6-ANWC-image.jpg"]));
         s_toDelete.Add(docId);
         Console.WriteLine($"- Document Id: {docId}");
     }
@@ -147,7 +152,7 @@ public static class Program
         {
             Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Kernel Memory");
             var docId = await s_memory.ImportDocumentAsync(new Document("doc002")
-                .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf" })
+                .AddFiles(["file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf"])
                 .AddTag("user", "Blake"));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
@@ -246,7 +251,7 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "xls01"))
         {
             Console.WriteLine("Uploading Excel file with some empty cells");
-            var docId = await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(new[] { "file8-data.xlsx" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(["file8-data.xlsx"]));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
         }
@@ -264,7 +269,7 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "json01"))
         {
             Console.WriteLine("Uploading JSON file");
-            var docId = await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(new[] { "file9-settings.json" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(["file9-settings.json"]));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
         }
@@ -361,7 +366,7 @@ public static class Program
 
         var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
 
-        Console.WriteLine(ImageSupportDemoEnabled
+        Console.WriteLine(s_imageSupportDemoEnabled
             ? $"\nAnswer: {answer.Result}\n\n  Sources:\n"
             : $"\nAnswer (none expected): {answer.Result}\n\n  Sources:\n");
 
@@ -534,18 +539,18 @@ public static class Program
     // Download file and print details
     private static async Task DownloadFile()
     {
-        const string filename = "file1-Wikipedia-Carbon.txt";
+        const string Filename = "file1-Wikipedia-Carbon.txt";
 
         Console.WriteLine("Downloading file");
-        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: filename);
+        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: Filename);
         var stream = new MemoryStream();
         await (await result.GetStreamAsync()).CopyToAsync(stream);
         var bytes = stream.ToArray();
 
         Console.WriteLine();
-        Console.WriteLine("Original File name : " + filename);
-        Console.WriteLine("Original File size : " + new FileInfo(filename).Length);
-        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(filename)).Length);
+        Console.WriteLine("Original File name : " + Filename);
+        Console.WriteLine("Original File size : " + new FileInfo(Filename).Length);
+        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(Filename)).Length);
         Console.WriteLine();
         Console.WriteLine("Downloaded File name : " + result.FileName);
         Console.WriteLine("Downloaded File type : " + result.FileType);

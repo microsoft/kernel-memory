@@ -1,15 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.LlamaSharp.FunctionalTests</AssemblyName>
+        <RootNamespace>Microsoft.LlamaSharp.FunctionalTests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <RootNamespace>Microsoft.LlamaSharp.FunctionalTests</RootNamespace>
-        <AssemblyName>Microsoft.LlamaSharp.FunctionalTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CS1591;CA1861;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

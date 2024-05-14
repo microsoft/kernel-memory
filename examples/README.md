@@ -4,8 +4,8 @@ Some examples about how to use Kernel Memory.
 
 1. [Collection of Jupyter notebooks with various scenarios](000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](001-dotnet-WebClient)
-4. [Importing files and asking question without running the service (serverless mode)](002-dotnet-Serverless)
-3. [Using KM Plugin for Semantic Kernel](003-dotnet-SemanticKernel-plugin)
+3. [Importing files and asking question without running the service (serverless mode)](002-dotnet-Serverless)
+4. [Using KM Plugin for Semantic Kernel](003-dotnet-SemanticKernel-plugin)
 5. [Processing files with custom logic (custom handlers) in serverless mode](004-dotnet-serverless-custom-pipeline)
 6. [Processing files with custom logic (custom handlers) in asynchronous mode](005-dotnet-AsyncMemoryCustomPipeline)
 7. [Upload files and ask questions from command line using curl](006-curl-calling-webservice)
@@ -26,3 +26,4 @@ Some examples about how to use Kernel Memory.
 22. [.NET configuration and logging](206-dotnet-configuration-and-logging)
 23. [Expanding chunks retrieving adjacent partitions](207-dotnet-expanding-chunks-on-retrieval)
 24. [Using local models via LM Studio](208-dotnet-lmstudio)
+25. [Fetching data from Discord](301-discord-test-application)

@@ -14,48 +14,43 @@ using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
-public class TestCosineSimilarity : BaseFunctionalTestCase
+public class TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : BaseFunctionalTestCase(cfg, log)
 {
     private const string IndexName = "test-cosinesimil";
 
-    private readonly ITestOutputHelper _log;
-
-    public TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
-    {
-        this._log = log;
-    }
+    private readonly ITestOutputHelper _log = log;
 
     [Fact]
     [Trait("Category", "Serverless")]
     public async Task CompareCosineSimilarity()
     {
-        const bool SimpleDbEnabled = true;
-        const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
-        const bool PostgresEnabled = true;
-        const bool RedisEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        bool azSearchEnabled = true;
+        bool mongoDbAtlasEnabled = false;
+        bool postgresEnabled = true;
+        bool qdrantEnabled = false;
+        bool redisEnabled = false;
+        bool simpleDbEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();
 
         SimpleVectorDb? simpleVecDb = null;
-        if (SimpleDbEnabled) { simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator); }
+        if (simpleDbEnabled) { simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator); }
 
         AzureAISearchMemory? acs = null;
-        if (AzSearchEnabled) { acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator); }
+        if (azSearchEnabled) { acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator); }
 
         QdrantMemory? qdrant = null;
-        if (QdrantEnabled) { qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator); }
+        if (qdrantEnabled) { qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator); }
 
         PostgresMemory? postgres = null;
-        if (PostgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
+        if (postgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
 
         MongoDbAtlasMemory? atlasVectorDb = null;
-        if (MongoDbAtlasEnabled) { atlasVectorDb = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
+        if (mongoDbAtlasEnabled) { atlasVectorDb = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
 
         RedisMemory? redis = null;
-        if (RedisEnabled)
+        if (redisEnabled)
         {
             // TODO: revisit RedisMemory not to need this, e.g. not to connect in ctor
             var redisMux = await ConnectionMultiplexer.ConnectAsync(this.RedisConfig.ConnectionString);

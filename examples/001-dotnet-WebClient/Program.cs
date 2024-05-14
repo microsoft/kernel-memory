@@ -105,7 +105,7 @@ public static class Program
         if (!ImageSupportDemoEnabled) { return; }
 
         Console.WriteLine("Uploading Image file with a news about a conference sponsored by Microsoft");
-        var docId = await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(new[] { "file6-ANWC-image.jpg" }));
+        var docId = await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(["file6-ANWC-image.jpg"]));
         s_toDelete.Add(docId);
         Console.WriteLine($"- Document Id: {docId}");
     }
@@ -117,7 +117,7 @@ public static class Program
         {
             Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Kernel Memory");
             var docId = await s_memory.ImportDocumentAsync(new Document("doc002")
-                .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf" })
+                .AddFiles(["file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf"])
                 .AddTag("user", "Blake"));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
@@ -216,7 +216,7 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "xls01"))
         {
             Console.WriteLine("Uploading Excel file with some empty cells");
-            var docId = await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(new[] { "file8-data.xlsx" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(["file8-data.xlsx"]));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
         }
@@ -234,7 +234,7 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "json01"))
         {
             Console.WriteLine("Uploading JSON file");
-            var docId = await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(new[] { "file9-settings.json" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(["file9-settings.json"]));
             s_toDelete.Add(docId);
             Console.WriteLine($"- Document Id: {docId}");
         }
