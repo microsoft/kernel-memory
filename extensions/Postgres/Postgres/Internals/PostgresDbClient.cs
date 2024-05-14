@@ -365,7 +365,7 @@ internal sealed class PostgresDbClient : IDisposable
         }
         catch (Npgsql.PostgresException e) when (IsTableNotFoundException(e))
         {
-            throw new IndexNotFound(e.Message, e);
+            throw new IndexNotFoundException(e.Message, e);
         }
         catch (Exception e)
         {

@@ -78,7 +78,7 @@ public sealed class QdrantMemory : IMemoryDb
             index = NormalizeIndexName(index);
             return this._qdrantClient.DeleteCollectionAsync(index, cancellationToken);
         }
-        catch (IndexNotFound)
+        catch (IndexNotFoundException)
         {
             this._log.LogInformation("Index not found, nothing to delete");
         }
@@ -163,7 +163,7 @@ public sealed class QdrantMemory : IMemoryDb
                 withVectors: withEmbeddings,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFound e)
+        catch (IndexNotFoundException e)
         {
             this._log.LogWarning(e, "Index not found");
             // Nothing to return
@@ -207,7 +207,7 @@ public sealed class QdrantMemory : IMemoryDb
                 withVectors: withEmbeddings,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFound e)
+        catch (IndexNotFoundException e)
         {
             this._log.LogWarning(e, "Index not found");
             // Nothing to return
@@ -242,7 +242,7 @@ public sealed class QdrantMemory : IMemoryDb
             this._log.LogTrace("Point ID {0} found, deleting...", existingPoint.Id);
             await this._qdrantClient.DeleteVectorsAsync(index, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFound e)
+        catch (IndexNotFoundException e)
         {
             this._log.LogInformation(e, "Index not found, nothing to delete");
         }

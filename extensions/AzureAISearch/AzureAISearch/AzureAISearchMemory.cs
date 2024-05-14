@@ -150,7 +150,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
         }
         catch (RequestFailedException e) when (IsIndexNotFoundException(e))
         {
-            throw new IndexNotFound(e.Message, e);
+            throw new IndexNotFoundException(e.Message, e);
         }
 
         foreach (var record in records)
