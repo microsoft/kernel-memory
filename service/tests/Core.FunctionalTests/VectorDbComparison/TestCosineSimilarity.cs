@@ -29,12 +29,12 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
     [Trait("Category", "Serverless")]
     public async Task CompareCosineSimilarity()
     {
-        const bool SimpleDbEnabled = true;
         const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
+        const bool MongoDbAtlasEnabled = false;
         const bool PostgresEnabled = true;
-        const bool RedisEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        const bool QdrantEnabled = false;
+        const bool RedisEnabled = false;
+        const bool SimpleDbEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();

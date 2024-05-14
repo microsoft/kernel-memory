@@ -38,12 +38,12 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Doc1.txt"),
             documentId: "Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
             documentId: "Documents-Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
             document: new Document("Doc2.txt")
                 .AddFile(Path.Join(this._fixturesPath, "Doc1.txt"))
                 .AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt")),
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
             content: memoryStream,
             documentId: "487BC53B60CFBD42167A0488A78347929E0FE811FC705A94253E419CA5911360",
             fileName: fileName,
-            steps: new[] { "extract", "partition" },
+            steps: ["extract", "partition"],
             tags: new() { { "user", "user1" } });
     }
 

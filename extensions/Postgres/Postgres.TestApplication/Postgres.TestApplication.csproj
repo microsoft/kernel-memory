@@ -1,19 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.Postgres.TestApplication</AssemblyName>
+        <RootNamespace>Microsoft.Postgres.TestApplication</RootNamespace>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CA1303;CA1852;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
-        <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI.csproj" />
-        <ProjectReference Include="..\Postgres\Postgres.csproj" />
     </ItemGroup>
 
 </Project>

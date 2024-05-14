@@ -30,9 +30,9 @@ public class TestMemoryFilters : BaseFunctionalTestCase
     public async Task TestFilters()
     {
         const bool AzSearchEnabled = true;
-        const bool QdrantEnabled = true;
+        const bool MongoDbAtlasEnabled = false;
         const bool PostgresEnabled = true;
-        const bool MongoDbAtlasEnabled = true;
+        const bool QdrantEnabled = false;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;

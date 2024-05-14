@@ -19,7 +19,7 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItRendersEmptyFilters()
     {
         // Arrange
-        List<MemoryFilter> filters1 = null;
+        List<MemoryFilter> filters1 = null!;
         List<MemoryFilter> filters2 = new();
 
         // Act

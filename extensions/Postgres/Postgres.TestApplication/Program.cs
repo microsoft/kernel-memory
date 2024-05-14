@@ -6,7 +6,7 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 
 namespace Postgres.TestApplication;
 
-internal class Program
+internal static class Program
 {
     public static async Task Main()
     {

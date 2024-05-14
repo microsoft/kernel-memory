@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <NoWarn>$(NoWarn);CS8625;CA1050;CS1591;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

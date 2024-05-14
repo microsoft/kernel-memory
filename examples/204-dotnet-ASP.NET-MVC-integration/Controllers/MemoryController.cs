@@ -26,7 +26,7 @@ public class MemoryController : Controller
     public async Task<string> GetAsync()
     {
         // Return data from MyOcrEngine
-        var ocrResult = await this._ocr.ExtractTextFromImageAsync(null);
+        var ocrResult = await this._ocr.ExtractTextFromImageAsync(new MemoryStream());
         return ocrResult;
     }
 }
