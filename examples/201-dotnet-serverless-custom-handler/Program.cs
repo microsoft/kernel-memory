@@ -15,7 +15,7 @@ internal static class Program
 
         memory.Orchestrator.AddHandler<MyHandler>("my_step");
 
-        await memory.ImportDocumentAsync("sample-Wikipedia-Moon.txt", steps: new[] { "my_step" });
+        await memory.ImportDocumentAsync("sample-Wikipedia-Moon.txt", steps: ["my_step"]);
 
         /* Output:
 
