@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
-public class IndexnameTests : BaseFunctionalTestCase
+public class IndexNameTests : BaseFunctionalTestCase
 {
     private readonly ITestOutputHelper _output;
 
-    public IndexnameTests(IConfiguration cfg, ITestOutputHelper output)
+    public IndexNameTests(IConfiguration cfg, ITestOutputHelper output)
         : base(cfg, output)
     {
         this._output = output ?? throw new ArgumentNullException(nameof(output));
@@ -57,7 +58,6 @@ public class IndexnameTests : BaseFunctionalTestCase
     [InlineData("..", 1)]
     [InlineData("1.2.3", 1)]
     //[InlineData("_test", 1)]
-
     public void BadIndexNamesAreRejected(string indexName, int errorCount)
     {
         // Creates the index using IMemoryDb

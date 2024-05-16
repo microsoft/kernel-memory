@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
-/// <inheritdoc />
-public static class IndexNameHelper
+internal static class IndexNameHelper
 {
     /// <summary>
     /// Tries to convert the given index name to a valid Elasticsearch index name.
-    /// </summary>    
+    /// </summary>
     public static bool TryConvert(string indexName, ElasticsearchConfig config, out (string ActualIndexName, IEnumerable<string> Errors) result)
     {
         indexName = indexName ?? throw new ArgumentNullException(nameof(indexName));
         var indexPrefix = config?.IndexPrefix ?? string.Empty;
-
 
         // Convert to lowercase and replace underscores with hyphens to
         // have a consistent behavior with other storage types supported by Kernel Memory. (see #18)

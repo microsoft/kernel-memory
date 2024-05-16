@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Elastic.Clients.Elasticsearch;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
+
 public class KernelMemoryTests : MemoryDbFunctionalTest
 {
-    const string NoAnswer = "INFO NOT FOUND";
-
+    private const string NoAnswer = "INFO NOT FOUND";
 
     public KernelMemoryTests(IConfiguration cfg, ITestOutputHelper output)
         : base(cfg, output)
@@ -27,12 +26,12 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     public IKernelMemory KernelMemory { get; }
 
     [Fact]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
+    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsMultipleFiltersAsync()
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
 
-        string indexName = nameof(ItSupportsMultipleFiltersAsync);
+        string indexName = nameof(this.ItSupportsMultipleFiltersAsync);
         this.Output.WriteLine($"Index name: {indexName}");
 
         const string Id = "ItSupportsMultipleFilters-file1-NASA-news.pdf";
@@ -130,7 +129,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         }
 
         // Act
-        var defaultRetries = 0;// withRetries ? 4 : 0;
+        var defaultRetries = 0; // withRetries ? 4 : 0;
 
         var retries = defaultRetries;
         var answer1 = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news")).ConfigureAwait(false);
@@ -177,7 +176,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
 
-        string indexName = nameof(ItSupportsASingleFilterAsync);
+        string indexName = nameof(this.ItSupportsASingleFilterAsync);
         const string Id = "ItSupportsASingleFilter-file1-NASA-news.pdf";
         const string Found = "spacecraft";
 
@@ -200,7 +199,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         //await Task.Delay(TimeSpan.FromSeconds(4)).ConfigureAwait(false);
 
         MemoryAnswer answer;
-        // Simple filter: unknown user cannot see the memory        
+        // Simple filter: unknown user cannot see the memory
         answer = await this.KernelMemory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "someone"), index: indexName).ConfigureAwait(false);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
@@ -241,36 +240,36 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     [Fact]
     public async Task CanImportOneDocumentAndAskAsync()
     {
-        var indexName = nameof(CanImportOneDocumentAndAskAsync);
+        var indexName = nameof(this.CanImportOneDocumentAndAskAsync);
 
         // Imports a document into the index
         var id = await this.KernelMemory.ImportDocumentAsync(
-            filePath: TestsHelper.WikipediaCarbonFileName,
-            documentId: "doc001",
-            tags: new TagCollection
-            {
-                { "indexedOn", DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz") }
-            },
-            index: indexName)
+                filePath: TestsHelper.WikipediaCarbonFileName,
+                documentId: "doc001",
+                tags: new TagCollection
+                {
+                    { "indexedOn", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz") }
+                },
+                index: indexName)
             .ConfigureAwait(false);
 
         this.Output.WriteLine($"Indexed document with id '{id}'.");
 
-        // Waits for the documents to be saved        
+        // Waits for the documents to be saved
         var actualIndexName = IndexNameHelper.Convert(indexName, base.ElasticsearchConfig);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 2)
         //          .ConfigureAwait(false);
 
         // Asks a question on the data we just inserted
         MemoryAnswer? answer = await this.TryToGetTopAnswerAsync(indexName, "What can carbon bond to?")
-                                         .ConfigureAwait(false);
+            .ConfigureAwait(false);
         this.PrintAnswerOfDocument(answer, "doc001");
     }
 
     [Fact]
     public async Task CanImportTwoDocumentsAndAskAsync()
     {
-        var indexName = nameof(CanImportTwoDocumentsAndAskAsync);
+        var indexName = nameof(this.CanImportTwoDocumentsAndAskAsync);
 
         // Proceeds
         var docId = await this.KernelMemory.ImportDocumentAsync(
@@ -281,43 +280,45 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine($"Indexed {docId}");
 
         docId = await this.KernelMemory.ImportDocumentAsync(
-            new Document("doc002")
-                .AddFiles(new[] {
-                    TestsHelper.WikipediaMoonFilename,
-                    TestsHelper.LoremIpsumFileName,
-                    TestsHelper.SKReadmeFileName })
-                .AddTag("user", "Blake"),
+                new Document("doc002")
+                    .AddFiles(new[]
+                    {
+                        TestsHelper.WikipediaMoonFilename,
+                        TestsHelper.LoremIpsumFileName,
+                        TestsHelper.SKReadmeFileName
+                    })
+                    .AddTag("user", "Blake"),
                 index: indexName)
             .ConfigureAwait(false);
 
         this.Output.WriteLine($"Indexed {docId}");
 
         docId = await this.KernelMemory.ImportDocumentAsync(new Document("doc003")
-            .AddFile(TestsHelper.NASANewsFileName)
-            .AddTag("user", "Taylor")
-            .AddTag("collection", "meetings")
-            .AddTag("collection", "NASA")
-            .AddTag("collection", "space")
-            .AddTag("type", "news"),
-            index: indexName)
+                    .AddFile(TestsHelper.NASANewsFileName)
+                    .AddTag("user", "Taylor")
+                    .AddTag("collection", "meetings")
+                    .AddTag("collection", "NASA")
+                    .AddTag("collection", "space")
+                    .AddTag("type", "news"),
+                index: indexName)
             .ConfigureAwait(false);
 
         this.Output.WriteLine($"Indexed {docId}");
 
-        // Waits for the documents to be saved        
+        // Waits for the documents to be saved
         var actualIndexName = IndexNameHelper.Convert(indexName, this.ElasticsearchConfig);
         //await this.Client.WaitForDocumentsAsync(actualIndexName, expectedDocuments: 10)
         //                 .ConfigureAwait(false);
 
         // This should return a citation to doc001
         var answer = await this.KernelMemory.AskAsync("What's E = m*c^2?", indexName)
-                                            .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         this.PrintAnswerOfDocument(answer, "doc001");
 
         // This should return a citation to doc002
         answer = await this.KernelMemory.AskAsync("What's Semantic Kernel?", indexName)
-                                        .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         this.PrintAnswerOfDocument(answer, "doc002");
     }
@@ -355,11 +356,11 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         for (int i = 0; i < 3; i++)
         {
             answer = await this.KernelMemory.AskAsync(
-                question: question,
-                index: indexName,
-                filter: null,
-                filters: null,
-                minRelevance: 0)
+                    question: question,
+                    index: indexName,
+                    filter: null,
+                    filters: null,
+                    minRelevance: 0)
                 .ConfigureAwait(false);
 
             if (answer.Result != NoAnswer)
@@ -368,7 +369,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
             }
 
             await Task.Delay(500)
-                      .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         return answer;

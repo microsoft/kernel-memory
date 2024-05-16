@@ -28,7 +28,7 @@ public class ElasticsearchMemory : IMemoryDb
     /// <param name="config">Elasticsearch configuration</param>
     /// <param name="client">Elasticsearch client</param>
     /// <param name="log">Application logger</param>
-    /// <param name="embeddingGenerator">Embedding generator</param>    
+    /// <param name="embeddingGenerator">Embedding generator</param>
     public ElasticsearchMemory(
         ElasticsearchConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
@@ -321,7 +321,7 @@ public class ElasticsearchMemory : IMemoryDb
             return qd;
         }
 
-        List<Query> super = new ();
+        List<Query> super = new();
 
         foreach (MemoryFilter filter in filters)
         {

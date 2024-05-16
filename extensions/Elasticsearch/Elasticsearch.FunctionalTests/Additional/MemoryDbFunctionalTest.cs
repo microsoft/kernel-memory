@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Elastic.Clients.Elasticsearch;
-using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KM.TestHelpers;
 using Xunit;
@@ -25,7 +25,6 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
     {
         this.Output = output ?? throw new ArgumentNullException(nameof(output));
 
-
 #pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         this.TextEmbeddingGenerator = new OpenAITextEmbeddingGenerator(
             config: base.OpenAiConfig,
@@ -35,15 +34,12 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
 
         this.Client = new ElasticsearchClient(base.ElasticsearchConfig.ToElasticsearchClientSettings());
         this.MemoryDb = new ElasticsearchMemory(base.ElasticsearchConfig, this.TextEmbeddingGenerator);
-
-
     }
 
     public ITestOutputHelper Output { get; }
     public ElasticsearchClient Client { get; }
     public IMemoryDb MemoryDb { get; }
     public ITextEmbeddingGenerator TextEmbeddingGenerator { get; }
-
 
     public async Task InitializeAsync()
     {

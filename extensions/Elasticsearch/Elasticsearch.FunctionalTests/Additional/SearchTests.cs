@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.AI.FormRecognizer.DocumentAnalysis;
-using Elastic.Clients.Elasticsearch;
-using Microsoft.Elasticsearch.FunctionalTests.Additional;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch;      
-using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -37,16 +32,16 @@ public class SearchTests : MemoryDbFunctionalTest
 
         // We upsert the file
         var docIds = await DataStorageTests.UpsertTextFilesAsync(
-        memoryDb: this.MemoryDb,
-        textEmbeddingGenerator: this.TextEmbeddingGenerator,
-        output: this.Output,
-        indexName: nameof(CanGetListWithTagsAsync),
-        fileNames: new[]
-        {
-    TestsHelper.WikipediaCarbonFileName,
-    TestsHelper.WikipediaMoonFilename,
-        })
-        .ConfigureAwait(false);
+                memoryDb: this.MemoryDb,
+                textEmbeddingGenerator: this.TextEmbeddingGenerator,
+                output: this.Output,
+                indexName: nameof(this.CanGetListWithTagsAsync),
+                fileNames: new[]
+                {
+                    TestsHelper.WikipediaCarbonFileName,
+                    TestsHelper.WikipediaMoonFilename,
+                })
+            .ConfigureAwait(false);
 
         // docsIds is a list of values like "d=3ed7b0787d484496ab25d50b2a887f8cf63193954fc844689116766434c11887//p=b84ee5e4841c4ab2877e30293752f7cc"
         Assert.Equal(expected: ExpectedTotalParagraphs, actual: docIds.Count());
@@ -65,14 +60,16 @@ public class SearchTests : MemoryDbFunctionalTest
         this.Output.WriteLine($"Filter: {filter.ToDebugString()}.\n");
 
         await foreach (var result in this.MemoryDb.GetListAsync(
-        index: nameof(CanGetListWithTagsAsync),
-        filters: new[] { filter },
-        limit: 100,
-        withEmbeddings: false))
+                           index: nameof(this.CanGetListWithTagsAsync),
+                           filters: new[] { filter },
+                           limit: 100,
+                           withEmbeddings: false))
         {
             var fileName = result.Payload["file"];
             this.Output.WriteLine($"Match #{idx++}: {fileName}");
-        };
+        }
+
+        ;
 
         Assert.Equal(expected: ExpectedTotalParagraphs, actual: idx);
     }
@@ -81,13 +78,15 @@ public class SearchTests : MemoryDbFunctionalTest
     public async Task CanGetListWithEmptyFiltersAsync()
     {
         await foreach (var result in this.MemoryDb.GetListAsync(
-            index: nameof(CanGetListWithTagsAsync),
-            filters: new[] { new MemoryFilter() }, // <-- KM has a test to make sure this works.
-            limit: 100,
-            withEmbeddings: false))
-        { };
+                           index: nameof(this.CanGetListWithTagsAsync),
+                           filters: new[] { new MemoryFilter() }, // <-- KM has a test to make sure this works.
+                           limit: 100,
+                           withEmbeddings: false))
+        {
+        }
+
+        ;
 
         // If it gets here, the test passed.
     }
 }
-

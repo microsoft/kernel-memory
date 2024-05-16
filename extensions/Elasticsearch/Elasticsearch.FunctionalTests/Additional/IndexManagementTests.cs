@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Elastic.Clients.Elasticsearch;
-using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
-using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KM.TestHelpers;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,32 +12,33 @@ public class IndexManagementTests : MemoryDbFunctionalTest
         IConfiguration cfg,
         ITestOutputHelper output)
         : base(cfg, output)
-    { }
+    {
+    }
 
     [Fact]
     public async Task CanCreateAndDeleteIndexAsync()
     {
-        var indexName = nameof(CanCreateAndDeleteIndexAsync);
+        var indexName = nameof(this.CanCreateAndDeleteIndexAsync);
         var vectorSize = 1536;
 
-        // Creates the index using IMemoryDb        
+        // Creates the index using IMemoryDb
         await this.MemoryDb.CreateIndexAsync(indexName, vectorSize)
-                           .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
-        // Verifies the index is created using the ES client        
-        var actualIndexName = IndexNameHelper.Convert(nameof(CanCreateAndDeleteIndexAsync), base.ElasticsearchConfig);
+        // Verifies the index is created using the ES client
+        var actualIndexName = IndexNameHelper.Convert(nameof(this.CanCreateAndDeleteIndexAsync), base.ElasticsearchConfig);
         var resp = await this.Client.Indices.ExistsAsync(actualIndexName)
-                                            .ConfigureAwait(false);
+            .ConfigureAwait(false);
         Assert.True(resp.Exists);
         this.Output.WriteLine($"The index '{actualIndexName}' was created successfully.");
 
         // Deletes the index
         await this.MemoryDb.DeleteIndexAsync(indexName)
-                           .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         // Verifies the index is deleted using the ES client
         resp = await this.Client.Indices.ExistsAsync(actualIndexName)
-                                        .ConfigureAwait(false);
+            .ConfigureAwait(false);
         Assert.False(resp.Exists);
         this.Output.WriteLine($"The index '{actualIndexName}' was deleted successfully.");
     }
@@ -51,20 +48,20 @@ public class IndexManagementTests : MemoryDbFunctionalTest
     {
         var indexNames = new[]
         {
-            IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-First", base.ElasticsearchConfig),
-            IndexNameHelper.Convert(nameof(CanGetIndicesAsync) + "-Second", base.ElasticsearchConfig)
+            IndexNameHelper.Convert(nameof(this.CanGetIndicesAsync) + "-First", base.ElasticsearchConfig),
+            IndexNameHelper.Convert(nameof(this.CanGetIndicesAsync) + "-Second", base.ElasticsearchConfig)
         };
 
         // Creates the indices using IMemoryDb
         foreach (var indexName in indexNames)
         {
             await this.MemoryDb.CreateIndexAsync(indexName, 1536)
-                               .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
 
         // Verifies the indices are returned
         var indices = await this.MemoryDb.GetIndexesAsync()
-                                         .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         Assert.True(indices.All(nme => indices.Contains(nme)));
 
@@ -72,7 +69,7 @@ public class IndexManagementTests : MemoryDbFunctionalTest
         foreach (var indexName in indexNames)
         {
             await this.MemoryDb.DeleteIndexAsync(indexName)
-                               .ConfigureAwait(false);
+                .ConfigureAwait(false);
         }
     }
 }
