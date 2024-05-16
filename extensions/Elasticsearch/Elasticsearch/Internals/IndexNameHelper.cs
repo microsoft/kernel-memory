@@ -2,25 +2,19 @@
 
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
-/// <inheritdoc />
-internal sealed class IndexNameHelper : IIndexNameHelper
+internal static class IndexNameHelper
 {
-    public IndexNameHelper(ElasticsearchConfig config)
-    {
-        this.IndexPrefix = config.IndexPrefix;
-    }
-
     /// <summary>
-    /// The prefix to use for all index names.
+    /// Tries to convert the given index name to a valid Elasticsearch index name.
     /// </summary>
-    public string IndexPrefix { get; }
-
-    /// <inheritdoc />
-    public bool TryConvert(string indexName, out (string ActualIndexName, IEnumerable<string> Errors) result)
+    public static bool TryConvert(string indexName, ElasticsearchConfig config, out (string ActualIndexName, IEnumerable<string> Errors) result)
     {
+        indexName = indexName ?? throw new ArgumentNullException(nameof(indexName));
+        var indexPrefix = config?.IndexPrefix ?? string.Empty;
+
         // Convert to lowercase and replace underscores with hyphens to
         // have a consistent behavior with other storage types supported by Kernel Memory. (see #18)
-        indexName = (this.IndexPrefix + indexName)
+        indexName = (indexPrefix + indexName)
             .Replace("_", "-", StringComparison.Ordinal)
             .Trim()
             .ToLowerInvariant();
@@ -68,10 +62,14 @@ internal sealed class IndexNameHelper : IIndexNameHelper
         return true;
     }
 
-    /// <inheritdoc />
-    public string Convert(string indexName)
+    /// <summary>
+    /// Converts the given index name to a valid Elasticsearch index name.
+    /// Throws an exception if the index name is invalid.
+    /// </summary>
+    /// <exception cref="InvalidIndexNameException"></exception>
+    public static string Convert(string indexName, ElasticsearchConfig config)
     {
-        if (!this.TryConvert(indexName, out var result))
+        if (!TryConvert(indexName, config, out var result))
         {
             throw new InvalidIndexNameException(result);
         }

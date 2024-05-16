@@ -20,7 +20,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="configuration">Elasticsearch configuration</param>"
-    public static IKernelMemoryBuilder WithElasticsearch(
+    public static IKernelMemoryBuilder WithElasticsearchMemoryDb(
         this IKernelMemoryBuilder builder,
         ElasticsearchConfig configuration)
     {
@@ -72,7 +72,6 @@ public static partial class DependencyInjection
         });
 
         return services
-            .AddSingleton<IIndexNameHelper, IndexNameHelper>()
             .AddSingleton(config)
             .AddSingleton<IMemoryDb, ElasticsearchMemory>();
     }

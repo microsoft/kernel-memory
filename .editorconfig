@@ -678,6 +678,7 @@ dotnet_naming_rule.async_methods_end_in_async.severity = silent
 dotnet_diagnostic.CA1031.severity = none # catch a more specific allowed exception type, or rethrow the exception
 dotnet_diagnostic.CA1051.severity = none # Do not declare visible instance fields
 dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+dotnet_diagnostic.CA1305.severity = none # The behavior of 'DateTimeOffset.ToString(string)' could vary based on the current user's locale settings
 dotnet_diagnostic.CA1307.severity = none # 'string.Contains(string)' has a method overload that takes a 'StringComparison' parameter. Replace this call
 dotnet_diagnostic.CA1711.severity = none # Rename type name so that it does not end in 'Collection'
 dotnet_diagnostic.CA1826.severity = none # Do not use Enumerable methods on indexable collections. Instead use the collection directly

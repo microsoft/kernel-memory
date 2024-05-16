@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\tests\Core.FunctionalTests\Core.FunctionalTests.csproj" />
+        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -28,6 +29,27 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\file1-Wikipedia-Carbon.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file2-Wikipedia-Moon.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file3-lorem-ipsum.docx">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file4-SK-Readme.pdf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file5-NASA-news.pdf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\file6-ANWC-image.jpg">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

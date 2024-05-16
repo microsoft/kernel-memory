@@ -2,6 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -30,6 +31,7 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
         bool mongoDbAtlasEnabled = false;
         bool postgresEnabled = true;
         bool qdrantEnabled = false;
+        bool elasticsearchEnabled = false;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
@@ -50,6 +52,12 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
         QdrantMemory qdrant = null!;
         if (qdrantEnabled) { qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator); }
 
+        ElasticsearchMemory elasticsearch = null!;
+        if (elasticsearchEnabled)
+        {
+            elasticsearch = new ElasticsearchMemory(this.ElasticsearchConfig, embeddingGenerator);
+        }
+
         var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
 
         if (DeleteIndex)
@@ -61,6 +69,8 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
             if (postgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
 
             if (mongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
+
+            if (elasticsearchEnabled) { await elasticsearch.DeleteIndexAsync(IndexName); }
 
             await simpleVecDb.DeleteIndexAsync(IndexName);
 
@@ -76,6 +86,8 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
             if (postgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
 
             if (mongoDbAtlasEnabled) { await mongoDbAtlas!.CreateIndexAsync(IndexName, 3); }
+
+            if (elasticsearchEnabled) { await elasticsearch.CreateIndexAsync(IndexName, 3); }
 
             await simpleVecDb.CreateIndexAsync(IndexName, 3);
         }
@@ -102,6 +114,8 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
                 if (postgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
 
                 if (mongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
+
+                if (elasticsearchEnabled) { await elasticsearch.UpsertAsync(IndexName, r.Value); }
 
                 await simpleVecDb.UpsertAsync(IndexName, r.Value);
             }
@@ -133,6 +147,12 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
             {
                 this._log.WriteLine("\n----- MongoDB Atlas vector DB -----");
                 await this.TestVectorDbFiltering(mongoDbAtlas, i);
+            }
+
+            if (elasticsearchEnabled)
+            {
+                this._log.WriteLine("\n----- Elasticsearch vector DB -----");
+                await this.TestVectorDbFiltering(elasticsearch, i);
             }
 
             this._log.WriteLine("\n----- Simple vector DB -----");

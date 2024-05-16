@@ -2,6 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -30,6 +31,7 @@ public class TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : B
         bool qdrantEnabled = false;
         bool redisEnabled = false;
         bool simpleDbEnabled = true;
+        bool elasticsearchEnabled = true;
 
         // == Ctors
         var embeddingGenerator = new FakeEmbeddingGenerator();
@@ -48,6 +50,9 @@ public class TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : B
 
         MongoDbAtlasMemory? atlasVectorDb = null;
         if (mongoDbAtlasEnabled) { atlasVectorDb = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
+
+        ElasticsearchMemory? elasticsearch = null;
+        if (elasticsearchEnabled) { elasticsearch = new ElasticsearchMemory(this.ElasticsearchConfig, embeddingGenerator); }
 
         RedisMemory? redis = null;
         if (redisEnabled)

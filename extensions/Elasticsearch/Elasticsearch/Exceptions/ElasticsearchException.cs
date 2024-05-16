@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// ReSharper disable CheckNamespace
+
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 
 /// <summary>
