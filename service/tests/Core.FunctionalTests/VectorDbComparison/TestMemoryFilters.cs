@@ -31,7 +31,7 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
         bool mongoDbAtlasEnabled = false;
         bool postgresEnabled = true;
         bool qdrantEnabled = false;
-        bool elasticsearchEnabled = true;
+        bool elasticsearchEnabled = false;
 
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
