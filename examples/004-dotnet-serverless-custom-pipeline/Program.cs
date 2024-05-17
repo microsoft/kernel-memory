@@ -56,12 +56,12 @@ await memory.ImportDocumentAsync(
         .AddFile("file5-NASA-news.pdf")
         .AddTag("testName", "example3"),
     index: "user-id-1",
-    steps: new[]
-    {
+    steps:
+    [
         "extract_text",
         "split_text_in_partitions",
         "generate_embeddings",
         "save_memory_records"
-    });
+    ]);
 
 Console.WriteLine("* File import completed.");

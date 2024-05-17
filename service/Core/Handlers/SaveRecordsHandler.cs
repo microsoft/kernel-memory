@@ -265,7 +265,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
             this._log.LogTrace("Saving record {0} in index '{1}'", record.Id, pipeline.Index);
             await db.UpsertAsync(pipeline.Index, record, cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFound e)
+        catch (IndexNotFoundException e)
         {
             this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
             await this.CreateIndexOnceAsync(db, createdIndexes, pipeline.Index, record.Vector.Length, cancellationToken, true).ConfigureAwait(false);
@@ -284,7 +284,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
             this._log.LogTrace("Saving batch of {0} records in index '{1}'", records.Count, pipeline.Index);
             await dbBatch.BatchUpsertAsync(pipeline.Index, records, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFound e)
+        catch (IndexNotFoundException e)
         {
             this._log.LogWarning(e, "Index {0} not found, attempting to create it", pipeline.Index);
             await this.CreateIndexOnceAsync(db, createdIndexes, pipeline.Index, records[0].Vector.Length, cancellationToken, true).ConfigureAwait(false);

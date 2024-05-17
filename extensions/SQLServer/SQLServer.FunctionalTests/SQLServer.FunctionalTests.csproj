@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.SQLServer.FunctionalTests</AssemblyName>
+        <RootNamespace>Microsoft.SQLServer.FunctionalTests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <RootNamespace>Microsoft.SQLServer.FunctionalTests</RootNamespace>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CA1859;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

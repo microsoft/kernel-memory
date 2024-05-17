@@ -73,13 +73,13 @@ string docId = await memory.ImportDocumentAsync(
         .AddFile("file4-KM-Readme.pdf")
         .AddFile("file5-NASA-news.pdf")
         .AddTag("testName", "example3"),
-    steps: new[]
-    {
+    steps:
+    [
         "extract_text",
         "split_text_in_partitions",
         "generate_embeddings",
         "save_memory_records"
-    });
+    ]);
 
 Console.WriteLine("* File import started.");
 

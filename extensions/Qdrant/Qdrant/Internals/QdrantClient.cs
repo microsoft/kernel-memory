@@ -431,7 +431,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
             if (response.StatusCode == HttpStatusCode.NotFound && responseContent.Contains("Not found: Collection", StringComparison.OrdinalIgnoreCase))
             {
                 this._log.LogWarning("Qdrant collection not found: {0}, {1}", response.StatusCode, responseContent);
-                throw new IndexNotFound(responseContent);
+                throw new IndexNotFoundException(responseContent);
             }
 
             if (!responseContent.Contains("already exists", StringComparison.OrdinalIgnoreCase))

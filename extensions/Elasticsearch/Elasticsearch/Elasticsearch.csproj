@@ -17,6 +17,10 @@
     <ItemGroup>
         <PackageReference Include="Elastic.Clients.Elasticsearch" />
     </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.Elasticsearch.FunctionalTests" />
+    </ItemGroup>
     
     <PropertyGroup>
         <IsPackable>true</IsPackable>

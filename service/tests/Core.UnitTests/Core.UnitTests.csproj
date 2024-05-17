@@ -1,15 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.KM.Core.UnitTests</AssemblyName>
+        <RootNamespace>Microsoft.KM.Core.UnitTests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.KM.Core.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;CS1591;CA1861;CA1031;</NoWarn>
-        <RootNamespace>Microsoft.KM.Core.UnitTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
