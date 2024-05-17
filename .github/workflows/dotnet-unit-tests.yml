@@ -8,10 +8,12 @@ on:
       - 'feature*'
       - 'dev'
     paths:
-      - '*.cs'
-      - '*.csproj'
-      - '*.sln'
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
       - 'appsettings.json'
+  schedule:
+    - cron: '55 0 * * 0'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -22,8 +24,10 @@ permissions:
 
 jobs:
   dotnet-test:
+    name: Unit Tests
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - { dotnet: "8.0.x", os: "ubuntu-latest" }
@@ -32,16 +36,21 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Setup dotnet ${{ matrix.dotnet }}
+
+      - name: Setup .NET ${{ matrix.dotnet }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet }}
-      - name: Display dotnet version
+
+      - name: Display .NET version
         run: dotnet --version
-      - name: Build dotnet solution
+
+      - name: Build solution
         run: dotnet build KernelMemory.sln -c Debug --nologo
+
       - name: Run Unit Tests
         run: dotnet test KernelMemory.sln -c Debug --filter Category=UnitTest -v q -l html --results-directory "TestResults-${{ matrix.os }}-${{ matrix.dotnet }}" --nologo --no-build
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
