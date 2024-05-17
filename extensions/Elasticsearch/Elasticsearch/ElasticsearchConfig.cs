@@ -2,6 +2,7 @@
 
 using Elastic.Clients.Elasticsearch.Mapping;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements

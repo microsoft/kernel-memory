@@ -1,15 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.Qdrant.UnitTests</AssemblyName>
+        <RootNamespace>Microsoft.Qdrant.UnitTests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.Qdrant.UnitTests</AssemblyName>
         <IsTestProject>true</IsTestProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CS1591;CA1861;</NoWarn>
-        <RootNamespace>Microsoft.Qdrant.UnitTests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

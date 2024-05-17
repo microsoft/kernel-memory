@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
+namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 
 /// <summary>
 /// Elasticsearch record.
@@ -103,9 +103,25 @@ public sealed class ElasticsearchMemoryRecord
         ArgumentNullExceptionEx.ThrowIfNull(record, nameof(record), "The record is NULL");
 
         // TODO: remove magic strings
-        string content = record.Payload["text"]?.ToString() ?? string.Empty;
-        string documentId = record.Tags["__document_id"][0] ?? string.Empty;
-        string filePart = record.Tags["__file_part"][0] ?? string.Empty;
+        string content = string.Empty;
+        if (record.Payload.TryGetValue("text", out object? text))
+        {
+            content = text?.ToString() ?? string.Empty;
+        }
+
+        //string content = record.Payload["text"]?.ToString() ?? string.Empty;
+        string documentId = string.Empty;
+        if (record.Tags.TryGetValue("__document_id", out List<string?>? documentIdList))
+        {
+            documentId = documentIdList?[0] ?? string.Empty;
+        }
+
+        string filePart = string.Empty;
+        if (record.Tags.TryGetValue("__file_part", out List<string?>? filePartList))
+        {
+            filePart = filePartList?[0] ?? string.Empty;
+        }
+
         string betterId = $"{documentId}|{filePart}";
 
         record.Payload.Remove("text"); // We move the text to the content field. No need to index twice.

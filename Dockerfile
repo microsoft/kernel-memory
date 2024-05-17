@@ -17,8 +17,8 @@ ARG BUILD_CONFIGURATION=Release
 
 COPY . /src/
 WORKDIR "/src/service/Service"
-RUN dotnet build Service.csproj -c $BUILD_CONFIGURATION -o /app/build
-RUN dotnet publish "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet build Service.csproj -c $BUILD_CONFIGURATION -o /app/build /p:RepoRoot=/src/
+RUN dotnet publish "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false /p:RepoRoot=/src/
 
 #########################################################################
 # prepare final content

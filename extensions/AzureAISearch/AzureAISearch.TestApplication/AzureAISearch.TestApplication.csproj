@@ -1,15 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
+        <AssemblyName>Microsoft.AzureAISearch.TestApplication</AssemblyName>
+        <RootNamespace>Microsoft.AzureAISearch.TestApplication</RootNamespace>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.AzureAISearch.TestApplication</AssemblyName>
-        <RootNamespace>Microsoft.AzureAISearch.TestApplication</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);KMEXP00;CA1050;CA2007;CA1826;CA1303;CA1307;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

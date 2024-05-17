@@ -40,6 +40,6 @@ public static class Program
         // Note: using custom "steps" to avoid LLM calls, and test just the custom web scraper
         await memory.ImportWebPageAsync(
             "https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md",
-            steps: new[] { "extract" });
+            steps: ["extract"]);
     }
 }
