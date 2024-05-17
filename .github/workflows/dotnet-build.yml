@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'main'
+      - 'feature*'
+      - 'dev'
+    paths:
+      - '*.cs'
+      - '*.csproj'
+      - '*.sln'
+      - 'appsettings.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dotnet: "8.0.x", os: "ubuntu-latest", configuration: Debug }
+          - { dotnet: "8.0.x", os: "ubuntu-latest", configuration: Release }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Setup dotnet ${{ matrix.dotnet}}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - name: Display dotnet version
+        run: dotnet --version
+      - name: Build dotnet solution
+        run: dotnet build KernelMemory.sln -c ${{ matrix.configuration }} /warnaserror
