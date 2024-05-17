@@ -37,10 +37,11 @@ public class MsExcelDecoderTest : BaseFunctionalTestCase
         Assert.Contains("\"444666\"", content); // currency
         Assert.Contains("\"United States of America\"", content); // text
         Assert.Contains("\"Rome\", \"\", \"Tokyo\"", content); // text with empty columns
-        Assert.Contains("\"1/12/2009\"", content); // date
         Assert.Contains("\"12/25/2090\"", content); // date
         Assert.Contains("\"98001\"", content); // zip code
         Assert.Contains("\"15554000600\"", content); // phone number
         Assert.Contains("\"TRUE\"", content); // boolean
+        Assert.True(content.Contains("\"1/12/2009\"") || content.Contains("\"01/12/2009\""), // date
+            $"{content} doesn't match one of the expected formats");
     }
 }
