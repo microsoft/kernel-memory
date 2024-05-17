@@ -365,11 +365,16 @@ public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        return await this.BatchUpsertAsync(index, new[] { record }, cancellationToken);
+        await foreach (var item in this.BatchUpsertAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
+        {
+            return item;
+        }
+
+        return null!;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
 
@@ -377,8 +382,6 @@ public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
         {
             throw new IndexNotFoundException($"The index '{index}' does not exist.");
         }
-
-        List<string> recordIds = new List<string>();
 
         using var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -457,11 +460,9 @@ public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
 
                 await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-                recordIds.Add(record.Id);
+                yield return record.Id;
             }
         }
-
-        return recordIds;
     }
 
     #region private ================================================================================
