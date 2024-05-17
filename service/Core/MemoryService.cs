@@ -236,7 +236,7 @@ public sealed class MemoryService : IKernelMemory
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> AskStreamingAsync(
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,

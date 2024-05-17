@@ -46,7 +46,8 @@ public interface ISearchClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Answer the given question, if possible.
+    /// Answer the given question, if possible, grounding the response with relevant memories matching the given criteria.
+    /// First result in the stream contains metadata about the result, subsequent results only contain answer tokens.
     /// </summary>
     /// <param name="index">Index (aka collection) to search for grounding information</param>
     /// <param name="question">Question to answer</param>
@@ -54,7 +55,7 @@ public interface ISearchClient
     /// <param name="minRelevance">Minimum relevance of the memories considered</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the given question</returns>
-    IAsyncEnumerable<string> AskStreamingAsync(
+    IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string index,
         string question,
         ICollection<MemoryFilter>? filters = null,

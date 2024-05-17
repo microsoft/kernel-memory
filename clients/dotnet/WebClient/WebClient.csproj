@@ -10,7 +10,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
-        <PackageReference Include="System.Net.Http.Json" />
     </ItemGroup>
 
     <PropertyGroup>

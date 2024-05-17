@@ -222,7 +222,7 @@ public interface IKernelMemory
     /// <param name="minRelevance">Minimum Cosine Similarity required</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>A stream that contains an answer to the query, or an empty list</returns>
-    public IAsyncEnumerable<string> AskStreamingAsync(
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,

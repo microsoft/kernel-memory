@@ -361,7 +361,7 @@ public sealed class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> AskStreamingAsync(
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
@@ -391,9 +391,9 @@ public sealed class MemoryWebClient : IKernelMemory
         using HttpResponseMessage response = await this._client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        await foreach (var responsePart in response.Content.ReadFromJsonAsAsyncEnumerable<string>(cancellationToken))
+        await foreach (var responsePart in response.Content.ReadFromJsonAsAsyncEnumerable<MemoryAnswer>(cancellationToken))
         {
-            if (responsePart is null || responsePart.Length == 0)
+            if (responsePart is null)
             {
                 continue;
             }

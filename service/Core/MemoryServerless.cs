@@ -259,7 +259,7 @@ public sealed class MemoryServerless : IKernelMemory
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> AskStreamingAsync(
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
