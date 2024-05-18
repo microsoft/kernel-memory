@@ -12,8 +12,8 @@ using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Timer = System.Timers.Timer;
 
@@ -124,7 +124,7 @@ public sealed class AzureQueuesPipeline : IQueue
 
             default:
                 this._log.LogCritical("Azure Queue authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ContentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
+                throw new DocumentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
         }
     }
 
@@ -345,7 +345,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue account name is empty");
-            throw new ContentStorageException("The account name is empty");
+            throw new DocumentStorageException("The account name is empty");
         }
     }
 
@@ -354,7 +354,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue account key is empty");
-            throw new ContentStorageException("The Azure Queue account key is empty");
+            throw new DocumentStorageException("The Azure Queue account key is empty");
         }
     }
 
@@ -363,7 +363,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue connection string is empty");
-            throw new ContentStorageException("The Azure Queue connection string is empty");
+            throw new DocumentStorageException("The Azure Queue connection string is empty");
         }
     }
 

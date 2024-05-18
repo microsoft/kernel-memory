@@ -6,7 +6,7 @@ using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace TikToken.UnitTests;
+namespace Microsoft.TikToken.UnitTests;
 
 public class TikTokenTokenizers : BaseUnitTestCase
 {

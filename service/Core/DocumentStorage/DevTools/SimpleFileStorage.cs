@@ -10,10 +10,10 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.KernelMemory.ContentStorage.DevTools;
+namespace Microsoft.KernelMemory.DocumentStorage.DevTools;
 
 [Experimental("KMEXP03")]
-public class SimpleFileStorage : IContentStorage
+public class SimpleFileStorage : IDocumentStorage
 {
     private readonly ILogger<SimpleFileStorage> _log;
     private readonly IFileSystem _fileSystem;
@@ -120,7 +120,7 @@ public class SimpleFileStorage : IContentStorage
                 this._log.LogError("File not found {0}/{1}/{2}", index, documentId, fileName);
             }
 
-            throw new ContentStorageFileNotFoundException("File not found");
+            throw new DocumentStorageFileNotFoundException("File not found");
         }
     }
 }

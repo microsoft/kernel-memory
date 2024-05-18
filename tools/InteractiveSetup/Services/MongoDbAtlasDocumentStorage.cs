@@ -5,13 +5,13 @@ using Microsoft.KernelMemory.InteractiveSetup.UI;
 
 namespace Microsoft.KernelMemory.InteractiveSetup.Services;
 
-internal static class MongoDbAtlasContentStorage
+internal static class MongoDbAtlasDocumentStorage
 {
     public static void Setup(Context ctx, bool force = false)
     {
-        if (!ctx.CfgMongoDbAtlasContentStorage.Value && !force) { return; }
+        if (!ctx.CfgMongoDbAtlasDocumentStorage.Value && !force) { return; }
 
-        ctx.CfgMongoDbAtlasContentStorage.Value = false;
+        ctx.CfgMongoDbAtlasDocumentStorage.Value = false;
         const string ServiceName = "MongoDbAtlas";
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))

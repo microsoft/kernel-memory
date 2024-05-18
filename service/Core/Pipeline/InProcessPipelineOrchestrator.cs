@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
 
@@ -26,7 +26,7 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <summary>
     /// Create a new instance of the synchronous orchestrator.
     /// </summary>
-    /// <param name="contentStorage">Service used to store files</param>
+    /// <param name="documentStorage">Service used to store files</param>
     /// <param name="embeddingGenerators">Services used to generate embeddings during the ingestion</param>
     /// <param name="memoryDbs">Services where to store memory records</param>
     /// <param name="textGenerator">Service used to generate text, e.g. synthetic memory records</param>
@@ -35,7 +35,7 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <param name="config">Global KM configuration</param>
     /// <param name="log">Application logger</param>
     public InProcessPipelineOrchestrator(
-        IContentStorage contentStorage,
+        IDocumentStorage documentStorage,
         List<ITextEmbeddingGenerator> embeddingGenerators,
         List<IMemoryDb> memoryDbs,
         ITextGenerator textGenerator,
@@ -43,7 +43,7 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
         IServiceProvider? serviceProvider = null,
         KernelMemoryConfig? config = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
         this._serviceProvider = serviceProvider;
     }

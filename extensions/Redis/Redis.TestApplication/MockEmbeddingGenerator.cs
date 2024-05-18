@@ -3,7 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 
-namespace Redis.TestApplication;
+namespace Microsoft.Redis.TestApplication;
 
 internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
 {

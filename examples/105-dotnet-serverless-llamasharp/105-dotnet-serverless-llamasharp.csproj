@@ -6,6 +6,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- To run the example choose one of these backends -->
+        <PackageReference Include="LLamaSharp.Backend.Cpu" />
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda11" />   -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda12" />   -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.OpenCL" />   -->
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
         <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
         <ProjectReference Include="..\..\service\Core\Core.csproj" />

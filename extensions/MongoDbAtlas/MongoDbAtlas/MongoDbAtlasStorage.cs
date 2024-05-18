@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Pipeline;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -14,7 +14,7 @@ using MongoDB.Driver.GridFS;
 namespace Microsoft.KernelMemory.MongoDbAtlas;
 
 [Experimental("KMEXP03")]
-public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
+public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IDocumentStorage
 {
     private readonly IMimeTypeDetection _mimeTypeDetection;
 
@@ -163,7 +163,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     Console.WriteLine(error);
                 }
 
-                throw new ContentStorageFileNotFoundException(error);
+                throw new DocumentStorageFileNotFoundException(error);
             }
 
             BinaryData docData = new(doc["content"].AsString);
@@ -188,7 +188,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     Console.WriteLine($"File {fileName} not found in index {index} and document {documentId}");
                 }
 
-                throw new ContentStorageFileNotFoundException("File not found");
+                throw new DocumentStorageFileNotFoundException("File not found");
             }
 
             BinaryData docData = new(doc["content"].AsString);
@@ -215,7 +215,7 @@ public sealed class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStora
                     Console.WriteLine($"File {fileName} not found in index {index} and document {documentId}");
                 }
 
-                throw new ContentStorageFileNotFoundException("File not found");
+                throw new DocumentStorageFileNotFoundException("File not found");
             }
 
             async Task<Stream> AsyncStreamDelegate() => await bucket.OpenDownloadStreamAsync(file.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
