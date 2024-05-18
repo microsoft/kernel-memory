@@ -15,7 +15,9 @@
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.61" />
     <PackageVersion Include="LLamaSharp" Version="0.12.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.12.0" />
+    <PackageVersion Include="LLamaSharp.Backend.Cuda11" Version="0.12.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.12.0" />
+    <PackageVersion Include="LLamaSharp.Backend.OpenCL" Version="0.12.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
