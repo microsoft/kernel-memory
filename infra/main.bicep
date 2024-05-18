@@ -105,7 +105,7 @@ module managedidentity 'modules/managed-identity.bicep' = {
   Module to create a Storage Account
   See https://learn.microsoft.com/azure/storage/common/storage-account-overview
   
-  The storage account is used to store files (KM Content Storage) and
+  The storage account is used to store files (KM Document Storage) and
   to run asynchronous ingestion (KM Pipelines Orchestration).
 */
 module storage 'modules/storage.bicep' = {

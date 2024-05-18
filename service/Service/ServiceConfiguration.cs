@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -152,21 +152,21 @@ internal sealed class ServiceConfiguration
 
     private void ConfigureStorageDependency(IKernelMemoryBuilder builder)
     {
-        switch (this._memoryConfiguration.ContentStorageType)
+        switch (this._memoryConfiguration.DocumentStorageType)
         {
             case string x1 when x1.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase):
             case string x2 when x2.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
                 // Check 2 keys for backward compatibility
-                builder.Services.AddAzureBlobsAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
-                                                               ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
+                builder.Services.AddAzureBlobsAsDocumentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
+                                                                ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddMongoDbAtlasAsContentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
+                builder.Services.AddMongoDbAtlasAsDocumentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
+                builder.Services.AddSimpleFileStorageAsDocumentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
                 break;
 
             default:

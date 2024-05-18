@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Postgres.TestApplication;
+namespace Microsoft.Postgres.TestApplication;
 
 internal static class Program
 {
@@ -31,23 +31,25 @@ internal static class Program
         var azureOpenAITextConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIText").Get<AzureOpenAIConfig>();
         ArgumentNullExceptionEx.ThrowIfNull(azureOpenAITextConfig, nameof(azureOpenAITextConfig), "AzureOpenAIText config not found");
 
-        // Concatenate our 'WithPostgres()' after 'WithOpenAIDefaults()' from the core nuget
+        // Concatenate our 'WithPostgresMemoryDb()' after 'WithOpenAIDefaults()' from the core nuget
         var mem1 = new KernelMemoryBuilder()
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .WithPostgresMemoryDb(postgresConfig)
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .Build();
 
-        // Concatenate our 'WithPostgres()' before 'WithOpenAIDefaults()' from the core nuget
+        // Concatenate our 'WithPostgresMemoryDb()' before 'WithOpenAIDefaults()' from the core nuget
         var mem2 = new KernelMemoryBuilder()
             .WithPostgresMemoryDb(postgresConfig)
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .Build();
 
-        // Concatenate our 'WithPostgres()' before and after KM builder extension methods from the core nuget
+        // Concatenate our 'WithPostgresMemoryDb()' before and after KM builder extension methods from the core nuget
         var mem3 = new KernelMemoryBuilder()
-            .WithSimpleFileStorage()
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithPostgresMemoryDb(postgresConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)

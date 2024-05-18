@@ -8,14 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
-/// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the content storage.
+/// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the document storage.
 /// </summary>
 public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
 {
@@ -28,7 +28,7 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
     public string StepName { get; }
 
     /// <summary>
-    /// Handler responsible for generating embeddings and saving them to content storages (not memory db).
+    /// Handler responsible for generating embeddings and saving them to document storages (not memory db).
     /// Note: stepName and other params are injected with DI
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>

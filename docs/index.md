@@ -79,7 +79,7 @@ Here's comparison table:
 * [Quickstart: test KM in few minutes](quickstart)
 * [**Memory service**, web clients and plugins](service)
 * [**Memory API**, memory ingestion and information retrieval](functions)
-* [KM **Extensions**: vector DBs, AI models, Data formats, Orchestration, Content storage](extensions)
+* [KM **Extensions**: vector DBs, AI models, Data formats, Orchestration, Document storage](extensions)
 * [Embedding **serverless** memory in .NET apps](serverless)
 * [**Security**, service and users](security)
 * [**How-to guides**, customizing KM and examples](how-to)

@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 
-namespace Postgres.UnitTests;
+namespace Microsoft.Postgres.UnitTests;
 
 public class PostgresConfigTests
 {
