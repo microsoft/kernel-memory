@@ -91,10 +91,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
-		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
-		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
 		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
 		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
+		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
+		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
@@ -266,15 +266,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLServer", "extensions\SQL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch", "extensions\Elasticsearch\Elasticsearch\Elasticsearch.csproj", "{2E10420F-BF96-411C-8FE0-F6268F2EEB67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.UnitTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "applications", "applications", "{11957DF3-7E62-4AE9-8844-9933518A9D1E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "applications", "applications", "{DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{471F899B-9524-426E-A332-E46C7218A832}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{432AC1B4-8275-4284-9A44-44988A6F0C24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -502,7 +502,6 @@ Global
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5E6B28C-F54D-423D-954D-A9EAEFB89732}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -510,10 +509,10 @@ Global
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{471F899B-9524-426E-A332-E46C7218A832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{471F899B-9524-426E-A332-E46C7218A832}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{471F899B-9524-426E-A332-E46C7218A832}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{471F899B-9524-426E-A332-E46C7218A832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -592,9 +591,10 @@ Global
 		{8ADA17CD-B779-4817-B10A-E9D7B019088D} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{B9BE1099-F78F-4A5F-A897-BF2C75E19C57} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{2E10420F-BF96-411C-8FE0-F6268F2EEB67} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{C5E6B28C-F54D-423D-954D-A9EAEFB89732} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
-		{471F899B-9524-426E-A332-E46C7218A832} = {11957DF3-7E62-4AE9-8844-9933518A9D1E}
+		{432AC1B4-8275-4284-9A44-44988A6F0C24} = {DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
