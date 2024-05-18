@@ -16,9 +16,8 @@ namespace Microsoft.KernelMemory.MemoryDb.SQLServer;
 /// <summary>
 /// Represents a memory store implementation that uses a SQL Server database as its backing store.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
-    Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-public class SqlServerMemory : IMemoryDb
+#pragma warning disable CA2100 // SQL reviewed for user input validation
+public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
 {
     /// <summary>
     /// The SQL Server configuration.
@@ -367,90 +366,103 @@ public class SqlServerMemory : IMemoryDb
     /// <inheritdoc/>
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
+        await foreach (var item in this.BatchUpsertAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
+        {
+            return item;
+        }
+
+        return null!;
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         index = NormalizeIndexName(index);
 
         if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
         {
-            // Index does not exist
-            return string.Empty;
+            throw new IndexNotFoundException($"The index '{index}' does not exist.");
         }
 
         using var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        using (SqlCommand command = connection.CreateCommand())
+        foreach (var record in records)
         {
-            command.CommandText = $@"
-                BEGIN TRANSACTION;
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = $@"
+                    BEGIN TRANSACTION;
 
-                MERGE INTO {this.GetFullTableName(this._config.MemoryTableName)}
-                USING (SELECT @key) as [src]([key])
-                ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
-                WHEN MATCHED THEN
-                    UPDATE SET payload=@payload, embedding=@embedding, tags=@tags
-                WHEN NOT MATCHED THEN
-                    INSERT ([id], [key], [collection], [payload], [tags], [embedding])
-                    VALUES (NEWID(), @key, @index, @payload, @tags, @embedding);
+                    MERGE INTO {this.GetFullTableName(this._config.MemoryTableName)}
+                    USING (SELECT @key) as [src]([key])
+                    ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
+                    WHEN MATCHED THEN
+                        UPDATE SET payload=@payload, embedding=@embedding, tags=@tags
+                    WHEN NOT MATCHED THEN
+                        INSERT ([id], [key], [collection], [payload], [tags], [embedding])
+                        VALUES (NEWID(), @key, @index, @payload, @tags, @embedding);
 
-                MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]
-                USING (
-                    SELECT
-                        {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-                        cast([vector].[key] AS INT) AS [vector_value_id],
-                        cast([vector].[value] AS FLOAT) AS [vector_value]
-                    FROM {this.GetFullTableName(this._config.MemoryTableName)}
-                    CROSS APPLY
-                        openjson(@embedding) [vector]
+                    MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]
+                    USING (
+                        SELECT
+                            {this.GetFullTableName(this._config.MemoryTableName)}.[id],
+                            cast([vector].[key] AS INT) AS [vector_value_id],
+                            cast([vector].[value] AS FLOAT) AS [vector_value]
+                        FROM {this.GetFullTableName(this._config.MemoryTableName)}
+                        CROSS APPLY
+                            openjson(@embedding) [vector]
+                        WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
+                            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+                    ) AS [src]
+                    ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
+                    WHEN MATCHED THEN
+                        UPDATE SET [tgt].[vector_value] = [src].[vector_value]
+                    WHEN NOT MATCHED THEN
+                        INSERT ([memory_id], [vector_value_id], [vector_value])
+                        VALUES ([src].[id],
+                                [src].[vector_value_id],
+                                [src].[vector_value] );
+
+                    DELETE FROM [tgt]
+                    FROM  {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
+                    INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [tgt].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
                     WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
-                        AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-                ) AS [src]
-                ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
-                WHEN MATCHED THEN
-                    UPDATE SET [tgt].[vector_value] = [src].[vector_value]
-                WHEN NOT MATCHED THEN
-                    INSERT ([memory_id], [vector_value_id], [vector_value])
-                    VALUES ([src].[id],
-                            [src].[vector_value_id],
-                            [src].[vector_value] );
+                            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index;
 
-				DELETE FROM [tgt]
-				FROM  {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
-				INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [tgt].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
-				WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
-                        AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index;
+                    MERGE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
+                    USING (
+                        SELECT
+                            {this.GetFullTableName(this._config.MemoryTableName)}.[id],
+                            cast([tags].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [tag_name],
+                            [tag_value].[value] AS [value]
+                        FROM {this.GetFullTableName(this._config.MemoryTableName)}
+                        CROSS APPLY openjson(@tags) [tags]
+                        CROSS APPLY openjson(cast([tags].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS) [tag_value]
+                        WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
+                            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+                    ) AS [src]
+                    ON [tgt].[memory_id] = [src].[id] AND [tgt].[name] = [src].[tag_name]
+                    WHEN MATCHED THEN
+                        UPDATE SET [tgt].[value] = [src].[value]
+                    WHEN NOT MATCHED THEN
+                        INSERT ([memory_id], [name], [value])
+                        VALUES ([src].[id],
+                                [src].[tag_name],
+                                [src].[value]);
 
-                MERGE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
-                USING (
-                    SELECT
-                        {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-                        cast([tags].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [tag_name],
-                        [tag_value].[value] AS [value]
-                    FROM {this.GetFullTableName(this._config.MemoryTableName)}
-                    CROSS APPLY openjson(@tags) [tags]
-                    CROSS APPLY openjson(cast([tags].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS) [tag_value]
-                    WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
-                        AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-                ) AS [src]
-                ON [tgt].[memory_id] = [src].[id] AND [tgt].[name] = [src].[tag_name]
-                WHEN MATCHED THEN
-                    UPDATE SET [tgt].[value] = [src].[value]
-                WHEN NOT MATCHED THEN
-                    INSERT ([memory_id], [name], [value])
-                    VALUES ([src].[id],
-                            [src].[tag_name],
-                            [src].[value]);
+                    COMMIT;";
 
-                COMMIT;";
+                command.Parameters.AddWithValue("@index", index);
+                command.Parameters.AddWithValue("@key", record.Id);
+                command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
 
-            command.Parameters.AddWithValue("@index", index);
-            command.Parameters.AddWithValue("@key", record.Id);
-            command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
-            return record.Id;
+                yield return record.Id;
+            }
         }
     }
 
