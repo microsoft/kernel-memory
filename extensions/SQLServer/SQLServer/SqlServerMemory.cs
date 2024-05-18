@@ -16,6 +16,7 @@ namespace Microsoft.KernelMemory.MemoryDb.SQLServer;
 /// <summary>
 /// Represents a memory store implementation that uses a SQL Server database as its backing store.
 /// </summary>
+#pragma warning disable CA2100 // SQL reviewed for user input validation
 public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
 {
     /// <summary>
