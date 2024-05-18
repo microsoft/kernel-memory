@@ -4,162 +4,157 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Qdrant;
+using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.KM.TestHelpers;
+using StackExchange.Redis;
 using Xunit.Abstractions;
 
 // ReSharper disable MissingBlankLines
 
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
-// #pragma warning disable CS8600 // by design
-// #pragma warning disable CS8604 // by design
-public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : BaseFunctionalTestCase(cfg, log)
+public class TestMemoryFilters : BaseFunctionalTestCase
 {
     private const string IndexName = "test-filters";
 
-    private readonly ITestOutputHelper _log = log;
+    // On/Off toggles
+    private readonly bool _azSearchEnabled = true;
+    private readonly bool _postgresEnabled = true;
+    private readonly bool _elasticsearchEnabled = false;
+    private readonly bool _mongoDbAtlasEnabled = false;
+    private readonly bool _qdrantEnabled = false;
+    private readonly bool _redisEnabled = false;
+
+    private readonly Dictionary<string, IMemoryDb> _memoryDbs = new();
+
+    public TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
+    {
+        FakeEmbeddingGenerator _ = new();
+
+        this._memoryDbs.Add("simple", new SimpleVectorDb(this.SimpleVectorDbConfig, _));
+
+        if (this._azSearchEnabled) { this._memoryDbs.Add("acs", new AzureAISearchMemory(this.AzureAiSearchConfig, _)); }
+
+        if (this._mongoDbAtlasEnabled) { this._memoryDbs.Add("mongoDb", new MongoDbAtlasMemory(this.MongoDbAtlasConfig, _)); }
+
+        if (this._postgresEnabled) { this._memoryDbs.Add("postgres", new PostgresMemory(this.PostgresConfig, _)); }
+
+        if (this._qdrantEnabled) { this._memoryDbs.Add("qdrant", new QdrantMemory(this.QdrantConfig, _)); }
+
+        if (this._elasticsearchEnabled) { this._memoryDbs.Add("es", new ElasticsearchMemory(this.ElasticsearchConfig, _)); }
+
+        if (this._redisEnabled)
+        {
+            // TODO: revisit RedisMemory not to need this, e.g. not to connect in ctor
+            var redisMux = ConnectionMultiplexer.ConnectAsync(this.RedisConfig.ConnectionString);
+            redisMux.Wait(TimeSpan.FromSeconds(5));
+            this._memoryDbs.Add("redis", new RedisMemory(this.RedisConfig, redisMux.Result, _));
+        }
+    }
 
     [Fact]
     [Trait("Category", "Serverless")]
     public async Task TestFilters()
     {
-        bool azSearchEnabled = true;
-        bool mongoDbAtlasEnabled = false;
-        bool postgresEnabled = true;
-        bool qdrantEnabled = false;
-        bool elasticsearchEnabled = false;
-
         // Booleans used for investigating test failures
         const bool DeleteIndex = true;
         const bool CreateIndex = true;
         const bool CreateRecords = true;
 
-        var embeddingGenerator = new FakeEmbeddingGenerator();
-
-        AzureAISearchMemory acs = null!;
-        if (azSearchEnabled) { acs = new AzureAISearchMemory(this.AzureAiSearchConfig, embeddingGenerator); }
-
-        MongoDbAtlasMemory mongoDbAtlas = null!;
-        if (mongoDbAtlasEnabled) { mongoDbAtlas = new MongoDbAtlasMemory(this.MongoDbAtlasConfig, embeddingGenerator); }
-
-        PostgresMemory postgres = null!;
-        if (postgresEnabled) { postgres = new PostgresMemory(this.PostgresConfig, embeddingGenerator); }
-
-        QdrantMemory qdrant = null!;
-        if (qdrantEnabled) { qdrant = new QdrantMemory(this.QdrantConfig, embeddingGenerator); }
-
-        ElasticsearchMemory elasticsearch = null!;
-        if (elasticsearchEnabled)
+        var records = new Dictionary<string, MemoryRecord>
         {
-            elasticsearch = new ElasticsearchMemory(this.ElasticsearchConfig, embeddingGenerator);
-        }
+            ["1"] = new() { Id = "1", Vector = new[] { 0.25f, 0.33f, 0.29f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Work" } } },
+            ["2"] = new() { Id = "2", Vector = new[] { 0.25f, 0.25f, 0.35f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Personal" } } },
+            ["3"] = new() { Id = "3", Vector = new[] { 0.1f, 0.1f, 0.1f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+            ["4"] = new() { Id = "4", Vector = new[] { 0.05f, 0.91f, 0.03f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+            ["5"] = new() { Id = "5", Vector = new[] { 0.65f, 0.12f, 0.99f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
+            ["6"] = new() { Id = "6", Vector = new[] { 0.81f, 0.12f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Personal" } } },
+            ["7"] = new() { Id = "7", Vector = new[] { 0.88f, 0.01f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Work" } } },
+        };
 
-        var simpleVecDb = new SimpleVectorDb(this.SimpleVectorDbConfig, embeddingGenerator);
+        if (DeleteIndex) { await this.DeleteIndexAsync(IndexName); }
 
-        if (DeleteIndex)
-        {
-            if (azSearchEnabled) { await acs.DeleteIndexAsync(IndexName); }
+        if (CreateIndex) { await this.CreateIndexAsync(IndexName, 3); }
 
-            if (qdrantEnabled) { await qdrant.DeleteIndexAsync(IndexName); }
-
-            if (postgresEnabled) { await postgres.DeleteIndexAsync(IndexName); }
-
-            if (mongoDbAtlasEnabled) { await mongoDbAtlas.DeleteIndexAsync(IndexName); }
-
-            if (elasticsearchEnabled) { await elasticsearch.DeleteIndexAsync(IndexName); }
-
-            await simpleVecDb.DeleteIndexAsync(IndexName);
-
-            await Task.Delay(TimeSpan.FromSeconds(2));
-        }
-
-        if (CreateIndex)
-        {
-            if (azSearchEnabled) { await acs.CreateIndexAsync(IndexName, 3); }
-
-            if (qdrantEnabled) { await qdrant.CreateIndexAsync(IndexName, 3); }
-
-            if (postgresEnabled) { await postgres.CreateIndexAsync(IndexName, 3); }
-
-            if (mongoDbAtlasEnabled) { await mongoDbAtlas!.CreateIndexAsync(IndexName, 3); }
-
-            if (elasticsearchEnabled) { await elasticsearch.CreateIndexAsync(IndexName, 3); }
-
-            await simpleVecDb.CreateIndexAsync(IndexName, 3);
-        }
-
-        if (CreateRecords)
-        {
-            var records = new Dictionary<string, MemoryRecord>
-            {
-                ["1"] = new() { Id = "1", Vector = new[] { 0.25f, 0.33f, 0.29f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Work" } } },
-                ["2"] = new() { Id = "2", Vector = new[] { 0.25f, 0.25f, 0.35f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Personal" } } },
-                ["3"] = new() { Id = "3", Vector = new[] { 0.1f, 0.1f, 0.1f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-                ["4"] = new() { Id = "4", Vector = new[] { 0.05f, 0.91f, 0.03f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-                ["5"] = new() { Id = "5", Vector = new[] { 0.65f, 0.12f, 0.99f }, Tags = new() { { "user", "Kaylee" }, { "collection", "Family" } } },
-                ["6"] = new() { Id = "6", Vector = new[] { 0.81f, 0.12f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Personal" } } },
-                ["7"] = new() { Id = "7", Vector = new[] { 0.88f, 0.01f, 0.13f }, Tags = new() { { "user", "Madelynn" }, { "collection", "Work" } } },
-            };
-
-            foreach (KeyValuePair<string, MemoryRecord> r in records)
-            {
-                if (azSearchEnabled) { await acs.UpsertAsync(IndexName, r.Value); }
-
-                if (qdrantEnabled) { await qdrant.UpsertAsync(IndexName, r.Value); }
-
-                if (postgresEnabled) { await postgres.UpsertAsync(IndexName, r.Value); }
-
-                if (mongoDbAtlasEnabled) { await mongoDbAtlas.UpsertAsync(IndexName, r.Value); }
-
-                if (elasticsearchEnabled) { await elasticsearch.UpsertAsync(IndexName, r.Value); }
-
-                await simpleVecDb.UpsertAsync(IndexName, r.Value);
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(2));
-        }
+        if (CreateRecords) { await this.UpsertAsync(IndexName, records); }
 
         for (int i = 1; i <= 3; i++)
         {
-            if (azSearchEnabled)
+            Console.WriteLine("\n----- Simple vector DB -----");
+            await this.TestVectorDbFiltering(this._memoryDbs["simple"], i);
+
+            if (this._memoryDbs.TryGetValue("acs", out IMemoryDb? acs))
             {
-                this._log.WriteLine("----- Azure AI Search -----");
+                Console.WriteLine("----- Azure AI Search -----");
                 await this.TestVectorDbFiltering(acs, i);
             }
 
-            if (qdrantEnabled)
+            if (this._memoryDbs.TryGetValue("qdrant", out IMemoryDb? qdrant))
             {
-                this._log.WriteLine("\n----- Qdrant vector DB -----");
+                Console.WriteLine("\n----- Qdrant vector DB -----");
                 await this.TestVectorDbFiltering(qdrant, i);
             }
 
-            if (postgresEnabled)
+            if (this._memoryDbs.TryGetValue("postgres", out IMemoryDb? postgres))
             {
-                this._log.WriteLine("\n----- Postgres vector DB -----");
+                Console.WriteLine("\n----- Postgres vector DB -----");
                 await this.TestVectorDbFiltering(postgres, i);
             }
 
-            if (mongoDbAtlasEnabled)
+            if (this._memoryDbs.TryGetValue("mongoDb", out IMemoryDb? mongoDb))
             {
-                this._log.WriteLine("\n----- MongoDB Atlas vector DB -----");
-                await this.TestVectorDbFiltering(mongoDbAtlas, i);
+                Console.WriteLine("\n----- MongoDB Atlas vector DB -----");
+                await this.TestVectorDbFiltering(mongoDb, i);
             }
 
-            if (elasticsearchEnabled)
+            if (this._memoryDbs.TryGetValue("es", out IMemoryDb? es))
             {
-                this._log.WriteLine("\n----- Elasticsearch vector DB -----");
-                await this.TestVectorDbFiltering(elasticsearch, i);
+                Console.WriteLine("\n----- Elasticsearch vector DB -----");
+                await this.TestVectorDbFiltering(es, i);
             }
 
-            this._log.WriteLine("\n----- Simple vector DB -----");
-            await this.TestVectorDbFiltering(simpleVecDb, i);
-
-            this._log.WriteLine("\n\n");
+            Console.WriteLine("\n\n");
         }
+    }
+
+    private async Task DeleteIndexAsync(string indexName)
+    {
+        foreach (var memoryDb in this._memoryDbs)
+        {
+            Console.WriteLine($"Deleting index {indexName} in {memoryDb.Value.GetType().FullName}");
+            await memoryDb.Value.DeleteIndexAsync(indexName);
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+    }
+
+    private async Task CreateIndexAsync(string indexName, int vectorSize)
+    {
+        foreach (var memoryDb in this._memoryDbs)
+        {
+            Console.WriteLine($"Creating index {indexName} in {memoryDb.Value.GetType().FullName}");
+            await memoryDb.Value.CreateIndexAsync(indexName, vectorSize);
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+
+    private async Task UpsertAsync(string indexName, Dictionary<string, MemoryRecord> records)
+    {
+        foreach (KeyValuePair<string, MemoryRecord> record in records)
+        {
+            foreach (var memoryDb in this._memoryDbs)
+            {
+                Console.WriteLine($"Adding record in {memoryDb.Value.GetType().FullName}");
+                await memoryDb.Value.UpsertAsync(indexName, record.Value);
+            }
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
     }
 
     // NOTE: result order does not matter, checking result count only
@@ -170,10 +165,10 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
         {
             var singleFilter = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee") };
             var singleFilterResults = await vectorDb.GetListAsync(IndexName, filters: singleFilter, limit: int.MaxValue).ToListAsync();
-            this._log.WriteLine($"\nSingle memory filter: {singleFilterResults.Count} results");
+            Console.WriteLine($"\nSingle memory filter: {singleFilterResults.Count} results");
             foreach (MemoryRecord r in singleFilterResults.OrderBy(x => x.Id))
             {
-                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+                Console.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }
 
             Assert.Equal(5, singleFilterResults.Count);
@@ -184,10 +179,10 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
         {
             var singleFilterMultipleTags = new List<MemoryFilter> { MemoryFilters.ByTag("user", "Kaylee").ByTag("collection", "Work") };
             var singleFilterMultipleTagsResults = await vectorDb.GetListAsync(IndexName, filters: singleFilterMultipleTags, limit: int.MaxValue).ToListAsync();
-            this._log.WriteLine($"\nSingle memory filter with multiple tags: {singleFilterMultipleTagsResults.Count} results");
+            Console.WriteLine($"\nSingle memory filter with multiple tags: {singleFilterMultipleTagsResults.Count} results");
             foreach (MemoryRecord r in singleFilterMultipleTagsResults.OrderBy(x => x.Id))
             {
-                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+                Console.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }
 
             Assert.Equal(1, singleFilterMultipleTagsResults.Count);
@@ -202,10 +197,10 @@ public class TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : Base
                 MemoryFilters.ByTag("user", "Madelynn").ByTag("collection", "Personal")
             };
             var multipleFiltersResults = await vectorDb.GetListAsync(IndexName, filters: multipleFilters, limit: int.MaxValue).ToListAsync();
-            this._log.WriteLine($"\nMultiple memory filters with multiple tags: {multipleFiltersResults.Count} results");
+            Console.WriteLine($"\nMultiple memory filters with multiple tags: {multipleFiltersResults.Count} results");
             foreach (MemoryRecord r in multipleFiltersResults.OrderBy(x => x.Id))
             {
-                this._log.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
+                Console.WriteLine($" - ID: {r.Id}, Tags: {string.Join(", ", r.Tags.Select(t => $"{t.Key}: {string.Join(", ", t.Value)}"))}");
             }
 
             Assert.Equal(4, multipleFiltersResults.Count);

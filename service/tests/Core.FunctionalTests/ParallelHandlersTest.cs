@@ -2,7 +2,7 @@
 
 using System.Diagnostics;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;

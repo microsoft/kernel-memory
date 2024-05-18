@@ -33,52 +33,17 @@ This repository presents best practices and a reference architecture for memory 
 AI and LLMs application scenarios. Please note that **the provided code serves as a
 demonstration** and is **not an officially supported** Microsoft offering.
 
-## Kernel Memory (KM) and Semantic Memory (SM)
+# Synchronous Memory API (aka "serverless")
 
-**Kernel Memory (KM) is a service** built on the feedback received and lessons learned
-from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
-features that would otherwise have to be developed manually, such as storing files,
-extracting text from files, providing a framework to secure users' data, etc.
-The KM codebase is entirely in .NET, which eliminates the need to write and maintain
-features in multiple languages. As a service, **KM can be used from any language, tool,
-or platform, e.g. browser extensions and ChatGPT assistants.**
-
-**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
-to databases and supports vector search. It was developed as part of the Semantic
-Kernel (SK) project and serves as the first public iteration of long-term memory.
-The core library is maintained in three languages, while the list of supported
-storage engines (known as "connectors") varies across languages.
-
-Here's comparison table:
-
-| Feature                                 | Kernel Memory                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Semantic Memory                                                                                              |
-|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| Data formats                            | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, HTML                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Text only                                                                                                    |
-| Search                                  | Cosine similarity, Hybrid search with filters (AND/OR conditions)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Cosine similarity                                                                                            | 
-| Language support                        | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | C#, Python, Java                                                                                             |
-| Storage engines                         | [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search), [Elasticsearch](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch), [MongoDB Atlas](https://www.mongodb.com/atlas/database), [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres), [Qdrant](https://qdrant.tech), [Redis](https://redis.io), [MSSQL Server](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer), In memory KNN, On disk KNN. In progress: Azure Cosmos DB for MongoDB vCore, [Chroma](https://www.trychroma.com) | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate |
-| File storage                            | Disk, [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction), [MongoDB Atlas](https://www.mongodb.com/atlas/database), In memory (volatile)                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                            |
-| RAG                                     | Yes, with sources lookup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | -                                                                                                            |
-| Summarization                           | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| OCR                                     | Yes via [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | -                                                                                                            |
-| Security Filters                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| Large document ingestion                | Yes, including async processing using queues ([Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction), [RabbitMQ](https://www.rabbitmq.com), File based or In memory queues)                                                                                                                                                                                                                                                                                                                                                                    | -                                                                                                            |
-| Document storage                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| Custom storage schema                   | some DBs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | -                                                                                                            |
-| Vector DBs with internal embedding      | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| Concurrent write to multiple vector DBs | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| LLMs                                    | [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models), [OpenAI](https://platform.openai.com/docs/models), [LLamaSharp](https://github.com/SciSharp/LLamaSharp) via [llama.cpp](https://github.com/ggerganov/llama.cpp), [LM Studio](https://lmstudio.ai/), Anthropic, Semantic Kernel connectors                                                                                                                                                                                                                                                      | Azure OpenAI, OpenAI, Gemini, Hugging Face, ONNX, custom ones, etc.                                          
-| LLMs with dedicated tokenization        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | No                                                                                                           |
-| Cloud deployment                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-| Web service with OpenAPI                | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                            |
-
-# Kernel Memory in serverless mode
-
-Kernel Memory works and scales at best when running as a **Web Service**, allowing to
+Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to
 ingest thousands of documents and information without blocking your app.
 
-However, you can use Kernel Memory also in serverless mode, embedding the `MemoryServerless`
-class in your .NET app.
+However, Kernel Memory can also run in serverless mode, embedding `MemoryServerless`
+class instance in .NET backend/console/desktop apps in synchronous mode. This approach
+works as well as in ASP.NET Web APIs and Azure Functions. Each request is processed
+immediately, although calling clients are responsible for handling transient errors.
+
+![image](docs/infra-sync.png)
 
 > ### Importing documents into your Kernel Memory can be as simple as this:
 >
@@ -108,7 +73,7 @@ class in your .NET app.
 > var answer2 = await memory.AskAsync("what's the project timeline?", filter: new MemoryFilter().ByTag("user", "Blake"));
 > ```
 
-The code leverages the default documents ingestion pipeline:
+The example leverages the default documents ingestion pipeline:
 
 1. Extract text: recognize the file format and extract the information
 2. Partition the text in small chunks, to optimize search
@@ -117,51 +82,41 @@ The code leverages the default documents ingestion pipeline:
    [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
    [Qdrant](https://qdrant.tech/) or other DBs.
 
-Documents are organized by users, safeguarding their private information.
-Furthermore, memories can be categorized and structured using **tags**, enabling
-efficient search and retrieval through faceted navigation.
+In the example, memories are organized by users using tags, safeguarding private information.
+Furthermore, memories can be categorized and structured using **tags**, enabling efficient
+search and retrieval through faceted navigation.
 
-# Data lineage, citations
-
-All memories and answers are fully correlated to the data provided. When
-producing an answer, Kernel Memory includes all the information needed
-to verify its accuracy:
-
-```csharp
-await memory.ImportFileAsync("NASA-news.pdf");
-
-var answer = await memory.AskAsync("Any news from NASA about Orion?");
-
-Console.WriteLine(answer.Result + "/n");
-
-foreach (var x in answer.RelevantSources)
-{
-    Console.WriteLine($"  * {x.SourceName} -- {x.Partitions.First().LastUpdate:D}");
-}
-```
-
-> Yes, there is news from NASA about the Orion spacecraft. NASA has invited the
-> media to see a new test version of the Orion spacecraft and the hardware that
-> will be used to recover the capsule and astronauts upon their return from
-> space during the Artemis II mission. The event is scheduled to take place at
-> Naval Base San Diego on Wednesday, August 2, at 11 a.m. PDT. Personnel from
-> NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with
-> the media. Teams are currently conducting tests in the Pacific Ocean to
-> demonstrate and evaluate the processes, procedures, and hardware for recovery
-> operations for crewed Artemis missions. These tests will help prepare the
-> team for Artemis II, which will be NASA's first crewed mission under the
-> Artemis program. The Artemis II crew, consisting of NASA astronauts Reid
-> Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency
-> astronaut Jeremy Hansen, will participate in recovery testing at sea next
-> year. For more information about the Artemis program, you can visit the NASA
-> website.
+> ### Data lineage, citations, referencing sources:
 >
-> - **NASA-news.pdf -- Tuesday, August 1, 2023**
+> All memories and answers are fully correlated to the data provided. When
+> producing an answer, Kernel Memory includes all the information needed
+> to verify its accuracy:
+>
+> ```csharp
+> await memory.ImportFileAsync("NASA-news.pdf");
+>
+> var answer = await memory.AskAsync("Any news from NASA about Orion?");
+>
+> Console.WriteLine(answer.Result + "/n");
+>
+> foreach (var x in answer.RelevantSources)
+> {
+>     Console.WriteLine($"  * {x.SourceName} -- {x.Partitions.First().LastUpdate:D}");
+> }
+> ```
+>
+> > Yes, there is news from NASA about the Orion spacecraft. NASA has invited the
+> > media to see a new test version [......] For more information about the Artemis program,
+> > you can visit the NASA website.
+> >
+> > - **NASA-news.pdf -- Tuesday, August 1, 2023**
 
-## Using Kernel Memory Service
+# Memory as a Service - Asynchronous API
 
 Depending on your scenarios, you might want to run all the code **locally
-inside your process, or remotely through an asynchronous service.**
+inside your process, or remotely through an asynchronous and scalable service.**
+
+![image](docs/infra-async.png)
 
 If you're importing small files, and need only C# and can block
 the process during the import, local-in-process execution can be fine, using
@@ -169,22 +124,61 @@ the **MemoryServerless** seen above.
 
 However, if you are in one of these scenarios:
 
-* I'd just like a web service to import data and send queries to answer
-* My app is written in **TypeScript, Java, Rust, or some other language**
-* I want to define **custom pipelines mixing multiple languages**
-  like Python, TypeScript, etc
-* I'm importing **big documents that can require minutes to process**, and
+- I'd just like a web service to import data and send queries to answer
+- My app is written in **TypeScript, Java, Rust, or some other language**
+- I'm importing **big documents that can require minutes to process**, and
   I don't want to block the user interface
-* I need memory import to **run independently, supporting failures and retry
+- I need memory import to **run independently, supporting failures and retry
   logic**
+- I want to define **custom pipelines mixing multiple languages**
+  like Python, TypeScript, etc
 
-then you can deploy Kernel Memory as a service, plugging in the
+then you can deploy Kernel Memory as a backend service, plugging in the
 default handlers, or your custom Python/TypeScript/Java/etc. handlers,
 and leveraging the asynchronous non-blocking memory encoding process,
 sending documents and asking questions using the **MemoryWebClient**.
 
 [Here](service/Service/README.md) you can find a complete set of instruction
 about [how to run the Kernel Memory service](service/Service/README.md).
+
+# Kernel Memory (KM) and SK Semantic Memory (SM)
+
+**Kernel Memory (KM) is a service** built on the feedback received and lessons learned
+from developing Semantic Kernel (SK) and Semantic Memory (SM). It provides several
+features that would otherwise have to be developed manually, such as storing files,
+extracting text from files, providing a framework to secure users' data, etc.
+The KM codebase is entirely in .NET, which eliminates the need to write and maintain
+features in multiple languages. As a service, **KM can be used from any language, tool,
+or platform, e.g. browser extensions and ChatGPT assistants.**
+
+**Semantic Memory (SM) is a library for C#, Python, and Java** that wraps direct calls
+to databases and supports vector search. It was developed as part of the Semantic
+Kernel (SK) project and serves as the first public iteration of long-term memory.
+The core library is maintained in three languages, while the list of supported
+storage engines (known as "connectors") varies across languages.
+
+Here's comparison table:
+
+| Feature                                 | Kernel Memory                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Semantic Memory                                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Data formats                            | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON, HTML                                                                                                                                                                                                                                                                                                                                                                                                                    | Text only                                                                                                    |
+| Search                                  | Cosine similarity, Hybrid search with filters (AND/OR conditions)                                                                                                                                                                                                                                                                                                                                                                                                                              | Cosine similarity                                                                                            |
+| Language support                        | Any language, command line tools, browser extensions, low-code/no-code apps, chatbots, assistants, etc.                                                                                                                                                                                                                                                                                                                                                                                        | C#, Python, Java                                                                                             |
+| Storage engines                         | [Azure AI Search](https://azure.microsoft.com/products/ai-services/ai-search), [Elasticsearch](https://www.nuget.org/packages/FreeMindLabs.KernelMemory.Elasticsearch), [MongoDB Atlas](https://www.mongodb.com/atlas/database), [Postgres+pgvector](https://github.com/microsoft/kernel-memory/extensions/postgres), [Qdrant](https://qdrant.tech), [Redis](https://redis.io), [SQL Server](https://www.nuget.org/packages/KernelMemory.MemoryStorage.SqlServer), In memory KNN, On disk KNN. | Azure AI Search, Chroma, DuckDB, Kusto, Milvus, MongoDB, Pinecone, Postgres, Qdrant, Redis, SQLite, Weaviate |
+| File storage                            | Disk, [Azure Blobs](https://learn.microsoft.com/azure/storage/blobs/storage-blobs-introduction), [MongoDB Atlas](https://www.mongodb.com/atlas/database), In memory (volatile)                                                                                                                                                                                                                                                                                                                 | -                                                                                                            |
+| RAG                                     | Yes, with sources lookup                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                            |
+| Summarization                           | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| OCR                                     | Yes via [Azure Document Intelligence](https://azure.microsoft.com/products/ai-services/ai-document-intelligence)                                                                                                                                                                                                                                                                                                                                                                               | -                                                                                                            |
+| Security Filters                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| Large document ingestion                | Yes, including async processing using queues ([Azure Queues](https://learn.microsoft.com/azure/storage/queues/storage-queues-introduction), [RabbitMQ](https://www.rabbitmq.com), File based or In memory queues)                                                                                                                                                                                                                                                                              | -                                                                                                            |
+| Document storage                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| Custom storage schema                   | some DBs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                            |
+| Vector DBs with internal embedding      | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| Concurrent write to multiple vector DBs | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| LLMs                                    | [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/concepts/models), [OpenAI](https://platform.openai.com/docs/models), [LLamaSharp](https://github.com/SciSharp/LLamaSharp) via [llama.cpp](https://github.com/ggerganov/llama.cpp), [LM Studio](https://lmstudio.ai/), Anthropic, Semantic Kernel connectors                                                                                                                                                                | Azure OpenAI, OpenAI, Gemini, Hugging Face, ONNX, custom ones, etc.                                          |
+| LLMs with dedicated tokenization        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | No                                                                                                           |
+| Cloud deployment                        | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
+| Web service with OpenAPI                | Yes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                            |
 
 ## Quick test using the Docker image
 
@@ -214,7 +208,7 @@ on macOS/Linux:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
-### To import files using Kernel Memory **web service**, use `MemoryWebClient`:
+# Import files using KM web service and `MemoryWebClient`
 
 > ```csharp
 > #reference clients/WebClient/WebClient.csproj
@@ -232,15 +226,16 @@ on macOS/Linux:
 >         .AddTag("fiscalYear", "2023"));
 > ```
 
-### Getting answers via the web service
+# Get answers via the web service
 
 > ```
 > curl http://127.0.0.1:9001/ask -d'{"query":"Any news from NASA about Orion?"}' -H 'Content-Type: application/json'
 > ```
+>
 > ```json
 > {
 >   "Query": "Any news from NASA about Orion?",
->   "Text": "Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version of the Orion spacecraft and the hardware that will be used to recover the capsule and astronauts upon their return from space during the Artemis II mission. The event is scheduled to take place at Naval Base San Diego on August 2nd at 11 a.m. PDT. Personnel from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with the media. Teams are currently conducting tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions. These tests will help prepare the team for Artemis II, which will be NASA's first crewed mission under the Artemis program. The Artemis II crew, consisting of NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and Canadian Space Agency astronaut Jeremy Hansen, will participate in recovery testing at sea next year. For more information about the Artemis program, you can visit the NASA website.",
+>   "Text": "Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version [......] For more information about the Artemis program, you can visit the NASA website.",
 >   "RelevantSources": [
 >     {
 >       "Link": "...",
@@ -248,7 +243,7 @@ on macOS/Linux:
 >       "SourceName": "file5-NASA-news.pdf",
 >       "Partitions": [
 >         {
->           "Text": "Skip to main content\nJul 28, 2023\nMEDIA ADVISORY M23-095\nNASA Invites Media to See Recovery Craft for\nArtemis Moon Mission\n(/sites/default/ﬁles/thumbnails/image/ksc-20230725-ph-fmx01_0003orig.jpg)\nAboard the USS John P. Murtha, NASA and Department of Defense personnel practice recovery operations for Artemis II in July. A\ncrew module test article is used to help verify the recovery team will be ready to recovery the Artemis II crew and the Orion spacecraft.\nCredits: NASA/Frank Michaux\nMedia are invited to see the new test version of NASA’s Orion spacecraft and the hardware teams will use\nto recover the capsule and astronauts upon their return from space during the Artemis II\n(http://www.nasa.gov/artemis-ii) mission. The event will take place at 11 a.m. PDT on Wednesday, Aug. 2,\nat Naval Base San Diego.\nPersonnel involved in recovery operations from NASA, the U.S. Navy, and the U.S. Air Force will be\navailable to speak with media.\nU.S. media interested in attending must RSVP by 4 p.m., Monday, July 31, to the Naval Base San Diego\nPublic Aﬀairs (mailto:nbsd.pao@us.navy.mil) or 619-556-7359.\nOrion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n1 of 3 7/28/23, 4:51 PMTeams are currently conducting the ﬁrst in a series of tests in the Paciﬁc Ocean to demonstrate and\nevaluate the processes, procedures, and hardware for recovery operations (https://www.nasa.gov\n/exploration/systems/ground/index.html) for crewed Artemis missions. The tests will help prepare the\nteam for Artemis II, NASA’s ﬁrst crewed mission under Artemis that will send four astronauts in Orion\naround the Moon to checkout systems ahead of future lunar missions.\nThe Artemis II crew – NASA astronauts Reid Wiseman, Victor Glover, and Christina Koch, and CSA\n(Canadian Space Agency) astronaut Jeremy Hansen – will participate in recovery testing at sea next year.\nFor more information about Artemis, visit:\nhttps://www.nasa.gov/artemis (https://www.nasa.gov/artemis)\n-end-\nRachel Kraft\nHeadquarters, Washington\n202-358-1100\nrachel.h.kraft@nasa.gov (mailto:rachel.h.kraft@nasa.gov)\nMadison Tuttle\nKennedy Space Center, Florida\n321-298-5868\nmadison.e.tuttle@nasa.gov (mailto:madison.e.tuttle@nasa.gov)\nLast Updated: Jul 28, 2023\nEditor: Claire O’Shea\nTags:  Artemis (/artemisprogram),Ground Systems (http://www.nasa.gov/exploration/systems/ground\n/index.html),Kennedy Space Center (/centers/kennedy/home/index.html),Moon to Mars (/topics/moon-to-\nmars/),Orion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n2 of 3 7/28/23, 4:51 PM",
+>           "Text": "Skip to main content\nJul 28, 2023\nMEDIA ADVISORY M23-095\nNASA Invites Media to See Recovery Craft for\nArtemis Moon Mission\n(/sites/default/ﬁles/thumbnails/image/ksc-20230725-ph-fmx01_0003orig.jpg)\nAboard the [......] to Mars (/topics/moon-to-\nmars/),Orion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n2 of 3 7/28/23, 4:51 PM",
 >           "Relevance": 0.8430657,
 >           "SizeInTokens": 863,
 >           "LastUpdate": "2023-08-01T08:15:02-07:00"
@@ -261,7 +256,7 @@ on macOS/Linux:
 
 You can find a [full example here](examples/001-dotnet-WebClient/README.md).
 
-## Custom memory ingestion pipelines
+# Custom memory ingestion pipelines
 
 On the other hand, if you need a custom data pipeline, you can also
 customize the steps, which will be handled by your custom business logic:
@@ -287,7 +282,7 @@ await memory.ImportDocumentAsync(
     steps: new[] { "step1", "step2", "step3" });
 ```
 
-# Web API specs
+# Web API specs with OpenAI swagger
 
 The API schema is available at http://127.0.0.1:9001/swagger/index.html when
 running the service locally with OpenAPI enabled.
@@ -298,8 +293,8 @@ running the service locally with OpenAPI enabled.
 
 1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
-4. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
-3. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
+3. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
+4. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
 5. [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
 6. [Processing files with custom logic (custom handlers) in asynchronous mode](examples/005-dotnet-AsyncMemoryCustomPipeline)
 7. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
@@ -336,27 +331,27 @@ running the service locally with OpenAPI enabled.
 
 ### .NET packages
 
-* **Microsoft.KernelMemory.WebClient:** .NET web client to call a running instance of Kernel Memory web service.
+- **Microsoft.KernelMemory.WebClient:** .NET web client to call a running instance of Kernel Memory web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-WebClient)
 
-* **Microsoft.KernelMemory.Core:** Kernel Memory core library including all extensions, can be used to build custom pipelines and handlers, contains
+- **Microsoft.KernelMemory.Core:** Kernel Memory core library including all extensions, can be used to build custom pipelines and handlers, contains
   also the serverless client to use memory in a synchronous way without the web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
 
-* **Microsoft.KernelMemory.Service.AspNetCore:** an extension to load Kernel Memory into your ASP.NET apps.
+- **Microsoft.KernelMemory.Service.AspNetCore:** an extension to load Kernel Memory into your ASP.NET apps.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Service.AspNetCore)](https://www.nuget.org/packages/Microsoft.KernelMemory.Service.AspNetCore/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/204-dotnet-ASP.NET-MVC-integration)
 
-* **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
+- **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
   replacing the original Semantic Memory available in SK.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/011-dotnet-using-MemoryPlugin)
+  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/003-dotnet-SemanticKernel-plugin)
 
 ### Packages for Python, Java and other languages
 
@@ -375,26 +370,26 @@ We also welcome PR contributions to support more languages.
 githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
 -->
 
-[<img alt="aaronpowell" src="https://avatars.githubusercontent.com/u/434140?v=4&s=110" width="110">](https://github.com/aaronpowell) |[<img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110">](https://github.com/afederici75) |[<img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110">](https://github.com/alexibraimov) |[<img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110">](https://github.com/alkampfergit) |[<img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110">](https://github.com/amomra) |[<img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110">](https://github.com/anthonypuppo) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[aaronpowell](https://github.com/aaronpowell) |[afederici75](https://github.com/afederici75) |[alexibraimov](https://github.com/alexibraimov) |[alkampfergit](https://github.com/alkampfergit) |[amomra](https://github.com/amomra) |[anthonypuppo](https://github.com/anthonypuppo) |
+| [<img alt="aaronpowell" src="https://avatars.githubusercontent.com/u/434140?v=4&s=110" width="110">](https://github.com/aaronpowell) | [<img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110">](https://github.com/afederici75) | [<img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110">](https://github.com/alexibraimov) | [<img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110">](https://github.com/alkampfergit) | [<img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110">](https://github.com/amomra) | [<img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110">](https://github.com/anthonypuppo) |
+| :----------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: |
+|                                            [aaronpowell](https://github.com/aaronpowell)                                             |                                             [afederici75](https://github.com/afederici75)                                              |                                             [alexibraimov](https://github.com/alexibraimov)                                              |                                            [alkampfergit](https://github.com/alkampfergit)                                             |                                             [amomra](https://github.com/amomra)                                              |                                             [anthonypuppo](https://github.com/anthonypuppo)                                             |
 
-[<img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110">](https://github.com/cherchyk) |[<img alt="coryisakson" src="https://avatars.githubusercontent.com/u/303811?v=4&s=110" width="110">](https://github.com/coryisakson) |[<img alt="crickman" src="https://avatars.githubusercontent.com/u/66376200?v=4&s=110" width="110">](https://github.com/crickman) |[<img alt="dluc" src="https://avatars.githubusercontent.com/u/371009?v=4&s=110" width="110">](https://github.com/dluc) |[<img alt="DM-98" src="https://avatars.githubusercontent.com/u/10290906?v=4&s=110" width="110">](https://github.com/DM-98) |[<img alt="GraemeJones104" src="https://avatars.githubusercontent.com/u/79144786?v=4&s=110" width="110">](https://github.com/GraemeJones104) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[cherchyk](https://github.com/cherchyk) |[coryisakson](https://github.com/coryisakson) |[crickman](https://github.com/crickman) |[dluc](https://github.com/dluc) |[DM-98](https://github.com/DM-98) |[GraemeJones104](https://github.com/GraemeJones104) |
+| [<img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110">](https://github.com/cherchyk) | [<img alt="coryisakson" src="https://avatars.githubusercontent.com/u/303811?v=4&s=110" width="110">](https://github.com/coryisakson) | [<img alt="crickman" src="https://avatars.githubusercontent.com/u/66376200?v=4&s=110" width="110">](https://github.com/crickman) | [<img alt="dluc" src="https://avatars.githubusercontent.com/u/371009?v=4&s=110" width="110">](https://github.com/dluc) | [<img alt="DM-98" src="https://avatars.githubusercontent.com/u/10290906?v=4&s=110" width="110">](https://github.com/DM-98) | [<img alt="GraemeJones104" src="https://avatars.githubusercontent.com/u/79144786?v=4&s=110" width="110">](https://github.com/GraemeJones104) |
+| :-----------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------: |
+|                                             [cherchyk](https://github.com/cherchyk)                                             |                                            [coryisakson](https://github.com/coryisakson)                                             |                                             [crickman](https://github.com/crickman)                                              |                                            [dluc](https://github.com/dluc)                                             |                                             [DM-98](https://github.com/DM-98)                                              |                                             [GraemeJones104](https://github.com/GraemeJones104)                                              |
 
-[<img alt="jurepurgar" src="https://avatars.githubusercontent.com/u/6506920?v=4&s=110" width="110">](https://github.com/jurepurgar) |[<img alt="kbeaugrand" src="https://avatars.githubusercontent.com/u/9513635?v=4&s=110" width="110">](https://github.com/kbeaugrand) |[<img alt="KSemenenko" src="https://avatars.githubusercontent.com/u/4385716?v=4&s=110" width="110">](https://github.com/KSemenenko) |[<img alt="lecramr" src="https://avatars.githubusercontent.com/u/20584823?v=4&s=110" width="110">](https://github.com/lecramr) |[<img alt="luismanez" src="https://avatars.githubusercontent.com/u/9392197?v=4&s=110" width="110">](https://github.com/luismanez) |[<img alt="marcominerva" src="https://avatars.githubusercontent.com/u/3522534?v=4&s=110" width="110">](https://github.com/marcominerva) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[jurepurgar](https://github.com/jurepurgar) |[kbeaugrand](https://github.com/kbeaugrand) |[KSemenenko](https://github.com/KSemenenko) |[lecramr](https://github.com/lecramr) |[luismanez](https://github.com/luismanez) |[marcominerva](https://github.com/marcominerva) |
+| [<img alt="jurepurgar" src="https://avatars.githubusercontent.com/u/6506920?v=4&s=110" width="110">](https://github.com/jurepurgar) | [<img alt="kbeaugrand" src="https://avatars.githubusercontent.com/u/9513635?v=4&s=110" width="110">](https://github.com/kbeaugrand) | [<img alt="KSemenenko" src="https://avatars.githubusercontent.com/u/4385716?v=4&s=110" width="110">](https://github.com/KSemenenko) | [<img alt="lecramr" src="https://avatars.githubusercontent.com/u/20584823?v=4&s=110" width="110">](https://github.com/lecramr) | [<img alt="luismanez" src="https://avatars.githubusercontent.com/u/9392197?v=4&s=110" width="110">](https://github.com/luismanez) | [<img alt="marcominerva" src="https://avatars.githubusercontent.com/u/3522534?v=4&s=110" width="110">](https://github.com/marcominerva) |
+| :---------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: |
+|                                             [jurepurgar](https://github.com/jurepurgar)                                             |                                             [kbeaugrand](https://github.com/kbeaugrand)                                             |                                             [KSemenenko](https://github.com/KSemenenko)                                             |                                             [lecramr](https://github.com/lecramr)                                              |                                             [luismanez](https://github.com/luismanez)                                             |                                             [marcominerva](https://github.com/marcominerva)                                             |
 
-[<img alt="neel015" src="https://avatars.githubusercontent.com/u/34688460?v=4&s=110" width="110">](https://github.com/neel015) |[<img alt="pascalberger" src="https://avatars.githubusercontent.com/u/2190718?v=4&s=110" width="110">](https://github.com/pascalberger) |[<img alt="pawarsum12" src="https://avatars.githubusercontent.com/u/136417839?v=4&s=110" width="110">](https://github.com/pawarsum12) |[<img alt="pradeepr-roboticist" src="https://avatars.githubusercontent.com/u/6598307?v=4&s=110" width="110">](https://github.com/pradeepr-roboticist) |[<img alt="qihangnet" src="https://avatars.githubusercontent.com/u/1784873?v=4&s=110" width="110">](https://github.com/qihangnet) |[<img alt="slapointe" src="https://avatars.githubusercontent.com/u/1054412?v=4&s=110" width="110">](https://github.com/slapointe) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[neel015](https://github.com/neel015) |[pascalberger](https://github.com/pascalberger) |[pawarsum12](https://github.com/pawarsum12) |[pradeepr-roboticist](https://github.com/pradeepr-roboticist) |[qihangnet](https://github.com/qihangnet) |[slapointe](https://github.com/slapointe) |
+| [<img alt="neel015" src="https://avatars.githubusercontent.com/u/34688460?v=4&s=110" width="110">](https://github.com/neel015) | [<img alt="pascalberger" src="https://avatars.githubusercontent.com/u/2190718?v=4&s=110" width="110">](https://github.com/pascalberger) | [<img alt="pawarsum12" src="https://avatars.githubusercontent.com/u/136417839?v=4&s=110" width="110">](https://github.com/pawarsum12) | [<img alt="pradeepr-roboticist" src="https://avatars.githubusercontent.com/u/6598307?v=4&s=110" width="110">](https://github.com/pradeepr-roboticist) | [<img alt="qihangnet" src="https://avatars.githubusercontent.com/u/1784873?v=4&s=110" width="110">](https://github.com/qihangnet) | [<img alt="slapointe" src="https://avatars.githubusercontent.com/u/1054412?v=4&s=110" width="110">](https://github.com/slapointe) |
+| :----------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: |
+|                                             [neel015](https://github.com/neel015)                                              |                                             [pascalberger](https://github.com/pascalberger)                                             |                                              [pawarsum12](https://github.com/pawarsum12)                                              |                                             [pradeepr-roboticist](https://github.com/pradeepr-roboticist)                                             |                                             [qihangnet](https://github.com/qihangnet)                                             |                                             [slapointe](https://github.com/slapointe)                                             |
 
-[<img alt="slorello89" src="https://avatars.githubusercontent.com/u/42971704?v=4&s=110" width="110">](https://github.com/slorello89) |[<img alt="spenavajr" src="https://avatars.githubusercontent.com/u/96045491?v=4&s=110" width="110">](https://github.com/spenavajr) |[<img alt="TaoChenOSU" src="https://avatars.githubusercontent.com/u/12570346?v=4&s=110" width="110">](https://github.com/TaoChenOSU) |[<img alt="teresaqhoang" src="https://avatars.githubusercontent.com/u/125500434?v=4&s=110" width="110">](https://github.com/teresaqhoang) |[<img alt="Valkozaur" src="https://avatars.githubusercontent.com/u/58659526?v=4&s=110" width="110">](https://github.com/Valkozaur) |[<img alt="vicperdana" src="https://avatars.githubusercontent.com/u/7114832?v=4&s=110" width="110">](https://github.com/vicperdana) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[slorello89](https://github.com/slorello89) |[spenavajr](https://github.com/spenavajr) |[TaoChenOSU](https://github.com/TaoChenOSU) |[teresaqhoang](https://github.com/teresaqhoang) |[Valkozaur](https://github.com/Valkozaur) |[vicperdana](https://github.com/vicperdana) |
+| [<img alt="slorello89" src="https://avatars.githubusercontent.com/u/42971704?v=4&s=110" width="110">](https://github.com/slorello89) | [<img alt="spenavajr" src="https://avatars.githubusercontent.com/u/96045491?v=4&s=110" width="110">](https://github.com/spenavajr) | [<img alt="TaoChenOSU" src="https://avatars.githubusercontent.com/u/12570346?v=4&s=110" width="110">](https://github.com/TaoChenOSU) | [<img alt="teresaqhoang" src="https://avatars.githubusercontent.com/u/125500434?v=4&s=110" width="110">](https://github.com/teresaqhoang) | [<img alt="Valkozaur" src="https://avatars.githubusercontent.com/u/58659526?v=4&s=110" width="110">](https://github.com/Valkozaur) | [<img alt="vicperdana" src="https://avatars.githubusercontent.com/u/7114832?v=4&s=110" width="110">](https://github.com/vicperdana) |
+| :----------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: |
+|                                             [slorello89](https://github.com/slorello89)                                              |                                             [spenavajr](https://github.com/spenavajr)                                              |                                             [TaoChenOSU](https://github.com/TaoChenOSU)                                              |                                              [teresaqhoang](https://github.com/teresaqhoang)                                              |                                             [Valkozaur](https://github.com/Valkozaur)                                              |                                             [vicperdana](https://github.com/vicperdana)                                             |
 
-[<img alt="xbotter" src="https://avatars.githubusercontent.com/u/3634877?v=4&s=110" width="110">](https://github.com/xbotter) |
-:---: |
-[xbotter](https://github.com/xbotter) |
+| [<img alt="xbotter" src="https://avatars.githubusercontent.com/u/3634877?v=4&s=110" width="110">](https://github.com/xbotter) |
+| :---------------------------------------------------------------------------------------------------------------------------: |
+|                                             [xbotter](https://github.com/xbotter)                                             |

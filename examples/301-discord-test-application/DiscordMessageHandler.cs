@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Sources.DiscordBot;
 namespace Microsoft.Discord.TestApplication;
 
 /// <summary>
-/// KM pipeline handler fetching discord data files from content storage
+/// KM pipeline handler fetching discord data files from document storage
 /// and storing messages in Postgres.
 /// </summary>
 public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, IAsyncDisposable

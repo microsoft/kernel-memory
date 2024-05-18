@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace TikToken.UnitTests;
+namespace Microsoft.TikToken.UnitTests;
 
 public class Startup
 {

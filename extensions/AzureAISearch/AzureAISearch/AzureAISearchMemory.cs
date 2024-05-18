@@ -16,8 +16,8 @@ using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
@@ -92,7 +92,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
 
             default:
                 this._log.LogCritical("Azure AI Search authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ContentStorageException($"Azure AI Search authentication type '{config.Auth}' undefined or not supported");
+                throw new DocumentStorageException($"Azure AI Search authentication type '{config.Auth}' undefined or not supported");
         }
     }
 
