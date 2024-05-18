@@ -375,7 +375,7 @@ public class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
 
