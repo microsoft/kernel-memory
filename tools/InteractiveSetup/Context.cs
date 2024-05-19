@@ -9,9 +9,9 @@ internal sealed class Context
     public BoundedBoolean CfgWebService = new();
 
     // Storage
-    public BoundedBoolean CfgContentStorage = new(initialState: true);
+    public BoundedBoolean CfgDocumentStorage = new(initialState: true);
     public BoundedBoolean CfgAzureBlobs = new();
-    public BoundedBoolean CfgMongoDbAtlasContentStorage = new();
+    public BoundedBoolean CfgMongoDbAtlasDocumentStorage = new();
     public BoundedBoolean CfgSimpleFileStorage = new();
 
     // Queues

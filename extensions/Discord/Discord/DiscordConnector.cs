@@ -25,8 +25,8 @@ public sealed class DiscordConnector : IHostedService, IDisposable, IAsyncDispos
     private readonly IKernelMemory _memory;
     private readonly ILogger<DiscordConnector> _log;
     private readonly string _authToken;
-    private readonly string _contentStorageIndex;
-    private readonly string _contentStorageFilename;
+    private readonly string _docStorageIndex;
+    private readonly string _docStorageFilename;
     private readonly List<string> _pipelineSteps;
 
     /// <summary>
@@ -55,9 +55,9 @@ public sealed class DiscordConnector : IHostedService, IDisposable, IAsyncDispos
         this._client.Log += this.OnLog;
         this._client.MessageReceived += this.OnMessage;
         this._memory = memory;
-        this._contentStorageIndex = config.Index;
+        this._docStorageIndex = config.Index;
         this._pipelineSteps = config.Steps;
-        this._contentStorageFilename = config.FileName;
+        this._docStorageFilename = config.FileName;
     }
 
     /// <inheritdoc />
@@ -153,9 +153,9 @@ public sealed class DiscordConnector : IHostedService, IDisposable, IAsyncDispos
             {
                 await this._memory.ImportDocumentAsync(
                     fileContent,
-                    fileName: this._contentStorageFilename,
+                    fileName: this._docStorageFilename,
                     documentId: documentId,
-                    index: this._contentStorageIndex,
+                    index: this._docStorageIndex,
                     steps: this._pipelineSteps).ConfigureAwait(false);
             }
         });

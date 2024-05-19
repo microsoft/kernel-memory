@@ -20,6 +20,15 @@
         <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- If you plan on using LLamaSharp, you will need to enable one of these backends,
+             which depend on the hardware hosting Kernel Memory code. -->
+
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cpu" />      -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda11" />   -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda12" />   -->
+    </ItemGroup>
+
     <!--
     This dependency is needed only to generate appsetting.development.json via
 

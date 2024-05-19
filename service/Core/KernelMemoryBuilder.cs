@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
-using Microsoft.KernelMemory.ContentStorage;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -75,6 +75,11 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         this._memoryServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+
+        // Support IHttpClientFactory (must be done before CopyServiceCollection)
+        if (this._hostServiceCollection == null) { this._memoryServiceCollection.AddHttpClient(); }
+        else { this._hostServiceCollection.AddHttpClient(); }
+
         CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection);
 
         // Important: this._memoryServiceCollection is the primary service collection
@@ -349,19 +354,19 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     private ClientTypes GetBuildType()
     {
         var hasQueueFactory = (this._memoryServiceCollection.HasService<QueueClientFactory>());
-        var hasContentStorage = (this._memoryServiceCollection.HasService<IContentStorage>());
+        var hasDocumentStorage = (this._memoryServiceCollection.HasService<IDocumentStorage>());
         var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
         var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>());
         var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
         var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGenerator>());
 
-        if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
+        if (hasDocumentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
         {
             return hasQueueFactory ? ClientTypes.AsyncService : ClientTypes.SyncServerless;
         }
 
         var missing = new List<string>();
-        if (!hasContentStorage) { missing.Add("Content storage"); }
+        if (!hasDocumentStorage) { missing.Add("Document storage"); }
 
         if (!hasMimeDetector) { missing.Add("MIME type detection"); }
 

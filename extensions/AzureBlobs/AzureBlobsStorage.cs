@@ -15,12 +15,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
 
-namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
+namespace Microsoft.KernelMemory.DocumentStorage.AzureBlobs;
 
 // TODO: a container can contain up to 50000 blocks
 // TODO: optionally use one container per index
 [Experimental("KMEXP03")]
-public sealed class AzureBlobsStorage : IContentStorage
+public sealed class AzureBlobsStorage : IDocumentStorage
 {
     private const string DefaultContainerName = "smemory";
     private const string DefaultEndpointSuffix = "core.windows.net";
@@ -91,7 +91,7 @@ public sealed class AzureBlobsStorage : IContentStorage
 
             default:
                 this._log.LogCritical("Azure Blob authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ContentStorageException($"Azure Blob authentication type '{config.Auth}' undefined or not supported");
+                throw new DocumentStorageException($"Azure Blob authentication type '{config.Auth}' undefined or not supported");
         }
 
         this._containerName = config.Container;
@@ -105,7 +105,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         if (this._containerClient == null)
         {
             this._log.LogCritical("Unable to instantiate Azure Blob container client");
-            throw new ContentStorageException("Unable to instantiate Azure Blob container client");
+            throw new DocumentStorageException("Unable to instantiate Azure Blob container client");
         }
     }
 
@@ -132,7 +132,7 @@ public sealed class AzureBlobsStorage : IContentStorage
     {
         if (string.IsNullOrWhiteSpace(index))
         {
-            throw new ContentStorageException("The index name is empty, stopping the process to prevent data loss");
+            throw new DocumentStorageException("The index name is empty, stopping the process to prevent data loss");
         }
 
         return this.DeleteBlobsByPrefixAsync(index, cancellationToken);
@@ -163,7 +163,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         var directoryName = JoinPaths(index, documentId);
         if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
         {
-            throw new ContentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+            throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
         return this.DeleteBlobsByPrefixAsync(directoryName, cancellationToken);
@@ -178,7 +178,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         var directoryName = JoinPaths(index, documentId);
         if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
         {
-            throw new ContentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+            throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
         return this.DeleteBlobsByPrefixAsync(directoryName, cancellationToken);
@@ -234,12 +234,12 @@ public sealed class AzureBlobsStorage : IContentStorage
 
             if (logErrIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
 
-            throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
+            throw new DocumentStorageFileNotFoundException("Unable to fetch blob content");
         }
         catch (RequestFailedException e) when (e.Status == 404)
         {
             this._log.LogInformation("File not found: {0}", blobName);
-            throw new ContentStorageFileNotFoundException("File not found", e);
+            throw new DocumentStorageFileNotFoundException("File not found", e);
         }
     }
 
@@ -294,7 +294,7 @@ public sealed class AzureBlobsStorage : IContentStorage
                 size = stream.Length;
                 break;
             default:
-                throw new ContentStorageException($"Unexpected object type {content.GetType().FullName}");
+                throw new DocumentStorageException($"Unexpected object type {content.GetType().FullName}");
         }
 
         if (size == 0)
@@ -311,7 +311,7 @@ public sealed class AzureBlobsStorage : IContentStorage
     {
         if (string.IsNullOrWhiteSpace(prefix))
         {
-            throw new ContentStorageException("The blob prefix is empty, stopping the process to prevent data loss");
+            throw new DocumentStorageException("The blob prefix is empty, stopping the process to prevent data loss");
         }
 
         this._log.LogInformation("Deleting blobs at {0}", prefix);
@@ -350,7 +350,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         BlobClient? blobClient = this._containerClient.GetBlobClient(blobName);
         if (blobClient == null)
         {
-            throw new ContentStorageException("Unable to instantiate Azure Blob blob client");
+            throw new DocumentStorageException("Unable to instantiate Azure Blob blob client");
         }
 
         return blobClient;
@@ -361,7 +361,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         var blobLeaseClient = blobClient.GetBlobLeaseClient();
         if (blobLeaseClient == null)
         {
-            throw new ContentStorageException("Unable to instantiate Azure blob lease client");
+            throw new DocumentStorageException("Unable to instantiate Azure blob lease client");
         }
 
         return blobLeaseClient;
@@ -376,7 +376,7 @@ public sealed class AzureBlobsStorage : IContentStorage
             .ConfigureAwait(false);
         if (lease == null || !lease.HasValue)
         {
-            throw new ContentStorageException("Unable to lease blob");
+            throw new DocumentStorageException("Unable to lease blob");
         }
 
         this._log.LogTrace("Blob {0} leased", blobLeaseClient.Uri);
@@ -401,7 +401,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Blob account name is empty");
-            throw new ContentStorageException("The account name is empty");
+            throw new DocumentStorageException("The account name is empty");
         }
     }
 
@@ -410,7 +410,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Blob account key is empty");
-            throw new ContentStorageException("The Azure Blob account key is empty");
+            throw new DocumentStorageException("The Azure Blob account key is empty");
         }
     }
 
@@ -419,7 +419,7 @@ public sealed class AzureBlobsStorage : IContentStorage
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Blob connection string is empty");
-            throw new ContentStorageException("The Azure Blob connection string is empty");
+            throw new DocumentStorageException("The Azure Blob connection string is empty");
         }
     }
 

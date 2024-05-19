@@ -3,8 +3,8 @@
 using System;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.DataFormats;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
@@ -86,18 +86,18 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithCustomStorage(
-        this IKernelMemoryBuilder builder, IContentStorage service)
+    public static IKernelMemoryBuilder WithCustomDocumentStorage(
+        this IKernelMemoryBuilder builder, IDocumentStorage service)
     {
-        service = service ?? throw new ConfigurationException("Memory Builder: the content storage instance is NULL");
-        builder.AddSingleton<IContentStorage>(service);
+        service = service ?? throw new ConfigurationException("Memory Builder: the document storage instance is NULL");
+        builder.AddSingleton<IDocumentStorage>(service);
         return builder;
     }
 
-    public static IKernelMemoryBuilder WithCustomStorage<T>(
-        this IKernelMemoryBuilder builder) where T : class, IContentStorage
+    public static IKernelMemoryBuilder WithCustomDocumentStorage<T>(
+        this IKernelMemoryBuilder builder) where T : class, IDocumentStorage
     {
-        builder.AddSingleton<IContentStorage, T>();
+        builder.AddSingleton<IDocumentStorage, T>();
         return builder;
     }
 

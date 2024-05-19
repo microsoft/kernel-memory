@@ -8,9 +8,9 @@ on:
       - 'feature*'
       - 'dev'
     paths:
-      - '*.cs'
-      - '*.csproj'
-      - '*.sln'
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
       - 'appsettings.json'
 
 concurrency:
@@ -22,8 +22,10 @@ permissions:
 
 jobs:
   dotnet-build:
+    name: Build
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         include:
           - { dotnet: "8.0.x", os: "ubuntu-latest", configuration: Debug }
@@ -32,11 +34,14 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Setup dotnet ${{ matrix.dotnet}}
+
+      - name: Setup .NET ${{ matrix.dotnet}}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet }}
-      - name: Display dotnet version
+
+      - name: Display .NET version
         run: dotnet --version
-      - name: Build dotnet solution
+
+      - name: Build solution
         run: dotnet build KernelMemory.sln -c ${{ matrix.configuration }} /warnaserror

@@ -3,6 +3,19 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
 
+/* PLEASE NOTE:
+ *
+ * The example is pre-configured to use a CPU backend.
+ *
+ * If your device provides CUDA or other backends, you can configure the example by editing the project file (*.csproj)
+ * and editing the LLamaSharp PackageReference, removing the CPU backend and choosing a different one.
+ *
+ * Kernel Memory web service is configured to not have ANY pre-configured LLamaSharp backend, e.g. KM Docker
+ * image does not work with LLamaSharp without manually mounting a LLamaSharp backend assembly into the
+ * Docker image at runtime. Same for custom .NET apps, which need to choose a LLamaSharp backend manually
+ * installing one of the available LLamaSharp.Backend packages.
+ */
+
 var llamaConfig = new LlamaSharpConfig();
 var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 

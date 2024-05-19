@@ -161,7 +161,7 @@ public interface IKernelMemory
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Export a file from content storage
+    /// Export a file from document storage
     /// </summary>
     /// <param name="documentId">ID of the document containing the file</param>
     /// <param name="fileName">File name</param>

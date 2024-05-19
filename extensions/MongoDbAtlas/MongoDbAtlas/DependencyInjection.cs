@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
 
@@ -25,7 +25,7 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Mongodb as content storage for files.
+    /// Adds Mongodb as document storage for files.
     /// </summary>
     /// <param name="builder">The kernel builder</param>
     /// <param name="config">Configuration for Mongodb</param>
@@ -33,20 +33,20 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         MongoDbAtlasConfig config)
     {
-        builder.Services.AddMongoDbAtlasAsContentStorage(config);
+        builder.Services.AddMongoDbAtlasAsDocumentStorage(config);
         return builder;
     }
 
     /// <summary>
-    /// Adds Mongodb as content storage service and memory service, for both files and memory records.
+    /// Adds Mongodb as document storage and memory db, for both files and memory records.
     /// </summary>
     /// <param name="builder">The kernel builder</param>
     /// <param name="config">Configuration for Mongodb</param>
-    public static IKernelMemoryBuilder WithMongoDbAtlasMemoryDbAndStorage(
+    public static IKernelMemoryBuilder WithMongoDbAtlasMemoryDbAndDocumentStorage(
         this IKernelMemoryBuilder builder,
         MongoDbAtlasConfig config)
     {
-        builder.Services.AddMongoDbAtlasAsMemoryDbAndContentStorage(config);
+        builder.Services.AddMongoDbAtlasAsMemoryDbAndDocumentStorage(config);
         return builder;
     }
 }
@@ -75,13 +75,13 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="config">Mongodb configuration.</param>
-    public static IServiceCollection AddMongoDbAtlasAsContentStorage(
+    public static IServiceCollection AddMongoDbAtlasAsDocumentStorage(
         this IServiceCollection services,
         MongoDbAtlasConfig config)
     {
         return services
             .AddSingleton(config)
-            .AddSingleton<IContentStorage, MongoDbAtlasStorage>();
+            .AddSingleton<IDocumentStorage, MongoDbAtlasStorage>();
     }
 
     /// <summary>
@@ -89,13 +89,13 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">The services collection</param>
     /// <param name="config">Mongodb configuration.</param>
-    public static IServiceCollection AddMongoDbAtlasAsMemoryDbAndContentStorage(
+    public static IServiceCollection AddMongoDbAtlasAsMemoryDbAndDocumentStorage(
         this IServiceCollection services,
         MongoDbAtlasConfig config)
     {
         return services
             .AddSingleton(config)
             .AddSingleton<IMemoryDb, MongoDbAtlasMemory>()
-            .AddSingleton<IContentStorage, MongoDbAtlasStorage>();
+            .AddSingleton<IDocumentStorage, MongoDbAtlasStorage>();
     }
 }

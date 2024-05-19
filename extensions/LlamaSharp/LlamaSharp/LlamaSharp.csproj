@@ -14,8 +14,16 @@
 
     <ItemGroup>
         <PackageReference Include="LLamaSharp" />
-        <PackageReference Include="LLamaSharp.Backend.Cpu" />
-        <PackageReference Include="LLamaSharp.Backend.Cuda12" />
+
+        <!-- Kernel Memory web service is configured to not have ANY pre-configured LLamaSharp backend, e.g. KM Docker
+             image does not work with LLamaSharp without manually mounting a LLamaSharp backend assembly into the
+             Docker image at runtime. Same for custom .NET apps, which need to choose a LLamaSharp backend manually
+             installing one of the available LLamaSharp.Backend packages. -->
+
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cpu" />      -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda11" />   -->
+        <!-- <PackageReference Include="LLamaSharp.Backend.Cuda12" />   -->
+
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 

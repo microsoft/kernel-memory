@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
-namespace Microsoft.KernelMemory.ContentStorage.DevTools;
+namespace Microsoft.KernelMemory.DocumentStorage.DevTools;
 
 public class SimpleFileStorageConfig
 {

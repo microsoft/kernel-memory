@@ -81,7 +81,7 @@ resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
               value: 'true'
             }
             {
-              name: 'KernelMemory__ContentStorageType'
+              name: 'KernelMemory__DocumentStorageType'
               value: 'AzureBlobs'
             }
             {

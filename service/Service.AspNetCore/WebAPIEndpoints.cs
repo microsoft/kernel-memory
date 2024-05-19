@@ -13,12 +13,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.KernelMemory.DocumentStorage;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
@@ -402,7 +402,7 @@ public static class WebAPIEndpoints
 
                     return response;
                 }
-                catch (ContentStorageFileNotFoundException e)
+                catch (DocumentStorageFileNotFoundException e)
                 {
                     return Results.Problem(title: "File not found", detail: e.Message, statusCode: 404);
                 }
