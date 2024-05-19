@@ -1,132 +1,114 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.Anthropic.Client;
 
 internal sealed class RawAnthropicClient
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private const string ApiKeyHeader = "x-api-key";
+    private const string EndpointVersionHeader = "anthropic-version";
+
+    private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly string _endpoint;
     private readonly string _endpointVersion;
-    private readonly string? _httpClientName;
 
-    internal RawAnthropicClient(
-        string apiKey,
-        string endpoint,
-        string endpointVersion,
-        IHttpClientFactory httpClientFactory,
-        string? httpClientName)
+    internal RawAnthropicClient(HttpClient httpClient, string endpoint, string endpointVersion, string apiKey)
     {
-        this._apiKey = apiKey;
+        this._httpClient = httpClient;
+        this._httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Telemetry.HttpUserAgent);
         this._endpoint = endpoint.TrimEnd('/');
         this._endpointVersion = endpointVersion;
-        this._httpClientFactory = httpClientFactory;
-        this._httpClientName = httpClientName;
+        this._apiKey = apiKey;
     }
 
-    internal async IAsyncEnumerable<StreamingResponseMessage> CallClaudeStreamingAsync(CallClaudeStreamingParams parameters)
+    internal async IAsyncEnumerable<StreamingResponseMessage> CallClaudeStreamingAsync(
+        CallClaudeStreamingParams parameters, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var requestPayload = new MessageRequest
         {
             Model = parameters.ModelName,
             MaxTokens = parameters.MaxTokens,
             Temperature = parameters.Temperature,
-            System = parameters.System ?? "You are an helpful assistant.",
+            System = parameters.System,
             Stream = true,
-            Messages = new[]
-            {
+            Messages =
+            [
                 new Message
                 {
                     Role = "user",
                     Content = parameters.Prompt
                 }
-            }
+            ]
         };
 
         string jsonPayload = JsonSerializer.Serialize(requestPayload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-        content.Headers.Add("x-api-key", this._apiKey);
-        content.Headers.Add("anthropic-version", this._endpointVersion);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        content.Headers.Add(ApiKeyHeader, this._apiKey);
+        content.Headers.Add(EndpointVersionHeader, this._endpointVersion);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._endpoint}/v1/messages")
-        {
-            Content = content,
-        };
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._endpoint}/v1/messages");
+        request.Content = content;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        var httpClient = this.GetHttpClient();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-        var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var responseError = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseError = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new KernelMemoryException($"Failed to send request: {response.StatusCode} - {responseError}");
         }
 
-        response.EnsureSuccessStatusCode();
-        var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-        using (StreamReader reader = new(responseStream))
+        using StreamReader reader = new(responseStream);
+        while (!reader.EndOfStream)
         {
-            while (!reader.EndOfStream)
+            string? line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+
+            if (line == null)
             {
-                string? line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                if (line == null)
-                {
-                    break; //end of stream
-                }
-
-                //this is the first line of message
-                var eventMessage = line.Split(":")[1].Trim();
-
-                //now read the message
-                line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                if (line == null)
-                {
-                    break; //end of stream
-                }
-
-                if (eventMessage == "content_block_delta")
-                {
-                    string data = line.Substring("data: ".Length).Trim();
-                    ContentBlockDelta? messageDelta = JsonSerializer.Deserialize<ContentBlockDelta>(data);
-                    if (messageDelta == null)
-                    {
-                        // TODO: log error, throw exception?
-                        continue;
-                    }
-
-                    yield return messageDelta;
-                }
-                else if (eventMessage == "message_stop")
-                {
-                    break;
-                }
-
-                //read the next empty line
-                await reader.ReadLineAsync().ConfigureAwait(false);
+                break; //end of stream
             }
-        }
-    }
 
-    private HttpClient GetHttpClient()
-    {
-        if (String.IsNullOrEmpty(this._httpClientName))
-        {
-            return this._httpClientFactory.CreateClient();
-        }
+            //this is the first line of message
+            var eventMessage = line.Split(":")[1].Trim();
 
-        return this._httpClientFactory.CreateClient(this._httpClientName);
+            //now read the message
+            line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+
+            if (line == null)
+            {
+                break; //end of stream
+            }
+
+            if (eventMessage == "content_block_delta")
+            {
+                string data = line.Substring("data: ".Length).Trim();
+                ContentBlockDelta? messageDelta = JsonSerializer.Deserialize<ContentBlockDelta>(data);
+                if (messageDelta == null)
+                {
+                    // TODO: log error, throw exception?
+                    continue;
+                }
+
+                yield return messageDelta;
+            }
+            else if (eventMessage == "message_stop")
+            {
+                break;
+            }
+
+            // Read the next empty line
+            await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

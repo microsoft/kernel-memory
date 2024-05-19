@@ -49,10 +49,15 @@ public class AnthropicConfiguration
     public int MaxTokenOut { get; set; } = 4096;
 
     /// <summary>
-    /// This allows configuring the client that will be used for httpclient factory to create client.
-    /// It can be left empty if the default client is to be used.
+    /// System prompt used when generating text
     /// </summary>
-    public string? HttpClientName { get; set; }
+    public string DefaultSystemPrompt { get; set; } = "You are an assistant that will answer user query based on a context";
+
+    /// <summary>
+    /// Optional client name for IHttpClientFactory, allowing to
+    /// inject a pre-configured client if needed.
+    /// </summary>
+    public string HttpClientName { get; set; } = string.Empty;
 
     /// <summary>
     /// Validate the configuration

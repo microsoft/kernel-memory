@@ -1,47 +1,34 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if KernelMemoryDev
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.Anthropic;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
-using Microsoft.KernelMemory.FileSystem.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
-
-var services = new ServiceCollection();
-services.AddHttpClient();
-
 var anthropicConfig = new AnthropicConfiguration();
+var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 
 new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddJsonFile("appsettings.Development.json", optional: true)
-    .AddUserSecrets<Program>()
+    .AddEnvironmentVariables()
     .Build()
-    .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-    .BindSection("KernelMemory:Services:Anthropic", anthropicConfig);
+    .BindSection("KernelMemory:Services:Anthropic", anthropicConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig);
 
-var memory = new KernelMemoryBuilder(services)
+var memory = new KernelMemoryBuilder()
+    // Generate answers using Anthropic
     .WithAnthropicTextGeneration(anthropicConfig)
+    // Generate embeddings using Azure OpenAI
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
-    .WithSimpleFileStorage(new SimpleFileStorageConfig()
-    {
-        Directory = "c:\\temp\\km\\storage",
-        StorageType = FileSystemTypes.Disk
-    })
-    .WithSimpleVectorDb(new SimpleVectorDbConfig()
-    {
-        Directory = "c:\\temp\\km\\vectorstorage",
-        StorageType = FileSystemTypes.Disk
-    })
+    // Persist memory on disk
+    .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
+    .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)
     .Build<MemoryServerless>();
 
-var importDocumentTask = memory.ImportDocumentAsync("file5-NASA-news.pdf", "file5-NASA-news.pdf");
-
-await importDocumentTask;
-
-Console.WriteLine("Imported document");
+// Import a document in memory
+await memory.ImportDocumentAsync("file5-NASA-news.pdf", "file5-NASA-news.pdf");
+Console.WriteLine("Document imported");
 
 // now ask a question
 var question = "What is orion?";
@@ -49,10 +36,3 @@ var answer = await memory.AskAsync(question);
 
 Console.WriteLine($"Question: {question}");
 Console.WriteLine($"Answer: {answer.Result}");
-
-Console.ReadKey();
-
-#else
-Console.WriteLine("KernelMemoryDev.sln required");
-
-#endif

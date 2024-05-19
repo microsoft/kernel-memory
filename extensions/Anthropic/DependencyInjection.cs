@@ -48,11 +48,17 @@ public static partial class DependencyInjection
         ITextTokenizer? textTokenizer)
     {
         services.AddSingleton(config);
-        return services
-            .AddSingleton<ITextGenerator>(serviceProvider => new AnthropicTextGeneration(
-                httpClientFactory: serviceProvider.GetService<IHttpClientFactory>()!,
-                config: config,
-                textTokenizer: textTokenizer,
-                log: serviceProvider.GetService<ILogger<AnthropicTextGeneration>>()));
+
+        if (textTokenizer != null)
+        {
+            return services
+                .AddSingleton<ITextGenerator>(serviceProvider => new AnthropicTextGeneration(
+                    config: config,
+                    textTokenizer: textTokenizer,
+                    httpClientFactory: serviceProvider.GetService<IHttpClientFactory>(),
+                    logFactory: serviceProvider.GetService<ILoggerFactory>()));
+        }
+
+        return services.AddSingleton<ITextGenerator, AnthropicTextGeneration>();
     }
 }

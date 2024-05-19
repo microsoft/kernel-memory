@@ -75,6 +75,11 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         this._memoryServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+
+        // Support IHttpClientFactory (must be done before CopyServiceCollection)
+        if (this._hostServiceCollection == null) { this._memoryServiceCollection.AddHttpClient(); }
+        else { this._hostServiceCollection.AddHttpClient(); }
+
         CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection);
 
         // Important: this._memoryServiceCollection is the primary service collection
