@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.AI.Anthropic;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -413,6 +414,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>("OpenAI"));
+                break;
+
+            case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddAnthropicTextGeneration(this.GetServiceConfig<AnthropicConfiguration>("Anthropic"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
