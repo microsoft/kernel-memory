@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - 'main'
-      - 'feature*'
-      - 'dev'
+      - "main"
+      - "feature*"
+      - "dev"
     paths:
-      - '**.cs'
-      - '**.csproj'
-      - '**.sln'
-      - 'appsettings.json'
+      - "**.cs"
+      - "**.csproj"
+      - "**.sln"
+      - "appsettings.json"
   schedule:
-    - cron: '55 0 * * 0'
+    - cron: "55 0 * * 0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -31,7 +31,7 @@ jobs:
       matrix:
         include:
           - { dotnet: "8.0.x", os: "ubuntu-latest" }
-          - { dotnet: "8.0.x", os: "windows" }
+          - { dotnet: "8.0.x", os: "windows-latest" }
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out source
