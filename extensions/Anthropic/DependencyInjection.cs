@@ -45,7 +45,7 @@ public static partial class DependencyInjection
     public static IServiceCollection AddAnthropicTextGeneration(
         this IServiceCollection services,
         AnthropicConfiguration config,
-        ITextTokenizer? textTokenizer)
+        ITextTokenizer? textTokenizer = null)
     {
         services.AddSingleton(config);
 
