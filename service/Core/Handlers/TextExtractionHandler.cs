@@ -16,7 +16,7 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
-/// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
+/// Memory ingestion pipeline handler responsible for extracting text from files and saving it to document storage.
 /// </summary>
 public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
 {

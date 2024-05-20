@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.KernelMemory.ContentStorage;
+namespace Microsoft.KernelMemory.DocumentStorage;
 
-public interface IContentStorage
+public interface IDocumentStorage
 {
     /// <summary>
     /// Create a new container (aka index), if it doesn't exist already

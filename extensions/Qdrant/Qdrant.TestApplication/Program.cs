@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.MemoryDb.Qdrant;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KM.TestHelpers;
 
-namespace Qdrant.TestApplication;
+namespace Microsoft.Qdrant.TestApplication;
 
 public static class Program
 {

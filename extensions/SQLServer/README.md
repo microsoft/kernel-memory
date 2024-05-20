@@ -63,7 +63,6 @@ To run Kernel Memory service with SQL Server backend:
     .Build();
     ```
 
-
 ## Local tests with Docker
 
 You can test the connector locally with Docker:
@@ -84,3 +83,25 @@ For more information about the SQL Server Linux container:
 
 - https://learn.microsoft.com/sql/linux/quickstart-install-connect-docker
 - https://devblogs.microsoft.com/azure-sql/development-with-sql-in-containers-on-macos/
+
+## Batch Upsert Feature
+
+The SQL Server Memory DB now supports batching upsert operations, enhancing performance for bulk data operations. This feature allows for efficient insertion or updating of multiple records in a single operation.
+
+### Using Batch Upsert
+
+To use the batch upsert feature, you can utilize the `BatchUpsertAsync` method. This method accepts an index name and an enumerable of `MemoryRecord` objects, performing upsert operations for all provided records in a batch.
+
+Example:
+
+```csharp
+var records = new List<MemoryRecord>
+{
+    new MemoryRecord("id1", new Dictionary<string, object> { { "key", "value1" } }),
+    new MemoryRecord("id2", new Dictionary<string, object> { { "key", "value2" } })
+};
+
+await memory.BatchUpsertAsync("yourIndexName", records);
+```
+
+This method efficiently handles the insertion or updating of records, significantly improving performance for operations involving large datasets.
