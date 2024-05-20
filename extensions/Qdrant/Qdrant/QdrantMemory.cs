@@ -92,7 +92,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbBatchUpsert
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        var result = this.BatchUpsertAsync(index, new[] { record }, cancellationToken);
+        var result = this.BatchUpsertAsync(index, [record], cancellationToken);
         var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
         return id;
     }
@@ -102,7 +102,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbBatchUpsert
     {
         index = NormalizeIndexName(index);
 
-        // Call ToList to avoid multiple enumerations (CA1851: Possible multiple enumerations of 'IEnumerable' collection.Consider using an implementation that avoids multiple enumerations).
+        // Call ToList to avoid multiple enumerations (CA1851: Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations).
         var localRecords = records.ToList();
 
         var qdrantPoints = new List<QdrantPoint<DefaultQdrantPayload>>();
