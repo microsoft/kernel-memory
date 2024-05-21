@@ -106,7 +106,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
 		tools\ask.sh = tools\ask.sh
-		tools\create-azure-webapp-publish-artifacts.sh = tools\create-azure-webapp-publish-artifacts.sh
 		tools\README.md = tools\README.md
 		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
 		tools\run-mongodb-atlas.sh = tools\run-mongodb-atlas.sh
