@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DataFormats;
@@ -141,11 +140,7 @@ public static partial class KernelMemoryBuilderExtensions
     public static IKernelMemoryBuilder WithCustomEmbeddingGenerator<T>(
            this IKernelMemoryBuilder builder) where T : class, ITextEmbeddingGenerator
     {
-        builder.Services.AddSingleton<ITextEmbeddingGenerator>(serviceProvider =>
-        {
-            return ActivatorUtilities.CreateInstance<T>(serviceProvider);
-        });
-
+        builder.AddSingleton<ITextEmbeddingGenerator, T>();
         return builder;
     }
 
