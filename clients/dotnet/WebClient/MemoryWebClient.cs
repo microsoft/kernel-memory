@@ -438,11 +438,18 @@ public sealed class MemoryWebClient : IKernelMemory
             // Add files to the form
             for (int i = 0; i < uploadRequest.Files.Count; i++)
             {
+                using Stream fileStream = uploadRequest.Files[i].FileContent;
+
+                if (fileStream.CanSeek && fileStream.Position > 0)
+                {
+                    fileStream.Seek(0, SeekOrigin.Begin);
+                }
+
                 string fileName = uploadRequest.Files[i].FileName;
                 byte[] bytes;
-                using (var binaryReader = new BinaryReader(uploadRequest.Files[i].FileContent))
+                using (var binaryReader = new BinaryReader(fileStream))
                 {
-                    bytes = binaryReader.ReadBytes((int)uploadRequest.Files[i].FileContent.Length);
+                    bytes = binaryReader.ReadBytes((int)fileStream.Length);
                 }
 
                 var fileContent = new ByteArrayContent(bytes, 0, bytes.Length);
