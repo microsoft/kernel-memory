@@ -32,6 +32,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.TraceSource" Version="8.0.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.24.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.22.0-preview.24179.1" />
     <PackageVersion Include="Microsoft.KernelMemory.Core" Version="0.51.240513.2" />
     <PackageVersion Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.51.240513.2" />

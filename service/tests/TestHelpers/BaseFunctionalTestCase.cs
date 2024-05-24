@@ -28,6 +28,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly MongoDbAtlasConfig MongoDbAtlasConfig;
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
+    protected readonly AzureCosmosDBMongoDBConfig AzureCosmosDBMongoDBConfig;
     protected readonly ElasticsearchConfig ElasticsearchConfig;
 
     // IMPORTANT: install Xunit.DependencyInjection package
@@ -47,6 +48,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.MongoDbAtlasConfig = cfg.GetSection("KernelMemory:Services:MongoDbAtlas").Get<MongoDbAtlasConfig>() ?? new();
         this.SimpleVectorDbConfig = cfg.GetSection("KernelMemory:Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
         this.LlamaSharpConfig = cfg.GetSection("KernelMemory:Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
+        this.AzureCosmosDBMongoDBConfig = cfg.GetSection("KernelMemory:Services:AzureCosmosDBMongoDB").Get<AzureCosmosDBMongoDBConfig>() ?? new();
         this.ElasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>() ?? new();
     }
 

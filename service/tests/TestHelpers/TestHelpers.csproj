@@ -24,6 +24,8 @@
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
         <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
+        <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\..\extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.csproj" />
     </ItemGroup>
 
     <ItemGroup>
