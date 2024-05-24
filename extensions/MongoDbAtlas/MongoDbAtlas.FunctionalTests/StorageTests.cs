@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.MongoDbAtlas.FunctionalTests;
 
@@ -165,7 +165,7 @@ public abstract class StorageTests : BaseFunctionalTestCase
         await this._sut.EmptyDocumentDirectoryAsync(this.IndexName, id);
 
         // Assert: check that the files are not there anymore
-        await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName1, false));
-        await Assert.ThrowsAsync<ContentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName2, false));
+        await Assert.ThrowsAsync<DocumentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName1, false));
+        await Assert.ThrowsAsync<DocumentStorageFileNotFoundException>(async () => await this._sut.ReadFileAsync(this.IndexName, id, fileName2, false));
     }
 }

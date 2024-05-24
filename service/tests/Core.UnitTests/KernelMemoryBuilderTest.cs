@@ -3,16 +3,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests;
+namespace Microsoft.KM.Core.UnitTests;
 
 public class KernelMemoryBuilderTest : BaseUnitTestCase
 {
@@ -25,7 +24,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
     public void ItBuildsServerlessClients()
     {
         // Arrange
-        var myContentStorage = new Mock<IContentStorage>();
+        var myDocumentStorage = new Mock<IDocumentStorage>();
         var myMimeTypeDetection = new Mock<IMimeTypeDetection>();
         var myTextEmbeddingGenerator = new Mock<ITextEmbeddingGenerator>();
         var myTextGenerator = new Mock<ITextGenerator>();
@@ -34,7 +33,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
         myTextEmbeddingGenerator.SetupGet(x => x.MaxTokens).Returns(int.MaxValue);
 
         var target = new KernelMemoryBuilder()
-            .WithCustomStorage(myContentStorage.Object)
+            .WithCustomDocumentStorage(myDocumentStorage.Object)
             .WithCustomMimeTypeDetection(myMimeTypeDetection.Object)
             .WithCustomEmbeddingGenerator(myTextEmbeddingGenerator.Object)
             .WithCustomTextGenerator(myTextGenerator.Object)
@@ -55,7 +54,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
         var hostServiceCollection = new ServiceCollection();
         var myQueue = new Mock<IQueue>();
         var myQueueFactory = new QueueClientFactory(() => myQueue.Object);
-        var myContentStorage = new Mock<IContentStorage>();
+        var myDocumentStorage = new Mock<IDocumentStorage>();
         var myMimeTypeDetection = new Mock<IMimeTypeDetection>();
         var myTextEmbeddingGenerator = new Mock<ITextEmbeddingGenerator>();
         var myTextGenerator = new Mock<ITextGenerator>();
@@ -65,7 +64,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
 
         var target = new KernelMemoryBuilder(hostServiceCollection)
             .WithCustomIngestionQueueClientFactory(myQueueFactory)
-            .WithCustomStorage(myContentStorage.Object)
+            .WithCustomDocumentStorage(myDocumentStorage.Object)
             .WithCustomMimeTypeDetection(myMimeTypeDetection.Object)
             .WithCustomEmbeddingGenerator(myTextEmbeddingGenerator.Object)
             .WithCustomTextGenerator(myTextGenerator.Object)
@@ -83,13 +82,13 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
     public void ItDetectsMissingEmbeddingGenerator()
     {
         // Arrange
-        var myContentStorage = new Mock<IContentStorage>();
+        var myDocumentStorage = new Mock<IDocumentStorage>();
         var myMimeTypeDetection = new Mock<IMimeTypeDetection>();
         var myTextGenerator = new Mock<ITextGenerator>();
         var myMemoryDb = new Mock<IMemoryDb>();
 
         var target = new KernelMemoryBuilder()
-            .WithCustomStorage(myContentStorage.Object)
+            .WithCustomDocumentStorage(myDocumentStorage.Object)
             .WithCustomMimeTypeDetection(myMimeTypeDetection.Object)
             .WithCustomTextGenerator(myTextGenerator.Object)
             .WithCustomMemoryDb(myMemoryDb.Object);

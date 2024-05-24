@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,13 +12,14 @@ using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
-public class AzureOpenAITextGenerator : ITextGenerator
+[Experimental("KMEXP01")]
+public sealed class AzureOpenAITextGenerator : ITextGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;
@@ -54,12 +56,12 @@ public class AzureOpenAITextGenerator : ITextGenerator
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
-            throw new ConfigurationException("The Azure OpenAI endpoint is empty");
+            throw new ConfigurationException($"Azure OpenAI: {config.Endpoint} is empty");
         }
 
         if (string.IsNullOrEmpty(config.Deployment))
         {
-            throw new ConfigurationException("The Azure OpenAI deployment name is empty");
+            throw new ConfigurationException($"Azure OpenAI: {config.Deployment} is empty");
         }
 
         this._isTextModel = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
@@ -94,14 +96,14 @@ public class AzureOpenAITextGenerator : ITextGenerator
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 if (string.IsNullOrEmpty(config.APIKey))
                 {
-                    throw new ConfigurationException("The Azure OpenAI API key is empty");
+                    throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
                 }
 
                 this._client = new OpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
                 break;
 
             default:
-                throw new ConfigurationException($"Azure OpenAI authentication type not supported: {config.Auth:G}");
+                throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
         }
     }
 

@@ -2,10 +2,10 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace AzureAISearch.UnitTests;
+namespace Microsoft.AzureAISearch.UnitTests;
 
 public class AzureAISearchFilteringTest : BaseUnitTestCase
 {
@@ -19,7 +19,7 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItRendersEmptyFilters()
     {
         // Arrange
-        List<MemoryFilter> filters1 = null;
+        List<MemoryFilter> filters1 = null!;
         List<MemoryFilter> filters2 = new();
 
         // Act

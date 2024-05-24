@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Redis;
 /// <summary>
 /// Implementation of an IMemoryDb using Redis.
 /// </summary>
+[Experimental("KMEXP03")]
 public sealed class RedisMemory : IMemoryDb
 {
     private readonly IDatabase _db;
@@ -399,10 +401,7 @@ public sealed class RedisMemory : IMemoryDb
     /// </summary>
     private static string NormalizeIndexName(string index, string? prefix = null)
     {
-        if (string.IsNullOrWhiteSpace(index))
-        {
-            throw new ArgumentNullException(nameof(index), "The index name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(index, nameof(index), "The index name is empty");
 
         var indexWithPrefix = !string.IsNullOrWhiteSpace(prefix) ? $"{prefix}{index}" : index;
 

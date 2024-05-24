@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.Postgres.Db;
 using Pgvector;
 
 namespace Microsoft.KernelMemory.Postgres;
@@ -20,7 +20,8 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// Postgres connector for Kernel Memory.
 /// </summary>
-public class PostgresMemory : IMemoryDb, IDisposable
+[Experimental("KMEXP03")]
+public sealed class PostgresMemory : IMemoryDb, IDisposable
 {
     private readonly ILogger<PostgresMemory> _log;
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
@@ -218,7 +219,7 @@ public class PostgresMemory : IMemoryDb, IDisposable
     /// <summary>
     /// Disposes the managed resources.
     /// </summary>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (disposing)
         {
@@ -234,11 +235,7 @@ public class PostgresMemory : IMemoryDb, IDisposable
 
     private static string NormalizeIndexName(string index)
     {
-        if (string.IsNullOrWhiteSpace(index))
-        {
-            throw new ArgumentNullException(nameof(index), "The index name is empty");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(index, nameof(index), "The index name is empty");
         index = s_replaceIndexNameCharsRegex.Replace(index.Trim().ToLowerInvariant(), ValidSeparator);
 
         PostgresSchema.ValidateTableName(index);

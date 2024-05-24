@@ -22,6 +22,8 @@ public static partial class DependencyInjection
 {
     public static IServiceCollection AddAzureQueuesOrchestration(this IServiceCollection services, AzureQueuesConfig config)
     {
+        config.Validate();
+
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<AzureQueuesPipeline>()

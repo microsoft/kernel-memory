@@ -29,13 +29,13 @@ public static class Main
             // Orchestration
             QueuesTypeSetup(ctx);
             AzureQueue.Setup(ctx);
-            RabbitMQ.Setup(ctx);
+            Services.RabbitMQ.Setup(ctx);
             SimpleQueues.Setup(ctx);
 
-            // Storage
-            ContentStorageTypeSetup(ctx);
+            // Document Storage
+            DocumentStorageTypeSetup(ctx);
             AzureBlobs.Setup(ctx);
-            MongoDbAtlasContentStorage.Setup(ctx);
+            MongoDbAtlasDocumentStorage.Setup(ctx);
             SimpleFileStorage.Setup(ctx);
 
             // Image support
@@ -51,7 +51,7 @@ public static class Main
             MemoryDbTypeSetup(ctx);
             AzureAISearch.Setup(ctx);
             MongoDbAtlasMemoryDb.Setup(ctx);
-            Postgres.Setup(ctx);
+            Services.Postgres.Setup(ctx);
             Qdrant.Setup(ctx);
             Redis.Setup(ctx);
             SimpleVectorDb.Setup(ctx);
@@ -94,8 +94,8 @@ public static class Main
                     QueuesTypeSetup(ctx);
                     break;
 
-                case string x when x.Equals("ContentStorageType", StringComparison.OrdinalIgnoreCase):
-                    ContentStorageTypeSetup(ctx);
+                case string x when x.Equals("DocumentStorageType", StringComparison.OrdinalIgnoreCase):
+                    DocumentStorageTypeSetup(ctx);
                     break;
 
                 case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
@@ -123,7 +123,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
-                    Postgres.Setup(ctx, true);
+                    Services.Postgres.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
@@ -131,7 +131,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    RabbitMQ.Setup(ctx, true);
+                    Services.RabbitMQ.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
@@ -301,36 +301,36 @@ public static class Main
         });
     }
 
-    private static void ContentStorageTypeSetup(Context ctx)
+    private static void DocumentStorageTypeSetup(Context ctx)
     {
-        if (!ctx.CfgContentStorage.Value) { return; }
+        if (!ctx.CfgDocumentStorage.Value) { return; }
 
         var config = AppSettings.GetCurrentConfig();
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            Title = "Where should the service store files?",
+            Title = "Where should the service store files? A persistent storage is required to handle updates, downloads, etc.",
             Options = new List<Answer>
             {
                 new("Azure Blobs",
-                    config.ContentStorageType == "AzureBlobs",
+                    config.DocumentStorageType == "AzureBlobs",
                     () =>
                     {
-                        AppSettings.Change(x => { x.ContentStorageType = "AzureBlobs"; });
+                        AppSettings.Change(x => { x.DocumentStorageType = "AzureBlobs"; });
                         ctx.CfgAzureBlobs.Value = true;
                     }),
                 new("MongoDB Atlas",
-                    config.ContentStorageType == "MongoDbAtlas",
+                    config.DocumentStorageType == "MongoDbAtlas",
                     () =>
                     {
-                        AppSettings.Change(x => { x.ContentStorageType = "MongoDbAtlas"; });
-                        ctx.CfgMongoDbAtlasContentStorage.Value = true;
+                        AppSettings.Change(x => { x.DocumentStorageType = "MongoDbAtlas"; });
+                        ctx.CfgMongoDbAtlasDocumentStorage.Value = true;
                     }),
                 new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)",
-                    config.ContentStorageType == "SimpleFileStorage",
+                    config.DocumentStorageType == "SimpleFileStorage",
                     () =>
                     {
-                        AppSettings.Change(x => { x.ContentStorageType = "SimpleFileStorage"; });
+                        AppSettings.Change(x => { x.DocumentStorageType = "SimpleFileStorage"; });
                         ctx.CfgSimpleFileStorage.Value = true;
                     }),
                 new("-exit-", false, SetupUI.Exit),

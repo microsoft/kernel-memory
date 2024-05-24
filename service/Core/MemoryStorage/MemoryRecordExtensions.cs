@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace Microsoft.KernelMemory.MemoryStorage;
 /// Extensions of <see cref="MemoryRecord"/>
 /// </summary>
 #pragma warning disable CA1055 // working with simple types
+[Experimental("KMEXP00")]
 public static class MemoryRecordExtensions
 {
     /// <summary>
@@ -68,10 +70,16 @@ public static class MemoryRecordExtensions
     /// <summary>
     /// Get web page URL, if the document was a web page
     /// </summary>
-    public static string? GetWebPageUrl(this MemoryRecord record, ILogger? log = null)
+    public static string GetWebPageUrl(this MemoryRecord record, string indexName, ILogger? log = null)
     {
-        var result = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
-        return string.IsNullOrWhiteSpace(result) ? null : result;
+        var fileDownloadUrl = Constants.HttpDownloadEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, indexName, StringComparison.Ordinal)
+            .Replace(Constants.HttpDocumentIdPlaceholder, record.GetDocumentId(), StringComparison.Ordinal)
+            .Replace(Constants.HttpFilenamePlaceholder, record.GetFileName(), StringComparison.Ordinal);
+
+        var webPageUrl = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
+
+        return string.IsNullOrWhiteSpace(webPageUrl) ? fileDownloadUrl : webPageUrl;
     }
 
     /// <summary>

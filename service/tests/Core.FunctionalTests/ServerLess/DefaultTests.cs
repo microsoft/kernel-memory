@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Core.FunctionalTests.DefaultTestCases;
-using Microsoft.TestHelpers;
+using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.ServerLess;
+namespace Microsoft.KM.Core.FunctionalTests.ServerLess;
 
 public class DefaultTests : BaseFunctionalTestCase
 {
@@ -100,5 +100,15 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItSupportsTags(string memoryType)
     {
         await DocumentUploadTest.ItSupportsTags(this.GetServerlessMemory(memoryType), this.Log);
+    }
+
+    [Theory]
+    [Trait("Category", "Serverless")]
+    [InlineData("default")]
+    [InlineData("simple_on_disk")]
+    [InlineData("simple_volatile")]
+    public async Task ItDownloadsPDFDocs(string memoryType)
+    {
+        await DocumentUploadTest.ItDownloadsPDFDocs(this.GetServerlessMemory(memoryType), this.Log);
     }
 }

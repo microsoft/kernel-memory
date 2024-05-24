@@ -13,6 +13,9 @@ public static class Constants
     // Form field containing the Document ID
     public const string WebServiceDocumentIdField = "documentId";
 
+    // Form field containing the Filename
+    public const string WebServiceFilenameField = "filename";
+
     // Form field containing the list of tags
     public const string WebServiceTagsField = "tags";
 
@@ -50,6 +53,7 @@ public static class Constants
     // Endpoints
     public const string HttpAskEndpoint = "/ask";
     public const string HttpSearchEndpoint = "/search";
+    public const string HttpDownloadEndpoint = "/download";
     public const string HttpUploadEndpoint = "/upload";
     public const string HttpUploadStatusEndpoint = "/upload-status";
     public const string HttpDocumentsEndpoint = "/documents";
@@ -57,8 +61,10 @@ public static class Constants
     public const string HttpDeleteDocumentEndpointWithParams = $"{HttpDocumentsEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
     public const string HttpDeleteIndexEndpointWithParams = $"{HttpIndexesEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}";
     public const string HttpUploadStatusEndpointWithParams = $"{HttpUploadStatusEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}";
+    public const string HttpDownloadEndpointWithParams = $"{HttpDownloadEndpoint}?{WebServiceIndexField}={HttpIndexPlaceholder}&{WebServiceDocumentIdField}={HttpDocumentIdPlaceholder}&{WebServiceFilenameField}={HttpFilenamePlaceholder}";
     public const string HttpIndexPlaceholder = "{index}";
     public const string HttpDocumentIdPlaceholder = "{documentId}";
+    public const string HttpFilenamePlaceholder = "{filename}";
 
     // Pipeline Handlers, Step names
     public const string PipelineStepsExtract = "extract";

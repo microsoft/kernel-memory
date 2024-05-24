@@ -2,12 +2,12 @@
 
 using System.Diagnostics;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests;
+namespace Microsoft.KM.Core.FunctionalTests;
 
 public class ParallelHandlersTest : BaseFunctionalTestCase
 {

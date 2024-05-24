@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\service\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Memory.Data" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="file1-Wikipedia-Carbon.txt" />
+        <Content Include="file1-Wikipedia-Carbon.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file2-Wikipedia-Moon.txt" />
+        <Content Include="file2-Wikipedia-Moon.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file3-lorem-ipsum.docx" />
+        <Content Include="file3-lorem-ipsum.docx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file4-KM-Readme.pdf" />
+        <Content Include="file4-KM-Readme.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file5-NASA-news.pdf" />
+        <Content Include="file5-NASA-news.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file6-ANWC-image.jpg" />
+        <Content Include="file6-ANWC-image.jpg">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file7-submarine.html" />
+        <Content Include="file7-submarine.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="file8-data.xlsx" />
+        <Content Include="file8-data.xlsx">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+</Project>

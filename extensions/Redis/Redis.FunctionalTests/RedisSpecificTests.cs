@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
 namespace Microsoft.Redis.FunctionalTests;
@@ -44,7 +44,7 @@ public class RedisSpecificTests : BaseFunctionalTestCase
             documentId: "1",
             tags: new TagCollection { { "user", "foo|bar|baz" } }));
         Assert.Equal(
-            $"Attempted to insert record with tag field: 'user' containing the separator: '|'. Update your {nameof(Microsoft.KernelMemory.RedisConfig)} to use a different separator, or remove the separator from the field.",
+            $"Attempted to insert record with tag field: 'user' containing the separator: '|'. Update your {nameof(KernelMemory.RedisConfig)} to use a different separator, or remove the separator from the field.",
             res.Message);
     }
 

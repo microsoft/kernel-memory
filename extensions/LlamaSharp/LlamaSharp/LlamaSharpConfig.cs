@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.IO;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -33,13 +32,12 @@ public class LlamaSharpConfig
     {
         if (string.IsNullOrWhiteSpace(this.ModelPath))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.ModelPath),
-                "The model path value is empty");
+            throw new ConfigurationException($"LlamaSharp: {nameof(this.ModelPath)} is empty");
         }
 
         if (allowIO && !File.Exists(this.ModelPath))
         {
-            throw new FileNotFoundException($"File not found: {this.ModelPath}");
+            throw new ConfigurationException($"LlamaSharp: {nameof(this.ModelPath)} file not found");
         }
     }
 }

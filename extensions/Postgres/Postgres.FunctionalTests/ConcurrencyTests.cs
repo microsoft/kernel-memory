@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 
 namespace Microsoft.Postgres.FunctionalTests;
 
@@ -22,7 +22,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
         switch (type)
         {
             default:
-                throw new ArgumentOutOfRangeException($"Unknown '{type}' test case");
+                throw new ArgumentOutOfRangeException(nameof(type), $"Unknown '{type}' test case");
 
             case "defaultSQL":
                 config = this.PostgresConfig;

@@ -42,7 +42,7 @@ internal static class HandlerTypeLoader
         // Check if the assembly exists
         if (string.IsNullOrEmpty(path))
         {
-            throw new ConfigurationException($"Handler assembly not found: {config.Assembly}");
+            throw new ConfigurationException($"Handler type loader: handler assembly not found: {config.Assembly}");
         }
 
         Assembly assembly = Assembly.LoadFrom(path);
@@ -52,7 +52,7 @@ internal static class HandlerTypeLoader
 
         if (!typeof(IPipelineStepHandler).IsAssignableFrom(handlerType))
         {
-            throw new ConfigurationException($"Invalid handler definition: `{config.Class}` class doesn't implement interface {nameof(IPipelineStepHandler)}");
+            throw new ConfigurationException($"Handler type loader: invalid handler definition: `{config.Class}` class doesn't implement interface {nameof(IPipelineStepHandler)}");
         }
 
         return true;

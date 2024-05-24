@@ -10,12 +10,12 @@ internal static class Program
     public static async Task Main()
     {
         var memory = new KernelMemoryBuilder()
-            .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+            .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
             .Build<MemoryServerless>();
 
         memory.Orchestrator.AddHandler<MyHandler>("my_step");
 
-        await memory.ImportDocumentAsync("sample-Wikipedia-Moon.txt", steps: new[] { "my_step" });
+        await memory.ImportDocumentAsync("sample-Wikipedia-Moon.txt", steps: ["my_step"]);
 
         /* Output:
 

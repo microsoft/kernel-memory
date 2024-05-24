@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Pipeline;
@@ -16,7 +15,7 @@ using Microsoft.KernelMemory.Search;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory;
 
-public class MemoryService : IKernelMemory
+public sealed class MemoryService : IKernelMemory
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ISearchClient _searchClient;
@@ -167,6 +166,21 @@ public class MemoryService : IKernelMemory
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
         return this._orchestrator.ReadPipelineSummaryAsync(index: index, documentId, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ExportFileAsync(
+        string documentId,
+        string fileName,
+        string? index = null,
+        CancellationToken cancellationToken = default)
+    {
+        var pipeline = new DataPipeline
+        {
+            Index = IndexName.CleanName(index, this._defaultIndexName),
+            DocumentId = documentId,
+        };
+        return this._orchestrator.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken);
     }
 
     /// <inheritdoc />

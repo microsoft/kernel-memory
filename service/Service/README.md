@@ -89,9 +89,17 @@ env var, so the code will use the settings stored in `appsettings.Development.js
 
 The service depends on three main components:
 
-- **Content storage**: this is where content like files, chats, emails are
-  saved and transformed when uploaded. Currently, the solution supports Azure Blobs,
-  local filesystem and in-memory volatile filesystem.
+- **Document storage**: this is where the application stores files, chats, emails,
+  cache, async job status, and temporary files used during the memory ingestion.
+  The solution supports Azure Blobs, local filesystem, MongoDb, and in-memory
+  volatile filesystem. The volatile file system is used by default, but should be
+  avoided in Production and used only for demos and tests.
+
+- **Memory storage**: service used to persist embeddings and memory records.
+  The service supports **Azure AI Search**, **Postgres**, **Qdrant**, **Redis**,
+  **SQL Server** and other engines, plus a very basic in memory vector storage
+  with support for persistence on disk called **SimpleVectorDb**.
+  Unless configured differently, KM uses SimpleVectorDb storing data in memory only.
 
 - **Embedding generator**: all the documents uploaded are automatically
   partitioned (aka "chunked") and indexed for vector search, generating
@@ -107,12 +115,6 @@ The service depends on three main components:
   which we recommend. The number of tokens available is also an important
   factor affecting summarization and answer generations, so you might
   get better results with 16k, 32k and bigger models.
-
-- **Vector storage**: service used to persist embeddings. The
-  service supports **Azure AI Search**, **Qdrant**, **Redis** and other engines,
-  plus a very basic in memory vector storage with support for persistence on disk
-  called **SimpleVectorDb**. Unless configured differently, KM uses SimpleVectorDb
-  storing data in memory only.
 
 - **Data ingestion orchestration**: this can run in memory and in the same
   process, e.g. when working with small files, or run as a service, in which

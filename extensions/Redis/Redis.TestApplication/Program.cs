@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.MemoryDb.Redis;
 using Microsoft.KernelMemory.MemoryStorage;
 using StackExchange.Redis;
 
-namespace Redis.TestApplication;
+namespace Microsoft.Redis.TestApplication;
 
 public static class Program
 {

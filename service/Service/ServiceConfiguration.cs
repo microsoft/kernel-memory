@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.AI.Anthropic;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
+using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
-using Microsoft.KernelMemory.Postgres;
 
 namespace Microsoft.KernelMemory.Service;
 
@@ -153,21 +153,21 @@ internal sealed class ServiceConfiguration
 
     private void ConfigureStorageDependency(IKernelMemoryBuilder builder)
     {
-        switch (this._memoryConfiguration.ContentStorageType)
+        switch (this._memoryConfiguration.DocumentStorageType)
         {
             case string x1 when x1.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase):
             case string x2 when x2.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
                 // Check 2 keys for backward compatibility
-                builder.Services.AddAzureBlobsAsContentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
-                                                               ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
+                builder.Services.AddAzureBlobsAsDocumentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
+                                                                ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddMongoDbAtlasAsContentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
+                builder.Services.AddMongoDbAtlasAsDocumentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSimpleFileStorageAsContentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
+                builder.Services.AddSimpleFileStorageAsDocumentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
                 break;
 
             default:
@@ -254,6 +254,15 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
+                case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
+
                 case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 {
                     var instance = this.GetServiceInstance<IMemoryDb>(builder,
@@ -307,6 +316,15 @@ internal sealed class ServiceConfiguration
                     builder.AddIngestionMemoryDb(instance);
                     break;
                 }
+
+                case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                        s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
+                    );
+                    builder.AddIngestionMemoryDb(instance);
+                    break;
+                }
             }
         }
     }
@@ -346,6 +364,10 @@ internal sealed class ServiceConfiguration
                 builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
                 break;
 
+            case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"));
+                break;
+
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
@@ -370,6 +392,10 @@ internal sealed class ServiceConfiguration
                 builder.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"));
                 break;
 
+            case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"));
+                break;
+
             default:
                 // NOOP - allow custom implementations, via WithCustomMemoryDb()
                 break;
@@ -388,6 +414,10 @@ internal sealed class ServiceConfiguration
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddOpenAITextGeneration(this.GetServiceConfig<OpenAIConfig>("OpenAI"));
+                break;
+
+            case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddAnthropicTextGeneration(this.GetServiceConfig<AnthropicConfiguration>("Anthropic"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):

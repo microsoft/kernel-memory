@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 
-namespace Abstractions.UnitTests.AI;
+namespace Microsoft.KM.Abstractions.UnitTests.AI;
 
 public class EmbeddingTest
 {

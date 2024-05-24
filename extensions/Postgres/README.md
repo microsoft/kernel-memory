@@ -41,7 +41,7 @@ To use Postgres with Kernel Memory:
       }
     }
     ```
-4. Configure KM builder to store memories in Postgres, for example:
+4. Configure KM builder to store memories in Postgres, and to persist documents, for example:
     ```csharp
     // using Microsoft.KernelMemory;
     // using Microsoft.KernelMemory.Postgres;
@@ -56,7 +56,8 @@ To use Postgres with Kernel Memory:
         .BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
     var memory = new KernelMemoryBuilder()
-        .WithPostgres(postgresConfig)
+        .WithPostgresMemoryDb(postgresConfig)
+        .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
         .WithAzureOpenAITextGeneration(azureOpenAIConfig)
         .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIConfig)
         .Build();

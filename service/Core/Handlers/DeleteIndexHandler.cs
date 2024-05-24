@@ -4,29 +4,29 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
 
-public class DeleteIndexHandler : IPipelineStepHandler
+public sealed class DeleteIndexHandler : IPipelineStepHandler
 {
     private readonly List<IMemoryDb> _memoryDbs;
-    private readonly IContentStorage _contentStorage;
+    private readonly IDocumentStorage _documentStorage;
     private readonly ILogger<DeleteIndexHandler> _log;
 
     public string StepName { get; }
 
     public DeleteIndexHandler(
         string stepName,
-        IContentStorage contentStorage,
+        IDocumentStorage documentStorage,
         List<IMemoryDb> memoryDbs,
         ILogger<DeleteIndexHandler>? log = null)
     {
         this.StepName = stepName;
-        this._contentStorage = contentStorage;
+        this._documentStorage = documentStorage;
         this._memoryDbs = memoryDbs;
         this._log = log ?? DefaultLogger<DeleteIndexHandler>.Instance;
 
@@ -46,7 +46,7 @@ public class DeleteIndexHandler : IPipelineStepHandler
         }
 
         // Delete index from file storage
-        await this._contentStorage.DeleteIndexDirectoryAsync(
+        await this._documentStorage.DeleteIndexDirectoryAsync(
             index: pipeline.Index,
             cancellationToken).ConfigureAwait(false);
 

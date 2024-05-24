@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Service;
 
-public class HttpAuthEndpointFilter : IEndpointFilter
+public sealed class HttpAuthEndpointFilter : IEndpointFilter
 {
     private readonly ServiceAuthorizationConfig _config;
 
@@ -25,7 +25,7 @@ public class HttpAuthEndpointFilter : IEndpointFilter
         {
             if (!context.HttpContext.Request.Headers.TryGetValue(this._config.HttpHeaderName, out var apiKey))
             {
-                return Results.Problem(detail: "API Key missing", statusCode: 401);
+                return Results.Problem(detail: "Missing API Key HTTP header", statusCode: 401);
             }
 
             if (!string.Equals(apiKey, this._config.AccessKey1, StringComparison.Ordinal)

@@ -2,13 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline.Queue;
 
@@ -24,7 +25,8 @@ namespace Microsoft.KernelMemory.Pipeline;
 /// - while continuing a pipeline, the system should retry the current step (which must be designed to be idempotent)
 /// - while ending a pipeline, same thing, the last step will be repeated (and should be idempotent).
 /// </summary>
-public class DistributedPipelineOrchestrator : BaseOrchestrator
+[Experimental("KMEXP04")]
+public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
 {
     private readonly QueueClientFactory _queueClientFactory;
 
@@ -34,7 +36,7 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     /// Create a new instance of the asynchronous orchestrator
     /// </summary>
     /// <param name="queueClientFactory">Queue client factory</param>
-    /// <param name="contentStorage">Service used to store files</param>
+    /// <param name="documentStorage">Service used to store files</param>
     /// <param name="embeddingGenerators">Services used to generate embeddings during the ingestion</param>
     /// <param name="memoryDbs">Services where to store memory records</param>
     /// <param name="textGenerator">Service used to generate text, e.g. synthetic memory records</param>
@@ -43,14 +45,14 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     /// <param name="log"></param>
     public DistributedPipelineOrchestrator(
         QueueClientFactory queueClientFactory,
-        IContentStorage contentStorage,
+        IDocumentStorage documentStorage,
         List<ITextEmbeddingGenerator> embeddingGenerators,
         List<IMemoryDb> memoryDbs,
         ITextGenerator textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
         ILogger<DistributedPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
         this._queueClientFactory = queueClientFactory;
     }
@@ -73,15 +75,8 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
         IPipelineStepHandler handler,
         CancellationToken cancellationToken = default)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler), "The handler is NULL");
-        }
-
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(handler, nameof(handler), "The handler is NULL");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
         if (this._queues.ContainsKey(handler.StepName))
         {
@@ -178,15 +173,8 @@ public class DistributedPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override async Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler), "The handler is NULL");
-        }
-
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(handler, nameof(handler), "The handler is NULL");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
         if (this._queues.ContainsKey(handler.StepName)) { return; }
 

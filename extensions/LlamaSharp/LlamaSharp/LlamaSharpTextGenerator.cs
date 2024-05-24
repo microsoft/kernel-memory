@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using LLama;
@@ -16,6 +17,7 @@ namespace Microsoft.KernelMemory.AI.LlamaSharp;
 /// Text generator based on LLama models, via LLamaSharp / llama.cpp
 /// See https://github.com/SciSharp/LLamaSharp
 /// </summary>
+[Experimental("KMEXP01")]
 public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 {
     private readonly LLamaWeights _model;

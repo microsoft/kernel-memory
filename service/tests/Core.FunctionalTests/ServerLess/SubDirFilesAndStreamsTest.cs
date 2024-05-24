@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Core.FunctionalTests.ServerLess;
+namespace Microsoft.KM.Core.FunctionalTests.ServerLess;
 
 public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
 {
@@ -38,12 +38,12 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Doc1.txt"),
             documentId: "Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
             documentId: "Documents-Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
             document: new Document("Doc2.txt")
                 .AddFile(Path.Join(this._fixturesPath, "Doc1.txt"))
                 .AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt")),
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 
     [Fact]
@@ -75,7 +75,26 @@ public class SubDirFilesAndStreamsTest : BaseFunctionalTestCase
             content: memoryStream,
             documentId: "487BC53B60CFBD42167A0488A78347929E0FE811FC705A94253E419CA5911360",
             fileName: fileName,
-            steps: new[] { "extract", "partition" },
+            steps: ["extract", "partition"],
             tags: new() { { "user", "user1" } });
+    }
+
+    [Fact]
+    [Trait("Category", "Serverless")]
+    public async Task ItAllowsToDownloadFilesWithTheSameName()
+    {
+        var doc = new Document { Id = "clones" };
+        doc.AddFile(Path.Join(this._fixturesPath, "Doc1.txt"));
+        doc.AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt"));
+
+        // Act
+        await this._memory.ImportDocumentAsync(document: doc);
+        SearchResult result = await this._memory.SearchAsync("Document one");
+
+        // Assert
+        Assert.Equal(2, result.Results.Count);
+        Assert.NotEqual(result.Results[0].SourceUrl, result.Results[1].SourceUrl);
+        Assert.EndsWith("Doc1.txt", result.Results[0].SourceUrl);
+        Assert.EndsWith("Doc1.txt", result.Results[1].SourceUrl);
     }
 }

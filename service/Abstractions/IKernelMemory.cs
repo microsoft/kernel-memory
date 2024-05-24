@@ -161,6 +161,20 @@ public interface IKernelMemory
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Export a file from document storage
+    /// </summary>
+    /// <param name="documentId">ID of the document containing the file</param>
+    /// <param name="fileName">File name</param>
+    /// <param name="index">Index containing the document</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>File content</returns>
+    public Task<StreamableFileContent> ExportFileAsync(
+        string documentId,
+        string fileName,
+        string? index = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Search the given index for a list of relevant documents for the given query.
     /// </summary>
     /// <param name="query">Query to filter memories</param>

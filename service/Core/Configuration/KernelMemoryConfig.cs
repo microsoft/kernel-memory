@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +54,12 @@ public class KernelMemoryConfig
         /// Multiple storages can help with data migrations and testing purposes.
         /// </summary>
         public List<string> MemoryDbTypes { get; set; } = new();
+
+        /// <summary>
+        /// How many memory DB records to insert at once when extracting memories
+        /// from uploaded documents (used only if the Memory Db supports batching).
+        /// </summary>
+        public int MemoryDbUpsertBatchSize { get; set; } = 1;
 
         /// <summary>
         /// The OCR service used to recognize text in images.
@@ -117,9 +124,32 @@ public class KernelMemoryConfig
     public ServiceConfig Service { get; set; } = new();
 
     /// <summary>
+    /// Legacy Documents storage settings.
+    /// </summary>
+    [Obsolete("`ContentStorageType` has been deprecated, please use `DocumentStorageType`")]
+
+    public string ContentStorageType
+    {
+        get
+        {
+            return this._contentStorageType;
+        }
+        set
+        {
+            this._contentStorageType = value;
+            if (!string.IsNullOrEmpty(this._contentStorageType))
+            {
+                throw new ConfigurationException($"`ContentStorageType` (value: {this._contentStorageType}) has been deprecated, please use `DocumentStorageType`");
+            }
+        }
+    }
+
+    private string _contentStorageType = string.Empty;
+
+    /// <summary>
     /// Documents storage settings.
     /// </summary>
-    public string ContentStorageType { get; set; } = string.Empty;
+    public string DocumentStorageType { get; set; } = string.Empty;
 
     /// <summary>
     /// The text generator used to generate synthetic data during ingestion

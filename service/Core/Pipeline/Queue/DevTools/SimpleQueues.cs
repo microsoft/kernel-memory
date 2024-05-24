@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 /// Basic implementation of a file based queue for local testing.
 /// This is not meant for production scenarios, only to avoid spinning up additional services.
 /// </summary>
+[Experimental("KMEXP04")]
 public sealed class SimpleQueues : IQueue
 {
     private sealed class MessageEventArgs : EventArgs
@@ -82,11 +84,11 @@ public sealed class SimpleQueues : IQueue
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, null, this._log);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, this._log);
                 break;
 
             default:
@@ -97,11 +99,7 @@ public sealed class SimpleQueues : IQueue
     /// <inheritdoc />
     public async Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(queueName))
-        {
-            throw new ArgumentOutOfRangeException(nameof(queueName), "The queue name is empty");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
         if (!string.IsNullOrEmpty(this._queueName))
         {
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");

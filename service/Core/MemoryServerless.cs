@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Pipeline;
@@ -22,10 +21,10 @@ namespace Microsoft.KernelMemory;
 /// <see cref="InProcessPipelineOrchestrator"/>, hence the name "Serverless".
 /// The class accesses directly storage, vectors and AI.
 /// </summary>
-public class MemoryServerless : IKernelMemory
+public sealed class MemoryServerless : IKernelMemory
 {
-    private readonly ISearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
+    private readonly ISearchClient _searchClient;
     private readonly string? _defaultIndexName;
 
     /// <summary>
@@ -190,6 +189,21 @@ public class MemoryServerless : IKernelMemory
         {
             return null;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<StreamableFileContent> ExportFileAsync(
+        string documentId,
+        string fileName,
+        string? index = null,
+        CancellationToken cancellationToken = default)
+    {
+        var pipeline = new DataPipeline
+        {
+            Index = IndexName.CleanName(index, this._defaultIndexName),
+            DocumentId = documentId,
+        };
+        return this._orchestrator.ReadFileAsStreamAsync(pipeline, fileName, cancellationToken);
     }
 
     /// <inheritdoc />

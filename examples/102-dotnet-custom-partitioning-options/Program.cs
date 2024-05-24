@@ -4,7 +4,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Configuration;
 
 var memory = new KernelMemoryBuilder()
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
     .WithCustomTextPartitioningOptions(new TextPartitioningOptions
     {
         // Max 99 tokens per sentence
@@ -17,8 +17,4 @@ var memory = new KernelMemoryBuilder()
     .Build<MemoryServerless>();
 
 await memory.ImportDocumentAsync(new Document()
-    .AddFile("mswordfile.docx"), steps: new[]
-{
-    "extract",
-    "partition"
-});
+    .AddFile("mswordfile.docx"), steps: ["extract", "partition"]);

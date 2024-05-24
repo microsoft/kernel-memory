@@ -6,11 +6,11 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Moq;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.MemoryStorage.DevTools;
+namespace Microsoft.KM.Core.UnitTests.MemoryStorage.DevTools;
 
 public class SimpleVectorDbTest : BaseUnitTestCase
 {
@@ -28,7 +28,7 @@ public class SimpleVectorDbTest : BaseUnitTestCase
         // Arrange
         var emb = new Mock<ITextEmbeddingGenerator>();
         emb.Setup(x => x.GenerateEmbeddingAsync(text, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Embedding(new[] { 0.5f, 0.5f, 0.5f }));
+            .ReturnsAsync(new Embedding([0.5f, 0.5f, 0.5f]));
 
         var target = new SimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile }, emb.Object);
         await target.CreateIndexAsync(index, 3);
@@ -39,7 +39,7 @@ public class SimpleVectorDbTest : BaseUnitTestCase
             await target.UpsertAsync(index, new MemoryRecord
             {
                 Id = RandomLetter() + RandomLetter() + RandomLetter() + $"_{i}",
-                Vector = new Embedding(new[] { RandomNumber() / 1000f, RandomNumber() / 1000f, RandomNumber() / 1000f }),
+                Vector = new Embedding([RandomNumber() / 1000f, RandomNumber() / 1000f, RandomNumber() / 1000f]),
             });
         }
 

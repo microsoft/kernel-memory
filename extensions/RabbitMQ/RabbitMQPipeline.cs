@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using RabbitMQ.Client.Events;
 
 namespace Microsoft.KernelMemory.Orchestration.RabbitMQ;
 
+[Experimental("KMEXP04")]
 public sealed class RabbitMQPipeline : IQueue
 {
     private readonly ILogger<RabbitMQPipeline> _log;
@@ -19,6 +21,7 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly IModel _channel;
     private readonly AsyncEventingBasicConsumer _consumer;
     private string _queueName = string.Empty;
+    private readonly int _messageTTLMsecs;
 
     /// <summary>
     /// Create a new RabbitMQ queue instance
@@ -38,6 +41,7 @@ public sealed class RabbitMQPipeline : IQueue
             DispatchConsumersAsync = true
         };
 
+        this._messageTTLMsecs = config.MessageTTLSecs * 1000;
         this._connection = factory.CreateConnection();
         this._channel = this._connection.CreateModel();
         this._channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
@@ -47,10 +51,7 @@ public sealed class RabbitMQPipeline : IQueue
     /// <inheritdoc />
     public Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(queueName))
-        {
-            throw new ArgumentOutOfRangeException(nameof(queueName), "The queue name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
@@ -88,15 +89,20 @@ public sealed class RabbitMQPipeline : IQueue
             throw new InvalidOperationException("The client must be connected to a queue first");
         }
 
-        this._log.LogDebug("Sending message...");
+        var properties = this._channel.CreateBasicProperties();
+        properties.Persistent = true;
+        properties.MessageId = Guid.NewGuid().ToString("N");
+        properties.Expiration = $"{this._messageTTLMsecs}";
+
+        this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, this._messageTTLMsecs / 1000);
 
         this._channel.BasicPublish(
             routingKey: this._queueName,
             body: Encoding.UTF8.GetBytes(message),
             exchange: string.Empty,
-            basicProperties: null);
+            basicProperties: properties);
 
-        this._log.LogDebug("Message sent");
+        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, this._messageTTLMsecs / 1000);
 
         return Task.CompletedTask;
     }
@@ -108,7 +114,7 @@ public sealed class RabbitMQPipeline : IQueue
         {
             try
             {
-                this._log.LogDebug("Message '{0}' received, expires at {1}", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
+                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);

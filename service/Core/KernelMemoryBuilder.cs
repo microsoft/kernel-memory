@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
-using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -20,7 +19,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Kernel Memory builder.
 /// </summary>
-public class KernelMemoryBuilder : IKernelMemoryBuilder
+public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
 {
     private enum ClientTypes
     {
@@ -76,6 +75,11 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         this._memoryServiceCollection = new ServiceCollection();
         this._hostServiceCollection = hostServiceCollection;
+
+        // Support IHttpClientFactory (must be done before CopyServiceCollection)
+        if (this._hostServiceCollection == null) { this._memoryServiceCollection.AddHttpClient(); }
+        else { this._hostServiceCollection.AddHttpClient(); }
+
         CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection);
 
         // Important: this._memoryServiceCollection is the primary service collection
@@ -117,7 +121,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
                                                 $"and other configuration methods before calling {nameof(this.Build)}(...)");
 
             default:
-                throw new ArgumentOutOfRangeException($"Unsupported memory type '{type}'");
+                throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported memory type '{type}'");
         }
     }
 
@@ -191,7 +195,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     public IPipelineOrchestrator GetOrchestrator()
     {
         var serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
-        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Unable to build orchestrator");
+        return serviceProvider.GetService<IPipelineOrchestrator>() ?? throw new ConfigurationException("Memory Builder: unable to build orchestrator");
     }
 
     #region internals
@@ -296,7 +300,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (this.IsEmbeddingGeneratorEnabled() && this._embeddingGenerators.Count == 0)
         {
-            throw new ConfigurationException("No embedding generators configured for memory ingestion. Check 'EmbeddingGeneratorTypes' setting.");
+            throw new ConfigurationException("Memory Builder: no embedding generators configured for memory ingestion. Check 'EmbeddingGeneratorTypes' setting.");
         }
     }
 
@@ -304,7 +308,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (this._memoryDbs.Count == 0)
         {
-            throw new ConfigurationException("Memory DBs for ingestion not configured");
+            throw new ConfigurationException("Memory Builder: memory DBs for ingestion not configured");
         }
     }
 
@@ -312,7 +316,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     {
         if (!this._memoryServiceCollection.HasService<IMemoryDb>())
         {
-            throw new ConfigurationException("Memory DBs for retrieval not configured");
+            throw new ConfigurationException("Memory Builder: memory DBs for retrieval not configured");
         }
     }
 
@@ -329,7 +333,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         if (this._embeddingGenerators.Count == 0 && this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>())
         {
             this._embeddingGenerators.Add(serviceProvider.GetService<ITextEmbeddingGenerator>()
-                                          ?? throw new ConfigurationException("Unable to build embedding generator"));
+                                          ?? throw new ConfigurationException("Memory Builder: unable to build embedding generator"));
         }
     }
 
@@ -338,7 +342,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
         if (this._memoryDbs.Count == 0 && this._memoryServiceCollection.HasService<IMemoryDb>())
         {
             this._memoryDbs.Add(serviceProvider.GetService<IMemoryDb>()
-                                ?? throw new ConfigurationException("Unable to build memory DB instance"));
+                                ?? throw new ConfigurationException("Memory Builder: unable to build memory DB instance"));
         }
     }
 
@@ -350,19 +354,19 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
     private ClientTypes GetBuildType()
     {
         var hasQueueFactory = (this._memoryServiceCollection.HasService<QueueClientFactory>());
-        var hasContentStorage = (this._memoryServiceCollection.HasService<IContentStorage>());
+        var hasDocumentStorage = (this._memoryServiceCollection.HasService<IDocumentStorage>());
         var hasMimeDetector = (this._memoryServiceCollection.HasService<IMimeTypeDetection>());
         var hasEmbeddingGenerator = (this._memoryServiceCollection.HasService<ITextEmbeddingGenerator>());
         var hasMemoryDb = (this._memoryServiceCollection.HasService<IMemoryDb>());
         var hasTextGenerator = (this._memoryServiceCollection.HasService<ITextGenerator>());
 
-        if (hasContentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
+        if (hasDocumentStorage && hasMimeDetector && hasEmbeddingGenerator && hasMemoryDb && hasTextGenerator)
         {
             return hasQueueFactory ? ClientTypes.AsyncService : ClientTypes.SyncServerless;
         }
 
         var missing = new List<string>();
-        if (!hasContentStorage) { missing.Add("Content storage"); }
+        if (!hasDocumentStorage) { missing.Add("Document storage"); }
 
         if (!hasMimeDetector) { missing.Add("MIME type detection"); }
 
@@ -372,7 +376,7 @@ public class KernelMemoryBuilder : IKernelMemoryBuilder
 
         if (!hasTextGenerator) { missing.Add("Text generator"); }
 
-        throw new ConfigurationException("Cannot build Memory client, some dependencies are not defined: " + string.Join(", ", missing));
+        throw new ConfigurationException("Memory Builder: cannot build Memory client, some dependencies are not defined: " + string.Join(", ", missing));
     }
 
     /// <summary>

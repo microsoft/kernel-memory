@@ -23,12 +23,13 @@ appBuilder.Services.AddHandlerAsHostedService<MyHandler>("mypipelinestep");
 var memory = new KernelMemoryBuilder(appBuilder.Services)
     .WithoutDefaultHandlers()
     .WithSimpleQueuesPipeline() // Queues are required by handlers hosted as a service
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
     .Build();
 
 // Console.WriteLine("Memory type: " + memory.GetType().FullName);
 // Enqueue a task, just for testing
-memory.ImportTextAsync("something", steps: new[] { "mypipelinestep" });
+#pragma warning disable CS4014
+Task.Run(() => memory.ImportTextAsync("something", steps: ["mypipelinestep"]));
 
 // Build and run .NET web app as usual
 Console.WriteLine("Starting service...");

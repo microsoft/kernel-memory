@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.KernelMemory.Models;
 
+[Experimental("KMEXP00")]
 public static class IndexName
 {
     /// <summary>

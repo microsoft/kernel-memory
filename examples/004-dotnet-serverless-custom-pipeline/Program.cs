@@ -26,7 +26,7 @@ using Microsoft.KernelMemory.Handlers;
 
 var memoryBuilder = new KernelMemoryBuilder()
     .WithoutDefaultHandlers() // remove default handlers, added manually below
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"));
+    .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);
 
 var memory = memoryBuilder.Build<MemoryServerless>();
 
@@ -56,12 +56,12 @@ await memory.ImportDocumentAsync(
         .AddFile("file5-NASA-news.pdf")
         .AddTag("testName", "example3"),
     index: "user-id-1",
-    steps: new[]
-    {
+    steps:
+    [
         "extract_text",
         "split_text_in_partitions",
         "generate_embeddings",
         "save_memory_records"
-    });
+    ]);
 
 Console.WriteLine("* File import completed.");

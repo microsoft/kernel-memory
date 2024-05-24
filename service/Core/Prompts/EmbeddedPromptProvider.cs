@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Prompts;
 
@@ -16,7 +16,8 @@ namespace Microsoft.KernelMemory.Prompts;
 ///
 /// To know which resources are embedded, check the csproj file.
 /// </summary>
-public class EmbeddedPromptProvider : IPromptProvider
+[Experimental("KMEXP00")]
+public sealed class EmbeddedPromptProvider : IPromptProvider
 {
     private static readonly string? s_namespace = typeof(EmbeddedPromptProvider).Namespace;
 

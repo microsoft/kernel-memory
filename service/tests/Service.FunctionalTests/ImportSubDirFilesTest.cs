@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Service.FunctionalTests;
+namespace Microsoft.KM.Service.FunctionalTests;
 
 public class ImportSubDirFilesTest : BaseFunctionalTestCase
 {
@@ -30,12 +30,12 @@ public class ImportSubDirFilesTest : BaseFunctionalTestCase
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Doc1.txt"),
             documentId: "Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
 
         await this._memory.ImportDocumentAsync(
             filePath: Path.Join(this._fixturesPath, "Documents", "Doc1.txt"),
             documentId: "Documents-Doc1.txt",
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 
     [Fact]
@@ -47,6 +47,6 @@ public class ImportSubDirFilesTest : BaseFunctionalTestCase
             document: new Document(id: "Doc2.txt")
                 .AddFile(Path.Join(this._fixturesPath, "Doc1.txt"))
                 .AddFile(Path.Join(this._fixturesPath, "Documents", "Doc1.txt")),
-            steps: new[] { "extract", "partition" });
+            steps: ["extract", "partition"]);
     }
 }

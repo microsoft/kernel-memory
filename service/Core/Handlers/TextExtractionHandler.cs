@@ -16,9 +16,9 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
-/// Memory ingestion pipeline handler responsible for extracting text from files and saving it to content storage.
+/// Memory ingestion pipeline handler responsible for extracting text from files and saving it to document storage.
 /// </summary>
-public class TextExtractionHandler : IPipelineStepHandler
+public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly IEnumerable<IContentDecoder> _decoders;
@@ -138,6 +138,13 @@ public class TextExtractionHandler : IPipelineStepHandler
         return (true, pipeline);
     }
 
+    public void Dispose()
+    {
+        if (this._webScraper is not IDisposable x) { return; }
+
+        x.Dispose();
+    }
+
     private async Task<(DataPipeline.FileDetails downloadedPage, BinaryData pageContent, bool skip)> DownloadContentAsync(
         DataPipeline.FileDetails uploadedFile, BinaryData fileContent, CancellationToken cancellationToken)
     {
@@ -167,10 +174,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
         // IMPORTANT: copy by value to avoid editing the source var
         DataPipeline.FileDetails? result = JsonSerializer.Deserialize<DataPipeline.FileDetails>(JsonSerializer.Serialize(uploadedFile));
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result), "File details cloning failure");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(result, nameof(result), "File details cloning failure");
 
         result.MimeType = urlDownloadResult.ContentType;
         result.Size = urlDownloadResult.Content.Length;

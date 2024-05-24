@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,13 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Configuration;
-using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
-public class InProcessPipelineOrchestrator : BaseOrchestrator
+[Experimental("KMEXP04")]
+public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
 {
     private readonly Dictionary<string, IPipelineStepHandler> _handlers = new(StringComparer.InvariantCultureIgnoreCase);
 
@@ -24,7 +26,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <summary>
     /// Create a new instance of the synchronous orchestrator.
     /// </summary>
-    /// <param name="contentStorage">Service used to store files</param>
+    /// <param name="documentStorage">Service used to store files</param>
     /// <param name="embeddingGenerators">Services used to generate embeddings during the ingestion</param>
     /// <param name="memoryDbs">Services where to store memory records</param>
     /// <param name="textGenerator">Service used to generate text, e.g. synthetic memory records</param>
@@ -33,7 +35,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <param name="config">Global KM configuration</param>
     /// <param name="log">Application logger</param>
     public InProcessPipelineOrchestrator(
-        IContentStorage contentStorage,
+        IDocumentStorage documentStorage,
         List<ITextEmbeddingGenerator> embeddingGenerators,
         List<IMemoryDb> memoryDbs,
         ITextGenerator textGenerator,
@@ -41,7 +43,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
         IServiceProvider? serviceProvider = null,
         KernelMemoryConfig? config = null,
         ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(contentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
+        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
     {
         this._serviceProvider = serviceProvider;
     }
@@ -67,10 +69,7 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     ///<inheritdoc />
     public override Task TryAddHandlerAsync(IPipelineStepHandler handler, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
         if (this._handlers.ContainsKey(handler.StepName)) { return Task.CompletedTask; }
 
@@ -145,22 +144,13 @@ public class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <param name="handler">Pipeline handler instance</param>
     public void AddHandler(IPipelineStepHandler handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler), "The handler is NULL");
-        }
+        ArgumentNullExceptionEx.ThrowIfNull(handler, nameof(handler), "The handler is NULL");
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(handler.StepName, nameof(handler.StepName), "The step name is empty");
 
-        if (string.IsNullOrEmpty(handler.StepName))
-        {
-            throw new ArgumentNullException(nameof(handler.StepName), "The step name is empty");
-        }
-
-        if (this._handlers.ContainsKey(handler.StepName))
+        if (!this._handlers.TryAdd(handler.StepName, handler))
         {
             throw new ArgumentException($"There is already a handler for step '{handler.StepName}'");
         }
-
-        this._handlers[handler.StepName] = handler;
     }
 
     ///<inheritdoc />

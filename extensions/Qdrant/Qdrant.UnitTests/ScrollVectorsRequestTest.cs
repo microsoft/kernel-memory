@@ -2,10 +2,10 @@
 
 using System.Text.Json;
 using Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Qdrant.UnitTests;
+namespace Microsoft.Qdrant.UnitTests;
 
 public class ScrollVectorsRequestTest : BaseUnitTestCase
 {
@@ -92,7 +92,7 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
         // Arrange
         var request = ScrollVectorsRequest
             .Create("coll")
-            .HavingAllTags(new[] { "user:devis", "type:blog" })
+            .HavingAllTags(["user:devis", "type:blog"])
             .HavingSomeTags(new[]
             {
                 new[] { "month:january", "year:2000" },
@@ -157,8 +157,8 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
         // Arrange
         var request = ScrollVectorsRequest
             .Create("coll")
-            .HavingAllTags(new[] { "user:devis", "type:blog" })
-            .HavingSomeTags(new[] { new[] { "month:january", "year:2000" } });
+            .HavingAllTags(["user:devis", "type:blog"])
+            .HavingSomeTags([new[] { "month:january", "year:2000" }]);
 
         // Act
         var actual = JsonSerializer.Serialize(request);

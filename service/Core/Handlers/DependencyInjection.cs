@@ -101,11 +101,7 @@ public static partial class DependencyInjection
             throw new ArgumentException($"'{tHandler.FullName}' doesn't implement interface '{nameof(IPipelineStepHandler)}'", nameof(tHandler));
         }
 
-        if (tHandler == null)
-        {
-            throw new ArgumentNullException(nameof(tHandler), $"Handler type for '{stepName}' is NULL");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNull(tHandler, nameof(tHandler), $"Handler type for '{stepName}' is NULL");
         services.AddTransient(tHandler, serviceProvider => ActivatorUtilities.CreateInstance(serviceProvider, tHandler, stepName));
 
         // Build generic type: HandlerAsAHostedService<THandler>

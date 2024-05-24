@@ -3,7 +3,6 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Diagnostics;
 
@@ -71,6 +70,6 @@ public static class DefaultLogger
             return true;
         }
 
-        throw new ConfigurationException($"Log level not supported: {value}");
+        throw new ConfigurationException($"Logger: log level '{value}' not supported");
     }
 }

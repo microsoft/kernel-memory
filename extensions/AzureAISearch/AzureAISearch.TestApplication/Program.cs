@@ -9,7 +9,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
 
-namespace AzureAISearch.TestApplication;
+namespace Microsoft.AzureAISearch.TestApplication;
 
 public static class Program
 {
@@ -35,8 +35,8 @@ public static class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var config = cfg.GetSection("KernelMemory:Services:AzureAISearch").Get<AzureAISearchConfig>()
-                     ?? throw new ArgumentNullException(message: "AzureAISearch config not found", null);
+        var config = cfg.GetSection("KernelMemory:Services:AzureAISearch").Get<AzureAISearchConfig>();
+        ArgumentNullExceptionEx.ThrowIfNull(config, nameof(config), "AzureAISearch config not found");
 
         // Azure AI Search service client
         s_adminClient = new SearchIndexClient(

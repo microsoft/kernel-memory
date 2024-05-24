@@ -5,7 +5,7 @@ namespace Microsoft.KernelMemory.InteractiveSetup.UI;
 /// <summary>
 /// A boolean that can "change" to True only a limited number of times
 /// </summary>
-public class BoundedBoolean
+public sealed class BoundedBoolean
 {
     private readonly int _maxChangesToTrue;
     private int _changesToTrueCount;

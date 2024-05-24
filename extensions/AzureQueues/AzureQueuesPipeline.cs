@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,13 +12,14 @@ using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Timer = System.Timers.Timer;
 
 namespace Microsoft.KernelMemory.Orchestration.AzureQueues;
 
+[Experimental("KMEXP04")]
 public sealed class AzureQueuesPipeline : IQueue
 {
     private const string DefaultEndpointSuffix = "core.windows.net";
@@ -35,23 +37,11 @@ public sealed class AzureQueuesPipeline : IQueue
     /// </summary>
     private event AsyncMessageHandler<MessageEventArgs>? Received;
 
-    // How often to check if there are new messages
-    private const int PollDelayMsecs = 100;
-
-    // How many messages to fetch at a time
-    private const int FetchBatchSize = 3;
-
-    // How long to lock messages once fetched. Azure Queue default is 30 secs.
-    private const int FetchLockSeconds = 300;
-
-    // How many times to dequeue a messages and process before moving it to a poison queue
-    private const int MaxRetryBeforePoisonQueue = 20;
-
-    // Suffix used for the poison queues
-    private const string PoisonQueueSuffix = "-poison";
-
     // Queue client builder, requiring the queue name in input
     private readonly Func<string, QueueClient> _clientBuilder;
+
+    // Queue confirguration
+    private readonly AzureQueuesConfig _config;
 
     // Queue client, once connected
     private QueueClient? _queue;
@@ -77,6 +67,9 @@ public sealed class AzureQueuesPipeline : IQueue
         AzureQueuesConfig config,
         ILogger<AzureQueuesPipeline>? log = null)
     {
+        this._config = config;
+        this._config.Validate();
+
         this._log = log ?? DefaultLogger<AzureQueuesPipeline>.Instance;
 
         switch (config.Auth)
@@ -131,7 +124,7 @@ public sealed class AzureQueuesPipeline : IQueue
 
             default:
                 this._log.LogCritical("Azure Queue authentication type '{0}' undefined or not supported", config.Auth);
-                throw new ContentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
+                throw new DocumentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
         }
     }
 
@@ -141,15 +134,11 @@ public sealed class AzureQueuesPipeline : IQueue
         queueName = CleanQueueName(queueName);
         this._log.LogTrace("Connecting to queue name: {0}", queueName);
 
-        if (string.IsNullOrEmpty(queueName))
-        {
-            this._log.LogError("The queue name is empty");
-            throw new ArgumentOutOfRangeException(nameof(queueName), "The queue name is empty");
-        }
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
-            this._log.LogError("The queue name has already been set");
+            this._log.LogError("The queue name has already been set, already connected to {0}", this._queueName);
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
         }
 
@@ -161,14 +150,14 @@ public sealed class AzureQueuesPipeline : IQueue
         Response? result = await this._queue.CreateIfNotExistsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         this._log.LogTrace("Queue ready: status code {0}", result?.Status);
 
-        this._poisonQueue = this._clientBuilder(this._queueName + PoisonQueueSuffix);
+        this._poisonQueue = this._clientBuilder(this._queueName + this._config.PoisonQueueSuffix);
         result = await this._poisonQueue.CreateIfNotExistsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         this._log.LogTrace("Poison queue ready: status code {0}", result?.Status);
 
         if (options.DequeueEnabled)
         {
-            this._log.LogTrace("Enabling dequeue on queue {0}, every {1} msecs", this._queueName, PollDelayMsecs);
-            this._dispatchTimer = new Timer(PollDelayMsecs); // milliseconds
+            this._log.LogTrace("Enabling dequeue on queue {0}, every {1} msecs", this._queueName, this._config.PollDelayMsecs);
+            this._dispatchTimer = new Timer(this._config.PollDelayMsecs); // milliseconds
             this._dispatchTimer.Elapsed += this.DispatchMessages;
             this._dispatchTimer.Start();
         }
@@ -195,13 +184,14 @@ public sealed class AzureQueuesPipeline : IQueue
     {
         this.Received += async (object sender, MessageEventArgs args) =>
         {
-            QueueMessage message = args.Message!;
+            ArgumentNullExceptionEx.ThrowIfNull(args.Message, nameof(args.Message), "The message received is NULL");
+            QueueMessage message = args.Message;
 
             this._log.LogInformation("Message '{0}' received, expires at {1}", message.MessageId, message.ExpiresOn);
 
             try
             {
-                if (message.DequeueCount <= MaxRetryBeforePoisonQueue)
+                if (message.DequeueCount <= this._config.MaxRetriesBeforePoisonQueue)
                 {
                     bool success = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
                     if (success)
@@ -271,7 +261,7 @@ public sealed class AzureQueuesPipeline : IQueue
             try
             {
                 // Fetch and Hide N messages
-                Response<QueueMessage[]> receiveMessages = this._queue.ReceiveMessages(FetchBatchSize, visibilityTimeout: TimeSpan.FromSeconds(FetchLockSeconds));
+                Response<QueueMessage[]> receiveMessages = this._queue.ReceiveMessages(this._config.FetchBatchSize, visibilityTimeout: TimeSpan.FromSeconds(this._config.FetchLockSeconds));
                 if (receiveMessages.HasValue && receiveMessages.Value.Length > 0)
                 {
                     messages = receiveMessages.Value;
@@ -336,10 +326,10 @@ public sealed class AzureQueuesPipeline : IQueue
 
         var poisonMsg = new
         {
-            MessageText = message.MessageText,
+            message.MessageText,
             Id = message.MessageId,
-            InsertedOn = message.InsertedOn,
-            DequeueCount = message.DequeueCount,
+            message.InsertedOn,
+            message.DequeueCount,
         };
 
         var neverExpire = TimeSpan.FromSeconds(-1);
@@ -355,7 +345,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue account name is empty");
-            throw new ContentStorageException("The account name is empty");
+            throw new DocumentStorageException("The account name is empty");
         }
     }
 
@@ -364,7 +354,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue account key is empty");
-            throw new ContentStorageException("The Azure Queue account key is empty");
+            throw new DocumentStorageException("The Azure Queue account key is empty");
         }
     }
 
@@ -373,7 +363,7 @@ public sealed class AzureQueuesPipeline : IQueue
         if (string.IsNullOrEmpty(value))
         {
             this._log.LogCritical("The Azure Queue connection string is empty");
-            throw new ContentStorageException("The Azure Queue connection string is empty");
+            throw new DocumentStorageException("The Azure Queue connection string is empty");
         }
     }
 

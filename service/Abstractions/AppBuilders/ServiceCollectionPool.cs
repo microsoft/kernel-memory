@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +19,8 @@ namespace Microsoft.KernelMemory.AppBuilders;
 /// a dependency exists in any of the collections, and to loop
 /// through the complete list of service descriptors.
 /// </summary>
-public class ServiceCollectionPool : IServiceCollection
+[Experimental("KMEXP00")]
+public sealed class ServiceCollectionPool : IServiceCollection
 {
     /// <summary>
     /// Collection of service collections, ie the pool.
@@ -50,11 +52,7 @@ public class ServiceCollectionPool : IServiceCollection
     /// <param name="primaryCollection">The primary service collection</param>
     public ServiceCollectionPool(IServiceCollection primaryCollection)
     {
-        if (primaryCollection == null)
-        {
-            throw new ArgumentNullException(nameof(primaryCollection), "The primary service collection cannot be NULL");
-        }
-
+        ArgumentNullExceptionEx.ThrowIfNull(primaryCollection, nameof(primaryCollection), "The primary service collection cannot be NULL");
         this._poolSizeLocked = false;
         this._primaryCollection = primaryCollection;
         this._pool = new List<IServiceCollection> { primaryCollection };

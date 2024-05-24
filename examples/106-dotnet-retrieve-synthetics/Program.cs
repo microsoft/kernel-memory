@@ -39,7 +39,7 @@ await memory.ImportDocumentAsync(new Document("doc1")
 // Fetch the list of summaries. The API returns one summary for each file.
 var results = await memory.SearchSummariesAsync(filter: MemoryFilters.ByDocument("doc1"));
 
-// Print the summaries!
+// Print the summaries
 foreach (var result in results)
 {
     Console.WriteLine($"== {result.SourceName} summary ==\n{result.Partitions.First().Text}\n");
@@ -53,7 +53,7 @@ OUTPUT:
 == file4-KM-Readme.pdf summary ==
 Kernel Memory is an AI service designed for efficient indexing of datasets, supporting features like Retrieval Augmented Generation, synthetic memory, and custom semantic memory processing. It integrates with platforms like Semantic Kernel, Microsoft Copilot, and ChatGPT, and is available as a GPT Plugin, web clients, a .NET library, and a Docker container. It allows natural language querying and provides answers with citations from indexed data.
 Semantic Memory, part of the Semantic Kernel project, is a library for C#, Python, and Java that supports vector search and wraps database calls. Kernel Memory builds upon this, offering additional features like text extraction from various file formats, secure data frameworks, and a .NET codebase for ease of use across languages and platforms.
-Kernel Memory supports a wide range of data formats and backends, including Microsoft Office files, PDFs, web pages, images with OCR, and JSON files. It integrates with various AI and vector storage services and offers content storage and orchestration options.
+Kernel Memory supports a wide range of data formats and backends, including Microsoft Office files, PDFs, web pages, images with OCR, and JSON files. It integrates with various AI and vector storage services and offers document storage and orchestration options.
 Kernel Memory can be used in serverless mode, embedded in applications, or as a service for scalable document ingestion and information retrieval. It supports custom ingestion pipelines, data lineage, and citations for verifying answer accuracy.
 The service provides a web API with OpenAPI documentation for easy access and testing. It also includes a Docker image for quick deployment and a web client for file import and querying. Custom memory ingestion pipelines can be defined with .NET handlers, and the service offers a range of .NET packages for integration with different services and platforms. Python and Java packages are also planned, with contributions for other languages welcomed.
 

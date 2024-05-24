@@ -2,13 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
@@ -17,7 +17,8 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// Text generator, supporting OpenAI text and chat completion. The class can be used with any service
 /// supporting OpenAI HTTP schema, such as LM Studio HTTP API.
 /// </summary>
-public class OpenAITextGenerator : ITextGenerator
+[Experimental("KMEXP01")]
+public sealed class OpenAITextGenerator : ITextGenerator
 {
     private readonly OpenAIClient _client;
     private readonly ILogger<OpenAITextGenerator> _log;
@@ -187,7 +188,7 @@ public class OpenAITextGenerator : ITextGenerator
     {
         if (string.IsNullOrEmpty(config.TextModel))
         {
-            throw new ConfigurationException("The OpenAI model name is empty");
+            throw new ConfigurationException($"OpenAI: {nameof(config.TextModel)} is empty");
         }
 
         this._model = config.TextModel;
@@ -204,7 +205,7 @@ public class OpenAITextGenerator : ITextGenerator
                 this._useTextCompletionProtocol = false;
                 break;
             default:
-                throw new ArgumentOutOfRangeException($"Unsupported text completion type '{config.TextGenerationType:G}'");
+                throw new ArgumentOutOfRangeException(nameof(config.TextGenerationType), $"Unsupported text completion type '{config.TextGenerationType:G}'");
         }
     }
 

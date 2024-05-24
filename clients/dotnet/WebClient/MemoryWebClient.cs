@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,21 +15,41 @@ using Microsoft.KernelMemory.Internals;
 
 namespace Microsoft.KernelMemory;
 
-public class MemoryWebClient : IKernelMemory
+#pragma warning disable CA2234 // using string URIs is ok
+
+/// <summary>
+/// Kernel Memory web service client
+/// </summary>
+public sealed class MemoryWebClient : IKernelMemory
 {
     private static readonly JsonSerializerOptions s_caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private readonly HttpClient _client;
 
+    /// <summary>
+    /// New instance of web client to use Kernel Memory web service
+    /// </summary>
+    /// <param name="endpoint">Kernel Memory web service endpoint</param>
+    /// <param name="apiKey">Kernel Memory web service API Key (if configured)</param>
+    /// <param name="apiKeyHeader">Name of HTTP header to use to send API Key</param>
     public MemoryWebClient(string endpoint, string? apiKey = "", string apiKeyHeader = "Authorization")
         : this(endpoint, new HttpClient(), apiKey: apiKey, apiKeyHeader: apiKeyHeader)
     {
     }
 
+    /// <summary>
+    /// New instance of web client to use Kernel Memory web service
+    /// </summary>
+    /// <param name="endpoint">Kernel Memory web service endpoint</param>
+    /// <param name="client">Custom HTTP Client to use (note: BaseAddress is overwritten)</param>
+    /// <param name="apiKey">Kernel Memory web service API Key (if configured)</param>
+    /// <param name="apiKeyHeader">Name of HTTP header to use to send API Key</param>
     public MemoryWebClient(string endpoint, HttpClient client, string? apiKey = "", string apiKeyHeader = "Authorization")
     {
+        ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(endpoint, nameof(endpoint), "Kernel Memory endpoint is empty");
+
         this._client = client;
-        this._client.BaseAddress = new Uri(endpoint);
+        this._client.BaseAddress = new Uri(endpoint.CleanBaseAddress());
 
         if (!string.IsNullOrEmpty(apiKey))
         {
@@ -98,16 +119,19 @@ public class MemoryWebClient : IKernelMemory
         IEnumerable<string>? steps = null,
         CancellationToken cancellationToken = default)
     {
-        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(text));
-        return await this.ImportDocumentAsync(
-                content,
-                fileName: "content.txt",
-                documentId: documentId,
-                tags,
-                index: index,
-                steps: steps,
-                cancellationToken)
-            .ConfigureAwait(false);
+        Stream content = new MemoryStream(Encoding.UTF8.GetBytes(text));
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImportDocumentAsync(
+                    content,
+                    fileName: "content.txt",
+                    documentId: documentId,
+                    tags,
+                    index: index,
+                    steps: steps,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -122,27 +146,30 @@ public class MemoryWebClient : IKernelMemory
         var uri = new Uri(url);
         Verify.ValidateUrl(uri.AbsoluteUri, requireHttps: false, allowReservedIp: false, allowQuery: true);
 
-        using Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
-        return await this.ImportDocumentAsync(
-                content,
-                fileName: "content.url",
-                documentId: documentId,
-                tags,
-                index: index,
-                steps: steps,
-                cancellationToken)
-            .ConfigureAwait(false);
+        Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
+        await using (content.ConfigureAwait(false))
+        {
+            return await this.ImportDocumentAsync(
+                    content,
+                    fileName: "content.url",
+                    documentId: documentId,
+                    tags,
+                    index: index,
+                    steps: steps,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<IndexDetails>> ListIndexesAsync(CancellationToken cancellationToken = default)
     {
-        const string URL = Constants.HttpIndexesEndpoint;
-        HttpResponseMessage? response = await this._client.GetAsync(URL, cancellationToken).ConfigureAwait(false);
+        var url = Constants.HttpIndexesEndpoint.CleanUrlPath();
+        HttpResponseMessage response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var data = JsonSerializer.Deserialize<IndexCollection>(json, s_caseInsensitiveJsonOptions) ?? new IndexCollection();
 
         return data.Results;
@@ -152,8 +179,9 @@ public class MemoryWebClient : IKernelMemory
     public async Task DeleteIndexAsync(string? index = null, CancellationToken cancellationToken = default)
     {
         var url = Constants.HttpDeleteIndexEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index);
-        HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .CleanUrlPath();
+        HttpResponseMessage response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
         // No error if the index doesn't exist
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -180,9 +208,10 @@ public class MemoryWebClient : IKernelMemory
         }
 
         var url = Constants.HttpDeleteDocumentEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index)
-            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
-        HttpResponseMessage? response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase)
+            .CleanUrlPath();
+        HttpResponseMessage response = await this._client.DeleteAsync(url, cancellationToken).ConfigureAwait(false);
 
         // No error if the document doesn't exist
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -217,8 +246,9 @@ public class MemoryWebClient : IKernelMemory
         CancellationToken cancellationToken = default)
     {
         var url = Constants.HttpUploadStatusEndpointWithParams
-            .Replace(Constants.HttpIndexPlaceholder, index)
-            .Replace(Constants.HttpDocumentIdPlaceholder, documentId);
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase)
+            .CleanUrlPath();
         HttpResponseMessage? response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -227,10 +257,37 @@ public class MemoryWebClient : IKernelMemory
 
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
 
         return status;
+    }
+
+    /// <inheritdoc />
+    public async Task<StreamableFileContent> ExportFileAsync(
+        string documentId,
+        string fileName,
+        string? index = null,
+        CancellationToken cancellationToken = default)
+    {
+        var url = Constants.HttpDownloadEndpointWithParams
+            .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase)
+            .Replace(Constants.HttpFilenamePlaceholder, fileName, StringComparison.OrdinalIgnoreCase)
+            .CleanUrlPath();
+
+        HttpResponseMessage httpResponse = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        ArgumentNullExceptionEx.ThrowIfNull(httpResponse, nameof(httpResponse), "KernelMemory HTTP response is NULL");
+
+        httpResponse.EnsureSuccessStatusCode();
+        (string contentType, long contentLength, DateTimeOffset lastModified) = GetFileDetails(httpResponse);
+
+        return new StreamableFileContent(
+            fileName: fileName,
+            fileSize: contentLength,
+            fileType: contentType,
+            lastWriteTimeUtc: lastModified,
+            asyncStreamDelegate: httpResponse.Content.ReadAsStreamAsync);
     }
 
     /// <inheritdoc />
@@ -260,10 +317,11 @@ public class MemoryWebClient : IKernelMemory
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
+        var url = Constants.HttpSearchEndpoint.CleanUrlPath();
+        HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<SearchResult>(json, s_caseInsensitiveJsonOptions) ?? new SearchResult();
     }
 
@@ -292,14 +350,56 @@ public class MemoryWebClient : IKernelMemory
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
+        var url = Constants.HttpAskEndpoint.CleanUrlPath();
+        HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
     }
 
     #region private
+
+    private static (string contentType, long contentLength, DateTimeOffset lastModified) GetFileDetails(HttpResponseMessage response)
+    {
+        string contentType = "application/octet-stream";
+        long contentLength = 0;
+        DateTimeOffset lastModified = DateTimeOffset.MinValue;
+
+        // Headers example:
+        // - HTTP/1.1 200 OK
+        // - Content-Length: 96195
+        // - Content-Type: text/plain
+        // - Date: Fri, 13 May 2044 10:09:30 GMT
+        // - Server: Kestrel
+        // - Accept-Ranges: bytes
+        // - Last-Modified: Fri, 03 May 2044 09:10:30 GMT
+        // - Content-Disposition: attachment; filename=file1.pdf; filename*=UTF-8''file1.pdf
+        response.Content.Headers.TryGetValues("Content-Type", out IEnumerable<string>? contentTypeValues);
+        response.Content.Headers.TryGetValues("Content-Length", out IEnumerable<string>? contentLengthValues);
+        response.Content.Headers.TryGetValues("Last-Modified", out IEnumerable<string>? lastModifiedValues);
+        // response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositionValues);
+
+        if (contentTypeValues != null && contentTypeValues.Any())
+        {
+            contentType = contentTypeValues.First();
+        }
+
+        if (contentLengthValues != null && contentLengthValues.Any())
+        {
+            contentLength = long.Parse(contentLengthValues.First(), CultureInfo.CurrentCulture);
+        }
+
+        if (lastModifiedValues != null && lastModifiedValues.Any())
+        {
+            if (!DateTimeOffset.TryParse(lastModifiedValues.First(), out lastModified))
+            {
+                lastModified = DateTimeOffset.MinValue;
+            }
+        }
+
+        return (contentType, contentLength, lastModified);
+    }
 
     /// <returns>Document ID</returns>
     private async Task<string> ImportInternalAsync(
@@ -313,7 +413,7 @@ public class MemoryWebClient : IKernelMemory
         using StringContent indexContent = new(index);
         using (StringContent documentIdContent = new(uploadRequest.DocumentId))
         {
-            List<IDisposable> disposables = new();
+            List<IDisposable> disposables = [];
             formData.Add(indexContent, Constants.WebServiceIndexField);
             formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
 
@@ -353,7 +453,8 @@ public class MemoryWebClient : IKernelMemory
             // Send HTTP request
             try
             {
-                HttpResponseMessage? response = await this._client.PostAsync("/upload", formData, cancellationToken).ConfigureAwait(false);
+                var url = Constants.HttpUploadEndpoint.CleanUrlPath();
+                HttpResponseMessage response = await this._client.PostAsync(url, formData, cancellationToken).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e) when (e.Data.Contains("StatusCode"))
@@ -366,7 +467,6 @@ public class MemoryWebClient : IKernelMemory
             }
             finally
             {
-                formData.Dispose();
                 foreach (var disposable in disposables)
                 {
                     disposable.Dispose();

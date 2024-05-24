@@ -1,0 +1,59 @@
+name: Unit Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "main"
+      - "feature*"
+      - "dev"
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.sln"
+      - "appsettings.json"
+  schedule:
+    - cron: "55 0 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-test:
+    name: Unit Tests
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - { dotnet: "8.0.x", os: "ubuntu-latest" }
+          - { dotnet: "8.0.x", os: "windows-latest" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+
+      - name: Display .NET version
+        run: dotnet --version
+
+      - name: Build solution
+        run: dotnet build KernelMemory.sln -c Debug --nologo
+
+      - name: Run Unit Tests
+        run: dotnet test KernelMemory.sln -c Debug --filter Category=UnitTest -v q -l html --results-directory "TestResults-${{ matrix.os }}-${{ matrix.dotnet }}" --nologo --no-build
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-results-${{ matrix.os }}-${{ matrix.dotnet }}
+          path: TestResults-${{ matrix.os }}-${{ matrix.dotnet }}
+        if: ${{ always() }}

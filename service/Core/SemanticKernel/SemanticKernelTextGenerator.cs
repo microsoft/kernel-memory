@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -14,7 +13,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory.SemanticKernel;
 
-internal class SemanticKernelTextGenerator : ITextGenerator
+internal sealed class SemanticKernelTextGenerator : ITextGenerator
 {
     private readonly ITextGenerationService _service;
     private readonly ITextTokenizer _tokenizer;
@@ -32,7 +31,9 @@ internal class SemanticKernelTextGenerator : ITextGenerator
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._service = textGenerationService ?? throw new ArgumentNullException(nameof(textGenerationService));
+        ArgumentNullExceptionEx.ThrowIfNull(textGenerationService, nameof(textGenerationService), "Text generation service is null");
+
+        this._service = textGenerationService;
         this.MaxTokenTotal = config.MaxTokenTotal;
 
         var log = loggerFactory?.CreateLogger<SemanticKernelTextGenerator>();

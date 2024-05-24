@@ -498,73 +498,6 @@ dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidde
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
 
 ###############################
-# Naming Conventions          #
-###############################
-
-# Styles
-
-dotnet_naming_style.pascal_case_style.capitalization = pascal_case
-
-dotnet_naming_style.camel_case_style.capitalization = camel_case
-
-dotnet_naming_style.static_underscored.capitalization = camel_case
-dotnet_naming_style.static_underscored.required_prefix = s_
-
-dotnet_naming_style.underscored.capitalization = camel_case
-dotnet_naming_style.underscored.required_prefix = _
-
-dotnet_naming_style.uppercase_with_underscore_separator.capitalization = all_upper
-dotnet_naming_style.uppercase_with_underscore_separator.word_separator = _
-
-dotnet_naming_style.end_in_async.required_prefix =
-dotnet_naming_style.end_in_async.required_suffix = Async
-dotnet_naming_style.end_in_async.capitalization = pascal_case
-dotnet_naming_style.end_in_async.word_separator =
-
-# Symbols
-
-dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
-dotnet_naming_symbols.constant_fields.required_modifiers = const
-
-dotnet_naming_symbols.local_constant.applicable_kinds = local
-dotnet_naming_symbols.local_constant.applicable_accessibilities = *
-dotnet_naming_symbols.local_constant.required_modifiers = const
-
-dotnet_naming_symbols.private_static_fields.applicable_kinds = field
-dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_fields.required_modifiers = static
-
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
-
-dotnet_naming_symbols.any_async_methods.applicable_kinds = method
-dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
-dotnet_naming_symbols.any_async_methods.required_modifiers = async
-
-# Rules
-
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
-dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
-
-dotnet_naming_rule.local_constant_should_be_pascal_case.symbols = local_constant
-dotnet_naming_rule.local_constant_should_be_pascal_case.style = pascal_case_style
-dotnet_naming_rule.local_constant_should_be_pascal_case.severity = error
-
-dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
-dotnet_naming_rule.private_static_fields_underscored.style = static_underscored
-dotnet_naming_rule.private_static_fields_underscored.severity = error
-
-dotnet_naming_rule.private_fields_underscored.symbols = private_fields
-dotnet_naming_rule.private_fields_underscored.style = underscored
-dotnet_naming_rule.private_fields_underscored.severity = error
-
-dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
-dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
-dotnet_naming_rule.async_methods_end_in_async.severity = error
-
-###############################
 # C# Coding Conventions       #
 ###############################
 
@@ -636,23 +569,156 @@ csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
 ###############################
-# Test and Examples           #
+# Global Naming Conventions   #
 ###############################
 
-[**/*.{FunctionalTests,TestApplication,UnitTests}/**.cs]
+# Styles
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+dotnet_naming_style.static_underscored.capitalization = camel_case
+dotnet_naming_style.static_underscored.required_prefix = s_
+
+dotnet_naming_style.underscored.capitalization = camel_case
+dotnet_naming_style.underscored.required_prefix = _
+
+dotnet_naming_style.uppercase_with_underscore_separator.capitalization = all_upper
+dotnet_naming_style.uppercase_with_underscore_separator.word_separator = _
+
+dotnet_naming_style.end_in_async.required_prefix =
+dotnet_naming_style.end_in_async.required_suffix = Async
+dotnet_naming_style.end_in_async.capitalization = pascal_case
+dotnet_naming_style.end_in_async.word_separator =
+
+# Symbols
+
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+
+dotnet_naming_symbols.local_constant.applicable_kinds = local
+dotnet_naming_symbols.local_constant.applicable_accessibilities = *
+dotnet_naming_symbols.local_constant.required_modifiers = const
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds = method
+dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
+dotnet_naming_symbols.any_async_methods.required_modifiers = async
+
+# Rules
+
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.local_constant_should_be_pascal_case.symbols = local_constant
+dotnet_naming_rule.local_constant_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.local_constant_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_underscored.style = static_underscored
+dotnet_naming_rule.private_static_fields_underscored.severity = error
+
+dotnet_naming_rule.private_fields_underscored.symbols = private_fields
+dotnet_naming_rule.private_fields_underscored.style = underscored
+dotnet_naming_rule.private_fields_underscored.severity = error
+
+#####################################################################################################
+# Naming Conventions by folder                                                                      #
+# See also https://www.jetbrains.com/help/resharper/Coding_Assistance__Naming_Style.html#configure  #
+#####################################################################################################
+
+[{clients,extensions,service,tools}/**.cs]
+
+dotnet_naming_style.end_in_async.required_prefix =
+dotnet_naming_style.end_in_async.required_suffix = Async
+dotnet_naming_style.end_in_async.capitalization = pascal_case
+dotnet_naming_style.end_in_async.word_separator =
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds = method
+dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
+dotnet_naming_symbols.any_async_methods.required_modifiers = async
+
+dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
+dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
+dotnet_naming_rule.async_methods_end_in_async.severity = error
+
+[{examples,experiments}/**.cs]
+
+dotnet_naming_style.end_in_async.required_prefix =
+dotnet_naming_style.end_in_async.required_suffix = Async
+dotnet_naming_style.end_in_async.capitalization = pascal_case
+dotnet_naming_style.end_in_async.word_separator =
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds = method
+dotnet_naming_symbols.any_async_methods.applicable_accessibilities = *
+dotnet_naming_symbols.any_async_methods.required_modifiers = async
+
+dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
+dotnet_naming_rule.async_methods_end_in_async.style = end_in_async
+dotnet_naming_rule.async_methods_end_in_async.severity = silent
+
+#####################################
+# Exceptions for Tests and Examples #
+#####################################
+
+# dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names[*.cs]
+# dotnet_diagnostic.IDE0130.severity = none # No namespace checks
+
+[**/{*.{FunctionalTests,TestApplication,UnitTests},TestHelpers}/**.cs]
+
+dotnet_diagnostic.CA1031.severity = none # catch a more specific allowed exception type, or rethrow the exception
+dotnet_diagnostic.CA1051.severity = none # Do not declare visible instance fields
 dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+dotnet_diagnostic.CA1305.severity = none # The behavior of 'DateTimeOffset.ToString(string)' could vary based on the current user's locale settings
+dotnet_diagnostic.CA1307.severity = none # 'string.Contains(string)' has a method overload that takes a 'StringComparison' parameter. Replace this call
+dotnet_diagnostic.CA1711.severity = none # Rename type name so that it does not end in 'Collection'
+dotnet_diagnostic.CA1826.severity = none # Do not use Enumerable methods on indexable collections. Instead use the collection directly
+dotnet_diagnostic.CA1859.severity = none # Change return type of method for improved performance
+dotnet_diagnostic.CA1861.severity = none # Prefer 'static readonly' fields over constant array arguments
+dotnet_diagnostic.CA2000.severity = none # Call System.IDisposable.Dispose on object
 dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in tests
+dotnet_diagnostic.CA2201.severity = none # Exception type XYZ is not sufficiently specific
+dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.IDE0005.severity = none # No need for documentation
+dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names
+dotnet_diagnostic.KMEXP00.severity = none # XYZ is for evaluation purposes only
+dotnet_diagnostic.KMEXP01.severity = none # XYZ is for evaluation purposes only
+dotnet_diagnostic.KMEXP03.severity = none # XYZ is for evaluation purposes only
+dotnet_diagnostic.SKEXP0010.severity = none # XYZ is for evaluation purposes only
+
 resharper_inconsistent_naming_highlighting = none
+# resharper_check_namespace_highlighting = none
+# resharper_arrange_attributes_highlighting = none
+# resharper_unused_member_global_highlighting = none
+# resharper_comment_typo_highlighting = none
 
 [examples/**.cs]
+
+dotnet_diagnostic.CA1031.severity = none # catch a more specific allowed exception type, or rethrow the exception
+dotnet_diagnostic.CA1050.severity = none # Declare types in namespaces
 dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
+dotnet_diagnostic.CA1859.severity = none # Change return type of method for improved performance
+dotnet_diagnostic.CA2000.severity = none # Call System.IDisposable.Dispose on object
 dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in examples
+dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
+dotnet_diagnostic.IDE0005.severity = none # No need for documentation
+dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names
+dotnet_diagnostic.KMEXP00.severity = none # XYZ is for evaluation purposes only
 dotnet_diagnostic.SKEXP0003.severity = none
+dotnet_diagnostic.SKEXP0010.severity = none # XYZ is for evaluation purposes only
 dotnet_diagnostic.SKEXP0011.severity = none
 dotnet_diagnostic.SKEXP0052.severity = none
 dotnet_diagnostic.SKEXP0101.severity = none
 
-# resharper_check_namespace_highlighting = none
-# dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names[*.cs]
-# dotnet_diagnostic.IDE0130.severity = none # No namespace checks
+resharper_comment_typo_highlighting = none
+

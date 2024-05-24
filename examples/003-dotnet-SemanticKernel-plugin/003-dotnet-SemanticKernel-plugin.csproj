@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
+        <ProjectReference Include="..\..\clients\dotnet\WebClient\WebClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SemanticKernel" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="mydocs-NASA-news.pdf" />
+        <Content Include="mydocs-NASA-news.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+</Project>

@@ -1,41 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Service.AspNetCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var webAppBuilder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to your ASP.NET app
+webAppBuilder.Services.AddControllers();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add Kernel Memory to your ASP.NET app
+webAppBuilder.AddKernelMemory(kmBuilder =>
+    {
+        // Configure Kernel Memory here if needed
+        kmBuilder
+            .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
+            .WithCustomImageOcr(new MyOcrEngine());
+    }
+);
 
-// === Memory stuff begin ===
-// * builder.Services is passed to the builder, so memory dependencies like the OCR service can be used also in our ASP.NET controllers
-IKernelMemory memory = new KernelMemoryBuilder(builder.Services)
-    .WithOpenAIDefaults(Env.Var("OPENAI_API_KEY"))
-    .WithCustomImageOcr(new MyOcrEngine())
-    .Build();
+// Build ASP.NET app
+var wepApp = webAppBuilder.Build();
 
-// Add the memory to the ASP.NET services so our controllers can use it
-builder.Services.AddSingleton(memory);
+// Typical ASP.NET app setup
+wepApp.UseHttpsRedirection();
+wepApp.UseAuthorization();
+wepApp.MapControllers();
 
-// === Memory stuff end ===
+// Optional: add Kernel Memory web endpoints
+wepApp.AddGetIndexesEndpoint("/km/"); // GET /km/indexes
 
-var app = builder.Build();
+// Start ASP.NET app
+wepApp.Run();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Try GET http://localhost:5000/memory     => see MemoryController
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+// Try GET http://localhost:5000/km/indexes => list of KM indexes

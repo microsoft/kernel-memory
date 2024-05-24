@@ -4,10 +4,10 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.TestHelpers;
+using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Core.UnitTests.FileSystem.DevTools;
+namespace Microsoft.KM.Core.UnitTests.FileSystem.DevTools;
 
 public class InMemoryFileSystemTest : BaseUnitTestCase
 {
@@ -178,6 +178,34 @@ public class InMemoryFileSystemTest : BaseUnitTestCase
 
         // Act
         var content = await this._target.ReadFileAsTextAsync(Vol, "sub1/sub2", "file.txt");
+
+        // Assert
+        Assert.Equal("some content", content);
+
+        // Cleanup
+        await this._target.DeleteVolumeAsync(Vol);
+    }
+
+    [Fact]
+    [Trait("Category", "UnitTest")]
+    public async Task ItStreamsFilesThatExist()
+    {
+        // Arrange
+        const string Vol = "v5";
+        await this._target.CreateVolumeAsync(Vol);
+        await this._target.CreateDirectoryAsync(Vol, "sub1/sub2");
+        await this._target.WriteFileAsync(Vol, "sub1/sub2", "file.txt", "some content");
+
+        // Act
+        var contentFile = await this._target.ReadFileInfoAsync(Vol, "sub1/sub2", "file.txt");
+        BinaryData? data;
+        await using (Stream stream = await contentFile.GetStreamAsync())
+        {
+            data = new BinaryData(stream.ReadAllBytes());
+            stream.Close();
+        }
+
+        var content = data.ToString();
 
         // Assert
         Assert.Equal("some content", content);

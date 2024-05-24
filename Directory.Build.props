@@ -1,21 +1,20 @@
 <!-- App Settings -->
 <Project>
     <PropertyGroup>
-        <!-- Default properties inherited by all projects. Projects can override. -->
-        <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-        <AnalysisLevel>latest</AnalysisLevel>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <LangVersion>11</LangVersion>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <RollForward>LatestMajor</RollForward>
-    </PropertyGroup>
+        <!-- Central version prefix - applies to all nuget packages. -->
+        <Version>0.61.0</Version>
 
-    <PropertyGroup>
-        <!-- Disable NuGet packaging by default. Projects can override. -->
-        <IsPackable>disable</IsPackable>
+        <!-- C# lang version, https://learn.microsoft.com/dotnet/csharp/whats-new -->
+        <LangVersion>12</LangVersion>
+
+        <!-- https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/nullable-value-types -->
+        <Nullable>enable</Nullable>
+
+        <!-- https://devblogs.microsoft.com/dotnet/welcome-to-csharp-10 -->
+        <ImplicitUsings>disable</ImplicitUsings>
+
+        <!-- https://learn.microsoft.com/dotnet/core/tools/global-json#rollforward -->
+        <RollForward>LatestMajor</RollForward>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -28,7 +27,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
+        <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,4 +36,102 @@
             <_Parameter1>false</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
+
+    <!-- ################################# -->
+    <!-- ###### CODE ANALYSIS START ###### -->
+    <!-- ################################# -->
+
+    <PropertyGroup>
+        <!-- Default properties inherited by all projects. Projects can override. -->
+        <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisMode>All</AnalysisMode>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <!-- Used by IDE0005 -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Roslynator.Formatting.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <!-- ###### CODE ANALYSIS END ######## -->
+
+    <!-- ################################# -->
+    <!-- ###### NUGET START ############## -->
+    <!-- ################################# -->
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <!-- Disable NuGet packaging by default. Projects can override. -->
+        <IsPackable>false</IsPackable>
+
+        <!-- Default description and tags. Packages can override. -->
+        <OutputType>Library</OutputType>
+        <Authors>Microsoft</Authors>
+        <Company>Microsoft</Company>
+        <Product>Kernel Memory</Product>
+        <Description>Memory Service and Plugin to index and query any data using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Memory, RAG, Plugin, Semantic Memory, Episodic Memory, Declarative Memory, Copilot, AI, Kernel Memory, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+
+        <!-- Required license, copyright, and repo information. Packages can override. -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+        <PackageProjectUrl>https://github.com/microsoft/kernel-memory</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/microsoft/kernel-memory</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <!-- Use icon linked below -->
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageIconUrl>icon.png</PackageIconUrl>
+
+        <!-- Use readme linked by the project (csproj must include a README) -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <!-- Embed C# sources in PDB -->
+        <EmbedAllSources>true</EmbedAllSources>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+        <!-- SourceLink allows step-through debugging for source hosted on GitHub. -->
+        <!-- https://github.com/dotnet/sourcelink -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+
+        <None Include="$(RepoRoot)icon.png" Link="icon.png" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+    <!-- ###### NUGET END ################ -->
 </Project>

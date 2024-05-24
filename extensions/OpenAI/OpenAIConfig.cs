@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -70,25 +69,35 @@ public class OpenAIConfig
     public int MaxRetries { get; set; } = 10;
 
     /// <summary>
+    /// The number of dimensions output embeddings should have.
+    /// Only supported in "text-embedding-3" and later models developed with
+    /// MRL, see https://arxiv.org/abs/2205.13147
+    /// </summary>
+    public int? EmbeddingDimensions { get; set; }
+
+    /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(this.APIKey))
         {
-            throw new ArgumentOutOfRangeException(nameof(this.APIKey), "The API Key is empty");
+            throw new ConfigurationException($"OpenAI: {nameof(this.APIKey)} is empty");
         }
 
         if (this.TextModelMaxTokenTotal < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.TextModelMaxTokenTotal),
-                $"{nameof(this.TextModelMaxTokenTotal)} cannot be less than 1");
+            throw new ConfigurationException($"OpenAI: {nameof(this.TextModelMaxTokenTotal)} cannot be less than 1");
         }
 
         if (this.EmbeddingModelMaxTokenTotal < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(this.EmbeddingModelMaxTokenTotal),
-                $"{nameof(this.EmbeddingModelMaxTokenTotal)} cannot be less than 1");
+            throw new ConfigurationException($"OpenAI: {nameof(this.EmbeddingModelMaxTokenTotal)} cannot be less than 1");
+        }
+
+        if (this.EmbeddingDimensions is < 1)
+        {
+            throw new ConfigurationException($"OpenAI: {nameof(this.EmbeddingDimensions)} cannot be less than 1");
         }
     }
 }

@@ -3,13 +3,13 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Xunit.Abstractions;
 
-namespace Microsoft.TestHelpers;
+namespace Microsoft.KM.TestHelpers;
 
 public abstract class BaseFunctionalTestCase : IDisposable
 {
@@ -29,6 +29,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
     protected readonly AzureCosmosDBMongoDBConfig AzureCosmosDBMongoDBConfig;
+    protected readonly ElasticsearchConfig ElasticsearchConfig;
 
     // IMPORTANT: install Xunit.DependencyInjection package
     protected BaseFunctionalTestCase(IConfiguration cfg, ITestOutputHelper output)
@@ -48,6 +49,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.SimpleVectorDbConfig = cfg.GetSection("KernelMemory:Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
         this.LlamaSharpConfig = cfg.GetSection("KernelMemory:Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
         this.AzureCosmosDBMongoDBConfig = cfg.GetSection("KernelMemory:Services:AzureCosmosDBMongoDB").Get<AzureCosmosDBMongoDBConfig>() ?? new();
+        this.ElasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>() ?? new();
     }
 
     protected IKernelMemory GetMemoryWebClient()
@@ -84,7 +86,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
                     .Build<MemoryServerless>();
 
             default:
-                throw new ArgumentOutOfRangeException($"{memoryType} not supported");
+                throw new ArgumentOutOfRangeException(nameof(memoryType), $"{memoryType} not supported");
         }
     }
 

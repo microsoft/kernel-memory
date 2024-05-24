@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KM.TestHelpers;
 using Microsoft.SemanticKernel;
-using Microsoft.TestHelpers;
 using Xunit.Abstractions;
 
-namespace Microsoft.Service.FunctionalTests;
+namespace Microsoft.KM.Service.FunctionalTests;
 
 public class SKPluginTest : BaseFunctionalTestCase
 {

@@ -92,7 +92,16 @@ public interface IPipelineOrchestrator
     Task StopAllPipelinesAsync();
 
     /// <summary>
-    /// Fetch a file from content storage
+    /// Fetch a file from document storage, streaming its content and details
+    /// </summary>
+    /// <param name="pipeline">Pipeline containing the file</param>
+    /// <param name="fileName">Name of the file to fetch</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>File data</returns>
+    Task<StreamableFileContent> ReadFileAsStreamAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetch a file from document storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
@@ -100,7 +109,7 @@ public interface IPipelineOrchestrator
     Task<BinaryData> ReadFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch a file from content storage
+    /// Fetch a file from document storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
@@ -108,7 +117,7 @@ public interface IPipelineOrchestrator
     Task<string> ReadTextFileAsync(DataPipeline pipeline, string fileName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Write a text file from content storage
+    /// Write a text file from document storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
@@ -117,7 +126,7 @@ public interface IPipelineOrchestrator
     Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Write a file from content storage
+    /// Write a file from document storage
     /// </summary>
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
@@ -163,7 +172,7 @@ public interface IPipelineOrchestrator
 
     /// <summary>
     /// Start an asynchronous job, via handlers, to delete a specified index
-    /// from vector and content storage. This might be a long running
+    /// from vector and document storage. This might be a long running
     /// operation, hence the use of queue/handlers.
     /// </summary>
     /// <param name="index">Optional index name</param>

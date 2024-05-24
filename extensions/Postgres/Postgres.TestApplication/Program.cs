@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.ContentStorage.DevTools;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
-using Microsoft.KernelMemory.Postgres;
 
-namespace Postgres.TestApplication;
+namespace Microsoft.Postgres.TestApplication;
 
-internal class Program
+internal static class Program
 {
     public static async Task Main()
     {
@@ -23,30 +22,34 @@ internal class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var postgresConfig = cfg.GetSection("KernelMemory:Services:Postgres").Get<PostgresConfig>()
-                             ?? throw new ArgumentNullException(message: "Postgres config not found", null);
-        var azureOpenAIEmbeddingConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIEmbedding").Get<AzureOpenAIConfig>()
-                                         ?? throw new ArgumentNullException(message: "AzureOpenAIEmbedding config not found", null);
-        var azureOpenAITextConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIText").Get<AzureOpenAIConfig>()
-                                    ?? throw new ArgumentNullException(message: "AzureOpenAIText config not found", null);
+        var postgresConfig = cfg.GetSection("KernelMemory:Services:Postgres").Get<PostgresConfig>();
+        ArgumentNullExceptionEx.ThrowIfNull(postgresConfig, nameof(postgresConfig), "Postgres config not found");
 
-        // Concatenate our 'WithPostgres()' after 'WithOpenAIDefaults()' from the core nuget
+        var azureOpenAIEmbeddingConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIEmbedding").Get<AzureOpenAIConfig>();
+        ArgumentNullExceptionEx.ThrowIfNull(azureOpenAIEmbeddingConfig, nameof(azureOpenAIEmbeddingConfig), "AzureOpenAIEmbedding config not found");
+
+        var azureOpenAITextConfig = cfg.GetSection("KernelMemory:Services:AzureOpenAIText").Get<AzureOpenAIConfig>();
+        ArgumentNullExceptionEx.ThrowIfNull(azureOpenAITextConfig, nameof(azureOpenAITextConfig), "AzureOpenAIText config not found");
+
+        // Concatenate our 'WithPostgresMemoryDb()' after 'WithOpenAIDefaults()' from the core nuget
         var mem1 = new KernelMemoryBuilder()
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .WithPostgresMemoryDb(postgresConfig)
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .Build();
 
-        // Concatenate our 'WithPostgres()' before 'WithOpenAIDefaults()' from the core nuget
+        // Concatenate our 'WithPostgresMemoryDb()' before 'WithOpenAIDefaults()' from the core nuget
         var mem2 = new KernelMemoryBuilder()
             .WithPostgresMemoryDb(postgresConfig)
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .Build();
 
-        // Concatenate our 'WithPostgres()' before and after KM builder extension methods from the core nuget
+        // Concatenate our 'WithPostgresMemoryDb()' before and after KM builder extension methods from the core nuget
         var mem3 = new KernelMemoryBuilder()
-            .WithSimpleFileStorage()
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithPostgresMemoryDb(postgresConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)

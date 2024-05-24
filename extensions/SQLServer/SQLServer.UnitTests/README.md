@@ -1,0 +1,1 @@
+Placeholder folder for the MS SQL Server memory extension

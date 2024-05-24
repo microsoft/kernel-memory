@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable RedundantUsingDirective
 // ReSharper disable InconsistentNaming
 // ReSharper disable CommentTypo
 
@@ -66,6 +65,7 @@ public static class Program
         await AskQuestionsFilteringByTypeTag();
         await AskQuestionsAboutExcelData();
         await AskQuestionsAboutJsonFile();
+        await DownloadFile();
 
         // =======================
         // === PURGE =============
@@ -86,6 +86,7 @@ public static class Program
                                                    "in a system's rest frame, where the two quantities differ only by a multiplicative " +
                                                    "constant and the units of measurement. The principle is described by the physicist " +
                                                    "Albert Einstein's formula: E = m*c^2");
+        Console.WriteLine($"- Document Id: {docId}");
         s_toDelete.Add(docId);
     }
 
@@ -93,8 +94,9 @@ public static class Program
     private static async Task StoreFile()
     {
         Console.WriteLine("Uploading article file about Carbon");
-        await s_memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt", documentId: "doc001");
-        s_toDelete.Add("doc001");
+        var docId = await s_memory.ImportDocumentAsync("file1-Wikipedia-Carbon.txt", documentId: "doc001");
+        s_toDelete.Add(docId);
+        Console.WriteLine($"- Document Id: {docId}");
     }
 
     // Extract memory from images (OCR required)
@@ -103,8 +105,9 @@ public static class Program
         if (!ImageSupportDemoEnabled) { return; }
 
         Console.WriteLine("Uploading Image file with a news about a conference sponsored by Microsoft");
-        await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(new[] { "file6-ANWC-image.jpg" }));
-        s_toDelete.Add("img001");
+        var docId = await s_memory.ImportDocumentAsync(new Document("img001").AddFiles(["file6-ANWC-image.jpg"]));
+        s_toDelete.Add(docId);
+        Console.WriteLine($"- Document Id: {docId}");
     }
 
     // Uploading multiple files and adding a user tag, checking if the document already exists
@@ -113,9 +116,11 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "doc002"))
         {
             Console.WriteLine("Uploading a text file, a Word doc, and a PDF about Kernel Memory");
-            await s_memory.ImportDocumentAsync(new Document("doc002")
-                .AddFiles(new[] { "file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf" })
+            var docId = await s_memory.ImportDocumentAsync(new Document("doc002")
+                .AddFiles(["file2-Wikipedia-Moon.txt", "file3-lorem-ipsum.docx", "file4-KM-Readme.pdf"])
                 .AddTag("user", "Blake"));
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -131,13 +136,15 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "doc003"))
         {
             Console.WriteLine("Uploading a PDF with a news about NASA and Orion");
-            await s_memory.ImportDocumentAsync(new Document("doc003")
+            var docId = await s_memory.ImportDocumentAsync(new Document("doc003")
                 .AddFile("file5-NASA-news.pdf")
                 .AddTag("user", "Taylor")
                 .AddTag("collection", "meetings")
                 .AddTag("collection", "NASA")
                 .AddTag("collection", "space")
                 .AddTag("type", "news"));
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -153,7 +160,9 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync("webPage1"))
         {
             Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md");
-            await s_memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "webPage1");
+            var docId = await s_memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "webPage1");
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -169,7 +178,9 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "htmlDoc001"))
         {
             Console.WriteLine("Uploading a HTML file about Apache Submarine project");
-            await s_memory.ImportDocumentAsync(new Document("htmlDoc001").AddFile("file7-submarine.html").AddTag("user", "Ela"));
+            var docId = await s_memory.ImportDocumentAsync(new Document("htmlDoc001").AddFile("file7-submarine.html").AddTag("user", "Ela"));
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -185,9 +196,11 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync("webPage2"))
         {
             Console.WriteLine("Uploading https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md");
-            await s_memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md",
+            var docId = await s_memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/docs/security/security-filters.md",
                 documentId: "webPage2",
                 steps: Constants.PipelineWithoutSummary);
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -203,7 +216,9 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "xls01"))
         {
             Console.WriteLine("Uploading Excel file with some empty cells");
-            await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(new[] { "file8-data.xlsx" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("xls01").AddFiles(["file8-data.xlsx"]));
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -219,7 +234,9 @@ public static class Program
         if (!await s_memory.IsDocumentReadyAsync(documentId: "json01"))
         {
             Console.WriteLine("Uploading JSON file");
-            await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(new[] { "file9-settings.json" }));
+            var docId = await s_memory.ImportDocumentAsync(new Document("json01").AddFiles(["file9-settings.json"]));
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
         }
         else
         {
@@ -264,7 +281,7 @@ public static class Program
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         // Show sources / citations
@@ -482,6 +499,28 @@ public static class Program
         AZURE_CLIENT_SECRET. If you choose to use an "APIKey", you would need to provide the actual API key in the configuration.
 
         */
+    }
+
+    // Download file and print details
+    private static async Task DownloadFile()
+    {
+        const string filename = "file1-Wikipedia-Carbon.txt";
+
+        Console.WriteLine("Downloading file");
+        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: filename);
+        var stream = new MemoryStream();
+        await (await result.GetStreamAsync()).CopyToAsync(stream);
+        var bytes = stream.ToArray();
+
+        Console.WriteLine();
+        Console.WriteLine("Original File name : " + filename);
+        Console.WriteLine("Original File size : " + new FileInfo(filename).Length);
+        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(filename)).Length);
+        Console.WriteLine();
+        Console.WriteLine("Downloaded File name : " + result.FileName);
+        Console.WriteLine("Downloaded File type : " + result.FileType);
+        Console.WriteLine("Downloaded File size : " + result.FileSize);
+        Console.WriteLine("Downloaded Bytes count: " + bytes.Length);
     }
 
     // =======================

@@ -27,7 +27,7 @@ Usage:
 
 Example:
 
-    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -u me -t "type:notes" -t "type:test" -i "bash test"
+    ./upload-file.sh -s http://127.0.0.1:9001 -f myFile.pdf -p me -t "type:notes" -t "type:test" -i "bash test"
 
 
 For more information visit https://github.com/microsoft/kernel-memory
@@ -69,11 +69,11 @@ readParameters() {
 
 validateParameters() {
     if [ -z "$SERVICE_URL" ]; then
-        echo "Please specify the web service URL"
+        echo "Please specify the web service URL. Use -h option for instructions."
         exit 1
     fi
     if [ -z "$FILENAME" ]; then
-        echo "Please specify a file to upload"
+        echo "Please specify a file to upload. Use -h option for instructions."
         exit 3
     fi
     if [ -d "$FILENAME" ]; then
