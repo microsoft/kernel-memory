@@ -229,8 +229,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDbAtlas.FunctionalTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCosmosDBMongoDB", "extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.csproj", "{8b62c632-9d70-4dc1-aeab-82d057a09a19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureCosmosDBMongoDB.FunctionalTests", "extensions\AzureCosmosDBMongoDB\AzureCosmosDBMongoDB.FunctionalTests\AzureCosmosDBMongoDB.FunctionalTests.csproj", "{27df6d22-92c2-44f1-8c2f-142cf607a96c}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "107-dotnet-SemanticKernel-TextCompletion", "examples\107-dotnet-SemanticKernel-TextCompletion\107-dotnet-SemanticKernel-TextCompletion.csproj", "{494B8590-F0B2-4D40-A895-F9D7BDF26250}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "208-dotnet-lmstudio", "examples\208-dotnet-lmstudio\208-dotnet-lmstudio.csproj", "{BC8057DA-CB40-4308-96FB-EF0100822BAD}"
@@ -531,9 +529,6 @@ Global
 		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8b62c632-9d70-4dc1-aeab-82d057a09a19}.Release|Any CPU.Build.0 = Release|Any CPU
-		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27df6d22-92c2-44f1-8c2f-142cf607a96c}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -619,7 +614,6 @@ Global
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{EE0D8645-2770-4E12-8E18-019B30970FE6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{8b62c632-9d70-4dc1-aeab-82d057a09a19} = {155DA079-E267-49AF-973A-D1D44681970F}
-		{27df6d22-92c2-44f1-8c2f-142cf607a96c} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
