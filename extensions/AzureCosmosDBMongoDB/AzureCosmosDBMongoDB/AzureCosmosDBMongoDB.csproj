@@ -9,8 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Abstractions" Condition="'$(SolutionName)' != 'KernelMemoryDev'" />
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" Condition="'$(SolutionName)' == 'KernelMemoryDev'" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,12 +18,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Microsoft.UnitTests" />
+        <InternalsVisibleTo Include="Microsoft.AzureCosmosDBMongoDB.UnitTests" />
+        <InternalsVisibleTo Include="Microsoft.AzureCosmosDBMongoDB.TestApplication" />
     </ItemGroup>
-
-    <Import Project="../../../code-analysis.props" />
-
-    <Import Project="../../../nuget-package.props" />
 
     <PropertyGroup>
         <IsPackable>false</IsPackable>

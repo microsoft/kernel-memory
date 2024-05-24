@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
@@ -28,23 +30,16 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     private readonly MongoClient _cosmosDBMongoClient;
     private readonly IMongoDatabase _cosmosMongoDatabase;
     private readonly IMongoCollection<AzureCosmosDBMongoDBMemoryRecord> _cosmosMongoCollection;
-    private readonly string _collectionName;
 
     /// <summary>
     /// Create a new instance
     /// </summary>
     /// <param name="config">Azure Cosmos DB for MongoDB configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="mongoClient">MongoClient for the MongoDB cluster</param>
-    /// <param name="databaseName">Database name for MongoDB</param>
-    /// <param name="collectionName">Collection name for MongoDB</param>
     /// <param name="log">Application logger</param>
     public AzureCosmosDBMongoDBMemory(
         AzureCosmosDBMongoDBConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        IMongoClient mongoClient,
-        string databaseName,
-        string collectionName,
         ILogger<AzureCosmosDBMongoDBMemory>? log = null)
     {
         this._embeddingGenerator = embeddingGenerator;
@@ -62,23 +57,13 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
             throw new AzureCosmosDBMongoDBMemoryException("Embedding generator not configured");
         }
 
-        if (mongoClient == null && config.ConnectionString == null) {
-            throw new AzureCosmosDBMongoDBMemoryException("You need to provide either the MongoClient or the Connection String for the MongoDB Cluster.");
-        }
-
-        if (mongoClient != null) {
-            MongoClientSettings settings = mongoClient.Settings;
-        } else {
-            MongoClientSettings settings = MongoClientSettings.FromConnectionString(config.ConnectionString);
-        }
-        
+        MongoClientSettings settings = MongoClientSettings.FromConnectionString(config.ConnectionString);
         settings.ApplicationName = config.ApplicationName;
         this._cosmosDBMongoClient = new MongoClient(settings);
-        this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(databaseName);
+        this._cosmosMongoDatabase = this._cosmosDBMongoClient.GetDatabase(config.DatabaseName);
 
-        this._cosmosMongoDatabase.CreateCollectionAsync(collectionName);
-        this._cosmosMongoCollection = this._cosmosMongoDatabase.GetCollection<AzureCosmosDBMongoDBMemoryRecord>(collectionName);
-        this._collectionName = collectionName;
+        this._cosmosMongoDatabase.CreateCollectionAsync(config.CollectionName);
+        this._cosmosMongoCollection = this._cosmosMongoDatabase.GetCollection<AzureCosmosDBMongoDBMemoryRecord>(config.CollectionName);
     }
 
     /// <inheritdoc />
@@ -114,7 +99,15 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     /// <inheritdoc />
     public async Task DeleteIndexAsync(string index, CancellationToken cancellationToken = default)
     {
-        await this._cosmosMongoCollection.Indexes.DropOneAsync(index, cancellationToken).ConfigureAwait(false);
+        var indexesCursor = await this._cosmosMongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
+        var indexes = await indexesCursor.ToListAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var indexDoc in indexes)
+        {
+            if (indexDoc["name"].AsString == index)
+            {
+                await this._cosmosMongoCollection.Indexes.DropOneAsync(index, cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -172,18 +165,50 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     }
 
     /// <inheritdoc />
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async IAsyncEnumerable<MemoryRecord> GetListAsync(
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         string index,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1,
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // TODO: Add logic for search with filters, once it is released in Azure Cosmos DB for MongoDB.
-        // For now this method returns an empty list.
-        yield break;
+        var finalFilter = this.TranslateFilters(filters, index);
+
+        // We need to perform a simple query without using vector search
+        var cursor = await this._cosmosMongoCollection
+            .FindAsync(finalFilter,
+                new FindOptions<AzureCosmosDBMongoDBMemoryRecord>()
+                {
+                    Limit = limit
+                },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        var documents = await cursor.ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        foreach (var document in documents)
+        {
+            var memoryRecord = FromAzureCosmosMemoryRecord(document, withEmbeddings);
+            yield return memoryRecord;
+        }
+    }
+
+    private static MemoryRecord FromAzureCosmosMemoryRecord(AzureCosmosDBMongoDBMemoryRecord doc, bool withEmbeddings)
+    {
+        var record = new MemoryRecord
+        {
+            Id = doc.Id,
+            Payload = BsonSerializer.Deserialize<Dictionary<string, object>>(doc.Payload)
+                      ?? new Dictionary<string, object>(),
+            Vector = withEmbeddings ? doc.Embedding : Array.Empty<float>()
+        };
+
+        foreach (string[] keyValue in doc.Tags.Select(tag => tag.Split(Constants.ReservedEqualsChar, 2)))
+        {
+            string key = keyValue[0];
+            string? value = keyValue.Length == 1 ? null : keyValue[1];
+            record.Tags.Add(key, value);
+        }
+
+        return record;
     }
 
     /// <inheritedoc />
@@ -197,11 +222,67 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
         await this._cosmosMongoCollection.DeleteOneAsync(filter, cancellationToken).ConfigureAwait(false);
     }
 
+    private FilterDefinition<AzureCosmosDBMongoDBMemoryRecord>? TranslateFilters(ICollection<MemoryFilter>? filters, string index)
+    {
+        List<FilterDefinition<AzureCosmosDBMongoDBMemoryRecord>> outerFiltersArray = new();
+        foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
+        {
+            var thisFilter = filter.GetFilters().ToArray();
+            List<FilterDefinition<AzureCosmosDBMongoDBMemoryRecord>> filtersArray = new();
+            foreach (var singleFilter in thisFilter)
+            {
+                var condition = Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.And(
+                    Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Eq("Tags.Key", singleFilter.Key),
+                    Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Eq("Tags.Values", singleFilter.Value)
+                );
+                filtersArray.Add(condition);
+            }
+
+            // if we have more than one condition, we need to compose all conditions with AND
+            // but if we have only a single filter we can directly use the filter.
+            if (filtersArray.Count > 1)
+            {
+                // More than one condition we need to create the condition
+                var andFilter = Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.And(filtersArray);
+                outerFiltersArray.Add(andFilter);
+            }
+            else if (filtersArray.Count == 1)
+            {
+                // We do not need to include an and filter because we have only one condition
+                outerFiltersArray.Add(filtersArray[0]);
+            }
+        }
+
+        FilterDefinition<AzureCosmosDBMongoDBMemoryRecord>? finalFilter = null;
+        // Outer filters must be composed in or
+        if (outerFiltersArray.Count > 1)
+        {
+            finalFilter = Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Or(outerFiltersArray);
+        }
+        else if (outerFiltersArray.Count == 1)
+        {
+            // We do not need to include an or filter because we have only one condition
+            finalFilter = outerFiltersArray[0];
+        }
+
+        var indexFilter = Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.Eq("Index", index);
+        if (finalFilter == null)
+        {
+            finalFilter = indexFilter;
+        }
+        else
+        {
+            // Compose in and
+            finalFilter = Builders<AzureCosmosDBMongoDBMemoryRecord>.Filter.And(indexFilter, finalFilter);
+        }
+        return finalFilter;
+    }
+
     private BsonDocument GetIndexDefinitionVectorIVF(string index, int vectorSize)
     {
         return new BsonDocument
         {
-            { "createIndexes", this._collectionName },
+            { "createIndexes", this._config.CollectionName },
             {
                 "indexes",
                 new BsonArray
@@ -213,9 +294,9 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
                         {
                             "cosmosSearchOptions", new BsonDocument
                             {
-                                { "kind", this._config.Kind.ToString() },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "numLists", this._config.NumLists },
-                                { "similarity", this._config.Similarity.ToString() },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", vectorSize }
                             }
                         }
@@ -229,7 +310,7 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
     {
         return new BsonDocument
         {
-            { "createIndexes", this._collectionName },
+            { "createIndexes", this._config.CollectionName },
             {
                 "indexes",
                 new BsonArray
@@ -241,10 +322,10 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
                         {
                             "cosmosSearchOptions", new BsonDocument
                             {
-                                { "kind", this._config.Kind.ToString() },
+                                { "kind", this._config.Kind.GetCustomName() },
                                 { "m", this._config.NumberOfConnections },
                                 { "efConstruction", this._config.EfConstruction },
-                                { "similarity", this._config.Similarity.ToString() },
+                                { "similarity", this._config.Similarity.GetCustomName() },
                                 { "dimensions", vectorSize }
                             }
                         }
