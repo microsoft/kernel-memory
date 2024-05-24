@@ -279,6 +279,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anthropic", "extensions\Ant
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "110-dotnet-anthropic", "examples\110-dotnet-anthropic\110-dotnet-anthropic.csproj", "{EE0D8645-2770-4E12-8E18-019B30970FE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "302-dotnet-sk-km-chat", "examples\302-dotnet-sk-km-chat\302-dotnet-sk-km-chat.csproj", "{37FA99CB-AD22-4BAC-B76F-961F84422DEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -523,6 +525,9 @@ Global
 		{EE0D8645-2770-4E12-8E18-019B30970FE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EE0D8645-2770-4E12-8E18-019B30970FE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE0D8645-2770-4E12-8E18-019B30970FE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37FA99CB-AD22-4BAC-B76F-961F84422DEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37FA99CB-AD22-4BAC-B76F-961F84422DEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37FA99CB-AD22-4BAC-B76F-961F84422DEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -607,6 +612,7 @@ Global
 		{432AC1B4-8275-4284-9A44-44988A6F0C24} = {DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{EE0D8645-2770-4E12-8E18-019B30970FE6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{37FA99CB-AD22-4BAC-B76F-961F84422DEE} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
