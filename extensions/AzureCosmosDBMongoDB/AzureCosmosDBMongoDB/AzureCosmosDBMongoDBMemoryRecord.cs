@@ -15,11 +15,11 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureCosmosDBMongoDB;
 public sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     [BsonId]
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = null!;
 
     [BsonElement("embedding")]
 #pragma warning disable CA1819 // Properties should not return arrays
-    public float[]? Embedding { get; set; }
+    public float[]? Embedding { get; set; } = null!;
 #pragma warning restore CA1819 // Properties should not return arrays
 
     [BsonElement("tags")]

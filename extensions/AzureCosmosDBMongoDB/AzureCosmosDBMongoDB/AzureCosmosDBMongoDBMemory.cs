@@ -198,7 +198,7 @@ public class AzureCosmosDBMongoDBMemory : IMemoryDb
             Id = doc.Id,
             Payload = BsonSerializer.Deserialize<Dictionary<string, object>>(doc.Payload)
                       ?? new Dictionary<string, object>(),
-            Vector = withEmbeddings ? doc.Embedding : Array.Empty<float>()
+            Vector = withEmbeddings ? doc.Embedding ?? Array.Empty<float>() : Array.Empty<float>()
         };
 
         foreach (string[] keyValue in doc.Tags.Select(tag => tag.Split(Constants.ReservedEqualsChar, 2)))

@@ -28,7 +28,16 @@ internal static class AzureCosmosDBVectorSearchTypeExtensions
 {
     public static string GetCustomName(this AzureCosmosDBVectorSearchType type)
     {
-        var attribute = type.GetType().GetField(type.ToString()).GetCustomAttribute<BsonElementAttribute>();
+        // Retrieve the FieldInfo object for the enum value, and check if it is null before accessing it.
+        var fieldInfo = type.GetType().GetField(type.ToString());
+        if (fieldInfo == null)
+        {
+            // Optionally handle the situation when the field is not found, such as logging a warning or throwing an exception.
+            return type.ToString(); // Or handle differently as needed.
+        }
+
+        // Retrieve the BsonElementAttribute from the field, if present.
+        var attribute = fieldInfo.GetCustomAttribute<BsonElementAttribute>();
         return attribute?.ElementName ?? type.ToString();
     }
 }
