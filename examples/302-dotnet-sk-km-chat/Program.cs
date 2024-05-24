@@ -119,7 +119,7 @@ internal sealed class Program
 
     private static async Task MemorizeDocuments(IKernelMemory memory, List<string> pages)
     {
-        await memory.ImportTextAsync("We can talk about Semantic Kernel and Kernel Memory, you can ask any questions, I will try to reply using information from KM public documentation in Github", documentId: "help");
+        await memory.ImportTextAsync("We can talk about Semantic Kernel and Kernel Memory, you can ask any questions, I will try to reply using information from public documentation in Github", documentId: "help");
         foreach (var url in pages)
         {
             var id = GetUrlId(url);
