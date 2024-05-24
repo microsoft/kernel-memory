@@ -138,7 +138,7 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     public static IKernelMemoryBuilder WithCustomEmbeddingGenerator<T>(
-           this IKernelMemoryBuilder builder) where T : class, ITextEmbeddingGenerator
+        this IKernelMemoryBuilder builder) where T : class, ITextEmbeddingGenerator
     {
         builder.AddSingleton<ITextEmbeddingGenerator, T>();
         return builder;
