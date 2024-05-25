@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory;
-using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Evaluation;
 using Microsoft.SemanticKernel;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using Elastic.Clients.Elasticsearch.Ingest;
 using static Microsoft.KernelMemory.Evaluation.TestSetGenerator;
 
 var memoryConfiguration = new KernelMemoryConfig();
@@ -21,38 +18,38 @@ var azureAISearchConfig = new AzureAISearchConfig();
 var postgresConfig = new PostgresConfig();
 
 new ConfigurationBuilder()
-           .AddJsonFile("appsettings.json")
-           .AddJsonFile("appsettings.Development.json", optional: true)
-           .Build()
-           .BindSection("KernelMemory", memoryConfiguration)
-           .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
-           .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
-           .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-           .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
-           .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
-           .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
-           .BindSection("KernelMemory:Services:Postgres", postgresConfig)
-           .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .Build()
+    .BindSection("KernelMemory", memoryConfiguration)
+    .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+    .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+    .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
+    .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
+    .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
+    .BindSection("KernelMemory:Services:Postgres", postgresConfig)
+    .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
 var memoryBuilder = new KernelMemoryBuilder()
-            .AddSingleton(memoryConfiguration)
-            // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
-            // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
-            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers ans summaries using LLama
-            // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
-            // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
-            // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            // .WithAzureBlobsStorage(new AzureBlobsConfig {...})           // Store files in Azure Blobs
-            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
-            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
+    .AddSingleton(memoryConfiguration)
+    // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
+    // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
+    // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers ans summaries using LLama
+    // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
+    // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
+    // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
+    // .WithAzureBlobsDocumentStorage(new AzureBlobsConfig {...})   // Store files in Azure Blobs
+    // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
+    // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
+    .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
 
 var kernelBuilder = Kernel.CreateBuilder()
     // For OpenAI:
     .AddOpenAIChatCompletion(
         modelId: "gpt-4",
-        apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY")!); ;
+        apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);
 
 TestSetGenerator testSetGenerator = new(kernelBuilder.Build(), memoryBuilder);
 
