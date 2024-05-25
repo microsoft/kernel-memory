@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 
 internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
@@ -35,10 +36,10 @@ internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
         var statements = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.ExtractStatements.InvokeAsync(this._kernel, new KernelArguments
-                {
-                    { "question", answer.Question },
-                    { "answer", answer.Result }
-                }).ConfigureAwait(false);
+            {
+                { "question", answer.Question },
+                { "answer", answer.Result }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<IEnumerable<string>>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
@@ -51,11 +52,11 @@ internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
         var evaluation = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.EvaluateCorrectness.InvokeAsync(this._kernel, new KernelArguments
-                {
-                    { "question", answer.Question },
-                    { "answer", JsonSerializer.Serialize(statements) },
-                    { "ground_truth", JsonSerializer.Serialize(testSet.Context) }
-                }).ConfigureAwait(false);
+            {
+                { "question", answer.Question },
+                { "answer", JsonSerializer.Serialize(statements) },
+                { "ground_truth", JsonSerializer.Serialize(testSet.Context) }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<CorrectnessEvaluation>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
@@ -68,8 +69,6 @@ internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
         metadata.Add($"{nameof(AnswerCorrectnessEvaluator)}-Evaluation", evaluation);
 
         return (float)evaluation.TP.Count() /
-            (float)(evaluation.TP.Count() + .5 * (evaluation.FP.Count() + evaluation.FN.Count()));
+               (float)(evaluation.TP.Count() + .5 * (evaluation.FP.Count() + evaluation.FN.Count()));
     }
 }
-
-

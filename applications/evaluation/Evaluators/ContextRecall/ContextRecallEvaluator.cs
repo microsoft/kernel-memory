@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.ContextRecall;
 
 internal sealed class ContextRecallEvaluator : EvaluationEngine
@@ -30,11 +31,11 @@ internal sealed class ContextRecallEvaluator : EvaluationEngine
         var evaluations = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.EvaluateContextRecall.InvokeAsync(this._kernel, new KernelArguments
-                {
-                    { "question", testSet.Question },
-                    { "context", JsonSerializer.Serialize(answer.RelevantSources.SelectMany(c => c.Partitions.Select(x => x.Text))) },
-                    { "ground_truth", testSet.GroundTruth }
-                }).ConfigureAwait(false);
+            {
+                { "question", testSet.Question },
+                { "context", JsonSerializer.Serialize(answer.RelevantSources.SelectMany(c => c.Partitions.Select(x => x.Text))) },
+                { "ground_truth", testSet.GroundTruth }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<IEnumerable<GroundTruthClassification>>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);

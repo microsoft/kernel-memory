@@ -10,6 +10,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerSimilarity;
 
 internal sealed class AnswerSimilarityEvaluator : EvaluationEngine
@@ -28,8 +29,8 @@ internal sealed class AnswerSimilarityEvaluator : EvaluationEngine
     internal async Task<float> Evaluate(TestSetItem testSet, MemoryAnswer answer, Dictionary<string, object?> metadata)
     {
         var answerEmbeddings = await this._textEmbeddingGenerationService
-                                            .GenerateEmbeddingsAsync([testSet.GroundTruth, answer.Result], this._kernel)
-                                            .ConfigureAwait(false);
+            .GenerateEmbeddingsAsync([testSet.GroundTruth, answer.Result], this._kernel)
+            .ConfigureAwait(false);
 
         var evaluation = TensorPrimitives.CosineSimilarity(answerEmbeddings.First().Span, answerEmbeddings.Last().Span);
 

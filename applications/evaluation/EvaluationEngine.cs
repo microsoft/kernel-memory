@@ -16,7 +16,7 @@ public abstract class EvaluationEngine
     protected string GetSKPrompt(string pluginName, string functionName)
     {
         var resourceStream = Assembly.GetExecutingAssembly()
-                                     .GetManifestResourceStream($"Prompts/{pluginName}/{functionName}.txt");
+            .GetManifestResourceStream($"Prompts/{pluginName}/{functionName}.txt");
 
         using var reader = new StreamReader(resourceStream!);
         var text = reader.ReadToEnd();

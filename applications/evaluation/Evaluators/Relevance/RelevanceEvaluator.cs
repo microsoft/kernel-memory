@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.Relevance;
 
 internal sealed class RelevanceEvaluator : EvaluationEngine
@@ -35,21 +36,21 @@ internal sealed class RelevanceEvaluator : EvaluationEngine
     internal async Task<float> Evaluate(MemoryAnswer answer, Dictionary<string, object?> metadata, int strictness = 3)
     {
         var questionEmbeddings = await this._textEmbeddingGenerationService
-                                            .GenerateEmbeddingsAsync([answer.Question], this._kernel)
-                                            .ConfigureAwait(false);
+            .GenerateEmbeddingsAsync([answer.Question], this._kernel)
+            .ConfigureAwait(false);
 
         var generatedQuestions = await this.GetEvaluations(answer, strictness)
-                                        .ToArrayAsync()
-                                        .ConfigureAwait(false);
+            .ToArrayAsync()
+            .ConfigureAwait(false);
 
         var generatedQuestionsEmbeddings = await this._textEmbeddingGenerationService
-                                            .GenerateEmbeddingsAsync(generatedQuestions.Select(c => c.Question).ToArray(), this._kernel)
-                                            .ConfigureAwait(false);
+            .GenerateEmbeddingsAsync(generatedQuestions.Select(c => c.Question).ToArray(), this._kernel)
+            .ConfigureAwait(false);
 
         var evaluations = generatedQuestionsEmbeddings
-                        .Select(c => TensorPrimitives.CosineSimilarity(questionEmbeddings.Single().Span, c.Span)
-                        *
-                        generatedQuestions[generatedQuestionsEmbeddings.IndexOf(c)].Committal);
+            .Select(c => TensorPrimitives.CosineSimilarity(questionEmbeddings.Single().Span, c.Span)
+                         *
+                         generatedQuestions[generatedQuestionsEmbeddings.IndexOf(c)].Committal);
 
         metadata.Add($"{nameof(RelevanceEvaluator)}-Evaluation", evaluations);
 

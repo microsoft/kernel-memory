@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Evaluation;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.Faithfulness;
 
 internal sealed class FaithfulnessEvaluator : EvaluationEngine
@@ -35,10 +36,10 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
         var statements = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.ExtractStatements.InvokeAsync(this._kernel, new KernelArguments
-                {
-                    { "question", answer.Question },
-                    { "answer", answer.Result }
-                }).ConfigureAwait(false);
+            {
+                { "question", answer.Question },
+                { "answer", answer.Result }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<IEnumerable<string>>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
@@ -52,10 +53,10 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
         {
             var evaluation = await this.FaithfulnessEvaluation.InvokeAsync(this._kernel, new KernelArguments
             {
-                    { "context", string.Join(Environment.NewLine, answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
-                    { "answer", answer.Result },
-                    { "statements", JsonSerializer.Serialize(statements) }
-                }).ConfigureAwait(false);
+                { "context", string.Join(Environment.NewLine, answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
+                { "answer", answer.Result },
+                { "statements", JsonSerializer.Serialize(statements) }
+            }).ConfigureAwait(false);
 
             var faithfulness = JsonSerializer.Deserialize<IEnumerable<StatementEvaluation>>(evaluation.GetValue<string>()!);
 

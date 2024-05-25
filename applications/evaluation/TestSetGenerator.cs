@@ -29,10 +29,10 @@ public sealed class TestSetGenerator : EvaluationEngine
         public Distribution() { }
 
         public override bool Equals(object? obj) => obj is Distribution distribution &&
-                   this.Simple == distribution.Simple &&
-                   this.Reasoning == distribution.Reasoning &&
-                   this.MultiContext == distribution.MultiContext &&
-                   this.Conditioning == distribution.Conditioning;
+                                                    this.Simple == distribution.Simple &&
+                                                    this.Reasoning == distribution.Reasoning &&
+                                                    this.MultiContext == distribution.MultiContext &&
+                                                    this.Conditioning == distribution.Conditioning;
 
         public override int GetHashCode()
         {
@@ -88,12 +88,12 @@ public sealed class TestSetGenerator : EvaluationEngine
         Temperature = 1e-8f,
     });
 
-    private KernelFunction MultiContextQuestionGeneratoin => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "MultiContextQuestion"), new OpenAIPromptExecutionSettings
+    private KernelFunction MultiContextQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "MultiContextQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
     });
 
-    private KernelFunction ConditiningQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "ConditionalQuestion"), new OpenAIPromptExecutionSettings
+    private KernelFunction ConditioningQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "ConditionalQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
     });
@@ -148,17 +148,17 @@ public sealed class TestSetGenerator : EvaluationEngine
         foreach (var documentId in documentIds)
         {
             var partitionRecords = await this._memory.GetListAsync(index,
-                        filters: new[] { new MemoryFilter().ByDocument(documentId) },
-                        limit: Int32.MaxValue)
-                        .ToArrayAsync()
-                        .ConfigureAwait(false);
+                    filters: new[] { new MemoryFilter().ByDocument(documentId) },
+                    limit: Int32.MaxValue)
+                .ToArrayAsync()
+                .ConfigureAwait(false);
 
             var nodes = this.SplitRecordsIntoNodes(partitionRecords, count);
 
             var questions = this.GetSimpleQuestionTestSetsAsync(nodes.Take(simpleCount), language: language, retryCount: retryCount)
-                                .Concat(this.GetReasoningTestSetsAsync(nodes.Skip(simpleCount).Take(reasoningCount), language: language, retryCount: retryCount))
-                                .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
-                                .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
+                .Concat(this.GetReasoningTestSetsAsync(nodes.Skip(simpleCount).Take(reasoningCount), language: language, retryCount: retryCount))
+                .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
+                .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
 
             await foreach (var item in questions)
             {
@@ -205,26 +205,25 @@ public sealed class TestSetGenerator : EvaluationEngine
     {
         return this.Try(retryCount, async (remainingTry) =>
         {
-            var question = await this.MultiContextQuestionGeneratoin.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                {
-                    { "question", seedQuestion },
-                    { "context1", context1 },
-                    { "context2", context2 }
-                }).ConfigureAwait(false);
+            var question = await this.MultiContextQuestionGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
+            {
+                { "question", seedQuestion },
+                { "context1", context1 },
+                { "context2", context2 }
+            }).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(language))
             {
                 question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
-                    {
-                        { "input", question.GetValue<string>() },
-                        { "translate_to", language }
-                    }).ConfigureAwait(false);
+                {
+                    { "input", question.GetValue<string>() },
+                    { "translate_to", language }
+                }).ConfigureAwait(false);
             }
 
             return question.GetValue<string>();
         })!;
     }
-
 
     private async IAsyncEnumerable<TestSet.TestSetItem> GetReasoningTestSetsAsync(
         IEnumerable<MemoryRecord[]> nodes,
@@ -259,18 +258,18 @@ public sealed class TestSetGenerator : EvaluationEngine
         return this.Try(retryCount, async (remainingTry) =>
         {
             var question = await this.ReasoningQuestionGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                {
-                    { "question", seedQuestion },
-                    { "context", context }
-                }).ConfigureAwait(false);
+            {
+                { "question", seedQuestion },
+                { "context", context }
+            }).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(language))
             {
                 question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
-                    {
-                        { "input", question.GetValue<string>() },
-                        { "translate_to", language }
-                    }).ConfigureAwait(false);
+                {
+                    { "input", question.GetValue<string>() },
+                    { "translate_to", language }
+                }).ConfigureAwait(false);
             }
 
             return question.GetValue<string>();
@@ -309,19 +308,19 @@ public sealed class TestSetGenerator : EvaluationEngine
     {
         return this.Try(retryCount, async (remainingTry) =>
         {
-            var question = await this.ConditiningQuestionGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                {
-                    { "question", seedQuestion },
-                    { "context", context }
-                }).ConfigureAwait(false);
+            var question = await this.ConditioningQuestionGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
+            {
+                { "question", seedQuestion },
+                { "context", context }
+            }).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(language))
             {
                 question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
-                    {
-                        { "input", question.GetValue<string>() },
-                        { "translate_to", language }
-                    }).ConfigureAwait(false);
+                {
+                    { "input", question.GetValue<string>() },
+                    { "translate_to", language }
+                }).ConfigureAwait(false);
             }
 
             return question.GetValue<string>();
@@ -355,27 +354,27 @@ public sealed class TestSetGenerator : EvaluationEngine
     }
 
     private Task<string> GetQuestionSeedAsync(
-            string context,
-            string language = null!,
-            int retryCount = 3)
+        string context,
+        string language = null!,
+        int retryCount = 3)
     {
         return this.Try(retryCount, async (remainingTry) =>
         {
             var phrases = await this.GetKeyPhrases(context, retryCount).ConfigureAwait(false);
 
             var seedQuestion = await this.SeedQuestionGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                    {
-                        { "keyPhrase", phrases.First() },
-                        { "context", context }
-                    }).ConfigureAwait(false);
+            {
+                { "keyPhrase", phrases.First() },
+                { "context", context }
+            }).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(language))
             {
                 seedQuestion = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
-                    {
-                        { "input", seedQuestion.GetValue<string>() },
-                        { "translate_to", language }
-                    }).ConfigureAwait(false);
+                {
+                    { "input", seedQuestion.GetValue<string>() },
+                    { "translate_to", language }
+                }).ConfigureAwait(false);
             }
 
             return seedQuestion.GetValue<string>();
@@ -384,17 +383,17 @@ public sealed class TestSetGenerator : EvaluationEngine
 
     private async Task<IEnumerable<string>> GetKeyPhrases(string context, int retryCount = 3)
     {
-        var keyphrases = await this.Try(retryCount, async (remainingTry) =>
+        var keyPhrases = await this.Try(retryCount, async (remainingTry) =>
         {
             var generatedKeyPhrases = await this.KeyPhraseExtraction.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                {
-                    { "input", context }
-                }).ConfigureAwait(false);
+            {
+                { "input", context }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<IEnumerable<string>>(generatedKeyPhrases.GetValue<string>()!);
         }).ConfigureAwait(false);
 
-        return this.Shuffle(keyphrases!);
+        return this.Shuffle(keyPhrases!);
     }
 
     private Task<QuestionAnswer> GetQuestionAnswerAsync(string context, string question, string language = null!, int retryCount = 3)
@@ -402,10 +401,10 @@ public sealed class TestSetGenerator : EvaluationEngine
         return this.Try(retryCount, async (remainingTry) =>
         {
             var generatedAnswer = await this.QuestionAnswerGeneration.InvokeAsync(this._evaluatorKernel, new KernelArguments
-                {
-                    { "context", context },
-                    { "question", question }
-                }).ConfigureAwait(false);
+            {
+                { "context", context },
+                { "question", question }
+            }).ConfigureAwait(false);
 
             var answer = JsonSerializer.Deserialize<QuestionAnswer>(generatedAnswer.GetValue<string>()!);
 
@@ -417,10 +416,10 @@ public sealed class TestSetGenerator : EvaluationEngine
             if (!string.IsNullOrEmpty(language))
             {
                 generatedAnswer = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
-                    {
-                        { "input", answer.Answer },
-                        { "translate_to", language }
-                    }).ConfigureAwait(false);
+                {
+                    { "input", answer.Answer },
+                    { "translate_to", language }
+                }).ConfigureAwait(false);
 
                 answer.Answer = generatedAnswer.GetValue<string>()!;
             }

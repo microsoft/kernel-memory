@@ -8,6 +8,7 @@ using Microsoft.KernelMemory.Evaluation;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+// ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.ContextRelevancy;
 
 internal sealed class ContextRelevancyEvaluator : EvaluationEngine
@@ -43,11 +44,11 @@ internal sealed class ContextRelevancyEvaluator : EvaluationEngine
         var relevancy = await this.Try(3, async (tryCount) =>
         {
             var verification = await this.EvaluateContext.InvokeAsync(this._kernel, new KernelArguments
-                {
-                    { "question", answer.Question },
-                    { "answer", answer.Result },
-                    { "context", partition.Text }
-                }).ConfigureAwait(false);
+            {
+                { "question", answer.Question },
+                { "answer", answer.Result },
+                { "context", partition.Text }
+            }).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<ContextRelevancy>(verification.GetValue<string>()!);
         }).ConfigureAwait(false);
