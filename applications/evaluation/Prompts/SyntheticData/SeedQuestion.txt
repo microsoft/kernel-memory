@@ -1,0 +1,23 @@
+﻿## Examples
+
+context: Photosynthesis in plants involves converting light energy into chemical energy, using chlorophyll and other pigments to absorb light. This process is crucial for plant growth and the production of oxygen.
+keyphrase: Photosynthesis
+question": What is the role of photosynthesis in plant growth?
+
+context: The Industrial Revolution, starting in the 18th century, marked a major turning point in history as it led to the development of factories and urbanization.
+keyphrase: Industrial Revolution
+question: How did the Industrial Revolution mark a major turning point in history?
+
+context: The process of evaporation plays a crucial role in the water cycle, converting water from liquid to vapor and allowing it to rise into the atmosphere.
+keyphrase: Evaporation
+question: Why is evaporation important in the water cycle?
+
+## Instructions
+
+Generate a question that can be fully answered from given context. The question should be formed using topic
+
+Let's do it with a real data.
+
+context: {{$context}}
+keyphrase: {{$keyphrase}}
+question: 

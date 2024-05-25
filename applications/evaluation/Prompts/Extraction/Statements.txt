@@ -1,0 +1,20 @@
+﻿## Examples
+
+question: Who was Albert Einstein and what is he best known for?
+answer: He was a German-born theoretical physicist, widely acknowledged to be one of the greatest and most influential physicists of all time. He was best known for developing the theory of relativity, he also made important contributions to the development of the theory of quantum mechanics.
+output: [
+ "Albert Einstein was a German-born theoretical physicist.",
+ "Albert Einstein is recognized as one of the greatest and most influential physicists of all time.",
+ "Albert Einstein was best known for developing the theory of relativity.",
+ "Albert Einstein also made important contributions to the development of the theory of quantum mechanics."
+]     
+
+## Instructions
+
+Given a question, an answer, and sentences from the answer analyze the complexity of each sentence and break down each sentence into one or more fully understandable statements while also ensuring no pronouns are used in each statement.
+
+Let's do it with a real data.
+
+question: {{$question}}
+answer: {{$answer}}
+output: 
