@@ -47,7 +47,7 @@ public abstract class EvaluationEngine
     /// Split records into nodes
     /// </summary>
     /// <param name="records">The records to create nodes.</param>
-    /// <param name="count">The nomber of nodes to create.</param>
+    /// <param name="count">The number of nodes to create.</param>
     /// <returns></returns>
     protected IEnumerable<MemoryRecord[]> SplitRecordsIntoNodes(MemoryRecord[] records, int count)
     {

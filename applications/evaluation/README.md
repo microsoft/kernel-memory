@@ -16,7 +16,7 @@ This repository contains the code for the evaluation of the Knowledge Management
 
 ### Test set generation
 
-To evaluate the KM, you must firt create a test set containing the queries and the expected answers. 
+To evaluate the KM, you must first create a test set containing the queries and the expected answers. 
 Since this is a manual process, this might be fastidious for large datasets. 
 To help you with this task, we provide a generator that creates a test set from a given KM memory and index. 
 

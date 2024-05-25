@@ -262,7 +262,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
             var seedQuestion = await this.GetQuestionSeedAsync(nodeText, language, retryCount).ConfigureAwait(false);
 
-            var question = await this.GetConditionningQuestionAsync(nodeText, seedQuestion, language, retryCount).ConfigureAwait(false);
+            var question = await this.GetConditioningQuestionAsync(nodeText, seedQuestion, language, retryCount).ConfigureAwait(false);
 
             var groundTruth = await this.GetQuestionAnswerAsync(nodeText, question, language, retryCount).ConfigureAwait(false);
 
@@ -279,7 +279,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         }
     }
 
-    private Task<string> GetConditionningQuestionAsync(string context, string seedQuestion, string language = null!, int retryCount = 3)
+    private Task<string> GetConditioningQuestionAsync(string context, string seedQuestion, string language = null!, int retryCount = 3)
     {
         return this.Try(retryCount, async (remainingTry) =>
         {
