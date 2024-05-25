@@ -16,17 +16,43 @@ namespace Microsoft.KernelMemory.Evaluation;
 
 public sealed class TestSetGenerator : EvaluationEngine
 {
-    public struct Distribution
+    public struct Distribution : IEquatable<Distribution>
     {
-        public float Simple = .5f;
+        public float Simple { get; set; } = .5f;
 
-        public float Reasoning = .16f;
+        public float Reasoning { get; set; } = .16f;
 
-        public float MultiContext = .17f;
+        public float MultiContext { get; set; } = .17f;
 
-        public float Conditioning = .17f;
+        public float Conditioning { get; set; } = .17f;
 
         public Distribution() { }
+
+        public override bool Equals(object? obj) => obj is Distribution distribution &&
+                   this.Simple == distribution.Simple &&
+                   this.Reasoning == distribution.Reasoning &&
+                   this.MultiContext == distribution.MultiContext &&
+                   this.Conditioning == distribution.Conditioning;
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Simple, this.Reasoning, this.MultiContext, this.Conditioning);
+        }
+
+        public static bool operator ==(Distribution left, Distribution right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Distribution left, Distribution right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(Distribution other)
+        {
+            return this == other;
+        }
     }
 
     private readonly ServiceProvider _serviceProvider;
