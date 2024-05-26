@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 public static class Program
 {
-    // ReSharper disable InconsistentNaming
     public static async Task Main()
     {
         const string DocFilename = "mydocs-NASA-news.pdf";

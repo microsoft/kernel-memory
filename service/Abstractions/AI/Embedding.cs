@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 #pragma warning disable IDE0130 // first class concept we want to have readily available
 #pragma warning disable CA2225 // no need for explicit methods
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 /// <summary>

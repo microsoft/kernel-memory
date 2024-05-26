@@ -7,7 +7,7 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions

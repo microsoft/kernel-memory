@@ -8,7 +8,7 @@ using Microsoft.KernelMemory.DataFormats.Pdf;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.DataFormats.WebPages;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions

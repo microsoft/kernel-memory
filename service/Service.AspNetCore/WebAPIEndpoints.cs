@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable RedundantUsingDirective
-
-#pragma warning disable IDE0005 // temp
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -385,11 +381,8 @@ public static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    // Class used to tag log entries and allow log filtering
-    // ReSharper disable once ClassNeverInstantiated.Local
 #pragma warning disable CA1812 // used by logger, can't be static
-    private sealed class KernelMemoryWebAPI
-    {
-    }
+    // Class used to tag log entries and allow log filtering
+    private sealed class KernelMemoryWebAPI;
 #pragma warning restore CA1812
 }
