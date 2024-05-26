@@ -45,13 +45,14 @@ var memoryBuilder = new KernelMemoryBuilder()
     .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
     .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
 
-var kernelBuilder = Kernel.CreateBuilder()
+var kernel = Kernel.CreateBuilder()
     // For OpenAI:
     .AddOpenAIChatCompletion(
         modelId: "gpt-4",
-        apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY")!);
+        apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY")!)
+    .Build();
 
-TestSetGenerator testSetGenerator = new(kernelBuilder.Build(), memoryBuilder);
+TestSetGenerator testSetGenerator = new(kernel, memoryBuilder);
 
 var distribution = new Distribution();
 
@@ -67,7 +68,7 @@ await foreach (var test in testSet)
     Console.WriteLine(test.Question);
 }
 
-var evaluation = new TestSetEvaluator(kernelBuilder, memoryBuilder.Build(), indexName: "default");
+var evaluation = new TestSetEvaluator(kernel, memoryBuilder.Build(), indexName: "default");
 
 var results = evaluation.EvaluateTestSetAsync(await testSet.ToArrayAsync());
 
