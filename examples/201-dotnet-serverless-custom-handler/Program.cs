@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// ReSharper disable InconsistentNaming
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Diagnostics;

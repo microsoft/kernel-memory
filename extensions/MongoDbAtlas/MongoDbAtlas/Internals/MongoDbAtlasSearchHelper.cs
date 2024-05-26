@@ -96,9 +96,7 @@ internal sealed class MongoDbAtlasSearchHelper
             {
                 {
                     "$listSearchIndexes",
-                    new BsonDocument
-                    {
-                    }
+                    new BsonDocument()
                 }
             }
         };

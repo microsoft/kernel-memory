@@ -37,7 +37,6 @@ using Microsoft.KernelMemory.MemoryStorage.DevTools;
 /// </summary>
 public static class Program
 {
-    // ReSharper disable once InconsistentNaming
     public static async Task Main()
     {
         // Partition input text in chunks of 100 tokens

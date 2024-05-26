@@ -2,6 +2,4 @@
 
 namespace Microsoft.KernelMemory.AI.Anthropic.Client;
 
-internal abstract class StreamingResponseMessage
-{
-}
+internal abstract class StreamingResponseMessage;

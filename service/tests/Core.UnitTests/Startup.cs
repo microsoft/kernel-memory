@@ -9,7 +9,6 @@ namespace Microsoft.KM.Core.UnitTests;
 
 public class Startup
 {
-    // ReSharper disable once UnusedMember.Global
     public void ConfigureHost(IHostBuilder hostBuilder)
     {
     }
