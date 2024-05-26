@@ -14,47 +14,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.KernelMemory.Evaluation;
 
-public sealed class TestSetGenerator : EvaluationEngine
+public sealed partial class TestSetGenerator : EvaluationEngine
 {
-    public struct Distribution : IEquatable<Distribution>
-    {
-        public float Simple { get; set; } = .5f;
-
-        public float Reasoning { get; set; } = .16f;
-
-        public float MultiContext { get; set; } = .17f;
-
-        public float Conditioning { get; set; } = .17f;
-
-        public Distribution() { }
-
-        public override bool Equals(object? obj) => obj is Distribution distribution &&
-                                                    this.Simple == distribution.Simple &&
-                                                    this.Reasoning == distribution.Reasoning &&
-                                                    this.MultiContext == distribution.MultiContext &&
-                                                    this.Conditioning == distribution.Conditioning;
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(this.Simple, this.Reasoning, this.MultiContext, this.Conditioning);
-        }
-
-        public static bool operator ==(Distribution left, Distribution right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Distribution left, Distribution right)
-        {
-            return !(left == right);
-        }
-
-        public bool Equals(Distribution other)
-        {
-            return this == other;
-        }
-    }
-
     private readonly ServiceProvider _serviceProvider;
 
     private readonly IMemoryDb _memory;
@@ -106,7 +67,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         this._evaluatorKernel = kernel.Clone();
     }
 
-    public async IAsyncEnumerable<TestSet.TestSetItem> GenerateTestSetsAsync(
+    public async IAsyncEnumerable<TestSetItem> GenerateTestSetsAsync(
         string index,
         int count = 10,
         int retryCount = 3,
@@ -114,19 +75,14 @@ public sealed class TestSetGenerator : EvaluationEngine
         Kernel translatorKernel = null!,
         Distribution? distribution = null)
     {
-        distribution = distribution ?? new Distribution();
+        distribution ??= new Distribution();
 
         if (distribution.Value.Simple + distribution.Value.Reasoning + distribution.Value.MultiContext + distribution.Value.Conditioning != 1)
         {
             throw new ArgumentException("The sum of distribution values must be 1.");
         }
 
-        if (!string.IsNullOrEmpty(language) && translatorKernel == null)
-        {
-            throw new ArgumentNullException(nameof(translatorKernel), "When using translation, you must provide the translation kernel.");
-        }
-
-        this._translatorKernel = translatorKernel;
+        this._translatorKernel = translatorKernel ?? this._evaluatorKernel;
 
         var simpleCount = (int)(Math.Ceiling(count * distribution.Value.Simple));
         var reasoningCount = (int)(Math.Floor(count * distribution.Value.Reasoning));
@@ -135,7 +91,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
         var documentIds = new List<string>();
 
-        await foreach (var record in this._memory.GetListAsync(index, limit: Int32.MaxValue))
+        await foreach (var record in this._memory.GetListAsync(index, limit: int.MaxValue))
         {
             if (documentIds.Contains(record.GetDocumentId()))
             {
@@ -149,13 +105,14 @@ public sealed class TestSetGenerator : EvaluationEngine
         {
             var partitionRecords = await this._memory.GetListAsync(index,
                     filters: new[] { new MemoryFilter().ByDocument(documentId) },
-                    limit: Int32.MaxValue)
+                    limit: int.MaxValue)
                 .ToArrayAsync()
                 .ConfigureAwait(false);
 
             var nodes = this.SplitRecordsIntoNodes(partitionRecords, count);
 
-            var questions = this.GetSimpleQuestionTestSetsAsync(nodes.Take(simpleCount), language: language, retryCount: retryCount)
+            var questions =
+                        this.GetSimpleQuestionTestSetsAsync(nodes.Take(simpleCount), language: language, retryCount: retryCount)
                 .Concat(this.GetReasoningTestSetsAsync(nodes.Skip(simpleCount).Take(reasoningCount), language: language, retryCount: retryCount))
                 .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
                 .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
@@ -167,7 +124,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         }
     }
 
-    private async IAsyncEnumerable<TestSet.TestSetItem> GetMultiContextTestSetsAsync(
+    private async IAsyncEnumerable<TestSetItem> GetMultiContextTestSetsAsync(
         IEnumerable<MemoryRecord[]> nodes,
         string language = null!,
         int retryCount = 3)
@@ -188,7 +145,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
             var groundTruth = await this.GetQuestionAnswerAsync(seedQuestionContext + " " + alternativeContext, question, language, retryCount).ConfigureAwait(false);
 
-            var testSet = new TestSet.TestSetItem
+            var testSet = new TestSetItem
             {
                 Question = seedQuestion,
                 QuestionType = QuestionType.MultiContext,
@@ -225,7 +182,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         })!;
     }
 
-    private async IAsyncEnumerable<TestSet.TestSetItem> GetReasoningTestSetsAsync(
+    private async IAsyncEnumerable<TestSetItem> GetReasoningTestSetsAsync(
         IEnumerable<MemoryRecord[]> nodes,
         string language = null!,
         int retryCount = 3)
@@ -240,7 +197,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
             var groundTruth = await this.GetQuestionAnswerAsync(nodeText, question, language, retryCount).ConfigureAwait(false);
 
-            var testSet = new TestSet.TestSetItem
+            var testSet = new TestSetItem
             {
                 Question = seedQuestion,
                 QuestionType = QuestionType.Reasoning,
@@ -276,7 +233,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         })!;
     }
 
-    private async IAsyncEnumerable<TestSet.TestSetItem> GetConditioningTestSetsAsync(
+    private async IAsyncEnumerable<TestSetItem> GetConditioningTestSetsAsync(
         IEnumerable<MemoryRecord[]> nodes,
         string language = null!,
         int retryCount = 3)
@@ -291,7 +248,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
             var groundTruth = await this.GetQuestionAnswerAsync(nodeText, question, language, retryCount).ConfigureAwait(false);
 
-            var testSet = new TestSet.TestSetItem
+            var testSet = new TestSetItem
             {
                 Question = seedQuestion,
                 QuestionType = QuestionType.Conditioning,
@@ -327,7 +284,7 @@ public sealed class TestSetGenerator : EvaluationEngine
         })!;
     }
 
-    private async IAsyncEnumerable<TestSet.TestSetItem> GetSimpleQuestionTestSetsAsync(
+    private async IAsyncEnumerable<TestSetItem> GetSimpleQuestionTestSetsAsync(
         IEnumerable<MemoryRecord[]> nodes,
         string language = null!,
         int retryCount = 3)
@@ -340,7 +297,7 @@ public sealed class TestSetGenerator : EvaluationEngine
 
             var groundTruth = await this.GetQuestionAnswerAsync(nodeText, seedQuestion, language, retryCount).ConfigureAwait(false);
 
-            var testSet = new TestSet.TestSetItem
+            var testSet = new TestSetItem
             {
                 Question = seedQuestion,
                 QuestionType = QuestionType.Simple,

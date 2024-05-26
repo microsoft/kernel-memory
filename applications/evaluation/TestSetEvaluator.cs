@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 using Microsoft.KernelMemory.Evaluators.AnswerSimilarity;
 using Microsoft.KernelMemory.Evaluators.ContextRecall;
@@ -15,7 +16,6 @@ public sealed class TestSetEvaluator
 {
     private readonly IKernelMemory _kernelMemory;
     private readonly string _indexName;
-
     private readonly Kernel _evaluatorKernel;
 
     private FaithfulnessEvaluator Faithfulness => new(this._evaluatorKernel);
@@ -30,15 +30,14 @@ public sealed class TestSetEvaluator
 
     private ContextRecallEvaluator ContextRecall => new(this._evaluatorKernel);
 
-    public TestSetEvaluator(IKernelBuilder evaluatorKernel, IKernelMemory kernelMemory, string indexName)
+    public TestSetEvaluator(Kernel evaluatorKernel, IKernelMemory kernelMemory, string indexName)
     {
-        this._evaluatorKernel = evaluatorKernel.Build();
-
+        this._evaluatorKernel = evaluatorKernel.Clone();
         this._kernelMemory = kernelMemory;
         this._indexName = indexName;
     }
 
-    public async IAsyncEnumerable<QuestionEvaluation> EvaluateTestSetAsync(IEnumerable<TestSet.TestSetItem> questions)
+    public async IAsyncEnumerable<QuestionEvaluation> EvaluateTestSetAsync(IEnumerable<TestSetItem> questions)
     {
         foreach (var test in questions)
         {
@@ -66,6 +65,7 @@ public sealed class TestSetEvaluator
             {
                 TestSet = test,
                 MemoryAnswer = answer,
+                Metadata = metadata,
                 Metrics = new()
                 {
                     AnswerRelevancy = await this.Relevance.Evaluate(answer, metadata).ConfigureAwait(false),
@@ -82,7 +82,7 @@ public sealed class TestSetEvaluator
 
 public class QuestionEvaluation
 {
-    public TestSet.TestSetItem TestSet { get; set; } = null!;
+    public TestSetItem TestSet { get; set; } = null!;
 
     public MemoryAnswer MemoryAnswer { get; set; } = null!;
 
