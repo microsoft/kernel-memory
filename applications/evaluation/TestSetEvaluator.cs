@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 using Microsoft.KernelMemory.Evaluators.AnswerSimilarity;
@@ -15,7 +17,6 @@ namespace Microsoft.KernelMemory.Evaluation;
 public sealed class TestSetEvaluator
 {
     private readonly IKernelMemory _kernelMemory;
-    private readonly string _indexName;
     private readonly Kernel _evaluatorKernel;
 
     private FaithfulnessEvaluator Faithfulness => new(this._evaluatorKernel);
@@ -30,18 +31,28 @@ public sealed class TestSetEvaluator
 
     private ContextRecallEvaluator ContextRecall => new(this._evaluatorKernel);
 
-    public TestSetEvaluator(Kernel evaluatorKernel, IKernelMemory kernelMemory, string indexName)
+    internal TestSetEvaluator([FromKeyedServices("evaluation")] Kernel evaluatorKernel, IKernelMemory kernelMemory)
     {
         this._evaluatorKernel = evaluatorKernel.Clone();
         this._kernelMemory = kernelMemory;
-        this._indexName = indexName;
     }
 
-    public async IAsyncEnumerable<QuestionEvaluation> EvaluateTestSetAsync(IEnumerable<TestSetItem> questions)
+    /// <summary>
+    /// Evaluate a set of questions against the memory
+    /// </summary>
+    /// <param name="index">Optional index name</param>
+    /// <param name="questions">The questions to evaluate</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If test contains filters too, the value is merged.</param>
+    /// <returns></returns>
+    public async IAsyncEnumerable<QuestionEvaluation> EvaluateTestSetAsync(
+        string index,
+        IEnumerable<TestSetItem> questions,
+        IList<MemoryFilter>? filters = null!)
     {
         foreach (var test in questions)
         {
-            var answer = await this._kernelMemory.AskAsync(test.Question, this._indexName).ConfigureAwait(false);
+            var answer = await this._kernelMemory.AskAsync(test.Question, index, filters: this.MergeFilters(filters, test.Filters))
+                                                .ConfigureAwait(false);
 
             if (answer.NoResult)
             {
@@ -58,7 +69,8 @@ public sealed class TestSetEvaluator
             var metadata = new Dictionary<string, object?>
             {
                 { "Question", test.Question },
-                { "IndexName", this._indexName }
+                { "IndexName", index },
+                { "Filters", filters }
             };
 
             yield return new QuestionEvaluation
@@ -77,6 +89,37 @@ public sealed class TestSetEvaluator
                 }
             };
         }
+    }
+
+    private ICollection<MemoryFilter>? MergeFilters(IList<MemoryFilter>? globalFilters, ICollection<MemoryFilter>? testFilters)
+    {
+        if (testFilters == null)
+        {
+            return globalFilters;
+        }
+
+        var filters = new Collection<MemoryFilter>();
+
+        foreach (var filter in testFilters)
+        {
+            var merged = new MemoryFilter();
+            filter.CopyTo(merged);
+
+            if (globalFilters == null)
+            {
+                filters.Add(merged);
+                continue;
+            }
+
+            foreach (var globalFilter in globalFilters)
+            {
+                filter.CopyTo(merged);
+            }
+
+            filters.Add(merged);
+        }
+
+        return filters;
     }
 }
 

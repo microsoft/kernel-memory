@@ -16,15 +16,12 @@ namespace Microsoft.KernelMemory.Evaluation;
 
 public sealed partial class TestSetGenerator : EvaluationEngine
 {
-    private readonly ServiceProvider _serviceProvider;
-
     private readonly IMemoryDb _memory;
 
     private readonly Kernel _evaluatorKernel;
+    private readonly Kernel _translationKernel;
 
-    private Kernel _translatorKernel = null!;
-
-    private KernelFunction Translate => this._translatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("Transmutation", "Translate"), new OpenAIPromptExecutionSettings
+    private KernelFunction Translate => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("Transmutation", "Translate"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
     });
@@ -59,12 +56,14 @@ public sealed partial class TestSetGenerator : EvaluationEngine
         Temperature = 1e-8f,
     });
 
-    public TestSetGenerator(Kernel kernel, IKernelMemoryBuilder memoryBuilder)
+    internal TestSetGenerator(
+            [FromKeyedServices("evaluation")] Kernel evaluationKernel,
+            [FromKeyedServices("translation")] Kernel? translationKernel,
+            IMemoryDb memoryDb)
     {
-        this._serviceProvider = memoryBuilder.Services.BuildServiceProvider();
-        this._memory = this._serviceProvider.GetRequiredService<IMemoryDb>();
-
-        this._evaluatorKernel = kernel.Clone();
+        this._evaluatorKernel = evaluationKernel.Clone();
+        this._translationKernel = (translationKernel ?? evaluationKernel).Clone();
+        this._memory = memoryDb;
     }
 
     public async IAsyncEnumerable<TestSetItem> GenerateTestSetsAsync(
@@ -72,7 +71,6 @@ public sealed partial class TestSetGenerator : EvaluationEngine
         int count = 10,
         int retryCount = 3,
         string language = null!,
-        Kernel translatorKernel = null!,
         Distribution? distribution = null)
     {
         distribution ??= new Distribution();
@@ -81,8 +79,6 @@ public sealed partial class TestSetGenerator : EvaluationEngine
         {
             throw new ArgumentException("The sum of distribution values must be 1.");
         }
-
-        this._translatorKernel = translatorKernel ?? this._evaluatorKernel;
 
         var simpleCount = (int)(Math.Ceiling(count * distribution.Value.Simple));
         var reasoningCount = (int)(Math.Floor(count * distribution.Value.Reasoning));
@@ -171,7 +167,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
             if (!string.IsNullOrEmpty(language))
             {
-                question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
+                question = await this.Translate.InvokeAsync(this._evaluatorKernel, new KernelArguments
                 {
                     { "input", question.GetValue<string>() },
                     { "translate_to", language }
@@ -222,7 +218,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
             if (!string.IsNullOrEmpty(language))
             {
-                question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
+                question = await this.Translate.InvokeAsync(this._evaluatorKernel, new KernelArguments
                 {
                     { "input", question.GetValue<string>() },
                     { "translate_to", language }
@@ -273,7 +269,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
             if (!string.IsNullOrEmpty(language))
             {
-                question = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
+                question = await this.Translate.InvokeAsync(this._evaluatorKernel, new KernelArguments
                 {
                     { "input", question.GetValue<string>() },
                     { "translate_to", language }
@@ -327,7 +323,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
             if (!string.IsNullOrEmpty(language))
             {
-                seedQuestion = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
+                seedQuestion = await this.Translate.InvokeAsync(this._evaluatorKernel, new KernelArguments
                 {
                     { "input", seedQuestion.GetValue<string>() },
                     { "translate_to", language }
@@ -372,7 +368,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
             if (!string.IsNullOrEmpty(language))
             {
-                generatedAnswer = await this.Translate.InvokeAsync(this._translatorKernel, new KernelArguments
+                generatedAnswer = await this.Translate.InvokeAsync(this._evaluatorKernel, new KernelArguments
                 {
                     { "input", answer.Answer },
                     { "translate_to", language }
