@@ -238,6 +238,8 @@ internal sealed class SearchClient : ISearchClient
 
             string fileName = memory.GetFileName(this._log);
 
+            string webPageUrl = memory.GetWebPageUrl(index);
+
             var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
             {
@@ -248,7 +250,7 @@ internal sealed class SearchClient : ISearchClient
             factsAvailableCount++;
 
             // TODO: add file age in days, to push relevance of newer documents
-            var fact = $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
+            var fact = $"==== [File:{(fileName == "content.url" ? webPageUrl : fileName)};Relevance:{relevance:P1}]:\n{partitionText}\n";
 
             // Use the partition/chunk only if there's room for it
             var size = this._textGenerator.CountTokens(fact);
