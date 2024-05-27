@@ -178,7 +178,6 @@ internal sealed class ServiceConfiguration
 
     private void ConfigureTextPartitioning(IKernelMemoryBuilder builder)
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (this._memoryConfiguration.DataIngestion.TextPartitioning != null)
         {
             this._memoryConfiguration.DataIngestion.TextPartitioning.Validate();

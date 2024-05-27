@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable CommentTypo
-
 #pragma warning disable CS8602 // memory is initialized before usage
 #pragma warning disable CS0162 // unreachable code is managed via boolean settings
 
@@ -504,18 +501,18 @@ public static class Program
     // Download file and print details
     private static async Task DownloadFile()
     {
-        const string filename = "file1-Wikipedia-Carbon.txt";
+        const string Filename = "file1-Wikipedia-Carbon.txt";
 
         Console.WriteLine("Downloading file");
-        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: filename);
+        StreamableFileContent result = await s_memory.ExportFileAsync(documentId: "doc001", fileName: Filename);
         var stream = new MemoryStream();
         await (await result.GetStreamAsync()).CopyToAsync(stream);
         var bytes = stream.ToArray();
 
         Console.WriteLine();
-        Console.WriteLine("Original File name : " + filename);
-        Console.WriteLine("Original File size : " + new FileInfo(filename).Length);
-        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(filename)).Length);
+        Console.WriteLine("Original File name : " + Filename);
+        Console.WriteLine("Original File size : " + new FileInfo(Filename).Length);
+        Console.WriteLine("Original Bytes count: " + (await File.ReadAllBytesAsync(Filename)).Length);
         Console.WriteLine();
         Console.WriteLine("Downloaded File name : " + result.FileName);
         Console.WriteLine("Downloaded File type : " + result.FileType);
