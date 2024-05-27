@@ -165,6 +165,13 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
+    public static IKernelMemoryBuilder WithCustomMemoryDb<T>(
+        this IKernelMemoryBuilder builder) where T : class, IMemoryDb
+    {
+        builder.AddSingleton<IMemoryDb, T>();
+        return builder;
+    }
+
     public static IKernelMemoryBuilder WithCustomTextGenerator(
         this IKernelMemoryBuilder builder,
         ITextGenerator service)
