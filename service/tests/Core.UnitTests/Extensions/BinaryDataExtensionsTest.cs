@@ -6,7 +6,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.UnitTests.Extensions;
 
-// ReSharper disable StringLiteralTypo
 public class BinaryDataExtensionsTest : BaseUnitTestCase
 {
     public BinaryDataExtensionsTest(ITestOutputHelper output) : base(output)

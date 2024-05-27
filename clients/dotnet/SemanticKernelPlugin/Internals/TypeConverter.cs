@@ -9,14 +9,10 @@ using System.Text.Json;
 namespace Microsoft.KernelMemory.SemanticKernelPlugin.Internals;
 
 [TypeConverter(typeof(TypeConverter))]
-public class TagCollectionWrapper : TagCollection
-{
-}
+public class TagCollectionWrapper : TagCollection;
 
 [TypeConverter(typeof(TypeConverter))]
-public class ListOfStringsWrapper : List<string>
-{
-}
+public class ListOfStringsWrapper : List<string>;
 
 #pragma warning disable CA1812 // required by SK
 internal sealed class TypeConverter : System.ComponentModel.TypeConverter

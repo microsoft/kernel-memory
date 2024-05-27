@@ -631,7 +631,6 @@ internal sealed class PostgresDbClient : IDisposable
     {
         if (disposing)
         {
-            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             (this._dataSource as IDisposable)?.Dispose();
         }
     }

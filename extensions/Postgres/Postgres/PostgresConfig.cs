@@ -127,7 +127,6 @@ public class PostgresConfig
     /// </summary>
     public void Validate()
     {
-        // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         this.TableNamePrefix = this.TableNamePrefix?.Trim() ?? string.Empty;
         this.ConnectionString = this.ConnectionString?.Trim() ?? string.Empty;
 

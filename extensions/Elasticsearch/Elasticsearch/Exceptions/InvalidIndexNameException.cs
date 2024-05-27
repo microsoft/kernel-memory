@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 
 namespace Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 

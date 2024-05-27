@@ -1,0 +1,25 @@
+﻿## Examples
+
+question: What is the capital of France?
+context: France is a country in Western Europe. It has several cities, including Paris, Lyon, and Marseille. Paris is not only known for its cultural landmarks like the Eiffel Tower and the Louvre Museum but also as the administrative center.
+output: Linking the Eiffel Tower and administrative center, which city stands as both?
+
+question: What does the append() method do in Python?
+context: In Python, lists are used to store multiple items in a single variable. Lists are one of 4 built-in data types used to store collections of data. The append() method adds a single item to the end of a list.
+output: If a list represents a variable collection, what method extends it by one item?
+
+## Instructions
+
+Complicate the given question by rewriting question into a multi-hop reasoning question based on the provided context.
+    Answering the question should require the reader to make multiple logical connections or inferences using the information available in given context.
+    Rules to follow when rewriting question:
+    1. Ensure that the rewritten question can be answered entirely from the information present in the contexts.
+    2. Do not frame questions that contains more than 15 words. Use abbreviation wherever possible.
+    3. Make sure the question is clear and unambiguous.
+    4. phrases like 'based on the provided context','according to the context',etc are not allowed to appear in the question.
+
+Let's do it with a real data.
+
+question: {{$question}}
+context: {{$context}}
+output: 

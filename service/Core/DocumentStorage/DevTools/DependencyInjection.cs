@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public static partial class KernelMemoryBuilderExtensions

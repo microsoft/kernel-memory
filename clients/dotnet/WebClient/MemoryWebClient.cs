@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -438,6 +438,11 @@ public sealed class MemoryWebClient : IKernelMemory
             // Add files to the form
             for (int i = 0; i < uploadRequest.Files.Count; i++)
             {
+                if (uploadRequest.Files[i].FileContent is { CanSeek: true, Position: > 0 })
+                {
+                    uploadRequest.Files[i].FileContent.Seek(0, SeekOrigin.Begin);
+                }
+
                 string fileName = uploadRequest.Files[i].FileName;
                 byte[] bytes;
                 using (var binaryReader = new BinaryReader(uploadRequest.Files[i].FileContent))

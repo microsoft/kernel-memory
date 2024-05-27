@@ -63,10 +63,9 @@ public class ConcurrencyTests : BaseFunctionalTestCase
                 break;
         }
 
-        // ReSharper disable once CommentTypo
         /* If concurrency is not handled properly, the test should fail with
          *   Npgsql.PostgresException
-         *   23505: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
+         *   23505: duplicate key value violates unique constraint
          */
         var concurrency = 20;
         var indexName = "create_index_test";

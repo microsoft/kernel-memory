@@ -138,7 +138,7 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     public static IKernelMemoryBuilder WithCustomEmbeddingGenerator<T>(
-           this IKernelMemoryBuilder builder) where T : class, ITextEmbeddingGenerator
+        this IKernelMemoryBuilder builder) where T : class, ITextEmbeddingGenerator
     {
         builder.AddSingleton<ITextEmbeddingGenerator, T>();
         return builder;
@@ -162,6 +162,13 @@ public static partial class KernelMemoryBuilderExtensions
             builder.AddIngestionMemoryDb(service);
         }
 
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomMemoryDb<T>(
+        this IKernelMemoryBuilder builder) where T : class, IMemoryDb
+    {
+        builder.AddSingleton<IMemoryDb, T>();
         return builder;
     }
 

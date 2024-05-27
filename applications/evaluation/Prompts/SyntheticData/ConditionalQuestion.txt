@@ -1,0 +1,25 @@
+﻿## Examples
+
+question: What is the function of the roots of a plant?
+context: The roots of a plant absorb water and nutrients from the soil, anchor the plant in the ground, and store food.
+output: What dual purpose do plant roots serve concerning soil nutrients and stability?
+
+question: How do vaccines protect against diseases?
+context: Vaccines protect against diseases by stimulating the body's immune response to produce antibodies, which recognize and combat pathogens.
+output: How do vaccines utilize the body's immune system to defend against pathogens?
+
+## Instructions
+
+Rewrite the provided question to increase its complexity by introducing a conditional element.
+The goal is to make the question more intricate by incorporating a scenario or condition that affects the context of the question.
+Follow the rules given below while rewriting the question.
+    1. The rewritten question should not be longer than 25 words. Use abbreviation wherever possible.
+    2. The rewritten question must be reasonable and must be understood and responded by humans.
+    3. The rewritten question must be fully answerable from information present context.
+    4. phrases like 'provided context','according to the context?',etc are not allowed to appear in the question.
+
+Let's do it with a real data.
+
+question: {{$question}}
+context: {{$context}}
+output: 

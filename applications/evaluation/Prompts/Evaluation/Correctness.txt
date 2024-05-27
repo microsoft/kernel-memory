@@ -1,0 +1,92 @@
+﻿## Examples
+
+question: What powers the sun and what is its primary function?
+answer: [
+   "The sun is powered by nuclear fission, similar to nuclear reactors on Earth.",
+   "The primary function of the sun is to provide light to the solar system."
+]
+ground_truth: [
+   "The sun is powered by nuclear fusion, where hydrogen atoms fuse to form helium.",
+   "This fusion process in the sun's core releases a tremendous amount of energy.",
+   "The energy from the sun provides heat and light, which are essential for life on Earth.",
+   "The sun's light plays a critical role in Earth's climate system.",
+   "Sunlight helps to drive the weather and ocean currents."
+]
+extracted_statements: 
+   {
+       "TP": [
+           {
+               "Statement": "The primary function of the sun is to provide light to the solar system.",
+               "Reason": "This statement is somewhat supported by the ground truth mentioning the sun providing light and its roles, though it focuses more broadly on the sun's energy."
+           }
+       ],
+       "FP": [
+           {
+               "Statement": "The sun is powered by nuclear fission, similar to nuclear reactors on Earth.",
+               "Reason": "This statement is incorrect and contradicts the ground truth which states that the sun is powered by nuclear fusion."
+           }
+       ],
+       "FN": [
+           {
+               "Statement": "The sun is powered by nuclear fusion, where hydrogen atoms fuse to form helium.",
+               "Reason": "This accurate description of the sun’s power source is not included in the answer."
+           },
+           {
+               "Statement": "This fusion process in the sun's core releases a tremendous amount of energy.",
+               "Reason": "This process and its significance are not mentioned in the answer."
+           },
+           {
+               "Statement": "The energy from the sun provides heat and light, which are essential for life on Earth.",
+               "Reason": "The answer only mentions light, omitting the essential aspects of heat and its necessity for life, which the ground truth covers."
+           },
+           {
+               "Statement": "The sun's light plays a critical role in Earth's climate system.",
+               "Reason": "This broader impact of the sun’s light on Earth's climate system is not addressed in the answer."
+           },
+           {
+               "Statement": "Sunlight helps to drive the weather and ocean currents.",
+               "Reason": "The effect of sunlight on weather patterns and ocean currents is omitted in the answer."
+           }
+       ]
+   }
+
+question: What is the boiling point of water?
+answer: [
+   "The boiling point of water is 100 degrees Celsius at sea level"
+   ]
+ground_truth: [
+   "The boiling point of water is 100 degrees Celsius (212 degrees Fahrenheit) at sea level.",
+   "The boiling point of water can change with altitude."
+
+   ]
+extracted_statements: 
+   {
+       "TP": [
+           {
+               "Statement": "The boiling point of water is 100 degrees Celsius at sea level",
+               "Reason": "This statement is directly supported by the ground truth which specifies the boiling point of water as 100 degrees Celsius at sea level."
+           }
+       ],
+       "FP": [],
+       "FN": [
+           {
+               "Statement": "The boiling point of water can change with altitude.",
+               "Reason": "This additional information about how the boiling point of water can vary with altitude is not mentioned in the answer."
+           }
+       ]
+   }
+
+## Instructions
+
+Given a ground truth and an answer statements, analyze each statement and classify them in one of the following categories:
+
+- TP (true positive): statements that are present in answer that are also directly supported by the one or more statements in ground truth,
+- FP (false positive): statements present in the answer but not directly supported by any statement in ground truth,
+- FN (false negative): statements found in the ground truth but not present in answer.
+
+Each statement can only belong to one of the categories. Provide a reason for each classification.
+
+question: {{$question}}
+answer: {{$answer}}
+ground_truth: {{$ground_truth}}
+extracted_statements: 
