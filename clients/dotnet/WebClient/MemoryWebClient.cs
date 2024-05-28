@@ -249,7 +249,7 @@ public sealed class MemoryWebClient : IKernelMemory
             .Replace(Constants.HttpIndexPlaceholder, index, StringComparison.OrdinalIgnoreCase)
             .Replace(Constants.HttpDocumentIdPlaceholder, documentId, StringComparison.OrdinalIgnoreCase)
             .CleanUrlPath();
-        HttpResponseMessage? response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await this._client.GetAsync(url, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -373,26 +373,29 @@ public sealed class MemoryWebClient : IKernelMemory
         // - Date: Fri, 13 May 2044 10:09:30 GMT
         // - Server: Kestrel
         // - Accept-Ranges: bytes
-        // - Last-Modified: Fri, 03 May 2044 09:10:30 GMT
+        // - Last-Modified: Tue, 03 May 2044 09:10:30 GMT
         // - Content-Disposition: attachment; filename=file1.pdf; filename*=UTF-8''file1.pdf
         response.Content.Headers.TryGetValues("Content-Type", out IEnumerable<string>? contentTypeValues);
         response.Content.Headers.TryGetValues("Content-Length", out IEnumerable<string>? contentLengthValues);
         response.Content.Headers.TryGetValues("Last-Modified", out IEnumerable<string>? lastModifiedValues);
         // response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositionValues);
 
-        if (contentTypeValues != null && contentTypeValues.Any())
+        List<string>? values = contentTypeValues?.ToList();
+        if (values != null && values.Count != 0)
         {
-            contentType = contentTypeValues.First();
+            contentType = values.First();
         }
 
-        if (contentLengthValues != null && contentLengthValues.Any())
+        values = contentLengthValues?.ToList();
+        if (values != null && values.Count != 0)
         {
-            contentLength = long.Parse(contentLengthValues.First(), CultureInfo.CurrentCulture);
+            contentLength = long.Parse(values.First(), CultureInfo.CurrentCulture);
         }
 
-        if (lastModifiedValues != null && lastModifiedValues.Any())
+        values = lastModifiedValues?.ToList();
+        if (values != null && values.Count != 0)
         {
-            if (!DateTimeOffset.TryParse(lastModifiedValues.First(), out lastModified))
+            if (!DateTimeOffset.TryParse(values.First(), out lastModified))
             {
                 lastModified = DateTimeOffset.MinValue;
             }

@@ -9,6 +9,9 @@ using Microsoft.KernelMemory.MongoDbAtlas;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Kernel Memory builder extensions
+/// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
@@ -52,7 +55,7 @@ public static partial class KernelMemoryBuilderExtensions
 }
 
 /// <summary>
-/// setup Mongodb
+/// .NET IServiceCollection dependency injection extensions.
 /// </summary>
 public static partial class DependencyInjection
 {

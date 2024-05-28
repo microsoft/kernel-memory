@@ -8,6 +8,9 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Kernel Memory builder extensions
+/// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithSimpleFileStorage(this IKernelMemoryBuilder builder, SimpleFileStorageConfig? config = null)
@@ -23,6 +26,9 @@ public static partial class KernelMemoryBuilderExtensions
     }
 }
 
+/// <summary>
+/// .NET IServiceCollection dependency injection extensions.
+/// </summary>
 public static partial class DependencyInjection
 {
     public static IServiceCollection AddSimpleFileStorageAsDocumentStorage(this IServiceCollection services, SimpleFileStorageConfig config)

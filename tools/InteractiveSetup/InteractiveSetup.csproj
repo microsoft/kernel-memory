@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
-        <NoWarn>$(NoWarn);CA1031;CA1303;CA1724;CS1591;</NoWarn>
+        <NoWarn>$(NoWarn);CA1031;CA1303;CA1724;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
