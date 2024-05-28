@@ -339,6 +339,7 @@ internal sealed class VolatileFileSystem : IFileSystem
         return this._volumes;
     }
 
+    // ReSharper disable once InconsistentNaming
     private Task ValidateVolumeExistsAsync(string volume, CancellationToken cancellationToken)
     {
         if (!this._volumes.ContainsKey(volume))

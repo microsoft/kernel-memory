@@ -20,6 +20,7 @@ public static partial class KernelFunctionExtensions
     /// <param name="text">String input to pass to the function</param>
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>Result returned by the function call</returns>
+    // ReSharper disable once InconsistentNaming
     public static Task<FunctionResult> InvokeAsync(
         this KernelFunction function,
         Kernel kernel,

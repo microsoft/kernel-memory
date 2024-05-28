@@ -9,6 +9,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP03;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
