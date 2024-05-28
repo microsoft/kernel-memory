@@ -16,6 +16,7 @@ public struct Distribution : IEquatable<Distribution>
 
     public Distribution() { }
 
+    // TODO: use tolerance when comparing floating numbers for equality
     public override bool Equals(object? obj) => obj is Distribution distribution &&
                                                 this.Simple == distribution.Simple &&
                                                 this.Reasoning == distribution.Reasoning &&

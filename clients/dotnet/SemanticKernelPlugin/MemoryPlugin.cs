@@ -93,22 +93,22 @@ public class MemoryPlugin
     /// Default index where to store and retrieve memory from. When null the service
     /// will use a default index for all information.
     /// </summary>
-    private readonly string? _defaultIndex = null;
+    private readonly string? _defaultIndex;
 
     /// <summary>
     /// Default collection of tags to add to information when ingesting.
     /// </summary>
-    private readonly TagCollection? _defaultIngestionTags = null;
+    private readonly TagCollection? _defaultIngestionTags;
 
     /// <summary>
     /// Default collection of tags required when retrieving memory (using filters).
     /// </summary>
-    private readonly TagCollection? _defaultRetrievalTags = null;
+    private readonly TagCollection? _defaultRetrievalTags;
 
     /// <summary>
     /// Default ingestion steps when storing new memories.
     /// </summary>
-    private readonly List<string>? _defaultIngestionSteps = null;
+    private readonly List<string>? _defaultIngestionSteps;
 
     /// <summary>
     /// Whether to wait for the asynchronous ingestion to be complete when storing new memories.
@@ -298,15 +298,26 @@ public class MemoryPlugin
         return id;
     }
 
+    /// <summary>
+    /// Store in memory the information extracted from a web page
+    /// </summary>
+    /// <param name="url">Web page URL</param>
+    /// <param name="documentId">The document ID associated with the information to save</param>
+    /// <param name="index">Memories index containing the information to save</param>
+    /// <param name="tags">Tas/Labels associated with the information to save</param>
+    /// <param name="steps">Steps to parse the information and store in memory</param>
+    /// <param name="loggerFactory">Logging factory</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Document ID</returns>
     [KernelFunction, Description("Store in memory the information extracted from a web page")]
     public async Task<string> SaveWebPageAsync(
         [ /*SKName(UrlParam),*/ Description("Complete URL of the web page to save")]
         string url,
         [ /*SKName(DocumentIdParam),*/ Description("The document ID associated with the information to save"), DefaultValue(null)]
         string? documentId = null,
-        [ /*SKName(IndexParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(IndexParam),*/ Description("Memories index containing the information to save"), DefaultValue(null)]
         string? index = null,
-        [ /*SKName(TagsParam),*/ Description("Memories index associated with the information to save"), DefaultValue(null)]
+        [ /*SKName(TagsParam),*/ Description("Tas/Labels associated with the information to save"), DefaultValue(null)]
         TagCollectionWrapper? tags = null,
         [ /*SKName(StepsParam),*/ Description("Steps to parse the information and store in memory"), DefaultValue(null)]
         ListOfStringsWrapper? steps = null,
@@ -327,17 +338,27 @@ public class MemoryPlugin
         return id;
     }
 
+    /// <summary>
+    /// Return up to N memories related to the input text
+    /// </summary>
+    /// <param name="query">The text to search in memory</param>
+    /// <param name="index">Memories index container to search for information</param>
+    /// <param name="minRelevance">Minimum relevance of the memories to return</param>
+    /// <param name="limit">Maximum number of memories to return</param>
+    /// <param name="tags">Memories key-value tags to filter information</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>JSON string containing the list of memories</returns>
     [KernelFunction, Description("Return up to N memories related to the input text")]
     public async Task<string> SearchAsync(
         [ /*SKName(QueryParam),*/ Description("The text to search in memory")]
         string query,
-        [ /*SKName(IndexParam),*/ Description("Memories index to search for information"), DefaultValue("")]
+        [ /*SKName(IndexParam),*/ Description("Memories index container to search for information"), DefaultValue("")]
         string? index = null,
         [ /*SKName(MinRelevanceParam),*/ Description("Minimum relevance of the memories to return"), DefaultValue(0d)]
         double minRelevance = 0,
         [ /*SKName(LimitParam),*/ Description("Maximum number of memories to return"), DefaultValue(1)]
         int limit = 1,
-        [ /*SKName(TagsParam),*/ Description("Memories tags to search for information"), DefaultValue(null)]
+        [ /*SKName(TagsParam),*/ Description("Memories key-value tags to filter information"), DefaultValue(null)]
         TagCollectionWrapper? tags = null,
         CancellationToken cancellationToken = default)
     {

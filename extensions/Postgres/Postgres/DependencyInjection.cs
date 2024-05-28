@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Postgres;
 namespace Microsoft.KernelMemory;
 
 /// <summary>
-/// Extensions for KernelMemoryBuilder
+/// Kernel Memory builder extensions
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
@@ -37,7 +37,7 @@ public static partial class KernelMemoryBuilderExtensions
 }
 
 /// <summary>
-/// Extensions for KernelMemoryBuilder and generic DI
+/// .NET IServiceCollection dependency injection extensions.
 /// </summary>
 public static partial class DependencyInjection
 {

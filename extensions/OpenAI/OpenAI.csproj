@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.OpenAI</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.OpenAI</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CS1591;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

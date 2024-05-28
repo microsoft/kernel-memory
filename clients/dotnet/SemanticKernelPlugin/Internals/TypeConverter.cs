@@ -8,9 +8,15 @@ using System.Text.Json;
 
 namespace Microsoft.KernelMemory.SemanticKernelPlugin.Internals;
 
+/// <summary>
+/// Type required by Semantic Kernel for mapping
+/// </summary>
 [TypeConverter(typeof(TypeConverter))]
 public class TagCollectionWrapper : TagCollection;
 
+/// <summary>
+/// Type required by Semantic Kernel for mapping
+/// </summary>
 [TypeConverter(typeof(TypeConverter))]
 public class ListOfStringsWrapper : List<string>;
 

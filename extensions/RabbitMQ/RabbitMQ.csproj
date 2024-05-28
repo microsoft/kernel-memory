@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Orchestration.RabbitMQ</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Orchestration.RabbitMQ</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP04;CS1591;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP04;CA1724;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
