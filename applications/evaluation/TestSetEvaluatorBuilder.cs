@@ -40,12 +40,12 @@ public class TestSetEvaluatorBuilder
         }
 
         return this._serviceCollection.BuildServiceProvider()
-                                            .GetRequiredService<TestSetEvaluator>();
+            .GetRequiredService<TestSetEvaluator>();
     }
 
     private static void CopyServiceCollection(
-       IServiceCollection? source,
-       IServiceCollection destination)
+        IServiceCollection? source,
+        IServiceCollection destination)
     {
         if (source == null) { return; }
 
@@ -54,5 +54,4 @@ public class TestSetEvaluatorBuilder
             destination.Add(d);
         }
     }
-
 }

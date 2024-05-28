@@ -4,7 +4,6 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Evaluation;
 using Microsoft.SemanticKernel;
-using static Microsoft.KernelMemory.Evaluation.TestSetGenerator;
 
 var memoryConfiguration = new KernelMemoryConfig();
 
@@ -53,8 +52,8 @@ var kernel = Kernel.CreateBuilder()
     .Build();
 
 var testSetGenerator = new TestSetGeneratorBuilder(memoryBuilder.Services)
-                            .AddEvaluatorKernel(kernel)
-                            .Build();
+    .AddEvaluatorKernel(kernel)
+    .Build();
 
 var distribution = new Distribution
 {
@@ -72,9 +71,9 @@ await foreach (var test in testSet)
 }
 
 var evaluation = new TestSetEvaluatorBuilder()
-                            .AddEvaluatorKernel(kernel)
-                            .WithMemory(memoryBuilder.Build())
-                            .Build();
+    .AddEvaluatorKernel(kernel)
+    .WithMemory(memoryBuilder.Build())
+    .Build();
 
 var results = evaluation.EvaluateTestSetAsync(index: "default", await testSet.ToArrayAsync());
 

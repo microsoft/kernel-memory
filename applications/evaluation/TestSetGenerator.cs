@@ -57,9 +57,9 @@ public sealed partial class TestSetGenerator : EvaluationEngine
     });
 
     internal TestSetGenerator(
-            [FromKeyedServices("evaluation")] Kernel evaluationKernel,
-            [FromKeyedServices("translation")] Kernel? translationKernel,
-            IMemoryDb memoryDb)
+        [FromKeyedServices("evaluation")] Kernel evaluationKernel,
+        [FromKeyedServices("translation")] Kernel? translationKernel,
+        IMemoryDb memoryDb)
     {
         this._evaluatorKernel = evaluationKernel.Clone();
         this._translationKernel = (translationKernel ?? evaluationKernel).Clone();
@@ -108,10 +108,10 @@ public sealed partial class TestSetGenerator : EvaluationEngine
             var nodes = this.SplitRecordsIntoNodes(partitionRecords, count);
 
             var questions =
-                        this.GetSimpleQuestionTestSetsAsync(nodes.Take(simpleCount), language: language, retryCount: retryCount)
-                .Concat(this.GetReasoningTestSetsAsync(nodes.Skip(simpleCount).Take(reasoningCount), language: language, retryCount: retryCount))
-                .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
-                .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
+                this.GetSimpleQuestionTestSetsAsync(nodes.Take(simpleCount), language: language, retryCount: retryCount)
+                    .Concat(this.GetReasoningTestSetsAsync(nodes.Skip(simpleCount).Take(reasoningCount), language: language, retryCount: retryCount))
+                    .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
+                    .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
 
             await foreach (var item in questions)
             {

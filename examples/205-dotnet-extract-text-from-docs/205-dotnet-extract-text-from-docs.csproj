@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <NoWarn>$(NoWarn);KMEXP00;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

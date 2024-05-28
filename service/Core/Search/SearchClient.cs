@@ -318,7 +318,7 @@ internal sealed class SearchClient : ISearchClient
         var charsGenerated = 0;
         var watch = new Stopwatch();
         watch.Restart();
-        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
                            .WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
@@ -347,7 +347,7 @@ internal sealed class SearchClient : ISearchClient
         return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswerAsync(string question, string facts)
+    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts)
     {
         var prompt = this._answerPrompt;
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);

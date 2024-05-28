@@ -52,7 +52,7 @@ public sealed class TestSetEvaluator
         foreach (var test in questions)
         {
             var answer = await this._kernelMemory.AskAsync(test.Question, index, filters: this.MergeFilters(filters, test.Filters))
-                                                .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             if (answer.NoResult)
             {
