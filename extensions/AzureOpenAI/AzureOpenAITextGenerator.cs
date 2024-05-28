@@ -13,7 +13,7 @@ using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
-using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
@@ -28,11 +28,11 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     private readonly string _deployment;
 
     public AzureOpenAITextGenerator(
-        AzureOpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null,
-        HttpClient? httpClient = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>(), httpClient)
+           AzureOpenAIConfig config,
+           ITextTokenizer? textTokenizer = null,
+           ILoggerFactory? loggerFactory = null,
+           HttpClient? httpClient = null)
+           : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>(), httpClient)
     {
     }
 
@@ -43,16 +43,6 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         HttpClient? httpClient = null)
     {
         this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
-
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -105,6 +95,8 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             default:
                 throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
         }
+
+        this._textTokenizer = textTokenizer ?? GptTokenizerDetector.GetTokenizer(this._isTextModel, this._deployment, this._client, this._log);
     }
 
     /// <inheritdoc/>

@@ -35,7 +35,6 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
         builder.Services.AddAzureOpenAIEmbeddingGeneration(config, textTokenizer);
 
         if (!onlyForRetrieval)
@@ -66,7 +65,6 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
         builder.Services.AddAzureOpenAITextGeneration(config, textTokenizer, httpClient);
         return builder;
     }
@@ -84,7 +82,6 @@ public static partial class DependencyInjection
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
         return services
             .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new AzureOpenAITextEmbeddingGenerator(
                 config,
@@ -100,7 +97,6 @@ public static partial class DependencyInjection
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
         return services
             .AddSingleton<ITextGenerator>(serviceProvider => new AzureOpenAITextGenerator(
                 config: config,

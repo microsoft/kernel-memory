@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -37,16 +38,6 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
         HttpClient? httpClient = null)
     {
         this._log = log ?? DefaultLogger<AzureOpenAITextEmbeddingGenerator>.Instance;
-
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
 
         this.MaxTokens = config.MaxTokenTotal;
 
@@ -85,6 +76,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
             default:
                 throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
         }
+
+        this._textTokenizer = textTokenizer ?? GptTokenizerDetector.GetTokenizerForEmbeddingModel(this._client, this._log);
     }
 
     /// <inheritdoc/>
