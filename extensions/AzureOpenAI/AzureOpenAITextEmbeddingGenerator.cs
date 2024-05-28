@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
 [Experimental("KMEXP01")]
-public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
+public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, IBatchTextEmbeddingGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
@@ -55,9 +56,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
                 this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
-                    modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: new DefaultAzureCredential(),
+                    modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -65,9 +66,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
                 this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
-                    modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     credential: config.GetTokenCredential(),
+                    modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -75,9 +76,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
             case AzureOpenAIConfig.AuthTypes.APIKey:
                 this._client = new AzureOpenAITextEmbeddingGenerationService(
                     deploymentName: config.Deployment,
-                    modelId: config.Deployment,
                     endpoint: config.Endpoint,
                     apiKey: config.APIKey,
+                    modelId: config.Deployment,
                     httpClient: httpClient,
                     dimensions: config.EmbeddingDimensions);
                 break;
@@ -100,5 +101,11 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+    }
+
+    public async Task<Embedding[]> GenerateEmbeddingsAsync(string[] text, CancellationToken cancellationToken = default)
+    {
+        var embeddings = await this._client.GenerateEmbeddingsAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 }
