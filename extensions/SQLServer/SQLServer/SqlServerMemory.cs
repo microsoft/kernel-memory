@@ -467,11 +467,11 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert, IDisposab
                 USING (
                     SELECT
                         {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-                        cast([tags].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [tag_name],
+                        cast([tags].[key] AS NVARCHAR(MAX)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [tag_name],
                         [tag_value].[value] AS [value]
                     FROM {this.GetFullTableName(this._config.MemoryTableName)}
                     CROSS APPLY openjson(@tags) [tags]
-                    CROSS APPLY openjson(cast([tags].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS) [tag_value]
+                    CROSS APPLY openjson(cast([tags].[value] AS NVARCHAR(MAX)) COLLATE SQL_Latin1_General_CP1_CI_AS) [tag_value]
                     WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
                         AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
                 ) AS [src]
