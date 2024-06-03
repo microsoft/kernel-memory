@@ -96,8 +96,8 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         this._memoryDbsWithBatchUpsert = new List<IMemoryDb>();
         if (this._upsertBatchSize > 1)
         {
-            this._memoryDbsWithSingleUpsert = this._memoryDbs.Where(x => x is not IMemoryDbBatchUpsert).ToList();
-            this._memoryDbsWithBatchUpsert = this._memoryDbs.Where(x => x is IMemoryDbBatchUpsert).ToList();
+            this._memoryDbsWithSingleUpsert = this._memoryDbs.Where(x => x is not IMemoryDbUpsertBatch).ToList();
+            this._memoryDbsWithBatchUpsert = this._memoryDbs.Where(x => x is IMemoryDbUpsertBatch).ToList();
             this._usingBatchUpsert = this._memoryDbsWithBatchUpsert.Count > 0;
         }
     }
@@ -277,12 +277,12 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
 
     private async Task SaveRecordsBatchAsync(DataPipeline pipeline, IMemoryDb db, List<MemoryRecord> records, HashSet<string> createdIndexes, CancellationToken cancellationToken)
     {
-        var dbBatch = ((IMemoryDbBatchUpsert)db);
-        ArgumentNullExceptionEx.ThrowIfNull(dbBatch, nameof(dbBatch), $"{db.GetType().FullName} doesn't implement {nameof(IMemoryDbBatchUpsert)}");
+        var dbBatch = ((IMemoryDbUpsertBatch)db);
+        ArgumentNullExceptionEx.ThrowIfNull(dbBatch, nameof(dbBatch), $"{db.GetType().FullName} doesn't implement {nameof(IMemoryDbUpsertBatch)}");
         try
         {
             this._log.LogTrace("Saving batch of {0} records in index '{1}'", records.Count, pipeline.Index);
-            await dbBatch.BatchUpsertAsync(pipeline.Index, records, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+            await dbBatch.UpsertBatchAsync(pipeline.Index, records, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (IndexNotFoundException e)
         {
@@ -290,7 +290,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
             await this.CreateIndexOnceAsync(db, createdIndexes, pipeline.Index, records[0].Vector.Length, cancellationToken, true).ConfigureAwait(false);
 
             this._log.LogTrace("Retry: Saving batch of {0} records in index '{1}'", records.Count, pipeline.Index);
-            await dbBatch.BatchUpsertAsync(pipeline.Index, records, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+            await dbBatch.UpsertBatchAsync(pipeline.Index, records, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

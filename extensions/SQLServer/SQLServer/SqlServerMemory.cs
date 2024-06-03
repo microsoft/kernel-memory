@@ -17,7 +17,7 @@ namespace Microsoft.KernelMemory.MemoryDb.SQLServer;
 /// Represents a memory store implementation that uses a SQL Server database as its backing store.
 /// </summary>
 #pragma warning disable CA2100 // SQL reviewed for user input validation
-public sealed class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert, IDisposable
+public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposable
 {
     /// <summary>
     /// The SQL Server configuration.
@@ -395,7 +395,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert, IDisposab
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
-        await foreach (var item in this.BatchUpsertAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
+        await foreach (var item in this.UpsertBatchAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
         {
             return item;
         }
@@ -404,7 +404,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbBatchUpsert, IDisposab
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
