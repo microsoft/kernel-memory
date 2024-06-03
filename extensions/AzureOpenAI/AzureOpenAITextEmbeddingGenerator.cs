@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -16,7 +17,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
 [Experimental("KMEXP01")]
-public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, IBatchTextEmbeddingGenerator
+public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
@@ -103,9 +104,10 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
-    public async Task<Embedding[]> GenerateEmbeddingsAsync(string[] text, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
-        var embeddings = await this._client.GenerateEmbeddingsAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false);
+        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(textList.ToList(), cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 }

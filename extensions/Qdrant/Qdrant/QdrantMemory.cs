@@ -22,7 +22,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 /// * allow using more Qdrant specific filtering logic
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class QdrantMemory : IMemoryDb, IMemoryDbBatchUpsert
+public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
@@ -92,13 +92,13 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbBatchUpsert
         MemoryRecord record,
         CancellationToken cancellationToken = default)
     {
-        var result = this.BatchUpsertAsync(index, [record], cancellationToken);
+        var result = this.UpsertBatchAsync(index, [record], cancellationToken);
         var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
         return id;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> BatchUpsertAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
 

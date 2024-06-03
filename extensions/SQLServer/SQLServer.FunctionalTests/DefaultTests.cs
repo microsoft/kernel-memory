@@ -111,11 +111,11 @@ public class DefaultTests : BaseFunctionalTestCase
         const string Id = "ItCanImportDocumentWithManyTagsAtATime-file1-NASA-news.pdf";
 
         var tags = new TagCollection
-              {
-                { "type", "news" },
-                { "type", "test" },
-                { "ext", "pdf" }
-              };
+        {
+            { "type", "news" },
+            { "type", "test" },
+            { "ext", "pdf" }
+        };
 
         for (int i = 0; i < 100; i++)
         {
@@ -123,10 +123,10 @@ public class DefaultTests : BaseFunctionalTestCase
         }
 
         await this._memory.ImportDocumentAsync(
-              "file1-NASA-news.pdf",
-              documentId: Id,
-              tags: tags,
-              steps: Constants.PipelineWithoutSummary);
+            "file1-NASA-news.pdf",
+            documentId: Id,
+            tags: tags,
+            steps: Constants.PipelineWithoutSummary);
 
         while (!await this._memory.IsDocumentReadyAsync(documentId: Id))
         {

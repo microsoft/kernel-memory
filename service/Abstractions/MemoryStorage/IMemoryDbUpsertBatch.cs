@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory.MemoryStorage;
 /// The interface is not mandatory and not implemented by all connectors.
 /// Handlers/Clients should check if the interface is available and leverage it to optimize throughput.
 /// </summary>
-public interface IMemoryDbBatchUpsert
+public interface IMemoryDbUpsertBatch
 {
     /// <summary>
     /// Insert/Update a list of vectors + payload.
@@ -20,7 +20,7 @@ public interface IMemoryDbBatchUpsert
     /// <param name="cancellationToken">Task cancellation token</param>
     /// <returns>Record IDs</returns>
     /// <exception cref="IndexNotFoundException">Error returned if the index where to write doesn't exist</exception>
-    IAsyncEnumerable<string> BatchUpsertAsync(
+    IAsyncEnumerable<string> UpsertBatchAsync(
         string index,
         IEnumerable<MemoryRecord> records,
         CancellationToken cancellationToken = default);

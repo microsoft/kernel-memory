@@ -29,7 +29,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 /// * support custom schema
 /// * support custom Azure AI Search logic
 /// </summary>
-public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
+public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
@@ -127,13 +127,13 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbBatchUpsert
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.BatchUpsertAsync(index, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(index, new[] { record }, cancellationToken);
         var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
         return id;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> BatchUpsertAsync(
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
         string index,
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
