@@ -29,6 +29,9 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     /// <inheritdoc/>
     public int MaxTokens { get; }
 
+    /// <inheritdoc/>
+    public int EmbeddingBatchMaxSize { get; }
+
     /// <summary>
     /// Create a new instance, using the given OpenAI pre-configured client.
     /// This constructor allows to have complete control on the OpenAI client definition.
@@ -48,6 +51,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
 
         this.SetTokenizer(textTokenizer);
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
+        this.EmbeddingBatchMaxSize = config.EmbeddingBatchMaxSize;
 
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,

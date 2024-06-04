@@ -50,8 +50,6 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
 
         this._textTokenizer = textTokenizer;
 
-        this.MaxTokens = config.MaxTokenTotal;
-
         switch (config.Auth)
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
@@ -87,10 +85,20 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
             default:
                 throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
         }
+
+        this.MaxTokens = config.MaxTokenTotal;
+
+        //https://learn.microsoft.com/en-us/azure/ai-services/openai/reference
+        //we need to be conservative, we set the limit to the minimum value (for ada) that does not cause an error
+        //if you use other models , you can increase this value
+        this.EmbeddingBatchMaxSize = config.EmbeddingBatchMaxSize;
     }
 
     /// <inheritdoc/>
     public int MaxTokens { get; }
+
+    /// <inheritdoc/>
+    public int EmbeddingBatchMaxSize { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)

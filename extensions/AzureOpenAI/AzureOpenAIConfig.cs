@@ -75,6 +75,15 @@ public class AzureOpenAIConfig
     public int? EmbeddingDimensions { get; set; }
 
     /// <summary>
+    /// Old AI model like ada (https://learn.microsoft.com/en-us/azure/ai-services/openai/reference) does
+    /// not support in azure version more than 16 element in a single batch, while openai accepts up to
+    /// 2k. This settings is needed to avoid sending too large batches to the service and having an error.
+    ///
+    /// Openai Has much larger windows as explained here https://platform.openai.com/docs/api-reference/embeddings/create.
+    /// </summary>
+    public int EmbeddingBatchMaxSize { get; set; } = 16;
+
+    /// <summary>
     /// Set credentials manually from code
     /// </summary>
     /// <param name="credential">Token credentials</param>

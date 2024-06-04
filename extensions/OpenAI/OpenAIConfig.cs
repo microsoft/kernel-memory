@@ -48,6 +48,11 @@ public class OpenAIConfig
     public int EmbeddingModelMaxTokenTotal { get; set; } = 8191;
 
     /// <summary>
+    /// As for documentation: https://platform.openai.com/docs/api-reference/embeddings/create.
+    /// </summary>
+    public int EmbeddingBatchMaxSize { get; set; } = 2048;
+
+    /// <summary>
     /// OpenAI HTTP endpoint. You may need to override this to work with
     /// OpenAI compatible services like LM Studio.
     /// </summary>

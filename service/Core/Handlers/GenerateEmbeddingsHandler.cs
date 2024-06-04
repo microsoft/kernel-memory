@@ -74,6 +74,12 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
         this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         var partitionsFound = false;
+
+        //we have two different strategies for generate embedding, because we need to support bulk embedding
+        //generation where we optimize the embedding generation greatly reducing the number of call to the model.
+        //we will calculate all embedding in a dictionary where the text is the key and the embedding is the value.
+        var embeddingCache = await EmbeddingGeneratorHelper.GetEmbeddingsAsync(pipeline, this, this._embeddingGenerators, this._orchestrator, cancellationToken).ConfigureAwait(false);
+
         foreach (var uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -139,7 +145,9 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
                                 this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
                             }
 
-                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
+                            //All embedding are pre-calculated, so we can simply go and get the embedding from the cache
+                            Embedding embedding = embeddingCache.GetEmbedding(generator, partitionContent);
+
                             embeddingData.Vector = embedding;
                             embeddingData.VectorSize = embeddingData.Vector.Length;
                             embeddingData.TimeStamp = DateTimeOffset.UtcNow;
