@@ -24,7 +24,6 @@ The [Postgres](https://www.postgresql.org) adapter allows to use Kernel Memory w
 >     CREATE EXTENSION vector
 >
 > For more information, check:
->
 > * [Using pgvector on Azure PostgreSQL](https://learn.microsoft.com/azure/postgresql/flexible-server/how-to-use-pgvector)
 > * [pg_vector extension documentation](https://github.com/pgvector/pgvector).
 
