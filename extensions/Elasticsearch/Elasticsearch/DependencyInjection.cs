@@ -11,7 +11,7 @@ using Microsoft.KernelMemory.MemoryStorage;
 namespace Microsoft.KernelMemory;
 
 /// <summary>
-/// DI pipelines for Elasticsearch Memory.
+/// Kernel Memory builder extensions
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
@@ -49,7 +49,7 @@ public static partial class KernelMemoryBuilderExtensions
 }
 
 /// <summary>
-/// Setup Elasticsearch memory within the DI service collection.
+/// .NET IServiceCollection dependency injection extensions.
 /// </summary>
 public static partial class DependencyInjection
 {

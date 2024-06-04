@@ -17,5 +17,7 @@ public sealed class TestSetItem
 
     public IEnumerable<string> Context { get; set; } = Array.Empty<string>();
 
+    public ICollection<MemoryFilter> Filters { get; set; } = Array.Empty<MemoryFilter>();
+
     public string ContextString => string.Join("\n", this.Context);
 }

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +20,7 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// supporting OpenAI HTTP schema.
 /// </summary>
 [Experimental("KMEXP01")]
-public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
+public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextEmbeddingGenerationService _client;
     private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
@@ -139,6 +141,13 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
+    {
+        var embeddings = await this._client.GenerateEmbeddingsAsync(textList.ToList(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 
     private void SetTokenizer(ITextTokenizer? textTokenizer = null)

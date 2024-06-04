@@ -8,6 +8,9 @@ using Microsoft.KernelMemory.DocumentStorage.AzureBlobs;
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Kernel Memory builder extensions
+/// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithAzureBlobsDocumentStorage(this IKernelMemoryBuilder builder, AzureBlobsConfig config)
@@ -17,6 +20,9 @@ public static partial class KernelMemoryBuilderExtensions
     }
 }
 
+/// <summary>
+/// .NET IServiceCollection dependency injection extensions.
+/// </summary>
 public static partial class DependencyInjection
 {
     public static IServiceCollection AddAzureBlobsAsDocumentStorage(this IServiceCollection services, AzureBlobsConfig config)

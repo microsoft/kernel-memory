@@ -6,7 +6,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Service.AspNetCore</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Service.AspNetCore</RootNamespace>
-        <NoWarn>$(NoWarn);CA1031;CA2254;CS1591;</NoWarn>
+        <NoWarn>$(NoWarn);CA1031;CA2254;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

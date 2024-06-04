@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.MemoryDb.Elasticsearch</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MemoryDb.Elasticsearch</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CS1591;CA1308;CA1724;CA1812;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1308;CA1724;CA1812;</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>        
     </PropertyGroup>

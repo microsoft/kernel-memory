@@ -79,6 +79,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		nuget.config = nuget.config
 		README.md = README.md
 		SECURITY.md = SECURITY.md
+		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
@@ -519,7 +520,6 @@ Global
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -11,7 +11,6 @@ This repository contains the code for the evaluation of the Knowledge Management
 - **Answer Semantic Similarity**: Comparing the semantic similarity between the generated answer and the expected answer.
 - **Answer Correctness**: Verifying the factual correctness of the generated answers.
 
-
 ## Usage
 
 ### Test set generation
@@ -23,14 +22,17 @@ To help you with this task, we provide a generator that creates a test set from 
 ```csharp
 using Microsoft.KernelMemory.Evaluation;
 
-TestSetGenerator testSetGenerator = new(kernel, memoryBuilder);
+var testSetGenerator = new TestSetGeneratorBuilder(memoryBuilder.Services)
+                            .AddEvaluatorKernel(kernel)
+                            .Build();
 
-var distribution = new Distribution();
-
-distribution.Simple = .5f;
-distribution.Reasoning = .16f;
-distribution.MultiContext = .17f;
-distribution.Conditioning = .17f;
+var distribution = new Distribution
+{
+    Simple = .5f,
+    Reasoning = .16f,
+    MultiContext = .17f,
+    Conditioning = .17f
+};
 
 var testSet = testSetGenerator.GenerateTestSetsAsync(index: "default", count: 10, retryCount: 3, distribution: distribution);
 
@@ -46,9 +48,12 @@ await foreach (var test in testSet)
 To evaluate the KM, you can use the following code:
 
 ```csharp
-var evaluation = new TestSetEvaluator(kernelBuilder, memoryBuilder.Build(), indexName: "default");
+var evaluation = new TestSetEvaluatorBuilder()
+                            .AddEvaluatorKernel(kernel)
+                            .WithMemory(memoryBuilder.Build())
+                            .Build();
 
-var results = evaluation.EvaluateTestSetAsync(await testSet.ToArrayAsync());
+var results = evaluation.EvaluateTestSetAsync(index: "default", await testSet.ToArrayAsync());
 
 await foreach (var result in results)
 {

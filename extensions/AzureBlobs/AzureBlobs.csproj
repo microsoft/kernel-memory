@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.DocumentStorage.AzureBlobs</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.DocumentStorage.AzureBlobs</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP03;CA1724;CS1591;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP03;CA1724;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
