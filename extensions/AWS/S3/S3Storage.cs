@@ -1,0 +1,356 @@
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.DocumentStorage;
+
+namespace Microsoft.KernelMemory.DocumentStorage.S3;
+
+public class S3Storage : IDocumentStorage
+{
+    private readonly AmazonS3Client _client;
+    private readonly string _bucketName;
+    private readonly ILogger<S3Storage> _log;
+
+    public S3Storage(
+        S3Config config,
+        ILogger<S3Storage>? log = null)
+    {
+        _log = log ?? DefaultLogger<S3Storage>.Instance;
+
+        switch (config.Auth)
+        {
+            case S3Config.AuthTypes.AccessKey:
+                {
+                    ValidateAccessKey(config.AccessKey);
+                    ValidateSecretKey(config.SecretKey);
+
+                    _client = new AmazonS3Client(
+                        awsAccessKeyId: config.AccessKey,
+                        awsSecretAccessKey: config.SecretKey,
+
+                        clientConfig: new AmazonS3Config
+                        {
+                            ServiceURL = config.CustomHost + "/" + config.BucketName,
+                            LogResponse = true
+                        }
+                    );
+                    break;
+                }
+
+            default:
+                _log.LogCritical("Authentication type '{0}' undefined or not supported", config.Auth);
+                throw new DocumentStorageException($"Authentication type '{config.Auth}' undefined or not supported");
+        }
+
+        if (string.IsNullOrEmpty(config.BucketName))
+        {
+            var msg = $"Bucket name '{config.BucketName}' undefined or not supported";
+            _log.LogCritical(msg);
+            throw new DocumentStorageException(msg);
+        }
+
+        _bucketName = config.BucketName;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateIndexDirectoryAsync(
+        string index,
+        CancellationToken cancellationToken = default)
+    {
+        // Note: AWS S3 doesn't have an artifact for "directories", which are just a detail
+        //       in a object name so there's no such thing as creating a directory.
+        //       For example, if you want to create a directory called "images" within a bucket,
+        //       you can set the object key as "images/object.jpg". This would give the appearance
+        //       of a file being stored in the "images" directory.
+
+        // This is just to bypass warnings for async function implementation
+        await Task.Run(
+            () =>
+            {
+                _log.LogTrace("Using index directory '{0}'", index);
+            },
+            cancellationToken: CancellationToken.None
+        );
+    }
+
+    /// <inheritdoc />
+    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            throw new DocumentStorageException("The index name is empty, stopping the process to prevent data loss");
+        }
+
+        return DeleteObjectsByPrefixAsync(index, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task CreateDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        // Note: AWS S3 doesn't have an artifact for "directories", which are just a detail in a blob name
+        //       so there's no such thing as creating a directory. When creating a blob, the name must contain
+        //       the directory name, e.g. blob.Name = "dir1/subdir2/file.txt"
+
+        // This is just to bypass warnings for async function implementation
+        await Task.Run(
+            () =>
+            {
+                _log.LogTrace("Using index directory '{0}' and document directory '{1}'", index, documentId);
+            },
+            cancellationToken: CancellationToken.None
+        );
+    }
+
+    /// <inheritdoc />
+    public Task EmptyDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
+        {
+            throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+        }
+
+        return DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteDocumentDirectoryAsync(
+        string index,
+        string documentId,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
+        {
+            throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
+        }
+
+        return DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task WriteFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        Stream streamContent,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        var objName = $"{directoryName}/{fileName}";
+        var len = streamContent.Length;
+
+        _log.LogTrace("Writing object {0} ...", objName);
+
+        if (streamContent.Length == 0)
+        {
+            _log.LogWarning("The file {0} is empty", objName);
+        }
+
+        await _client.PutObjectAsync(new PutObjectRequest
+        {
+            BucketName = _bucketName,
+            Key = objName,
+            InputStream = streamContent
+        });
+
+        _log.LogTrace("Object {0} ready, size {1}", objName, len);
+    }
+
+    /// <inheritdoc />
+    public async Task<StreamableFileContent> ReadFileAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        var objName = $"{directoryName}/{fileName}";
+
+        try
+        {
+            using (var response = await _client.GetObjectAsync(
+                new GetObjectRequest
+                {
+                    BucketName = _bucketName,
+                    Key = objName,
+                },
+                cancellationToken: cancellationToken
+            ))
+            {
+                if (response == null)
+                {
+                    return new StreamableFileContent(
+                        fileName,
+                        0,
+                        "application/octet-stream",
+                        DateTimeOffset.UtcNow
+                    );
+                }
+
+                using (var responseStream = response.ResponseStream)
+                {
+                    var memoryStream = new MemoryStream();
+
+                    await responseStream.CopyToAsync(memoryStream);
+
+                    return new StreamableFileContent(
+                        fileName,
+                        response.ContentLength,
+                        response.Headers.ContentType,
+                        response.LastModified,
+                        async () =>
+                        {
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+                            return await Task.FromResult(memoryStream);
+                        }
+                    );
+                }
+            }
+        }
+        catch (AmazonS3Exception e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            if (logErrIfNotFound)
+            {
+                _log.LogInformation("File not found: {0}", objName);
+            }
+
+            throw new DocumentStorageFileNotFoundException("File not found", e);
+        }
+    }
+
+    /// <summary>
+    /// Generates a pre-signed URL for accessing an object stored in S3 for a limited time.
+    /// </summary>
+    /// <param name="index">The index directory in which the object resides.</param>
+    /// <param name="documentId">The document directory under the index where the object resides.</param>
+    /// <param name="fileName">The name of the file/object for which to generate the URL.</param>
+    /// <param name="validDuration">The duration for which the URL should remain valid.</param>
+    /// <returns>A pre-signed URL for accessing the object.</returns>
+    public async Task<string> GeneratePreSignedURL(string index, string documentId, string fileName, TimeSpan validDuration)
+    {
+        var directoryName = JoinPaths(index, documentId);
+        var objectKey = $"{directoryName}/{fileName}";
+
+        var request = new GetPreSignedUrlRequest
+        {
+            BucketName = _bucketName,
+            Key = objectKey,
+            Expires = DateTime.UtcNow.Add(validDuration),
+            Verb = HttpVerb.GET
+        };
+
+        try
+        {
+            var url = await _client.GetPreSignedURLAsync(request);
+            _log.LogTrace("Generated pre-signed URL for object {0}", objectKey);
+            return url;
+        }
+        catch (Exception ex)
+        {
+            _log.LogError("Error generating pre-signed URL for object {0}: {1}", objectKey, ex.Message);
+            throw;
+        }
+    }
+
+    #region private
+
+    /// <summary>
+    /// Join index name and document ID, using the platform specific logic, to calculate the directory name
+    /// </summary>
+    /// <param name="index">Index name, left side of the path</param>
+    /// <param name="documentId">Document ID, right side of the path (appended to index)</param>
+    /// <returns>Index name concatenated with Document Id into a single path</returns>
+    private static string JoinPaths(string index, string documentId)
+    {
+        return $"{index}/{documentId}";
+    }
+
+    private async Task DeleteObjectsByPrefixAsync(string prefix, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(prefix))
+        {
+            throw new DocumentStorageException("The object prefix is empty, stopping the process to prevent data loss");
+        }
+
+        _log.LogInformation("Deleting objects at {0}", prefix);
+
+        var allObjects = new List<S3Object>();
+        var request = new ListObjectsV2Request
+        {
+            BucketName = _bucketName,
+            Prefix = prefix
+        };
+
+        do
+        {
+            var response = await _client.ListObjectsV2Async(
+                request,
+                cancellationToken: cancellationToken
+            );
+
+            allObjects.AddRange(response.S3Objects);
+
+            if (!response.IsTruncated)
+            {
+                // Exit the loop if there are no more objects to retrieve
+                break;
+            }
+
+            request.ContinuationToken = response.NextContinuationToken;
+        }
+        while (true);
+
+        foreach (var obj in allObjects)
+        {
+            var fileName = obj.Key.Trim('/').Substring(prefix.Trim('/').Length).Trim('/');
+
+            // Don't delete the pipeline status file
+            if (fileName == Constants.PipelineStatusFilename) { continue; }
+
+            _log.LogInformation("Deleting blob {0}", obj.Key);
+
+            var response = await _client.DeleteObjectAsync(
+                bucketName: _bucketName,
+                key: obj.Key,
+                cancellationToken: cancellationToken
+            );
+
+            // 204 No Content: This status code indicates that the object was successfully deleted
+            // from the bucket. The request was processed successfully, and there is no content
+            // to return in the response.
+            if (response.HttpStatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                _log.LogDebug("Delete response: {0}", response.HttpStatusCode);
+            }
+            else
+            {
+                _log.LogWarning("Unexpected delete response: {0}", response.HttpStatusCode);
+            }
+        }
+    }
+
+    private void ValidateAccessKey(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            var msg = "The S3 Access Key is empty";
+            this._log.LogCritical(msg);
+            throw new DocumentStorageException(msg);
+        }
+    }
+
+    private void ValidateSecretKey(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            var msg = "The S3 Secret Key is empty";
+            this._log.LogCritical(msg);
+            throw new DocumentStorageException(msg);
+        }
+    }
+
+    #endregion
+}
