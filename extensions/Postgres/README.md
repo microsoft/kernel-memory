@@ -17,17 +17,14 @@ to use Kernel Memory with [Postgres+pgvector](https://github.com/pgvector/pgvect
 >     CREATE EXTENSION vector
 >
 > For more information, check:
-> * [Using pgvector on Azure PostgreSQL](https://learn.microsoft.com/azure/postgresql/flexible-server/how-to-use-pgvector)
-> * [pg_vector extension documentation](https://github.com/pgvector/pgvector).
+>
+> - [Using pgvector on Azure PostgreSQL](https://learn.microsoft.com/azure/postgresql/flexible-server/how-to-use-pgvector)
+> - [pg_vector extension documentation](https://github.com/pgvector/pgvector).
 
 To use Postgres with Kernel Memory:
 
-1. Have a PostgreSQL instance ready, e.g.
-   checkout [Azure Database for PostgreSQL](https://learn.microsoft.com/en-us/azure/postgresql/)
+1. Have a PostgreSQL instance ready, e.g. checkout [Azure Database for PostgreSQL](https://learn.microsoft.com/azure/postgresql)
 2. Verify your Postgres instance supports vectors, e.g. run `SELECT * FROM pg_extension`
-
-[//]: # (2. install the [Microsoft.KernelMemory.Postgres]&#40;https://www.nuget.org/packages/Microsoft.KernelMemory.Postgres&#41; package)
-
 3. Add Postgres connection string to appsettings.json (or appsettings.development.json), for example:
 
     ```json
@@ -35,7 +32,7 @@ To use Postgres with Kernel Memory:
       "KernelMemory": {
         "Services": {
           "Postgres": {
-            "ConnectionString": "Host=localhost;Port=5432;Username=myuser;Password=mypassword"
+            "ConnectionString": "Host=localhost;Port=5432;Username=myuser;Password=mypassword;Database=mydatabase"
           }
         }
       }

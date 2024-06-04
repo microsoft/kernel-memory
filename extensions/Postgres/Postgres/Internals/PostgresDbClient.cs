@@ -21,10 +21,11 @@ namespace Microsoft.KernelMemory.Postgres;
 /// </summary>
 internal sealed class PostgresDbClient : IDisposable
 {
-    // See: https://www.postgresql.org/docs/8.2/errcodes-appendix.html
-    private const string PgErrUndefinedTable = "42P01"; // UNDEFINED TABLE
-    private const string PgErrUniqueViolation = "23505"; // UNIQUE VIOLATION
-    private const string PgErrTypeDoesNotExist = "42704"; // UNDEFINED OBJECT
+    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
+    private const string PgErrUndefinedTable = "42P01"; // undefined_table
+    private const string PgErrUniqueViolation = "23505"; // unique_violation
+    private const string PgErrTypeDoesNotExist = "42704"; // undefined_object
+    private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
 
     private readonly ILogger _log;
     private readonly NpgsqlDataSource _dataSource;
@@ -39,6 +40,7 @@ internal sealed class PostgresDbClient : IDisposable
     private readonly string _colPayload;
     private readonly string _columnsListNoEmbeddings;
     private readonly string _columnsListWithEmbeddings;
+    private readonly bool _dbNamePresent;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
@@ -51,6 +53,7 @@ internal sealed class PostgresDbClient : IDisposable
         this._log = log ?? DefaultLogger<PostgresDbClient>.Instance;
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(config.ConnectionString);
+        this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);
         dataSourceBuilder.UseVector();
         this._dataSource = dataSourceBuilder.Build();
         this._schema = config.Schema;
@@ -93,7 +96,7 @@ internal sealed class PostgresDbClient : IDisposable
         tableName = this.WithTableNamePrefix(tableName);
         this._log.LogTrace("Checking if table {0} exists", tableName);
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
         await using (connection.ConfigureAwait(false))
         {
             NpgsqlCommand cmd = connection.CreateCommand();
@@ -147,8 +150,7 @@ internal sealed class PostgresDbClient : IDisposable
         tableName = this.WithSchemaAndTableNamePrefix(tableName);
         this._log.LogTrace("Creating table: {0}", tableName);
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
         Npgsql.PostgresException? createErr = null;
 
         try
@@ -194,7 +196,7 @@ internal sealed class PostgresDbClient : IDisposable
                 }
             }
         }
-        catch (Npgsql.PostgresException e) when (VectorTypeDoesNotExists(e))
+        catch (Npgsql.PostgresException e) when (IsVectorTypeDoesNotExistException(e))
         {
             this._log.LogError(e, "Vector type not installed, check 'SELECT * FROM pg_extension'");
             throw;
@@ -247,7 +249,7 @@ internal sealed class PostgresDbClient : IDisposable
     public async IAsyncEnumerable<string> GetTablesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection.ConfigureAwait(false))
         {
@@ -286,7 +288,7 @@ internal sealed class PostgresDbClient : IDisposable
         CancellationToken cancellationToken = default)
     {
         tableName = this.WithSchemaAndTableNamePrefix(tableName);
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection.ConfigureAwait(false))
         {
@@ -327,7 +329,7 @@ internal sealed class PostgresDbClient : IDisposable
         const string EmptyContent = "";
         string[] emptyTags = Array.Empty<string>();
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -419,7 +421,7 @@ internal sealed class PostgresDbClient : IDisposable
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
             tableName, minSimilarity, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection.ConfigureAwait(false))
         {
@@ -524,7 +526,7 @@ internal sealed class PostgresDbClient : IDisposable
         this._log.LogTrace("Fetching list of records. Table: {0}. Order by: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
             tableName, orderBySql, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection.ConfigureAwait(false))
         {
@@ -593,7 +595,7 @@ internal sealed class PostgresDbClient : IDisposable
         tableName = this.WithSchemaAndTableNamePrefix(tableName);
         this._log.LogTrace("Deleting record '{0}' from table '{1}'", id, tableName);
 
-        NpgsqlConnection connection = await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection.ConfigureAwait(false))
         {
@@ -632,6 +634,32 @@ internal sealed class PostgresDbClient : IDisposable
         if (disposing)
         {
             (this._dataSource as IDisposable)?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Try to connect to PG, handling exceptions in case the DB doesn't exist
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task<NpgsqlConnection> ConnectAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Npgsql.PostgresException e) when (IsDbNotFoundException(e))
+        {
+            if (this._dbNamePresent)
+            {
+                this._log.LogCritical("DB not found. Try checking the connection string, e.g. whether the `Database` parameter is empty or incorrect: {0}", e.Message);
+            }
+            else
+            {
+                this._log.LogCritical("DB not found. Try checking the connection string, e.g. specifying the `Database` parameter: {0}", e.Message);
+            }
+
+            throw;
         }
     }
 
@@ -674,12 +702,17 @@ internal sealed class PostgresDbClient : IDisposable
         return $"{this._tableNamePrefix}{tableName}";
     }
 
+    private static bool IsDbNotFoundException(Npgsql.PostgresException e)
+    {
+        return (e.SqlState == PgErrDatabaseDoesNotExist);
+    }
+
     private static bool IsTableNotFoundException(Npgsql.PostgresException e)
     {
         return (e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool VectorTypeDoesNotExists(Npgsql.PostgresException e)
+    private static bool IsVectorTypeDoesNotExistException(Npgsql.PostgresException e)
     {
         return (e.SqlState == PgErrTypeDoesNotExist
                 && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
