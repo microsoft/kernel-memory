@@ -17,7 +17,6 @@ to use Kernel Memory with [Postgres+pgvector](https://github.com/pgvector/pgvect
 >     CREATE EXTENSION vector
 >
 > For more information, check:
->
 > - [Using pgvector on Azure PostgreSQL](https://learn.microsoft.com/azure/postgresql/flexible-server/how-to-use-pgvector)
 > - [pg_vector extension documentation](https://github.com/pgvector/pgvector).
 
