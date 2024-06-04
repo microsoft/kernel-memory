@@ -2,7 +2,7 @@
 <Project>
     <PropertyGroup>
         <!-- Central version prefix - applies to all nuget packages. -->
-        <Version>0.61.0</Version>
+        <Version>0.62.0</Version>
 
         <!-- C# lang version, https://learn.microsoft.com/dotnet/csharp/whats-new -->
         <LangVersion>12</LangVersion>
