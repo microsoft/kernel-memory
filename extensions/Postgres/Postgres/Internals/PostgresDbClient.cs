@@ -355,7 +355,7 @@ internal sealed class PostgresDbClient : IDisposable
                     cmd.Parameters.AddWithValue("@id", record.Id);
                     cmd.Parameters.AddWithValue("@embedding", record.Embedding);
                     cmd.Parameters.AddWithValue("@tags", NpgsqlDbType.Array | NpgsqlDbType.Text, record.Tags.ToArray() ?? emptyTags);
-                    cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, record.Content ?? EmptyContent);
+                    cmd.Parameters.AddWithValue("@content", NpgsqlDbType.Text, CleanContent(record.Content) ?? EmptyContent);
                     cmd.Parameters.AddWithValue("@payload", NpgsqlDbType.Jsonb, record.Payload ?? EmptyPayload);
 #pragma warning restore CA2100
 
@@ -661,6 +661,13 @@ internal sealed class PostgresDbClient : IDisposable
 
             throw;
         }
+    }
+
+    private static string CleanContent(string input)
+    {
+        // Remove 0x00 null, not supported by Postgres text fields, to avoid
+        // exception: 22021: invalid byte sequence for encoding "UTF8": 0x00
+        return input.Replace("\0", "", StringComparison.Ordinal);
     }
 
     private PostgresMemoryRecord ReadEntry(NpgsqlDataReader dataReader, bool withEmbeddings)
