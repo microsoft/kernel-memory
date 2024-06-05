@@ -1,4 +1,4 @@
-# Deploying the infrastructure
+# Deploying the Kernel Memory infrastructure to Azure
 
 You can deploy the Kernel Memory infrastructure to Azure by clicking the button below. This will create required
 resources. We recommend to create a new resource group for each deployment.
