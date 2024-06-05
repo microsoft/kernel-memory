@@ -1,5 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.DocumentStorage;
 
 namespace Microsoft.KernelMemory.DocumentStorage.S3;
 
@@ -13,37 +21,36 @@ public class S3Storage : IDocumentStorage
         S3Config config,
         ILogger<S3Storage>? log = null)
     {
-        _log = log ?? DefaultLogger<S3Storage>.Instance;
+        this._log = log ?? DefaultLogger<S3Storage>.Instance;
 
         switch (config.Auth)
         {
             case S3Config.AuthTypes.AccessKey:
-                {
-                    ValidateAccessKey(config.AccessKey);
-                    ValidateSecretKey(config.SecretKey);
+            {
+                ValidateAccessKey(config.AccessKey);
+                ValidateSecretKey(config.SecretKey);
 
-                    _client = new AmazonS3Client(
-                        awsAccessKeyId: config.AccessKey,
-                        awsSecretAccessKey: config.SecretKey,
-
-                        clientConfig: new AmazonS3Config
-                        {
-                            ServiceURL = config.CustomHost + "/" + config.BucketName,
-                            LogResponse = true
-                        }
-                    );
-                    break;
-                }
+                this._client = new AmazonS3Client(
+                    awsAccessKeyId: config.AccessKey,
+                    awsSecretAccessKey: config.SecretKey,
+                    clientConfig: new AmazonS3Config
+                    {
+                        ServiceURL = config.CustomHost + "/" + config.BucketName,
+                        LogResponse = true
+                    }
+                );
+                break;
+            }
 
             default:
-                _log.LogCritical("Authentication type '{0}' undefined or not supported", config.Auth);
+                this._log.LogCritical("Authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Authentication type '{config.Auth}' undefined or not supported");
         }
 
         if (string.IsNullOrEmpty(config.BucketName))
         {
             var msg = $"Bucket name '{config.BucketName}' undefined or not supported";
-            _log.LogCritical(msg);
+            this._log.LogCritical(msg);
             throw new DocumentStorageException(msg);
         }
 
@@ -65,7 +72,7 @@ public class S3Storage : IDocumentStorage
         await Task.Run(
             () =>
             {
-                _log.LogTrace("Using index directory '{0}'", index);
+                this._log.LogTrace("Using index directory '{0}'", index);
             },
             cancellationToken: CancellationToken.None
         );
@@ -79,7 +86,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The index name is empty, stopping the process to prevent data loss");
         }
 
-        return DeleteObjectsByPrefixAsync(index, cancellationToken);
+        return this.DeleteObjectsByPrefixAsync(index, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -96,7 +103,7 @@ public class S3Storage : IDocumentStorage
         await Task.Run(
             () =>
             {
-                _log.LogTrace("Using index directory '{0}' and document directory '{1}'", index, documentId);
+                this._log.LogTrace("Using index directory '{0}' and document directory '{1}'", index, documentId);
             },
             cancellationToken: CancellationToken.None
         );
@@ -111,7 +118,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
-        return DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+        return this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -126,7 +133,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
-        return DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+        return this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -141,21 +148,21 @@ public class S3Storage : IDocumentStorage
         var objName = $"{directoryName}/{fileName}";
         var len = streamContent.Length;
 
-        _log.LogTrace("Writing object {0} ...", objName);
+        this._log.LogTrace("Writing object {0} ...", objName);
 
         if (streamContent.Length == 0)
         {
-            _log.LogWarning("The file {0} is empty", objName);
+            this._log.LogWarning("The file {0} is empty", objName);
         }
 
-        await _client.PutObjectAsync(new PutObjectRequest
+        await this._client.PutObjectAsync(new PutObjectRequest
         {
             BucketName = _bucketName,
             Key = objName,
             InputStream = streamContent
         });
 
-        _log.LogTrace("Object {0} ready, size {1}", objName, len);
+        this._log.LogTrace("Object {0} ready, size {1}", objName, len);
     }
 
     /// <inheritdoc />
@@ -171,14 +178,14 @@ public class S3Storage : IDocumentStorage
 
         try
         {
-            using (var response = await _client.GetObjectAsync(
-                new GetObjectRequest
-                {
-                    BucketName = _bucketName,
-                    Key = objName,
-                },
-                cancellationToken: cancellationToken
-            ))
+            using (var response = await this._client.GetObjectAsync(
+                       new GetObjectRequest
+                       {
+                           BucketName = _bucketName,
+                           Key = objName,
+                       },
+                       cancellationToken: cancellationToken
+                   ))
             {
                 if (response == null)
                 {
@@ -210,11 +217,11 @@ public class S3Storage : IDocumentStorage
                 }
             }
         }
-        catch (AmazonS3Exception e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+        catch (AmazonS3Exception e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
             if (logErrIfNotFound)
             {
-                _log.LogInformation("File not found: {0}", objName);
+                this._log.LogInformation("File not found: {0}", objName);
             }
 
             throw new DocumentStorageFileNotFoundException("File not found", e);
@@ -244,13 +251,13 @@ public class S3Storage : IDocumentStorage
 
         try
         {
-            var url = await _client.GetPreSignedURLAsync(request);
-            _log.LogTrace("Generated pre-signed URL for object {0}", objectKey);
+            var url = await this._client.GetPreSignedURLAsync(request);
+            this._log.LogTrace("Generated pre-signed URL for object {0}", objectKey);
             return url;
         }
         catch (Exception ex)
         {
-            _log.LogError("Error generating pre-signed URL for object {0}: {1}", objectKey, ex.Message);
+            this._log.LogError("Error generating pre-signed URL for object {0}: {1}", objectKey, ex.Message);
             throw;
         }
     }
@@ -275,7 +282,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The object prefix is empty, stopping the process to prevent data loss");
         }
 
-        _log.LogInformation("Deleting objects at {0}", prefix);
+        this._log.LogInformation("Deleting objects at {0}", prefix);
 
         var allObjects = new List<S3Object>();
         var request = new ListObjectsV2Request
@@ -286,7 +293,7 @@ public class S3Storage : IDocumentStorage
 
         do
         {
-            var response = await _client.ListObjectsV2Async(
+            var response = await this._client.ListObjectsV2Async(
                 request,
                 cancellationToken: cancellationToken
             );
@@ -300,8 +307,7 @@ public class S3Storage : IDocumentStorage
             }
 
             request.ContinuationToken = response.NextContinuationToken;
-        }
-        while (true);
+        } while (true);
 
         foreach (var obj in allObjects)
         {
@@ -310,9 +316,9 @@ public class S3Storage : IDocumentStorage
             // Don't delete the pipeline status file
             if (fileName == Constants.PipelineStatusFilename) { continue; }
 
-            _log.LogInformation("Deleting blob {0}", obj.Key);
+            this._log.LogInformation("Deleting blob {0}", obj.Key);
 
-            var response = await _client.DeleteObjectAsync(
+            var response = await this._client.DeleteObjectAsync(
                 bucketName: _bucketName,
                 key: obj.Key,
                 cancellationToken: cancellationToken
@@ -321,13 +327,13 @@ public class S3Storage : IDocumentStorage
             // 204 No Content: This status code indicates that the object was successfully deleted
             // from the bucket. The request was processed successfully, and there is no content
             // to return in the response.
-            if (response.HttpStatusCode == System.Net.HttpStatusCode.NoContent)
+            if (response.HttpStatusCode == HttpStatusCode.NoContent)
             {
-                _log.LogDebug("Delete response: {0}", response.HttpStatusCode);
+                this._log.LogDebug("Delete response: {0}", response.HttpStatusCode);
             }
             else
             {
-                _log.LogWarning("Unexpected delete response: {0}", response.HttpStatusCode);
+                this._log.LogWarning("Unexpected delete response: {0}", response.HttpStatusCode);
             }
         }
     }
