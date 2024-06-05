@@ -2,6 +2,9 @@
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
+using System;
+using System.Text;
+
 namespace Microsoft.KernelMemory;
 
 public class RabbitMqConfig
@@ -37,4 +40,55 @@ public class RabbitMqConfig
     /// Default: 3600 second, 1 hour.
     /// </summary>
     public int MessageTTLSecs { get; set; } = 3600;
+
+    /// <summary>
+    /// How many times to dequeue a messages and process before moving it to a poison queue.
+    /// </summary>
+    public int MaxRetriesBeforePoisonQueue { get; set; } = 20;
+
+    /// <summary>
+    /// Suffix used for the poison queues.
+    /// </summary>
+    public string PoisonQueueSuffix { get; set; } = "-poison";
+
+    /// <summary>
+    /// Verify that the current state is valid.
+    /// </summary>
+    public void Validate()
+    {
+        if (this.MaxRetriesBeforePoisonQueue < 0)
+        {
+            throw new ConfigurationException($"RabbitQM: {nameof(this.MaxRetriesBeforePoisonQueue)} cannot be a negative number");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix))
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is empty");
+        }
+
+        if (!IsValidQueueName(this.PoisonQueueSuffix))
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is too long or contains invalid chars");
+        }
+    }
+
+    private static bool IsValidQueueName(string name)
+    {
+        // Queue names must follow the rules described at
+        // https://www.rabbitmq.com/docs/queues#names.
+        if (name.StartsWith("amq.", StringComparison.InvariantCulture))
+        {
+            return false;
+        }
+
+        // Queue names can be up to 255 bytes of UTF-8 characters.
+        // We define a maximum length of 60 bytes for the suffix,
+        // so there is room for the other name part.
+        if (Encoding.UTF8.GetByteCount(name) > 60)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
