@@ -178,6 +178,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "207-dotnet-expanding-chunks
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlobs", "extensions\AzureBlobs\AzureBlobs.csproj", "{20FFF62D-5BA5-4126-A16C-C14E1FF35A4F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "S3", "extensions\AWS\S3\S3.csproj", "{A1B2C3D4-E5F6-7890-AB12-CD34EF56G78H}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureQueues", "extensions\AzureQueues\AzureQueues.csproj", "{40CB6452-68DD-4C78-9852-78281A161950}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAIDocIntel", "extensions\AzureAIDocIntel\AzureAIDocIntel.csproj", "{CFE7C192-2561-40CC-8592-136293451EC1}"

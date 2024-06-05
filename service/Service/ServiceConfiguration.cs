@@ -162,6 +162,10 @@ internal sealed class ServiceConfiguration
                                                                 ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
+            case string x when x.Equals("S3", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddS3AsDocumentStorage(this.GetServiceConfig<S3Config>("S3"));
+                break;
+
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddMongoDbAtlasAsDocumentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
@@ -206,20 +210,20 @@ internal sealed class ServiceConfiguration
             {
                 case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
-                        s => s.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding")));
-                    builder.AddIngestionEmbeddingGenerator(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                            s => s.AddAzureOpenAIEmbeddingGeneration(this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding")));
+                        builder.AddIngestionEmbeddingGenerator(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
-                        s => s.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>("OpenAI")));
-                    builder.AddIngestionEmbeddingGenerator(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                            s => s.AddOpenAITextEmbeddingGeneration(this.GetServiceConfig<OpenAIConfig>("OpenAI")));
+                        builder.AddIngestionEmbeddingGenerator(instance);
+                        break;
+                    }
 
                 default:
                     // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
@@ -245,85 +249,85 @@ internal sealed class ServiceConfiguration
                     break;
 
                 case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>("SimpleVectorDb"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>("SimpleVectorDb"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
 
                 case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
-                {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
-                        s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
-                    );
-                    builder.AddIngestionMemoryDb(instance);
-                    break;
-                }
+                    {
+                        var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                            s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
+                        );
+                        builder.AddIngestionMemoryDb(instance);
+                        break;
+                    }
             }
         }
     }

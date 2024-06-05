@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft. All rights reserved.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,21 +28,22 @@ public class S3Storage : IDocumentStorage
         switch (config.Auth)
         {
             case S3Config.AuthTypes.AccessKey:
-            {
-                ValidateAccessKey(config.AccessKey);
-                ValidateSecretKey(config.SecretKey);
+                {
+                    this.ValidateAccessKey(config.AccessKey);
+                    this.ValidateSecretKey(config.SecretKey);
 
-                this._client = new AmazonS3Client(
-                    awsAccessKeyId: config.AccessKey,
-                    awsSecretAccessKey: config.SecretKey,
-                    clientConfig: new AmazonS3Config
-                    {
-                        ServiceURL = config.CustomHost + "/" + config.BucketName,
-                        LogResponse = true
-                    }
-                );
-                break;
-            }
+                    this._client = new AmazonS3Client(
+                        awsAccessKeyId: config.AccessKey,
+                        awsSecretAccessKey: config.SecretKey,
+
+                        clientConfig: new AmazonS3Config
+                        {
+                            ServiceURL = config.CustomHost + "/" + config.BucketName,
+                            LogResponse = true
+                        }
+                    );
+                    break;
+                }
 
             default:
                 this._log.LogCritical("Authentication type '{0}' undefined or not supported", config.Auth);
@@ -54,7 +57,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException(msg);
         }
 
-        _bucketName = config.BucketName;
+        this._bucketName = config.BucketName;
     }
 
     /// <inheritdoc />
@@ -68,25 +71,18 @@ public class S3Storage : IDocumentStorage
         //       you can set the object key as "images/object.jpg". This would give the appearance
         //       of a file being stored in the "images" directory.
 
-        // This is just to bypass warnings for async function implementation
-        await Task.Run(
-            () =>
-            {
-                this._log.LogTrace("Using index directory '{0}'", index);
-            },
-            cancellationToken: CancellationToken.None
-        );
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
+    public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(index))
         {
             throw new DocumentStorageException("The index name is empty, stopping the process to prevent data loss");
         }
 
-        return this.DeleteObjectsByPrefixAsync(index, cancellationToken);
+        await this.DeleteObjectsByPrefixAsync(index, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -98,19 +94,11 @@ public class S3Storage : IDocumentStorage
         // Note: AWS S3 doesn't have an artifact for "directories", which are just a detail in a blob name
         //       so there's no such thing as creating a directory. When creating a blob, the name must contain
         //       the directory name, e.g. blob.Name = "dir1/subdir2/file.txt"
-
-        // This is just to bypass warnings for async function implementation
-        await Task.Run(
-            () =>
-            {
-                this._log.LogTrace("Using index directory '{0}' and document directory '{1}'", index, documentId);
-            },
-            cancellationToken: CancellationToken.None
-        );
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task EmptyDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task EmptyDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
         if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
@@ -118,11 +106,11 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
-        return this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+        await this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task DeleteDocumentDirectoryAsync(
+    public async Task DeleteDocumentDirectoryAsync(
         string index,
         string documentId,
         CancellationToken cancellationToken = default)
@@ -133,7 +121,7 @@ public class S3Storage : IDocumentStorage
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
         }
 
-        return this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken);
+        await this.DeleteObjectsByPrefixAsync(directoryName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -157,10 +145,10 @@ public class S3Storage : IDocumentStorage
 
         await this._client.PutObjectAsync(new PutObjectRequest
         {
-            BucketName = _bucketName,
+            BucketName = this._bucketName,
             Key = objName,
             InputStream = streamContent
-        });
+        }, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         this._log.LogTrace("Object {0} ready, size {1}", objName, len);
     }
@@ -179,13 +167,13 @@ public class S3Storage : IDocumentStorage
         try
         {
             using (var response = await this._client.GetObjectAsync(
-                       new GetObjectRequest
-                       {
-                           BucketName = _bucketName,
-                           Key = objName,
-                       },
-                       cancellationToken: cancellationToken
-                   ))
+                new GetObjectRequest
+                {
+                    BucketName = this._bucketName,
+                    Key = objName,
+                },
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false))
             {
                 if (response == null)
                 {
@@ -201,7 +189,7 @@ public class S3Storage : IDocumentStorage
                 {
                     var memoryStream = new MemoryStream();
 
-                    await responseStream.CopyToAsync(memoryStream);
+                    await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
                     return new StreamableFileContent(
                         fileName,
@@ -211,7 +199,7 @@ public class S3Storage : IDocumentStorage
                         async () =>
                         {
                             memoryStream.Seek(0, SeekOrigin.Begin);
-                            return await Task.FromResult(memoryStream);
+                            return await Task.FromResult(memoryStream).ConfigureAwait(false);
                         }
                     );
                 }
@@ -236,14 +224,14 @@ public class S3Storage : IDocumentStorage
     /// <param name="fileName">The name of the file/object for which to generate the URL.</param>
     /// <param name="validDuration">The duration for which the URL should remain valid.</param>
     /// <returns>A pre-signed URL for accessing the object.</returns>
-    public async Task<string> GeneratePreSignedURL(string index, string documentId, string fileName, TimeSpan validDuration)
+    public async Task<string> GeneratePreSignedURLAsync(string index, string documentId, string fileName, TimeSpan validDuration)
     {
         var directoryName = JoinPaths(index, documentId);
         var objectKey = $"{directoryName}/{fileName}";
 
         var request = new GetPreSignedUrlRequest
         {
-            BucketName = _bucketName,
+            BucketName = this._bucketName,
             Key = objectKey,
             Expires = DateTime.UtcNow.Add(validDuration),
             Verb = HttpVerb.GET
@@ -251,7 +239,7 @@ public class S3Storage : IDocumentStorage
 
         try
         {
-            var url = await this._client.GetPreSignedURLAsync(request);
+            var url = await this._client.GetPreSignedURLAsync(request).ConfigureAwait(false);
             this._log.LogTrace("Generated pre-signed URL for object {0}", objectKey);
             return url;
         }
@@ -287,7 +275,7 @@ public class S3Storage : IDocumentStorage
         var allObjects = new List<S3Object>();
         var request = new ListObjectsV2Request
         {
-            BucketName = _bucketName,
+            BucketName = this._bucketName,
             Prefix = prefix
         };
 
@@ -296,7 +284,7 @@ public class S3Storage : IDocumentStorage
             var response = await this._client.ListObjectsV2Async(
                 request,
                 cancellationToken: cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             allObjects.AddRange(response.S3Objects);
 
@@ -319,10 +307,10 @@ public class S3Storage : IDocumentStorage
             this._log.LogInformation("Deleting blob {0}", obj.Key);
 
             var response = await this._client.DeleteObjectAsync(
-                bucketName: _bucketName,
+                bucketName: this._bucketName,
                 key: obj.Key,
                 cancellationToken: cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             // 204 No Content: This status code indicates that the object was successfully deleted
             // from the bucket. The request was processed successfully, and there is no content

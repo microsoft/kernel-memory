@@ -1,4 +1,6 @@
 
+// Copyright (c) Microsoft. All rights reserved.
+
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
