@@ -13,7 +13,7 @@ using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.DocumentStorage.S3;
 
-public class S3Storage : IDocumentStorage
+public class S3Storage : IDocumentStorage, IDisposable
 {
     private readonly AmazonS3Client _client;
     private readonly string _bucketName;
@@ -60,8 +60,13 @@ public class S3Storage : IDocumentStorage
         this._bucketName = config.BucketName;
     }
 
+    public void Dispose()
+    {
+        this._client?.Dispose();
+    }
+
     /// <inheritdoc />
-    public async Task CreateIndexDirectoryAsync(
+    public Task CreateIndexDirectoryAsync(
         string index,
         CancellationToken cancellationToken = default)
     {
@@ -86,7 +91,7 @@ public class S3Storage : IDocumentStorage
     }
 
     /// <inheritdoc />
-    public async Task CreateDocumentDirectoryAsync(
+    public Task CreateDocumentDirectoryAsync(
         string index,
         string documentId,
         CancellationToken cancellationToken = default)
@@ -172,23 +177,14 @@ public class S3Storage : IDocumentStorage
                     BucketName = this._bucketName,
                     Key = objName,
                 },
-                cancellationToken: cancellationToken
+                cancellationToken
             ).ConfigureAwait(false))
             {
-                if (response == null)
-                {
-                    return new StreamableFileContent(
-                        fileName,
-                        0,
-                        "application/octet-stream",
-                        DateTimeOffset.UtcNow
-                    );
-                }
+                var memoryStream = new MemoryStream();
+                var responseStream = response.ResponseStream;
 
-                using (var responseStream = response.ResponseStream)
+                await using (responseStream.ConfigureAwait(false))
                 {
-                    var memoryStream = new MemoryStream();
-
                     await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
                     return new StreamableFileContent(
