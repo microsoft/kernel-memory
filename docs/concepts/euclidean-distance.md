@@ -19,6 +19,8 @@ In higher dimensions, this formula can be generalized to:
 
     d = √(x2 - x1)² + (y2 - y1)² + ... + (zn - zn-1)²
 
+![image](https://github.com/microsoft/kernel-memory/assets/371009/8b22d372-bd95-40f7-ba02-d19bb46206fb)
+
 Euclidean distance has many applications in computer science and artificial intelligence,
 particularly when working with [embeddings](/concepts/embedding). Embeddings are numerical
 representations of data that capture the underlying structure and relationships
