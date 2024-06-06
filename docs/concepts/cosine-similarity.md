@@ -21,6 +21,10 @@ that the two vectors are identical, 0 indicates that they are orthogonal
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/b396780f-8985-4331-92ac-0771bba29a79)
 
+where
+
+![image](https://github.com/microsoft/kernel-memory/assets/371009/9452e860-a5fb-41ab-8311-7db5eed5e62a)
+
 Cosine similarity is particularly useful when working with high-dimensional data
 such as word embeddings because it takes into account both the magnitude and direction
 of each vector. This makes it more robust than other measures like
