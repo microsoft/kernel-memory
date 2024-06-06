@@ -32,7 +32,7 @@ $$
 $$
 
 Euclidean distance has many applications in computer science and artificial intelligence,
-particularly when working with [embeddings](/concepts/embedding). Embeddings are numerical
+particularly when working with [embeddings](embedding). Embeddings are numerical
 representations of data that capture the underlying structure and relationships
 between different data points. They are commonly used in natural language processing,
 computer vision, and recommendation systems.
