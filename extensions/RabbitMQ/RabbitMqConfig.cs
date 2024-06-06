@@ -70,7 +70,7 @@ public class RabbitMqConfig
         // https://www.rabbitmq.com/docs/queues#names.
         if (this.PoisonQueueSuffix.StartsWith("amq.", StringComparison.InvariantCulture))
         {
-            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it reserved for internal use");
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it's reserved for internal use");
         }
 
         // Queue names can be up to 255 bytes of UTF-8 characters.
