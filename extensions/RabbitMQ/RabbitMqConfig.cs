@@ -66,29 +66,19 @@ public class RabbitMqConfig
             throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is empty");
         }
 
-        if (!IsValidQueueName(this.PoisonQueueSuffix))
-        {
-            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is too long or contains invalid chars");
-        }
-    }
-
-    private static bool IsValidQueueName(string name)
-    {
         // Queue names must follow the rules described at
         // https://www.rabbitmq.com/docs/queues#names.
-        if (name.StartsWith("amq.", StringComparison.InvariantCulture))
+        if (this.PoisonQueueSuffix.StartsWith("amq.", StringComparison.InvariantCulture))
         {
-            return false;
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it reserved for internal use");
         }
 
         // Queue names can be up to 255 bytes of UTF-8 characters.
         // We define a maximum length of 60 bytes for the suffix,
         // so there is room for the other name part.
-        if (Encoding.UTF8.GetByteCount(name) > 60)
+        if (Encoding.UTF8.GetByteCount(this.PoisonQueueSuffix) > 60)
         {
-            return false;
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} can be up to 60 characters length");
         }
-
-        return true;
     }
 }
