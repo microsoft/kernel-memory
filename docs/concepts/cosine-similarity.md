@@ -19,10 +19,12 @@ of their magnitudes. This results in a value between -1 and 1, where 1 indicates
 that the two vectors are identical, 0 indicates that they are orthogonal
 (i.e., have no correlation), and -1 indicates that they are opposite.
 
+![image](https://github.com/microsoft/kernel-memory/assets/371009/b396780f-8985-4331-92ac-0771bba29a79)
+
 Cosine similarity is particularly useful when working with high-dimensional data
 such as word embeddings because it takes into account both the magnitude and direction
 of each vector. This makes it more robust than other measures like
-[Euclidean distance](euclidean-distance), which only considers the magnitude.
+[Euclidean distance](euclidean-distance), which only considers the direction.
 
 One common use case for cosine similarity is to find similar words based on their
 embeddings. For example, given an embedding for "cat", we can use cosine similarity
