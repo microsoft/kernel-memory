@@ -19,11 +19,25 @@ of their magnitudes. This results in a value between -1 and 1, where 1 indicates
 that the two vectors are identical, 0 indicates that they are orthogonal
 (i.e., have no correlation), and -1 indicates that they are opposite.
 
-![image](https://github.com/microsoft/kernel-memory/assets/371009/b396780f-8985-4331-92ac-0771bba29a79)
 
-where
-
-![image](https://github.com/microsoft/kernel-memory/assets/371009/9452e860-a5fb-41ab-8311-7db5eed5e62a)
+```math
+A = (A_1, A_2, \ldots, A_n) 
+```
+```math
+B = (B_1, B_2, \ldots, B_n)
+```
+```math
+\text{Cosine Similarity} = \frac{A \cdot B}{\|A\| \|B\|}
+```
+```math
+ A \cdot B = \sum_{i=1}^{n} A_i B_i
+```
+```math
+ \|A\| = \sqrt{\sum_{i=1}^{n} A_i^2}
+```
+```math
+ \|B\| = \sqrt{\sum_{i=1}^{n} B_i^2} 
+```
 
 Cosine similarity is particularly useful when working with high-dimensional data
 such as word embeddings because it takes into account both the magnitude and direction
