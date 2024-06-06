@@ -19,15 +19,17 @@ In higher dimensions, this formula can be generalized to:
 
     d = √(x2 - x1)² + (y2 - y1)² + ... + (zn - zn-1)²
 
-```math
-A = (A_1, A_2, \ldots, A_n) 
-```
-```math
+$$
+A = (A_1, A_2, \ldots, A_n)
+$$
+
+$$
 B = (B_1, B_2, \ldots, B_n)
-```
-```math
-\text{Euclidean Distance} = \sqrt{\sum_{i=1}^{n} (A_i - B_i)^2} 
-```
+$$
+
+$$
+\text{Euclidean Distance} = \sqrt{\sum_{i=1}^{n} (A_i - B_i)^2}
+$$
 
 Euclidean distance has many applications in computer science and artificial intelligence,
 particularly when working with [embeddings](/concepts/embedding). Embeddings are numerical
