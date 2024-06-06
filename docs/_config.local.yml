@@ -1,8 +1,11 @@
 # Config for local Jekyll tests
 theme: just-the-docs
 
+# To test locally run `run.cmd`
+# and open http://127.0.0.1:4000/kernel-memory/
+
 # ==================================================
-# == everything below is the same as _config.yaml ==
+# == everything below is the same as _config.yml ==
 # ==================================================
 
 title: Kernel Memory

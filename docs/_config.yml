@@ -1,8 +1,11 @@
 # Config for GitHub Pages
 remote_theme: just-the-docs/just-the-docs@v0.7.0
 
+# To test locally run `run-with-docker.sh`
+# and open http://127.0.0.1:4000/kernel-memory/
+
 # ========================================================
-# == everything below is the same as _config.local.yaml ==
+# == everything below is the same as _config.local.yml  ==
 # ========================================================
 
 title: Kernel Memory
@@ -80,3 +83,9 @@ search:
 mermaid:
   # See https://cdn.jsdelivr.net/npm/mermaid/
   version: "10.6.1"
+
+# LaTeX rendering via "katex" (KaTeX, default) or "mathjax" (MathJax) or "none" / "off" (NO rendering)
+# latex: katex
+
+compress_html:
+  blanklines: false
