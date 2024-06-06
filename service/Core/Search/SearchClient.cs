@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -201,6 +202,97 @@ internal sealed class SearchClient : ISearchClient
             return noAnswerFound;
         }
 
+        var (facts, relevantSources, factsAvailableCount, factsUsedCount) = await this.GetFactsAsync(question, index, filters, minRelevance, cancellationToken).ConfigureAwait(false);
+        var answer = noAnswerFound;
+        answer.RelevantSources = relevantSources;
+        if (factsAvailableCount > 0 && factsUsedCount == 0)
+        {
+            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
+            noAnswerFound.NoResultReason = "Unable to use memories";
+            return noAnswerFound;
+        }
+
+        if (factsUsedCount == 0)
+        {
+            this._log.LogWarning("No memories available");
+            noAnswerFound.NoResultReason = "No memories available";
+            return noAnswerFound;
+        }
+
+        var text = new StringBuilder();
+        var charsGenerated = 0;
+        var watch = new Stopwatch();
+        watch.Restart();
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
+                           .WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            text.Append(x);
+
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
+        }
+
+        watch.Stop();
+
+        answer.Result = text.ToString();
+        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
+        if (answer.NoResult)
+        {
+            answer.NoResultReason = "No relevant memories found";
+            this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
+        }
+        else
+        {
+            this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
+        }
+
+        return answer;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<string> AskTextStreamingAsync(string index, string question, ICollection<MemoryFilter>? filters = null, double minRelevance = 0, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(question))
+        {
+            this._log.LogWarning("No question provided");
+            yield return this._config.EmptyAnswer;
+            yield break;
+        }
+
+        var (facts, _, _, factsUsedCount) = await this.GetFactsAsync(question, index, filters, minRelevance, cancellationToken).ConfigureAwait(false);
+
+        if (factsUsedCount == 0)
+        {
+            this._log.LogError("No memories available or unable to inject memories in the prompt, not enough tokens available");
+            yield return this._config.EmptyAnswer;
+            yield break;
+        }
+
+        var text = new StringBuilder();
+        var charsGenerated = 0;
+        var watch = new Stopwatch();
+        watch.Restart();
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
+                           .WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            yield return x;
+
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
+        }
+
+        watch.Stop();
+    }
+
+    private async Task<(string, List<Citation>, int, int)> GetFactsAsync(string question, string index, ICollection<MemoryFilter>? filters, double minRelevance, CancellationToken cancellationToken)
+    {
+        var relevantSources = new List<Citation>();
         var facts = new StringBuilder();
         var maxTokens = this._config.MaxAskPromptSize > 0
             ? this._config.MaxAskPromptSize
@@ -212,7 +304,6 @@ internal sealed class SearchClient : ISearchClient
 
         var factsUsedCount = 0;
         var factsAvailableCount = 0;
-        var answer = noAnswerFound;
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
@@ -267,11 +358,11 @@ internal sealed class SearchClient : ISearchClient
             tokensAvailable -= size;
 
             // If the file is already in the list of citations, only add the partition
-            var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
+            var citation = relevantSources.FirstOrDefault(x => x.Link == linkToFile);
             if (citation == null)
             {
                 citation = new Citation();
-                answer.RelevantSources.Add(citation);
+                relevantSources.Add(citation);
             }
 
             // Add the partition to the list of citations
@@ -299,52 +390,7 @@ internal sealed class SearchClient : ISearchClient
                 break;
             }
         }
-
-        if (factsAvailableCount > 0 && factsUsedCount == 0)
-        {
-            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            noAnswerFound.NoResultReason = "Unable to use memories";
-            return noAnswerFound;
-        }
-
-        if (factsUsedCount == 0)
-        {
-            this._log.LogWarning("No memories available");
-            noAnswerFound.NoResultReason = "No memories available";
-            return noAnswerFound;
-        }
-
-        var text = new StringBuilder();
-        var charsGenerated = 0;
-        var watch = new Stopwatch();
-        watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
-                           .WithCancellation(cancellationToken).ConfigureAwait(false))
-        {
-            text.Append(x);
-
-            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
-            {
-                charsGenerated = text.Length;
-                this._log.LogTrace("{0} chars generated", charsGenerated);
-            }
-        }
-
-        watch.Stop();
-
-        answer.Result = text.ToString();
-        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
-        if (answer.NoResult)
-        {
-            answer.NoResultReason = "No relevant memories found";
-            this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
-        }
-        else
-        {
-            this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
-        }
-
-        return answer;
+        return (facts.ToString(), relevantSources, factsAvailableCount, factsUsedCount);
     }
 
     private IAsyncEnumerable<string> GenerateAnswer(string question, string facts)

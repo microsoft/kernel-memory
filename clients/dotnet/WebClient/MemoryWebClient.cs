@@ -358,6 +358,18 @@ public sealed class MemoryWebClient : IKernelMemory
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<string> AskTextStreaming(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException("Streaming text responses is not supported by the Kernel Memory web service");
+    }
+
     #region private
 
     private static (string contentType, long contentLength, DateTimeOffset lastModified) GetFileDetails(HttpResponseMessage response)

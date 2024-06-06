@@ -13,6 +13,7 @@ using Microsoft.KernelMemory.Service.AspNetCore.Models;
 using System.IO;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.KernelMemory.DocumentStorage;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
@@ -28,6 +29,7 @@ public static class WebAPIEndpoints
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
         builder.AddAskEndpoint(apiPrefix, authFilter);
+        builder.AddAskTextStreamingEndpoint(apiPrefix, authFilter);
         builder.AddSearchEndpoint(apiPrefix, authFilter);
         builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
         builder.AddGetDownloadEndpoint(apiPrefix, authFilter);
@@ -222,6 +224,40 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void AddAskTextStreamingEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
+        // Ask endpoint
+        var route = group.MapPost(Constants.HttpAskTextStreamingEndpoint, GetStreamAsync)
+            .Produces<MemoryAnswer>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    private static async IAsyncEnumerable<string> GetStreamAsync(
+        MemoryQuery query,
+                    IKernelMemory service,
+                    ILogger<KernelMemoryWebAPI> log,
+                    [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+        await foreach (var textStream in service.AskTextStreaming(
+                question: query.Question,
+                index: query.Index,
+                filters: query.Filters,
+                minRelevance: query.MinRelevance,
+                cancellationToken: cancellationToken).ConfigureAwait(false))
+        {
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false); // needed to fix issue where this is not streaming
+
+            yield return textStream ?? "";
+        }
     }
 
     public static void AddSearchEndpoint(
