@@ -58,7 +58,7 @@ public class RabbitMqConfig
     {
         if (this.MaxRetriesBeforePoisonQueue < 0)
         {
-            throw new ConfigurationException($"RabbitQM: {nameof(this.MaxRetriesBeforePoisonQueue)} cannot be a negative number");
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.MaxRetriesBeforePoisonQueue)} cannot be a negative number");
         }
 
         if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix))
