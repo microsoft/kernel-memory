@@ -13,6 +13,16 @@ returns a single scalar value. It is also known as the scalar product or inner
 product. The dot product of two vectors is calculated by multiplying corresponding
 elements of each vector and then summing the results.
 
+```math
+A = (A_1, A_2, \ldots, A_n) 
+```
+```math
+B = (B_1, B_2, \ldots, B_n)
+```
+```math
+A \cdot B = \sum_{i=1}^{n} A_i B_i 
+```
+
 The dot product has many applications in computer science, particularly in artificial
 intelligence and machine learning. One common use case for the dot product is to
 measure the similarity between two vectors, such as word [embeddings](/concepts/embedding)
