@@ -39,6 +39,8 @@ public class TestSetEvaluatorBuilder
             throw new InvalidOperationException("Memory service is required to build the TestSetEvaluator");
         }
 
+        this._serviceCollection.AddScoped<TestSetEvaluator>();
+
         return this._serviceCollection.BuildServiceProvider()
             .GetRequiredService<TestSetEvaluator>();
     }
