@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 using System;
 using System.Text;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class RabbitMqConfig
+public class RabbitMQConfig
 {
     /// <summary>
     /// RabbitMQ hostname, e.g. "127.0.0.1"

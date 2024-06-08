@@ -34,12 +34,12 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly int _messageTTLMsecs;
 
     // Queue confirguration
-    private readonly RabbitMqConfig _config;
+    private readonly RabbitMQConfig _config;
 
     /// <summary>
     /// Create a new RabbitMQ queue instance
     /// </summary>
-    public RabbitMQPipeline(RabbitMqConfig config, ILogger<RabbitMQPipeline>? log = null)
+    public RabbitMQPipeline(RabbitMQConfig config, ILogger<RabbitMQPipeline>? log = null)
     {
         this._config = config;
         this._config.Validate();
