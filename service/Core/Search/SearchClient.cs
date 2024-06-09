@@ -417,8 +417,8 @@ internal sealed class SearchClient : ISearchClient
                 yield return new MemoryAnswer
                 {
                     Result = token,
-                    NoResult = null,
-                    Question = null,
+                    NoResult = false,
+                    Question = "",
                     RelevantSources = [],
                 };
             }

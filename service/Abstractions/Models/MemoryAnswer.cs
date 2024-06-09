@@ -17,11 +17,11 @@ public class MemoryAnswer
     /// </summary>
     [JsonPropertyName("question")]
     [JsonPropertyOrder(1)]
-    public string? Question { get; set; } = string.Empty;
+    public string Question { get; set; } = string.Empty;
 
     [JsonPropertyName("noResult")]
     [JsonPropertyOrder(2)]
-    public bool? NoResult { get; set; } = true;
+    public bool NoResult { get; set; } = true;
 
     /// <summary>
     /// Content of the answer.
