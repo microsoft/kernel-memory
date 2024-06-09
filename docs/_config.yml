@@ -1,8 +1,11 @@
 # Config for GitHub Pages
-remote_theme: just-the-docs/just-the-docs@v0.7.0
+remote_theme: just-the-docs/just-the-docs@v0.8.2
+
+# To test locally run `run-with-docker.sh`
+# and open http://127.0.0.1:4000/kernel-memory/
 
 # ========================================================
-# == everything below is the same as _config.local.yaml ==
+# == everything below is the same as _config.local.yml  ==
 # ========================================================
 
 title: Kernel Memory
@@ -79,4 +82,8 @@ search:
 
 mermaid:
   # See https://cdn.jsdelivr.net/npm/mermaid/
-  version: "10.6.1"
+  version: "10.9.1"
+
+mathjax:
+  source: https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML
+  config: 'MathJax.Hub.Config({ TeX: { equationNumbers: { autoNumber: "AMS" } } })'

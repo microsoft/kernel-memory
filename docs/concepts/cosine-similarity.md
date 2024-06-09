@@ -19,10 +19,34 @@ of their magnitudes. This results in a value between -1 and 1, where 1 indicates
 that the two vectors are identical, 0 indicates that they are orthogonal
 (i.e., have no correlation), and -1 indicates that they are opposite.
 
+$$
+A = (A_1, A_2, \ldots, A_n)
+$$
+
+$$
+B = (B_1, B_2, \ldots, B_n)
+$$
+
+$$
+\text{Cosine Similarity} = \frac{A \cdot B}{\|A\| \|B\|}
+$$
+
+$$
+A \cdot B = \sum_{i=1}^{n} A_i B_i
+$$
+
+$$
+\|A\| = \sqrt{\sum_{i=1}^{n} A_i^2}
+$$
+
+$$
+\|B\| = \sqrt{\sum_{i=1}^{n} B_i^2}
+$$
+
 Cosine similarity is particularly useful when working with high-dimensional data
 such as word embeddings because it takes into account both the magnitude and direction
 of each vector. This makes it more robust than other measures like
-[Euclidean distance](euclidean-distance), which only considers the magnitude.
+[Euclidean distance](euclidean-distance), which only considers the direction.
 
 One common use case for cosine similarity is to find similar words based on their
 embeddings. For example, given an embedding for "cat", we can use cosine similarity

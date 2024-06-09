@@ -47,8 +47,10 @@ public sealed class TestSetGeneratorBuilder
             throw new InvalidOperationException("MemoryDb service is required to build the TestSetGenerator");
         }
 
+        this._serviceCollection.AddScoped<TestSetGenerator>();
+
         return this._serviceCollection.BuildServiceProvider()
-            .GetRequiredService<TestSetGenerator>();
+                                      .GetRequiredService<TestSetGenerator>();
     }
 
     private static void CopyServiceCollection(
