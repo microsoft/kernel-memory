@@ -75,11 +75,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		Dockerfile = Dockerfile
+		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
 		LICENSE = LICENSE
 		nuget.config = nuget.config
 		README.md = README.md
 		SECURITY.md = SECURITY.md
-		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
@@ -92,10 +92,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
+		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
+		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
 		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
 		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
-		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
-		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
@@ -268,21 +268,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch", "extensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "applications", "applications", "{DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{432AC1B4-8275-4284-9A44-44988A6F0C24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{432AC1B4-8275-4284-9A44-44988A6F0C24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anthropic", "extensions\Anthropic\Anthropic.csproj", "{A0C81A29-715F-463E-A243-7E45DB8AE53F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anthropic", "extensions\Anthropic\Anthropic.csproj", "{A0C81A29-715F-463E-A243-7E45DB8AE53F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "110-dotnet-anthropic", "examples\110-dotnet-anthropic\110-dotnet-anthropic.csproj", "{EE0D8645-2770-4E12-8E18-019B30970FE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "110-dotnet-anthropic", "examples\110-dotnet-anthropic\110-dotnet-anthropic.csproj", "{EE0D8645-2770-4E12-8E18-019B30970FE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "302-dotnet-sk-km-chat", "examples\302-dotnet-sk-km-chat\302-dotnet-sk-km-chat.csproj", "{37FA99CB-AD22-4BAC-B76F-961F84422DEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "302-dotnet-sk-km-chat", "examples\302-dotnet-sk-km-chat\302-dotnet-sk-km-chat.csproj", "{37FA99CB-AD22-4BAC-B76F-961F84422DEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "401-evaluation", "examples\401-evaluation\401-evaluation.csproj", "{D1308C73-79B6-4635-B50D-420742D09C20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "401-evaluation", "examples\401-evaluation\401-evaluation.csproj", "{D1308C73-79B6-4635-B50D-420742D09C20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "applications", "applications", "{0B980824-DDC3-4A02-B26B-562162D95206}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluation.FunctionalTests", "applications\tests\Evaluation.Tests\Evaluation.FunctionalTests.csproj", "{A9A0BFC7-DFF9-40DB-B7A6-AE1236D00313}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -520,6 +524,7 @@ Global
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{432AC1B4-8275-4284-9A44-44988A6F0C24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0C81A29-715F-463E-A243-7E45DB8AE53F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -533,6 +538,9 @@ Global
 		{D1308C73-79B6-4635-B50D-420742D09C20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1308C73-79B6-4635-B50D-420742D09C20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1308C73-79B6-4635-B50D-420742D09C20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9A0BFC7-DFF9-40DB-B7A6-AE1236D00313}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9A0BFC7-DFF9-40DB-B7A6-AE1236D00313}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9A0BFC7-DFF9-40DB-B7A6-AE1236D00313}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -619,6 +627,8 @@ Global
 		{EE0D8645-2770-4E12-8E18-019B30970FE6} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{37FA99CB-AD22-4BAC-B76F-961F84422DEE} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{D1308C73-79B6-4635-B50D-420742D09C20} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{0B980824-DDC3-4A02-B26B-562162D95206} = {5E7DD43D-B5E7-4827-B57D-447E5B428589}
+		{A9A0BFC7-DFF9-40DB-B7A6-AE1236D00313} = {0B980824-DDC3-4A02-B26B-562162D95206}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
