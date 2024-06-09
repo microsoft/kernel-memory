@@ -8,7 +8,7 @@ using Microsoft.KernelMemory.Pipeline;
 using Microsoft.SemanticKernel.Embeddings;
 using Moq;
 
-namespace Microsoft.KM.Core.FunctionalTests.Handlers;
+namespace Microsoft.KM.Core.UnitTests.Handlers;
 
 public class EmbeddingGeneratorHelperTests
 {
