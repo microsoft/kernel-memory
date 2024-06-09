@@ -45,7 +45,7 @@ public class MemoryAnswer
     /// </summary>
     [JsonPropertyName("relevantSources")]
     [JsonPropertyOrder(20)]
-    public List<Citation>? RelevantSources { get; set; } = new();
+    public List<Citation> RelevantSources { get; set; } = new();
 
     /// <summary>
     /// Serialize using .NET JSON serializer, e.g. to avoid ambiguity
