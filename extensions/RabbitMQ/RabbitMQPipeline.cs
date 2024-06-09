@@ -24,17 +24,10 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly AsyncEventingBasicConsumer _consumer;
-
-    // Queue name
-    private string _queueName = string.Empty;
-
-    // Poison Queue name
-    private string _poisonQueueName = string.Empty;
-
-    private readonly int _messageTTLMsecs;
-
-    // Queue confirguration
     private readonly RabbitMQConfig _config;
+    private readonly int _messageTTLMsecs;
+    private string _queueName = string.Empty;
+    private string _poisonQueueName = string.Empty;
 
     /// <summary>
     /// Create a new RabbitMQ queue instance
@@ -71,19 +64,17 @@ public sealed class RabbitMQPipeline : IQueue
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
-            throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
+            throw new InvalidOperationException($"The client is already connected to `{this._queueName}`");
         }
 
         this._queueName = queueName;
-        this._log.LogDebug("Queue name: {0}", this._queueName);
-
         this._channel.QueueDeclare(
             queue: this._queueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
             arguments: null);
-        this._log.LogTrace("Queue ready");
+        this._log.LogTrace("Queue name: {0}", this._poisonQueueName);
 
         if (options.DequeueEnabled)
         {
@@ -91,19 +82,18 @@ public sealed class RabbitMQPipeline : IQueue
                 autoAck: false,
                 consumer: this._consumer);
 
-            this._log.LogTrace("Enabling dequeue on queue {0}", this._queueName);
+            this._log.LogTrace("Enabling dequeue on queue `{0}`", this._queueName);
         }
 
         this._poisonQueueName = this._queueName + this._config.PoisonQueueSuffix;
-        this._log.LogDebug("Poison queue name: {0}", this._poisonQueueName);
-
         this._channel.QueueDeclare(
             queue: this._poisonQueueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
             arguments: null);
-        this._log.LogTrace("Poison queue ready");
+
+        this._log.LogTrace("Poison queue name: {0}", this._poisonQueueName);
 
         return Task.FromResult<IQueue>(this);
     }
@@ -121,36 +111,14 @@ public sealed class RabbitMQPipeline : IQueue
             throw new InvalidOperationException("The client must be connected to a queue first");
         }
 
-        this.PublishMessage(this._queueName, Encoding.UTF8.GetBytes(message), Guid.NewGuid().ToString("N"), this._messageTTLMsecs, 0);
+        this.PublishMessage(
+            queueName: this._queueName,
+            body: Encoding.UTF8.GetBytes(message),
+            messageId: Guid.NewGuid().ToString("N"),
+            expirationMsecs: this._messageTTLMsecs,
+            deliveryCount: 0);
 
         return Task.CompletedTask;
-    }
-
-    private void PublishMessage(string queueName, ReadOnlyMemory<byte> body, string messageId, int? expirationMsecs, int deliveryCount)
-    {
-        var properties = this._channel.CreateBasicProperties();
-        properties.Persistent = true;
-        properties.MessageId = messageId;
-
-        if (expirationMsecs.HasValue)
-        {
-            properties.Expiration = $"{expirationMsecs}";
-        }
-
-        properties.Headers = new Dictionary<string, object>
-        {
-            [DeliveryCountHeader] = deliveryCount
-        };
-
-        this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
-
-        this._channel.BasicPublish(
-            routingKey: queueName,
-            body: body,
-            exchange: string.Empty,
-            basicProperties: properties);
-
-        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
     }
 
     /// <inheritdoc />
@@ -233,5 +201,38 @@ public sealed class RabbitMQPipeline : IQueue
 
         this._channel.Dispose();
         this._connection.Dispose();
+    }
+
+    private void PublishMessage(
+        string queueName,
+        ReadOnlyMemory<byte> body,
+        string messageId,
+        int? expirationMsecs,
+        int deliveryCount)
+    {
+        var properties = this._channel.CreateBasicProperties();
+        properties.Persistent = true;
+        properties.MessageId = messageId;
+
+        if (expirationMsecs.HasValue)
+        {
+            properties.Expiration = $"{expirationMsecs}";
+        }
+
+        properties.Headers = new Dictionary<string, object>
+        {
+            [DeliveryCountHeader] = deliveryCount
+        };
+
+        this._log.LogDebug("Sending message to {0}: {1} (TTL: {2} secs)...",
+            queueName, properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
+
+        this._channel.BasicPublish(
+            routingKey: queueName,
+            body: body,
+            exchange: string.Empty,
+            basicProperties: properties);
+
+        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
     }
 }
