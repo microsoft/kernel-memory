@@ -12,7 +12,7 @@ using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Search;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public sealed class MemoryService : IKernelMemory

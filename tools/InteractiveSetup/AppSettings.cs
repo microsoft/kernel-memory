@@ -116,9 +116,7 @@ internal static class AppSettings
         File.Create(DevelopmentSettingsFile).Dispose();
         var data = new
         {
-            KernelMemory = new
-            {
-            },
+            KernelMemory = new { },
             Logging = new
             {
                 LogLevel = new

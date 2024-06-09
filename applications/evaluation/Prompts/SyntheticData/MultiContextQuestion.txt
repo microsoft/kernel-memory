@@ -1,0 +1,28 @@
+﻿## Examples
+
+question: What process turns plants green?
+context1: Chlorophyll is the pigment that gives plants their green color and helps them photosynthesize.
+context2: Photosynthesis in plants typically occurs in the leaves where chloroplasts are concentrated.
+output: In which plant structures does the pigment responsible for their verdancy facilitate energy production?
+
+question: How do you calculate the area of a rectangle?
+context1: The area of a shape is calculated based on the shape's dimensions. For rectangles, this involves multiplying the length and width.
+context2: Rectangles have four sides with opposite sides being equal in length. They are a type of quadrilateral.
+output: What multiplication involving equal opposites yields a quadrilateral's area?
+
+## Instructions
+
+The task is to rewrite and complicate the given question in a way that answering it requires information derived from both context1 and context2. 
+Follow the rules given below while rewriting the question.
+	1. The rewritten question should not be very long. Use abbreviation wherever possible.
+	2. The rewritten question must be reasonable and must be understood and responded by humans.
+	3. The rewritten question must be fully answerable from information present in context1 and context2. 
+	4. Read and understand both contexts and rewrite the question so that answering requires insight from both context1 and context2.
+	5. phrases like 'based on the provided context','according to the context?',etc are not allowed to appear in the question.
+
+Let's do it with a real data.
+
+question: {{$question}}
+context1: {{$context1}}
+context2: {{$context2}}
+output: 

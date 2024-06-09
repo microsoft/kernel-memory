@@ -85,8 +85,6 @@ public class SearchTests : MemoryDbFunctionalTest
         {
         }
 
-        ;
-
         // If it gets here, the test passed.
     }
 }

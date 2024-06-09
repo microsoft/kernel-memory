@@ -393,7 +393,6 @@ dotnet_diagnostic.CA1064.severity = warning # Exceptions should be public
 dotnet_diagnostic.CA1303.severity = warning # Do not pass literals as localized parameters
 dotnet_diagnostic.CA1416.severity = warning # Validate platform compatibility
 dotnet_diagnostic.CA1508.severity = warning # Avoid dead conditional code
-dotnet_diagnostic.CS1591.severity = warning # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CA1852.severity = warning # Sealed classes
 dotnet_diagnostic.CA1859.severity = warning # Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1860.severity = warning # Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance
@@ -447,6 +446,7 @@ dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to co
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
 dotnet_diagnostic.CA1054.severity = none # URI parameters should not be strings
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
+dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
@@ -496,6 +496,18 @@ dotnet_diagnostic.IDE0032.severity = none # Use auto property
 dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
+
+dotnet_diagnostic.SKEXP0003.severity = none # XYZ is for evaluation purposes only
+dotnet_diagnostic.SKEXP0010.severity = none
+dotnet_diagnostic.SKEXP0010.severity = none
+dotnet_diagnostic.SKEXP0011.severity = none
+dotnet_diagnostic.SKEXP0052.severity = none
+dotnet_diagnostic.SKEXP0101.severity = none
+
+dotnet_diagnostic.KMEXP00.severity = none # XYZ is for evaluation purposes only
+dotnet_diagnostic.KMEXP01.severity = none
+dotnet_diagnostic.KMEXP02.severity = none
+dotnet_diagnostic.KMEXP03.severity = none
 
 ###############################
 # C# Coding Conventions       #
@@ -602,6 +614,10 @@ dotnet_naming_symbols.local_constant.applicable_kinds = local
 dotnet_naming_symbols.local_constant.applicable_accessibilities = *
 dotnet_naming_symbols.local_constant.required_modifiers = const
 
+dotnet_naming_symbols.private_constant_fields.applicable_kinds = field
+dotnet_naming_symbols.private_constant_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_constant_fields.required_modifiers = const
+
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_fields.required_modifiers = static
@@ -622,6 +638,10 @@ dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = error
 dotnet_naming_rule.local_constant_should_be_pascal_case.symbols = local_constant
 dotnet_naming_rule.local_constant_should_be_pascal_case.style = pascal_case_style
 dotnet_naming_rule.local_constant_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.private_constant_fields.symbols = private_constant_fields
+dotnet_naming_rule.private_constant_fields.style = pascal_case_style
+dotnet_naming_rule.private_constant_fields.severity = error
 
 dotnet_naming_rule.private_static_fields_underscored.symbols = private_static_fields
 dotnet_naming_rule.private_static_fields_underscored.style = static_underscored
@@ -687,14 +707,8 @@ dotnet_diagnostic.CA1861.severity = none # Prefer 'static readonly' fields over 
 dotnet_diagnostic.CA2000.severity = none # Call System.IDisposable.Dispose on object
 dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in tests
 dotnet_diagnostic.CA2201.severity = none # Exception type XYZ is not sufficiently specific
-dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
-dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.IDE0005.severity = none # No need for documentation
 dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names
-dotnet_diagnostic.KMEXP00.severity = none # XYZ is for evaluation purposes only
-dotnet_diagnostic.KMEXP01.severity = none # XYZ is for evaluation purposes only
-dotnet_diagnostic.KMEXP03.severity = none # XYZ is for evaluation purposes only
-dotnet_diagnostic.SKEXP0010.severity = none # XYZ is for evaluation purposes only
 
 resharper_inconsistent_naming_highlighting = none
 # resharper_check_namespace_highlighting = none
@@ -710,15 +724,8 @@ dotnet_diagnostic.CA1303.severity = none # Passing literal strings as values
 dotnet_diagnostic.CA1859.severity = none # Change return type of method for improved performance
 dotnet_diagnostic.CA2000.severity = none # Call System.IDisposable.Dispose on object
 dotnet_diagnostic.CA2007.severity = none # no need of ConfigureAwait(false) in examples
-dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.IDE0005.severity = none # No need for documentation
 dotnet_diagnostic.IDE1006.severity = none # No need for Async suffix on test names
-dotnet_diagnostic.KMEXP00.severity = none # XYZ is for evaluation purposes only
-dotnet_diagnostic.SKEXP0003.severity = none
-dotnet_diagnostic.SKEXP0010.severity = none # XYZ is for evaluation purposes only
-dotnet_diagnostic.SKEXP0011.severity = none
-dotnet_diagnostic.SKEXP0052.severity = none
-dotnet_diagnostic.SKEXP0101.severity = none
 
 resharper_comment_typo_highlighting = none
 

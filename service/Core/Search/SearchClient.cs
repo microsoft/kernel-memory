@@ -194,6 +194,7 @@ internal sealed class SearchClient : ISearchClient
         await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
             string fileName = memory.GetFileName(this._log);
+            string webPageUrl = memory.GetWebPageUrl(index);
 
             var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
@@ -204,7 +205,7 @@ internal sealed class SearchClient : ISearchClient
 
             factsAvailableCount++;
 
-            var fact = GenerateFactString(fileName, relevance, partitionText);
+            var fact = GenerateFactString(fileName, webPageUrl, relevance, partitionText);
 
             // Use the partition/chunk only if there's room for it
             var size = this._textGenerator.CountTokens(fact);
@@ -247,7 +248,7 @@ internal sealed class SearchClient : ISearchClient
         var charsGenerated = 0;
         var watch = new Stopwatch();
         watch.Restart();
-        await foreach (var x in this.GenerateAnswerAsync(question, facts.ToString())
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
                            .WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
@@ -327,6 +328,7 @@ internal sealed class SearchClient : ISearchClient
         await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
             string fileName = memory.GetFileName(this._log);
+            string webPageUrl = memory.GetWebPageUrl(index);
 
             var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
@@ -337,7 +339,7 @@ internal sealed class SearchClient : ISearchClient
 
             factsAvailableCount++;
 
-            var fact = GenerateFactString(fileName, relevance, partitionText);
+            var fact = GenerateFactString(fileName, webPageUrl, relevance, partitionText);
 
             // Use the partition/chunk only if there's room for it
             var size = this._textGenerator.CountTokens(fact);
@@ -381,7 +383,7 @@ internal sealed class SearchClient : ISearchClient
         StringBuilder bufferedAnswer = new();
         bool finishedRequiredBuffering = false;
         var watch = Stopwatch.StartNew();
-        await foreach (var token in this.GenerateAnswerAsync(question, facts.ToString()).WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var token in this.GenerateAnswer(question, facts.ToString()).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             if (token is null || token.Length == 0)
             {
@@ -439,7 +441,7 @@ internal sealed class SearchClient : ISearchClient
         this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
     }
 
-    private IAsyncEnumerable<string?> GenerateAnswerAsync(string question, string facts)
+    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts)
     {
         var prompt = this._answerPrompt;
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -478,10 +480,10 @@ internal sealed class SearchClient : ISearchClient
         return string.Equals(value, target, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string GenerateFactString(string fileName, double relevance, string partitionText)
+    private static string GenerateFactString(string fileName, string webPageUrl, double relevance, string partitionText)
     {
         // TODO: add file age in days, to push relevance of newer documents
-        return $"==== [File:{fileName};Relevance:{relevance:P1}]:\n{partitionText}\n";
+        return $"==== [File:{(fileName == "content.url" ? webPageUrl : fileName)};Relevance:{relevance:P1}]:\n{partitionText}\n";
     }
 
     private void MapMatchToCitation(string index, List<Citation> citations, MemoryRecord memory, double relevance)

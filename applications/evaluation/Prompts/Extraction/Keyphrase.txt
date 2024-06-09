@@ -1,0 +1,26 @@
+﻿## Examples
+
+text: A black hole is a region of spacetime where gravity is so strong that nothing, including light and other electromagnetic waves, has enough energy to escape it. The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole.
+keyphrases: [
+                    "Black hole",
+                    "Region of spacetime",
+                    "Strong gravity",
+                    "Light and electromagnetic waves",
+                    "Theory of general relativity"
+                ]
+
+text: The Great Wall of China is an ancient series of walls and fortifications located in northern China, built around 500 years ago. This immense wall stretches over 13,000 miles and is a testament to the skill and persistence of ancient Chinese engineers.
+keyphrases:  [
+                    "Great Wall of China",
+                    "Ancient fortifications",
+                    "Northern China"
+                ]           
+
+## Instructions
+
+Extract the top 3 to 5 keyphrases from the provided text, focusing on the most significant and distinctive aspects.
+
+Let's do it with a real data.
+
+text: {{$input}}
+keyphrases:

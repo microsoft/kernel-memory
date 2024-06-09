@@ -5,9 +5,12 @@ using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Kernel Memory builder extensions
+/// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithSimpleVectorDb(this IKernelMemoryBuilder builder, SimpleVectorDbConfig? config = null)
@@ -35,6 +38,9 @@ public static partial class KernelMemoryBuilderExtensions
     }
 }
 
+/// <summary>
+/// .NET IServiceCollection dependency injection extensions.
+/// </summary>
 public static partial class DependencyInjection
 {
     public static IServiceCollection AddSimpleVectorDbAsMemoryDb(this IServiceCollection services, SimpleVectorDbConfig? config = null)

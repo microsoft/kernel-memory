@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 💬 Ask the Community
+  - name: 🙋 Ask a question in the forum
+    url: https://github.com/microsoft/kernel-memory/discussions/categories/1-q-a
+    about: Start a Q&A discussion in the repository
+  - name: 🚀 Feature request
+    url: https://github.com/microsoft/kernel-memory/discussions/categories/2-feature-requests
+    about: Describe your scenario and suggest a feature
+  - name: 💬 Chat with the community on Discord
     url: https://aka.ms/KMdiscord
-    about: Reach out to the Kernel Memory community here!
+    about: Real time chat with the community on Discord

@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.DataFormats.AzureAIDocIntel</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.DataFormats.AzureAIDocIntel</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP02;CA1724;CS1591;CA1308;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP02;CA1724;CA1308;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

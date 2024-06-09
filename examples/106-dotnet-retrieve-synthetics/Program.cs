@@ -45,7 +45,6 @@ foreach (var result in results)
     Console.WriteLine($"== {result.SourceName} summary ==\n{result.Partitions.First().Text}\n");
 }
 
-// ReSharper disable CommentTypo
 /*
 
 OUTPUT:

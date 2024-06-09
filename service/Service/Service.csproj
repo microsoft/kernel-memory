@@ -8,7 +8,7 @@
         <RootNamespace>Microsoft.KernelMemory.Service</RootNamespace>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CA2007;CA1724;CA2254;CA1031;CS1591;CA1861;CA1303;SKEXP0001;</NoWarn>
+        <NoWarn>$(NoWarn);CA2007;CA1724;CA2254;CA1031;CA1861;CA1303;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

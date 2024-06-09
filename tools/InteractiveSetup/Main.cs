@@ -179,7 +179,7 @@ public static class Main
                         x.Retrieval.EmbeddingGeneratorType = "AzureOpenAIEmbedding";
                         x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
                             ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
-                            : new List<string> { };
+                            : new List<string>();
                     });
                     ctx.CfgAzureOpenAIEmbedding.Value = true;
                 }),
@@ -199,7 +199,7 @@ public static class Main
                     AppSettings.Change(x =>
                     {
                         x.Retrieval.EmbeddingGeneratorType = "";
-                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string> { };
+                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string>();
                     });
                 }),
                 new("-exit-", false, SetupUI.Exit),
@@ -420,7 +420,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { };
+                            x.DataIngestion.MemoryDbTypes = new List<string>();
                         });
                     }),
                 new("-exit-", false, SetupUI.Exit),

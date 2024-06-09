@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Evaluation</AssemblyName>
-        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1591;CS1574;NU5104;SKEXP0001;</NoWarn>
+        <RootNamespace>Microsoft.KernelMemory.Evaluation</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1574;NU5104;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -20,4 +20,59 @@
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="Prompts\Evaluation\ContextRecall.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Evaluation\Correctness.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Evaluation\ContextPrecision.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Extraction\Question.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Evaluation\Faithfulness.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Extraction\Statements.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Extraction\Keyphrase.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\SyntheticData\ConditionalQuestion.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\SyntheticData\QuestionAnswer.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\SyntheticData\MultiContextQuestion.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\SyntheticData\ReasoningQuestion.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\SyntheticData\SeedQuestion.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Prompts\Transmutation\Translate.txt">
+            <CustomToolNamespace></CustomToolNamespace>
+            <LogicalName>$([System.String]::new('%(RelativeDir)').Replace('\','/'))%(FileName)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+    
 </Project>

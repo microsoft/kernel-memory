@@ -103,4 +103,35 @@ public class DefaultTests : BaseFunctionalTestCase
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
     }
+
+    [Fact]
+    [Trait("Category", "SQLServer")]
+    public async Task ItCanImportDocumentWithManyTagsAtATime()
+    {
+        const string Id = "ItCanImportDocumentWithManyTagsAtATime-file1-NASA-news.pdf";
+
+        var tags = new TagCollection
+        {
+            { "type", "news" },
+            { "type", "test" },
+            { "ext", "pdf" }
+        };
+
+        for (int i = 0; i < 100; i++)
+        {
+            tags.AddSyntheticTag($"tagTest{i}");
+        }
+
+        await this._memory.ImportDocumentAsync(
+            "file1-NASA-news.pdf",
+            documentId: Id,
+            tags: tags,
+            steps: Constants.PipelineWithoutSummary);
+
+        while (!await this._memory.IsDocumentReadyAsync(documentId: Id))
+        {
+            this.Log("Waiting for memory ingestion to complete...");
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+    }
 }

@@ -8,9 +8,12 @@ using Microsoft.KernelMemory.DataFormats.Pdf;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.DataFormats.WebPages;
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
+/// <summary>
+/// Kernel Memory builder extensions
+/// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithContentDecoder<T>(
@@ -56,6 +59,9 @@ public static partial class KernelMemoryBuilderExtensions
     }
 }
 
+/// <summary>
+/// .NET IServiceCollection dependency injection extensions.
+/// </summary>
 public static partial class DependencyInjection
 {
     public static IServiceCollection AddContentDecoder<T>(

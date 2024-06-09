@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.KernelMemory.MemoryStorage;
 
-// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 public class MemoryRecord
 {
     // Memory Db Record schema versioning - Introduced after version 0.23.231218.1

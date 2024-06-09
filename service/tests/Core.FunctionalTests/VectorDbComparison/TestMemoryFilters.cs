@@ -13,8 +13,6 @@ using Microsoft.KM.TestHelpers;
 using StackExchange.Redis;
 using Xunit.Abstractions;
 
-// ReSharper disable MissingBlankLines
-
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 
 public class TestMemoryFilters : BaseFunctionalTestCase

@@ -5,7 +5,6 @@ using Microsoft.KernelMemory.Prompts;
 
 public static class Program
 {
-    // ReSharper disable InconsistentNaming
     public static async Task Main()
     {
         var azureOpenAITextConfig = new AzureOpenAIConfig();
