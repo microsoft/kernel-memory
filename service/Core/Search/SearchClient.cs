@@ -419,7 +419,7 @@ internal sealed class SearchClient : ISearchClient
                     Result = token,
                     NoResult = null,
                     Question = null,
-                    RelevantSources = null,
+                    RelevantSources = [],
                 };
             }
 
