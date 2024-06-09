@@ -13,56 +13,41 @@ using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.DocumentStorage.S3;
 
-public class S3Storage : IDocumentStorage, IDisposable
+public sealed class AWSS3Storage : IDocumentStorage, IDisposable
 {
     private readonly AmazonS3Client _client;
+    private readonly ILogger<AWSS3Storage> _log;
     private readonly string _bucketName;
-    private readonly ILogger<S3Storage> _log;
 
-    public S3Storage(
-        S3Config config,
-        ILogger<S3Storage>? log = null)
+    public AWSS3Storage(
+        AWSS3Config config,
+        ILogger<AWSS3Storage>? log = null)
     {
-        this._log = log ?? DefaultLogger<S3Storage>.Instance;
+        config.Validate();
+
+        this._log = log ?? DefaultLogger<AWSS3Storage>.Instance;
+        this._bucketName = config.BucketName;
 
         switch (config.Auth)
         {
-            case S3Config.AuthTypes.AccessKey:
-                {
-                    this.ValidateAccessKey(config.AccessKey);
-                    this.ValidateSecretKey(config.SecretKey);
-
-                    this._client = new AmazonS3Client(
-                        awsAccessKeyId: config.AccessKey,
-                        awsSecretAccessKey: config.SecretKey,
-
-                        clientConfig: new AmazonS3Config
-                        {
-                            ServiceURL = config.CustomHost + "/" + config.BucketName,
-                            LogResponse = true
-                        }
-                    );
-                    break;
-                }
+            case AWSS3Config.AuthTypes.AccessKey:
+            {
+                this._client = new AmazonS3Client(
+                    awsAccessKeyId: config.AccessKey,
+                    awsSecretAccessKey: config.SecretAccessKey,
+                    clientConfig: new AmazonS3Config
+                    {
+                        ServiceURL = config.Endpoint + "/" + config.BucketName,
+                        LogResponse = true
+                    }
+                );
+                break;
+            }
 
             default:
                 this._log.LogCritical("Authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Authentication type '{config.Auth}' undefined or not supported");
         }
-
-        if (string.IsNullOrEmpty(config.BucketName))
-        {
-            var msg = $"Bucket name '{config.BucketName}' undefined or not supported";
-            this._log.LogCritical(msg);
-            throw new DocumentStorageException(msg);
-        }
-
-        this._bucketName = config.BucketName;
-    }
-
-    public void Dispose()
-    {
-        this._client?.Dispose();
     }
 
     /// <inheritdoc />
@@ -71,7 +56,7 @@ public class S3Storage : IDocumentStorage, IDisposable
         CancellationToken cancellationToken = default)
     {
         // Note: AWS S3 doesn't have an artifact for "directories", which are just a detail
-        //       in a object name so there's no such thing as creating a directory.
+        //       in an object name so there's no such thing as creating a directory.
         //       For example, if you want to create a directory called "images" within a bucket,
         //       you can set the object key as "images/object.jpg". This would give the appearance
         //       of a file being stored in the "images" directory.
@@ -82,6 +67,7 @@ public class S3Storage : IDocumentStorage, IDisposable
     /// <inheritdoc />
     public async Task DeleteIndexDirectoryAsync(string index, CancellationToken cancellationToken = default)
     {
+        this._log.LogTrace("Deleting index '{0}'", index);
         if (string.IsNullOrWhiteSpace(index))
         {
             throw new DocumentStorageException("The index name is empty, stopping the process to prevent data loss");
@@ -171,35 +157,23 @@ public class S3Storage : IDocumentStorage, IDisposable
 
         try
         {
-            using (var response = await this._client.GetObjectAsync(
-                new GetObjectRequest
-                {
-                    BucketName = this._bucketName,
-                    Key = objName,
-                },
-                cancellationToken
-            ).ConfigureAwait(false))
-            {
-                var memoryStream = new MemoryStream();
-                var responseStream = response.ResponseStream;
+            GetObjectRequest request = new() { BucketName = this._bucketName, Key = objName };
+            var response = await this._client.GetObjectAsync(request, cancellationToken).ConfigureAwait(false);
 
-                await using (responseStream.ConfigureAwait(false))
-                {
-                    await responseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            var memoryStream = new MemoryStream();
+            await response.ResponseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
-                    return new StreamableFileContent(
-                        fileName,
-                        response.ContentLength,
-                        response.Headers.ContentType,
-                        response.LastModified,
-                        async () =>
-                        {
-                            memoryStream.Seek(0, SeekOrigin.Begin);
-                            return await Task.FromResult(memoryStream).ConfigureAwait(false);
-                        }
-                    );
+            return new StreamableFileContent(
+                fileName,
+                response.ContentLength,
+                response.Headers.ContentType,
+                response.LastModified,
+                () =>
+                {
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+                    return Task.FromResult((Stream)memoryStream);
                 }
-            }
+            );
         }
         catch (AmazonS3Exception e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
@@ -246,6 +220,12 @@ public class S3Storage : IDocumentStorage, IDisposable
         }
     }
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        this._client.Dispose();
+    }
+
     #region private
 
     /// <summary>
@@ -253,7 +233,7 @@ public class S3Storage : IDocumentStorage, IDisposable
     /// </summary>
     /// <param name="index">Index name, left side of the path</param>
     /// <param name="documentId">Document ID, right side of the path (appended to index)</param>
-    /// <returns>Index name concatenated with Document Id into a single path</returns>
+    /// <returns>Index name concatenated with Document ID into a single path</returns>
     private static string JoinPaths(string index, string documentId)
     {
         return $"{index}/{documentId}";
@@ -266,7 +246,7 @@ public class S3Storage : IDocumentStorage, IDisposable
             throw new DocumentStorageException("The object prefix is empty, stopping the process to prevent data loss");
         }
 
-        this._log.LogInformation("Deleting objects at {0}", prefix);
+        this._log.LogTrace("Deleting objects with prefix '{0}'", prefix);
 
         var allObjects = new List<S3Object>();
         var request = new ListObjectsV2Request
@@ -277,10 +257,12 @@ public class S3Storage : IDocumentStorage, IDisposable
 
         do
         {
-            var response = await this._client.ListObjectsV2Async(
+            ListObjectsV2Response? response = await this._client.ListObjectsV2Async(
                 request,
                 cancellationToken: cancellationToken
             ).ConfigureAwait(false);
+
+            if (response == null) { break; }
 
             allObjects.AddRange(response.S3Objects);
 
@@ -300,7 +282,7 @@ public class S3Storage : IDocumentStorage, IDisposable
             // Don't delete the pipeline status file
             if (fileName == Constants.PipelineStatusFilename) { continue; }
 
-            this._log.LogInformation("Deleting blob {0}", obj.Key);
+            this._log.LogInformation("Deleting blob '{0}', filename '{1}' from bucket '{2}'", obj.Key, fileName, this._bucketName);
 
             var response = await this._client.DeleteObjectAsync(
                 bucketName: this._bucketName,
@@ -319,26 +301,6 @@ public class S3Storage : IDocumentStorage, IDisposable
             {
                 this._log.LogWarning("Unexpected delete response: {0}", response.HttpStatusCode);
             }
-        }
-    }
-
-    private void ValidateAccessKey(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            var msg = "The S3 Access Key is empty";
-            this._log.LogCritical(msg);
-            throw new DocumentStorageException(msg);
-        }
-    }
-
-    private void ValidateSecretKey(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            var msg = "The S3 Secret Key is empty";
-            this._log.LogCritical(msg);
-            throw new DocumentStorageException(msg);
         }
     }
 

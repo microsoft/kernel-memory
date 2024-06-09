@@ -13,9 +13,9 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static IKernelMemoryBuilder WithS3DocumentStorage(this IKernelMemoryBuilder builder, S3Config config)
+    public static IKernelMemoryBuilder WithAWSS3DocumentStorage(this IKernelMemoryBuilder builder, AWSS3Config config)
     {
-        builder.Services.AddS3AsDocumentStorage(config);
+        builder.Services.AddAWSS3AsDocumentStorage(config);
         return builder;
     }
 }
@@ -25,10 +25,10 @@ public static partial class KernelMemoryBuilderExtensions
 /// </summary>
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddS3AsDocumentStorage(this IServiceCollection services, S3Config config)
+    public static IServiceCollection AddAWSS3AsDocumentStorage(this IServiceCollection services, AWSS3Config config)
     {
         return services
-            .AddSingleton<S3Config>(config)
-            .AddSingleton<IDocumentStorage, S3Storage>();
+            .AddSingleton<AWSS3Config>(config)
+            .AddSingleton<IDocumentStorage, AWSS3Storage>();
     }
 }

@@ -11,10 +11,10 @@
     <ItemGroup>
         <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\..\extensions\Anthropic\Anthropic.csproj" />
+        <ProjectReference Include="..\..\extensions\AWS\S3\S3.csproj" />
         <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
         <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
         <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
-        <ProjectReference Include="..\..\extensions\AWS\S3\S3.csproj" />
         <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
         <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
         <ProjectReference Include="..\..\extensions\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
