@@ -47,10 +47,16 @@ public sealed class TestSetGeneratorBuilder
             throw new InvalidOperationException("MemoryDb service is required to build the TestSetGenerator");
         }
 
-        this._serviceCollection.AddScoped<TestSetGenerator>();
+        this._serviceCollection.AddScoped<TestSetGenerator>(sp =>
+        {
+            return new TestSetGenerator(
+                sp.GetRequiredKeyedService<Kernel>("evaluation"),
+                sp.GetKeyedService<Kernel>("translation"),
+                sp.GetRequiredService<IMemoryDb>());
+        });
 
         return this._serviceCollection.BuildServiceProvider()
-                                      .GetRequiredService<TestSetGenerator>();
+            .GetRequiredService<TestSetGenerator>();
     }
 
     private static void CopyServiceCollection(
