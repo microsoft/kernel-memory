@@ -44,7 +44,7 @@ public class TextGenerationOptions
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
-    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string> StopSequences { get; set; } = new List<string>();
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
