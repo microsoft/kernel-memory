@@ -81,7 +81,8 @@ public sealed class RabbitMQPipeline : IQueue
                 ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
                 ["x-dead-letter-exchange"] = poisonExchange
             });
-        
+
+        this._log.LogTrace("Queue name: {0}", this._queueName);
 
         if (options.DequeueEnabled)
         {
@@ -101,7 +102,8 @@ public sealed class RabbitMQPipeline : IQueue
             arguments: null);
 
         this._channel.QueueBind(this._poisonQueueName, poisonExchange, string.Empty, null);
-        this._log.LogTrace("Poison Queue name: {0}", this._poisonQueueName);
+
+        this._log.LogTrace("Poison queue name: {0}", this._poisonQueueName);
 
         return Task.FromResult<IQueue>(this);
     }
@@ -126,33 +128,6 @@ public sealed class RabbitMQPipeline : IQueue
             expirationMsecs: this._messageTTLMsecs);
 
         return Task.CompletedTask;
-    }
-
-    private void PublishMessage(string queueName, ReadOnlyMemory<byte> body, string messageId, int? expirationMsecs, int deliveryCount)
-    {
-        var properties = this._channel.CreateBasicProperties();
-        properties.Persistent = true;
-        properties.MessageId = messageId;
-
-        if (expirationMsecs.HasValue)
-        {
-            properties.Expiration = $"{expirationMsecs}";
-        }
-
-        properties.Headers = new Dictionary<string, object>
-        {
-            [DeliveryCountHeader] = deliveryCount
-        };
-
-        this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
-
-        this._channel.BasicPublish(
-            routingKey: queueName,
-            body: body,
-            exchange: string.Empty,
-            basicProperties: properties);
-
-        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
     }
 
     /// <inheritdoc />
@@ -209,8 +184,7 @@ public sealed class RabbitMQPipeline : IQueue
         string queueName,
         ReadOnlyMemory<byte> body,
         string messageId,
-        int? expirationMsecs,
-        int deliveryCount)
+        int? expirationMsecs)
     {
         var properties = this._channel.CreateBasicProperties();
         properties.Persistent = true;
@@ -220,11 +194,6 @@ public sealed class RabbitMQPipeline : IQueue
         {
             properties.Expiration = $"{expirationMsecs}";
         }
-
-        properties.Headers = new Dictionary<string, object>
-        {
-            [DeliveryCountHeader] = deliveryCount
-        };
 
         this._log.LogDebug("Sending message to {0}: {1} (TTL: {2} secs)...",
             queueName, properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
