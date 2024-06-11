@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 using System;
 using System.Text;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
-public class RabbitMqConfig
+public class RabbitMQConfig
 {
     /// <summary>
     /// RabbitMQ hostname, e.g. "127.0.0.1"
@@ -70,7 +70,7 @@ public class RabbitMqConfig
         // https://www.rabbitmq.com/docs/queues#names.
         if (this.PoisonQueueSuffix.StartsWith("amq.", StringComparison.InvariantCulture))
         {
-            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it reserved for internal use");
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it's reserved for internal use");
         }
 
         // Queue names can be up to 255 bytes of UTF-8 characters.
