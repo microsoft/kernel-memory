@@ -13,17 +13,29 @@ returns a single scalar value. It is also known as the scalar product or inner
 product. The dot product of two vectors is calculated by multiplying corresponding
 elements of each vector and then summing the results.
 
+$$
+A = (A_1, A_2, \ldots, A_n)
+$$
+
+$$
+B = (B_1, B_2, \ldots, B_n)
+$$
+
+$$
+A \cdot B = \sum_{i=1}^{n} A_i B_i
+$$
+
 The dot product has many applications in computer science, particularly in artificial
 intelligence and machine learning. One common use case for the dot product is to
-measure the similarity between two vectors, such as word [embeddings](/concepts/embedding)
+measure the similarity between two vectors, such as word [embeddings](embedding)
 or image embeddings. This can be useful when trying to find similar words or images
 in a dataset.
 
 In AI, the dot product can be used to calculate the
-[cosine similarity](/concepts/cosine-similarity) between two vectors. Cosine similarity
+[cosine similarity](cosine-similarity) between two vectors. Cosine similarity
 measures the angle between two vectors, with a smaller angle indicating greater
 similarity. This can be useful when working with high-dimensional data where
-[Euclidean distance](/concepts/euclidean-distance) may not be an accurate measure of similarity.
+[Euclidean distance](euclidean-distance) may not be an accurate measure of similarity.
 
 Another application of the dot product in AI is in neural networks, where it can
 be used to calculate the weighted sum of inputs to a neuron. This calculation is

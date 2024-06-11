@@ -27,7 +27,7 @@ public class TestSetEvaluatorBuilder
 
     public TestSetEvaluatorBuilder WithMemory(IKernelMemory memory)
     {
-        this._serviceCollection.AddKeyedSingleton<IKernelMemory>(memory);
+        this._serviceCollection.AddSingleton<IKernelMemory>(memory);
 
         return this;
     }
@@ -38,6 +38,13 @@ public class TestSetEvaluatorBuilder
         {
             throw new InvalidOperationException("Memory service is required to build the TestSetEvaluator");
         }
+
+        this._serviceCollection.AddScoped<TestSetEvaluator>(sp =>
+        {
+            return new TestSetEvaluator(
+                sp.GetKeyedService<Kernel>("evaluation")!,
+                sp.GetRequiredService<IKernelMemory>());
+        });
 
         return this._serviceCollection.BuildServiceProvider()
             .GetRequiredService<TestSetEvaluator>();

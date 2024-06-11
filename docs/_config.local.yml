@@ -1,8 +1,11 @@
 # Config for local Jekyll tests
 theme: just-the-docs
 
+# To test locally run `run.cmd`
+# and open http://127.0.0.1:4000/kernel-memory/
+
 # ==================================================
-# == everything below is the same as _config.yaml ==
+# == everything below is the same as _config.yml ==
 # ==================================================
 
 title: Kernel Memory
@@ -80,3 +83,7 @@ search:
 mermaid:
   # See https://cdn.jsdelivr.net/npm/mermaid/
   version: "10.6.1"
+
+mathjax:
+  source: https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML
+  config: 'MathJax.Hub.Config({ TeX: { equationNumbers: { autoNumber: "AMS" } } })'
