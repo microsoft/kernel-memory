@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,8 +17,6 @@ namespace Microsoft.KernelMemory.Orchestration.RabbitMQ;
 [Experimental("KMEXP04")]
 public sealed class RabbitMQPipeline : IQueue
 {
-    private const string DeliveryCountHeader = "x-delivery-count";
-
     private readonly ILogger<RabbitMQPipeline> _log;
     private readonly IConnection _connection;
     private readonly IModel _channel;
@@ -77,12 +74,22 @@ public sealed class RabbitMQPipeline : IQueue
         this._queueName = queueName;
         this._log.LogDebug("Queue name: {0}", this._queueName);
 
+        var poisonExchange = $"{this._queueName}.exchange";
+        this._channel.ExchangeDeclare(poisonExchange, "fanout");
+        this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready ", poisonExchange, this._queueName);
+
         this._channel.QueueDeclare(
             queue: this._queueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
-            arguments: null);
+            arguments: new Dictionary<string, object>
+            {
+                ["x-queue-type"] = "quorum",
+                ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
+                ["x-dead-letter-exchange"] = poisonExchange
+            });
+
         this._log.LogTrace("Queue ready");
 
         if (options.DequeueEnabled)
@@ -103,6 +110,8 @@ public sealed class RabbitMQPipeline : IQueue
             exclusive: false,
             autoDelete: false,
             arguments: null);
+
+        this._channel.QueueBind(this._poisonQueueName, poisonExchange, string.Empty, null);
         this._log.LogTrace("Poison queue ready");
 
         return Task.FromResult<IQueue>(this);
@@ -121,12 +130,12 @@ public sealed class RabbitMQPipeline : IQueue
             throw new InvalidOperationException("The client must be connected to a queue first");
         }
 
-        this.PublishMessage(this._queueName, Encoding.UTF8.GetBytes(message), Guid.NewGuid().ToString("N"), this._messageTTLMsecs, 0);
+        this.PublishMessage(this._queueName, Encoding.UTF8.GetBytes(message), Guid.NewGuid().ToString("N"), this._messageTTLMsecs);
 
         return Task.CompletedTask;
     }
 
-    private void PublishMessage(string queueName, ReadOnlyMemory<byte> body, string messageId, int? expirationMsecs, int deliveryCount)
+    private void PublishMessage(string queueName, ReadOnlyMemory<byte> body, string messageId, int? expirationMsecs)
     {
         var properties = this._channel.CreateBasicProperties();
         properties.Persistent = true;
@@ -136,11 +145,6 @@ public sealed class RabbitMQPipeline : IQueue
         {
             properties.Expiration = $"{expirationMsecs}";
         }
-
-        properties.Headers = new Dictionary<string, object>
-        {
-            [DeliveryCountHeader] = deliveryCount
-        };
 
         this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
 
@@ -158,50 +162,23 @@ public sealed class RabbitMQPipeline : IQueue
     {
         this._consumer.Received += async (object sender, BasicDeliverEventArgs args) =>
         {
-            var dequeueCount = 1;
-
             try
             {
-                if (args.BasicProperties.Headers.TryGetValue(DeliveryCountHeader, out var deliveryCountObj))
+                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
+
+                byte[] body = args.Body.ToArray();
+                string message = Encoding.UTF8.GetString(body);
+
+                bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
+                if (success)
                 {
-                    // The number of dequeue attempts is equal to the number of times the message has been delivered +1.
-                    dequeueCount = Convert.ToInt32(deliveryCountObj, CultureInfo.InvariantCulture) + 1;
-                }
-
-                if (dequeueCount <= this._config.MaxRetriesBeforePoisonQueue)
-                {
-                    this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
-
-                    byte[] body = args.Body.ToArray();
-                    string message = Encoding.UTF8.GetString(body);
-
-                    bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
-                    if (success)
-                    {
-                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties.MessageId);
-                        this._channel.BasicAck(args.DeliveryTag, multiple: false);
-                    }
-                    else
-                    {
-                        var backoffDelay = TimeSpan.FromSeconds(1 * dequeueCount);
-
-                        this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
-                            args.BasicProperties.MessageId, backoffDelay.TotalMilliseconds);
-
-                        await Task.Delay(backoffDelay).ConfigureAwait(false);
-
-                        this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
-                        this.PublishMessage(this._queueName, args.Body, args.BasicProperties.MessageId, this._messageTTLMsecs, dequeueCount);
-                    }
+                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties.MessageId);
+                    this._channel.BasicAck(args.DeliveryTag, multiple: false);
                 }
                 else
                 {
-                    this._log.LogWarning("Message '{0}' has reached the maximum number of retries, moving to poison queue", args.BasicProperties.MessageId);
-
-                    this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
-                    this.PublishMessage(this._poisonQueueName, args.Body, args.BasicProperties.MessageId, expirationMsecs: null, dequeueCount);
-
-                    this._log.LogDebug("Message '{0}' moved to poison queue", args.BasicProperties.MessageId);
+                    this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue", args.BasicProperties.MessageId);
+                    this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                 }
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
@@ -212,15 +189,10 @@ public sealed class RabbitMQPipeline : IQueue
                 // - failed to delete message from queue
                 // - failed to unlock message in the queue
 
-                var backoffDelay = TimeSpan.FromSeconds(1 * dequeueCount);
-                this._log.LogWarning(e, "Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
-                    args.BasicProperties.MessageId, backoffDelay.TotalMilliseconds);
-
-                await Task.Delay(backoffDelay).ConfigureAwait(false);
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.BasicProperties.MessageId);
 
                 // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
-                this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
-                this.PublishMessage(this._queueName, args.Body, args.BasicProperties.MessageId, this._messageTTLMsecs, dequeueCount);
+                this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
             }
 #pragma warning restore CA1031
         };
