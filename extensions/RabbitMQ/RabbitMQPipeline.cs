@@ -68,7 +68,7 @@ public sealed class RabbitMQPipeline : IQueue
 
         var poisonExchange = $"{this._queueName}.exchange";
         this._channel.ExchangeDeclare(poisonExchange, "fanout");
-        this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready ", poisonExchange, this._queueName);
+        this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready", poisonExchange, this._queueName);
 
         this._channel.QueueDeclare(
             queue: this._queueName,
