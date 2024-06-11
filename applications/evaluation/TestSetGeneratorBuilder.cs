@@ -56,7 +56,7 @@ public sealed class TestSetGeneratorBuilder
         });
 
         return this._serviceCollection.BuildServiceProvider()
-                                      .GetRequiredService<TestSetGenerator>();
+            .GetRequiredService<TestSetGenerator>();
     }
 
     private static void CopyServiceCollection(

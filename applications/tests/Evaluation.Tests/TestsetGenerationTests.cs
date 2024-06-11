@@ -7,14 +7,14 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Xunit.Abstractions;
 
-namespace Microsoft.SQLServer.FunctionalTests;
+namespace Microsoft.KM.Evaluation.FunctionalTests;
 
+#pragma warning disable SKEXP0010
 public class TestsetGenerationTests
 {
     private readonly IKernelMemory _memory;
     private readonly TestSetGenerator _testSetGenerator;
     private readonly TestSetEvaluator _testSetEvaluator;
-
     private readonly Kernel _kernel;
 
     public TestsetGenerationTests(IConfiguration cfg, ITestOutputHelper output)
@@ -44,15 +44,15 @@ public class TestsetGenerationTests
             .Build();
 
         this._testSetGenerator = new TestSetGeneratorBuilder(memoryBuilder.Services)
-                                                .AddEvaluatorKernel(this._kernel)
-                                                .Build();
+            .AddEvaluatorKernel(this._kernel)
+            .Build();
 
         this._memory = memoryBuilder.Build();
 
         this._testSetEvaluator = new TestSetEvaluatorBuilder()
-                                    .AddEvaluatorKernel(this._kernel)
-                                    .WithMemory(this._memory)
-                                    .Build();
+            .AddEvaluatorKernel(this._kernel)
+            .WithMemory(this._memory)
+            .Build();
     }
 
     [Fact]
@@ -61,12 +61,12 @@ public class TestsetGenerationTests
     {
         await this._memory
             .ImportDocumentAsync(
-             "file1-NASA-news.pdf",
-             documentId: "file1-NASA-news",
-             steps: Constants.PipelineWithoutSummary);
+                "file1-NASA-news.pdf",
+                documentId: "file1-NASA-news",
+                steps: Constants.PipelineWithoutSummary);
 
         var testSets = await this._testSetGenerator.GenerateTestSetsAsync("default4tests", retryCount: 5, count: 1)
-                                .ToArrayAsync();
+            .ToArrayAsync();
 
         Assert.NotEmpty(testSets);
         Assert.Equal(1, testSets.Length);
@@ -78,9 +78,9 @@ public class TestsetGenerationTests
     {
         await this._memory
             .ImportDocumentAsync(
-             "file1-NASA-news.pdf",
-             documentId: "file1-NASA-news",
-             steps: Constants.PipelineWithoutSummary);
+                "file1-NASA-news.pdf",
+                documentId: "file1-NASA-news",
+                steps: Constants.PipelineWithoutSummary);
 
         var evaluation = await this._testSetEvaluator.EvaluateTestSetAsync("default4tests", new[]
         {
