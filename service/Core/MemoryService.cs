@@ -234,4 +234,29 @@ public sealed class MemoryService : IKernelMemory
             minRelevance: minRelevance,
             cancellationToken: cancellationToken);
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        index = IndexName.CleanName(index, this._defaultIndexName);
+        return this._searchClient.AskStreamingAsync(
+            index: index,
+            question: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            cancellationToken: cancellationToken);
+    }
 }

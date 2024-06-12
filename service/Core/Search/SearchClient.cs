@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,15 +118,6 @@ internal sealed class SearchClient : ISearchClient
         // Memories are sorted by relevance, starting from the most relevant
         foreach ((MemoryRecord memory, double relevance) in list)
         {
-            // Note: a document can be composed by multiple files
-            string documentId = memory.GetDocumentId(this._log);
-
-            // Identify the file in case there are multiple files
-            string fileId = memory.GetFileId(this._log);
-
-            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
-            string linkToFile = $"{index}/{documentId}/{fileId}";
-
             var partitionText = memory.GetPartitionText(this._log).Trim();
             if (string.IsNullOrEmpty(partitionText))
             {
@@ -137,32 +128,7 @@ internal sealed class SearchClient : ISearchClient
             // Relevance is `float.MinValue` when search uses only filters and no embeddings (see code above)
             if (relevance > float.MinValue) { this._log.LogTrace("Adding result with relevance {0}", relevance); }
 
-            // If the file is already in the list of citations, only add the partition
-            var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.Results.Add(citation);
-            }
-
-            // Add the partition to the list of citations
-            citation.Index = index;
-            citation.DocumentId = documentId;
-            citation.FileId = fileId;
-            citation.Link = linkToFile;
-            citation.SourceContentType = memory.GetFileContentType(this._log);
-            citation.SourceName = memory.GetFileName(this._log);
-            citation.SourceUrl = memory.GetWebPageUrl(index);
-
-            citation.Partitions.Add(new Citation.Partition
-            {
-                Text = partitionText,
-                Relevance = (float)relevance,
-                PartitionNumber = memory.GetPartitionNumber(this._log),
-                SectionNumber = memory.GetSectionNumber(),
-                LastUpdate = memory.GetLastUpdate(),
-                Tags = memory.Tags,
-            });
+            this.MapMatchToCitation(index, result.Results, memory, relevance);
 
             // In cases where a buggy storage connector is returning too many records
             if (result.Results.Count >= this._config.MaxMatchesCount)
@@ -227,17 +193,7 @@ internal sealed class SearchClient : ISearchClient
         // Memories are sorted by relevance, starting from the most relevant
         await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
         {
-            // Note: a document can be composed by multiple files
-            string documentId = memory.GetDocumentId(this._log);
-
-            // Identify the file in case there are multiple files
-            string fileId = memory.GetFileId(this._log);
-
-            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
-            string linkToFile = $"{index}/{documentId}/{fileId}";
-
             string fileName = memory.GetFileName(this._log);
-
             string webPageUrl = memory.GetWebPageUrl(index);
 
             var partitionText = memory.GetPartitionText(this._log).Trim();
@@ -249,8 +205,7 @@ internal sealed class SearchClient : ISearchClient
 
             factsAvailableCount++;
 
-            // TODO: add file age in days, to push relevance of newer documents
-            var fact = $"==== [File:{(fileName == "content.url" ? webPageUrl : fileName)};Relevance:{relevance:P1}]:\n{partitionText}\n";
+            var fact = GenerateFactString(fileName, webPageUrl, relevance, partitionText);
 
             // Use the partition/chunk only if there's room for it
             var size = this._textGenerator.CountTokens(fact);
@@ -266,32 +221,7 @@ internal sealed class SearchClient : ISearchClient
             facts.Append(fact);
             tokensAvailable -= size;
 
-            // If the file is already in the list of citations, only add the partition
-            var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                answer.RelevantSources.Add(citation);
-            }
-
-            // Add the partition to the list of citations
-            citation.Index = index;
-            citation.DocumentId = documentId;
-            citation.FileId = fileId;
-            citation.Link = linkToFile;
-            citation.SourceContentType = memory.GetFileContentType(this._log);
-            citation.SourceName = fileName;
-            citation.SourceUrl = memory.GetWebPageUrl(index);
-
-            citation.Partitions.Add(new Citation.Partition
-            {
-                Text = partitionText,
-                Relevance = (float)relevance,
-                PartitionNumber = memory.GetPartitionNumber(this._log),
-                SectionNumber = memory.GetSectionNumber(),
-                LastUpdate = memory.GetLastUpdate(),
-                Tags = memory.Tags,
-            });
+            this.MapMatchToCitation(index, answer.RelevantSources, memory, relevance);
 
             // In cases where a buggy storage connector is returning too many records
             if (factsUsedCount >= this._config.MaxMatchesCount)
@@ -333,8 +263,9 @@ internal sealed class SearchClient : ISearchClient
         watch.Stop();
 
         answer.Result = text.ToString();
-        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
-        if (answer.NoResult)
+        var noResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
+        answer.NoResult = noResult;
+        if (noResult)
         {
             answer.NoResultReason = "No relevant memories found";
             this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
@@ -345,6 +276,169 @@ internal sealed class SearchClient : ISearchClient
         }
 
         return answer;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var noAnswerFound = new MemoryAnswer
+        {
+            Question = question,
+            NoResult = true,
+            Result = this._config.EmptyAnswer,
+        };
+
+        if (string.IsNullOrEmpty(question))
+        {
+            this._log.LogWarning("No question provided");
+            noAnswerFound.NoResultReason = "No question provided";
+            yield return noAnswerFound;
+            yield break;
+        }
+
+        var facts = new StringBuilder();
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
+        var tokensAvailable = maxTokens
+                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(question)
+                              - this._config.AnswerTokens;
+
+        var factsUsedCount = 0;
+        var factsAvailableCount = 0;
+        var answer = noAnswerFound;
+
+        this._log.LogTrace("Fetching relevant memories");
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+            index: index,
+            text: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: this._config.MaxMatchesCount,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
+
+        // Memories are sorted by relevance, starting from the most relevant
+        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+        {
+            string fileName = memory.GetFileName(this._log);
+            string webPageUrl = memory.GetWebPageUrl(index);
+
+            var partitionText = memory.GetPartitionText(this._log).Trim();
+            if (string.IsNullOrEmpty(partitionText))
+            {
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
+                continue;
+            }
+
+            factsAvailableCount++;
+
+            var fact = GenerateFactString(fileName, webPageUrl, relevance, partitionText);
+
+            // Use the partition/chunk only if there's room for it
+            var size = this._textGenerator.CountTokens(fact);
+            if (size >= tokensAvailable)
+            {
+                // Stop after reaching the max number of tokens
+                break;
+            }
+
+            factsUsedCount++;
+            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
+
+            facts.Append(fact);
+            tokensAvailable -= size;
+
+            this.MapMatchToCitation(index, answer.RelevantSources, memory, relevance);
+
+            // In cases where a buggy storage connector is returning too many records
+            if (factsUsedCount >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
+        }
+
+        if (factsAvailableCount > 0 && factsUsedCount == 0)
+        {
+            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
+            noAnswerFound.NoResultReason = "Unable to use memories";
+            yield return noAnswerFound;
+            yield break;
+        }
+
+        if (factsUsedCount == 0)
+        {
+            this._log.LogWarning("No memories available");
+            noAnswerFound.NoResultReason = "No memories available";
+            yield return noAnswerFound;
+            yield break;
+        }
+
+        StringBuilder bufferedAnswer = new();
+        bool finishedRequiredBuffering = false;
+        var watch = Stopwatch.StartNew();
+        await foreach (var token in this.GenerateAnswer(question, facts.ToString()).WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (token is null || token.Length == 0)
+            {
+                continue;
+            }
+
+            bufferedAnswer.Append(token);
+
+            int currentLength = bufferedAnswer.Length;
+
+            if (!finishedRequiredBuffering)
+            {
+                // Adding 5 to the length to ensure that the extra tokens in ValueIsEquivalentTo can be checked (non-text tokens)
+                if (currentLength <= this._config.EmptyAnswer.Length + 5 && ValueIsEquivalentTo(bufferedAnswer.ToString(), this._config.EmptyAnswer))
+                {
+                    this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
+                    noAnswerFound.NoResultReason = "No relevant memories found";
+                    yield return noAnswerFound;
+                    yield break;
+                }
+                else if (currentLength > this._config.EmptyAnswer.Length)
+                {
+                    finishedRequiredBuffering = true;
+                    answer.NoResult = false;
+                    answer.Result = bufferedAnswer.ToString();
+                    yield return answer;
+                }
+            }
+            else
+            {
+                yield return new MemoryAnswer
+                {
+                    Result = token,
+                    NoResult = false,
+                    Question = "",
+                    RelevantSources = [],
+                };
+            }
+
+            if (this._log.IsEnabled(LogLevel.Trace) && currentLength >= 30)
+            {
+                this._log.LogTrace("{0} chars generated", currentLength);
+            }
+        }
+
+        //Edge case when the generated answer is shorter than the configured empty answer
+        if (!finishedRequiredBuffering)
+        {
+            answer.NoResult = false;
+            answer.Result = bufferedAnswer.ToString();
+            yield return answer;
+        }
+
+        watch.Stop();
+        this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
     }
 
     private IAsyncEnumerable<string> GenerateAnswer(string question, string facts)
@@ -384,5 +478,52 @@ internal sealed class SearchClient : ISearchClient
         value = value.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
         target = target.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
         return string.Equals(value, target, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GenerateFactString(string fileName, string webPageUrl, double relevance, string partitionText)
+    {
+        // TODO: add file age in days, to push relevance of newer documents
+        return $"==== [File:{(fileName == "content.url" ? webPageUrl : fileName)};Relevance:{relevance:P1}]:\n{partitionText}\n";
+    }
+
+    private void MapMatchToCitation(string index, List<Citation> citations, MemoryRecord memory, double relevance)
+    {
+        string partitionText = memory.GetPartitionText(this._log).Trim();
+
+        // Note: a document can be composed by multiple files
+        string documentId = memory.GetDocumentId(this._log);
+
+        // Identify the file in case there are multiple files
+        string fileId = memory.GetFileId(this._log);
+
+        // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
+        string linkToFile = $"{index}/{documentId}/{fileId}";
+
+        // If the file is already in the list of citations, only add the partition
+        Citation? citation = citations.Find(x => x.Link == linkToFile);
+        if (citation == null)
+        {
+            citation = new Citation();
+            citations.Add(citation);
+        }
+
+        // Add the partition to the list of citations
+        citation.Index = index;
+        citation.DocumentId = documentId;
+        citation.FileId = fileId;
+        citation.Link = linkToFile;
+        citation.SourceContentType = memory.GetFileContentType(this._log);
+        citation.SourceName = memory.GetFileName(this._log);
+        citation.SourceUrl = memory.GetWebPageUrl(index);
+
+        citation.Partitions.Add(new Citation.Partition
+        {
+            Text = partitionText,
+            Relevance = (float)relevance,
+            PartitionNumber = memory.GetPartitionNumber(this._log),
+            SectionNumber = memory.GetSectionNumber(),
+            LastUpdate = memory.GetLastUpdate(),
+            Tags = memory.Tags,
+        });
     }
 }

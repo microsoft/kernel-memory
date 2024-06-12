@@ -52,6 +52,7 @@ public static class Constants
 
     // Endpoints
     public const string HttpAskEndpoint = "/ask";
+    public const string HttpAskStreamEndpoint = "/ask/stream";
     public const string HttpSearchEndpoint = "/search";
     public const string HttpDownloadEndpoint = "/download";
     public const string HttpUploadEndpoint = "/upload";

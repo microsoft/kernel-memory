@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -356,6 +358,48 @@ public sealed class MemoryWebClient : IKernelMemory
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        MemoryQuery request = new()
+        {
+            Index = index,
+            Question = question,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance
+        };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, Constants.HttpAskStreamEndpoint);
+        httpRequest.Content = content;
+
+        using HttpResponseMessage response = await this._client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        await foreach (var responsePart in response.Content.ReadFromJsonAsAsyncEnumerable<MemoryAnswer>(cancellationToken))
+        {
+            if (responsePart is null)
+            {
+                continue;
+            }
+
+            yield return responsePart;
+        }
     }
 
     #region private

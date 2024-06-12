@@ -55,6 +55,7 @@ public static class Program
         // =======================
 
         await AskSimpleQuestion();
+        await AskSimpleQuestionWithStreamingAndShowSources();
         await AskSimpleQuestionAndShowSources();
         await AskQuestionAboutImageContent();
         await AskQuestionUsingFilter();
@@ -269,6 +270,53 @@ public static class Program
         due to the speed of light being a very large number when squared. This concept is a fundamental principle in physics and has important implications
         in various fields, including nuclear physics and cosmology.
 
+        */
+    }
+
+    private static async Task AskSimpleQuestionWithStreamingAndShowSources()
+    {
+        var question = "Any news from NASA about Orion?";
+        Console.WriteLine($"Question: {question}");
+        var answer = s_memory.AskStreamingAsync(question, filter: MemoryFilters.ByTag("user", "Taylor"));
+        Console.WriteLine("\nAnswer:\n");
+
+        List<Citation>? citations = [];
+        bool isFirstPart = true;
+        await foreach (var answerPart in answer)
+        {
+            if (isFirstPart)
+            {
+                citations = answerPart.RelevantSources;
+                isFirstPart = false;
+            }
+
+            Console.Write(answerPart.Result);
+        }
+
+        Console.WriteLine("\n\nSources:\n");
+        foreach (var x in citations)
+        {
+            Console.WriteLine(x.SourceUrl != null
+                ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"
+                : $"  - {x.SourceName}  - {x.Link} [{x.Partitions.First().LastUpdate:D}]");
+        }
+
+        Console.WriteLine("\n====================================\n");
+
+        /* OUTPUT
+
+        Question: Any news from NASA about Orion?
+
+        Answer:
+        Yes, NASA has invited media to see the new test version of the Orion spacecraft and the hardware teams will use to recover the capsule and astronauts upon their return from space during the Artemis II mission.
+        The event will take place at Naval Base San Diego on August 2.
+        Personnel involved in recovery operations from NASA, the U.S. Navy, and the U.S. Air Force will be available to speak with media.
+        Teams are currently conducting tests in the Pacific Ocean to demonstrate and evaluate the processes, procedures, and hardware for recovery operations for crewed Artemis missions.
+        The tests will help prepare the team for Artemis II, NASA's first crewed mission under Artemis that will send four astronauts in Orion around the Moon to checkout systems ahead of future lunar missions.
+        The Artemis II crew will participate in recovery testing at sea next year.
+
+        Sources:
+            - /download?index=default&documentId=doc003&filename=file5-NASA-news.pdf [Friday, 17 May 2024]
         */
     }
 

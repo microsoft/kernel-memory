@@ -211,4 +211,22 @@ public interface IKernelMemory
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Search the given index for an answer to the given query.
+    /// </summary>
+    /// <param name="question">Question to answer</param>
+    /// <param name="index">Optional index name</param>
+    /// <param name="filter">Filter to match</param>
+    /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
+    /// <param name="minRelevance">Minimum Cosine Similarity required</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>A stream that contains an answer to the query, or an empty list</returns>
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        CancellationToken cancellationToken = default);
 }
