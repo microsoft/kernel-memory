@@ -70,7 +70,7 @@ public class SearchClientConfig
     /// <summary>
     /// Up to 4 sequences where the completion will stop generating further tokens.
     /// </summary>
-    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
+    public IList<string> StopSequences { get; set; } = new List<string>();
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
