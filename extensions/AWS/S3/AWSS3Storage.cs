@@ -37,7 +37,7 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
                     awsSecretAccessKey: config.SecretAccessKey,
                     clientConfig: new AmazonS3Config
                     {
-                        ServiceURL = config.Endpoint + "/" + config.BucketName,
+                        ServiceURL = config.Endpoint,
                         LogResponse = true
                     }
                 );
@@ -91,7 +91,7 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
     /// <inheritdoc />
     public async Task EmptyDocumentDirectoryAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
-        var directoryName = JoinPaths(index, documentId);
+        var directoryName = $"{index}/{documentId}";
         if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
         {
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
@@ -106,7 +106,7 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
         string documentId,
         CancellationToken cancellationToken = default)
     {
-        var directoryName = JoinPaths(index, documentId);
+        var directoryName = $"{index}/{documentId}";
         if (string.IsNullOrWhiteSpace(index) || string.IsNullOrWhiteSpace(documentId) || string.IsNullOrWhiteSpace(directoryName))
         {
             throw new DocumentStorageException("The index, or document ID, or directory name is empty, stopping the process to prevent data loss");
@@ -123,25 +123,24 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
         Stream streamContent,
         CancellationToken cancellationToken = default)
     {
-        var directoryName = JoinPaths(index, documentId);
-        var objName = $"{directoryName}/{fileName}";
+        var objectKey = $"{index}/{documentId}/{fileName}";
         var len = streamContent.Length;
 
-        this._log.LogTrace("Writing object {0} ...", objName);
+        this._log.LogTrace("Writing object {0} ...", objectKey);
 
         if (streamContent.Length == 0)
         {
-            this._log.LogWarning("The file {0} is empty", objName);
+            this._log.LogWarning("The file {0} is empty", objectKey);
         }
 
         await this._client.PutObjectAsync(new PutObjectRequest
         {
             BucketName = this._bucketName,
-            Key = objName,
+            Key = objectKey,
             InputStream = streamContent
         }, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        this._log.LogTrace("Object {0} ready, size {1}", objName, len);
+        this._log.LogTrace("Object {0} ready, size {1}", objectKey, len);
     }
 
     /// <inheritdoc />
@@ -152,12 +151,11 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default)
     {
-        var directoryName = JoinPaths(index, documentId);
-        var objName = $"{directoryName}/{fileName}";
+        var objectKey = $"{index}/{documentId}/{fileName}";
 
         try
         {
-            GetObjectRequest request = new() { BucketName = this._bucketName, Key = objName };
+            GetObjectRequest request = new() { BucketName = this._bucketName, Key = objectKey };
             var response = await this._client.GetObjectAsync(request, cancellationToken).ConfigureAwait(false);
 
             var memoryStream = new MemoryStream();
@@ -179,44 +177,10 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
         {
             if (logErrIfNotFound)
             {
-                this._log.LogInformation("File not found: {0}", objName);
+                this._log.LogInformation("File not found: {0}", objectKey);
             }
 
             throw new DocumentStorageFileNotFoundException("File not found", e);
-        }
-    }
-
-    /// <summary>
-    /// Generates a pre-signed URL for accessing an object stored in S3 for a limited time.
-    /// </summary>
-    /// <param name="index">The index directory in which the object resides.</param>
-    /// <param name="documentId">The document directory under the index where the object resides.</param>
-    /// <param name="fileName">The name of the file/object for which to generate the URL.</param>
-    /// <param name="validDuration">The duration for which the URL should remain valid.</param>
-    /// <returns>A pre-signed URL for accessing the object.</returns>
-    public async Task<string> GeneratePreSignedURLAsync(string index, string documentId, string fileName, TimeSpan validDuration)
-    {
-        var directoryName = JoinPaths(index, documentId);
-        var objectKey = $"{directoryName}/{fileName}";
-
-        var request = new GetPreSignedUrlRequest
-        {
-            BucketName = this._bucketName,
-            Key = objectKey,
-            Expires = DateTime.UtcNow.Add(validDuration),
-            Verb = HttpVerb.GET
-        };
-
-        try
-        {
-            var url = await this._client.GetPreSignedURLAsync(request).ConfigureAwait(false);
-            this._log.LogTrace("Generated pre-signed URL for object {0}", objectKey);
-            return url;
-        }
-        catch (Exception ex)
-        {
-            this._log.LogError("Error generating pre-signed URL for object {0}: {1}", objectKey, ex.Message);
-            throw;
         }
     }
 
@@ -227,17 +191,6 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
     }
 
     #region private
-
-    /// <summary>
-    /// Join index name and document ID, using the platform specific logic, to calculate the directory name
-    /// </summary>
-    /// <param name="index">Index name, left side of the path</param>
-    /// <param name="documentId">Document ID, right side of the path (appended to index)</param>
-    /// <returns>Index name concatenated with Document ID into a single path</returns>
-    private static string JoinPaths(string index, string documentId)
-    {
-        return $"{index}/{documentId}";
-    }
 
     private async Task DeleteObjectsByPrefixAsync(string prefix, CancellationToken cancellationToken)
     {
