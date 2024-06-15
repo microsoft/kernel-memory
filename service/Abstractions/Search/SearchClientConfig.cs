@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
