@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.DocumentStorage;
-using Microsoft.KernelMemory.DocumentStorage.S3;
+using Microsoft.KernelMemory.DocumentStorage.AWSS3;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements

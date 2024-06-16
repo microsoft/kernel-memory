@@ -286,7 +286,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "401-evaluation", "examples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evaluation.FunctionalTests", "applications\tests\Evaluation.Tests\Evaluation.FunctionalTests.csproj", "{C746CE00-8BAE-4B46-A757-FE85D68747CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3", "extensions\AWS\S3\S3.csproj", "{E969B9F4-E17F-49B7-928C-DC2F40FDF918}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWSS3", "extensions\AWS\S3\S3.csproj", "{E969B9F4-E17F-49B7-928C-DC2F40FDF918}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

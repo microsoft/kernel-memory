@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
-        <AssemblyName>Microsoft.KernelMemory.DocumentStorage.S3</AssemblyName>
-        <RootNamespace>Microsoft.KernelMemory.DocumentStorage.S3</RootNamespace>
+        <AssemblyName>Microsoft.KernelMemory.DocumentStorage.AWSS3</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.DocumentStorage.AWSS3</RootNamespace>
         <NoWarn>$(NoWarn);KMEXP03;CA1724;</NoWarn>
     </PropertyGroup>
 
@@ -18,7 +18,7 @@
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
-        <PackageId>Microsoft.KernelMemory.DocumentStorage.S3</PackageId>
+        <PackageId>Microsoft.KernelMemory.DocumentStorage.AWSS3</PackageId>
         <Product>AWS S3 Storage for Kernel Memory document storage</Product>
         <Description>AWS S3 Storage adapter allowing Kernel Memory to upload documents and maintain their state in AWS S3 or compatible service</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, AWS, S3, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>

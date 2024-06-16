@@ -11,6 +11,7 @@ internal sealed class Context
     // Storage
     public BoundedBoolean CfgDocumentStorage = new(initialState: true);
     public BoundedBoolean CfgAzureBlobs = new();
+    public BoundedBoolean CfgAWSS3 = new();
     public BoundedBoolean CfgMongoDbAtlasDocumentStorage = new();
     public BoundedBoolean CfgSimpleFileStorage = new();
 

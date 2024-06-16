@@ -11,7 +11,7 @@ using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 
-namespace Microsoft.KernelMemory.DocumentStorage.S3;
+namespace Microsoft.KernelMemory.DocumentStorage.AWSS3;
 
 public sealed class AWSS3Storage : IDocumentStorage, IDisposable
 {

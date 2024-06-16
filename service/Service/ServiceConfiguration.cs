@@ -162,8 +162,8 @@ internal sealed class ServiceConfiguration
                                                                 ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
-            case string x when x.Equals("S3", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAWSS3AsDocumentStorage(this.GetServiceConfig<AWSS3Config>("S3"));
+            case string x when x.Equals("AWSS3", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddAWSS3AsDocumentStorage(this.GetServiceConfig<AWSS3Config>("AWSS3"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
