@@ -74,21 +74,21 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
     {
         var settings = new PromptExecutionSettings
         {
-            ExtensionData = new Dictionary<string, object>()
+            ExtensionData = new Dictionary<string, object>
             {
-                [nameof(options.Temperature)] = options.Temperature,
-                [nameof(options.TopP)] = options.TopP,
-                [nameof(options.PresencePenalty)] = options.PresencePenalty,
-                [nameof(options.FrequencyPenalty)] = options.FrequencyPenalty,
-                [nameof(options.StopSequences)] = options.StopSequences,
-                [nameof(options.ResultsPerPrompt)] = options.ResultsPerPrompt,
-                [nameof(options.TokenSelectionBiases)] = options.TokenSelectionBiases
+                ["temperature"] = options.Temperature,
+                ["top_p"] = options.NucleusSampling,
+                ["presence_penalty"] = options.PresencePenalty,
+                ["frequency_penalty"] = options.FrequencyPenalty,
+                ["stop_sequences"] = options.StopSequences,
+                ["results_per_prompt"] = options.ResultsPerPrompt,
+                ["token_selection_biases"] = options.TokenSelectionBiases
             }
         };
 
         if (options.MaxTokens != null)
         {
-            settings.ExtensionData[nameof(options.MaxTokens)] = options.MaxTokens;
+            settings.ExtensionData["max_tokens"] = options.MaxTokens;
         }
 
         return settings;
