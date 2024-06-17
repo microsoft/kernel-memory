@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -81,7 +82,11 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     public abstract Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     ///<inheritdoc />
-    public async Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default)
+    public async Task<string> ImportDocumentAsync(
+        string index,
+        DocumentUploadRequest uploadRequest,
+        IContext? context = null,
+        CancellationToken cancellationToken = default)
     {
         this.Log.LogInformation("Queueing upload of {0} files for further processing [request {1}]", uploadRequest.Files.Count, uploadRequest.DocumentId);
 
@@ -90,8 +95,9 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         var pipeline = this.PrepareNewDocumentUpload(
             index: index,
             documentId: uploadRequest.DocumentId,
-            uploadRequest.Tags,
-            uploadRequest.Files);
+            tags: uploadRequest.Tags,
+            filesToUpload: uploadRequest.Files,
+            contextArgs: context?.Arguments);
 
         if (uploadRequest.Steps.Count > 0)
         {
@@ -127,7 +133,8 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         string index,
         string documentId,
         TagCollection tags,
-        IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null)
+        IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null,
+        IDictionary<string, object?>? contextArgs = null)
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
 
@@ -138,6 +145,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             Index = index,
             DocumentId = documentId,
             Tags = tags,
+            ContextArguments = contextArgs ?? new Dictionary<string, object?>(),
             FilesToUpload = filesToUpload.ToList(),
         };
 

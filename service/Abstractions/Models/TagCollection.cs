@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Microsoft.KernelMemory;
 
@@ -143,6 +144,37 @@ public class TagCollection : IDictionary<string, List<string?>>
     public void Clear()
     {
         this._data.Clear();
+    }
+
+    public override string ToString()
+    {
+        return ToString(this._data.Where(x => x.Value.Count > 0));
+    }
+
+    public string ToStringExcludeReserved()
+    {
+        return ToString(this._data.Where(x => x.Value.Count > 0 && !x.Key.StartsWith(Constants.ReservedTagsPrefix, StringComparison.Ordinal)));
+    }
+
+    private static string ToString(IEnumerable<KeyValuePair<string, List<string?>>> list)
+    {
+        var result = new StringBuilder();
+
+        foreach (KeyValuePair<string, List<string?>> tags in list)
+        {
+            if (tags.Value.Count == 1)
+            {
+                result.Append(tags.Key).Append(':').Append(tags.Value.First());
+            }
+            else
+            {
+                result.Append(tags.Key).Append(":[").Append(string.Join(", ", tags.Value)).Append(']');
+            }
+
+            result.Append(';');
+        }
+
+        return result.ToString().TrimEnd(';');
     }
 
     private static void ValidateKey(string key)

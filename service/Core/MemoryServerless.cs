@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Pipeline;
@@ -55,10 +56,11 @@ public sealed class MemoryServerless : IKernelMemory
         Document document,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -68,20 +70,22 @@ public sealed class MemoryServerless : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddFile(filePath);
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<string> ImportDocumentAsync(
         DocumentUploadRequest uploadRequest,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var index = IndexName.CleanName(uploadRequest.Index, this._defaultIndexName);
-        return this._orchestrator.ImportDocumentAsync(index, uploadRequest, cancellationToken);
+        return this._orchestrator.ImportDocumentAsync(index, uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -92,11 +96,12 @@ public sealed class MemoryServerless : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddStream(fileName, content);
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -106,18 +111,20 @@ public sealed class MemoryServerless : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await using (content.ConfigureAwait(false))
         {
             return await this.ImportDocumentAsync(
-                content,
+                content: content,
                 fileName: "content.txt",
                 documentId: documentId,
                 tags: tags,
                 index: index,
                 steps: steps,
+                context: context,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
@@ -129,6 +136,7 @@ public sealed class MemoryServerless : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var uri = new Uri(url);
@@ -137,7 +145,15 @@ public sealed class MemoryServerless : IKernelMemory
         Stream content = new MemoryStream(Encoding.UTF8.GetBytes(uri.AbsoluteUri));
         await using (content.ConfigureAwait(false))
         {
-            return await this.ImportDocumentAsync(content, fileName: "content.url", documentId: documentId, tags: tags, index: index, steps: steps, cancellationToken: cancellationToken)
+            return await this.ImportDocumentAsync(
+                    content: content,
+                    fileName: "content.url",
+                    documentId: documentId,
+                    tags: tags,
+                    index: index,
+                    steps: steps,
+                    context: context,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -214,6 +230,7 @@ public sealed class MemoryServerless : IKernelMemory
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = -1,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -230,6 +247,7 @@ public sealed class MemoryServerless : IKernelMemory
             filters: filters,
             minRelevance: minRelevance,
             limit: limit,
+            context: context,
             cancellationToken: cancellationToken);
     }
 
@@ -240,6 +258,7 @@ public sealed class MemoryServerless : IKernelMemory
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -255,6 +274,7 @@ public sealed class MemoryServerless : IKernelMemory
             question: question,
             filters: filters,
             minRelevance: minRelevance,
+            context: context,
             cancellationToken: cancellationToken);
     }
 }
