@@ -52,6 +52,8 @@ public static class DefaultLogger
             {
                 if (!TryGetLogLevel(section.Value, out LogLevel level)) { continue; }
 
+                // if (section.Key == DefaultCategoryKey) { builder.SetMinimumLevel(level); }
+                // else { builder.AddFilter(section.Key, level); }
                 builder.AddFilter(category: (section.Key == DefaultCategoryKey) ? null : section.Key, level: level);
             }
         });

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.KernelMemory.Context;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -270,11 +271,10 @@ public sealed class DataPipeline
 
     /// <summary>
     /// Unstructured dictionary available to support custom tasks and business logic.
-    /// The orchestrator doesn't use this property, and it's up to custom handlers to manage it.
     /// </summary>
     [JsonPropertyOrder(20)]
-    [JsonPropertyName("custom_data")]
-    public Dictionary<string, object> CustomData { get; set; } = new();
+    [JsonPropertyName("args")]
+    public IDictionary<string, object?> ContextArguments { get; set; } = new Dictionary<string, object?>();
 
     /// <summary>
     /// When uploading over an existing upload, we temporarily capture
@@ -445,5 +445,13 @@ public sealed class DataPipeline
             RemainingSteps = this.RemainingSteps,
             CompletedSteps = this.CompletedSteps,
         };
+    }
+}
+
+public static partial class DataPipelineExtensions
+{
+    public static IContext GetContext(this DataPipeline pipeline)
+    {
+        return new RequestContext(pipeline.ContextArguments);
     }
 }

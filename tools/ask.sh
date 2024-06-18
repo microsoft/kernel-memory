@@ -91,7 +91,7 @@ validateParameters
 
 # Send HTTP request using curl
 CMD="curl -v -H 'Content-Type: application/json'"
-CMD="$CMD -d'{\"question\":\"${QUESTION}\",\"filters\":[{${FILTER}}],\"index\":\"${INDEXNAME}\"}'"
+CMD="$CMD -d'{\"question\":\"${QUESTION}\",\"filters\":[{${FILTER}}],\"index\":\"${INDEXNAME}\",\"args\":{\"custom_rag_max_tokens_int\":1000}}'"
 CMD="$CMD $SERVICE_URL/ask"
 
 set -x
