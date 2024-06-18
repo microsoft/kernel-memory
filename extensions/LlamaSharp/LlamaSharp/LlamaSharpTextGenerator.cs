@@ -105,7 +105,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             TokensKeep = this.MaxTokenTotal,
             MaxTokens = options.MaxTokens ?? -1,
             Temperature = (float)options.Temperature,
-            TopP = (float)options.TopP,
+            TopP = (float)options.NucleusSampling,
             PresencePenalty = (float)options.PresencePenalty,
             FrequencyPenalty = (float)options.FrequencyPenalty,
             AntiPrompts = options.StopSequences?.ToList() ?? new(),

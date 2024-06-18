@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Internals;
 
 namespace Microsoft.KernelMemory;
@@ -67,10 +68,11 @@ public sealed class MemoryWebClient : IKernelMemory
         Document document,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -80,19 +82,21 @@ public sealed class MemoryWebClient : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags: tags).AddFile(filePath);
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<string> ImportDocumentAsync(
         DocumentUploadRequest uploadRequest,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
-        return this.ImportInternalAsync(uploadRequest.Index, uploadRequest, cancellationToken);
+        return this.ImportInternalAsync(uploadRequest.Index, uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -103,11 +107,12 @@ public sealed class MemoryWebClient : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var document = new Document(documentId, tags).AddStream(fileName, content);
         DocumentUploadRequest uploadRequest = new(document, index, steps);
-        return this.ImportDocumentAsync(uploadRequest, cancellationToken);
+        return this.ImportDocumentAsync(uploadRequest, context, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -117,18 +122,20 @@ public sealed class MemoryWebClient : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         Stream content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await using (content.ConfigureAwait(false))
         {
             return await this.ImportDocumentAsync(
-                    content,
+                    content: content,
                     fileName: "content.txt",
                     documentId: documentId,
-                    tags,
+                    tags: tags,
                     index: index,
                     steps: steps,
+                    context: context,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -141,6 +148,7 @@ public sealed class MemoryWebClient : IKernelMemory
         TagCollection? tags = null,
         string? index = null,
         IEnumerable<string>? steps = null,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         var uri = new Uri(url);
@@ -150,12 +158,13 @@ public sealed class MemoryWebClient : IKernelMemory
         await using (content.ConfigureAwait(false))
         {
             return await this.ImportDocumentAsync(
-                    content,
+                    content: content,
                     fileName: "content.url",
                     documentId: documentId,
-                    tags,
+                    tags: tags,
                     index: index,
                     steps: steps,
+                    context: context,
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -298,6 +307,7 @@ public sealed class MemoryWebClient : IKernelMemory
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = -1,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -314,6 +324,7 @@ public sealed class MemoryWebClient : IKernelMemory
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
             MinRelevance = minRelevance,
             Limit = limit,
+            ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
@@ -332,6 +343,7 @@ public sealed class MemoryWebClient : IKernelMemory
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         if (filter != null)
@@ -346,7 +358,8 @@ public sealed class MemoryWebClient : IKernelMemory
             Index = index,
             Question = question,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
-            MinRelevance = minRelevance
+            MinRelevance = minRelevance,
+            ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
@@ -408,17 +421,24 @@ public sealed class MemoryWebClient : IKernelMemory
     private async Task<string> ImportInternalAsync(
         string index,
         DocumentUploadRequest uploadRequest,
+        IContext? context,
         CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
         using MultipartFormDataContent formData = new();
 
         using StringContent indexContent = new(index);
+        using StringContent contextArgsContent = new(JsonSerializer.Serialize(context?.Arguments));
         using (StringContent documentIdContent = new(uploadRequest.DocumentId))
         {
             List<IDisposable> disposables = [];
-            formData.Add(indexContent, Constants.WebServiceIndexField);
-            formData.Add(documentIdContent, Constants.WebServiceDocumentIdField);
+            formData.Add(indexContent, Constants.WebService.IndexField);
+            formData.Add(documentIdContent, Constants.WebService.DocumentIdField);
+
+            if (context?.Arguments != null)
+            {
+                formData.Add(contextArgsContent, Constants.WebService.ArgsField);
+            }
 
             // Add steps to the form
             foreach (string? step in uploadRequest.Steps)
@@ -427,7 +447,7 @@ public sealed class MemoryWebClient : IKernelMemory
 
                 var stepContent = new StringContent(step);
                 disposables.Add(stepContent);
-                formData.Add(stepContent, Constants.WebServiceStepsField);
+                formData.Add(stepContent, Constants.WebService.StepsField);
             }
 
             // Add tags to the form
@@ -435,7 +455,7 @@ public sealed class MemoryWebClient : IKernelMemory
             {
                 var tagContent = new StringContent($"{tag.Key}{Constants.ReservedEqualsChar}{tag.Value}");
                 disposables.Add(tagContent);
-                formData.Add(tagContent, Constants.WebServiceTagsField);
+                formData.Add(tagContent, Constants.WebService.TagsField);
             }
 
             // Add files to the form

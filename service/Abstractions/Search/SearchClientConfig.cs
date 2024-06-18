@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -40,6 +39,19 @@ public class SearchClientConfig
     /// Text to return when the LLM cannot produce an answer.
     /// </summary>
     public string EmptyAnswer { get; set; } = "INFO NOT FOUND";
+
+    /// <summary>
+    /// Template use to inject facts into the RAG prompt.
+    /// Available placeholders:
+    /// * {{$content}}  : text from memory, i.e. chunk of text extracted from the source
+    /// * {{$source}}   : name of the source file, or URL of the web page, where the content originated.
+    /// * {{$relevance}}: relevance score of the current chunk of text
+    /// * {{$memoryId}} : ID of the memory record
+    /// * {{$tags}}     : list of tags, excluding reserved/internal ones
+    /// * {{$tag[X]}}   : tag X value(s), replaced with "-" if the value is empty
+    /// * {{$meta[X]}}  : value of memory record payload X field (memory payload is also known as metadata), replaced with "-" if the value is empty
+    /// </summary>
+    public string FactTemplate { get; set; } = "==== [File:{{$source}};Relevance:{{$relevance}}]:\n{{$content}}";
 
     /// <summary>
     /// Number between 0.0 and 2.0. It controls the randomness of the completion.

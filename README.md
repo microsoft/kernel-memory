@@ -315,6 +315,7 @@ running the service locally with OpenAPI enabled.
 24. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
 25. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
 26. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
+27. [Using Context Parameters to customize RAG prompt during a request](examples/209-dotnet-using-context-overrides)
 
 ## Tools
 

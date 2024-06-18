@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -79,6 +80,17 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
         // Support IHttpClientFactory (must be done before CopyServiceCollection)
         if (this._hostServiceCollection == null) { this._memoryServiceCollection.AddHttpClient(); }
         else { this._hostServiceCollection.AddHttpClient(); }
+
+        // Support request context
+        if (this._hostServiceCollection == null) { this._memoryServiceCollection.AddRequestContextProvider(); }
+        else
+        {
+            // Inject only if not already provided
+            if (!this._hostServiceCollection.HasService<IContextProvider>())
+            {
+                this._hostServiceCollection.AddRequestContextProvider();
+            }
+        }
 
         CopyServiceCollection(hostServiceCollection, this._memoryServiceCollection);
 
