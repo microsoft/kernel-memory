@@ -35,12 +35,12 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         IPromptProvider? promptProvider = null,
-        ILogger<SummarizationHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -48,7 +48,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
 
-        this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SummarizationHandler>();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }

@@ -17,9 +17,9 @@ public sealed class HtmlDecoder : IContentDecoder
 {
     private readonly ILogger<HtmlDecoder> _log;
 
-    public HtmlDecoder(ILogger<HtmlDecoder>? log = null)
+    public HtmlDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<HtmlDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<HtmlDecoder>();
     }
 
     /// <inheritdoc />

@@ -11,11 +11,11 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     public MyHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        ILogger<MyHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
-        this._log = log ?? DefaultLogger<MyHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MyHandler>();
 
         this._log.LogInformation("Instantiating handler {0}...", this.GetType().FullName);
     }

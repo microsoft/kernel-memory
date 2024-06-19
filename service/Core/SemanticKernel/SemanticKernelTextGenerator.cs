@@ -36,8 +36,7 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
         this._service = textGenerationService;
         this.MaxTokenTotal = config.MaxTokenTotal;
 
-        var log = loggerFactory?.CreateLogger<SemanticKernelTextGenerator>();
-        this._log = log ?? DefaultLogger<SemanticKernelTextGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SemanticKernelTextGenerator>();
 
         if (textTokenizer == null)
         {

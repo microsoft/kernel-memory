@@ -23,12 +23,12 @@ public sealed class DeleteIndexHandler : IPipelineStepHandler
         string stepName,
         IDocumentStorage documentStorage,
         List<IMemoryDb> memoryDbs,
-        ILogger<DeleteIndexHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._documentStorage = documentStorage;
         this._memoryDbs = memoryDbs;
-        this._log = log ?? DefaultLogger<DeleteIndexHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DeleteIndexHandler>();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }

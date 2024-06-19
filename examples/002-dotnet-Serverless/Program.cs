@@ -30,6 +30,7 @@ public static class Program
         var azDocIntelConfig = new AzureAIDocIntelConfig();
         var azureAISearchConfig = new AzureAISearchConfig();
         var postgresConfig = new PostgresConfig();
+        var azureBlobConfig = new AzureBlobsConfig();
 
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -42,6 +43,7 @@ public static class Program
             .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
             .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
+            .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
@@ -49,11 +51,11 @@ public static class Program
             .AddSingleton(memoryConfiguration)
             // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
             // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
-            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers ans summaries using LLama
+            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers and summaries using LLama
             // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
             // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
             // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            // .WithAzureBlobsStorage(new AzureBlobsConfig {...})           // Store files in Azure Blobs
+            // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
             // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
             // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
@@ -61,7 +63,7 @@ public static class Program
 
         if (s_imageSupportDemoEnabled)
         {
-            if (string.IsNullOrWhiteSpace(azDocIntelConfig.APIKey))
+            if (azDocIntelConfig.Auth == AzureAIDocIntelConfig.AuthTypes.APIKey && string.IsNullOrWhiteSpace(azDocIntelConfig.APIKey))
             {
                 Console.WriteLine("Azure AI Document Intelligence API key not found. OCR demo disabled.");
                 s_imageSupportDemoEnabled = false;

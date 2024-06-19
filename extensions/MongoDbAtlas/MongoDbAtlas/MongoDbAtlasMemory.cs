@@ -34,16 +34,16 @@ public sealed class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
     /// </summary>
     /// <param name="config">Configuration</param>
     /// <param name="embeddingGenerator">Embedding generator</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public MongoDbAtlasMemory(
         MongoDbAtlasConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<MongoDbAtlasMemory>? log = null) : base(config)
+        ILoggerFactory? loggerFactory = null) : base(config)
     {
         ArgumentNullExceptionEx.ThrowIfNull(embeddingGenerator, nameof(embeddingGenerator), "Embedding generator is null");
 
         this._embeddingGenerator = embeddingGenerator;
-        this._log = log ?? DefaultLogger<MongoDbAtlasMemory>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MongoDbAtlasMemory>();
         this._utils = new MongoDbAtlasSearchHelper(this.Config.ConnectionString, this.Config.DatabaseName);
     }
 

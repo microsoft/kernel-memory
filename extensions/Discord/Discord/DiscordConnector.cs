@@ -12,6 +12,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.Sources.DiscordBot;
 
@@ -34,13 +35,13 @@ public sealed class DiscordConnector : IHostedService, IDisposable, IAsyncDispos
     /// </summary>
     /// <param name="config">Discord settings</param>
     /// <param name="memory">Memory instance used to upload files when messages arrives</param>
-    /// <param name="logFactory">App log factory</param>
+    /// <param name="loggerFactory">App log factory</param>
     public DiscordConnector(
         DiscordConnectorConfig config,
         IKernelMemory memory,
-        ILoggerFactory logFactory)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = logFactory.CreateLogger<DiscordConnector>();
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DiscordConnector>();
         this._authToken = config.DiscordToken;
 
         var dc = new DiscordSocketConfig

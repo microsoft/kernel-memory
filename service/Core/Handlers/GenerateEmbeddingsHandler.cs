@@ -33,14 +33,14 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public GenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        ILogger<GenerateEmbeddingsHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
-        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<GenerateEmbeddingsHandler>();
         this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
 
         this._orchestrator = orchestrator;

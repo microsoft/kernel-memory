@@ -20,10 +20,10 @@ public sealed class MsExcelDecoder : IContentDecoder
     private readonly MsExcelDecoderConfig _config;
     private readonly ILogger<MsExcelDecoder> _log;
 
-    public MsExcelDecoder(MsExcelDecoderConfig? config = null, ILogger<MsExcelDecoder>? log = null)
+    public MsExcelDecoder(MsExcelDecoderConfig? config = null, ILoggerFactory? loggerFactory = null)
     {
         this._config = config ?? new MsExcelDecoderConfig();
-        this._log = log ?? DefaultLogger<MsExcelDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MsExcelDecoder>();
     }
 
     /// <inheritdoc />

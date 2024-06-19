@@ -28,17 +28,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextEmbeddingGenerator>(), httpClient)
     {
-    }
-
-    public AzureOpenAITextEmbeddingGenerator(
-        AzureOpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<AzureOpenAITextEmbeddingGenerator>? log = null,
-        HttpClient? httpClient = null)
-    {
-        this._log = log ?? DefaultLogger<AzureOpenAITextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureOpenAITextEmbeddingGenerator>();
 
         if (textTokenizer == null)
         {
@@ -61,7 +52,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     credential: new DefaultAzureCredential(),
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
@@ -71,7 +63,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     credential: config.GetTokenCredential(),
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -81,7 +74,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     apiKey: config.APIKey,
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             default:

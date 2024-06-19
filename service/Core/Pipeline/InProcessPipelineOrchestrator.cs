@@ -33,7 +33,7 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
     /// <param name="mimeTypeDetection">Service used to detect a file type</param>
     /// <param name="serviceProvider">Optional service provider to add handlers by type</param>
     /// <param name="config">Global KM configuration</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public InProcessPipelineOrchestrator(
         IDocumentStorage documentStorage,
         List<ITextEmbeddingGenerator> embeddingGenerators,
@@ -42,8 +42,8 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
         IMimeTypeDetection? mimeTypeDetection = null,
         IServiceProvider? serviceProvider = null,
         KernelMemoryConfig? config = null,
-        ILogger<InProcessPipelineOrchestrator>? log = null)
-        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
+        ILoggerFactory? loggerFactory = null)
+        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, loggerFactory?.CreateLogger<InProcessPipelineOrchestrator>())
     {
         this._serviceProvider = serviceProvider;
     }

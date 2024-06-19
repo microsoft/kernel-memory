@@ -26,14 +26,14 @@ public class ElasticsearchMemory : IMemoryDb
     /// Create a new instance of Elasticsearch KM connector
     /// </summary>
     /// <param name="config">Elasticsearch configuration</param>
-    /// <param name="client">Elasticsearch client</param>
-    /// <param name="log">Application logger</param>
     /// <param name="embeddingGenerator">Embedding generator</param>
+    /// <param name="client">Elasticsearch client</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public ElasticsearchMemory(
         ElasticsearchConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
         ElasticsearchClient? client = null,
-        ILogger<ElasticsearchMemory>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         ArgumentNullExceptionEx.ThrowIfNull(embeddingGenerator, nameof(embeddingGenerator), "The embedding generator is NULL");
         ArgumentNullExceptionEx.ThrowIfNull(config, nameof(config), "The configuration is NULL");
@@ -41,7 +41,7 @@ public class ElasticsearchMemory : IMemoryDb
         this._embeddingGenerator = embeddingGenerator;
         this._config = config;
         this._client = client ?? new ElasticsearchClient(this._config.ToElasticsearchClientSettings());
-        this._log = log ?? DefaultLogger<ElasticsearchMemory>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<ElasticsearchMemory>();
     }
 
     /// <inheritdoc />
