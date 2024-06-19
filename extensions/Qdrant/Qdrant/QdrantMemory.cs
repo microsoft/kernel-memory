@@ -33,11 +33,11 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
     /// </summary>
     /// <param name="config">Qdrant connector configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public QdrantMemory(
         QdrantConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<QdrantMemory>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._embeddingGenerator = embeddingGenerator;
 
@@ -46,8 +46,8 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
             throw new QdrantException("Embedding generator not configured");
         }
 
-        this._log = log ?? DefaultLogger<QdrantMemory>.Instance;
-        this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey);
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<QdrantMemory>();
+        this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey, loggerFactory: loggerFactory);
     }
 
     /// <inheritdoc />

@@ -26,13 +26,13 @@ public sealed class HandlerAsAHostedService<T> : IHostedService where T : IPipel
         string stepName,
         IPipelineOrchestrator orchestrator,
         T handler,
-        ILogger<HandlerAsAHostedService<T>>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._stepName = stepName;
         this._orchestrator = orchestrator;
         this._handler = handler;
 
-        this._log = log ?? DefaultLogger<HandlerAsAHostedService<T>>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<HandlerAsAHostedService<T>>();
         this._log.LogInformation("Handler as service created: {0}", stepName);
     }
 

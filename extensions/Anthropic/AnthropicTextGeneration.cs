@@ -34,12 +34,12 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
     /// <param name="config">Client configuration, including credentials and model details</param>
     /// <param name="textTokenizer">Tokenizer used to count tokens</param>
     /// <param name="httpClientFactory">Optional factory used to inject a pre-configured HTTP client for requests to Anthropic API</param>
-    /// <param name="logFactory">Optional factory used to inject configured loggers</param>
+    /// <param name="loggerFactory">Optional factory used to inject configured loggers</param>
     public AnthropicTextGeneration(
         AnthropicConfiguration config,
         ITextTokenizer? textTokenizer = null,
         IHttpClientFactory? httpClientFactory = null,
-        ILoggerFactory? logFactory = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._modelName = config.TextModelName;
         this._defaultSystemPrompt = !string.IsNullOrWhiteSpace(config.DefaultSystemPrompt) ? config.DefaultSystemPrompt : DefaultSystemPrompt;
@@ -47,9 +47,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         // Using the smallest value for now - KM support MaxTokenIn and MaxTokenOut TODO
         this.MaxTokenTotal = config.MaxTokenOut;
 
-        this._log = (logFactory != null)
-            ? logFactory.CreateLogger<AnthropicTextGeneration>()
-            : DefaultLogger<AnthropicTextGeneration>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AnthropicTextGeneration>();
 
         if (httpClientFactory == null)
         {

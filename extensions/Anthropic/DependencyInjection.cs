@@ -56,7 +56,7 @@ public static partial class DependencyInjection
                     config: config,
                     textTokenizer: textTokenizer,
                     httpClientFactory: serviceProvider.GetService<IHttpClientFactory>(),
-                    logFactory: serviceProvider.GetService<ILoggerFactory>()));
+                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
         }
 
         return services.AddSingleton<ITextGenerator, AnthropicTextGeneration>();

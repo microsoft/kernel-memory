@@ -23,12 +23,12 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
         string stepName,
         IDocumentStorage documentStorage,
         List<IMemoryDb> memoryDbs,
-        ILogger<DeleteDocumentHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._documentStorage = documentStorage;
         this._memoryDbs = memoryDbs;
-        this._log = log ?? DefaultLogger<DeleteDocumentHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DeleteDocumentHandler>();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }

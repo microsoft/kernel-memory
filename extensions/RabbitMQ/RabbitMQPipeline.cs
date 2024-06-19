@@ -26,9 +26,9 @@ public sealed class RabbitMQPipeline : IQueue
     /// <summary>
     /// Create a new RabbitMQ queue instance
     /// </summary>
-    public RabbitMQPipeline(RabbitMqConfig config, ILogger<RabbitMQPipeline>? log = null)
+    public RabbitMQPipeline(RabbitMqConfig config, ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<RabbitMQPipeline>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<RabbitMQPipeline>();
 
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         var factory = new ConnectionFactory

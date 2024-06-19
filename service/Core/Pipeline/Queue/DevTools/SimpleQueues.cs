@@ -76,19 +76,19 @@ public sealed class SimpleQueues : IQueue
     /// Create new file based queue
     /// </summary>
     /// <param name="config">File queue configuration</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public SimpleQueues(SimpleQueuesConfig config, ILogger<SimpleQueues>? log = null)
+    public SimpleQueues(SimpleQueuesConfig config, ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<SimpleQueues>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SimpleQueues>();
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, null, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, null, loggerFactory);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, loggerFactory);
                 break;
 
             default:

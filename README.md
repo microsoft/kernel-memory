@@ -316,6 +316,7 @@ running the service locally with OpenAPI enabled.
 25. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
 26. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 27. [Using Context Parameters to customize RAG prompt during a request](examples/209-dotnet-using-context-overrides)
+28. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
 
 ## Tools
 

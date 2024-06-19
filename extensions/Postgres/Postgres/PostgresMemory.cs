@@ -32,13 +32,13 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
     /// </summary>
     /// <param name="config">Postgres configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public PostgresMemory(
         PostgresConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<PostgresMemory>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<PostgresMemory>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<PostgresMemory>();
 
         this._embeddingGenerator = embeddingGenerator;
         if (this._embeddingGenerator == null)
@@ -49,7 +49,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
         // Normalize underscore and check for invalid symbols
         config.TableNamePrefix = NormalizeTableNamePrefix(config.TableNamePrefix);
 
-        this._db = new PostgresDbClient(config, this._log);
+        this._db = new PostgresDbClient(config, loggerFactory);
     }
 
     /// <inheritdoc />

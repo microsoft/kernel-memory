@@ -54,15 +54,15 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// </summary>
     /// <param name="config">The SQL server instance configuration.</param>
     /// <param name="embeddingGenerator">The text embedding generator.</param>
-    /// <param name="log">The logger.</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public SqlServerMemory(
         SqlServerConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<SqlServerMemory>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._config = config;
         this._embeddingGenerator = embeddingGenerator ?? throw new ConfigurationException("Embedding generator not configured");
-        this._log = log ?? DefaultLogger<SqlServerMemory>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SqlServerMemory>();
     }
 
     /// <inheritdoc/>
