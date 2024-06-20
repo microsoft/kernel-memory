@@ -22,10 +22,10 @@ public sealed class MsPowerPointDecoder : IContentDecoder
     private readonly MsPowerPointDecoderConfig _config;
     private readonly ILogger<MsPowerPointDecoder> _log;
 
-    public MsPowerPointDecoder(MsPowerPointDecoderConfig? config = null, ILogger<MsPowerPointDecoder>? log = null)
+    public MsPowerPointDecoder(MsPowerPointDecoderConfig? config = null, ILoggerFactory? loggerFactory = null)
     {
         this._config = config ?? new MsPowerPointDecoderConfig();
-        this._log = log ?? DefaultLogger<MsPowerPointDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MsPowerPointDecoder>();
     }
 
     /// <inheritdoc />

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI;
 
@@ -13,11 +14,11 @@ namespace Microsoft.KernelMemory.AI;
 /// </summary>
 public class NoTextGenerator : ITextGenerator
 {
-    private readonly ILogger<ITextGenerator> _log;
+    private readonly ILogger<NoTextGenerator> _log;
 
-    public NoTextGenerator(ILoggerFactory loggerFactory)
+    public NoTextGenerator(ILoggerFactory? loggerFactory = null)
     {
-        this._log = loggerFactory.CreateLogger<ITextGenerator>();
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<NoTextGenerator>();
     }
 
     /// <inheritdoc />

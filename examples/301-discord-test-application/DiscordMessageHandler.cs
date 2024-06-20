@@ -39,7 +39,7 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
         ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
-        this._log = loggerFactory?.CreateLogger<DiscordMessageHandler>() ?? DefaultLogger<DiscordMessageHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DiscordMessageHandler>();
 
         this._orchestrator = orchestrator;
         this._serviceProvider = serviceProvider;

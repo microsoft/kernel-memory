@@ -34,8 +34,7 @@ internal sealed class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGener
         this._service = textEmbeddingGenerationService;
         this.MaxTokens = config.MaxTokenTotal;
 
-        var log = loggerFactory?.CreateLogger<SemanticKernelTextEmbeddingGenerator>();
-        this._log = log ?? DefaultLogger<SemanticKernelTextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SemanticKernelTextEmbeddingGenerator>();
 
         if (textTokenizer == null)
         {

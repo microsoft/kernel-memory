@@ -16,9 +16,9 @@ public sealed class MarkDownDecoder : IContentDecoder
 {
     private readonly ILogger<MarkDownDecoder> _log;
 
-    public MarkDownDecoder(ILogger<MarkDownDecoder>? log = null)
+    public MarkDownDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<MarkDownDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MarkDownDecoder>();
     }
 
     /// <inheritdoc />

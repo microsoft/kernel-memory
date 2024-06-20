@@ -42,7 +42,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
     /// <param name="textGenerator">Service used to generate text, e.g. synthetic memory records</param>
     /// <param name="mimeTypeDetection">Service used to detect a file type</param>
     /// <param name="config">Global KM configuration</param>
-    /// <param name="log"></param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public DistributedPipelineOrchestrator(
         QueueClientFactory queueClientFactory,
         IDocumentStorage documentStorage,
@@ -51,8 +51,8 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
         ITextGenerator textGenerator,
         IMimeTypeDetection? mimeTypeDetection = null,
         KernelMemoryConfig? config = null,
-        ILogger<DistributedPipelineOrchestrator>? log = null)
-        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, log)
+        ILoggerFactory? loggerFactory = null)
+        : base(documentStorage, embeddingGenerators, memoryDbs, textGenerator, mimeTypeDetection, config, loggerFactory?.CreateLogger<DistributedPipelineOrchestrator>())
     {
         this._queueClientFactory = queueClientFactory;
     }

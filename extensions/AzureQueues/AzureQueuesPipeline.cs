@@ -65,12 +65,12 @@ public sealed class AzureQueuesPipeline : IQueue
 
     public AzureQueuesPipeline(
         AzureQueuesConfig config,
-        ILogger<AzureQueuesPipeline>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._config = config;
         this._config.Validate();
 
-        this._log = log ?? DefaultLogger<AzureQueuesPipeline>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureQueuesPipeline>();
 
         switch (config.Auth)
         {

@@ -19,11 +19,11 @@ public sealed class DeleteGeneratedFilesHandler : IPipelineStepHandler
     public DeleteGeneratedFilesHandler(
         string stepName,
         IDocumentStorage documentStorage,
-        ILogger<DeleteGeneratedFilesHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._documentStorage = documentStorage;
-        this._log = log ?? DefaultLogger<DeleteGeneratedFilesHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DeleteGeneratedFilesHandler>();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }

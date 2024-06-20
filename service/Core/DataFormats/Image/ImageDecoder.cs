@@ -17,10 +17,10 @@ public sealed class ImageDecoder : IContentDecoder
     private readonly IOcrEngine? _ocrEngine;
     private readonly ILogger<ImageDecoder> _log;
 
-    public ImageDecoder(IOcrEngine? ocrEngine = null, ILogger<ImageDecoder>? log = null)
+    public ImageDecoder(IOcrEngine? ocrEngine = null, ILoggerFactory? loggerFactory = null)
     {
         this._ocrEngine = ocrEngine;
-        this._log = log ?? DefaultLogger<ImageDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<ImageDecoder>();
     }
 
     /// <inheritdoc />
