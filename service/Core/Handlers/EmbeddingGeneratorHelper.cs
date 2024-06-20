@@ -9,7 +9,7 @@ using Microsoft.KernelMemory.Pipeline;
 namespace Microsoft.KernelMemory.Handlers;
 
 /// <summary>
-/// Allows an unique and optimzied way to generate a cache of embedding for a given
+/// Allows a unique and optimzied way to generate a cache of embedding for a given
 /// text and a list of embedding generators.
 /// </summary>
 internal class EmbeddingGeneratorHelper
@@ -30,8 +30,8 @@ internal class EmbeddingGeneratorHelper
         {
             foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
-                //Following code is sub optimal because it needs to mimic the code of the GenerateEmbeddingHandler that uses some of these
-                //Condition to avoid generating the partition embedding.
+                // Following code is suboptimal because it needs to mimic the code of the GenerateEmbeddingHandler that uses some of these
+                // Condition to avoid generating the partition embedding.
                 var partitionFile = generatedFile.Value;
 
                 if (partitionFile.AlreadyProcessedBy(pipelineStepHandler))
@@ -46,7 +46,7 @@ internal class EmbeddingGeneratorHelper
                     continue;
                 }
 
-                //only some of the mime type can be used to generate embeddings.
+                // only some of the mime type can be used to generate embeddings.
                 switch (partitionFile.MimeType)
                 {
                     case MimeTypes.PlainText:
@@ -62,6 +62,7 @@ internal class EmbeddingGeneratorHelper
         {
             await helper.GenerateEmbeddingAsync(textSnippets, cancellationToken).ConfigureAwait(false);
         }
+
         return helper;
     }
 
@@ -91,12 +92,13 @@ internal class EmbeddingGeneratorHelper
                     var singlePieceOfText = text[i];
                     var pieceTokenCount = generator.CountTokens(singlePieceOfText);
 
-                    //The next piece of element will exceed the limit, or we reached maximum batch size.
+                    // The next piece of element will exceed the limit, or we reached maximum batch size.
                     if (BatchReachedMaximumNumberOfElements(generator, batchGenerator, batch, tokenCount, pieceTokenCount))
                     {
                         await this.BatchConvertAsync(generator, batchGenerator, batch, cancellationToken).ConfigureAwait(false);
                         tokenCount = 0; //a new token count starts.
                     }
+
                     batch.Add(singlePieceOfText);
                     tokenCount += pieceTokenCount;
                 }
@@ -126,7 +128,7 @@ internal class EmbeddingGeneratorHelper
         int tokenCount,
         int pieceTokenCount)
     {
-        return tokenCount + pieceTokenCount > generator.MaxTokens || batch.Count == batchGenerator.EmbeddingBatchMaxSize;
+        return tokenCount + pieceTokenCount > generator.MaxTokens || batch.Count == batchGenerator.MaxBatchSize;
     }
 
     private async Task BatchConvertAsync(
@@ -141,6 +143,7 @@ internal class EmbeddingGeneratorHelper
         {
             this._cache[generator][batch[j]] = embeddings[j];
         }
+
         batch.Clear();
     }
 

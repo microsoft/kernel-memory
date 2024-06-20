@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Handlers;
 using Microsoft.KernelMemory.Pipeline;
-using Microsoft.SemanticKernel.Embeddings;
 using Moq;
 
 namespace Microsoft.KM.Core.UnitTests.Handlers;
@@ -35,9 +33,9 @@ public class EmbeddingGeneratorHelperTests
         };
 
         var generatedFiles = new Dictionary<string, DataPipeline.GeneratedFileDetails>
-            {
-                { "file1", generatedFileDetails }
-            };
+        {
+            { "file1", generatedFileDetails }
+        };
 
         //only some artifact type should generate the embedding
         var fileDetails = new DataPipeline.FileDetails()
@@ -84,11 +82,11 @@ public class EmbeddingGeneratorHelperTests
         };
 
         var generatedFiles = new Dictionary<string, DataPipeline.GeneratedFileDetails>
-            {
-                { "file1", generatedFileDetails },
-                { "file2", generatedFileDetails },
-                { "file3", generatedFileDetails },
-            };
+        {
+            { "file1", generatedFileDetails },
+            { "file2", generatedFileDetails },
+            { "file3", generatedFileDetails },
+        };
 
         //only some artifact type should generate the embedding
         var fileDetails = new DataPipeline.FileDetails()
@@ -105,7 +103,7 @@ public class EmbeddingGeneratorHelperTests
             .ReturnsAsync([new Embedding(), new Embedding(), new Embedding()]);
         embeddingGeneratorMock.Setup(e => e.MaxTokens).Returns(1000);
         embeddingGeneratorMock.Setup(e => e.CountTokens(It.IsAny<string>())).Returns(10);
-        embeddingGeneratorMock.Setup(e => e.EmbeddingBatchMaxSize).Returns(10);
+        embeddingGeneratorMock.Setup(e => e.MaxBatchSize).Returns(10);
 
         // Act
         var result = await EmbeddingGeneratorHelper.GetEmbeddingsAsync(
@@ -120,8 +118,8 @@ public class EmbeddingGeneratorHelperTests
         Assert.NotNull(result);
 
         embeddingGeneratorMock.Verify(e => e.GenerateEmbeddingBatchAsync(
-            It.IsAny<IEnumerable<string>>(),
-            It.IsAny<CancellationToken>()),
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<CancellationToken>()),
             Times.Exactly(1));
     }
 
@@ -143,11 +141,11 @@ public class EmbeddingGeneratorHelperTests
         };
 
         var generatedFiles = new Dictionary<string, DataPipeline.GeneratedFileDetails>
-            {
-                { "file1", generatedFileDetails },
-                { "file2", generatedFileDetails },
-                { "file3", generatedFileDetails },
-            };
+        {
+            { "file1", generatedFileDetails },
+            { "file2", generatedFileDetails },
+            { "file3", generatedFileDetails },
+        };
 
         //only some artifact type should generate the embedding
         var fileDetails = new DataPipeline.FileDetails()
@@ -170,7 +168,7 @@ public class EmbeddingGeneratorHelperTests
         embeddingGeneratorMock.Setup(e => e.CountTokens(It.IsAny<string>())).Returns(10);
 
         //important: this setup maximum number of element equal to 2.
-        embeddingGeneratorMock.Setup(e => e.EmbeddingBatchMaxSize).Returns(2);
+        embeddingGeneratorMock.Setup(e => e.MaxBatchSize).Returns(2);
 
         // Act
         var result = await EmbeddingGeneratorHelper.GetEmbeddingsAsync(
@@ -185,8 +183,8 @@ public class EmbeddingGeneratorHelperTests
         Assert.NotNull(result);
 
         embeddingGeneratorMock.Verify(e => e.GenerateEmbeddingBatchAsync(
-            It.IsAny<IEnumerable<string>>(),
-            It.IsAny<CancellationToken>()),
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
 
@@ -208,11 +206,11 @@ public class EmbeddingGeneratorHelperTests
         };
 
         var generatedFiles = new Dictionary<string, DataPipeline.GeneratedFileDetails>
-            {
-                { "file1", generatedFileDetails },
-                { "file2", generatedFileDetails },
-                { "file3", generatedFileDetails },
-            };
+        {
+            { "file1", generatedFileDetails },
+            { "file2", generatedFileDetails },
+            { "file3", generatedFileDetails },
+        };
 
         //only some artifact type should generate the embedding
         var fileDetails = new DataPipeline.FileDetails()
@@ -236,7 +234,7 @@ public class EmbeddingGeneratorHelperTests
         embeddingGeneratorMock.Setup(e => e.MaxTokens).Returns(25);
         embeddingGeneratorMock.Setup(e => e.CountTokens(It.IsAny<string>())).Returns(10);
 
-        embeddingGeneratorMock.Setup(e => e.EmbeddingBatchMaxSize).Returns(200);
+        embeddingGeneratorMock.Setup(e => e.MaxBatchSize).Returns(200);
 
         // Act
         var result = await EmbeddingGeneratorHelper.GetEmbeddingsAsync(
@@ -251,8 +249,8 @@ public class EmbeddingGeneratorHelperTests
         Assert.NotNull(result);
 
         embeddingGeneratorMock.Verify(e => e.GenerateEmbeddingBatchAsync(
-            It.IsAny<IEnumerable<string>>(),
-            It.IsAny<CancellationToken>()),
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
 

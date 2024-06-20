@@ -43,6 +43,11 @@ public class AzureOpenAIConfig
     public AuthTypes Auth { get; set; }
 
     /// <summary>
+    /// API key, required if Auth == APIKey
+    /// </summary>
+    public string APIKey { get; set; } = string.Empty;
+
+    /// <summary>
     /// Azure OpenAI endpoint URL
     /// </summary>
     public string Endpoint { get; set; } = string.Empty;
@@ -58,16 +63,6 @@ public class AzureOpenAIConfig
     public int MaxTokenTotal { get; set; } = 8191;
 
     /// <summary>
-    /// API key, required if Auth == APIKey
-    /// </summary>
-    public string APIKey { get; set; } = string.Empty;
-
-    /// <summary>
-    /// How many times to retry in case of throttling.
-    /// </summary>
-    public int MaxRetries { get; set; } = 10;
-
-    /// <summary>
     /// The number of dimensions output embeddings should have.
     /// Only supported in "text-embedding-3" and later models developed with
     /// MRL, see https://arxiv.org/abs/2205.13147
@@ -75,13 +70,18 @@ public class AzureOpenAIConfig
     public int? EmbeddingDimensions { get; set; }
 
     /// <summary>
-    /// Old AI model like ada (https://learn.microsoft.com/en-us/azure/ai-services/openai/reference) does
-    /// not support in azure version more than 16 element in a single batch, while openai accepts up to
-    /// 2k. This settings is needed to avoid sending too large batches to the service and having an error.
+    /// Some models like ada have different limits on the batch size. The value can vary
+    /// from 1 to several dozens depending on platform settings.
+    /// See https://learn.microsoft.com/azure/ai-services/openai/reference#embeddings
     ///
-    /// Openai Has much larger windows as explained here https://platform.openai.com/docs/api-reference/embeddings/create.
+    /// The default value is 1 to avoid errors. Set the value accordingly to your resource capacity.
     /// </summary>
-    public int EmbeddingBatchMaxSize { get; set; } = 16;
+    public int MaxEmbeddingBatchSize { get; set; } = 1;
+
+    /// <summary>
+    /// How many times to retry in case of throttling.
+    /// </summary>
+    public int MaxRetries { get; set; } = 10;
 
     /// <summary>
     /// Set credentials manually from code

@@ -20,8 +20,8 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
     private readonly AzureOpenAITextEmbeddingGenerationService _client;
+    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
@@ -40,6 +40,10 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         }
 
         this._textTokenizer = textTokenizer;
+
+        this.MaxTokens = config.MaxTokenTotal;
+
+        this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
         switch (config.Auth)
         {
@@ -79,20 +83,13 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
             default:
                 throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
         }
-
-        this.MaxTokens = config.MaxTokenTotal;
-
-        //https://learn.microsoft.com/en-us/azure/ai-services/openai/reference
-        //we need to be conservative, we set the limit to the minimum value (for ada) that does not cause an error
-        //if you use other models , you can increase this value
-        this.EmbeddingBatchMaxSize = config.EmbeddingBatchMaxSize;
     }
 
     /// <inheritdoc/>
     public int MaxTokens { get; }
 
     /// <inheritdoc/>
-    public int EmbeddingBatchMaxSize { get; }
+    public int MaxBatchSize { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
@@ -109,7 +106,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     /// <inheritdoc/>
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(textList.ToList(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        var list = textList.ToList();
+        this._log.LogDebug("Generating embeddings, batch size: {0}", list.Count);
+        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 }
