@@ -13,9 +13,9 @@ namespace Microsoft.KernelMemory.AI;
 public interface ITextEmbeddingBatchGenerator
 {
     /// <summary>
-    /// This indicates the maximum number of elements that can be processed in a single batch. Some of
-    /// the models have not only a limit in the number of tokens but also have a limit in the number
-    /// of elements that can be sent in a single batch.
+    /// The maximum number of elements that can be processed in a single batch.
+    /// Some services and old models can process only one string at a time, others can process many more.
+    /// The value depends on the service and the model used, and is configurable on each class.
     /// </summary>
     int MaxBatchSize { get; }
 
