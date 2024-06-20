@@ -30,11 +30,11 @@ internal sealed class DiskFileSystem : IFileSystem
     public DiskFileSystem(
         string directory,
         IMimeTypeDetection? mimeTypeDetection = null,
-        ILogger? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._dataPath = directory;
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this._log = log ?? DefaultLogger<DiskFileSystem>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<DiskFileSystem>();
         this.CreateDirectory(this._dataPath);
     }
 

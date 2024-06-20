@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.Context;
 
 namespace Microsoft.KernelMemory.Search;
 
@@ -19,6 +20,7 @@ public interface ISearchClient
     /// <param name="filters">Additional filters</param>
     /// <param name="minRelevance">Minimum relevance of the results to return</param>
     /// <param name="limit">Max number of results to return</param>
+    /// <param name="context">Optional context carrying optional information used by internal logic</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>List of relevant results matching the search criteria</returns>
     Task<SearchResult> SearchAsync(
@@ -27,6 +29,7 @@ public interface ISearchClient
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = -1,
+        IContext? context = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -36,6 +39,7 @@ public interface ISearchClient
     /// <param name="question">Question to answer</param>
     /// <param name="filters">Filtering criteria to select memories to consider</param>
     /// <param name="minRelevance">Minimum relevance of the memories considered</param>
+    /// <param name="context">Optional context carrying optional information used by internal logic</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the given question</returns>
     Task<MemoryAnswer> AskAsync(
@@ -43,6 +47,7 @@ public interface ISearchClient
         string question,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        IContext? context = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

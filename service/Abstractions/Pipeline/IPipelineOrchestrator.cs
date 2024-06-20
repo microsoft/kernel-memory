@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.KernelMemory.Pipeline;
@@ -36,9 +37,10 @@ public interface IPipelineOrchestrator
     /// </summary>
     /// <param name="index">Index where memory is stored</param>
     /// <param name="uploadRequest">Details about the file and how to import it</param>
+    /// <param name="context">Unstructured data supporting custom business logic in the current request.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Import Id</returns>
-    Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, CancellationToken cancellationToken = default);
+    /// <returns>Pipeline/Document ID</returns>
+    Task<string> ImportDocumentAsync(string index, DocumentUploadRequest uploadRequest, IContext? context = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a new pipeline value object for files upload
@@ -46,9 +48,10 @@ public interface IPipelineOrchestrator
     /// <param name="index">Index where memory is stored</param>
     /// <param name="documentId">Id of the pipeline instance. This value will persist throughout the pipeline and final data lineage used for citations.</param>
     /// <param name="tags">List of key-value pairs, used to organize and label the memories. E.g. "type", "category", etc. Multiple values per key are allowed.</param>
+    /// <param name="contextArgs">Optional data to pass into pipeline handlers, mirroring IContext.Arguments used during web requests</param>
     /// <param name="filesToUpload">List of files provided before starting the pipeline, to be uploaded into the container before starting.</param>
     /// <returns>Pipeline representation</returns>
-    DataPipeline PrepareNewDocumentUpload(string index, string documentId, TagCollection tags, IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null);
+    DataPipeline PrepareNewDocumentUpload(string index, string documentId, TagCollection tags, IEnumerable<DocumentUploadRequest.UploadedFile>? filesToUpload = null, IDictionary<string, object?>? contextArgs = null);
 
     /// <summary>
     /// Start a new data pipeline execution
@@ -147,7 +150,7 @@ public interface IPipelineOrchestrator
     ///   when writing records and when searching: in this case you don't need the pipeline
     ///   to calculate embeddings, because your connector does all the work.
     /// * you are using a basic "text search" and a DB without "vector search": in this case
-    ///   embeddings would be unused so it's better to disable them to save cost and latency.
+    ///   embeddings would be unused, so it's better to disable them to save cost and latency.
     /// </summary>
     bool EmbeddingGenerationEnabled { get; }
 
@@ -172,7 +175,7 @@ public interface IPipelineOrchestrator
 
     /// <summary>
     /// Start an asynchronous job, via handlers, to delete a specified index
-    /// from vector and document storage. This might be a long running
+    /// from vector and document storage. This might be a long-running
     /// operation, hence the use of queue/handlers.
     /// </summary>
     /// <param name="index">Optional index name</param>

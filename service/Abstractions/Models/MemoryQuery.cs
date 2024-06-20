@@ -22,4 +22,8 @@ public class MemoryQuery
     [JsonPropertyName("minRelevance")]
     [JsonPropertyOrder(2)]
     public double MinRelevance { get; set; } = 0;
+
+    [JsonPropertyName("args")]
+    [JsonPropertyOrder(100)]
+    public Dictionary<string, object?> ContextArguments { get; set; } = new();
 }

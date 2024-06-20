@@ -62,15 +62,15 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="config">Configuration settings</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public SaveRecordsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         KernelMemoryConfig? config = null,
-        ILogger<SaveRecordsHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
-        this._log = log ?? DefaultLogger<SaveRecordsHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SaveRecordsHandler>();
         this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
 
         this._orchestrator = orchestrator;

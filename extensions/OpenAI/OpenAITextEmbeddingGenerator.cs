@@ -46,8 +46,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._log = loggerFactory?.CreateLogger<OpenAITextEmbeddingGenerator>()
-                    ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
 
         this.SetTokenizer(textTokenizer);
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
@@ -56,8 +55,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         this._client = new OpenAITextEmbeddingGenerationService(
             modelId: config.EmbeddingModel,
             openAIClient: openAIClient,
-            loggerFactory: loggerFactory,
-            dimensions: config.EmbeddingDimensions);
+            dimensions: config.EmbeddingDimensions,
+            loggerFactory: loggerFactory);
     }
 
     /// <summary>
@@ -74,8 +73,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._log = loggerFactory?.CreateLogger<OpenAITextEmbeddingGenerator>()
-                    ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
 
         this.SetTokenizer(textTokenizer);
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
@@ -85,7 +83,6 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
 
     /// <summary>
     /// Create new instance.
-    /// This constructor passes the given logger factory to the internal SK service.
     /// </summary>
     /// <param name="config">Endpoint and model configuration</param>
     /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
@@ -97,8 +94,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
     {
-        this._log = loggerFactory?.CreateLogger<OpenAITextEmbeddingGenerator>()
-                    ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
 
         this.SetTokenizer(textTokenizer);
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
@@ -107,31 +103,6 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
             modelId: config.EmbeddingModel,
             openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
             loggerFactory: loggerFactory,
-            dimensions: config.EmbeddingDimensions);
-    }
-
-    /// <summary>
-    /// Create new instance.
-    /// This constructor does not pass the given logger to the internal SK service.
-    /// </summary>
-    /// <param name="config">Endpoint and model configuration</param>
-    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="httpClient">Optional HTTP client with custom settings</param>
-    public OpenAITextEmbeddingGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<OpenAITextEmbeddingGenerator>? log = null,
-        HttpClient? httpClient = null)
-    {
-        this._log = log ?? DefaultLogger<OpenAITextEmbeddingGenerator>.Instance;
-
-        this.SetTokenizer(textTokenizer);
-        this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
-
-        this._client = new OpenAITextEmbeddingGenerationService(
-            modelId: config.EmbeddingModel,
-            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
             dimensions: config.EmbeddingDimensions);
     }
 

@@ -32,17 +32,8 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextGenerator>(), httpClient)
     {
-    }
-
-    public AzureOpenAITextGenerator(
-        AzureOpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<AzureOpenAITextGenerator>? log = null,
-        HttpClient? httpClient = null)
-    {
-        this._log = log ?? DefaultLogger<AzureOpenAITextGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureOpenAITextGenerator>();
 
         if (textTokenizer == null)
         {
@@ -129,7 +120,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
                 DeploymentName = this._deployment,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.TopP,
+                NucleusSamplingFactor = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
                 ChoicesPerPrompt = 1,
@@ -161,7 +152,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
                 DeploymentName = this._deployment,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.TopP,
+                NucleusSamplingFactor = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
                 // ChoiceCount = 1,

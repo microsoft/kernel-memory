@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -17,7 +18,7 @@ namespace Microsoft.KernelMemory.Handlers;
 
 public sealed class SummarizationHandler : IPipelineStepHandler
 {
-    private const int MinLength = 50;
+    private const int MinLength = 30;
 
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
@@ -34,12 +35,12 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="promptProvider">Class responsible for providing a given prompt</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public SummarizationHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         IPromptProvider? promptProvider = null,
-        ILogger<SummarizationHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -47,7 +48,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
 
-        this._log = log ?? DefaultLogger<SummarizationHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SummarizationHandler>();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);
     }
@@ -86,7 +87,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
                     case MimeTypes.MarkDown:
                         this._log.LogDebug("Summarizing text file {0}", file.Name);
                         string content = (await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false)).ToString();
-                        (string summary, bool success) = await this.SummarizeAsync(content).ConfigureAwait(false);
+                        (string summary, bool success) = await this.SummarizeAsync(content, pipeline.GetContext()).ConfigureAwait(false);
                         if (success)
                         {
                             var summaryData = new BinaryData(summary);
@@ -127,27 +128,74 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         return (true, pipeline);
     }
 
-    private async Task<(string summary, bool skip)> SummarizeAsync(string content)
+    private async Task<(string summary, bool skip)> SummarizeAsync(string content, IContext context)
     {
         ITextGenerator textGenerator = this._orchestrator.GetTextGenerator();
-
-        int summaryMaxTokens = textGenerator.MaxTokenTotal / 2; // 50% of model capacity
-        int maxTokensPerParagraph = summaryMaxTokens / 2; // 25% of model capacity
-        int maxTokensPerLine = Math.Min(Math.Max(200, maxTokensPerParagraph / 2), 500); // 200...500
-        int overlappingTokens = maxTokensPerLine / 2;
-
         int contentLength = textGenerator.CountTokens(content);
+        this._log.LogError("Size of the content to summarize: {0} tokens", contentLength);
+
+        // If the content is less than 30 tokens don't do anything and move on.
         if (contentLength < MinLength)
         {
-            this._log.LogDebug("Content too short to summarize, {0} tokens", contentLength);
-            return (content, false);
+            this._log.LogError("Content is too short to summarize ({0} tokens), nothing to do", contentLength);
+            return (content, true);
         }
+
+        // By default, the goal is to summarize to 50% of the model capacity (or less)
+        int targetSummarySize = textGenerator.MaxTokenTotal / 2;
+
+        // Allow to override the target goal using context arguments
+        var customTargetSummarySize = context.GetCustomSummaryTargetTokenSizeOrDefault(-1);
+        if (customTargetSummarySize > 0)
+        {
+            if (customTargetSummarySize > textGenerator.MaxTokenTotal / 2)
+            {
+                throw new ArgumentOutOfRangeException(
+                    $"Custom summary size is too large, the max value allowed is {textGenerator.MaxTokenTotal / 2} (50% of the model capacity)");
+            }
+
+            ArgumentOutOfRangeException.ThrowIfLessThan(customTargetSummarySize, 15);
+            targetSummarySize = customTargetSummarySize;
+        }
+
+        this._log.LogTrace("Target goal: summary max size <= {0} tokens", targetSummarySize);
+
+        // By default, use 25% of the previous paragraph when summarizing a paragraph
+        int maxTokensPerParagraph = textGenerator.MaxTokenTotal / 4;
+
+        // When splitting text in sentences take 100..500 tokens
+        // If possible allow 50% of the paragraph size, aka 12.5% of the model capacity.
+        int maxTokensPerLine = Math.Min(Math.Max(100, maxTokensPerParagraph / 2), 500);
+
+        // By default, use 6.2% of the model capacity for overlapping tokens
+        int overlappingTokens = maxTokensPerLine / 2;
+
+        // Allow to override the number of overlapping tokens using context arguments
+        var customOverlappingTokens = context.GetCustomSummaryOverlappingTokensOrDefault(-1);
+        if (customOverlappingTokens >= 0)
+        {
+            if (customOverlappingTokens > maxTokensPerLine / 2)
+            {
+                throw new ArgumentOutOfRangeException(
+                    $"Custom number of overlapping tokens is too large, the max value allowed is {maxTokensPerLine / 2}");
+            }
+
+            overlappingTokens = customOverlappingTokens;
+        }
+
+        this._log.LogTrace("Overlap setting: {0} tokens", overlappingTokens);
 
         // Summarize at least once
         var done = false;
 
+        var summarizationPrompt = context.GetCustomSummaryPromptOrDefault(this._summarizationPrompt);
+
         // If paragraphs overlap, we need to dedupe the content, e.g. run at least one summarization call on the entire content
         var overlapToRemove = overlappingTokens > 0;
+
+        // Since the summary is meant to be shorter than the content, reserve 50% of the model
+        // capacity for input and 50% for output (aka the summary to generate)
+        int maxInputTokens = textGenerator.MaxTokenTotal / 2;
 
         // After the first run (after overlaps have been introduced), check if the summarization is causing the content to grow
         bool firstRun = overlapToRemove;
@@ -155,7 +203,9 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         while (!done)
         {
             var paragraphs = new List<string>();
-            if (contentLength <= summaryMaxTokens)
+
+            // If the content fits into half the model capacity, use a single paragraph
+            if (contentLength <= maxInputTokens)
             {
                 overlapToRemove = false;
                 paragraphs.Add(content);
@@ -173,7 +223,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
                 string paragraph = paragraphs[index];
                 this._log.LogTrace("Summarizing paragraph {0}", index);
 
-                var filledPrompt = this._summarizationPrompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
+                var filledPrompt = summarizationPrompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);
                 await foreach (string token in textGenerator.GenerateTextAsync(filledPrompt, new TextGenerationOptions()).ConfigureAwait(false))
                 {
                     newContent.Append(token);
@@ -185,17 +235,20 @@ public sealed class SummarizationHandler : IPipelineStepHandler
             content = newContent.ToString();
             contentLength = textGenerator.CountTokens(content);
 
+            // If the compression fails, stop, log an error, and save the content generated this far.
             if (!firstRun && contentLength >= previousLength)
             {
-                this._log.LogError("Summarization failed, the content is getting longer: {0} tokens => {1} tokens", previousLength, contentLength);
-                return (content, false);
+                this._log.LogError(
+                    "Summarization stopped, the content is not getting shorter: {0} tokens => {1} tokens. The summary has been saved but is longer than requested.",
+                    previousLength, contentLength);
+                return (content, true);
             }
 
             this._log.LogTrace("Summary length: {0} => {1}", previousLength, contentLength);
             previousLength = contentLength;
 
             firstRun = false;
-            done = !overlapToRemove && (contentLength <= summaryMaxTokens);
+            done = !overlapToRemove && (contentLength <= targetSummarySize);
         }
 
         return (content, true);

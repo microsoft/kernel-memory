@@ -3,19 +3,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-internal sealed class SearchClient : ISearchClient
+public sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
@@ -28,7 +30,7 @@ internal sealed class SearchClient : ISearchClient
         ITextGenerator textGenerator,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
-        ILogger<SearchClient>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
@@ -38,7 +40,7 @@ internal sealed class SearchClient : ISearchClient
         promptProvider ??= new EmbeddedPromptProvider();
         this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
 
-        this._log = log ?? DefaultLogger<SearchClient>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SearchClient>();
 
         if (this._memoryDb == null)
         {
@@ -64,6 +66,7 @@ internal sealed class SearchClient : ISearchClient
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         int limit = -1,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
         if (limit <= 0) { limit = this._config.MaxMatchesCount; }
@@ -185,13 +188,19 @@ internal sealed class SearchClient : ISearchClient
         string question,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        IContext? context = null,
         CancellationToken cancellationToken = default)
     {
+        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
+        string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
+        string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
+        if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
+
         var noAnswerFound = new MemoryAnswer
         {
             Question = question,
             NoResult = true,
-            Result = this._config.EmptyAnswer,
+            Result = emptyAnswer,
         };
 
         if (string.IsNullOrEmpty(question))
@@ -206,7 +215,7 @@ internal sealed class SearchClient : ISearchClient
             ? this._config.MaxAskPromptSize
             : this._textGenerator.MaxTokenTotal;
         var tokensAvailable = maxTokens
-                              - this._textGenerator.CountTokens(this._answerPrompt)
+                              - this._textGenerator.CountTokens(answerPrompt)
                               - this._textGenerator.CountTokens(question)
                               - this._config.AnswerTokens;
 
@@ -249,8 +258,14 @@ internal sealed class SearchClient : ISearchClient
 
             factsAvailableCount++;
 
-            // TODO: add file age in days, to push relevance of newer documents
-            var fact = $"==== [File:{(fileName == "content.url" ? webPageUrl : fileName)};Relevance:{relevance:P1}]:\n{partitionText}\n";
+            var fact = PromptUtils.RenderFactTemplate(
+                template: factTemplate,
+                factContent: partitionText,
+                source: (fileName == "content.url" ? webPageUrl : fileName),
+                relevance: relevance.ToString("P1", CultureInfo.CurrentCulture),
+                recordId: memory.Id,
+                tags: memory.Tags,
+                metadata: memory.Payload);
 
             // Use the partition/chunk only if there's room for it
             var size = this._textGenerator.CountTokens(fact);
@@ -318,8 +333,7 @@ internal sealed class SearchClient : ISearchClient
         var charsGenerated = 0;
         var watch = new Stopwatch();
         watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString())
-                           .WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
 
@@ -347,24 +361,27 @@ internal sealed class SearchClient : ISearchClient
         return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts)
+    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
     {
-        var prompt = this._answerPrompt;
+        string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
+        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
+        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
+        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
+
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
         question = question.Trim();
         question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
-
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
         var options = new TextGenerationOptions
         {
-            Temperature = this._config.Temperature,
-            TopP = this._config.TopP,
+            MaxTokens = maxTokens,
+            Temperature = temperature,
+            NucleusSampling = nucleusSampling,
             PresencePenalty = this._config.PresencePenalty,
             FrequencyPenalty = this._config.FrequencyPenalty,
-            MaxTokens = this._config.AnswerTokens,
             StopSequences = this._config.StopSequences,
             TokenSelectionBiases = this._config.TokenSelectionBiases,
         };
@@ -376,7 +393,7 @@ internal sealed class SearchClient : ISearchClient
                 this._config.AnswerTokens);
         }
 
-        return this._textGenerator.GenerateTextAsync(prompt, options);
+        return this._textGenerator.GenerateTextAsync(prompt, options, token);
     }
 
     private static bool ValueIsEquivalentTo(string value, string target)
