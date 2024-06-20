@@ -29,8 +29,14 @@ public class Document
         }
     }
 
+    /// <summary>
+    /// Files to process
+    /// </summary>
     public FileCollection Files { get; } = new();
 
+    /// <summary>
+    /// Tags to apply to the memories extracted from the files uploaded.
+    /// </summary>
     public TagCollection Tags { get; } = new();
 
     public Document(string? id = null, TagCollection? tags = null, IEnumerable<string>? filePaths = null)

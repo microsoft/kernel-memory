@@ -30,27 +30,13 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// </summary>
     /// <param name="config">Configuration settings</param>
     /// <param name="textTokenizer">Optional text tokenizer, replacing the one provided by the model</param>
-    /// <param name="loggerFactory">Optional .NET logger factory</param>
+    /// <param name="loggerFactory">Application logger instance</param>
     public LlamaSharpTextGenerator(
         LlamaSharpConfig config,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<LlamaSharpTextGenerator>())
     {
-    }
-
-    /// <summary>
-    /// Create new instance
-    /// </summary>
-    /// <param name="config">Configuration settings</param>
-    /// <param name="textTokenizer">Optional text tokenizer, replacing the one provided by the model</param>
-    /// <param name="log">Logger instance</param>
-    public LlamaSharpTextGenerator(
-        LlamaSharpConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<LlamaSharpTextGenerator>? log = null)
-    {
-        this._log = log ?? DefaultLogger<LlamaSharpTextGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<LlamaSharpTextGenerator>();
 
         config.Validate();
         this.MaxTokenTotal = (int)config.MaxTokenTotal;
@@ -105,7 +91,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             TokensKeep = this.MaxTokenTotal,
             MaxTokens = options.MaxTokens ?? -1,
             Temperature = (float)options.Temperature,
-            TopP = (float)options.TopP,
+            TopP = (float)options.NucleusSampling,
             PresencePenalty = (float)options.PresencePenalty,
             FrequencyPenalty = (float)options.FrequencyPenalty,
             AntiPrompts = options.StopSequences?.ToList() ?? new(),

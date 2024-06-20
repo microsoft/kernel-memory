@@ -26,4 +26,8 @@ public class SearchQuery
     [JsonPropertyName("limit")]
     [JsonPropertyOrder(3)]
     public int Limit { get; set; } = -1;
+
+    [JsonPropertyName("args")]
+    [JsonPropertyOrder(100)]
+    public Dictionary<string, object?> ContextArguments { get; set; } = new();
 }

@@ -14,7 +14,7 @@ This page
 This material
 [END LIST]
 
-Summarize:
+Summarize this:
 Hello how are you?
 +++++
 Hello

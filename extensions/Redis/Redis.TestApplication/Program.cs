@@ -158,7 +158,7 @@ public static class Program
                 EmbeddingModel = "text-embedding-ada-002",
                 EmbeddingModelMaxTokenTotal = 8_191,
                 APIKey = openAIApiKey
-            }, log: null);
+            }, loggerFactory: null);
         }
         else
         {

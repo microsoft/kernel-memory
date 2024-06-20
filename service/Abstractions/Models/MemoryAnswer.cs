@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -62,5 +65,26 @@ public class MemoryAnswer
     {
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions)
                ?? new MemoryAnswer();
+    }
+
+    public override string ToString()
+    {
+        var result = new StringBuilder();
+        result.AppendLine(this.Result);
+
+        if (!this.NoResult)
+        {
+            var sources = new Dictionary<string, string>();
+            foreach (var x in this.RelevantSources)
+            {
+                string date = x.Partitions.First().LastUpdate.ToString("D", CultureInfo.CurrentCulture);
+                sources[x.Index + x.Link] = $"  - {x.SourceName} [{date}]";
+            }
+
+            result.AppendLine("- Sources:");
+            result.AppendLine(string.Join("\n", sources.Values));
+        }
+
+        return result.ToString();
     }
 }

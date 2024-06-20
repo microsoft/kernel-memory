@@ -33,10 +33,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
     public AzureBlobsStorage(
         AzureBlobsConfig config,
         IMimeTypeDetection? mimeTypeDetection = null,
-        ILogger<AzureBlobsStorage>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this._log = log ?? DefaultLogger<AzureBlobsStorage>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureBlobsStorage>();
 
         BlobServiceClient client;
         switch (config.Auth)

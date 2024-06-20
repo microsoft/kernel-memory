@@ -20,9 +20,9 @@ public sealed class PdfDecoder : IContentDecoder
 {
     private readonly ILogger<PdfDecoder> _log;
 
-    public PdfDecoder(ILogger<PdfDecoder>? log = null)
+    public PdfDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<PdfDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<PdfDecoder>();
     }
 
     /// <inheritdoc />

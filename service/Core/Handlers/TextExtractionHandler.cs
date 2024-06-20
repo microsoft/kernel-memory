@@ -36,18 +36,18 @@ public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="decoders">The list of content decoders for extracting content</param>
     /// <param name="webScraper">Web scraper instance used to fetch web pages</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public TextExtractionHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         IEnumerable<IContentDecoder> decoders,
         IWebScraper? webScraper = null,
-        ILogger<TextExtractionHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
         this._decoders = decoders;
-        this._log = log ?? DefaultLogger<TextExtractionHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextExtractionHandler>();
         this._webScraper = webScraper ?? new WebScraper();
 
         this._log.LogInformation("Handler '{0}' ready", stepName);

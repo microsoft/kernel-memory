@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Abstractions</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1574;NU5104;SKEXP0001;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CA1711;CA1724;CS1574;NU5104;SKEXP0001;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

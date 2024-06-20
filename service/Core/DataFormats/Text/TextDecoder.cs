@@ -16,9 +16,9 @@ public sealed class TextDecoder : IContentDecoder
 {
     private readonly ILogger<TextDecoder> _log;
 
-    public TextDecoder(ILogger<TextDecoder>? log = null)
+    public TextDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<TextDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextDecoder>();
     }
 
     /// <inheritdoc />
