@@ -45,7 +45,6 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
-            .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
             .BindSection("KernelMemory:Services:AWSS3", awsS3Config)
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
