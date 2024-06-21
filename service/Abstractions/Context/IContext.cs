@@ -199,4 +199,14 @@ public static class CustomContextExtensions
 
         return defaultValue;
     }
+
+    public static int GetCustomEmbeddingGenerationBatchSizeOrDefault(this IContext? context, int defaultValue)
+    {
+        if (context.TryGetArg<int>(Constants.CustomContext.EmbeddingGeneration.BatchSize, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
 }
