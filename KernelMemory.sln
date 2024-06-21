@@ -116,6 +116,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-redis.sh = tools\run-redis.sh
 		tools\search.sh = tools\search.sh
 		tools\upload-file.sh = tools\upload-file.sh
+		tools\run-s3ninja.sh = tools\run-s3ninja.sh
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -289,6 +290,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "209-dotnet-using-context-overrides", "examples\209-dotnet-using-context-overrides\209-dotnet-using-context-overrides.csproj", "{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "210-KM-without-builder", "examples\210-KM-without-builder\210-KM-without-builder.csproj", "{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3", "extensions\AWS\S3\S3.csproj", "{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -548,6 +551,10 @@ Global
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -637,6 +644,7 @@ Global
 		{C746CE00-8BAE-4B46-A757-FE85D68747CE} = {DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}
 		{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

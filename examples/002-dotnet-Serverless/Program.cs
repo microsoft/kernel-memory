@@ -31,6 +31,7 @@ public static class Program
         var azureAISearchConfig = new AzureAISearchConfig();
         var postgresConfig = new PostgresConfig();
         var azureBlobConfig = new AzureBlobsConfig();
+        var awsS3Config = new AWSS3Config();
 
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -44,6 +45,7 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
+            .BindSection("KernelMemory:Services:AWSS3", awsS3Config)
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
@@ -60,9 +62,10 @@ public static class Program
             // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
             // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
             // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
             // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
+            // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
             // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
+            // .WithAWSS3DocumentStorage(awsS3Config)                       // Store files on AWS S3
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
 
