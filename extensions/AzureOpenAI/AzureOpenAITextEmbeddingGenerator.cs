@@ -100,6 +100,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     /// <inheritdoc/>
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
+        this._log.LogDebug("Generating embeddings");
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
