@@ -46,11 +46,11 @@ internal sealed class PostgresDbClient : IDisposable
     /// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
     /// </summary>
     /// <param name="config">Configuration</param>
-    /// <param name="log">Application logger</param>
-    public PostgresDbClient(PostgresConfig config, ILogger? log = null)
+    /// <param name="loggerFactory">Application logger factory</param>
+    public PostgresDbClient(PostgresConfig config, ILoggerFactory? loggerFactory = null)
     {
         config.Validate();
-        this._log = log ?? DefaultLogger<PostgresDbClient>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<PostgresDbClient>();
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(config.ConnectionString);
         this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);

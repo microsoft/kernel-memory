@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.DocumentStorage.AWSS3</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.DocumentStorage.AWSS3</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP03;CA1724;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.S3" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.DocumentStorage.AWSS3</PackageId>
+        <Product>AWS S3 Storage for Kernel Memory document storage</Product>
+        <Description>AWS S3 Storage adapter allowing Kernel Memory to upload documents and maintain their state in AWS S3 or compatible service</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, AWS, S3, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

@@ -20,9 +20,9 @@ public sealed class MsWordDecoder : IContentDecoder
 {
     private readonly ILogger<MsWordDecoder> _log;
 
-    public MsWordDecoder(ILogger<MsWordDecoder>? log = null)
+    public MsWordDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<MsWordDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<MsWordDecoder>();
     }
 
     /// <inheritdoc />

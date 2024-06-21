@@ -33,12 +33,12 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="options">The customize text partitioning option</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public TextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         TextPartitioningOptions? options = null,
-        ILogger<TextPartitioningHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -46,7 +46,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         this._options = options ?? new TextPartitioningOptions();
         this._options.Validate();
 
-        this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextPartitioningHandler>();
         this._log.LogInformation("Handler '{0}' ready", stepName);
 
         this._tokenCounter = DefaultGPTTokenizer.StaticCountTokens;

@@ -21,17 +21,17 @@ public class SimpleFileStorage : IDocumentStorage
     public SimpleFileStorage(
         SimpleFileStorageConfig config,
         IMimeTypeDetection? mimeTypeDetection = null,
-        ILogger<SimpleFileStorage>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<SimpleFileStorage>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SimpleFileStorage>();
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, mimeTypeDetection, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, mimeTypeDetection, loggerFactory);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, mimeTypeDetection, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, mimeTypeDetection, loggerFactory);
                 break;
 
             default:

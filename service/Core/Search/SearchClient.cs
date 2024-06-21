@@ -17,7 +17,7 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
-internal sealed class SearchClient : ISearchClient
+public sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
@@ -30,7 +30,7 @@ internal sealed class SearchClient : ISearchClient
         ITextGenerator textGenerator,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
-        ILogger<SearchClient>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
@@ -40,7 +40,7 @@ internal sealed class SearchClient : ISearchClient
         promptProvider ??= new EmbeddedPromptProvider();
         this._answerPrompt = promptProvider.ReadPrompt(Constants.PromptNamesAnswerWithFacts);
 
-        this._log = log ?? DefaultLogger<SearchClient>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SearchClient>();
 
         if (this._memoryDb == null)
         {

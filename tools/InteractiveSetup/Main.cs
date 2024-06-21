@@ -35,6 +35,7 @@ public static class Main
             // Document Storage
             DocumentStorageTypeSetup(ctx);
             AzureBlobs.Setup(ctx);
+            AWSS3.Setup(ctx);
             MongoDbAtlasDocumentStorage.Setup(ctx);
             SimpleFileStorage.Setup(ctx);
 
@@ -318,6 +319,13 @@ public static class Main
                     {
                         AppSettings.Change(x => { x.DocumentStorageType = "AzureBlobs"; });
                         ctx.CfgAzureBlobs.Value = true;
+                    }),
+                new("AWS S3",
+                    config.DocumentStorageType == "AWSS3",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DocumentStorageType = "AWSS3"; });
+                        ctx.CfgAWSS3.Value = true;
                     }),
                 new("MongoDB Atlas",
                     config.DocumentStorageType == "MongoDbAtlas",

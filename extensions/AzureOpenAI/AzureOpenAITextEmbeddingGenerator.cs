@@ -20,25 +20,16 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
     private readonly AzureOpenAITextEmbeddingGenerationService _client;
+    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
-        : this(config, textTokenizer, loggerFactory?.CreateLogger<AzureOpenAITextEmbeddingGenerator>(), httpClient)
     {
-    }
-
-    public AzureOpenAITextEmbeddingGenerator(
-        AzureOpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<AzureOpenAITextEmbeddingGenerator>? log = null,
-        HttpClient? httpClient = null)
-    {
-        this._log = log ?? DefaultLogger<AzureOpenAITextEmbeddingGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureOpenAITextEmbeddingGenerator>();
 
         if (textTokenizer == null)
         {
@@ -52,6 +43,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
 
         this.MaxTokens = config.MaxTokenTotal;
 
+        this.MaxBatchSize = config.MaxEmbeddingBatchSize;
+
         switch (config.Auth)
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
@@ -61,7 +54,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     credential: new DefaultAzureCredential(),
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
@@ -71,7 +65,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     credential: config.GetTokenCredential(),
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -81,7 +76,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
                     apiKey: config.APIKey,
                     modelId: config.Deployment,
                     httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions);
+                    dimensions: config.EmbeddingDimensions,
+                    loggerFactory: loggerFactory);
                 break;
 
             default:
@@ -91,6 +87,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
 
     /// <inheritdoc/>
     public int MaxTokens { get; }
+
+    /// <inheritdoc/>
+    public int MaxBatchSize { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
@@ -107,7 +106,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     /// <inheritdoc/>
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(textList.ToList(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        var list = textList.ToList();
+        this._log.LogDebug("Generating embeddings, batch size: {0}", list.Count);
+        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 }

@@ -60,17 +60,17 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
+    /// <param name="endpoint">The Qdrant Vector Database endpoint</param>
     /// <param name="apiKey">API key for Qdrant cloud</param>
-    /// <param name="httpClient">Optional HTTP client override.</param>
-    /// <param name="log">Application logger.</param>
+    /// <param name="httpClient">Optional HTTP client override</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public QdrantClient(
         string endpoint,
         string? apiKey = null,
         HttpClient? httpClient = null,
-        ILogger<QdrantClient<T>>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<QdrantClient<T>>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<QdrantClient<T>>();
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);

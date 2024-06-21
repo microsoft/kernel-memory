@@ -26,12 +26,12 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
     /// Creates a new instance of the Azure AI Document Intelligence.
     /// </summary>
     /// <param name="config">Azure AI Document Intelligence settings</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public AzureAIDocIntelEngine(
         AzureAIDocIntelConfig config,
-        ILogger<AzureAIDocIntelEngine>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<AzureAIDocIntelEngine>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAIDocIntelEngine>();
 
         switch (config.Auth)
         {

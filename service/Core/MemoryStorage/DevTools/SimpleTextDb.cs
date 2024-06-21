@@ -29,17 +29,17 @@ public class SimpleTextDb : IMemoryDb
 
     public SimpleTextDb(
         SimpleTextDbConfig config,
-        ILogger<SimpleTextDb>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<SimpleTextDb>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SimpleTextDb>();
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._fileSystem = new DiskFileSystem(config.Directory, null, this._log);
+                this._fileSystem = new DiskFileSystem(config.Directory, null, loggerFactory);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, this._log);
+                this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, loggerFactory);
                 break;
 
             default:
