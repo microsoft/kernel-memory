@@ -29,7 +29,7 @@ public sealed class RabbitMQPipeline : IQueue
     /// <summary>
     /// Create a new RabbitMQ queue instance
     /// </summary>
-    public RabbitMQPipeline(RabbitMqConfig config, ILoggerFactory? loggerFactory = null)
+    public RabbitMQPipeline(RabbitMQConfig config, ILoggerFactory? loggerFactory = null)
     {
         this._config = config;
         this._config.Validate();
