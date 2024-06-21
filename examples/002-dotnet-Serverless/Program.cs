@@ -48,6 +48,11 @@ public static class Program
             .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
 
         var builder = new KernelMemoryBuilder()
+            .Configure(builder => builder.Services.AddLogging(l =>
+            {
+                l.SetMinimumLevel(LogLevel.Trace);
+                l.AddSimpleConsole(c => c.SingleLine = true);
+            }))
             .AddSingleton(memoryConfiguration)
             // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
             // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding

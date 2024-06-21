@@ -127,19 +127,23 @@ public sealed class DataPipeline
         /// Check whether this file has already been processed by the given handler
         /// </summary>
         /// <param name="handler">Handler instance</param>
+        /// <param name="subStep">Optional value used by handlers that process the same file multiple times, to distinguish each pass</param>
         /// <returns>True if the handler already processed the file</returns>
-        public bool AlreadyProcessedBy(IPipelineStepHandler handler)
+        public bool AlreadyProcessedBy(IPipelineStepHandler handler, string? subStep = null)
         {
-            return this.ProcessedBy.Contains(handler.StepName, StringComparer.OrdinalIgnoreCase);
+            var key = string.IsNullOrWhiteSpace(subStep) ? handler.StepName : $"{handler.StepName}/{subStep}";
+            return this.ProcessedBy.Contains(key, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Mark the file as already processed by the given handler
         /// </summary>
         /// <param name="handler">Handler instance</param>
-        public void MarkProcessedBy(IPipelineStepHandler handler)
+        /// <param name="subStep">Optional value used by handlers that process the same file multiple times, to distinguish each pass</param>
+        public void MarkProcessedBy(IPipelineStepHandler handler, string? subStep = null)
         {
-            this.ProcessedBy.Add(handler.StepName);
+            var key = string.IsNullOrWhiteSpace(subStep) ? handler.StepName : $"{handler.StepName}/{subStep}";
+            this.ProcessedBy.Add(key);
         }
 
         /// <summary>
