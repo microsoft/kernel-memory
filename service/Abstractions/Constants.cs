@@ -36,6 +36,12 @@ public static class Constants
             public const string OverlappingTokens = "custom_partitioning_overlapping_tokens_int";
         }
 
+        public static class EmbeddingGeneration
+        {
+            // Used to override MaxBatchSize embedding generators config
+            public const string BatchSize = "custom_embedding_generation_batch_size_int";
+        }
+
         public static class Rag
 
         {

@@ -20,8 +20,8 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
     private readonly AzureOpenAITextEmbeddingGenerationService _client;
+    private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
@@ -42,6 +42,8 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         this._textTokenizer = textTokenizer;
 
         this.MaxTokens = config.MaxTokenTotal;
+
+        this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
         switch (config.Auth)
         {
@@ -87,6 +89,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     public int MaxTokens { get; }
 
     /// <inheritdoc/>
+    public int MaxBatchSize { get; }
+
+    /// <inheritdoc/>
     public int CountTokens(string text)
     {
         return this._textTokenizer.CountTokens(text);
@@ -101,7 +106,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     /// <inheritdoc/>
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(textList.ToList(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        var list = textList.ToList();
+        this._log.LogDebug("Generating embeddings, batch size: {0}", list.Count);
+        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }
 }
