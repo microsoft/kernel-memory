@@ -29,8 +29,9 @@ public class AWSS3Config
 
     /// <summary>
     /// AWS S3 endpoint, e.g. https://s3.us-west-2.amazonaws.com
+    /// You can use S3 compatible services and dev tools like S3 Ninja.
     /// </summary>
-    public string Endpoint { get; set; } = string.Empty;
+    public string Endpoint { get; set; } = "https://s3.amazonaws.com";
 
     /// <summary>
     /// S3 bucket name
