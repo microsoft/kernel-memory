@@ -42,7 +42,7 @@ var docId = await memory.ImportDocumentAsync(new Document("doc002")
 
 Example above demonstrates how to insert data with a tag `tenantId` and assign it to a specific tenant with the value `1`. This allows for easy data separation in a multitenant environment.
 
-## Data retrival example
+## Data retrieval example
 
 ```csharp
 using Microsoft.KernelMemory;

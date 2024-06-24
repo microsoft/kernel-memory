@@ -8,7 +8,7 @@ the work to the Kernel Memory Service.
 1. The example points to `https://127.0.0.1:9001` so you should start the
    Kernel Memory Service locally before running this example.
 
-2. You can easily deploy Kernel Memory to Azure by folowing procedure on [this page](../../infra/README.md).
+2. You can easily deploy Kernel Memory to Azure by following procedure on [this page](../../infra/README.md).
 
 Start `dotnet/Service/Service.csproj`. See `dotnet/Service/README.md` for details.
 

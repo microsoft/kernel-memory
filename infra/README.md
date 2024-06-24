@@ -1,9 +1,22 @@
-# Deploying the Kernel Memory infrastructure to Azure
+# Deploying Kernel Memory infrastructure to Azure
 
-You can deploy the Kernel Memory infrastructure to Azure by clicking the button below. This will create required
-resources. We recommend to create a new resource group for each deployment.
+To deploy the Kernel Memory infrastructure to Azure, simply click the button below. This will create all the necessary resources. We recommend creating a new resource group for each deployment.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fkernel-memory%2Fmain%2Finfra%2Fmain.json)
+
+After clicking the button, you will be redirected to the Azure portal. You will need to fill in the following parameters:
+
+![alt text](images/deployment.png "Deployment parameters")
+
+    Important:
+
+    1. We recommend creating a new resource group for each deployment or use an empty one.
+    2. The deployment process may take up to 5 minutes.
+    3. Make sure you pick region that has following models available for you
+        modelName: 'gpt-35-turbo-16k' Version: '0613'
+        modelName: 'text-embedding-ada-002' Version: '2'
+    4. For Capacities we recommend using 30.  But each Azure Subscription has a unique limit.
+    5. Web Service Authorization Key 1 and 2 should be unique values.  We recommend using random GUID generator like     https://guidgenerator.com/ to generate the values.
 
 <details>
 
@@ -39,7 +52,7 @@ You can start using Kernel Memory immediately after deployment. Use `Application
 Kernel Memory web service is deployed with `AuthenticationType` set to `APIKey` and default API keys are random GUIDs. Each request requires the `Authorization` HTTP header, passing one of the two keys.
 
 > [!WARNING]
-> It is highly recommended to change the default API keys after deployment. You can do this by updating the
+> If you want to change the API keys after deployment. You can do this by updating the
 > `KernelMemory__ServiceAuthorization__AccessKey1` and `KernelMemory__ServiceAuthorization__AccessKey2` > **environment variables** in the Container App.
 >
 > Refer [to this screenshot](./images/ACA-EnvVar.png) or to the documentation
@@ -55,8 +68,7 @@ Here is an example of how to create a `MemoryWebClient` instance and start using
 
 ```csharp
 var memory = new MemoryWebClient(
-    "https://km-service-example.example.azurecontainerapps.io",
-    apiKey: "...your WebServiceAuthorizationKey1...");
+    "https://km-service-example.example.azurecontainerapps.io", apiKey: "...your WebServiceAuthorizationKey1...");
 ```
 
 We recommend reviewing the [examples](../examples/) included in the repository, e.g. starting from
