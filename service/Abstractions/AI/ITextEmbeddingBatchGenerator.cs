@@ -13,6 +13,13 @@ namespace Microsoft.KernelMemory.AI;
 public interface ITextEmbeddingBatchGenerator
 {
     /// <summary>
+    /// The maximum number of elements that can be processed in a single batch.
+    /// Some services and old models can process only one string at a time, others can process many more.
+    /// The value depends on the service and the model used, and is configurable on each class.
+    /// </summary>
+    int MaxBatchSize { get; }
+
+    /// <summary>
     /// Generates embeddings for a list of text chunks.
     /// </summary>
     /// <param name="textList">The list of text chunks to process.</param>

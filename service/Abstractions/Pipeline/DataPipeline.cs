@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.KernelMemory.Context;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -126,19 +127,23 @@ public sealed class DataPipeline
         /// Check whether this file has already been processed by the given handler
         /// </summary>
         /// <param name="handler">Handler instance</param>
+        /// <param name="subStep">Optional value used by handlers that process the same file multiple times, to distinguish each pass</param>
         /// <returns>True if the handler already processed the file</returns>
-        public bool AlreadyProcessedBy(IPipelineStepHandler handler)
+        public bool AlreadyProcessedBy(IPipelineStepHandler handler, string? subStep = null)
         {
-            return this.ProcessedBy.Contains(handler.StepName, StringComparer.OrdinalIgnoreCase);
+            var key = string.IsNullOrWhiteSpace(subStep) ? handler.StepName : $"{handler.StepName}/{subStep}";
+            return this.ProcessedBy.Contains(key, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Mark the file as already processed by the given handler
         /// </summary>
         /// <param name="handler">Handler instance</param>
-        public void MarkProcessedBy(IPipelineStepHandler handler)
+        /// <param name="subStep">Optional value used by handlers that process the same file multiple times, to distinguish each pass</param>
+        public void MarkProcessedBy(IPipelineStepHandler handler, string? subStep = null)
         {
-            this.ProcessedBy.Add(handler.StepName);
+            var key = string.IsNullOrWhiteSpace(subStep) ? handler.StepName : $"{handler.StepName}/{subStep}";
+            this.ProcessedBy.Add(key);
         }
 
         /// <summary>
@@ -270,11 +275,10 @@ public sealed class DataPipeline
 
     /// <summary>
     /// Unstructured dictionary available to support custom tasks and business logic.
-    /// The orchestrator doesn't use this property, and it's up to custom handlers to manage it.
     /// </summary>
     [JsonPropertyOrder(20)]
-    [JsonPropertyName("custom_data")]
-    public Dictionary<string, object> CustomData { get; set; } = new();
+    [JsonPropertyName("args")]
+    public IDictionary<string, object?> ContextArguments { get; set; } = new Dictionary<string, object?>();
 
     /// <summary>
     /// When uploading over an existing upload, we temporarily capture
@@ -445,5 +449,13 @@ public sealed class DataPipeline
             RemainingSteps = this.RemainingSteps,
             CompletedSteps = this.CompletedSteps,
         };
+    }
+}
+
+public static partial class DataPipelineExtensions
+{
+    public static IContext GetContext(this DataPipeline pipeline)
+    {
+        return new RequestContext(pipeline.ContextArguments);
     }
 }

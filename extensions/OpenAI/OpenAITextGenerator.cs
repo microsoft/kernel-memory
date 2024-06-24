@@ -56,7 +56,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._log = loggerFactory?.CreateLogger<OpenAITextGenerator>() ?? DefaultLogger<OpenAITextGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
 
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
         this.SetCompletionType(config);
@@ -77,7 +77,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
     {
-        this._log = loggerFactory?.CreateLogger<OpenAITextGenerator>() ?? DefaultLogger<OpenAITextGenerator>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
 
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
         this.SetCompletionType(config);
@@ -126,7 +126,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
                 DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.TopP,
+                NucleusSamplingFactor = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
                 ChoicesPerPrompt = 1,
@@ -158,7 +158,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
                 DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.TopP,
+                NucleusSamplingFactor = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
                 // ChoiceCount = 1,

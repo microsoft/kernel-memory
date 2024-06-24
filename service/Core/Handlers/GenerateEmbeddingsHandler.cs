@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.Handlers;
@@ -17,9 +15,8 @@ namespace Microsoft.KernelMemory.Handlers;
 /// <summary>
 /// Memory ingestion pipeline handler responsible for generating text embedding and saving them to the document storage.
 /// </summary>
-public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
+public sealed class GenerateEmbeddingsHandler : GenerateEmbeddingsHandlerBase, IPipelineStepHandler
 {
-    private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<GenerateEmbeddingsHandler> _log;
     private readonly List<ITextEmbeddingGenerator> _embeddingGenerators;
     private readonly bool _embeddingGenerationEnabled;
@@ -33,17 +30,16 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
     /// </summary>
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public GenerateEmbeddingsHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
-        ILogger<GenerateEmbeddingsHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
+        : base(orchestrator, (loggerFactory ?? DefaultLogger.Factory).CreateLogger<GenerateEmbeddingsHandler>())
     {
         this.StepName = stepName;
-        this._log = log ?? DefaultLogger<GenerateEmbeddingsHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<GenerateEmbeddingsHandler>();
         this._embeddingGenerationEnabled = orchestrator.EmbeddingGenerationEnabled;
-
-        this._orchestrator = orchestrator;
         this._embeddingGenerators = orchestrator.GetEmbeddingGenerators();
 
         if (this._embeddingGenerationEnabled)
@@ -71,127 +67,75 @@ public sealed class GenerateEmbeddingsHandler : IPipelineStepHandler
             return (true, pipeline);
         }
 
-        this._log.LogDebug("Generating embeddings, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
-
-        var partitionsFound = false;
-        foreach (var uploadedFile in pipeline.Files)
+        foreach (ITextEmbeddingGenerator generator in this._embeddingGenerators)
         {
-            // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
-            Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
+            var subStepName = GetSubStepName(generator);
+            var partitions = await this.GetListOfPartitionsToProcessAsync(pipeline, subStepName, cancellationToken).ConfigureAwait(false);
 
-            foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
+            int batchSize = pipeline.GetContext().GetCustomEmbeddingGenerationBatchSizeOrDefault((generator as ITextEmbeddingBatchGenerator)?.MaxBatchSize ?? 1);
+            if (batchSize > 1 && generator is ITextEmbeddingBatchGenerator batchGenerator)
             {
-                var partitionFile = generatedFile.Value;
-                if (partitionFile.AlreadyProcessedBy(this))
-                {
-                    partitionsFound = true;
-                    this._log.LogTrace("File {0} already processed by this handler", partitionFile.Name);
-                    continue;
-                }
-
-                // Calc embeddings only for partitions (text chunks) and synthetic data
-                if (partitionFile.ArtifactType != DataPipeline.ArtifactTypes.TextPartition
-                    && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
-                {
-                    this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
-                    continue;
-                }
-
-                partitionsFound = true;
-
-                // TODO: cost/perf: if the partition SHA256 is the same and the embedding exists, avoid generating it again
-                switch (partitionFile.MimeType)
-                {
-                    case MimeTypes.PlainText:
-                    case MimeTypes.MarkDown:
-                        this._log.LogTrace("Processing file {0}", partitionFile.Name);
-                        foreach (ITextEmbeddingGenerator generator in this._embeddingGenerators)
-                        {
-                            EmbeddingFileContent embeddingData = new()
-                            {
-                                SourceFileName = partitionFile.Name
-                            };
-
-                            var generatorProviderClassName = generator.GetType().FullName ?? generator.GetType().Name;
-                            embeddingData.GeneratorProvider = string.Join('.', generatorProviderClassName.Split('.').TakeLast(3));
-
-                            // TODO: get model name from embedding generator
-                            embeddingData.GeneratorName = "TODO";
-
-                            this._log.LogTrace("Generating embeddings using {0}, file: {1}", embeddingData.GeneratorProvider, partitionFile.Name);
-
-                            // Check if embeddings have already been generated
-                            string embeddingFileName = GetEmbeddingFileName(partitionFile.Name, embeddingData.GeneratorProvider, embeddingData.GeneratorName);
-
-                            // TODO: check if the file exists in storage
-                            if (uploadedFile.GeneratedFiles.ContainsKey(embeddingFileName))
-                            {
-                                this._log.LogDebug("Embeddings for {0} have already been generated", partitionFile.Name);
-                                continue;
-                            }
-
-                            // TODO: handle Azure.RequestFailedException - BlobNotFound
-                            string partitionContent = await this._orchestrator.ReadTextFileAsync(pipeline, partitionFile.Name, cancellationToken).ConfigureAwait(false);
-
-                            var inputTokenCount = generator.CountTokens(partitionContent);
-                            if (inputTokenCount > generator.MaxTokens)
-                            {
-                                this._log.LogWarning("The content size ({0} tokens) exceeds the embedding generator capacity ({1} max tokens)", inputTokenCount, generator.MaxTokens);
-                            }
-
-                            Embedding embedding = await generator.GenerateEmbeddingAsync(partitionContent, cancellationToken).ConfigureAwait(false);
-                            embeddingData.Vector = embedding;
-                            embeddingData.VectorSize = embeddingData.Vector.Length;
-                            embeddingData.TimeStamp = DateTimeOffset.UtcNow;
-
-                            this._log.LogDebug("Saving embedding file {0}", embeddingFileName);
-                            string text = JsonSerializer.Serialize(embeddingData);
-                            await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, cancellationToken).ConfigureAwait(false);
-
-                            var embeddingFileNameDetails = new DataPipeline.GeneratedFileDetails
-                            {
-                                Id = Guid.NewGuid().ToString("N"),
-                                ParentId = uploadedFile.Id,
-                                SourcePartitionId = partitionFile.Id,
-                                Name = embeddingFileName,
-                                Size = text.Length,
-                                MimeType = MimeTypes.TextEmbeddingVector,
-                                ArtifactType = DataPipeline.ArtifactTypes.TextEmbeddingVector,
-                                PartitionNumber = partitionFile.PartitionNumber,
-                                SectionNumber = partitionFile.SectionNumber,
-                                Tags = partitionFile.Tags,
-                            };
-                            embeddingFileNameDetails.MarkProcessedBy(this);
-                            newFiles.Add(embeddingFileName, embeddingFileNameDetails);
-                        }
-
-                        break;
-
-                    default:
-                        this._log.LogWarning("File {0} cannot be used to generate embedding, type not supported", partitionFile.Name);
-                        continue;
-                }
-
-                partitionFile.MarkProcessedBy(this);
+                await this.GenerateEmbeddingsWithBatchingAsync(pipeline, batchGenerator, batchSize, partitions, cancellationToken).ConfigureAwait(false);
             }
-
-            // Add new files to pipeline status
-            foreach (var file in newFiles)
+            else
             {
-                uploadedFile.GeneratedFiles.Add(file.Key, file.Value);
+                await this.GenerateEmbeddingsOneAtATimeAsync(pipeline, generator, partitions, cancellationToken).ConfigureAwait(false);
             }
-        }
-
-        if (!partitionsFound)
-        {
-            this._log.LogWarning("Pipeline '{0}/{1}': text partitions not found, cannot generate embeddings, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
         }
 
         return (true, pipeline);
     }
 
-    private static string GetEmbeddingFileName(string srcFilename, string type, string embeddingName)
+    protected override IPipelineStepHandler ActualInstance => this;
+
+    // Generate and save embeddings, one batch at a time
+    private async Task GenerateEmbeddingsWithBatchingAsync(
+        DataPipeline pipeline,
+        ITextEmbeddingBatchGenerator generator,
+        int batchSize,
+        List<PartitionInfo> partitions,
+        CancellationToken cancellationToken)
     {
-        return $"{srcFilename}.{type}.{embeddingName}{FileExtensions.TextEmbeddingVector}";
+        PartitionInfo[][] batches = partitions.Chunk(batchSize).ToArray();
+
+        this._log.LogTrace("Generating embeddings, pipeline '{0}/{1}', batch generator '{2}', batch size {3}, batch count {4}",
+            pipeline.Index, pipeline.DocumentId, generator.GetType().FullName, generator.MaxBatchSize, batches.Length);
+
+        // One batch at a time
+        foreach (PartitionInfo[] partitionsInfo in batches)
+        {
+            string[] strings = partitionsInfo.Select(x => x.PartitionContent).ToArray();
+
+            int totalTokens = strings.Sum(s => ((ITextEmbeddingGenerator)generator).CountTokens(s));
+            this._log.LogTrace("Generating embeddings, pipeline '{0}/{1}', generator '{2}', batch size {3}, total {4} tokens",
+                pipeline.Index, pipeline.DocumentId, generator.GetType().FullName, strings.Length, totalTokens);
+
+            Embedding[] embeddings = await generator.GenerateEmbeddingBatchAsync(strings, cancellationToken).ConfigureAwait(false);
+            await this.SaveEmbeddingsToDocumentStorageAsync(
+                    pipeline, partitionsInfo, embeddings, GetEmbeddingProviderName(generator), GetEmbeddingGeneratorName(generator), cancellationToken)
+                .ConfigureAwait(false);
+        }
+    }
+
+    // Generate and save embeddings, one chunk at a time
+    private async Task GenerateEmbeddingsOneAtATimeAsync(
+        DataPipeline pipeline,
+        ITextEmbeddingGenerator generator,
+        List<PartitionInfo> partitions,
+        CancellationToken cancellationToken)
+    {
+        this._log.LogTrace("Generating embeddings, pipeline '{0}/{1}', generator '{2}', partition count {3}",
+            pipeline.Index, pipeline.DocumentId, generator.GetType().FullName, partitions.Count);
+
+        // One partition at a time
+        foreach (PartitionInfo partitionInfo in partitions)
+        {
+            this._log.LogTrace("Generating embedding, pipeline '{0}/{1}', generator '{2}', content size {3} tokens",
+                pipeline.Index, pipeline.DocumentId, generator.GetType().FullName, generator.CountTokens(partitionInfo.PartitionContent));
+            var embedding = await generator.GenerateEmbeddingAsync(partitionInfo.PartitionContent, cancellationToken).ConfigureAwait(false);
+            await this.SaveEmbeddingToDocumentStorageAsync(
+                    pipeline, partitionInfo, embedding, GetEmbeddingProviderName(generator), GetEmbeddingGeneratorName(generator), cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 }

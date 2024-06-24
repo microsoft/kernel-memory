@@ -46,9 +46,9 @@ public class CustomPdfDecoder : IContentDecoder
 {
     private readonly ILogger<CustomPdfDecoder> _log;
 
-    public CustomPdfDecoder(ILogger<CustomPdfDecoder>? log = null)
+    public CustomPdfDecoder(ILoggerFactory? loggerFactory = null)
     {
-        this._log = log ?? DefaultLogger<CustomPdfDecoder>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<CustomPdfDecoder>();
     }
 
     /// <inheritdoc />

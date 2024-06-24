@@ -25,12 +25,12 @@ public sealed class WebScraper : IWebScraper, IDisposable
 
     public WebScraper(
         HttpClient? httpClient = null,
-        ILogger<WebScraper>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient ?? new HttpClient();
         this._httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Telemetry.HttpUserAgent);
 
-        this._log = log ?? DefaultLogger<WebScraper>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<WebScraper>();
     }
 
     /// <inheritdoc />

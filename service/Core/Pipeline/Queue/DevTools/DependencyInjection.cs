@@ -37,7 +37,7 @@ public static partial class DependencyInjection
     {
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
-            return new SimpleQueues(config, log: serviceProvider.GetService<ILogger<SimpleQueues>>());
+            return new SimpleQueues(config, loggerFactory: serviceProvider.GetService<ILoggerFactory>());
         }
 
         // The orchestrator uses multiple queue clients, each linked to a specific queue,

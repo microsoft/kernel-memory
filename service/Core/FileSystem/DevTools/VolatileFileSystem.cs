@@ -36,10 +36,10 @@ internal sealed class VolatileFileSystem : IFileSystem
     /// <summary>
     /// Ctor accessible to unit tests only.
     /// </summary>
-    internal VolatileFileSystem(IMimeTypeDetection? mimeTypeDetection = null, ILogger? log = null)
+    internal VolatileFileSystem(IMimeTypeDetection? mimeTypeDetection = null, ILoggerFactory? loggerFactory = null)
     {
         this._mimeTypeDetection = mimeTypeDetection ?? new MimeTypesDetection();
-        this._log = log ?? DefaultLogger<VolatileFileSystem>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<VolatileFileSystem>();
     }
 
     /// <summary>
@@ -47,13 +47,15 @@ internal sealed class VolatileFileSystem : IFileSystem
     /// (directories and files) across clients. E.g. the simple queue requires a shared
     /// instance to work properly.
     /// </summary>
-    public static VolatileFileSystem GetInstance(string directory, IMimeTypeDetection? mimeTypeDetection = null, ILogger? log = null)
+    public static VolatileFileSystem GetInstance(string directory, IMimeTypeDetection? mimeTypeDetection = null, ILoggerFactory? loggerFactory = null)
     {
         directory = directory.Trim('/').Trim('\\').ToLowerInvariant();
         if (!s_singletons.ContainsKey(directory))
         {
             // s_singletons[directory] = new VolatileFileSystem(log);
-            s_singletons.AddOrUpdate(directory, _ => new VolatileFileSystem(mimeTypeDetection, log), (_, _) => new VolatileFileSystem(mimeTypeDetection, log));
+            s_singletons.AddOrUpdate(directory,
+                _ => new VolatileFileSystem(mimeTypeDetection, loggerFactory),
+                (_, _) => new VolatileFileSystem(mimeTypeDetection, loggerFactory));
         }
 
         return s_singletons[directory];

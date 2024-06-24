@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
@@ -32,12 +33,12 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
     /// <param name="stepName">Pipeline step for which the handler will be invoked</param>
     /// <param name="orchestrator">Current orchestrator used by the pipeline, giving access to content and other helps.</param>
     /// <param name="options">The customize text partitioning option</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public TextPartitioningHandler(
         string stepName,
         IPipelineOrchestrator orchestrator,
         TextPartitioningOptions? options = null,
-        ILogger<TextPartitioningHandler>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
@@ -45,7 +46,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         this._options = options ?? new TextPartitioningOptions();
         this._options.Validate();
 
-        this._log = log ?? DefaultLogger<TextPartitioningHandler>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextPartitioningHandler>();
         this._log.LogInformation("Handler '{0}' ready", stepName);
 
         this._tokenCounter = DefaultGPTTokenizer.StaticCountTokens;
@@ -60,13 +61,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
 
             if (this._options.MaxTokensPerParagraph > this._maxTokensPerPartition)
             {
-#pragma warning disable CA2254 // the msg is always used
-                var errMsg = $"The configured partition size ({this._options.MaxTokensPerParagraph} tokens) is too big for one " +
-                             $"of the embedding generators in use. The max value allowed is {this._maxTokensPerPartition} tokens. " +
-                             $"Consider changing the partitioning options, see {InternalConstants.DocsBaseUrl}/how-to/custom-partitioning for details.";
-                this._log.LogError(errMsg);
-                throw new ConfigurationException(errMsg);
-#pragma warning restore CA2254
+                throw ParagraphsTooBigForEmbeddingsException(this._options.MaxTokensPerParagraph, this._maxTokensPerPartition, this._log);
             }
         }
     }
@@ -82,6 +77,18 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
             this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
             return (true, pipeline);
         }
+
+        var context = pipeline.GetContext();
+
+        // Allow to override the paragraph size using context arguments
+        var maxTokensPerParagraph = context.GetCustomPartitioningMaxTokensPerParagraphOrDefault(this._options.MaxTokensPerParagraph);
+        if (maxTokensPerParagraph > this._maxTokensPerPartition)
+        {
+            throw ParagraphsTooBigForEmbeddingsException(maxTokensPerParagraph, this._maxTokensPerPartition, this._log);
+        }
+
+        // Allow to override the number of overlapping tokens using context arguments
+        var overlappingTokens = Math.Max(0, context.GetCustomPartitioningOverlappingTokensOrDefault(this._options.OverlappingTokens));
 
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
@@ -121,7 +128,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         string content = partitionContent.ToString();
                         sentences = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitPlainTextParagraphs(
-                            sentences, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
+                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -132,7 +139,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         partitionsMimeType = MimeTypes.MarkDown;
                         sentences = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitMarkdownParagraphs(
-                            sentences, maxTokensPerParagraph: this._options.MaxTokensPerParagraph, overlapTokens: this._options.OverlappingTokens, tokenCounter: this._tokenCounter);
+                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter);
                         break;
                     }
 
@@ -190,4 +197,15 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
 
         return (true, pipeline);
     }
+
+#pragma warning disable CA2254 // the msg is always used
+    private static ConfigurationException ParagraphsTooBigForEmbeddingsException(int value, int limit, ILogger logger)
+    {
+        var errMsg = $"The configured partition size ({value} tokens) is too big for one " +
+                     $"of the embedding generators in use. The max value allowed is {limit} tokens. " +
+                     $"Consider changing the partitioning options, see {InternalConstants.DocsBaseUrl}/how-to/custom-partitioning for details.";
+        logger.LogError(errMsg);
+        return new ConfigurationException(errMsg);
+    }
+#pragma warning restore CA2254
 }

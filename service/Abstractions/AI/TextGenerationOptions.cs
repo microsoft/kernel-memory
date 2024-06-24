@@ -17,10 +17,11 @@ public class TextGenerationOptions
     public double Temperature { get; set; } = 0;
 
     /// <summary>
-    /// TopP controls the diversity of the completion.
-    /// The higher the TopP, the more diverse the completion.
+    /// TopP, also known as nucleus sampling, controls the diversity of the completion.
+    /// The lower the value, the less diverse and more focused the completion.
+    /// A higher value allows for more diverse completions by considering a larger set of possible tokens.
     /// </summary>
-    public double TopP { get; set; } = 0;
+    public double NucleusSampling { get; set; } = 0;
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens

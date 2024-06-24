@@ -40,14 +40,14 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     /// </summary>
     /// <param name="config">Azure AI Search configuration</param>
     /// <param name="embeddingGenerator">Text embedding generator</param>
-    /// <param name="log">Application logger</param>
+    /// <param name="loggerFactory">Application logger factory</param>
     public AzureAISearchMemory(
         AzureAISearchConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
-        ILogger<AzureAISearchMemory>? log = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._embeddingGenerator = embeddingGenerator;
-        this._log = log ?? DefaultLogger<AzureAISearchMemory>.Instance;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAISearchMemory>();
         this._useHybridSearch = config.UseHybridSearch;
 
         if (string.IsNullOrEmpty(config.Endpoint))
