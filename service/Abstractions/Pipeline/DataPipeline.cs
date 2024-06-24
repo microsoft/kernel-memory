@@ -255,6 +255,13 @@ public sealed class DataPipeline
     public List<string> CompletedSteps { get; set; } = new();
 
     /// <summary>
+    /// Tells if the pipeline failed.
+    /// </summary>
+    [JsonPropertyOrder(6)]
+    [JsonPropertyName("failed")]
+    public bool Failed { get; set; } = false;
+
+    /// <summary>
     /// Document tags
     /// </summary>
     [JsonPropertyOrder(7)]
@@ -272,6 +279,13 @@ public sealed class DataPipeline
     [JsonPropertyOrder(10)]
     [JsonPropertyName("files")]
     public List<FileDetails> Files { get; set; } = new();
+
+    /// <summary>
+    /// The Erorr logs that caused the pipeline to fail, if any.
+    /// </summary>
+    [JsonPropertyOrder(19)]
+    [JsonPropertyName("logs")]
+    public string? Logs { get; set; } = null;
 
     /// <summary>
     /// Unstructured dictionary available to support custom tasks and business logic.
@@ -438,7 +452,7 @@ public sealed class DataPipeline
         return new DataPipelineStatus
         {
             Completed = this.Complete,
-            Failed = false, // TODO
+            Failed = this.Failed,
             Empty = this.Files.Count == 0,
             Index = this.Index,
             DocumentId = this.DocumentId,
@@ -448,6 +462,9 @@ public sealed class DataPipeline
             Steps = this.Steps,
             RemainingSteps = this.RemainingSteps,
             CompletedSteps = this.CompletedSteps,
+            // If the pipeline failed, the first remaining step is the one that failed.
+            FailedStep = this.Failed ? this.RemainingSteps.FirstOrDefault() : null,
+            Logs = this.Logs,
         };
     }
 }
