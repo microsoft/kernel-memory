@@ -430,10 +430,10 @@ internal sealed class PostgresDbClient : IDisposable
             {
 #pragma warning disable CA2100 // SQL reviewed
                 cmd.CommandText = @$"
-                SELECT {columns}, 1 - ({this._colEmbedding} <=> @embedding) AS {similarityActualValue}
+                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {similarityActualValue}
                 FROM {tableName}
                 WHERE {filterSql}
-                ORDER BY {similarityActualValue} DESC
+                ORDER BY {similarityActualValue} ASC
                 LIMIT @limit
                 OFFSET @offset
             ";
