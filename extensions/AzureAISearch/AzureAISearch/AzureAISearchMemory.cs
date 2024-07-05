@@ -191,7 +191,8 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 Queries = { vectorQuery },
                 // Default, applies the vector query AFTER the search filter
                 FilterMode = VectorFilterMode.PreFilter
-            }
+            },
+            Size = limit
         };
 
         // Remove empty filters
@@ -200,9 +201,8 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         if (filters is { Count: > 0 })
         {
             options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            options.Size = limit;
-
-            this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
+            
+            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
@@ -252,13 +252,16 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        SearchOptions options = new();
+        var options = new SearchOptions
+        {
+            Size = limit
+        };
+
         if (filters is { Count: > 0 })
         {
             options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            options.Size = limit;
 
-            this._log.LogDebug("Filtering vectors, limit {0}, condition: {1}", options.Size, options.Filter);
+            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
         // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
