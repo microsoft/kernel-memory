@@ -201,7 +201,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         if (filters is { Count: > 0 })
         {
             options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            
+
             this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
@@ -252,7 +252,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        var options = new SearchOptions
+        SearchOptions options = new()
         {
             Size = limit
         };
