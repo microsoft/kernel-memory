@@ -404,8 +404,8 @@ internal sealed class PostgresDbClient : IDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string similarityActualValue = "__similarity";
-        string similarityPlaceholder = "@__min_similarity";
+        string colDifference = "difference";
+        string colMaxDifference = "@__max_difference";
 
         // Filtering logic, including filter by similarity
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
@@ -413,13 +413,15 @@ internal sealed class PostgresDbClient : IDisposable
         {
             filterSql = "TRUE";
         }
+        var maxDifference = 1 - minSimilarity;
+        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDifference}";
 
         if (sqlUserValues == null) { sqlUserValues = new(); }
 
-        sqlUserValues[similarityPlaceholder] = minSimilarity;
+        sqlUserValues[colMaxDifference] = minSimilarity;
 
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
-            tableName, minSimilarity, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");
+            tableName, minSimilarity, limit, offset, filterSql);
 
         NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
@@ -429,11 +431,16 @@ internal sealed class PostgresDbClient : IDisposable
             await using (cmd.ConfigureAwait(false))
             {
 #pragma warning disable CA2100 // SQL reviewed
+
+                // When using 1 - (embedding <=> target) the index is not being used, therefore we calculate
+                // the similarity (1 - difference) later
+                // Furthermore, colDifference can't be used in the WHERE clause
+                // as that causes a "table cannot be found error"
                 cmd.CommandText = @$"
-                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {similarityActualValue}
+                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDifference}
                 FROM {tableName}
                 WHERE {filterSql}
-                ORDER BY {similarityActualValue} ASC
+                ORDER BY {colDifference} ASC
                 LIMIT @limit
                 OFFSET @offset
             ";
@@ -447,7 +454,7 @@ internal sealed class PostgresDbClient : IDisposable
                     cmd.Parameters.AddWithValue(kv.Key, kv.Value);
                 }
 #pragma warning restore CA2100
-
+                this._log.LogTrace("SQL: {0}", cmd.CommandText);
                 // TODO: rewrite code to stream results (need to combine yield and try-catch)
                 var result = new List<(PostgresMemoryRecord record, double similarity)>();
                 try
@@ -455,16 +462,10 @@ internal sealed class PostgresDbClient : IDisposable
                     NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                     await using (dataReader.ConfigureAwait(false))
                     {
-                        var run = true;
-                        while (run && await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                         {
-                            double similarity = dataReader.GetDouble(dataReader.GetOrdinal(similarityActualValue));
-                            if (similarity < minSimilarity)
-                            {
-                                run = false;
-                                continue;
-                            }
-
+                            double difference = dataReader.GetDouble(dataReader.GetOrdinal(colDifference));
+                            double similarity = 1 - difference;
                             result.Add((this.ReadEntry(dataReader, withEmbeddings), similarity));
                         }
                     }
