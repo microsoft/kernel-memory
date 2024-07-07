@@ -404,8 +404,8 @@ internal sealed class PostgresDbClient : IDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string colDifference = "difference";
-        string colMaxDifference = "@__max_difference";
+        string colDistance = "distance";
+        string colMaxDistance = "@__max_distance";
 
         // Filtering logic, including filter by similarity
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
@@ -413,12 +413,12 @@ internal sealed class PostgresDbClient : IDisposable
         {
             filterSql = "TRUE";
         }
-        var maxDifference = 1 - minSimilarity;
-        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDifference}";
+        var maxDistance = 1 - minSimilarity;
+        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDistance}";
 
         if (sqlUserValues == null) { sqlUserValues = new(); }
 
-        sqlUserValues[colMaxDifference] = minSimilarity;
+        sqlUserValues[colMaxDistance] = minSimilarity;
 
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
             tableName, minSimilarity, limit, offset, filterSql);
@@ -437,10 +437,10 @@ internal sealed class PostgresDbClient : IDisposable
                 // Furthermore, colDifference can't be used in the WHERE clause
                 // as that causes a "table cannot be found error"
                 cmd.CommandText = @$"
-                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDifference}
+                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDistance}
                 FROM {tableName}
                 WHERE {filterSql}
-                ORDER BY {colDifference} ASC
+                ORDER BY {colDistance} ASC
                 LIMIT @limit
                 OFFSET @offset
             ";
@@ -464,8 +464,8 @@ internal sealed class PostgresDbClient : IDisposable
                     {
                         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                         {
-                            double difference = dataReader.GetDouble(dataReader.GetOrdinal(colDifference));
-                            double similarity = 1 - difference;
+                            double distance = dataReader.GetDouble(dataReader.GetOrdinal(colDistance));
+                            double similarity = 1 - distance;
                             result.Add((this.ReadEntry(dataReader, withEmbeddings), similarity));
                         }
                     }
