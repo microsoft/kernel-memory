@@ -99,7 +99,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     /// <inheritdoc/>
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        this._log.LogDebug("Generating embeddings");
+        this._log.LogTrace("Generating embedding");
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
