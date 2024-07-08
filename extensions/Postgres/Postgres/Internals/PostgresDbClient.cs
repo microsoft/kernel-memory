@@ -404,7 +404,7 @@ internal sealed class PostgresDbClient : IDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string colDistance = "distance";
+        string colDistance = "__distance";
         string colMaxDistance = "@__max_distance";
 
         // Filtering logic, including filter by similarity
@@ -421,7 +421,7 @@ internal sealed class PostgresDbClient : IDisposable
         sqlUserValues[colMaxDistance] = minSimilarity;
 
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
-            tableName, minSimilarity, limit, offset, filterSql);
+            tableName, minSimilarity, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");
 
         NpgsqlConnection connection = await this.ConnectAsync(cancellationToken).ConfigureAwait(false);
 
@@ -433,8 +433,8 @@ internal sealed class PostgresDbClient : IDisposable
 #pragma warning disable CA2100 // SQL reviewed
 
                 // When using 1 - (embedding <=> target) the index is not being used, therefore we calculate
-                // the similarity (1 - difference) later
-                // Furthermore, colDifference can't be used in the WHERE clause
+                // the similarity (1 - distance) later
+                // Furthermore, colDistance can't be used in the WHERE clause
                 // as that causes a "table cannot be found error"
                 cmd.CommandText = @$"
                 SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDistance}
@@ -454,7 +454,6 @@ internal sealed class PostgresDbClient : IDisposable
                     cmd.Parameters.AddWithValue(kv.Key, kv.Value);
                 }
 #pragma warning restore CA2100
-                this._log.LogTrace("SQL: {0}", cmd.CommandText);
                 // TODO: rewrite code to stream results (need to combine yield and try-catch)
                 var result = new List<(PostgresMemoryRecord record, double similarity)>();
                 try
