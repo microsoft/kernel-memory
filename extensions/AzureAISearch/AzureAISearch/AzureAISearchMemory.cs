@@ -169,14 +169,11 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (limit <= 0) { limit = int.MaxValue; }
-
         var client = this.GetSearchClient(index);
 
         Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
         VectorizedQuery vectorQuery = new(textEmbedding.Data)
         {
-            KNearestNeighborsCount = limit,
             Fields = { AzureAISearchMemoryRecord.VectorField },
             // Exhaustive search is a brute force comparison across all vectors,
             // ignoring the index, which can be much slower once the index contains a lot of data.
@@ -191,9 +188,15 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 Queries = { vectorQuery },
                 // Default, applies the vector query AFTER the search filter
                 FilterMode = VectorFilterMode.PreFilter
-            },
-            Size = limit
+            }
         };
+
+        if (limit > 0)
+        {
+            vectorQuery.KNearestNeighborsCount = limit;
+            options.Size = limit;
+            this._log.LogDebug("KNearestNeighborsCount and max results: {0}", limit);
+        }
 
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
@@ -201,7 +204,6 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         if (filters is { Count: > 0 })
         {
             options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-
             this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
@@ -227,13 +229,16 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         {
             if (doc == null || doc.Score < minDistance) { continue; }
 
-            // In cases where Azure Search is returning too many records
-            if (++count > limit) { break; }
-
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
             var documentScore = this._useHybridSearch ? doc.Score ?? 0 : ScoreToCosineSimilarity(doc.Score ?? 0);
             yield return (memoryRecord, documentScore);
+
+            // Stop after returning the amount requested, even if storage is returning more records
+            if (limit > 0 && ++count >= limit)
+            {
+                break;
+            }
         }
     }
 
@@ -245,22 +250,22 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (limit <= 0) { limit = int.MaxValue; }
-
         var client = this.GetSearchClient(index);
+
+        SearchOptions options = new();
+
+        if (limit > 0)
+        {
+            options.Size = limit;
+            this._log.LogDebug("Max results: {0}", limit);
+        }
 
         // Remove empty filters
         filters = filters?.Where(f => !f.IsEmpty()).ToList();
 
-        SearchOptions options = new()
-        {
-            Size = limit
-        };
-
         if (filters is { Count: > 0 })
         {
             options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-
             this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
@@ -289,12 +294,16 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         if (searchResult == null) { yield break; }
 
+        var count = 0;
         await foreach (SearchResult<AzureAISearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync().ConfigureAwait(false))
         {
-            // stop after returning the amount requested
-            if (limit-- <= 0) { yield break; }
-
             yield return doc.Document.ToMemoryRecord(withEmbeddings);
+
+            // Stop after returning the amount requested, even if storage is returning more records
+            if (limit > 0 && ++count >= limit)
+            {
+                break;
+            }
         }
     }
 
