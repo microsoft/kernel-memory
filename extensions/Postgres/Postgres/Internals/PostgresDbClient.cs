@@ -413,6 +413,7 @@ internal sealed class PostgresDbClient : IDisposable
         {
             filterSql = "TRUE";
         }
+
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDistance}";
 
