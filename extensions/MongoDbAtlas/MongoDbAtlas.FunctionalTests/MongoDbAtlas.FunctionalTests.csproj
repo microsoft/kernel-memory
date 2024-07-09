@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <AssemblyName>Microsoft.MongoDbAtlas.FunctionalTests</AssemblyName>
@@ -10,6 +10,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);KMEXP03;</NoWarn>
+        <UserSecretsId>5c3c9f0a-6e03-4606-a578-d527359baf3c</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

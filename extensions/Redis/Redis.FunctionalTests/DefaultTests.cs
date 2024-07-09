@@ -13,14 +13,30 @@ public class DefaultTests : BaseFunctionalTestCase
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
-        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+        if (cfg.GetValue<bool>("UseAzureOpenAI"))
+        {
+            Assert.False(string.IsNullOrEmpty(this.AzureOpenAITextConfiguration.APIKey));
 
-        this._memory = new KernelMemoryBuilder()
-            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
-            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-            .WithOpenAI(this.OpenAiConfig)
-            .WithRedisMemoryDb(this.RedisConfig)
-            .Build<MemoryServerless>();
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
+                .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
+                .WithRedisMemoryDb(this.RedisConfig)
+                .Build<MemoryServerless>();
+        }
+        else
+        {
+            //use standard openai
+            Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithOpenAI(this.OpenAiConfig)
+                .WithRedisMemoryDb(this.RedisConfig)
+                .Build<MemoryServerless>();
+        }
     }
 
     [Fact]
