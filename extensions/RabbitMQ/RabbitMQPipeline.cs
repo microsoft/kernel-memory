@@ -11,6 +11,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace Microsoft.KernelMemory.Orchestration.RabbitMQ;
 
@@ -70,17 +71,25 @@ public sealed class RabbitMQPipeline : IQueue
         this._channel.ExchangeDeclare(poisonExchange, "fanout");
         this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready", poisonExchange, this._queueName);
 
-        this._channel.QueueDeclare(
-            queue: this._queueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: new Dictionary<string, object>
-            {
-                ["x-queue-type"] = "quorum",
-                ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
-                ["x-dead-letter-exchange"] = poisonExchange
-            });
+        try
+        {
+            this._channel.QueueDeclare(
+                queue: this._queueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object>
+                {
+                    ["x-queue-type"] = "quorum",
+                    ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
+                    ["x-dead-letter-exchange"] = poisonExchange
+                });
+        }
+        catch (OperationInterruptedException ex) when (ex.Message.Contains("inequivalent arg 'x-delivery-limit'", StringComparison.InvariantCulture))
+        {
+            this._log.LogError(ex, "The queue '{0}' already exists, it is not possible to change the 'x-delivery-limit' value to {1}", this._queueName, this._config.MaxRetriesBeforePoisonQueue);
+            throw new KernelMemoryException($"The queue '{this._queueName}' already exists, it is not possible to change the 'x-delivery-limit' value to {this._config.MaxRetriesBeforePoisonQueue}", ex);
+        }
 
         this._log.LogTrace("Queue name: {0}", this._queueName);
 
