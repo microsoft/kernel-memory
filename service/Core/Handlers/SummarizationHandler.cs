@@ -137,7 +137,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         // If the content is less than 30 tokens don't do anything and move on.
         if (contentLength < MinLength)
         {
-            this._log.LogDebug("Content is too short to summarize ({0} tokens), nothing to do", contentLength);
+            this._log.LogWarning("Content is too short to summarize ({0} tokens), nothing to do", contentLength);
             return (content, true);
         }
 
