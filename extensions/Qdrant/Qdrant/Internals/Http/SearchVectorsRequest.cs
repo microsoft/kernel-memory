@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using static Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http.Filter;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 
@@ -87,9 +88,13 @@ internal sealed class SearchVectorsRequest
             if (tags == null) { continue; }
 
             var andFilter = new Filter.AndClause();
-            foreach (var tag in tags)
+            foreach (var tag in tags.Where(t => !string.IsNullOrEmpty(t)))
             {
-                if (!string.IsNullOrEmpty(tag))
+                if (tag[0] == '!')
+                {
+                    andFilter.And(new MustNotClause(QdrantConstants.PayloadTagsField, tag[1..]));
+                }
+                else
                 {
                     andFilter.AndValue(QdrantConstants.PayloadTagsField, tag);
                 }
