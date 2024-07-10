@@ -132,12 +132,12 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     {
         ITextGenerator textGenerator = this._orchestrator.GetTextGenerator();
         int contentLength = textGenerator.CountTokens(content);
-        this._log.LogError("Size of the content to summarize: {0} tokens", contentLength);
+        this._log.LogTrace("Size of the content to summarize: {0} tokens", contentLength);
 
         // If the content is less than 30 tokens don't do anything and move on.
         if (contentLength < MinLength)
         {
-            this._log.LogError("Content is too short to summarize ({0} tokens), nothing to do", contentLength);
+            this._log.LogWarning("Content is too short to summarize ({0} tokens), nothing to do", contentLength);
             return (content, true);
         }
 
