@@ -60,6 +60,11 @@ public static class FilteringTest
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
+        // Simple filter: Test AND logic between equality and not equality
+        answer = await memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "owner").ByNotTag("type", "news"), index: indexName);
+        log(answer.Result);
+        Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
+
         // Simple filter: test AND logic with correct values
         answer = await memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("type", "news").ByTag("user", "owner"), index: indexName);
         log(answer.Result);
@@ -104,6 +109,25 @@ public static class FilteringTest
         }, index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        // Multiple filters: unknown users can se the memory if it is not a type secured
+        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
+        {
+            MemoryFilters.ByTag("user", "someone1"),
+            MemoryFilters.ByTag("user", "someone2"),
+            MemoryFilters.ByNotTag("type", "securenews"),
+        }, index: indexName);
+        log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
+
+        //Multiple filters: exclude two user (OR not equality on the same filter).
+        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
+        {
+            MemoryFilters.ByNotTag("user", "someone1"),
+            MemoryFilters.ByNotTag("user", "someone2")
+        }, index: indexName);
+        log(answer.Result);
+        Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: unknown users cannot see the memory even if the type is correct (testing AND logic)
         answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
