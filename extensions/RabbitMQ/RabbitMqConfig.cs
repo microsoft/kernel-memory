@@ -37,4 +37,10 @@ public class RabbitMqConfig
     /// Default: 3600 second, 1 hour.
     /// </summary>
     public int MessageTTLSecs { get; set; } = 3600;
+
+    /// <summary>
+    /// Set to true if your RabbitMQ supports SSL.
+    /// Default: false
+    /// </summary>
+    public bool SslEnabled { get; set; } = false;
 }

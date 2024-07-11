@@ -23,6 +23,7 @@ internal static class RabbitMQ
                 { "Username", "user" },
                 { "Password", "" },
                 { "VirtualHost", "/" },
+                { "SslEnabled", false },
             };
         }
 
@@ -33,6 +34,7 @@ internal static class RabbitMQ
             { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
             { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
             { "VirtualHost", SetupUI.AskOpenQuestion("RabbitMQ <virtualhost>", config["VirtualHost"].ToString()) },
+            { "SslEnabled", SetupUI.AskOpenQuestion("RabbitMQ <SSL enabled>", config["SslEnabled"].ToString()) },
         });
     }
 }
