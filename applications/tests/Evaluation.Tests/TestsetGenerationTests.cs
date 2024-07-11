@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Evaluation;
 using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
@@ -28,8 +27,8 @@ public class TestsetGenerationTests
 
         var memoryBuilder = new KernelMemoryBuilder()
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig);
 
         this._kernel = Kernel
             .CreateBuilder()

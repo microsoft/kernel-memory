@@ -23,8 +23,9 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextEmbeddingGenerationService _client = null!;
-    private readonly ITextTokenizer? _textTokenizer;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
+    private readonly string _model;
 
     /// <summary>
     /// Create a new instance, using the given OpenAI pre-configured client.
@@ -93,13 +94,19 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
-        return this._textTokenizer!.CountTokens(text);
+        return this._textTokenizer.CountTokens(text);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer.GetTokens(text);
     }
 
     /// <inheritdoc/>
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Generating embedding");
+        this._log.LogTrace("Generating embedding, model '{0}'", this._model);
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
@@ -107,7 +114,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
         var list = textList.ToList();
-        this._log.LogDebug("Generating embeddings, batch size: {0}", list.Count);
+        this._log.LogTrace("Generating embeddings, model '{0}', batch size '{1}'", this._model, list.Count);
         var embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }
@@ -123,14 +130,15 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
+        this._model = config.EmbeddingModel;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
 
         if (textTokenizer == null)
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._textTokenizer = textTokenizer;

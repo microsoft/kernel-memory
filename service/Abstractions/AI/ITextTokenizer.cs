@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.KernelMemory.AI;
@@ -16,4 +17,11 @@ public interface ITextTokenizer
     /// <param name="text">Text to analyze</param>
     /// <returns>Number of tokens</returns>
     public int CountTokens(string text);
+
+    /// <summary>
+    /// Return tokens
+    /// </summary>
+    /// <param name="text">Text to parse</param>
+    /// <returns>Collection of tokens</returns>
+    IReadOnlyList<string> GetTokens(string text);
 }
