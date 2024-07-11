@@ -22,6 +22,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     private readonly ITextTokenizer _textTokenizer;
     private readonly AzureOpenAITextEmbeddingGenerationService _client;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
+    private readonly string _deployment;
 
     public AzureOpenAITextEmbeddingGenerator(
         AzureOpenAIConfig config,
@@ -35,14 +36,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._textTokenizer = textTokenizer;
+        this._deployment = config.Deployment;
 
         this.MaxTokens = config.MaxTokenTotal;
-
         this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
         switch (config.Auth)
@@ -98,9 +99,15 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     }
 
     /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer.GetTokens(text);
+    }
+
+    /// <inheritdoc/>
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Generating embedding");
+        this._log.LogTrace("Generating embedding, deployment '{0}'", this._deployment);
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
@@ -108,7 +115,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
         var list = textList.ToList();
-        this._log.LogDebug("Generating embeddings, batch size: {0}", list.Count);
+        this._log.LogTrace("Generating embeddings, deployment '{0}', batch size '{1}'", this._deployment, list.Count);
         IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
     }

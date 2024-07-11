@@ -16,10 +16,9 @@ public sealed class FakeEmbeddingGenerator : ITextEmbeddingGenerator
         this._mocks[input] = embedding;
     }
 
-    public int CountTokens(string text)
-    {
-        return 0;
-    }
+    public int CountTokens(string text) => 0;
+
+    public IReadOnlyList<string> GetTokens(string text) => Array.Empty<string>();
 
     public int MaxTokens { get; } = 0;
 

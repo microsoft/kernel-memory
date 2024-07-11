@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Evaluation;
 using Microsoft.SemanticKernel;
 
@@ -34,15 +33,15 @@ var memoryBuilder = new KernelMemoryBuilder()
     .AddSingleton(memoryConfiguration)
     // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
     // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
-    // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers ans summaries using LLama
+    // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers and summaries using LLama
     // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
     // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
     // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
     // .WithAzureBlobsDocumentStorage(new AzureBlobsConfig {...})   // Store files in Azure Blobs
     // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
     // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
-    .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
+    .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig);
 
 var kernel = Kernel.CreateBuilder()
     // For OpenAI:

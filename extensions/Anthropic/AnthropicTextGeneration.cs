@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
-using Microsoft.KernelMemory.AI.TikToken;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
@@ -68,8 +68,8 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(TikTokenGPT4Tokenizer));
-            textTokenizer = new TikTokenGPT4Tokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._textTokenizer = textTokenizer;
@@ -84,13 +84,19 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         return this._textTokenizer.CountTokens(text);
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer.GetTokens(text);
+    }
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Sending text generation request");
+        this._log.LogTrace("Sending text generation request, model '{0}'", this._modelName);
 
         CallClaudeStreamingParams parameters = new(this._modelName, prompt)
         {
@@ -110,7 +116,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
                     break;
 
                 default:
-                    //do nothing we simple want to use delta text.
+                    //do nothing we simply want to use delta text.
                     break;
             }
         }

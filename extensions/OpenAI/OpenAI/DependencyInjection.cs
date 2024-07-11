@@ -46,9 +46,6 @@ public static partial class KernelMemoryBuilderExtensions
         bool onlyForRetrieval = false,
         HttpClient? httpClient = null)
     {
-        textGenerationTokenizer ??= new DefaultGPTTokenizer();
-        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
-
         var openAIConfig = new OpenAIConfig
         {
             TextModel = DefaultTextModel,
@@ -94,9 +91,6 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textGenerationTokenizer ??= new DefaultGPTTokenizer();
-        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
-
         builder.WithOpenAITextEmbeddingGeneration(config, textEmbeddingTokenizer, onlyForRetrieval, httpClient);
         builder.WithOpenAITextGeneration(config, textGenerationTokenizer);
         return builder;
@@ -121,9 +115,6 @@ public static partial class KernelMemoryBuilderExtensions
         bool onlyForRetrieval = false)
     {
         config.Validate();
-        textGenerationTokenizer ??= new DefaultGPTTokenizer();
-        textEmbeddingTokenizer ??= new DefaultGPTTokenizer();
-
         builder.WithOpenAITextEmbeddingGeneration(config, openAIClient, textEmbeddingTokenizer, onlyForRetrieval);
         builder.WithOpenAITextGeneration(config, openAIClient, textGenerationTokenizer);
         return builder;
@@ -146,8 +137,6 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         builder.Services.AddOpenAITextEmbeddingGeneration(config, httpClient: httpClient);
         if (!onlyForRetrieval)
         {
@@ -175,8 +164,6 @@ public static partial class KernelMemoryBuilderExtensions
         bool onlyForRetrieval = false)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         builder.Services.AddOpenAITextEmbeddingGeneration(config, openAIClient);
         if (!onlyForRetrieval)
         {
@@ -202,8 +189,6 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         builder.Services.AddOpenAITextGeneration(config, textTokenizer, httpClient);
         return builder;
     }
@@ -223,8 +208,6 @@ public static partial class KernelMemoryBuilderExtensions
         ITextTokenizer? textTokenizer = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         builder.Services.AddOpenAITextGeneration(config, openAIClient, textTokenizer);
         return builder;
     }
@@ -242,8 +225,6 @@ public static partial class DependencyInjection
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         return services
             .AddSingleton<ITextEmbeddingGenerator>(
                 serviceProvider => new OpenAITextEmbeddingGenerator(
@@ -260,8 +241,6 @@ public static partial class DependencyInjection
         ITextTokenizer? textTokenizer = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         return services
             .AddSingleton<ITextEmbeddingGenerator>(
                 serviceProvider => new OpenAITextEmbeddingGenerator(
@@ -278,8 +257,6 @@ public static partial class DependencyInjection
         HttpClient? httpClient = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         return services
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
@@ -295,8 +272,6 @@ public static partial class DependencyInjection
         ITextTokenizer? textTokenizer = null)
     {
         config.Validate();
-        textTokenizer ??= new DefaultGPTTokenizer();
-
         return services
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,

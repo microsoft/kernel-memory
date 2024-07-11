@@ -13,10 +13,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="coverlet.collector">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -31,6 +27,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\service\tests\TestHelpers\TestHelpers.csproj" />
+      <ProjectReference Include="..\OpenAI\OpenAI.csproj" />
     </ItemGroup>
 
 </Project>

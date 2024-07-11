@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 
 public static class Program
 {
@@ -27,15 +26,15 @@ public static class Program
         azureAISearchConfigWithoutHybridSearch.UseHybridSearch = false;
 
         var memoryNoHybridSearch = new KernelMemoryBuilder()
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .WithAzureAISearchMemoryDb(azureAISearchConfigWithoutHybridSearch)
             .WithSearchClientConfig(new SearchClientConfig { MaxMatchesCount = 2, Temperature = 0, TopP = 0 })
             .Build<MemoryServerless>();
 
         var memoryWithHybridSearch = new KernelMemoryBuilder()
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .WithAzureAISearchMemoryDb(azureAISearchConfigWithHybridSearch)
             .WithSearchClientConfig(new SearchClientConfig { MaxMatchesCount = 2, Temperature = 0, TopP = 0 })
             .Build<MemoryServerless>();

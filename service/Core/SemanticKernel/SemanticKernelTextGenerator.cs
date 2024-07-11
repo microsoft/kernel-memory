@@ -25,6 +25,9 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
     /// <inheritdoc />
     public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text) => this._tokenizer.GetTokens(text);
+
     public SemanticKernelTextGenerator(
         ITextGenerationService textGenerationService,
         SemanticKernelConfig config,
@@ -42,8 +45,8 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._tokenizer = textTokenizer;
