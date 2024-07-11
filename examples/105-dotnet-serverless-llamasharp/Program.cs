@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 
 /* PLEASE NOTE:
  *
@@ -35,7 +34,7 @@ var searchClientConfig = new SearchClientConfig
 var memory = new KernelMemoryBuilder()
     .WithSearchClientConfig(searchClientConfig)
     .WithLlamaTextGeneration(llamaConfig)
-    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer())
+    .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
     .Build<MemoryServerless>();
 
 // Some sci-fi content based on a recent news from ISS

@@ -24,7 +24,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     private readonly ITextTokenizer _textTokenizer;
     private readonly OpenAIClient _client;
     private readonly ILogger<AzureOpenAITextGenerator> _log;
-    private readonly bool _isTextModel;
+    private readonly bool _useTextCompletionProtocol;
     private readonly string _deployment;
 
     public AzureOpenAITextGenerator(
@@ -39,8 +39,8 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._textTokenizer = textTokenizer;
@@ -55,7 +55,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             throw new ConfigurationException($"Azure OpenAI: {config.Deployment} is empty");
         }
 
-        this._isTextModel = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
+        this._useTextCompletionProtocol = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
         this._deployment = config.Deployment;
         this.MaxTokenTotal = config.MaxTokenTotal;
 
@@ -108,13 +108,21 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     }
 
     /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer.GetTokens(text);
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (this._isTextModel)
+        if (this._useTextCompletionProtocol)
         {
+            this._log.LogTrace("Sending text generation request, deployment '{0}'", this._deployment);
+
             var openaiOptions = new CompletionsOptions
             {
                 DeploymentName = this._deployment,
@@ -147,6 +155,8 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         }
         else
         {
+            this._log.LogTrace("Sending chat message generation request, deployment '{0}'", this._deployment);
+
             var openaiOptions = new ChatCompletionsOptions
             {
                 DeploymentName = this._deployment,

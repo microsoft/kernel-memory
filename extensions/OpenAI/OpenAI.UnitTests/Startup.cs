@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.TikToken.UnitTests;
+namespace Microsoft.OpenAI.UnitTests;
 
 public class Startup
 {

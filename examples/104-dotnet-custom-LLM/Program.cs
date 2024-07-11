@@ -58,6 +58,14 @@ public class CustomModelTextGeneration : ITextGenerator
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        // ... calculate and return list of tokens ...
+
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,

@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
-using Microsoft.KernelMemory.AI.OpenAI;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -41,7 +40,7 @@ public static partial class KernelMemoryBuilderExtensions
             builder.AddIngestionEmbeddingGenerator(
                 new AzureOpenAITextEmbeddingGenerator(
                     config: config ?? new AzureOpenAIConfig(),
-                    textTokenizer: textTokenizer ?? new DefaultGPTTokenizer(),
+                    textTokenizer: textTokenizer,
                     loggerFactory: loggerFactory,
                     httpClient));
         }
@@ -84,7 +83,6 @@ public static partial class DependencyInjection
             return services.AddSingleton<ITextEmbeddingGenerator, AzureOpenAITextEmbeddingGenerator>();
         }
 
-        textTokenizer ??= new DefaultGPTTokenizer();
         config ??= new AzureOpenAIConfig();
         config.Validate();
 
@@ -107,7 +105,6 @@ public static partial class DependencyInjection
             return services.AddSingleton<ITextGenerator, AzureOpenAITextGenerator>();
         }
 
-        textTokenizer ??= new DefaultGPTTokenizer();
         config ??= new AzureOpenAIConfig();
         config.Validate();
 

@@ -9,6 +9,7 @@ using LLama;
 using LLama.Abstractions;
 using LLama.Common;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
@@ -22,7 +23,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 {
     private readonly LLamaWeights _model;
     private readonly LLamaContext _context;
-    private readonly ITextTokenizer? _textTokenizer;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<LlamaSharpTextGenerator> _log;
 
     /// <summary>
@@ -40,6 +41,15 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 
         config.Validate();
         this.MaxTokenTotal = (int)config.MaxTokenTotal;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
+        }
+
         this._textTokenizer = textTokenizer;
 
         var parameters = new ModelParams(config.ModelPath)
@@ -77,6 +87,12 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         }
 
         return value.Value;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer.GetTokens(text);
     }
 
     /// <inheritdoc/>

@@ -13,7 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\OpenAI\OpenAI.csproj" />
+        <ProjectReference Include="..\..\OpenAI\OpenAI\OpenAI.csproj" />
         <ProjectReference Include="..\Redis\Redis.csproj" />
     </ItemGroup>
 

@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Microsoft.TikToken.UnitTests</AssemblyName>
-        <RootNamespace>Microsoft.TikToken.UnitTests</RootNamespace>
+        <AssemblyName>Microsoft.OpenAI.UnitTests</AssemblyName>
+        <RootNamespace>Microsoft.OpenAI.UnitTests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
         <IsTestProject>true</IsTestProject>
