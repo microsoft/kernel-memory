@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 
 // Use this boolean to decide whether to use OpenAI or Azure OpenAI models
@@ -28,8 +27,8 @@ appBuilder.Configuration
 var memory = new KernelMemoryBuilder(appBuilder.Services)
     .Configure(UseAzure,
         builder => builder
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer()),
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig),
         builder => builder.WithOpenAI(openAIConfig))
     .Build<MemoryServerless>();
 

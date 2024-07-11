@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
-using Microsoft.KernelMemory.AI.TikToken;
+using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.AzureAIDocIntel;
@@ -73,7 +73,7 @@ public static class Program
         var promptProvider = new EmbeddedPromptProvider();
 
         // AI dependencies
-        var tokenizer = new TikTokenGPT4Tokenizer();
+        var tokenizer = new GPT4Tokenizer();
         var embeddingGeneratorHttpClient = new HttpClient();
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizer, loggerFactory, embeddingGeneratorHttpClient);
         var textGeneratorHttpClient = new HttpClient();

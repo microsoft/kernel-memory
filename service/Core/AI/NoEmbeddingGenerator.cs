@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,12 @@ public class NoEmbeddingGenerator : ITextEmbeddingGenerator
 
     /// <inheritdoc />
     public int CountTokens(string text)
+    {
+        throw this.Error();
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text)
     {
         throw this.Error();
     }

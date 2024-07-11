@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -66,8 +65,8 @@ public static class Program
             // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
             // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
             // .WithAWSS3DocumentStorage(awsS3Config)                       // Store files on AWS S3
-            .WithAzureOpenAITextGeneration(azureOpenAITextConfig, new DefaultGPTTokenizer())
-            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig, new DefaultGPTTokenizer());
+            .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
+            .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig);
 
         if (s_imageSupportDemoEnabled)
         {

@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
@@ -24,7 +23,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
     {
         // Arrange
         this._config.TextModel = "gpt-4";
-        var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
+        var client = new OpenAITextGenerator(this._config);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(
@@ -47,7 +46,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
     {
         // Arrange
         this._config.TextModel = "gpt-3.5-turbo-instruct";
-        var client = new OpenAITextGenerator(this._config, null, DefaultLogger<OpenAITextGenerator>.Instance);
+        var client = new OpenAITextGenerator(this._config);
 
         // Act
         IAsyncEnumerable<string> text = client.GenerateTextAsync(

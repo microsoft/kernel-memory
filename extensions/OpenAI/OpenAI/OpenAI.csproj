@@ -9,16 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="GPT3\encoder.json" />
-        <EmbeddedResource Include="GPT3\vocab.bpe" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -31,7 +27,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>
