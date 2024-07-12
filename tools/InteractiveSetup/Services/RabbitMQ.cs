@@ -34,7 +34,7 @@ internal static class RabbitMQ
             { "Username", SetupUI.AskOpenQuestion("RabbitMQ <username>", config["Username"].ToString()) },
             { "Password", SetupUI.AskPassword("RabbitMQ <password>", config["Password"].ToString()) },
             { "VirtualHost", SetupUI.AskOpenQuestion("RabbitMQ <virtualhost>", config["VirtualHost"].ToString()) },
-            { "SslEnabled", SetupUI.AskBoolean("RabbitMQ <SSL enabled>", (bool)config["SslEnabled"]) },
+            { "SslEnabled", SetupUI.AskBoolean("RabbitMQ SSL enabled (yes/no)?", (bool)config["SslEnabled"]) },
         });
     }
 }
