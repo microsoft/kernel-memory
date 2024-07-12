@@ -15,21 +15,37 @@ public class DefaultTests : BaseFunctionalTestCase
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
-        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+        if (cfg.GetValue<bool>("UseAzureOpenAI"))
+        {
+            Assert.False(string.IsNullOrEmpty(this.AzureOpenAIEmbeddingConfiguration.APIKey));
 
-        SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
+            SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
-        var builder = new KernelMemoryBuilder();
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
+                .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
+                .WithSqlServerMemoryDb(sqlServerConfig)
+                .Build<MemoryServerless>();
+        }
+        else
+        {
+            Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
-        this._memory = builder
-            .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
-            .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
-            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-            .WithOpenAI(this.OpenAiConfig)
-            // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
-            // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithSqlServerMemoryDb(sqlServerConfig)
-            .Build<MemoryServerless>();
+            SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
+
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithOpenAI(this.OpenAiConfig)
+                // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
+                // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
+                .WithSqlServerMemoryDb(sqlServerConfig)
+                .Build<MemoryServerless>();
+        }
 
         var serviceProvider = builder.Services.BuildServiceProvider();
         this._memoryDb = serviceProvider.GetService<IMemoryDb>()!;
