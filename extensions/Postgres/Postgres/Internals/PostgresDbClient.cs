@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -415,7 +416,7 @@ internal sealed class PostgresDbClient : IDisposable
         }
 
         var maxDistance = 1 - minSimilarity;
-        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDistance}";
+        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDistance.ToString(CultureInfo.InvariantCulture)}";
 
         if (sqlUserValues == null) { sqlUserValues = new(); }
 
