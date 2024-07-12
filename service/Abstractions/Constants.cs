@@ -34,6 +34,9 @@ public static class Constants
 
             // Used to override OverlappingTokens config
             public const string OverlappingTokens = "custom_partitioning_overlapping_tokens_int";
+
+            // Used to prepend header to each partition
+            public const string ChunkHeader = "custom_partitioning_chunk_header_str";
         }
 
         public static class EmbeddingGeneration
