@@ -22,19 +22,19 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="builder">KM builder</param>
     /// <param name="service">SK text generation service instance</param>
     /// <param name="config">SK text generator settings</param>
-    /// <param name="tokenizer">Tokenizer used to count tokens used by prompts</param>
+    /// <param name="textTokenizer">Tokenizer used to count tokens used by prompts</param>
     ///  <param name="loggerFactory">.NET logger factory</param>
     /// <returns>KM builder</returns>
     public static IKernelMemoryBuilder WithSemanticKernelTextGenerationService(
         this IKernelMemoryBuilder builder,
         ITextGenerationService service,
         SemanticKernelConfig config,
-        ITextTokenizer? tokenizer = null,
+        ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
         if (service == null) { throw new ConfigurationException("Memory Builder: the semantic kernel text generation service instance is NULL"); }
 
-        return builder.AddSingleton<ITextGenerator>(new SemanticKernelTextGenerator(service, config, tokenizer, loggerFactory));
+        return builder.AddSingleton<ITextGenerator>(new SemanticKernelTextGenerator(service, config, textTokenizer, loggerFactory));
     }
 
     ///  <summary>
@@ -44,7 +44,7 @@ public static partial class KernelMemoryBuilderExtensions
     ///  <param name="builder">KM builder</param>
     ///  <param name="service">SK text embedding generation instance</param>
     ///  <param name="config">SK text embedding generator settings</param>
-    ///  <param name="tokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
+    ///  <param name="textTokenizer">Tokenizer used to count tokens sent to the embedding generator</param>
     ///  <param name="loggerFactory">.NET logger factory</param>
     ///  <param name="onlyForRetrieval">Whether to use this embedding generator only during data ingestion, and not for retrieval (search and ask API)</param>
     ///  <returns>KM builder</returns>
@@ -52,13 +52,13 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         ITextEmbeddingGenerationService service,
         SemanticKernelConfig config,
-        ITextTokenizer? tokenizer = null,
+        ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         bool onlyForRetrieval = false)
     {
         if (service == null) { throw new ConfigurationException("Memory Builder: the semantic kernel text embedding generation service instance is NULL"); }
 
-        var generator = new SemanticKernelTextEmbeddingGenerator(service, config, tokenizer, loggerFactory);
+        var generator = new SemanticKernelTextEmbeddingGenerator(service, config, textTokenizer, loggerFactory);
         builder.AddSingleton<ITextEmbeddingGenerator>(generator);
 
         if (!onlyForRetrieval)
