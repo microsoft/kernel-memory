@@ -132,7 +132,7 @@ public static class CustomContextExtensions
 
     public static double GetCustomRagTemperatureOrDefault(this IContext? context, double defaultValue)
     {
-        if (context.TryGetArg<int>(Constants.CustomContext.Rag.Temperature, out var customValue))
+        if (context.TryGetArg<double>(Constants.CustomContext.Rag.Temperature, out var customValue))
         {
             return customValue;
         }
@@ -142,7 +142,7 @@ public static class CustomContextExtensions
 
     public static double GetCustomRagNucleusSamplingOrDefault(this IContext? context, double defaultValue)
     {
-        if (context.TryGetArg<int>(Constants.CustomContext.Rag.NucleusSampling, out var customValue))
+        if (context.TryGetArg<double>(Constants.CustomContext.Rag.NucleusSampling, out var customValue))
         {
             return customValue;
         }
