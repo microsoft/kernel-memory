@@ -55,12 +55,17 @@ public static class FilteringTest
         log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
+        // Simple filter: NOT the news.
+        answer = await memory.AskAsync("What is Orion?", filter: MemoryFilters.ByNotTag("type", "news"), index: indexName);
+        log(answer.Result);
+        Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
+
         // Simple filter: the memory is of the user but we do not want to use memory of that user.
         answer = await memory.AskAsync("What is Orion?", filter: MemoryFilters.ByNotTag("user", "owner"), index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
-        // Simple filter: Test AND logic between equality and not equality
+        // not equality on a field where we have two names
         answer = await memory.AskAsync("What is Orion?", filter: MemoryFilters.ByTag("user", "owner").ByNotTag("type", "news"), index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);

@@ -15,20 +15,20 @@ public class DefaultTests : BaseFunctionalTestCase
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
+        IKernelMemoryBuilder builder;
         if (cfg.GetValue<bool>("UseAzureOpenAI"))
         {
             Assert.False(string.IsNullOrEmpty(this.AzureOpenAIEmbeddingConfiguration.APIKey));
 
             SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
-            this._memory = new KernelMemoryBuilder()
+            builder = new KernelMemoryBuilder()
                 .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
                 .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
                 .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                 .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
                 .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-                .WithSqlServerMemoryDb(sqlServerConfig)
-                .Build<MemoryServerless>();
+                .WithSqlServerMemoryDb(sqlServerConfig);
         }
         else
         {
@@ -36,18 +36,18 @@ public class DefaultTests : BaseFunctionalTestCase
 
             SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
-            this._memory = new KernelMemoryBuilder()
+            builder = new KernelMemoryBuilder()
                 .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
                 .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
                 .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
                 .WithOpenAI(this.OpenAiConfig)
                 // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
                 // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-                .WithSqlServerMemoryDb(sqlServerConfig)
-                .Build<MemoryServerless>();
+                .WithSqlServerMemoryDb(sqlServerConfig);
         }
 
         var serviceProvider = builder.Services.BuildServiceProvider();
+        this._memory = builder.Build<MemoryServerless>();
         this._memoryDb = serviceProvider.GetService<IMemoryDb>()!;
     }
 

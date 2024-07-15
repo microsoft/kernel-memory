@@ -281,7 +281,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
                 .Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}").ToList();
             List<string> safeSqlPlaceholders = new();
 
-            List<string> conditions = new ();
+            List<string> conditions = new();
 
             if (equalTags.Count > 0)
             {
