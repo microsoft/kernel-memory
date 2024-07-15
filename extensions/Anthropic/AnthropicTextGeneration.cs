@@ -36,7 +36,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
     /// <param name="httpClientFactory">Optional factory used to inject a pre-configured HTTP client for requests to Anthropic API</param>
     /// <param name="loggerFactory">Optional factory used to inject configured loggers</param>
     public AnthropicTextGeneration(
-        AnthropicConfiguration config,
+        AnthropicConfig config,
         ITextTokenizer? textTokenizer = null,
         IHttpClientFactory? httpClientFactory = null,
         ILoggerFactory? loggerFactory = null)

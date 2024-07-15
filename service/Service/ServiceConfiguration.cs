@@ -420,7 +420,7 @@ internal sealed class ServiceConfiguration
                 break;
 
             case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAnthropicTextGeneration(this.GetServiceConfig<AnthropicConfiguration>("Anthropic"));
+                builder.Services.AddAnthropicTextGeneration(this.GetServiceConfig<AnthropicConfig>("Anthropic"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
