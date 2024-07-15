@@ -38,7 +38,12 @@ public sealed class RabbitMQPipeline : IQueue
             UserName = config.Username,
             Password = config.Password,
             VirtualHost = !string.IsNullOrWhiteSpace(config.VirtualHost) ? config.VirtualHost : "/",
-            DispatchConsumersAsync = true
+            DispatchConsumersAsync = true,
+            Ssl = new SslOption
+            {
+                Enabled = config.SslEnabled,
+                ServerName = config.Host,
+            }
         };
 
         this._messageTTLMsecs = config.MessageTTLSecs * 1000;
