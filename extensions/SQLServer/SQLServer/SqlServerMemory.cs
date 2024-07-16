@@ -128,7 +128,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         index = NormalizeIndexName(index);
 
-        if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false))
         {
             // Index does not exist
             return;
@@ -175,7 +175,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         index = NormalizeIndexName(index);
 
-        if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false))
         {
             // Index does not exist
             return;
@@ -238,7 +238,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         index = NormalizeIndexName(index);
 
-        if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false))
         {
             // Index does not exist
             yield break;
@@ -301,7 +301,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         index = NormalizeIndexName(index);
 
-        if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false))
         {
             // Index does not exist
             yield break;
@@ -410,7 +410,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         index = NormalizeIndexName(index);
 
-        if (!(await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false)))
+        if (!await this.DoesIndexExistsAsync(index, cancellationToken).ConfigureAwait(false))
         {
             throw new IndexNotFoundException($"The index '{index}' does not exist.");
         }
@@ -506,7 +506,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
     #region private ================================================================================
 
-    // Note: "_" is allowed in Postgres, but we normalize it to "-" for consistency with other DBs
+    // Note: "_" is allowed in SQL Server, but we normalize it to "-" for consistency with other DBs
     private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
     private const string ValidSeparator = "-";
 
@@ -682,12 +682,12 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             Id = dataReader.GetString(dataReader.GetOrdinal("key"))
         };
 
-        if (!(await dataReader.IsDBNullAsync(dataReader.GetOrdinal("payload"), cancellationToken).ConfigureAwait(false)))
+        if (!await dataReader.IsDBNullAsync(dataReader.GetOrdinal("payload"), cancellationToken).ConfigureAwait(false))
         {
             entry.Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(dataReader.GetString(dataReader.GetOrdinal("payload")))!;
         }
 
-        if (!(await dataReader.IsDBNullAsync(dataReader.GetOrdinal("tags"), cancellationToken).ConfigureAwait(false)))
+        if (!await dataReader.IsDBNullAsync(dataReader.GetOrdinal("tags"), cancellationToken).ConfigureAwait(false))
         {
             entry.Tags = JsonSerializer.Deserialize<TagCollection>(dataReader.GetString(dataReader.GetOrdinal("tags")))!;
         }
