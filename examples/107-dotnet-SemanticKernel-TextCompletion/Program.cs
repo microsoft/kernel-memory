@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -11,13 +10,12 @@ var chatDeployment = Environment.GetEnvironmentVariable("AOAI_DEPLOYMENT_CHAT")!
 var embeddingDeployment = Environment.GetEnvironmentVariable("AOAI_DEPLOYMENT_EMBEDDING")!;
 
 var config = new SemanticKernelConfig();
-var tokenizer = new DefaultGPTTokenizer();
 
 var memory = new KernelMemoryBuilder()
     .WithSemanticKernelTextGenerationService(
-        new AzureOpenAIChatCompletionService(chatDeployment, endpoint, apiKey), config, tokenizer)
+        new AzureOpenAIChatCompletionService(chatDeployment, endpoint, apiKey), config)
     .WithSemanticKernelTextEmbeddingGenerationService(
-        new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey), config, tokenizer)
+        new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey), config)
     .Build<MemoryServerless>();
 
 await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/COMMUNITY.md", documentId: "doc001");

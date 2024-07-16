@@ -31,6 +31,12 @@ public class NoTextGenerator : ITextGenerator
     }
 
     /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        throw this.Error();
+    }
+
+    /// <inheritdoc />
     public IAsyncEnumerable<string> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
     {
         throw this.Error();

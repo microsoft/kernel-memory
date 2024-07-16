@@ -6,11 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 

@@ -148,7 +148,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
         int contentLength = textGenerator.CountTokens(content);
         if (contentLength < MinLength)
         {
-            this._log.LogDebug("Content too short to summarize, {0} tokens", contentLength);
+            this._log.LogWarning("Content too short to summarize, {0} tokens", contentLength);
             return (content, false);
         }
 

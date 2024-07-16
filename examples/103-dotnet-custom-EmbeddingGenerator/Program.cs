@@ -53,6 +53,14 @@ public class MyEmbeddingGenerator : ITextEmbeddingGenerator
     }
 
     /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        // ... calculate and return the list of tokens ...
+
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
     public Task<Embedding> GenerateEmbeddingAsync(
         string text, CancellationToken cancellationToken = default)
     {
