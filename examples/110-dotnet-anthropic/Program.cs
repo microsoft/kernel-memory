@@ -5,7 +5,7 @@ using Microsoft.KernelMemory.AI.Anthropic;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 
-var anthropicConfig = new AnthropicConfiguration();
+var anthropicConfig = new AnthropicConfig();
 var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 
 new ConfigurationBuilder()
