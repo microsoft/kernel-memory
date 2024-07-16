@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 using System;
 using System.Text;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public class RabbitMQConfig
@@ -40,6 +40,12 @@ public class RabbitMQConfig
     /// Default: 3600 second, 1 hour.
     /// </summary>
     public int MessageTTLSecs { get; set; } = 3600;
+
+    /// <summary>
+    /// Set to true if your RabbitMQ supports SSL.
+    /// Default: false
+    /// </summary>
+    public bool SslEnabled { get; set; } = false;
 
     /// <summary>
     /// How many times to dequeue a messages and process before moving it to a poison queue.
