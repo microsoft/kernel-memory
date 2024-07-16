@@ -2,9 +2,12 @@
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
+using System;
+using System.Text;
+
 namespace Microsoft.KernelMemory;
 
-public class RabbitMqConfig
+public class RabbitMQConfig
 {
     /// <summary>
     /// RabbitMQ hostname, e.g. "127.0.0.1"
@@ -43,4 +46,45 @@ public class RabbitMqConfig
     /// Default: false
     /// </summary>
     public bool SslEnabled { get; set; } = false;
+
+    /// <summary>
+    /// How many times to dequeue a messages and process before moving it to a poison queue.
+    /// </summary>
+    public int MaxRetriesBeforePoisonQueue { get; set; } = 20;
+
+    /// <summary>
+    /// Suffix used for the poison queues.
+    /// </summary>
+    public string PoisonQueueSuffix { get; set; } = "-poison";
+
+    /// <summary>
+    /// Verify that the current state is valid.
+    /// </summary>
+    public void Validate()
+    {
+        if (this.MaxRetriesBeforePoisonQueue < 0)
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.MaxRetriesBeforePoisonQueue)} cannot be a negative number");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix))
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is empty");
+        }
+
+        // Queue names must follow the rules described at
+        // https://www.rabbitmq.com/docs/queues#names.
+        if (this.PoisonQueueSuffix.StartsWith("amq.", StringComparison.InvariantCulture))
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it's reserved for internal use");
+        }
+
+        // Queue names can be up to 255 bytes of UTF-8 characters.
+        // We define a maximum length of 60 bytes for the suffix,
+        // so there is room for the other name part.
+        if (Encoding.UTF8.GetByteCount(this.PoisonQueueSuffix) > 60)
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} can be up to 60 characters length");
+        }
+    }
 }
