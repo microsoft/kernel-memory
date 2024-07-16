@@ -415,7 +415,7 @@ internal sealed class PostgresDbClient : IDisposable
         }
 
         var maxDistance = 1 - minSimilarity;
-        filterSql += $" AND {this._colEmbedding} <=> @embedding < {maxDistance}";
+        filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 
         if (sqlUserValues == null) { sqlUserValues = new(); }
 
@@ -447,6 +447,7 @@ internal sealed class PostgresDbClient : IDisposable
             ";
 
                 cmd.Parameters.AddWithValue("@embedding", target);
+                cmd.Parameters.AddWithValue("@maxDistance", maxDistance);
                 cmd.Parameters.AddWithValue("@limit", limit);
                 cmd.Parameters.AddWithValue("@offset", offset);
 
