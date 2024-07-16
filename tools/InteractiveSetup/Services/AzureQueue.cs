@@ -18,17 +18,30 @@ internal static class AzureQueue
         {
             config = new Dictionary<string, object>
             {
-                { "Auth", "ConnectionString" },
                 { "Account", "" },
+                { "Auth", "ConnectionString" },
                 { "ConnectionString", "" },
             };
         }
 
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            { "Auth", "ConnectionString" },
-            { "Account", SetupUI.AskOpenQuestion("Azure Queue <account name>", config["Account"].ToString()) },
-            { "ConnectionString", SetupUI.AskPassword("Azure Queue <connection string>", config["ConnectionString"].ToString()) },
+            Title = $"[{ServiceName}] Which type of authentication do you want to use?",
+            Options =
+            [
+                new("Azure Identity (Entra)", config["Auth"].ToString() == "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "AzureIdentity";
+                    x.Services[ServiceName].Remove("ConnectionString");
+                })),
+                new("Connection String", config["Auth"].ToString() != "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "ConnectionString";
+                    x.Services[ServiceName]["ConnectionString"] = SetupUI.AskPassword("Azure Queue <connection string>", config["ConnectionString"].ToString());
+                }))
+            ]
         });
+
+        AppSettings.Change(x => x.Services[ServiceName]["Account"] = SetupUI.AskOpenQuestion("Azure Queue <account name>", config["Account"].ToString()));
     }
 }

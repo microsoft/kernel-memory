@@ -36,7 +36,11 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
 
         this._memoryDbs.Add("simple", new SimpleVectorDb(this.SimpleVectorDbConfig, this._embeddingGenerator));
 
-        if (this._azSearchEnabled) { this._memoryDbs.Add("acs", new AzureAISearchMemory(this.AzureAiSearchConfig, this._embeddingGenerator)); }
+        if (this._azSearchEnabled)
+        {
+            this.AzureAiSearchConfig.UseHybridSearch = false;
+            this._memoryDbs.Add("acs", new AzureAISearchMemory(this.AzureAiSearchConfig, this._embeddingGenerator));
+        }
 
         if (this._mongoDbAtlasEnabled) { this._memoryDbs.Add("mongoDb", new MongoDbAtlasMemory(this.MongoDbAtlasConfig, this._embeddingGenerator)); }
 

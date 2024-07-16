@@ -404,8 +404,6 @@ internal sealed class PostgresDbClient : IDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string colDistance = "__distance";
-        string colMaxDistance = "@__max_distance";
 
         // Filtering logic, including filter by similarity
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
@@ -419,8 +417,6 @@ internal sealed class PostgresDbClient : IDisposable
 
         if (sqlUserValues == null) { sqlUserValues = new(); }
 
-        sqlUserValues[colMaxDistance] = minSimilarity;
-
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
             tableName, minSimilarity, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");
 
@@ -432,11 +428,10 @@ internal sealed class PostgresDbClient : IDisposable
             await using (cmd.ConfigureAwait(false))
             {
 #pragma warning disable CA2100 // SQL reviewed
+                string colDistance = "__distance";
 
                 // When using 1 - (embedding <=> target) the index is not being used, therefore we calculate
-                // the similarity (1 - distance) later
-                // Furthermore, colDistance can't be used in the WHERE clause
-                // as that causes a "table cannot be found error"
+                // the similarity (1 - distance) later. Furthermore, colDistance can't be used in the WHERE clause.
                 cmd.CommandText = @$"
                 SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDistance}
                 FROM {tableName}
