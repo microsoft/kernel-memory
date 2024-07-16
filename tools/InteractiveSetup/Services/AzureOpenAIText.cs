@@ -19,22 +19,33 @@ internal static class AzureOpenAIText
             config = new Dictionary<string, object>
             {
                 { "APIType", "ChatCompletion" },
-                { "Auth", "ApiKey" },
                 { "Endpoint", "" },
                 { "Deployment", "" },
+                { "Auth", "ApiKey" },
                 { "APIKey", "" },
-                { "MaxRetries", 10 },
             };
         }
 
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            { "APIType", "ChatCompletion" },
-            { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()) },
-            { "Deployment", SetupUI.AskOpenQuestion("Azure OpenAI <text/chat completion deployment name>", config["Deployment"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure OpenAI <API Key>", config["APIKey"].ToString()) },
-            { "MaxRetries", 10 },
+            Title = $"[{ServiceName}] Which type of authentication do you want to use?",
+            Options =
+            [
+                new("Azure Identity (Entra)", config["Auth"].ToString() == "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "AzureIdentity";
+                    x.Services[ServiceName].Remove("APIKey");
+                })),
+                new("API Key", config["Auth"].ToString() != "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "ApiKey";
+                    x.Services[ServiceName]["APIKey"] = SetupUI.AskPassword("Azure OpenAI <API Key>", config["APIKey"].ToString());
+                }))
+            ]
         });
+
+        AppSettings.Change(x => x.Services[ServiceName]["APIType"] = "ChatCompletion");
+        AppSettings.Change(x => x.Services[ServiceName]["Endpoint"] = SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()));
+        AppSettings.Change(x => x.Services[ServiceName]["Deployment"] = SetupUI.AskOpenQuestion("Azure OpenAI <text/chat model deployment name>", config["Deployment"].ToString()));
     }
 }

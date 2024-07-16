@@ -18,19 +18,32 @@ internal static class AzureAISearch
         {
             config = new Dictionary<string, object>
             {
-                { "Auth", "ApiKey" },
                 { "Endpoint", "" },
+                { "Auth", "ApiKey" },
                 { "APIKey", "" },
                 { "UseHybridSearch", false },
             };
         }
 
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            { "Auth", "ApiKey" },
-            { "Endpoint", SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()) },
-            { "APIKey", SetupUI.AskPassword("Azure AI Search <API Key>", config["APIKey"].ToString()) },
-            { "UseHybridSearch", SetupUI.AskBoolean("Use hybrid search (yes/no)?", (bool)config["UseHybridSearch"]) },
+            Title = $"[{ServiceName}] Which type of authentication do you want to use?",
+            Options =
+            [
+                new("Azure Identity (Entra)", config["Auth"].ToString() == "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "AzureIdentity";
+                    x.Services[ServiceName].Remove("APIKey");
+                })),
+                new("API Key", config["Auth"].ToString() != "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "ApiKey";
+                    x.Services[ServiceName]["APIKey"] = SetupUI.AskPassword("Azure AI Search <API Key>", config["APIKey"].ToString());
+                }))
+            ]
         });
+
+        AppSettings.Change(x => x.Services[ServiceName]["Endpoint"] = SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()));
+        AppSettings.Change(x => x.Services[ServiceName]["UseHybridSearch"] = SetupUI.AskBoolean("Use hybrid search (yes/no)?", (bool)config["UseHybridSearch"]));
     }
 }
