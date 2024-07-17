@@ -61,4 +61,9 @@ public class SqlServerConfig
     /// The SQL Server tags table name.
     /// </summary>
     public string TagsTableName { get; set; } = DefaultTagsTableName;
+
+    /// <summary>
+    /// It tells if we should use the vector search or not.
+    /// </summary>
+    public bool UseVectorSearch { get; set; } = false;
 }
