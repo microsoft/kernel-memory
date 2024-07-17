@@ -256,16 +256,18 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             limit = int.MaxValue;
         }
 
+        var list = new List<MemoryRecord>();
+
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        await using (var disposableConnection = connection.ConfigureAwait(false))
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
+            SqlCommand command = connection.CreateCommand();
+            await using var disposableCommand = command.ConfigureAwait(false);
+            var tagFilters = new TagCollection();
 
-        var tagFilters = new TagCollection();
-
-        command.CommandText = $@"
+            command.CommandText = $@"
             WITH [filters] AS
 		    (
 			    SELECT
@@ -281,16 +283,24 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
             {this.GenerateFilters(index, command.Parameters, filters)};";
 
-        command.Parameters.AddWithValue("@index", index);
-        command.Parameters.AddWithValue("@limit", limit);
-        command.Parameters.AddWithValue("@filters", JsonSerializer.Serialize(tagFilters));
+            command.Parameters.AddWithValue("@index", index);
+            command.Parameters.AddWithValue("@limit", limit);
+            command.Parameters.AddWithValue("@filters", JsonSerializer.Serialize(tagFilters));
 
-        var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        await using var disposableReader = dataReader.ConfigureAwait(false);
+            var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            await using var disposableReader = dataReader.ConfigureAwait(false);
 
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // Iterates over the entries and saves them in a list so that the connection can be closed before returning the results.
+                var entry = await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                list.Add(entry);
+            }
+        }
+
+        foreach (var item in list)
         {
-            yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+            yield return item;
         }
     }
 
