@@ -25,7 +25,6 @@ public sealed class GPT4Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        var tokens = s_tokenizer.Encode(text, out var normalizedString);
-        return tokens.Select(t => t.Value).ToArray();
+        return s_tokenizer.Encode(text, out string? _).Select(t => t.Value).ToList();
     }
 }
