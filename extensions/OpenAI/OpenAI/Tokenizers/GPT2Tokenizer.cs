@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.ML.Tokenizers;
 
 // ReSharper disable once CheckNamespace
@@ -24,6 +25,7 @@ public sealed class GPT2Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text).Tokens;
+        var tokens = s_tokenizer.Encode(text, out var normalizedString);
+        return tokens.Select(t => t.Value).ToArray();
     }
 }
