@@ -8,11 +8,13 @@ using Microsoft.ML.Tokenizers;
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
 /// <summary>
-/// TikToken GPT3 tokenizer (p50k_base.tiktoken)
+/// GPT 4o / 4o mini tokenizer (cl200k_base.tiktoken + special tokens)
 /// </summary>
-public sealed class GPT3Tokenizer : ITextTokenizer
+// ReSharper disable once InconsistentNaming
+public sealed class GPT4oTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("text-davinci-003");
+    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4o",
+        new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />
     public int CountTokens(string text)
