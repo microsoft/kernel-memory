@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.ML.Tokenizers;
 
 // ReSharper disable once CheckNamespace
@@ -24,6 +25,6 @@ public sealed class GPT4Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text).Tokens;
+        return s_tokenizer.Encode(text, out string? _).Select(t => t.Value).ToList();
     }
 }
