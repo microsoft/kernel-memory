@@ -166,6 +166,12 @@ internal static class Program
         Console.WriteLine("* Log level           : " + app.Logger.GetLogLevelName());
         Console.WriteLine("***************************************************************************************************************************");
 
+        // health probe
+        app.MapGet("/health", () => Results.Ok("Service is running."))
+                        .Produces<string>(StatusCodes.Status200OK)
+                        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+                        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
         app.Logger.LogInformation(
             "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
             env,
