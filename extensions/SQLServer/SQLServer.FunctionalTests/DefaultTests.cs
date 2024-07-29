@@ -23,6 +23,7 @@ public class DefaultTests : BaseFunctionalTestCase
 
         this._memory = builder
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+            .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
