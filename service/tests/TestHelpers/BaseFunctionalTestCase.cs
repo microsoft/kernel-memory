@@ -2,6 +2,8 @@
 
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
@@ -59,26 +61,24 @@ public abstract class BaseFunctionalTestCase : IDisposable
 
     protected IKernelMemory GetServerlessMemory(string memoryType)
     {
+        var builder = new KernelMemoryBuilder()
+            .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
+            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+            .WithOpenAI(this.OpenAiConfig);
+
         switch (memoryType)
         {
             case "default":
-                return new KernelMemoryBuilder()
-                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-                    .WithOpenAI(this.OpenAiConfig)
-                    .Build<MemoryServerless>();
+                return builder.Build<MemoryServerless>();
 
             case "simple_on_disk":
-                return new KernelMemoryBuilder()
-                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-                    .WithOpenAI(this.OpenAiConfig)
+                return builder
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { Directory = "_vectors", StorageType = FileSystemTypes.Disk })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { Directory = "_files", StorageType = FileSystemTypes.Disk })
                     .Build<MemoryServerless>();
 
             case "simple_volatile":
-                return new KernelMemoryBuilder()
-                    .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-                    .WithOpenAI(this.OpenAiConfig)
+                return builder
                     .WithSimpleVectorDb(new SimpleVectorDbConfig { StorageType = FileSystemTypes.Volatile })
                     .WithSimpleFileStorage(new SimpleFileStorageConfig { StorageType = FileSystemTypes.Volatile })
                     .Build<MemoryServerless>();
