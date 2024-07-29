@@ -272,16 +272,11 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         }
 
         string queryColumns = "[key], [payload], [tags]";
+        if (withEmbeddings) { queryColumns += ", [embedding]"; }
 
-        if (withEmbeddings)
-        {
-            queryColumns += ", [embedding]";
-        }
+        if (limit < 0) { limit = int.MaxValue; }
 
-        if (limit < 0)
-        {
-            limit = int.MaxValue;
-        }
+        var list = new List<MemoryRecord>();
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -291,20 +286,20 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             var tagFilters = new TagCollection();
 
             command.CommandText = $@"
-            WITH [filters] AS
-		    (
-			    SELECT
-				    cast([filters].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [name],
-				    cast([filters].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [value]
-			    FROM openjson(@filters) [filters]
-		    )
-            SELECT TOP (@limit)
-                {queryColumns}
-            FROM
-                {this.GetFullTableName(this._config.MemoryTableName)}
-		    WHERE 1=1
-            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-            {this.GenerateFilters(index, command.Parameters, filters)};";
+                WITH [filters] AS
+		        (
+			        SELECT
+				        cast([filters].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [name],
+				        cast([filters].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [value]
+			        FROM openjson(@filters) [filters]
+		        )
+                SELECT TOP (@limit)
+                    {queryColumns}
+                FROM
+                    {this.GetFullTableName(this._config.MemoryTableName)}
+		        WHERE 1=1
+                AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+                {this.GenerateFilters(index, command.Parameters, filters)};";
 
             command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@limit", limit);
@@ -313,7 +308,9 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                // Iterates over the entries and saves them in a list so that the connection can be closed before returning the results.
+                var entry = await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                list.Add(entry);
             }
 
             await dataReader.DisposeAsync().ConfigureAwait(false);
@@ -322,6 +319,11 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         {
             command.Dispose();
             connection.Dispose();
+        }
+
+        foreach (var item in list)
+        {
+            yield return item;
         }
     }
 
