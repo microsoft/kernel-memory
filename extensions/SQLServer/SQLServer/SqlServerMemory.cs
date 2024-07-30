@@ -78,19 +78,26 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        var sql = $"""
+        var sql = $@"
             BEGIN TRANSACTION;
-            
+
             INSERT INTO {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id])
             VALUES (@index);
-                      
+
+            IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}', N'U') IS NULL
+            CREATE TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
+            (
+                [memory_id] UNIQUEIDENTIFIER NOT NULL,
+                [vector_value_id] [int] NOT NULL,
+                [vector_value] [float] NOT NULL
+                FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._config.MemoryTableName)}([id])
+            );
+
+            IF OBJECT_ID(N'[{this._config.Schema}.IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]', N'U') IS NULL
+            CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]
+            ON {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
+            {(this._cachedServerVersion >= 16 ? "ORDER ([memory_id])" : "")};
+
             IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.TagsTableName}_{index}")}', N'U') IS NULL
             CREATE TABLE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")}
             (
@@ -99,36 +106,24 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                 [value] NVARCHAR(256) NOT NULL,
                 FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._config.MemoryTableName)}([id])
             );
-            """;
 
-        if (!this._config.UseVectorSearch)
+            COMMIT;";
+
+        var connection = new SqlConnection(this._config.ConnectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            sql += $"""
-                IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}', N'U') IS NULL
-                CREATE TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
-                (
-                    [memory_id] UNIQUEIDENTIFIER NOT NULL,
-                    [vector_value_id] [int] NOT NULL,
-                    [vector_value] [float] NOT NULL,
-                    FOREIGN KEY ([memory_id]) REFERENCES {this.GetFullTableName(this._config.MemoryTableName)}([id])
-                );
-
-                IF OBJECT_ID(N'[{this._config.Schema}.IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]', N'U') IS NULL
-                CREATE CLUSTERED COLUMNSTORE INDEX [IXC_{$"{this._config.EmbeddingsTableName}_{index}"}]
-                ON {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}
-                {(this._cachedServerVersion >= 16 ? "ORDER ([memory_id])" : "")};
-                """;
+            SqlCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddWithValue("@index", index);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            command.Dispose();
         }
-
-        command.CommandText = $"""
-                        {sql}
-
-                        COMMIT;
-                        """;
-
-        command.Parameters.AddWithValue("@index", index);
-
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        finally
+        {
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
     }
 
     /// <inheritdoc/>
@@ -144,15 +139,15 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        var sql = $"""
+        var sql = $@"
             BEGIN TRANSACTION;
+
+            DELETE [embeddings]
+            FROM {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} [embeddings]
+            INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [embeddings].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
+            WHERE
+                {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+            AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;
 
             DELETE [tags]
             FROM {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} [tags]
@@ -161,33 +156,27 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                 {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
             AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;
 
-           """;
+            DELETE FROM {this.GetFullTableName(this._config.MemoryTableName)} WHERE [collection] = @index AND [key]=@key;
 
-        if (!this._config.UseVectorSearch)
+            COMMIT;";
+
+        var connection = new SqlConnection(this._config.ConnectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            sql += $"""
-                DELETE [embeddings]
-                FROM {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} [embeddings]
-                INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [embeddings].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
-                WHERE
-                    {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-                AND {this.GetFullTableName(this._config.MemoryTableName)}.[key]=@key;
+            SqlCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.Parameters.AddWithValue("@index", index);
+            command.Parameters.AddWithValue("@key", record.Id);
 
-                """;
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            command.Dispose();
         }
-
-        sql += $"""                
-                DELETE FROM {this.GetFullTableName(this._config.MemoryTableName)} WHERE [collection] = @index AND [key]=@key;
-                
-                COMMIT;
-                """;
-
-        command.CommandText = sql;
-
-        command.Parameters.AddWithValue("@index", index);
-        command.Parameters.AddWithValue("@key", record.Id);
-
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        finally
+        {
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
     }
 
     /// <inheritdoc/>
@@ -203,29 +192,32 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        command.CommandText = $"""
+        var sql = $@"
             BEGIN TRANSACTION;
 
-            IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}', N'U') IS NOT NULL
             DROP TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")};
             DROP TABLE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")};
 
             DELETE FROM {this.GetFullTableName(this._config.MemoryCollectionTableName)}
                              WHERE [id] = @index;
 
-            COMMIT;
-            """;
+            COMMIT;";
 
-        command.Parameters.AddWithValue("@index", index);
-
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        var connection = new SqlConnection(this._config.ConnectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        SqlCommand command = connection.CreateCommand();
+        try
+        {
+            command.CommandText = sql;
+            command.Parameters.AddWithValue("@index", index);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            command.Dispose();
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
     }
 
     /// <inheritdoc/>
@@ -235,28 +227,39 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         List<string> indexes = new();
 
+        var sql = $"SELECT [id] FROM {this.GetFullTableName(this._config.MemoryCollectionTableName)}";
+
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
         SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        command.CommandText = $"SELECT [id] FROM {this.GetFullTableName(this._config.MemoryCollectionTableName)}";
-
-        var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        await using var disposableReader = dataReader.ConfigureAwait(false);
-
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            indexes.Add(dataReader.GetString(dataReader.GetOrdinal("id")));
+            command.CommandText = sql;
+            var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                indexes.Add(dataReader.GetString(dataReader.GetOrdinal("id")));
+            }
+
+            await dataReader.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            command.Dispose();
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
         }
 
         return indexes;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetListAsync(string index, ICollection<MemoryFilter>? filters = null, int limit = 1, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<MemoryRecord> GetListAsync(
+        string index,
+        ICollection<MemoryFilter>? filters = null,
+        int limit = 1,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
@@ -269,59 +272,58 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         }
 
         string queryColumns = "[key], [payload], [tags]";
+        if (withEmbeddings) { queryColumns += ", [embedding]"; }
 
-        if (withEmbeddings)
-        {
-            if (this._config.UseVectorSearch)
-            {
-                queryColumns += ", VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]";
-            }
-            else
-            {
-                queryColumns += ", [embedding]";
-            }
-        }
+        if (limit < 0) { limit = int.MaxValue; }
 
-        if (limit < 0)
-        {
-            limit = int.MaxValue;
-        }
+        var list = new List<MemoryRecord>();
 
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
         SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        var tagFilters = new TagCollection();
-
-        command.CommandText = $@"
-            WITH [filters] AS
-		    (
-			    SELECT
-				    cast([filters].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [name],
-				    cast([filters].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [value]
-			    FROM openjson(@filters) [filters]
-		    )
-            SELECT TOP (@limit)
-                {queryColumns}
-            FROM
-                {this.GetFullTableName(this._config.MemoryTableName)}
-		    WHERE 1=1
-            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-            {this.GenerateFilters(index, command.Parameters, filters)};";
-
-        command.Parameters.AddWithValue("@index", index);
-        command.Parameters.AddWithValue("@limit", limit);
-        command.Parameters.AddWithValue("@filters", JsonSerializer.Serialize(tagFilters));
-
-        var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        await using var disposableReader = dataReader.ConfigureAwait(false);
-
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            yield return await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+            var tagFilters = new TagCollection();
+
+            command.CommandText = $@"
+                WITH [filters] AS
+		        (
+			        SELECT
+				        cast([filters].[key] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [name],
+				        cast([filters].[value] AS NVARCHAR(256)) COLLATE SQL_Latin1_General_CP1_CI_AS AS [value]
+			        FROM openjson(@filters) [filters]
+		        )
+                SELECT TOP (@limit)
+                    {queryColumns}
+                FROM
+                    {this.GetFullTableName(this._config.MemoryTableName)}
+		        WHERE 1=1
+                AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+                {this.GenerateFilters(index, command.Parameters, filters)};";
+
+            command.Parameters.AddWithValue("@index", index);
+            command.Parameters.AddWithValue("@limit", limit);
+            command.Parameters.AddWithValue("@filters", JsonSerializer.Serialize(tagFilters));
+
+            var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // Iterates over the entries and saves them in a list so that the connection can be closed before returning the results.
+                var entry = await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false);
+                list.Add(entry);
+            }
+
+            await dataReader.DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            command.Dispose();
+            connection.Dispose();
+        }
+
+        foreach (var item in list)
+        {
+            yield return item;
         }
     }
 
@@ -347,49 +349,17 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         if (withEmbeddings)
         {
-            if (this._config.UseVectorSearch)
-            {
-                queryColumns += $"," +
-                            $"VECTOR_TO_JSON_ARRAY({this.GetFullTableName(this._config.MemoryTableName)}.[embedding]) AS [embedding]";
-            }
-            else
-            {
-                queryColumns += $"," +
-                                $"{this.GetFullTableName(this._config.MemoryTableName)}.[embedding]";
-            }
+            queryColumns += $"," +
+                            $"{this.GetFullTableName(this._config.MemoryTableName)}.[embedding]";
         }
 
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
         SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        var generatedFilters = this.GenerateFilters(index, command.Parameters, filters);
-        string? sql = null;
-
-        if (this._config.UseVectorSearch)
+        try
         {
-            var maxDistance = 1 - minRelevance;
-
-            sql = $"""
-                SELECT TOP (@limit)
-                    {queryColumns},
-                    VECTOR_DISTANCE('cosine', JSON_ARRAY_TO_VECTOR(@vector), Embedding) AS [distance] 
-                FROM
-                    {this.GetFullTableName(this._config.MemoryTableName)}
-                WHERE 1=1
-                AND VECTOR_DISTANCE('cosine', JSON_ARRAY_TO_VECTOR(@vector), Embedding) <= @max_distance
-                {generatedFilters}
-                ORDER BY [distance] ASC
-                """;
-
-            command.Parameters.AddWithValue("@max_distance", maxDistance);
-        }
-        else
-        {
-            sql = $"""
+            var generatedFilters = this.GenerateFilters(index, command.Parameters, filters);
+            command.CommandText = $@"
                 WITH
                 [embedding] as
                 (
@@ -433,35 +403,27 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                 WHERE 1=1
                 AND [cosine_similarity] >= @min_relevance_score
                 {generatedFilters}
-                ORDER BY [cosine_similarity] desc
-                """;
+                ORDER BY [cosine_similarity] desc";
 
+            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data.ToArray()));
+            command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@min_relevance_score", minRelevance);
+            command.Parameters.AddWithValue("@limit", limit);
+
+            var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                double cosineSimilarity = dataReader.GetDouble(dataReader.GetOrdinal("cosine_similarity"));
+                yield return (await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false), cosineSimilarity);
+            }
+
+            await dataReader.DisposeAsync().ConfigureAwait(false);
         }
-
-        command.CommandText = sql;
-
-        command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data.ToArray()));
-        command.Parameters.AddWithValue("@index", index);
-        command.Parameters.AddWithValue("@limit", limit);
-
-        var dataReader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        await using var disposableReader = dataReader.ConfigureAwait(false);
-
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        finally
         {
-            double cosineSimilarity = 0;
-            if (this._config.UseVectorSearch)
-            {
-                double distance = dataReader.GetDouble(dataReader.GetOrdinal("distance"));
-                cosineSimilarity = 1 - distance;
-            }
-            else
-            {
-                cosineSimilarity = dataReader.GetDouble(dataReader.GetOrdinal("cosine_similarity"));
-            }
-
-            yield return (await this.ReadEntryAsync(dataReader, withEmbeddings, cancellationToken).ConfigureAwait(false), cosineSimilarity);
+            command.Dispose();
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
         }
     }
 
@@ -481,6 +443,9 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> UpsertBatchAsync(string index, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        List<MemoryRecord> list = records.ToList();
+        this._log.LogDebug("Upserting records, batch size {0}", list.Count);
+
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
         index = NormalizeIndexName(index);
@@ -490,77 +455,45 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             throw new IndexNotFoundException($"The index '{index}' does not exist.");
         }
 
-        var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        foreach (var record in records)
-        {
-            SqlCommand command = connection.CreateCommand();
-            await using var disposableCommand = command.ConfigureAwait(false);
-
-            string sql = """
+        var sql = $@"
                 BEGIN TRANSACTION;
 
-                """;
+                MERGE INTO {this.GetFullTableName(this._config.MemoryTableName)}
+                USING (SELECT @key) as [src]([key])
+                ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
+                WHEN MATCHED THEN
+                    UPDATE SET payload=@payload, embedding=@embedding, tags=@tags
+                WHEN NOT MATCHED THEN
+                    INSERT ([id], [key], [collection], [payload], [tags], [embedding])
+                    VALUES (NEWID(), @key, @index, @payload, @tags, @embedding);
 
-            if (this._config.UseVectorSearch)
-            {
-                sql += $"""
-                    MERGE INTO {this.GetFullTableName(this._config.MemoryTableName)}
-                    USING (SELECT @key) as [src]([key])
-                    ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
-                    WHEN MATCHED THEN
-                        UPDATE SET payload=@payload, embedding=JSON_ARRAY_TO_VECTOR(@embedding), tags=@tags
-                    WHEN NOT MATCHED THEN
-                        INSERT ([id], [key], [collection], [payload], [tags], [embedding])
-                        VALUES (NEWID(), @key, @index, @payload, @tags, JSON_ARRAY_TO_VECTOR(@embedding));
+                MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]
+                USING (
+                    SELECT
+                        {this.GetFullTableName(this._config.MemoryTableName)}.[id],
+                        cast([vector].[key] AS INT) AS [vector_value_id],
+                        cast([vector].[value] AS FLOAT) AS [vector_value]
+                    FROM {this.GetFullTableName(this._config.MemoryTableName)}
+                    CROSS APPLY
+                        openjson(@embedding) [vector]
+                    WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
+                        AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
+                ) AS [src]
+                ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
+                WHEN MATCHED THEN
+                    UPDATE SET [tgt].[vector_value] = [src].[vector_value]
+                WHEN NOT MATCHED THEN
+                    INSERT ([memory_id], [vector_value_id], [vector_value])
+                    VALUES ([src].[id],
+                            [src].[vector_value_id],
+                            [src].[vector_value] );
 
-                    """;
-            }
-            else
-            {
-                sql += $"""
-                    MERGE INTO {this.GetFullTableName(this._config.MemoryTableName)}
-                    USING (SELECT @key) as [src]([key])
-                    ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
-                    WHEN MATCHED THEN
-                        UPDATE SET payload=@payload, embedding=@embedding, tags=@tags
-                    WHEN NOT MATCHED THEN
-                        INSERT ([id], [key], [collection], [payload], [tags], [embedding])
-                        VALUES (NEWID(), @key, @index, @payload, @tags, @embedding);
-                    
-                    MERGE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")} AS [tgt]
-                    USING (
-                        SELECT
-                            {this.GetFullTableName(this._config.MemoryTableName)}.[id],
-                            cast([vector].[key] AS INT) AS [vector_value_id],
-                            cast([vector].[value] AS FLOAT) AS [vector_value]
-                        FROM {this.GetFullTableName(this._config.MemoryTableName)}
-                        CROSS APPLY
-                            openjson(@embedding) [vector]
-                        WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
-                            AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
-                    ) AS [src]
-                    ON [tgt].[memory_id] = [src].[id] AND [tgt].[vector_value_id] = [src].[vector_value_id]
-                    WHEN MATCHED THEN
-                        UPDATE SET [tgt].[vector_value] = [src].[vector_value]
-                    WHEN NOT MATCHED THEN
-                        INSERT ([memory_id], [vector_value_id], [vector_value])
-                        VALUES ([src].[id],
-                                [src].[vector_value_id],
-                                [src].[vector_value] );
-
-                    """;
-            }
-
-            sql += $"""
                 DELETE FROM [tgt]
                 FROM  {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
                 INNER JOIN {this.GetFullTableName(this._config.MemoryTableName)} ON [tgt].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
                 WHERE {this.GetFullTableName(this._config.MemoryTableName)}.[key] = @key
                         AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index;
-                
+
                 MERGE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
                 USING (
                     SELECT
@@ -581,21 +514,32 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                     VALUES ([src].[id],
                             [src].[tag_name],
                             [src].[value]);
-                
-                COMMIT;
-                """;
 
-            command.CommandText = sql;
+                COMMIT;";
 
-            command.Parameters.AddWithValue("@index", index);
-            command.Parameters.AddWithValue("@key", record.Id);
-            command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
+        var connection = new SqlConnection(this._config.ConnectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            foreach (var record in list)
+            {
+                SqlCommand command = connection.CreateCommand();
+                command.CommandText = sql;
+                command.Parameters.AddWithValue("@index", index);
+                command.Parameters.AddWithValue("@key", record.Id);
+                command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
+                await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                command.Dispose();
 
-            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
-            yield return record.Id;
+                yield return record.Id;
+            }
+        }
+        finally
+        {
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
         }
     }
 
@@ -639,17 +583,21 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     private async Task CacheSqlServerMajorVersionNumberAsync(CancellationToken cancellationToken)
     {
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
         SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
 
-        command.CommandText = "SELECT SERVERPROPERTY('ProductMajorVersion')";
-
-        var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-
-        this._cachedServerVersion = Convert.ToInt32(result, CultureInfo.InvariantCulture);
+        try
+        {
+            command.CommandText = "SELECT SERVERPROPERTY('ProductMajorVersion')";
+            var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            this._cachedServerVersion = Convert.ToInt32(result, CultureInfo.InvariantCulture);
+        }
+        finally
+        {
+            command.Dispose();
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
     }
 
     /// <summary>
@@ -658,63 +606,43 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <returns></returns>
     private async Task CreateTablesIfNotExistsAsync(CancellationToken cancellationToken)
     {
-        var sql = $"""
-                IF NOT EXISTS (SELECT  *
-                                FROM    sys.schemas
-                                WHERE   name = N'{this._config.Schema}' )
-                EXEC('CREATE SCHEMA [{this._config.Schema}]');
-                IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryCollectionTableName)}', N'U') IS NULL
-                CREATE TABLE {this.GetFullTableName(this._config.MemoryCollectionTableName)}
-                (   [id] NVARCHAR(256) NOT NULL,
-                    PRIMARY KEY ([id])
-                );
+        var sql = $@"IF NOT EXISTS (SELECT  *
+                                    FROM    sys.schemas
+                                    WHERE   name = N'{this._config.Schema}' )
+                    EXEC('CREATE SCHEMA [{this._config.Schema}]');
+                    IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryCollectionTableName)}', N'U') IS NULL
+                    CREATE TABLE {this.GetFullTableName(this._config.MemoryCollectionTableName)}
+                    (   [id] NVARCHAR(256) NOT NULL,
+                        PRIMARY KEY ([id])
+                    );
 
-                """;
-
-        if (this._config.UseVectorSearch)
-        {
-            sql += $"""
-                IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryTableName)}', N'U') IS NULL
-                CREATE TABLE {this.GetFullTableName(this._config.MemoryTableName)}
-                (   [id] UNIQUEIDENTIFIER NOT NULL,
-                    [key] NVARCHAR(256)  NOT NULL,
-                    [collection] NVARCHAR(256) NOT NULL,
-                    [payload] NVARCHAR(MAX),
-                    [tags] NVARCHAR(MAX),
-                    [embedding] VARBINARY(8000),
-                    PRIMARY KEY ([id]),
-                    FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
-                    CONSTRAINT UK_{this._config.MemoryTableName} UNIQUE([collection], [key])
-                );
-                """;
-        }
-        else
-        {
-            sql += $"""
-                IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryTableName)}', N'U') IS NULL
-                CREATE TABLE {this.GetFullTableName(this._config.MemoryTableName)}
-                (   [id] UNIQUEIDENTIFIER NOT NULL,
-                    [key] NVARCHAR(256)  NOT NULL,
-                    [collection] NVARCHAR(256) NOT NULL,
-                    [payload] NVARCHAR(MAX),
-                    [tags] NVARCHAR(MAX),
-                    [embedding] NVARCHAR(MAX),
-                    PRIMARY KEY ([id]),
-                    FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
-                    CONSTRAINT UK_{this._config.MemoryTableName} UNIQUE([collection], [key])
-                );
-                """;
-        }
+                    IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryTableName)}', N'U') IS NULL
+                    CREATE TABLE {this.GetFullTableName(this._config.MemoryTableName)}
+                    (   [id] UNIQUEIDENTIFIER NOT NULL,
+                        [key] NVARCHAR(256)  NOT NULL,
+                        [collection] NVARCHAR(256) NOT NULL,
+                        [payload] NVARCHAR(MAX),
+                        [tags] NVARCHAR(MAX),
+                        [embedding] NVARCHAR(MAX),
+                        PRIMARY KEY ([id]),
+                        FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
+                        CONSTRAINT UK_{this._config.MemoryTableName} UNIQUE([collection], [key])
+                    );";
 
         var connection = new SqlConnection(this._config.ConnectionString);
-        await using var disposableConnection = connection.ConfigureAwait(false);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-
         SqlCommand command = connection.CreateCommand();
-        await using var disposableCommand = command.ConfigureAwait(false);
-
-        command.CommandText = sql;
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            command.CommandText = sql;
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            command.Dispose();
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
     }
 
     /// <summary>
@@ -747,7 +675,10 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <param name="parameters">The SQL parameters to populate.</param>
     /// <param name="filters">The filters to apply</param>
     /// <returns></returns>
-    private string GenerateFilters(string index, SqlParameterCollection parameters, ICollection<MemoryFilter>? filters = null)
+    private string GenerateFilters(
+        string index,
+        SqlParameterCollection parameters,
+        ICollection<MemoryFilter>? filters = null)
     {
         var filterBuilder = new StringBuilder();
 

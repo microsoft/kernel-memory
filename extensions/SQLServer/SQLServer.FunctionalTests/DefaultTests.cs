@@ -2,6 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
+using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KM.TestHelpers;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SQLServer.FunctionalTests;
 public class DefaultTests : BaseFunctionalTestCase
 {
     private readonly MemoryServerless _memory;
+    private readonly IMemoryDb _memoryDb;
 
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
@@ -17,14 +19,20 @@ public class DefaultTests : BaseFunctionalTestCase
 
         SqlServerConfig sqlServerConfig = cfg.GetSection("KernelMemory:Services:SqlServer").Get<SqlServerConfig>()!;
 
-        this._memory = new KernelMemoryBuilder()
+        var builder = new KernelMemoryBuilder();
+
+        this._memory = builder
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+            .Configure(kmb => kmb.Services.AddLogging(b => { b.AddConsole().SetMinimumLevel(LogLevel.Trace); }))
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
             // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
             // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
             .WithSqlServerMemoryDb(sqlServerConfig)
             .Build<MemoryServerless>();
+
+        var serviceProvider = builder.Services.BuildServiceProvider();
+        this._memoryDb = serviceProvider.GetService<IMemoryDb>()!;
     }
 
     [Fact]
@@ -102,6 +110,13 @@ public class DefaultTests : BaseFunctionalTestCase
     public async Task ItSupportsTags()
     {
         await DocumentUploadTest.ItSupportsTags(this._memory, this.Log);
+    }
+
+    [Fact]
+    [Trait("Category", "SQLServer")]
+    public async Task ItDeletesRecords()
+    {
+        await RecordDeletionTest.ItDeletesRecords(this._memory, this._memoryDb, this.Log);
     }
 
     [Fact]
