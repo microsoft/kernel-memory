@@ -50,6 +50,15 @@ public interface ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default);
 
+
+    IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// List the available memory indexes (aka collections).
     /// </summary>

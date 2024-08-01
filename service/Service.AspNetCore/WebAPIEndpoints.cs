@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -29,6 +30,7 @@ public static class WebAPIEndpoints
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
         builder.AddAskEndpoint(apiPrefix, authFilter);
+        builder.AddAskChunkEndpoint(apiPrefix, authFilter);
         builder.AddSearchEndpoint(apiPrefix, authFilter);
         builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
         builder.AddGetDownloadEndpoint(apiPrefix, authFilter);
@@ -234,7 +236,58 @@ public static class WebAPIEndpoints
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
+    public static void AddAskChunkEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
+        // Ask endpoint
+        var route = group.MapPost(Constants.HttpAskChunkEndpoint,
+                async Task (
+                    HttpContext httpContext,
+                    MemoryQuery query,
+                    IKernelMemory service,
+                    ILogger<KernelMemoryWebAPI> log,
+                    IContextProvider contextProvider,
+                    CancellationToken cancellationToken) =>
+                {
+                    // Allow internal classes to access custom arguments via IContextProvider
+                    contextProvider.InitContextArgs(query.ContextArguments);
+                    httpContext.Response.ContentType = "text/event-stream";
+                    log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+                    try
+                    {
+                        var answerStream = await service.AskAsyncChunk(
+                            question: query.Question,
+                            index: query.Index,
+                            filters: query.Filters,
+                            minRelevance: query.MinRelevance,
+                            context: contextProvider.GetContext(),
+                            cancellationToken: cancellationToken
+                        ).ConfigureAwait(false);
+
+                        await foreach (var answer in answerStream.ConfigureAwait(false))
+                        {
+                            string json = JsonSerializer.Serialize(answer);
+                            await httpContext.Response.WriteAsync($"data: {json}\n\n", cancellationToken).ConfigureAwait(false);
+                            await httpContext.Response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.LogError(ex, "Error occurred while streaming resp");
+                        string errorJson = JsonSerializer.Serialize(new { error = "An error occurred while processing the request." });
+                        await httpContext.Response.WriteAsync($"data: {errorJson}\n\n", cancellationToken).ConfigureAwait(false);
+                        await httpContext.Response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                })
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+            .RequireCors("KM-CORS");
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
     public static void AddSearchEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {

@@ -48,6 +48,8 @@ public static class Constants
         public static class Rag
 
         {
+            // Used to override EosToken config for streaming
+            public const string EosToken = "custom_rag_eos_token_str";
             // Used to override No Answer config
             public const string EmptyAnswer = "custom_rag_empty_answer_str";
 
@@ -112,6 +114,8 @@ public static class Constants
     public const string ReservedPayloadVectorGeneratorField = "vector_generator";
 
     // Endpoints
+
+    public const string HttpAskChunkEndpoint = "/ask_stream";
     public const string HttpAskEndpoint = "/ask";
     public const string HttpSearchEndpoint = "/search";
     public const string HttpDownloadEndpoint = "/download";

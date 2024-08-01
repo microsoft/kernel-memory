@@ -228,4 +228,13 @@ public interface IKernelMemory
         double minRelevance = 0,
         IContext? context = null,
         CancellationToken cancellationToken = default);
+
+    public Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        CancellationToken cancellationToken = default);
 }

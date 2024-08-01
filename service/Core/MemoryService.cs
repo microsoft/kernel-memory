@@ -253,4 +253,30 @@ public sealed class MemoryService : IKernelMemory
             context: context,
             cancellationToken: cancellationToken);
     }
+
+    public Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        index = IndexName.CleanName(index, this._defaultIndexName);
+        return Task.FromResult<IAsyncEnumerable<MemoryAnswer>>(this._searchClient.AskAsyncChunk(
+            index: index,
+            question: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            context: context,
+            cancellationToken: cancellationToken));
+    }
 }
