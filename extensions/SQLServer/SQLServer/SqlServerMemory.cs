@@ -47,7 +47,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <summary>
     /// The interface that is responsible for getting queries against the SQL Server database.
     /// </summary>
-    private readonly ISqlServerQueryProvider _queryProvider;
+    private readonly SqlServerQueryProvider _queryProvider;
 
     /// <summary>
     /// SQL Server version, retrieved on the first connection

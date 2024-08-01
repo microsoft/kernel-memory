@@ -65,5 +65,8 @@ public class SqlServerConfig
     /// <summary>
     /// It tells if we should use the vector search or not.
     /// </summary>
+    /// <remarks>
+    /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
+    /// </remarks>
     public bool UseVectorSearch { get; set; } = false;
 }

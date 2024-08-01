@@ -1,21 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Globalization;
-using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace Microsoft.KernelMemory.MemoryDb.SQLServer.QueryProviders;
 
-internal sealed class VectorQueryProvider : ISqlServerQueryProvider
+internal sealed class VectorQueryProvider : SqlServerQueryProvider
 {
-    private readonly SqlServerConfig _config;
-
-    public VectorQueryProvider(SqlServerConfig config)
+    public VectorQueryProvider(SqlServerConfig config) : base(config)
     {
-        this._config = config;
     }
 
-    public string GetCreateIndexQuery(int sqlServerVersion, string index, int vectorSize)
+    public override string GetCreateIndexQuery(int sqlServerVersion, string index, int vectorSize)
     {
         var sql = $"""
             BEGIN TRANSACTION;
@@ -38,7 +33,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetDeleteQuery(string index)
+    public override string GetDeleteQuery(string index)
     {
         var sql = $"""
             BEGIN TRANSACTION;
@@ -58,7 +53,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetIndexDeleteQuery(string index)
+    public override string GetIndexDeleteQuery(string index)
     {
         var sql = $"""
             BEGIN TRANSACTION;
@@ -76,13 +71,13 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetIndexesQuery()
+    public override string GetIndexesQuery()
     {
         var sql = $"SELECT [id] FROM {this.GetFullTableName(this._config.MemoryCollectionTableName)}";
         return sql;
     }
 
-    public string GetListQuery(string index,
+    public override string GetListQuery(string index,
             ICollection<MemoryFilter>? filters,
             bool withEmbeddings,
             SqlParameterCollection parameters)
@@ -110,7 +105,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetSimilarityListQuery(string index,
+    public override string GetSimilarityListQuery(string index,
         ICollection<MemoryFilter>? filters,
         bool withEmbedding,
         SqlParameterCollection parameters)
@@ -143,7 +138,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetUpsertBatchQuery(string index)
+    public override string GetUpsertBatchQuery(string index)
     {
         var sql = $"""
                 BEGIN TRANSACTION;
@@ -190,7 +185,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         return sql;
     }
 
-    public string GetCreateTablesQuery()
+    public override string GetCreateTablesQuery()
     {
         var sql = $"""
                 IF NOT EXISTS (SELECT  *
@@ -218,77 +213,5 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
                 """;
 
         return sql;
-    }
-
-    /// <summary>
-    /// Gets the full table name with schema.
-    /// </summary>
-    /// <param name="tableName">The table name.</param>
-    private string GetFullTableName(string tableName)
-    {
-        return $"[{this._config.Schema}].[{tableName}]";
-    }
-
-    /// <summary>
-    /// Generates the filters as SQL commands and sets the SQL parameters
-    /// </summary>
-    /// <param name="index">The index name.</param>
-    /// <param name="parameters">The SQL parameters to populate.</param>
-    /// <param name="filters">The filters to apply</param>
-    private string GenerateFilters(
-        string index,
-        SqlParameterCollection parameters,
-        ICollection<MemoryFilter>? filters)
-    {
-        var filterBuilder = new StringBuilder();
-
-        if (filters is null || filters.Count <= 0 || filters.All(f => f.Count <= 0))
-        {
-            return string.Empty;
-        }
-
-        filterBuilder.Append("AND ( ");
-
-        for (int i = 0; i < filters.Count; i++)
-        {
-            var filter = filters.ElementAt(i);
-
-            if (i > 0)
-            {
-                filterBuilder.Append(" OR ");
-            }
-
-            for (int j = 0; j < filter.Pairs.Count(); j++)
-            {
-                var value = filter.Pairs.ElementAt(j);
-
-                if (j > 0)
-                {
-                    filterBuilder.Append(" AND ");
-                }
-
-                filterBuilder.Append(" ( ");
-
-                filterBuilder.Append(CultureInfo.CurrentCulture, $@"EXISTS (
-                         SELECT
-	                        1
-                        FROM {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tags]
-                        WHERE
-	                        [tags].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
-                            AND [name] = @filter_{i}_{j}_name
-                            AND [value] = @filter_{i}_{j}_value
-                        )
-                    ");
-
-                filterBuilder.Append(" ) ");
-
-                parameters.AddWithValue($"@filter_{i}_{j}_name", value.Key);
-                parameters.AddWithValue($"@filter_{i}_{j}_value", value.Value);
-            }
-        }
-
-        filterBuilder.Append(" )");
-
-        return filterBuilder.ToString();
     }
 }
