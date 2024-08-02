@@ -66,6 +66,7 @@ public class SqlServerConfig
     /// It tells if we should use the vector search or not.
     /// </summary>
     /// <remarks>
+    /// Currently, Vector Search supports only Azure SQL Database and can handle vectors up to 1998 dimensions.
     /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
     /// </remarks>
     public bool UseVectorSearch { get; set; } = false;
