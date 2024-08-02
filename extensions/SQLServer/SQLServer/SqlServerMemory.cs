@@ -150,7 +150,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var sql = this._queryProvider.GetIndexDeleteQuery(index);
+        var sql = this._queryProvider.GetDeleteIndexQuery(index);
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);

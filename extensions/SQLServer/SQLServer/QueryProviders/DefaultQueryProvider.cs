@@ -74,12 +74,11 @@ internal sealed class DefaultQueryProvider : SqlServerQueryProvider
         return sql;
     }
 
-    public override string GetIndexDeleteQuery(string index)
+    public override string GetDeleteIndexQuery(string index)
     {
         var sql = $"""
             BEGIN TRANSACTION;
 
-            IF OBJECT_ID(N'{this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")}', N'U') IS NOT NULL
             DROP TABLE {this.GetFullTableName($"{this._config.EmbeddingsTableName}_{index}")};
             DROP TABLE {this.GetFullTableName($"{this._config.TagsTableName}_{index}")};
 

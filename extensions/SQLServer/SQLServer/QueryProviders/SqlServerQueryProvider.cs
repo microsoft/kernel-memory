@@ -19,7 +19,7 @@ internal abstract class SqlServerQueryProvider
 
     public abstract string GetDeleteQuery(string index);
 
-    public abstract string GetIndexDeleteQuery(string index);
+    public abstract string GetDeleteIndexQuery(string index);
 
     public abstract string GetIndexesQuery();
 
