@@ -18,19 +18,32 @@ internal static class AzureBlobs
         {
             config = new Dictionary<string, object>
             {
-                { "Auth", "ConnectionString" },
                 { "Account", "" },
-                { "Container", "smemory" },
+                { "Container", "kmemory" },
+                { "Auth", "ConnectionString" },
                 { "ConnectionString", "" },
             };
         }
 
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
-            { "Auth", "ConnectionString" },
-            { "Container", SetupUI.AskOpenQuestion("Azure Blobs <container name>", config["Container"].ToString()) },
-            { "Account", SetupUI.AskOpenQuestion("Azure Blobs <account name>", config["Account"].ToString()) },
-            { "ConnectionString", SetupUI.AskPassword("Azure Blobs <connection string>", config["ConnectionString"].ToString()) },
+            Title = $"[{ServiceName}] Which type of authentication do you want to use?",
+            Options =
+            [
+                new("Azure Identity (Entra)", config["Auth"].ToString() == "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "AzureIdentity";
+                    x.Services[ServiceName].Remove("ConnectionString");
+                })),
+                new("Connection String", config["Auth"].ToString() != "AzureIdentity", () => AppSettings.Change(x =>
+                {
+                    x.Services[ServiceName]["Auth"] = "ConnectionString";
+                    x.Services[ServiceName]["ConnectionString"] = SetupUI.AskPassword("Azure Blobs <connection string>", config["ConnectionString"].ToString());
+                }))
+            ]
         });
+
+        AppSettings.Change(x => x.Services[ServiceName]["Account"] = SetupUI.AskOpenQuestion("Azure Blobs <account name>", config["Account"].ToString()));
+        AppSettings.Change(x => x.Services[ServiceName]["Container"] = SetupUI.AskOpenQuestion("Azure Blobs <container name>", config["Container"].ToString()));
     }
 }

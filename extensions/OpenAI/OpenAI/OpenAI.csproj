@@ -5,20 +5,16 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.OpenAI</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.OpenAI</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA1308;SKEXP0010;SKEXP0011;SKEXP0001;CA2208;NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="GPT3\encoder.json" />
-        <EmbeddedResource Include="GPT3\vocab.bpe" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -31,7 +27,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
     </ItemGroup>
 
 </Project>

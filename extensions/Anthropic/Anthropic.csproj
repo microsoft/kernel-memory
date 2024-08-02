@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
-        <ProjectReference Include="..\TikToken\TikToken\TikToken.csproj" />
+        <ProjectReference Include="..\OpenAI\OpenAI\OpenAI.csproj" />
     </ItemGroup>
 
     <ItemGroup>
