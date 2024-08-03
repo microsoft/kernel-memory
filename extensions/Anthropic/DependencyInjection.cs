@@ -23,7 +23,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="textTokenizer">Optional tokenizer, default one will be used if passed null.</param>
     public static IKernelMemoryBuilder WithAnthropicTextGeneration(
         this IKernelMemoryBuilder builder,
-        AnthropicConfiguration config,
+        AnthropicConfig config,
         ITextTokenizer? textTokenizer = null)
     {
         builder.Services.AddAnthropicTextGeneration(config, textTokenizer);
@@ -44,7 +44,7 @@ public static partial class DependencyInjection
     /// <param name="textTokenizer">Tokenizer to measure content size</param>
     public static IServiceCollection AddAnthropicTextGeneration(
         this IServiceCollection services,
-        AnthropicConfiguration config,
+        AnthropicConfig config,
         ITextTokenizer? textTokenizer = null)
     {
         services.AddSingleton(config);

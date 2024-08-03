@@ -74,41 +74,6 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = {
 
 ////////////////////////// Private endpoint
 
-// resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-01-01' = {
-//   name: 'km-search-pe-${suffix}'
-//   location: location
-//   tags: tags
-//   properties: {
-//     subnet: {
-//       id: privateEndpointSubnetId
-//     }
-//     privateLinkServiceConnections: [
-//       {
-//         name: 'private-endpoint-connection'
-//         properties: {
-//           privateLinkServiceId: search.id
-//           groupIds: ['searchService']
-//         }
-//       }
-//     ]
-//   }
-// }
-
-// resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-01-01' = {
-//   name: 'km-search-pe-zg-${suffix}'
-//   parent: privateEndpoint
-//   properties: {
-//     privateDnsZoneConfigs: [
-//       {
-//         name: 'km-search-pe-zg-Config-${suffix}'
-//         properties: {
-//           privateDnsZoneId: privateDnsZoneId
-//         }
-//       }
-//     ]
-//   }
-// }
-
 module module_search_pe '../network/private-endpoint.bicep' = {
   name: 'module_search_pe_${suffix}'
   params: {

@@ -21,8 +21,8 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 public sealed class OpenAITextGenerator : ITextGenerator
 {
     private readonly OpenAIClient _client;
+    private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextGenerator> _log;
-    private ITextTokenizer? _textTokenizer;
     private bool _useTextCompletionProtocol;
     private string? _model;
 
@@ -44,6 +44,26 @@ public sealed class OpenAITextGenerator : ITextGenerator
     public int MaxTokenTotal { get; }
 
     /// <summary>
+    /// Create a new instance.
+    /// </summary>
+    /// <param name="config">Client and model configuration</param>
+    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
+    /// <param name="loggerFactory">App logger factory</param>
+    /// <param name="httpClient">Optional HTTP client with custom settings</param>
+    public OpenAITextGenerator(
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(
+            config,
+            OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
+            textTokenizer,
+            loggerFactory)
+    {
+    }
+
+    /// <summary>
     /// Create a new instance, using the given OpenAI pre-configured client
     /// </summary>
     /// <param name="config">Model configuration</param>
@@ -56,60 +76,33 @@ public sealed class OpenAITextGenerator : ITextGenerator
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
-
-        this.MaxTokenTotal = config.TextModelMaxTokenTotal;
-        this.SetCompletionType(config);
-        this.SetTokenizer(textTokenizer);
         this._client = openAIClient;
-    }
-
-    /// <summary>
-    /// Create a new instance.
-    /// </summary>
-    /// <param name="config">Client and model configuration</param>
-    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
-    /// <param name="loggerFactory">App logger factory</param>
-    /// <param name="httpClient">Optional HTTP client with custom settings</param>
-    public OpenAITextGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null,
-        HttpClient? httpClient = null)
-    {
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
 
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
         this.SetCompletionType(config);
-        this.SetTokenizer(textTokenizer);
-        this._client = OpenAIClientBuilder.BuildOpenAIClient(config, httpClient);
-    }
 
-    /// <summary>
-    /// Create a new instance.
-    /// </summary>
-    /// <param name="config">Client and model configuration</param>
-    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
-    /// <param name="log">Application logger</param>
-    /// <param name="httpClient">Optional HTTP client with custom settings</param>
-    public OpenAITextGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILogger<OpenAITextGenerator>? log = null,
-        HttpClient? httpClient = null)
-    {
-        this._log = log ?? DefaultLogger<OpenAITextGenerator>.Instance;
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
+        }
 
-        this.MaxTokenTotal = config.TextModelMaxTokenTotal;
-        this.SetCompletionType(config);
-        this.SetTokenizer(textTokenizer);
-        this._client = OpenAIClientBuilder.BuildOpenAIClient(config, httpClient);
+        this._textTokenizer = textTokenizer;
     }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
         return this._textTokenizer!.CountTokens(text);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._textTokenizer!.GetTokens(text);
     }
 
     /// <inheritdoc/>
@@ -120,6 +113,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
     {
         if (this._useTextCompletionProtocol)
         {
+            this._log.LogTrace("Sending text generation request, model '{0}'", this._model);
+
             var openaiOptions = new CompletionsOptions
             {
                 Prompts = { prompt },
@@ -153,6 +148,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
         }
         else
         {
+            this._log.LogTrace("Sending chat message generation request, model '{0}'", this._model);
+
             var openaiOptions = new ChatCompletionsOptions
             {
                 DeploymentName = this._model,
@@ -207,18 +204,5 @@ public sealed class OpenAITextGenerator : ITextGenerator
             default:
                 throw new ArgumentOutOfRangeException(nameof(config.TextGenerationType), $"Unsupported text completion type '{config.TextGenerationType:G}'");
         }
-    }
-
-    private void SetTokenizer(ITextTokenizer? textTokenizer = null)
-    {
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
     }
 }

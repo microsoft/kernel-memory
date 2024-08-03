@@ -7,20 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\extensions\AzureAIDocIntel\AzureAIDocIntel.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureBlobs\AzureBlobs.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\AzureQueues\AzureQueues.csproj" />
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
-        <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
-        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI.csproj" />
-        <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
-        <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
-        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
-        <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
-        <ProjectReference Include="..\..\extensions\TikToken\TikToken\TikToken.csproj" />
-        <ProjectReference Include="..\..\service\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\..\service\Core\Core.csproj" />
     </ItemGroup>
 

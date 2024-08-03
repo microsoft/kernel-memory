@@ -31,15 +31,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
         name: InfrastructureSubnetName
         properties: {
           addressPrefix: InfrastructureSubnetAddressRange
-          // delegations: [
-          //   {
-          //     name: 'default'
-          //     properties: {
-          //       serviceName: 'Microsoft.App/environments'
-          //     }
-          //   }
-          // ]
-          // privateLinkServiceNetworkPolicies: 'Disabled'
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Disabled'
         }

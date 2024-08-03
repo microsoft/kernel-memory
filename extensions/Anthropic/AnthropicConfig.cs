@@ -7,7 +7,7 @@ namespace Microsoft.KernelMemory.AI.Anthropic;
 /// <summary>
 /// Configuration for Text Generation with Anthropic
 /// </summary>
-public class AnthropicConfiguration
+public class AnthropicConfig
 {
     /// <summary>
     /// Anthropic web service endpoint

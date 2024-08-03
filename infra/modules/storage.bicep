@@ -19,9 +19,6 @@ param externalTasksQueueName string = 'km-queue-${suffix}'
 param vnetId string
 param privateEndpointSubnetId string
 
-// param privateDnsZoneId_Blob string
-// param privateDnsZoneId_Queue string
-
 param managedIdentityPrincipalId string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
@@ -106,15 +103,6 @@ module module_queue_pe 'network/private-endpoint.bicep' = {
     privateLinkServiceConnections_GroupIds: ['queue'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
   }
 }
-
-// module module_dns_queue 'network/dns-2.bicep' = {
-//   name: 'module_dns_queue-${suffix}'
-//   params: {
-//     vnetId: vnetId
-//     privateDnsZoneName: 'privatelink.queue.${environment().suffixes.storage}' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
-//     tags: tags
-//   }
-// }
 
 ////////////////////////// RBAC
 

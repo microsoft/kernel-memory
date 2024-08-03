@@ -138,6 +138,12 @@ internal static class Program
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
             app.AddKernelMemoryEndpoints("/", authFilter);
 
+            // Health probe
+            app.MapGet("/health", () => Results.Ok("Service is running."))
+                .Produces<string>(StatusCodes.Status200OK)
+                .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+                .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+
             if (config.ServiceAuthorization.Enabled && config.ServiceAuthorization.AccessKey1 == config.ServiceAuthorization.AccessKey2)
             {
                 app.Logger.LogError("KM Web Service: Access keys 1 and 2 have the same value. Keys should be different to allow rotation.");

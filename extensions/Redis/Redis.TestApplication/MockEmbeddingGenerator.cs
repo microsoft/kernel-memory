@@ -18,6 +18,9 @@ internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
     public int CountTokens(string text) => 0;
 
     /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text) => Array.Empty<string>();
+
+    /// <inheritdoc />
     public int MaxTokens => 0;
 
     /// <inheritdoc />

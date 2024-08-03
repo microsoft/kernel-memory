@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,9 @@ internal sealed class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGener
     /// <inheritdoc />
     public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 
+    /// <inheritdoc />
+    public IReadOnlyList<string> GetTokens(string text) => this._tokenizer.GetTokens(text);
+
     public SemanticKernelTextEmbeddingGenerator(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         SemanticKernelConfig config,
@@ -40,8 +44,8 @@ internal sealed class SemanticKernelTextEmbeddingGenerator : ITextEmbeddingGener
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                nameof(GPT4Tokenizer));
+            textTokenizer = new GPT4Tokenizer();
         }
 
         this._tokenizer = textTokenizer;

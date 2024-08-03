@@ -90,6 +90,8 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         // Allow to override the number of overlapping tokens using context arguments
         var overlappingTokens = Math.Max(0, context.GetCustomPartitioningOverlappingTokensOrDefault(this._options.OverlappingTokens));
 
+        string? chunkHeader = context.GetCustomPartitioningChunkHeaderOrDefault(null);
+
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
@@ -128,7 +130,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         string content = partitionContent.ToString();
                         sentences = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitPlainTextParagraphs(
-                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter);
+                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter, chunkHeader: chunkHeader);
                         break;
                     }
 
