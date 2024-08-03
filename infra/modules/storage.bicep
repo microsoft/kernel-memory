@@ -4,8 +4,8 @@ param suffix string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
 
-@description('Optional. The tags to be assigned to the created resources.')
-param tags object = {}
+@description('The tags to be assigned to the created resources.')
+param tags object
 
 @description('The name of the Azure Storage Account.')
 param storageAccountName string = 'kmstorage${suffix}' //'storage${uniqueString(resourceGroup().id)}'
@@ -15,6 +15,9 @@ param storageBlobContainerName string = 'smemory'
 
 @description('The name of the Queue in Azure Storage.')
 param externalTasksQueueName string = 'km-queue-${suffix}'
+
+param vnetId string
+param privateEndpointSubnetId string
 
 param managedIdentityPrincipalId string
 
@@ -29,8 +32,79 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   properties: {
     allowBlobPublicAccess: false
     allowSharedKeyAccess: false
+
+    publicNetworkAccess: 'Disabled'
   }
 }
+
+////////////////////////// Seeding
+
+resource storageBlobService 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-09-01' = {
+  parent: storageBlobService
+  name: storageBlobContainerName
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource storageQueuesService 'Microsoft.Storage/storageAccounts/queueServices@2021-09-01' = {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
+  name: externalTasksQueueName
+  parent: storageQueuesService
+  properties: {}
+}
+
+////////////////////////// Private endpoint
+
+module module_blob_pe 'network/private-endpoint.bicep' = {
+  name: 'module_blob_pe_${suffix}'
+  params: {
+    suffix: suffix
+    location: location
+    tags: tags
+
+    serviceName_Used_for_PE: '${storageAccountName}-blob'
+
+    DNSZoneName: 'privatelink.blob.${environment().suffixes.storage}' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+    vnetId: vnetId
+    privateEndpointSubnetId: privateEndpointSubnetId
+
+    privateLinkServiceId: storageAccount.id
+    privateLinkServiceConnections_GroupIds: ['blob'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+  }
+}
+
+module module_queue_pe 'network/private-endpoint.bicep' = {
+  dependsOn: [
+    module_blob_pe
+  ]
+  name: 'module_queue_pe_${suffix}'
+  params: {
+    suffix: suffix
+    location: location
+    tags: tags
+
+    serviceName_Used_for_PE: '${storageAccountName}-queue'
+
+    DNSZoneName: 'privatelink.queue.${environment().suffixes.storage}' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+    vnetId: vnetId
+    privateEndpointSubnetId: privateEndpointSubnetId
+
+    privateLinkServiceId: storageAccount.id
+    privateLinkServiceConnections_GroupIds: ['queue'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+  }
+}
+
+////////////////////////// RBAC
 
 // Storage Queue Data Contributor
 resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -90,7 +164,7 @@ resource roleAssignment3 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 
 // Storage Queue Data Message Processor
 resource roleAssignment4 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('// Storage Queue Data Message Processor-${suffix}')
+  name: guid('Storage Queue Data Message Processor-${suffix}')
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId(
@@ -102,25 +176,7 @@ resource roleAssignment4 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-resource storageBlobService 'Microsoft.Storage/storageAccounts/blobServices@2021-09-01' = {
-  name: 'default'
-  parent: storageAccount
-}
-
-resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-09-01' = {
-  parent: storageBlobService
-  name: storageBlobContainerName
-}
-
-resource storageQueuesService 'Microsoft.Storage/storageAccounts/queueServices@2021-09-01' = {
-  name: 'default'
-  parent: storageAccount
-}
-
-resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2021-09-01' = {
-  name: externalTasksQueueName
-  parent: storageQueuesService
-}
+////////////////////////// Output
 
 @description('The storage account name.')
 output storageAccountName string = storageAccount.name
