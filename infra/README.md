@@ -3,6 +3,9 @@
 You can deploy the Kernel Memory infrastructure to Azure by clicking the button below. This will create required
 resources. We recommend to create a new resource group for each deployment.
 
+> [!WARNING]
+> During the deployment you must select Models that your Azure Subscription is allowed to use.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fkernel-memory%2Fmain%2Finfra%2Fmain.json)
 
 <details>
@@ -33,8 +36,11 @@ After the deployment is complete, you will see the following resources in your r
 - Container App
 - Managed Identity
 - Storage account
+- Public IP address
+- Application Gateway
+- Virtual network, Subnets, Network interfaces, Private Links and Private DNS Zones
 
-You can start using Kernel Memory immediately after deployment. Use `Application Url` from Container App instance page as Kernel Memory's endpoint. Refer [to this screenshot](./images/ACA-ApplicationUrl.png) if you need help finding Application Url value.
+You can start using Kernel Memory immediately after deployment. Navigate to `Public IP address` deployed in your Resource group and find `IP address`. Refer [to this screenshot](./images/Pip.png) (red marked used to hide private information) if you need help finding IP address value.
 
 Kernel Memory web service is deployed with `AuthenticationType` set to `APIKey` and default API keys are random GUIDs. Each request requires the `Authorization` HTTP header, passing one of the two keys.
 
@@ -55,7 +61,7 @@ Here is an example of how to create a `MemoryWebClient` instance and start using
 
 ```csharp
 var memory = new MemoryWebClient(
-    "https://km-service-example.example.azurecontainerapps.io",
+    "http://111.111.111.111/",
     apiKey: "...your WebServiceAuthorizationKey1...");
 ```
 
