@@ -4,6 +4,22 @@ To deploy the Kernel Memory infrastructure to Azure, simply click the button bel
 
 To deploy the Kernel Memory infrastructure to Azure, simply click the button below. This will create all the necessary resources. We recommend creating a new resource group for each deployment.
 
+#### Resource Providers
+
+The Azure subscription that you deploy this solution accelerator in will require `Microsoft.AlertsManagement`, `Microsoft.App` and `Microsoft.ContainerService` resource providers to be registered.
+This can be accomplished via the [Azure Portal](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types#azure-ortal) or with the following [Azure CLI](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types#azure-cli) commands:
+
+```shell
+# register providers
+az provider register --namespace Microsoft.AlertsManagement
+az provider register --namespace Microsoft.App
+az provider register --namespace Microsoft.ContainerService
+# verify providers were registered
+az provider show --namespace Microsoft.AlertsManagement -o table
+az provider show --namespace Microsoft.App -o table
+az provider show --namespace Microsoft.ContainerService -o table
+```
+
 > [!WARNING]
 > During the deployment you must select Models that your Azure Subscription is allowed to use.
 
