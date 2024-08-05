@@ -160,13 +160,32 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
         index = NormalizeIndexName(index);
         if (limit <= 0) { limit = int.MaxValue; }
 
-        // Remove empty filters
-        filters = filters?.Where(f => !f.IsEmpty()).ToList();
-
         var requiredTags = new List<IEnumerable<string>>();
-        if (filters is { Count: > 0 })
+        // Check if we have at least one non-empty filter
+        var nonEmptyFilters = filters?.Where(filters => !filters.IsEmpty()).ToArray() ?? Array.Empty<MemoryFilter>();
+        if (nonEmptyFilters.Length > 0)
         {
-            requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}")));
+            foreach (var memoryFilter in nonEmptyFilters)
+            {
+                var filtersList = memoryFilter.GetAllFilters();
+                List<string> stringFilters = new();
+                foreach (var baseFilter in filtersList)
+                {
+                    if (baseFilter is EqualFilter eq)
+                    {
+                        stringFilters.Add($"{eq.Key}{Constants.ReservedEqualsChar}{eq.Value}");
+                    }
+                    else if (baseFilter is NotEqualFilter neq)
+                    {
+                        stringFilters.Add($"!{neq.Key}{Constants.ReservedEqualsChar}{neq.Value}");
+                    }
+                    else
+                    {
+                        throw new QdrantException($"Filter of type {baseFilter.GetType().Name} is not supported by redis");
+                    }
+                }
+                requiredTags.Add(stringFilters);
+            }
         }
 
         Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);

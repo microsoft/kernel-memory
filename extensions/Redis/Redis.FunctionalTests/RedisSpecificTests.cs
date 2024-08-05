@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
 using Microsoft.KM.TestHelpers;
@@ -12,13 +12,28 @@ public class RedisSpecificTests : BaseFunctionalTestCase
 
     public RedisSpecificTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
-        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+        if (cfg.GetValue<bool>("UseAzureOpenAI"))
+        {
+            Assert.False(string.IsNullOrEmpty(this.AzureOpenAITextConfiguration.APIKey));
 
-        this._memory = new KernelMemoryBuilder()
-            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-            .WithOpenAI(this.OpenAiConfig)
-            .WithRedisMemoryDb(this.RedisConfig)
-            .Build<MemoryServerless>();
+            this._memory = new KernelMemoryBuilder()
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
+                .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
+                .WithRedisMemoryDb(this.RedisConfig)
+                .Build<MemoryServerless>();
+        }
+        else
+        {
+            //use standard openai
+            Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+
+            this._memory = new KernelMemoryBuilder()
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithOpenAI(this.OpenAiConfig)
+                .WithRedisMemoryDb(this.RedisConfig)
+                .Build<MemoryServerless>();
+        }
     }
 
     [Fact]

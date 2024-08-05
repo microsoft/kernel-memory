@@ -29,8 +29,6 @@ public abstract class DefaultTests : BaseFunctionalTestCase
 
     protected DefaultTests(IConfiguration cfg, ITestOutputHelper output, bool multiCollection) : base(cfg, output)
     {
-        Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey), "OpenAI API Key is empty");
-
         if (multiCollection)
         {
             // this._config = this.MongoDbAtlasConfig;
@@ -62,13 +60,29 @@ public abstract class DefaultTests : BaseFunctionalTestCase
             ash.DropDatabaseAsync().Wait();
         }
 
-        this._memory = new KernelMemoryBuilder()
-            .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-            .WithOpenAI(this.OpenAiConfig)
-            // .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
-            // .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
-            .WithMongoDbAtlasMemoryDb(this.MongoDbAtlasConfig)
-            .Build<MemoryServerless>();
+        if (cfg.GetValue<bool>("UseAzureOpenAI"))
+        {
+            Assert.False(string.IsNullOrEmpty(this.AzureOpenAIEmbeddingConfiguration.APIKey));
+
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithAzureOpenAITextGeneration(this.AzureOpenAITextConfiguration)
+                .WithAzureOpenAITextEmbeddingGeneration(this.AzureOpenAIEmbeddingConfiguration)
+                .WithMongoDbAtlasMemoryDb(this.MongoDbAtlasConfig)
+                .Build<MemoryServerless>();
+        }
+        else
+        {
+            Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
+
+            this._memory = new KernelMemoryBuilder()
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithOpenAI(this.OpenAiConfig)
+                .WithMongoDbAtlasMemoryDb(this.MongoDbAtlasConfig)
+                .Build<MemoryServerless>();
+        }
     }
 
     [Fact]

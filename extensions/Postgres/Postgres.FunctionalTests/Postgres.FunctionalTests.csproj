@@ -10,6 +10,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);KMEXP03;</NoWarn>
+        <UserSecretsId>d2183ec2-a100-438a-a421-3afbde9ca357</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
