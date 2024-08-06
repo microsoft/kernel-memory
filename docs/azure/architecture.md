@@ -33,9 +33,9 @@ As a Vector DB, this architecture uses Azure AI Search. Kernel Memory can also b
 
 For AI models, this architecture leverages models deployed in Azure AI. The text-embedding-ada-002 version `2` is used for embedding, and the `gpt-35-turbo-16k` deployment version `0613` is used for inference. Model names and versions are specified in the `infra/main.bicep` file.
 
-All resources are deployed in the same Azure Resource Group and region.
+All resources are deployed in the same Azure Resource Group and the region.
 
-![image](./diagram.png)
+![image](./architecture.png)
 
 ## Cost
 
