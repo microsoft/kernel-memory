@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
@@ -10,6 +11,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace Microsoft.KernelMemory.Orchestration.RabbitMQ;
 
@@ -20,14 +22,19 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly AsyncEventingBasicConsumer _consumer;
-    private string _queueName = string.Empty;
+    private readonly RabbitMQConfig _config;
     private readonly int _messageTTLMsecs;
+    private string _queueName = string.Empty;
+    private string _poisonQueueName = string.Empty;
 
     /// <summary>
     /// Create a new RabbitMQ queue instance
     /// </summary>
-    public RabbitMQPipeline(RabbitMqConfig config, ILoggerFactory? loggerFactory = null)
+    public RabbitMQPipeline(RabbitMQConfig config, ILoggerFactory? loggerFactory = null)
     {
+        this._config = config;
+        this._config.Validate();
+
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<RabbitMQPipeline>();
 
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
@@ -60,23 +67,57 @@ public sealed class RabbitMQPipeline : IQueue
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
-            throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
+            throw new InvalidOperationException($"The client is already connected to `{this._queueName}`");
         }
 
         this._queueName = queueName;
-        this._channel.QueueDeclare(
-            queue: queueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null);
+
+        var poisonExchange = $"{this._queueName}.exchange";
+        this._channel.ExchangeDeclare(poisonExchange, "fanout");
+        this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready", poisonExchange, this._queueName);
+
+        try
+        {
+            this._channel.QueueDeclare(
+                queue: this._queueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object>
+                {
+                    ["x-queue-type"] = "quorum",
+                    ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
+                    ["x-dead-letter-exchange"] = poisonExchange
+                });
+        }
+        catch (OperationInterruptedException ex) when (ex.Message.Contains("inequivalent arg 'x-delivery-limit'", StringComparison.InvariantCulture))
+        {
+            this._log.LogError(ex, "The queue '{0}' already exists, it is not possible to change the 'x-delivery-limit' value to {1}", this._queueName, this._config.MaxRetriesBeforePoisonQueue);
+            throw new KernelMemoryException($"The queue '{this._queueName}' already exists, it is not possible to change the 'x-delivery-limit' value to {this._config.MaxRetriesBeforePoisonQueue}", ex);
+        }
+
+        this._log.LogTrace("Queue name: {0}", this._queueName);
 
         if (options.DequeueEnabled)
         {
             this._channel.BasicConsume(queue: this._queueName,
                 autoAck: false,
                 consumer: this._consumer);
+
+            this._log.LogTrace("Enabling dequeue on queue `{0}`", this._queueName);
         }
+
+        this._poisonQueueName = this._queueName + this._config.PoisonQueueSuffix;
+        this._channel.QueueDeclare(
+            queue: this._poisonQueueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
+
+        this._channel.QueueBind(this._poisonQueueName, poisonExchange, string.Empty, null);
+
+        this._log.LogTrace("Poison queue name: {0}", this._poisonQueueName);
 
         return Task.FromResult<IQueue>(this);
     }
@@ -94,20 +135,11 @@ public sealed class RabbitMQPipeline : IQueue
             throw new InvalidOperationException("The client must be connected to a queue first");
         }
 
-        var properties = this._channel.CreateBasicProperties();
-        properties.Persistent = true;
-        properties.MessageId = Guid.NewGuid().ToString("N");
-        properties.Expiration = $"{this._messageTTLMsecs}";
-
-        this._log.LogDebug("Sending message: {0} (TTL: {1} secs)...", properties.MessageId, this._messageTTLMsecs / 1000);
-
-        this._channel.BasicPublish(
-            routingKey: this._queueName,
+        this.PublishMessage(
+            queueName: this._queueName,
             body: Encoding.UTF8.GetBytes(message),
-            exchange: string.Empty,
-            basicProperties: properties);
-
-        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, this._messageTTLMsecs / 1000);
+            messageId: Guid.NewGuid().ToString("N"),
+            expirationMsecs: this._messageTTLMsecs);
 
         return Task.CompletedTask;
     }
@@ -160,5 +192,32 @@ public sealed class RabbitMQPipeline : IQueue
 
         this._channel.Dispose();
         this._connection.Dispose();
+    }
+
+    private void PublishMessage(
+        string queueName,
+        ReadOnlyMemory<byte> body,
+        string messageId,
+        int? expirationMsecs)
+    {
+        var properties = this._channel.CreateBasicProperties();
+        properties.Persistent = true;
+        properties.MessageId = messageId;
+
+        if (expirationMsecs.HasValue)
+        {
+            properties.Expiration = $"{expirationMsecs}";
+        }
+
+        this._log.LogDebug("Sending message to {0}: {1} (TTL: {2} secs)...",
+            queueName, properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
+
+        this._channel.BasicPublish(
+            routingKey: queueName,
+            body: body,
+            exchange: string.Empty,
+            basicProperties: properties);
+
+        this._log.LogDebug("Message sent: {0} (TTL: {1} secs)", properties.MessageId, expirationMsecs.HasValue ? expirationMsecs / 1000 : "infinite");
     }
 }
