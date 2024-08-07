@@ -100,6 +100,16 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    public static string GetCustomEosTokenOrDefault(this IContext? context, string defaultValue)
+    {
+        if (context.TryGetArg<string>(Constants.CustomContext.Rag.EosToken, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
     public static string GetCustomRagFactTemplateOrDefault(this IContext? context, string defaultValue)
     {
         if (context.TryGetArg<string>(Constants.CustomContext.Rag.FactTemplate, out var customValue))

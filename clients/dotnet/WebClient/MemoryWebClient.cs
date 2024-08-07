@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Internals;
 
@@ -369,6 +370,56 @@ public sealed class MemoryWebClient : IKernelMemory
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
+    }
+
+    /// <inheritdoc />
+    public async Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+        string question,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        MemoryQuery request = new()
+        {
+            Index = index,
+            Question = question,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            MinRelevance = minRelevance,
+            ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
+        };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        var url = Constants.HttpAskChunkEndpoint.CleanUrlPath();
+        HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+            {
+                if (line.StartsWith("data:"))
+                {
+                    var jsonData = line.Substring(6);
+                    var chunk = JsonSerializer.Deserialize<MemoryAnswer>(jsonData);
+                    yield return chunk;
+                    if (chunk?.Result == "end")
+                    {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     #region private

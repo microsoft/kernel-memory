@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Context;
@@ -336,7 +337,6 @@ public sealed class SearchClient : ISearchClient
         await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
-
             if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
             {
                 charsGenerated = text.Length;
@@ -361,6 +361,179 @@ public sealed class SearchClient : ISearchClient
         return answer;
     }
 
+    public async IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
+        string eosToken = context.GetCustomEosTokenOrDefault("end");
+        string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
+        string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
+        if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
+
+        var noAnswerFound = new MemoryAnswer
+        {
+            Question = question,
+            NoResult = true,
+            Result = emptyAnswer,
+        };
+
+        if (string.IsNullOrEmpty(question))
+        {
+            this._log.LogWarning("No question provided");
+            noAnswerFound.NoResultReason = "No question provided";
+            yield return noAnswerFound;
+            yield break;
+        }
+
+        var facts = new StringBuilder();
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
+        var tokensAvailable = maxTokens
+                              - this._textGenerator.CountTokens(answerPrompt)
+                              - this._textGenerator.CountTokens(question)
+                              - this._config.AnswerTokens;
+
+        var factsUsedCount = 0;
+        var factsAvailableCount = 0;
+        var answer = noAnswerFound;
+
+        this._log.LogTrace("Fetching relevant memories");
+        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
+            index: index,
+            text: question,
+            filters: filters,
+            minRelevance: minRelevance,
+            limit: this._config.MaxMatchesCount,
+            withEmbeddings: false,
+            cancellationToken: cancellationToken);
+
+        // Memories are sorted by relevance, starting from the most relevant
+        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+        {
+            // Note: a document can be composed by multiple files
+            string documentId = memory.GetDocumentId(this._log);
+
+            // Identify the file in case there are multiple files
+            string fileId = memory.GetFileId(this._log);
+
+            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
+            string linkToFile = $"{index}/{documentId}/{fileId}";
+
+            string fileName = memory.GetFileName(this._log);
+
+            string webPageUrl = memory.GetWebPageUrl(index);
+
+            var partitionText = memory.GetPartitionText(this._log).Trim();
+            if (string.IsNullOrEmpty(partitionText))
+            {
+                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
+                continue;
+            }
+
+            factsAvailableCount++;
+
+            var fact = PromptUtils.RenderFactTemplate(
+                template: factTemplate,
+                factContent: partitionText,
+                source: (fileName == "content.url" ? webPageUrl : fileName),
+                relevance: relevance.ToString("P1", CultureInfo.CurrentCulture),
+                recordId: memory.Id,
+                tags: memory.Tags,
+                metadata: memory.Payload);
+
+            // Use the partition/chunk only if there's room for it
+            var size = this._textGenerator.CountTokens(fact);
+            if (size >= tokensAvailable)
+            {
+                // Stop after reaching the max number of tokens
+                break;
+            }
+
+            factsUsedCount++;
+            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
+
+            facts.Append(fact);
+            tokensAvailable -= size;
+
+            // If the file is already in the list of citations, only add the partition
+            var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
+            if (citation == null)
+            {
+                citation = new Citation();
+                answer.RelevantSources.Add(citation);
+            }
+
+            // Add the partition to the list of citations
+            citation.Index = index;
+            citation.DocumentId = documentId;
+            citation.FileId = fileId;
+            citation.Link = linkToFile;
+            citation.SourceContentType = memory.GetFileContentType(this._log);
+            citation.SourceName = fileName;
+            citation.SourceUrl = memory.GetWebPageUrl(index);
+
+            citation.Partitions.Add(new Citation.Partition
+            {
+                Text = partitionText,
+                Relevance = (float)relevance,
+                PartitionNumber = memory.GetPartitionNumber(this._log),
+                SectionNumber = memory.GetSectionNumber(),
+                LastUpdate = memory.GetLastUpdate(),
+                Tags = memory.Tags,
+            });
+
+            // In cases where a buggy storage connector is returning too many records
+            if (factsUsedCount >= this._config.MaxMatchesCount)
+            {
+                break;
+            }
+        }
+
+        if (factsAvailableCount > 0 && factsUsedCount == 0)
+        {
+            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
+            noAnswerFound.NoResultReason = "Unable to use memories";
+            yield return noAnswerFound;
+            yield break;
+        }
+
+        if (factsUsedCount == 0)
+        {
+            this._log.LogWarning("No memories available");
+            noAnswerFound.NoResultReason = "No memories available";
+            yield return noAnswerFound;
+            yield break;
+        }
+        var charsGenerated = 0;
+        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(true))
+        {
+            var text = new StringBuilder();
+            text.Append(x);
+            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            {
+                charsGenerated = text.Length;
+                this._log.LogTrace("{0} chars generated", charsGenerated);
+            }
+            var newAnswer = new MemoryAnswer
+            {
+                Question = question,
+                NoResult = false,
+                Result = text.ToString()
+            };
+            this._log.LogInformation("Chunk: '{0}", newAnswer.Result);
+            yield return newAnswer;
+        }
+        answer.Result = eosToken;
+        this._log.LogInformation("Eos token: '{0}", answer.Result);
+        yield return answer;
+    }
+
     private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
@@ -371,7 +544,6 @@ public sealed class SearchClient : ISearchClient
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
         question = question.Trim();
-        question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
