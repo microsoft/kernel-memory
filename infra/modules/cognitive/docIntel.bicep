@@ -1,10 +1,17 @@
 param suffix string = uniqueString(resourceGroup().id)
+
+param vnetId string
+param privateEndpointSubnetId string
+
 param managedIdentityPrincipalId string
 
 metadata description = 'Creates an Azure Document Intelligence (form recognizer) instance.'
 
 param name string
 param location string = resourceGroup().location
+
+@description('The tags to be assigned to the created resources.')
+param tags object
 
 @description('The custom subdomain name used to access the API. Defaults to the value of the name parameter.')
 param customSubDomainName string = name
@@ -30,6 +37,7 @@ resource account 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: name
   location: location
   kind: kind
+  tags: tags
   properties: {
     customSubDomainName: customSubDomainName
     publicNetworkAccess: publicNetworkAccess
@@ -38,6 +46,28 @@ resource account 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
   sku: sku
 }
+
+////////////////////////// Private endpoint
+
+module module_DocIntel_pe '../network/private-endpoint.bicep' = {
+  name: 'module_DocIntel_pe${suffix}'
+  params: {
+    suffix: suffix
+    location: location
+    tags: tags
+
+    serviceName_Used_for_PE: name
+
+    DNSZoneName: 'privatelink.cognitiveservices.azure.com' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+    vnetId: vnetId
+    privateEndpointSubnetId: privateEndpointSubnetId
+
+    privateLinkServiceId: account.id
+    privateLinkServiceConnections_GroupIds: ['account'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+  }
+}
+
+////////////////////////// RBAC
 
 // Cognitive Services User
 resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -52,5 +82,7 @@ resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
     principalType: 'ServicePrincipal'
   }
 }
+
+////////////////////////// Output
 
 output endpoint string = account.properties.endpoint
