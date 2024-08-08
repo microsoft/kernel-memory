@@ -12,6 +12,50 @@ This section explains the infrastructure of Kernel Memory in Azure, which implem
 
 ![image](./async.png)
 
+## Components of the Kernel Memory Architecture
+
+The diagram illustrates the components of the Kernel Memory infrastructure in Azure and their interactions.
+
+#### Kernel Memory Web Service
+
+- **Function**: Acts as the entry point for data ingestion. It receives data through an API and processes user queries.
+- **Operations**:
+  - **Upload**: Sends data to Document Storage.
+  - **Enqueue**: Sends data to the Ingestion Queue.
+  - **Search**: Queries data from the Memory Database.
+
+#### Document Storage
+
+- **Service**: Azure Blob Storage.
+- **Function**: Stores the raw documents uploaded by the Web Service.
+- **Operations**:
+  - **Read/Write**: Kernel Memory Async Handlers read from and write to Document Storage as they process the data.
+
+#### Ingestion Queue
+
+- **Service**: Azure Storage Queue.
+- **Function**: Manages the flow of data between the Web Service and the Async Handlers. It temporarily holds the data before processing.
+- **Operations**:
+  - **Enqueue**: Web Service adds data to the queue.
+  - **Receive**: Kernel Memory Async Handlers retrieve data from the queue for processing.
+
+#### Kernel Memory Async Handlers
+
+- **Function**: Process the data retrieved from the Ingestion Queue. This includes extracting information and transforming it as needed.
+- **Operations**:
+  - **Read/Write**: Access Document Storage for reading raw documents and writing processed data.
+  - **Upsert/Delete**: Update or delete entries in the Memory Database based on the processed data.
+
+#### Memory Database (Memory Db)
+
+- **Service**: Azure AI Search.
+- **Function**: Stores the processed data, making it searchable and accessible for queries.
+- **Operations**:
+  - **Upsert/Delete**: Kernel Memory Async Handlers update or remove data entries.
+  - **Search**: Web Service queries the database to retrieve processed information for user requests.
+
+
+### Overview
 The Web Service receives data through an API and stores it in Azure Blob Storage. Kernel Memory Async Handlers then process the data, which is subsequently stored in Azure AI Search. Finally, the data can be queried by the Web Service
 
 For the Kernel Memory Web Service and Kernel Memory Async Handlers, we use Azure Container Apps to pull Docker images from Docker Hub. The current architecture employs the `Consumption` ACA deployment type. For production deployments, we recommend using the `Dedicated` deployment type. Azure Container Apps are deployed with a public endpoint protected by an API key.
