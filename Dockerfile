@@ -13,7 +13,7 @@ ARG PLATFORM=$BUILDPLATFORM
 # ARG BUILDPLATFORM
 FROM --platform=$PLATFORM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG AS build
 
-ARG BUILD_CONFIGURATION=Release
+ARG BUILD_CONFIGURATION=Debug
 
 COPY . /src/
 WORKDIR "/src/service/Service"
@@ -46,15 +46,14 @@ COPY --from=build --chown=km:km --chmod=0550 /app/publish .
 #########################################################################
 
 LABEL org.opencontainers.image.authors="Devis Lucato, https://github.com/dluc"
-MAINTAINER Devis Lucato "https://github.com/dluc"
+LABEL MAINTAINER="Carlo De Chellis"
 
 # Define current user
 USER $USER
 
 # Used by .NET and KM to load appsettings.Production.json
-ENV ASPNETCORE_ENVIRONMENT Production
-ENV ASPNETCORE_URLS http://+:9001
-ENV ASPNETCORE_HTTP_PORTS 9001
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_HTTP_PORTS=9001
 
 EXPOSE 9001
 
