@@ -2,10 +2,13 @@ param managedIdentityPrincipalId string
 
 param suffix string = uniqueString(resourceGroup().id)
 
+@description('The tags to be assigned to the created resources.')
+param tags object
+
 @description('Service name must only contain lowercase letters, digits or dashes, cannot use dash as the first two or last one characters, cannot contain consecutive dashes, and is limited between 2 and 60 characters in length.')
 @minLength(2)
 @maxLength(60)
-param name string
+param name string = 'km-search-${suffix}'
 
 @allowed([
   'free'
@@ -45,9 +48,13 @@ param hostingMode string = 'default'
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
+param vnetId string
+param privateEndpointSubnetId string
+
 resource search 'Microsoft.Search/searchServices@2023-11-01' = {
   name: name
   location: location
+  tags: tags
   sku: {
     name: sku
   }
@@ -55,11 +62,37 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = {
     replicaCount: replicaCount
     partitionCount: partitionCount
     hostingMode: hostingMode
+
+    // bohdan Check `disableLocalAuth: true`
     authOptions: {
       aadOrApiKey: {}
     }
+
+    publicNetworkAccess: 'disabled'
   }
 }
+
+////////////////////////// Private endpoint
+
+module module_search_pe '../network/private-endpoint.bicep' = {
+  name: 'module_search_pe_${suffix}'
+  params: {
+    suffix: suffix
+    location: location
+    tags: tags
+
+    serviceName_Used_for_PE: name
+
+    DNSZoneName: 'privatelink.search.windows.net' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+    vnetId: vnetId
+    privateEndpointSubnetId: privateEndpointSubnetId
+
+    privateLinkServiceId: search.id
+    privateLinkServiceConnections_GroupIds: ['searchService'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+  }
+}
+
+////////////////////////// RBAC
 
 // Search Index Data Contributor
 resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -89,4 +122,9 @@ resource roleAssignment2 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
+////////////////////////// Output
+
 output searchName string = search.name
+
+// output searchObj object = search
+// output searchPrivateEndpointObj object = privateEndpoint
