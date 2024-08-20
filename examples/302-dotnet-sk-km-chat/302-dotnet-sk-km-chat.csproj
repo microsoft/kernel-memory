@@ -7,7 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" />
+<!--        <PackageReference Include="Microsoft.SemanticKernel" />-->
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

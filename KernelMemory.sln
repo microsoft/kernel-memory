@@ -291,6 +291,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "210-KM-without-builder", "e
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3", "extensions\AWS\S3\S3.csproj", "{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3p-sk", "3p-sk", "{C72A2140-8D2F-48A9-B9D8-333E1B1D4ABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernel.Abstractions", "_dev\semantic-kernel\dotnet\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj", "{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.OpenAI", "_dev\semantic-kernel\dotnet\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj", "{397E4DFB-0318-4629-9BB1-52B6445232FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticKernel.Core", "_dev\semantic-kernel\dotnet\src\SemanticKernel.Core\SemanticKernel.Core.csproj", "{E8CC77FC-137A-4508-885F-346D90FC4169}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -549,6 +557,18 @@ Global
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{397E4DFB-0318-4629-9BB1-52B6445232FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{397E4DFB-0318-4629-9BB1-52B6445232FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{397E4DFB-0318-4629-9BB1-52B6445232FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{397E4DFB-0318-4629-9BB1-52B6445232FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8CC77FC-137A-4508-885F-346D90FC4169}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8CC77FC-137A-4508-885F-346D90FC4169}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8CC77FC-137A-4508-885F-346D90FC4169}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8CC77FC-137A-4508-885F-346D90FC4169}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -638,6 +658,9 @@ Global
 		{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{0C2C849E-0BA0-4D55-B995-E81FCDBBF0DA} = {C72A2140-8D2F-48A9-B9D8-333E1B1D4ABE}
+		{397E4DFB-0318-4629-9BB1-52B6445232FD} = {C72A2140-8D2F-48A9-B9D8-333E1B1D4ABE}
+		{E8CC77FC-137A-4508-885F-346D90FC4169} = {C72A2140-8D2F-48A9-B9D8-333E1B1D4ABE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
