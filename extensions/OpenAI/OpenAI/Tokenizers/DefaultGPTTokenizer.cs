@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Tokenizers;
 
 // ReSharper disable once CheckNamespace
+#pragma warning disable IDE0130
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
 public static class DefaultGPTTokenizer
