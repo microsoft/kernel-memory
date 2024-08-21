@@ -13,6 +13,8 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryDb.Qdrant.Client;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.SemanticKernel.Connectors.Qdrant;
+using Qdrant.Client;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 
@@ -22,7 +24,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 /// * allow using more Qdrant specific filtering logic
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
+public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposable
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
@@ -39,6 +41,15 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
         ITextEmbeddingGenerator embeddingGenerator,
         ILoggerFactory? loggerFactory = null)
     {
+        // === MOVING TO SK connector
+        this._useSKConnector = config.UseSKConnector;
+        this._skQdrantClient = new QdrantClient(
+            address: new Uri(config.Endpoint),
+            apiKey: config.APIKey,
+            loggerFactory: loggerFactory ?? DefaultLogger.Factory);
+        this._skQdrantStore = new QdrantVectorStore(this._skQdrantClient, new QdrantVectorStoreOptions());
+        // ==========================
+
         this._embeddingGenerator = embeddingGenerator;
 
         if (this._embeddingGenerator == null)
@@ -62,6 +73,16 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
     /// <inheritdoc />
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
+        // === MOVING TO SK connector
+        if (this._useSKConnector)
+        {
+            IAsyncEnumerable<string> asyncList = this._skQdrantStore.ListCollectionNamesAsync(cancellationToken);
+            return await asyncList
+                .ToListAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+        }
+        // ==========================
+
         return await this._qdrantClient
             .GetCollectionsAsync(cancellationToken)
             .ToListAsync(cancellationToken: cancellationToken)
@@ -273,6 +294,15 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
     // Note: "_" is allowed in Qdrant, but we normalize it to "-" for consistency with other DBs
     private static readonly Regex s_replaceIndexNameCharsRegex = new(@"[\s|\\|/|.|_|:]");
     private const string ValidSeparator = "-";
+
+    private readonly QdrantClient _skQdrantClient;
+    private readonly QdrantVectorStore _skQdrantStore;
+    private readonly bool _useSKConnector;
+
+    public void Dispose()
+    {
+        this._skQdrantClient.Dispose();
+    }
 
     private static string NormalizeIndexName(string index)
     {
