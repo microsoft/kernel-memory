@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.ML.Tokenizers;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 

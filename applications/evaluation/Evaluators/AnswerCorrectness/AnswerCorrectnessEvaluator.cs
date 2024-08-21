@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 
