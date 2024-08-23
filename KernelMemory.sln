@@ -80,6 +80,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		README.md = README.md
 		SECURITY.md = SECURITY.md
 		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
+		azure.yaml = azure.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
@@ -243,6 +244,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{B488168B
 		infra\main.bicep = infra\main.bicep
 		infra\main.json = infra\main.json
 		infra\README.md = infra\README.md
+		infra\AZD.md = infra\AZD.md
+		infra\main.parameters.json = infra\main.parameters.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{C2D3A947-B6F9-4306-BD42-21D8D1F42750}"
