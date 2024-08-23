@@ -25,7 +25,7 @@ az provider show --namespace Microsoft.ContainerService -o table
 
 The deployment process may take up to 20 minutes.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fkernel-memory%2Fmain%2Finfra%2Fmain.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
 
 After clicking the button, you will be redirected to the Azure portal. You will need to fill parameters explained in the next section.
 

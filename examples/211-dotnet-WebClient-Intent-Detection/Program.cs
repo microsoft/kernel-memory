@@ -20,7 +20,7 @@ public static class Program
 
     public static async Task Main()
     {
-        s_memory = new MemoryWebClient("https://km-service-5798c2.gentlemeadow-e01ece56.eastus2.azurecontainerapps.io/", apiKey: "6957f639-2c52-4ecc-8823-ef9b086095c1");
+        s_memory = new MemoryWebClient("http://127.0.0.1:9001/");
 
         // =======================
         // === INGESTION =========

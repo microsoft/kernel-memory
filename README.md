@@ -35,7 +35,7 @@ built for most popular AI platforms.
 
 Kernel Memory can be deployed in various configurations, including as a **Service** in Azure. To learn more about deploying Kernel Memory in Azure, please refer to the [Azure deployment guide](https://microsoft.github.io/kernel-memory/azure). For detailed instructions on deploying to Azure, you can check the [infrastructure documentation](/infra/README.md). If you are already familiar with these resources, you can quickly deploy by clicking the following button.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2Fkernel-memory%2Fmain%2Finfra%2Fmain.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
 
 # Synchronous Memory API (aka "serverless")
 

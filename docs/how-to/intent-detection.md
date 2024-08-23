@@ -70,4 +70,4 @@ private static async Task AskForIntent(string request)
 }
 ```
 
-You can also review [Intent Detection working example](../../examples/007-dotnet-WebClient-Intent-Detection/README.md)
+You can also review [Intent Detection working example](https://github.com/microsoft/kernel-memory/tree/main/examples/211-dotnet-WebClient-Intent-Detection/README.md)
