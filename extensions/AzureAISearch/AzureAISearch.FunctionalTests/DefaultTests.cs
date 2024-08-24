@@ -33,11 +33,11 @@ public class DefaultTests : BaseFunctionalTestCase
             Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
             this._memory = new KernelMemoryBuilder()
-                  .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
-                  .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
-                  .WithOpenAI(this.OpenAiConfig)
-                  .WithAzureAISearchMemoryDb(this.AzureAiSearchConfig.Endpoint, this.AzureAiSearchConfig.APIKey)
-                  .Build<MemoryServerless>();
+                .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
+                .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
+                .WithOpenAI(this.OpenAiConfig)
+                .WithAzureAISearchMemoryDb(this.AzureAiSearchConfig.Endpoint, this.AzureAiSearchConfig.APIKey)
+                .Build<MemoryServerless>();
         }
     }
 
