@@ -743,7 +743,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         AND [value] = @filter_{i}_{j}_value
     )
 "
- );
+                        );
 
                         //now that I've appended a clause, I need to add the parameters
 
@@ -756,7 +756,6 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                     }
 
                     filterBuilder.Append(" ) ");
-
                 }
             }
 
