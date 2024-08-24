@@ -59,6 +59,7 @@ internal static class AzureAISearchFiltering
             {
                 conditions.Add($"tags/any(s: search.in(s, '{string.Join(filterGroup.SearchInDelimiter, filterGroup.EqualValues)}', '{filterGroup.SearchInDelimiter}'))");
             }
+
             if (filterGroup.NotEqualValues.Count != 0)
             {
                 conditions.Add($"not tags/any(s: search.in(s, '{string.Join(filterGroup.SearchInDelimiter, filterGroup.NotEqualValues)}', '{filterGroup.SearchInDelimiter}'))");
