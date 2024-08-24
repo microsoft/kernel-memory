@@ -7,16 +7,16 @@ namespace Microsoft.KernelMemory;
 
 public class MemoryFilter : TagCollection
 {
-    public bool IsEmpty()
-    {
-        return this.Count == 0 && this._notTags.Count == 0;
-    }
-
     /// <summary>
     /// This collection of tags contains all the tags that are used to
     /// negatively filter out memory records.
     /// </summary>
-    private TagCollection _notTags = new();
+    private readonly TagCollection _notTags = new();
+
+    public bool IsEmpty()
+    {
+        return this.Count == 0 && this._notTags.Count == 0;
+    }
 
     public MemoryFilter ByTag(string name, string value)
     {
