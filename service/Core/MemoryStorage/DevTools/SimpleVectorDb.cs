@@ -217,12 +217,12 @@ public class SimpleVectorDb : IMemoryDb
             {
                 if (baseFilter is EqualFilter eq)
                 {
-                    //Verify that contains key and value required
+                    // Verify that it contains key and value required
                     match = match && tags.ContainsKey(eq.Key) && tags[eq.Key].Contains(eq.Value);
                 }
                 else if (baseFilter is NotEqualFilter neq)
                 {
-                    //Verity that tag is not contained at all, or if is present it don't contain the value
+                    // Verity that tag is not contained at all, or if is present it doesn't contain the value
                     match = match && (!tags.ContainsKey(neq.Key) || !tags[neq.Key].Contains(neq.Value));
                 }
                 else
