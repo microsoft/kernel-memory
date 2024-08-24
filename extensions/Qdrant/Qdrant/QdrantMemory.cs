@@ -184,6 +184,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
                         throw new QdrantException($"Filter of type {baseFilter.GetType().Name} is not supported by redis");
                     }
                 }
+
                 requiredTags.Add(stringFilters);
             }
         }
