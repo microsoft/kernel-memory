@@ -25,6 +25,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
         : base(cfg, output)
     {
         this.Output = output ?? throw new ArgumentNullException(nameof(output));
+#pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         if (cfg.GetValue<bool>("UseAzureOpenAI"))
         {
             this.TextEmbeddingGenerator = new AzureOpenAITextEmbeddingGenerator(
@@ -34,7 +35,6 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
         }
         else
         {
-#pragma warning disable KMEXP01 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             this.TextEmbeddingGenerator = new OpenAITextEmbeddingGenerator(
                 config: base.OpenAiConfig,
                 textTokenizer: default,
