@@ -214,7 +214,7 @@ public class SimpleTextDb : IMemoryDb
                 }
                 else if (baseFilter is NotEqualFilter neq)
                 {
-                    //Verity that tag is not contained at all, or if is present it don't contain the value
+                    // Verify that tag is not contained at all, or if is present it don't contain the value
                     match = match && (!tags.ContainsKey(neq.Key) || !tags[neq.Key].Contains(neq.Value));
                 }
                 else
