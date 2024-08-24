@@ -209,7 +209,7 @@ public class SimpleTextDb : IMemoryDb
             {
                 if (baseFilter is EqualFilter eq)
                 {
-                    // Verify that contains key and value required
+                    // Verify that it contains key and value required
                     match = match && tags.ContainsKey(eq.Key) && tags[eq.Key].Contains(eq.Value);
                 }
                 else if (baseFilter is NotEqualFilter neq)
