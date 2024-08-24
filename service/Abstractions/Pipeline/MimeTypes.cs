@@ -211,7 +211,7 @@ public class MimeTypesDetection : IMimeTypeDetection
             { FileExtensions.ArchiveZip, MimeTypes.ArchiveZip },
             { FileExtensions.ArchiveRar, MimeTypes.ArchiveRar },
             { FileExtensions.Archive7Zip, MimeTypes.Archive7Zip },
-            { FileExtensions.Bin, MimeTypes.OctetStream}
+            { FileExtensions.Bin, MimeTypes.OctetStream }
         };
 
     public string GetFileType(string filename)
