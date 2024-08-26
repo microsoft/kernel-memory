@@ -15,7 +15,11 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Identity" />
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+<!--        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />-->
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

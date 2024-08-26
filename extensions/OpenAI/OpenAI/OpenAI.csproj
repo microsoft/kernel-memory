@@ -13,8 +13,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+<!--        <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />-->
         <PackageReference Include="Microsoft.ML.Tokenizers" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\_dev\semantic-kernel\dotnet\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

@@ -13,10 +13,14 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
+<!--        <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />-->
         <PackageReference Include="System.Memory.Data" />
         <PackageReference Include="System.Numerics.Tensors" />
         <PackageReference Include="System.Text.Json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

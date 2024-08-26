@@ -10,9 +10,11 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\_dev\semantic-kernel\dotnet\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Qdrant.Client" />
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 

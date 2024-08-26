@@ -11,7 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" />
+<!--        <PackageReference Include="Microsoft.SemanticKernel" />-->
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+        <ProjectReference Include="..\..\_dev\semantic-kernel\dotnet\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

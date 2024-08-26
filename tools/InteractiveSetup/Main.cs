@@ -53,7 +53,7 @@ public static class Main
             AzureAISearch.Setup(ctx);
             MongoDbAtlasMemoryDb.Setup(ctx);
             Services.Postgres.Setup(ctx);
-            Qdrant.Setup(ctx);
+            Services.Qdrant.Setup(ctx);
             Redis.Setup(ctx);
             SimpleVectorDb.Setup(ctx);
 
@@ -128,7 +128,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                    Qdrant.Setup(ctx, true);
+                    Services.Qdrant.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
