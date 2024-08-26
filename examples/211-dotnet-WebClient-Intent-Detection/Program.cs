@@ -3,16 +3,10 @@
 #pragma warning disable CS8602 // memory is initialized before usage
 #pragma warning disable CS0162 // unreachable code is managed via boolean settings
 
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.KernelMemory;
 
-/* Use MemoryWebClient to run the default import pipeline
- * deployed as a web service at "http://127.0.0.1:9001/".
- *
- * Note: start the Kernel Memory service before running this.
- * Note: if the web service uses distributed handlers, make sure
- *       handlers are running to get the pipeline to complete,
- *       otherwise the web service might just upload the files
- *       without extracting memories. */
 public static class Program
 {
     private static MemoryWebClient? s_memory;
@@ -26,7 +20,7 @@ public static class Program
         // === INGESTION =========
         // =======================
 
-        // await StoreIntent();
+        await StoreIntent();
 
         // Wait for remote ingestion pipelines to complete
         foreach (var docId in s_toDelete)
@@ -83,7 +77,7 @@ public static class Program
                 "account-balance", new List<string>
                 {
                     "Tell me my account balance.",
-                    "'d like to know my account balance"
+                    "I'd like to know my account balance"
                 }
             },
 
@@ -126,8 +120,14 @@ public static class Program
         {
             foreach (string intentRequest in intentSample.Value)
             {
+                var docId = HashThis(intentRequest);
+                if (await s_memory.IsDocumentReadyAsync(docId))
+                {
+                    continue;
+                }
+
                 Console.WriteLine($"Uploading intent {intentSample.Key} with question: {intentRequest}");
-                string docId = await s_memory.ImportTextAsync(intentRequest, tags: new TagCollection() { { "intent", intentSample.Key } });
+                await s_memory.ImportTextAsync(intentRequest, tags: new TagCollection() { { "intent", intentSample.Key } }, documentId: docId);
                 Console.WriteLine($"- Document Id: {docId}");
                 s_toDelete.Add(docId);
             }
@@ -141,7 +141,7 @@ public static class Program
     // =======================
 
     // Helper function to retrieve a tag value from a SearchResult
-    private static string? getTagValue(SearchResult answer, string tagName, string? defaultValue = null)
+    private static string? GetTagValue(SearchResult answer, string tagName, string? defaultValue = null)
     {
         if (answer.Results.Count == 0)
         {
@@ -170,10 +170,15 @@ public static class Program
         // we ask for one chank of data with a minimum relevance of 0.75
         SearchResult answer = await s_memory.SearchAsync(request, minRelevance: 0.75, limit: 1);
 
-        string? intent = getTagValue(answer, "intent", "none");
+        string? intent = GetTagValue(answer, "intent", "none");
         Console.WriteLine($"Intent: {intent}");
 
         Console.WriteLine("\n====================================\n");
+    }
+
+    private static string HashThis(string value)
+    {
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToUpperInvariant();
     }
 
     // =======================

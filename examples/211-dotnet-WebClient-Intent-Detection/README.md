@@ -1,34 +1,24 @@
-## Example: using the service with \<MemoryWebClient>
+# Example: using the service for Intent Detection
 
-This example shows how to import multiple files and ask questions, delegating
-the work to the Kernel Memory Service.
+This example shows how intent detection could be achieved using Kernel Memory WebClient. First, we upload some intents with their samples to Kernel Memory. Then, we ask for the intent of some questions. Finally, we delete the memories we uploaded.
 
-### There are two ways to run this example:
+## Running the example locally
 
-1. The example points to `https://127.0.0.1:9001` so you should start the
-   Kernel Memory Service locally before running this example.
-
-2. You can easily deploy Kernel Memory to Azure by following procedure on [this page](../../infra/README.md).
-
+The example points to `http://127.0.0.1:9001` so you should start the Kernel Memory Service locally before running this example.
 Start `dotnet/Service/Service.csproj`. See `dotnet/Service/README.md` for details.
 
 ```csharp
 var memory = new MemoryWebClient("http://127.0.0.1:9001/");
-// In case you have deployed the service to Azure, you can use the following code:
-// s_memory = new MemoryWebClient("https://AZURE_CONTAINER_APP_ENDPOINT.azurecontainerapps.io/", apiKey: "KEY_YOU_PROVIDED_WHEN_DEPLOYING");
-
-await memory.ImportDocumentAsync(new Document("doc012")
-    .AddFiles([ "file2.txt", "file3.docx", "file4.pdf" ])
-    .AddTag("user", "Blake"));
-
-while (!await memory.IsDocumentReadyAsync(documentId: "doc012"))
-{
-    Console.WriteLine("Waiting for memory ingestion to complete...");
-    await Task.Delay(TimeSpan.FromSeconds(2));
-
-string answer = await memory.AskAsync("What's Semantic Kernel?");
 ```
 
-# Run the example
+### Run the example
 
 To run the example, depending on your platform, execute either `run.sh` or `run.cmd` or just `dotnet run`
+
+## Running the example with KM on Azure
+
+You can easily deploy Kernel Memory to Azure by following procedure on [this page](../../infra/README.md). Next, you will need to update one line in `Program.cs` to point to the Azure Public IP created during the deployment, you will also need to provide the API key you used when deploying the service.
+
+```csharp
+var memory = new MemoryWebClient("http://[IP ADDRESS]/", apiKey: "KEY_YOU_PROVIDED_WHEN_DEPLOYING");
+```
