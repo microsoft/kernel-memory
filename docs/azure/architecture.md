@@ -56,26 +56,39 @@ The diagram illustrates the components of the Kernel Memory infrastructure in Az
 
 ### Overview
 
-The Web Service receives data through an API and stores it in Azure Blob Storage. Kernel Memory Async Handlers then process the data, which is subsequently stored in Azure AI Search. Finally, the data can be queried by the Web Service
+The Web Service receives data through an API and stores it in Azure Blob Storage.
+Kernel Memory Async Handlers then process the data, which is subsequently stored in Azure AI Search.
+Finally, the data can be queried by the Web Service
 
-For the Kernel Memory Web Service and Kernel Memory Async Handlers, we use Azure Container Apps to pull Docker images from Docker Hub. The current architecture employs the `Consumption` ACA deployment type. For production deployments, we recommend using the `Dedicated` deployment type. Azure Container Apps are deployed with a public endpoint protected by an API key.
+For the Kernel Memory Web Service and Kernel Memory Async Handlers, we use Azure Container Apps to pull Docker images from Docker Hub.
+The current architecture employs the `Consumption` ACA deployment type.
+For production deployments, we recommend using the `Dedicated` deployment type.
+Azure Container Apps are deployed with a public endpoint protected by an API key.
 
 {: .highlight }
-It's important to note that the Kernel Memory Web Service and Kernel Memory Async Handlers can also be deployed using Azure App Service, Azure Kubernetes Service, Azure Container Instances, or Azure Virtual Machines.
+It's important to note that the Kernel Memory Web Service and Kernel Memory Async Handlers can also be deployed using
+Azure App Service, Azure Kubernetes Service, Azure Container Instances, or Azure Virtual Machines.
 
 Kernel Memory Async Handlers use Azure AI Document Intelligence to extract content from images. Local authentication is disabled in favor of Managed Identity.
 
-An Azure Managed Identity is created and assigned to the Azure Container Apps to access Azure Blob Storage and Azure AI Search. This Managed Identity is also used to access other resources required by the Kernel Memory Web Service and Kernel Memory Async Handlers.
+An Azure Managed Identity is created and assigned to the Azure Container Apps to access Azure Blob Storage and Azure AI Search.
+This Managed Identity is also used to access other resources required by the Kernel Memory Web Service and Kernel Memory Async Handlers.
 
-Azure Blob Storage is used for document storage. Data is stored in Blob Storage and, after processing by the Kernel Memory Async Handlers, is stored in Azure AI Search for querying by the Web Service. The architecture uses Standard Locally Redundant Storage (SKU Standard_LRS) for redundancy in the primary region. For security, the Storage Account does not use access keys and relies on Managed Identity for access.
+Azure Blob Storage is used for document storage.
+Data is stored in Blob Storage and, after processing by the Kernel Memory Async Handlers, is stored in Azure AI Search for querying by the Web Service.
+The architecture uses Standard Locally Redundant Storage (SKU Standard_LRS) for redundancy in the primary region.
+For security, the Storage Account does not use access keys and relies on Managed Identity for access.
 
 The architecture uses Azure Storage Queue for queuing. The Web Service sends data to the queue, and the Kernel Memory Async Handlers retrieve data from it.
 {: .highlight }
 It's important to note that orchestration can also be achieved using RabbitMQ.
 
-As a Vector DB, this architecture uses Azure AI Search. Kernel Memory can also be configured to work with Qdrant, Postgres, Redis, SimpleVectorDb, or SQL Server. Access to Azure AI Search, like other services, is protected with Managed Identity.
+As a Vector DB, this architecture uses Azure AI Search. Kernel Memory can also be configured to work with Qdrant, Postgres, Redis, SimpleVectorDb, or SQL Server.
+Access to Azure AI Search, like other services, is protected with Managed Identity.
 
-For AI models, this architecture leverages models deployed in Azure AI. The text-embedding-ada-002 version `2` is used for embedding, and the `gpt-35-turbo-16k` deployment version `0613` is used for inference. Model names and versions are specified in the `infra/main.bicep` file.
+For AI models, this architecture leverages models deployed in Azure AI.
+The text-embedding-ada-002 version `2` is used for embedding, and the `gpt-35-turbo-16k` deployment version `0613` is used for inference.
+Model names and versions are specified in the `infra/main.bicep` file.
 
 All resources are deployed in the same Azure Resource Group and the region.
 
@@ -114,7 +127,7 @@ To minimize costs while testing Kernel Memory on Azure, delete resources after u
 |                       |                                | Total             |                                                                                                                                                                                                                                                                                                                                | $195.65                |
 
 _All prices shown are in United States – Dollar ($) USD. This is a summary estimate, not a quote. For up to date pricing information please visit https://azure.microsoft.com/pricing/calculator/
-This estimate was created at 6/24/2024 2:41:50 PM UTC._
+This estimate was created on 6/24/2024 2:41:50 PM UTC._
 
 ### Next steps
 
