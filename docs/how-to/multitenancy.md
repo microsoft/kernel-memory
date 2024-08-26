@@ -8,12 +8,15 @@ layout: default
 
 # Multitenancy in Kernel Memory
 
-Multitenant architectures are commonly used in SaaS products and enterprises to achieve separation between tenants, customers, or even applications. If your Kernel Memory workload will be used as a multitenant workload, you need to consider the following implementation.
+Multitenant architectures are commonly used in SaaS products and enterprises to achieve separation between tenants, customers, or even applications.
+If your Kernel Memory workload will be used as a multitenant workload, you need to consider the following implementation.
 
 {: .highlight }
 To learn more about Architecting multitenant solutions please refer to [Azure Multitenant Architecture](https://learn.microsoft.com/azure/architecture/guide/multitenant/overview/)
 
-Kernel Memory uses a rich tagging system to allow you to tag your data with any metadata you want. This allows you to easily filter and query your data based on these tags. When you are using Kernel Memory in a multitenant environment, you can use these tags to separate the data of different tenants.
+Kernel Memory uses a rich tagging system to allow you to tag your data with any metadata you want.
+This allows you to easily filter and query your data based on these tags.
+When you are using Kernel Memory in a multitenant environment, you can use these tags to separate the data of different tenants.
 
 ## Data insertion example
 
@@ -40,7 +43,8 @@ var docId = await memory.ImportDocumentAsync(new Document("doc002")
     .AddTag("tenantId", "1"));
 ```
 
-Example above demonstrates how to insert data with a tag `tenantId` and assign it to a specific tenant with the value `1`. This allows for easy data separation in a multitenant environment.
+Example above demonstrates how to insert data with a tag `tenantId` and assign it to a specific tenant with the value `1`.
+This allows for easy data separation in a multitenant environment.
 
 ## Data retrieval example
 
@@ -54,4 +58,5 @@ var answer = await memory.AskAsync(question, filter: MemoryFilters.ByTag("tenant
 var searchresult = await memory.SearchAsync(question, filter: MemoryFilters.ByTag("tenantId", "1"));
 ```
 
-Example above demonstrates how to retrieve data with a tag `tenantId` that is equal to `1`. This feature enables convenient data separation in a multitenant environment.
+Example above demonstrates how to retrieve data with a tag `tenantId` that is equal to `1`.
+This feature enables convenient data separation in a multitenant environment.
