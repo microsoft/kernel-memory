@@ -28,8 +28,6 @@ public static class Program
 
         // await StoreIntent();
 
-
-
         // Wait for remote ingestion pipelines to complete
         foreach (var docId in s_toDelete)
         {
@@ -66,40 +64,62 @@ public static class Program
     {
         var intentSamples = new Dictionary<string, List<string>>
         {
-            { "FAQ", new List<string> {
-                "How do I check the balance on my bank Visa Debit Card?",
-                "Can I transfer money from my account to an account at another financial institution?",
-                "Can I join the bank online?",
-                "How do I find my tax statements?",
-                "Can I access my tax forms online?",
-                "Bank information",
-                "If I lose my debit or credit card, what should I do?",
-                "My card was lost/stolen, what should I do?",
-                "How do I activate my credit card?" } },
+            {
+                "FAQ", new List<string>
+                {
+                    "How do I check the balance on my bank Visa Debit Card?",
+                    "Can I transfer money from my account to an account at another financial institution?",
+                    "Can I join the bank online?",
+                    "How do I find my tax statements?",
+                    "Can I access my tax forms online?",
+                    "Bank information",
+                    "If I lose my debit or credit card, what should I do?",
+                    "My card was lost/stolen, what should I do?",
+                    "How do I activate my credit card?"
+                }
+            },
 
-            { "account-balance", new List<string> {
-                "Tell me my account balance.",
-                "'d like to know my account balance"} },
+            {
+                "account-balance", new List<string>
+                {
+                    "Tell me my account balance.",
+                    "'d like to know my account balance"
+                }
+            },
 
-            { "transfer-funds", new List<string> {
-                "How to transfer fund to my checking account?",
-                "I need to pay my credit card",
-                "Can I pay my bill?",
-                 } },
+            {
+                "transfer-funds", new List<string>
+                {
+                    "How to transfer fund to my checking account?",
+                    "I need to pay my credit card",
+                    "Can I pay my bill?",
+                }
+            },
 
-            { "transaction-history", new List<string> {
-                "Can I get transaction records?",
-                 } },
+            {
+                "transaction-history", new List<string>
+                {
+                    "Can I get transaction records?",
+                }
+            },
 
-            { "change-PIN", new List<string> {
-                "Update my password",
-                "How to change the PIN for my account?",
-                "Can you reset my PIN?"} },
+            {
+                "change-PIN", new List<string>
+                {
+                    "Update my password",
+                    "How to change the PIN for my account?",
+                    "Can you reset my PIN?"
+                }
+            },
 
-            { "transfer-to-agent", new List<string> {
-                "Connect me to an agent",
-                "Transfer to an agent",
-                "Can I talk to a human?"} },
+            {
+                "transfer-to-agent", new List<string>
+                {
+                    "Connect me to an agent",
+                    "Transfer to an agent",
+                    "Can I talk to a human?"
+                }
+            },
         };
 
         foreach (KeyValuePair<string, List<string>> intentSample in intentSamples)
@@ -112,10 +132,9 @@ public static class Program
                 s_toDelete.Add(docId);
             }
         }
+
         Console.WriteLine("\n====================================\n");
-
     }
-
 
     // =======================
     // === RETRIEVAL =========
@@ -140,6 +159,7 @@ public static class Program
         {
             return citation.Partitions[0].Tags[tagName][0];
         }
+
         return defaultValue;
     }
 
@@ -155,7 +175,6 @@ public static class Program
 
         Console.WriteLine("\n====================================\n");
     }
-
 
     // =======================
     // === PURGE =============
