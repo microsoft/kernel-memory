@@ -1,6 +1,10 @@
 # Example: using the service for Intent Detection
 
-This example shows how intent detection could be achieved using Kernel Memory WebClient. First, we upload some intents with their samples to Kernel Memory. Then, we ask for the intent of some questions. Finally, we delete the memories we uploaded.
+This example demonstrates intent detection using Kernel Memory.
+Initially, intents - each with a name (e.g. “account-balance”) and associated examples - are uploaded to Kernel Memory. 
+These examples help LLMs match user input to the corresponding intent name.
+Next, we query the intent of specific questions. 
+Finally, the example code deletes the intents, although in a real application, these would be stored persistently, imported once, and updated as needed with new examples or intent names.
 
 ## Running the example locally
 
