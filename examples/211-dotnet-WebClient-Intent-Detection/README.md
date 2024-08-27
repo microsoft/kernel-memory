@@ -21,7 +21,8 @@ To run the example, depending on your platform, execute either `run.sh` or `run.
 
 ## Running the example with KM on Azure
 
-You can easily deploy Kernel Memory to Azure by following procedure on [this page](../../infra/README.md). Next, you will need to update one line in `Program.cs` to point to the Azure Public IP created during the deployment, you will also need to provide the API key you used when deploying the service.
+You can easily deploy Kernel Memory to Azure by following procedure on [this page](../../infra/README.md).
+You will need to update one line in `Program.cs`, pointing KM WebClient to the Azure Public IP created during the deployment, including the API key chosen during KM deployment.
 
 ```csharp
 var memory = new MemoryWebClient("http://[IP ADDRESS]/", apiKey: "KEY_YOU_PROVIDED_WHEN_DEPLOYING");
