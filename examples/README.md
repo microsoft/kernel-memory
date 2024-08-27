@@ -30,4 +30,5 @@ Some examples about how to use Kernel Memory.
 26. [Using local models via LM Studio](208-dotnet-lmstudio)
 27. [Using Context Parameters to customize RAG prompt during a request](209-dotnet-using-context-overrides)
 28. [Creating a Memory instance without KernelMemoryBuilder](210-KM-without-builder)
-29. [Fetching data from Discord](301-discord-test-application)
+29. [Intent Detection](211-dotnet-WebClient-Intent-Detection)
+30. [Fetching data from Discord](301-discord-test-application)

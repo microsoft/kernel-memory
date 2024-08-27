@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 		docs\service.md = docs\service.md
 		docs\_config.local.yml = docs\_config.local.yml
 		docs\_config.yml = docs\_config.yml
+		docs\azure.md = docs\azure.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
@@ -294,6 +295,28 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "210-KM-without-builder", "e
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3", "extensions\AWS\S3\S3.csproj", "{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure", "azure", "{795CD089-05A9-4800-B6FF-3243CAD7D41B}"
+	ProjectSection(SolutionItems) = preProject
+		docs\azure\architecture.md = docs\azure\architecture.md
+		docs\azure\architecture.png = docs\azure\architecture.png
+		docs\azure\async.png = docs\azure\async.png
+		docs\azure\deployment.md = docs\azure\deployment.md
+		docs\azure\diagram.png = docs\azure\diagram.png
+		docs\azure\usage.md = docs\azure\usage.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how-to", "how-to", "{6B992EFC-81B0-4E52-925F-41420BDC40B6}"
+	ProjectSection(SolutionItems) = preProject
+		docs\how-to\custom-partitioning.md = docs\how-to\custom-partitioning.md
+		docs\how-to\custom-pipelines.md = docs\how-to\custom-pipelines.md
+		docs\how-to\custom-prompts.md = docs\how-to\custom-prompts.md
+		docs\how-to\hugging-face.md = docs\how-to\hugging-face.md
+		docs\how-to\intent-detection.md = docs\how-to\intent-detection.md
+		docs\how-to\multitenancy.md = docs\how-to\multitenancy.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "211-dotnet-WebClient-Intent-Detection", "examples\211-dotnet-WebClient-Intent-Detection\211-dotnet-WebClient-Intent-Detection.csproj", "{84AEC1DD-CBAE-400A-949C-91BA373C587D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -552,6 +575,9 @@ Global
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -641,6 +667,9 @@ Global
 		{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{00A3DDF3-2230-4AEC-8B5B-B75F958D194B} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{795CD089-05A9-4800-B6FF-3243CAD7D41B} = {7BA7F1B2-19E2-46EB-B000-513EE2F65769}
+		{6B992EFC-81B0-4E52-925F-41420BDC40B6} = {7BA7F1B2-19E2-46EB-B000-513EE2F65769}
+		{84AEC1DD-CBAE-400A-949C-91BA373C587D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

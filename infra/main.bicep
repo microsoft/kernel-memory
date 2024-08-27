@@ -37,7 +37,7 @@ param InferenceModel string = 'gpt-35-turbo-16k'
 
 @description('''
 Inference deployment model\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.
-The default capacity is 30,000 TPM. 
+The default capacity is 30 that represents 30,000 TPM. 
 For model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.
 ''')
 @minValue(1)
@@ -60,7 +60,7 @@ param EmbeddingModel string = 'text-embedding-ada-002'
 
 @description('''
 Embedding deployment model\'s Tokens-Per-Minute (TPM) capacity, measured in thousands.
-The default capacity is 30,000 TPM.
+The default capacity is 30 that represents 30,000 TPM.
 For model limits specific to your region, refer to the documentation at https://learn.microsoft.com/azure/ai-services/openai/concepts/models#standard-deployment-model-quota.
 ''')
 @minValue(1)
