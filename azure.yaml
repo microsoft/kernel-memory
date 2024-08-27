@@ -1,3 +1,17 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 name: kernel-memory
+workflows:
+  up:
+    steps:
+      - azd: provision
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      interactive: true
+      run: "Write-Host \"Semantic Kernel is ready at: $env:kmServiceEndpoint"
+    posix:
+      shell: sh
+      interactive: true
+      run: "echo Semantic Kernel is ready at: $kmServiceEndpoint"
