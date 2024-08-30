@@ -306,7 +306,7 @@ internal sealed class MongoDbAtlasSearchHelper
     {
         var conventionPack = ConventionRegistry.Lookup(typeof(CamelCaseElementNameConvention));
 
-        return conventionPack != null;
+        return conventionPack.Conventions.Any(c => c is CamelCaseElementNameConvention);
     }
 
     private static string ToLowerIfTrue(string value, bool toLower)
