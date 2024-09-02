@@ -31,6 +31,16 @@ Designed for seamless integration as a Plugin with
 Copilot and ChatGPT, Kernel Memory enhances data-driven features in applications
 built for most popular AI platforms.
 
+# Deployment to Azure
+
+Kernel Memory can be deployed in various configurations, including as a **Service** in Azure.
+To learn more about deploying Kernel Memory in Azure, please refer to the
+[Azure deployment guide](https://microsoft.github.io/kernel-memory/azure).
+For detailed instructions on deploying to Azure, you can check the [infrastructure documentation](/infra/README.md).
+If you are already familiar with these resources, you can quickly deploy by clicking the following button.
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
+
 # Synchronous Memory API (aka "serverless")
 
 Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to

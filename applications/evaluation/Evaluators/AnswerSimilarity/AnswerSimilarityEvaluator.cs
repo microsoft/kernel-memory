@@ -10,6 +10,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerSimilarity;
 
