@@ -13,7 +13,7 @@ public class AdditionalFilteringTests : BaseFunctionalTestCase
     {
         if (cfg.GetValue<bool>("UseAzureOpenAI"))
         {
-            //ok in azure we can use managed identities so we need to check the confgiuration
+            //ok in azure we can use managed identities so we need to check the configuration
             if (this.AzureOpenAITextConfiguration.Auth == AzureOpenAIConfig.AuthTypes.APIKey)
             {
                 //verify that we really have an api key.
