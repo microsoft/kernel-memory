@@ -212,8 +212,8 @@ public class SimpleVectorDb : IMemoryDb
             var match = true;
 
             // Verify that all conditions are met (AND logic)
-            var allFilter = filter.GetAllFilters();
-            foreach (var baseFilter in allFilter)
+            var allFilters = filter.GetFilters();
+            foreach (var baseFilter in allFilters)
             {
                 if (baseFilter is EqualFilter eq)
                 {

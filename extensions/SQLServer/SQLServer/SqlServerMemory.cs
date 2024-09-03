@@ -696,7 +696,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                     filterBuilder.Append(" OR ");
                 }
 
-                var validFilters = filter.GetAllFilters().ToArray();
+                var validFilters = filter.GetFilters().ToArray();
                 for (int j = 0; j < validFilters.Length; j++)
                 {
                     var baseFilter = validFilters[j];

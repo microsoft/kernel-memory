@@ -183,7 +183,7 @@ public sealed class RedisMemory : IMemoryDb
             foreach (var filter in filters.Where(f => !f.IsEmpty()))
             {
                 sb.Append('(');
-                var validFilters = filter.GetAllFilters();
+                var validFilters = filter.GetFilters();
                 foreach (BaseFilter baseFilter in validFilters)
                 {
                     if (baseFilter is EqualFilter eq)

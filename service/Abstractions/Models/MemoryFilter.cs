@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,28 +38,10 @@ public class MemoryFilter : TagCollection
     }
 
     /// <summary>
-    /// Get all the filters you need to put into the query
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<KeyValuePair<string, string?>> GetFilters()
-    {
-        return this.ToKeyValueList();
-    }
-
-    /// <summary>
-    /// Gets all the filters that needs to be put as not into  the query
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<KeyValuePair<string, string?>> GetNotFilters()
-    {
-        return this._notTags.ToKeyValueList();
-    }
-
-    /// <summary>
     /// Get a composition of all filters, And and Not.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<BaseFilter> GetAllFilters()
+    public IEnumerable<BaseFilter> GetFilters()
     {
         var equalFilters = this.Pairs
             .Where(f => !string.IsNullOrEmpty(f.Value))

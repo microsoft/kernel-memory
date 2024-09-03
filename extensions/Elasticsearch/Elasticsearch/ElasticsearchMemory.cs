@@ -320,7 +320,7 @@ public class ElasticsearchMemory : IMemoryDb
             List<Query> thisMust = new();
 
             // Each filter is a list of key/value pairs.
-            foreach (var baseFilter in filter.GetAllFilters())
+            foreach (var baseFilter in filter.GetFilters())
             {
                 Query newTagQuery = new TermQuery(ElasticsearchMemoryRecord.TagsName) { Value = baseFilter.Key };
                 Query termQuery = new TermQuery(ElasticsearchMemoryRecord.TagsValue) { Value = baseFilter.Value ?? string.Empty };

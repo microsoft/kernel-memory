@@ -274,7 +274,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
                 throw new NotImplementedException("PostgresMemoryFilter is not supported yet");
             }
 
-            var allFilters = filter.GetAllFilters().ToArray();
+            var allFilters = filter.GetFilters().ToArray();
 
             List<string> equalTags = allFilters
                 .OfType<EqualFilter>()

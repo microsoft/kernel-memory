@@ -218,7 +218,7 @@ public sealed class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         List<FilterDefinition<MongoDbAtlasMemoryRecord>> outerFiltersArray = new();
         foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
         {
-            var thisFilter = filter.GetAllFilters().ToArray();
+            var thisFilter = filter.GetFilters().ToArray();
             List<FilterDefinition<MongoDbAtlasMemoryRecord>> filtersArray = new();
             foreach (var singleFilter in thisFilter)
             {

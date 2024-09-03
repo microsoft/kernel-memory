@@ -32,7 +32,7 @@ internal static class AzureAISearchFiltering
         var filtersForSearchInQuery = filterList
             // Filters with only one key, but not multiple values (i.e: excluding MemoryFilters.ByTag("department", "HR").ByTag("department", "Marketing") as here we want an `AND`)
             .Where(filter => !filter.IsEmpty() && filter.Keys.Count == 1 && filter.Values.First().Count == 1)
-            .SelectMany(filter => filter.GetAllFilters()) // Flattening to pairs
+            .SelectMany(filter => filter.GetFilters()) // Flattening to pairs
             .GroupBy(pair => pair.Key) // Grouping by the tag key
             .Where(g => g.Count() > 1)
             .Select(group => new
@@ -76,7 +76,7 @@ internal static class AzureAISearchFiltering
         // to be removed upstream, we check again and remove them here too.
         foreach (var filter in remainingFilters)
         {
-            var filterConditions = filter.GetAllFilters()
+            var filterConditions = filter.GetFilters()
                 .Select(baseFilter =>
                 {
                     if (baseFilter is EqualFilter eq)
