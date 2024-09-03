@@ -17,7 +17,18 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     {
         if (cfg.GetValue<bool>("UseAzureOpenAI"))
         {
-            Assert.False(string.IsNullOrEmpty(this.AzureOpenAIEmbeddingConfiguration.APIKey));
+            //ok in azure we can use managed identities so we need to check the confgiuration
+            if (this.AzureOpenAITextConfiguration.Auth == AzureOpenAIConfig.AuthTypes.APIKey)
+            {
+                //verify that we really have an api key.
+                Assert.False(string.IsNullOrEmpty(this.AzureOpenAITextConfiguration.APIKey));
+            }
+
+            if (this.AzureOpenAIEmbeddingConfiguration.Auth == AzureOpenAIConfig.AuthTypes.APIKey)
+            {
+                //verify that we really have an api key.
+                Assert.False(string.IsNullOrEmpty(this.AzureOpenAIEmbeddingConfiguration.APIKey));
+            }
 
             this.KernelMemory = new KernelMemoryBuilder()
                 .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
