@@ -137,8 +137,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                nameof(GPT4oTokenizer));
+            textTokenizer = new GPT4oTokenizer();
         }
 
         this._textTokenizer = textTokenizer;
