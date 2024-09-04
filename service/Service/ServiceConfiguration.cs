@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Anthropic;
+using Microsoft.KernelMemory.AI.Ollama;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
@@ -215,7 +216,7 @@ internal sealed class ServiceConfiguration
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
                         s => s.AddAzureOpenAIEmbeddingGeneration(
                             config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                            textTokenizer: new GPT4Tokenizer()));
+                            textTokenizer: new GPT4oTokenizer()));
                     builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -225,7 +226,17 @@ internal sealed class ServiceConfiguration
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
                         s => s.AddOpenAITextEmbeddingGeneration(
                             config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                            textTokenizer: new GPT4Tokenizer()));
+                            textTokenizer: new GPT4oTokenizer()));
+                    builder.AddIngestionEmbeddingGenerator(instance);
+                    break;
+                }
+
+                case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                        s => s.AddOllamaTextEmbeddingGeneration(
+                            config: this.GetServiceConfig<OllamaConfig>("Ollama"),
+                            textTokenizer: new GPT4oTokenizer()));
                     builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -352,13 +363,19 @@ internal sealed class ServiceConfiguration
             case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddAzureOpenAIEmbeddingGeneration(
                     config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                    textTokenizer: new GPT4Tokenizer());
+                    textTokenizer: new GPT4oTokenizer());
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddOpenAITextEmbeddingGeneration(
                     config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4Tokenizer());
+                    textTokenizer: new GPT4oTokenizer());
+                break;
+
+            case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddOllamaTextEmbeddingGeneration(
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
+                    textTokenizer: new GPT4oTokenizer());
                 break;
 
             default:
@@ -423,17 +440,25 @@ internal sealed class ServiceConfiguration
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddAzureOpenAITextGeneration(
                     config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"),
-                    textTokenizer: new GPT4Tokenizer());
+                    textTokenizer: new GPT4oTokenizer());
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 builder.Services.AddOpenAITextGeneration(
                     config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4Tokenizer());
+                    textTokenizer: new GPT4oTokenizer());
                 break;
 
             case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAnthropicTextGeneration(this.GetServiceConfig<AnthropicConfig>("Anthropic"));
+                builder.Services.AddAnthropicTextGeneration(
+                    config: this.GetServiceConfig<AnthropicConfig>("Anthropic"),
+                    textTokenizer: new GPT4oTokenizer());
+                break;
+
+            case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddOllamaTextGeneration(
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
+                    textTokenizer: new GPT4oTokenizer());
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):

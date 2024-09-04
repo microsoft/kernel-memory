@@ -39,6 +39,7 @@
     <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.28.0" />
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="OllamaSharp" Version="3.0.1" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
     <PackageVersion Include="Pgvector" Version="0.3.0" />
     <PackageVersion Include="Polly.Core" Version="8.4.1" />
