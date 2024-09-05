@@ -46,7 +46,7 @@ public static class Main
             // Embedding generation
             EmbeddingGeneratorSetup(ctx);
             AzureOpenAIEmbedding.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
 
             // Memory DB
             MemoryDbTypeSetup(ctx);
@@ -60,7 +60,7 @@ public static class Main
             // Text generation
             TextGeneratorTypeSetup(ctx);
             AzureOpenAIText.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
             LlamaSharp.Setup(ctx);
             Ollama.Setup(ctx);
 
@@ -121,7 +121,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    OpenAI.Setup(ctx, true);
+                    Services.OpenAI.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
