@@ -7,9 +7,9 @@ using Microsoft.KernelMemory.Diagnostics;
 
 /* This example shows how to use KM with Ollama
  *
- * 1. Install and launch Ollama. You should see an icon for the app running the background.
+ * 1. Install and launch Ollama. You should see an icon for the app running in the background.
  *
- * 2. Download your preferred models, e.g.
+ * 2. Download your preferred models, for example:
  *      - ollama pull nomic-embed-text
  *      - ollama pull phi3:medium-128k
  *
