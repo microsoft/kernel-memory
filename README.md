@@ -315,7 +315,7 @@ running the service locally with OpenAPI enabled.
    * [Using Context Parameters to customize RAG prompt during a request](examples/209-dotnet-using-context-overrides)
 6. Local models and external connectors
    * [Using custom LLMs](examples/104-dotnet-custom-LLM)
-   * [Using local LLMs with Ollama](212-dotnet-ollama) 
+   * [Using local LLMs with Ollama](examples/212-dotnet-ollama) 
    * [Using local LLMs with llama.cpp via LlamaSharp](examples/105-dotnet-serverless-llamasharp)
    * [Using local models with LM Studio](examples/208-dotnet-lmstudio)
    * [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
