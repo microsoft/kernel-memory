@@ -317,6 +317,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how-to", "how-to", "{6B992E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "211-dotnet-WebClient-Intent-Detection", "examples\211-dotnet-WebClient-Intent-Detection\211-dotnet-WebClient-Intent-Detection.csproj", "{84AEC1DD-CBAE-400A-949C-91BA373C587D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "212-dotnet-ollama", "examples\212-dotnet-ollama\212-dotnet-ollama.csproj", "{B303885D-F64F-4EEB-B085-0014E863AF61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ollama", "extensions\Ollama\Ollama\Ollama.csproj", "{F192513B-265B-4943-A2A9-44E23B15BA18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -578,6 +582,13 @@ Global
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B303885D-F64F-4EEB-B085-0014E863AF61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B303885D-F64F-4EEB-B085-0014E863AF61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B303885D-F64F-4EEB-B085-0014E863AF61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F192513B-265B-4943-A2A9-44E23B15BA18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F192513B-265B-4943-A2A9-44E23B15BA18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -670,6 +681,8 @@ Global
 		{795CD089-05A9-4800-B6FF-3243CAD7D41B} = {7BA7F1B2-19E2-46EB-B000-513EE2F65769}
 		{6B992EFC-81B0-4E52-925F-41420BDC40B6} = {7BA7F1B2-19E2-46EB-B000-513EE2F65769}
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{B303885D-F64F-4EEB-B085-0014E863AF61} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{F192513B-265B-4943-A2A9-44E23B15BA18} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

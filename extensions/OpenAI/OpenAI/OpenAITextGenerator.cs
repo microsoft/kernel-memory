@@ -86,8 +86,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                nameof(GPT4oTokenizer));
+            textTokenizer = new GPT4oTokenizer();
         }
 
         this._textTokenizer = textTokenizer;
@@ -96,13 +96,13 @@ public sealed class OpenAITextGenerator : ITextGenerator
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
-        return this._textTokenizer!.CountTokens(text);
+        return this._textTokenizer.CountTokens(text);
     }
 
     /// <inheritdoc/>
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return this._textTokenizer!.GetTokens(text);
+        return this._textTokenizer.GetTokens(text);
     }
 
     /// <inheritdoc/>

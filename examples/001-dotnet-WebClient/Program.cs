@@ -253,7 +253,7 @@ public static class Program
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0.66);
         Console.WriteLine($"\nAnswer: {answer.Result}");
 
         Console.WriteLine("\n====================================\n");
@@ -278,7 +278,7 @@ public static class Program
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0.5);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         // Show sources / citations
