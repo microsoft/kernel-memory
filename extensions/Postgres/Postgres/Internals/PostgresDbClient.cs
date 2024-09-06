@@ -19,7 +19,7 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
-internal sealed class PostgresDbClient : IDisposable
+internal sealed class PostgresDbClient
 {
     // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
     private const string PgErrUndefinedTable = "42P01"; // undefined_table
@@ -229,7 +229,7 @@ internal sealed class PostgresDbClient : IDisposable
             {
                 // Check if the custom SQL contains the lock placeholder (assuming it's not commented out)
                 bool missingLockStatement = !string.IsNullOrEmpty(this._createTableSql)
-                                             && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
+                    && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
 
                 if (missingLockStatement)
                 {
@@ -658,23 +658,6 @@ internal sealed class PostgresDbClient : IDisposable
         }
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Disposes the managed resources
-    /// </summary>
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-        }
-    }
-
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
     /// </summary>
@@ -684,8 +667,11 @@ internal sealed class PostgresDbClient : IDisposable
     {
         try
         {
-            using var dataSource = this._dataSourceBuilder.Build();
-            return await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            var dataSource = this._dataSourceBuilder.Build();
+            await using (dataSource.ConfigureAwait(false))
+            {
+                return await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Npgsql.PostgresException e) when (IsDbNotFoundException(e))
         {
@@ -761,9 +747,9 @@ internal sealed class PostgresDbClient : IDisposable
     private static bool IsVectorTypeDoesNotExistException(Npgsql.PostgresException e)
     {
         return e.SqlState == PgErrTypeDoesNotExist
-                && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
+            && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
+            && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
+            && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
