@@ -7,12 +7,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
+using OpenAI.Embeddings;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
@@ -20,7 +22,7 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly AzureOpenAITextEmbeddingGenerationService _client;
+    private readonly OpenAIClient _client;
     private readonly ILogger<AzureOpenAITextEmbeddingGenerator> _log;
     private readonly string _deployment;
 
@@ -49,40 +51,59 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         switch (config.Auth)
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                this._client = new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: new DefaultAzureCredential(),
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions,
-                    loggerFactory: loggerFactory);
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential());
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                this._client = new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    credential: config.GetTokenCredential(),
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions,
-                    loggerFactory: loggerFactory);
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential());
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
-                this._client = new AzureOpenAITextEmbeddingGenerationService(
-                    deploymentName: config.Deployment,
-                    endpoint: config.Endpoint,
-                    apiKey: config.APIKey,
-                    modelId: config.Deployment,
-                    httpClient: httpClient,
-                    dimensions: config.EmbeddingDimensions,
-                    loggerFactory: loggerFactory);
+                if (string.IsNullOrEmpty(config.APIKey))
+                {
+                    throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
+                }
+
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
                 break;
 
             default:
-                throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
+                throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
+                // case AzureOpenAIConfig.AuthTypes.AzureIdentity:
+                //     this._client = new AzureOpenAITextEmbeddingGenerationService(
+                //         deploymentName: config.Deployment,
+                //         endpoint: config.Endpoint,
+                //         credential: new DefaultAzureCredential(),
+                //         modelId: config.Deployment,
+                //         httpClient: httpClient,
+                //         dimensions: config.EmbeddingDimensions,
+                //         loggerFactory: loggerFactory);
+                //     break;
+
+                // case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
+                //     this._client = new AzureOpenAITextEmbeddingGenerationService(
+                //         deploymentName: config.Deployment,
+                //         endpoint: config.Endpoint,
+                //         credential: config.GetTokenCredential(),
+                //         modelId: config.Deployment,
+                //         httpClient: httpClient,
+                //         dimensions: config.EmbeddingDimensions,
+                //         loggerFactory: loggerFactory);
+                //     break;
+
+                // case AzureOpenAIConfig.AuthTypes.APIKey:
+                //     this._client = new AzureOpenAITextEmbeddingGenerationService(
+                //         deploymentName: config.Deployment,
+                //         endpoint: config.Endpoint,
+                //         apiKey: config.APIKey,
+                //         modelId: config.Deployment,
+                //         httpClient: httpClient,
+                //         dimensions: config.EmbeddingDimensions,
+                //         loggerFactory: loggerFactory);
+                //     break;
+
+                // default:
+                //     throw new NotImplementedException($"Azure OpenAI auth type '{config.Auth}' not available");
         }
     }
 
@@ -105,10 +126,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     }
 
     /// <inheritdoc/>
-    public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
+    public async Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Generating embedding, deployment '{0}'", this._deployment);
-        return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        var embeddingClient = this._client.GetEmbeddingClient(this._deployment);
+        var embeddingGenerationOptions = new EmbeddingGenerationOptions();
+        var openAIEmbedding = await embeddingClient.GenerateEmbeddingAsync(text, embeddingGenerationOptions, cancellationToken).ConfigureAwait(false);
+        var kernelMemoryEmbedding = new Microsoft.KernelMemory.Embedding(openAIEmbedding.Value.Vector.ToArray());
+        return kernelMemoryEmbedding;
     }
 
     /// <inheritdoc/>
@@ -116,7 +141,9 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     {
         var list = textList.ToList();
         this._log.LogTrace("Generating embeddings, deployment '{0}', batch size '{1}'", this._deployment, list.Count);
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return embeddings.Select(e => new Embedding(e)).ToArray();
+        var embeddingClient = this._client.GetEmbeddingClient(this._deployment);
+        var embeddingGenerationOptions = new EmbeddingGenerationOptions();
+        var openAIEmbeddings = await embeddingClient.GenerateEmbeddingsAsync(list, embeddingGenerationOptions, cancellationToken).ConfigureAwait(false);
+        return openAIEmbeddings.Value.Select(e => new Embedding(e.Vector.ToArray())).ToArray();
     }
 }

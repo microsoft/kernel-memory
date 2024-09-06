@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -9,12 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using OpenAI.Chat;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
@@ -22,7 +22,7 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 public sealed class AzureOpenAITextGenerator : ITextGenerator
 {
     private readonly ITextTokenizer _textTokenizer;
-    private readonly OpenAIClient _client;
+    private readonly AzureOpenAIClient _client;
     private readonly ILogger<AzureOpenAITextGenerator> _log;
     private readonly bool _useTextCompletionProtocol;
     private readonly string _deployment;
@@ -59,29 +59,14 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         this._deployment = config.Deployment;
         this.MaxTokenTotal = config.MaxTokenTotal;
 
-        OpenAIClientOptions options = new()
-        {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), new SequentialDelayStrategy()),
-            Diagnostics =
-            {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
-            }
-        };
-
-        if (httpClient is not null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
-
         switch (config.Auth)
         {
             case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential(), options);
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential());
                 break;
 
             case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential());
                 break;
 
             case AzureOpenAIConfig.AuthTypes.APIKey:
@@ -90,7 +75,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
                     throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
                 }
 
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
+                this._client = new AzureOpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
                 break;
 
             default:
@@ -123,33 +108,37 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         {
             this._log.LogTrace("Sending text generation request, deployment '{0}'", this._deployment);
 
-            var openaiOptions = new CompletionsOptions
+            var chatCompletionOptions = new ChatCompletionOptions
             {
-                DeploymentName = this._deployment,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
+                TopP = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
-                ChoicesPerPrompt = 1,
             };
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { chatCompletionOptions.StopSequences.Add(s); }
             }
 
-            if (options.TokenSelectionBiases is { Count: > 0 })
+            if (options.LogitBiases is { Count: > 0 })
             {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
+                foreach (var (token, bias) in options.LogitBiases) { chatCompletionOptions.LogitBiases.Add(token, (int)bias); }
             }
 
-            StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (Completions? completions in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
+            ChatMessage chatMessage = ChatMessage.CreateUserMessage(prompt);
+
+            IEnumerable<ChatMessage> messages = new List<ChatMessage> { chatMessage };
+
+            var chatClient = this._client.GetChatClient(this._deployment);
+            AsyncCollectionResult<StreamingChatCompletionUpdate> response = chatClient.CompleteChatStreamingAsync(messages: messages, options: chatCompletionOptions, cancellationToken: cancellationToken);
+
+            await foreach (StreamingChatCompletionUpdate update in response.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                foreach (Choice? choice in completions.Choices)
+                foreach (var part in update.ContentUpdate)
                 {
-                    yield return choice.Text;
+                    yield return part.Text;
                 }
             }
         }
@@ -157,33 +146,38 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         {
             this._log.LogTrace("Sending chat message generation request, deployment '{0}'", this._deployment);
 
-            var openaiOptions = new ChatCompletionsOptions
+            var chatCompletionOptions = new ChatCompletionOptions
             {
-                DeploymentName = this._deployment,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
+                TopP = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
-                // ChoiceCount = 1,
             };
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { chatCompletionOptions.StopSequences.Add(s); }
             }
 
-            if (options.TokenSelectionBiases is { Count: > 0 })
+            if (options.LogitBiases is { Count: > 0 })
             {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
+                foreach (var (token, bias) in options.LogitBiases) { chatCompletionOptions.LogitBiases.Add(token, (int)bias); }
             }
 
-            openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));
+            ChatMessage chatMessage = ChatMessage.CreateUserMessage(prompt);
 
-            StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
+            IEnumerable<ChatMessage> messages = new List<ChatMessage> { chatMessage };
+
+            var chatClient = this._client.GetChatClient(this._deployment);
+            AsyncCollectionResult<StreamingChatCompletionUpdate> response = chatClient.CompleteChatStreamingAsync(messages: messages, options: chatCompletionOptions, cancellationToken: cancellationToken);
+
+            await foreach (StreamingChatCompletionUpdate update in response.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                yield return update.ContentUpdate;
+                foreach (var part in update.ContentUpdate)
+                {
+                    yield return part.Text;
+                }
             }
         }
     }
