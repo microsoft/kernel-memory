@@ -110,9 +110,9 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         samplingPipeline.AlphaPresence = (float)options.PresencePenalty;
         samplingPipeline.AlphaFrequency = (float)options.FrequencyPenalty;
 
-        if (options.TokenSelectionBiases is { Count: > 0 })
+        if (options.LogitBiases is { Count: > 0 })
         {
-            foreach (var (token, bias) in options.TokenSelectionBiases)
+            foreach (var (token, bias) in options.LogitBiases)
             {
                 samplingPipeline.LogitBias!.Add(token, bias);
             }

@@ -84,7 +84,7 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
                 ["frequency_penalty"] = options.FrequencyPenalty,
                 ["stop_sequences"] = options.StopSequences,
                 ["results_per_prompt"] = options.ResultsPerPrompt,
-                ["token_selection_biases"] = options.TokenSelectionBiases
+                ["token_selection_biases"] = options.LogitBiases
             }
         };
 
