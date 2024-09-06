@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
 using System.Net.Http;
-using Azure.AI.OpenAI;
-using Azure.Core;
-using Azure.Core.Pipeline;
-using Microsoft.KernelMemory.Diagnostics;
 using OpenAI;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
@@ -22,12 +19,11 @@ internal static class OpenAIClientBuilder
         if (!string.IsNullOrWhiteSpace(config.Endpoint)
             && !config.Endpoint.StartsWith(ChangeEndpointPolicy.DefaultEndpoint, StringComparison.OrdinalIgnoreCase))
         {
-            options.AddPolicy(new ChangeEndpointPolicy(config.Endpoint), HttpPipelinePosition.PerRetry);
+            options.AddPolicy(new ChangeEndpointPolicy(config.Endpoint), PipelinePosition.PerTry);
         }
-
         if (httpClient is not null)
         {
-            options.Transport = new HttpClientTransport(httpClient);
+            options.Transport = new HttpClientPipelineTransport(httpClient);
         }
 
         return new OpenAIClient(config.APIKey, options);
