@@ -16,15 +16,7 @@ internal static class OpenAIClientBuilder
         OpenAIConfig config,
         HttpClient? httpClient = null)
     {
-        OpenAIClientOptions options = new()
-        {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), new SequentialDelayStrategy()),
-            Diagnostics =
-            {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
-            }
-        };
+        OpenAIClientOptions options = new();
 
         // Point the client to a non-OpenAI endpoint, e.g. LM Studio web service
         if (!string.IsNullOrWhiteSpace(config.Endpoint)
