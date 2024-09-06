@@ -52,12 +52,19 @@
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
-  <!-- OpenXml blocked, do not upgrade these -->
+  <!--
+    OpenXml blocked, do not upgrade these
+    Excel import breaks with 'System.MissingMethodException: Method not found: 'DocumentFormat.OpenXml.OpenXmlElementList DocumentFormat.OpenXml.OpenXmlElement.get_ChildElements()
+    History:
+    - Sept 2024:
+      - ClosedXML upgraded from 0.102.2 to 0.102.3
+      - Tested OpenXml to 3.1.0 + ClosedXML 0.102.3 - Exception still occurring
+  -->
   <ItemGroup>
     <!-- see https://github.com/microsoft/kernel-memory/issues/265 -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <!-- see https://github.com/ClosedXML/ClosedXML/releases/tag/0.102.2 -->
-    <PackageVersion Include="ClosedXML" Version="0.102.2" />
+    <!-- see https://github.com/ClosedXML/ClosedXML/releases/tag/0.102.3 -->
+    <PackageVersion Include="ClosedXML" Version="0.102.3" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
