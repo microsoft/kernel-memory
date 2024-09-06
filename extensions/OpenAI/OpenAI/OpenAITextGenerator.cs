@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
@@ -111,72 +113,83 @@ public sealed class OpenAITextGenerator : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        //TODO perhaps don't need this if statement
         if (this._useTextCompletionProtocol)
         {
             this._log.LogTrace("Sending text generation request, model '{0}'", this._model);
 
-            var openaiOptions = new CompletionsOptions
+            var chatCompletionOptions = new ChatCompletionOptions
             {
-                Prompts = { prompt },
-                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
+                TopP = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
-                ChoicesPerPrompt = 1,
             };
+
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { chatCompletionOptions.StopSequences.Add(s); }
             }
 
-            if (options.TokenSelectionBiases is { Count: > 0 })
+            if (options.LogitBiases is { Count: > 0 })
             {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
+                foreach (var (token, bias) in options.LogitBiases) { chatCompletionOptions.LogitBiases.Add(token, (int)bias); }
             }
 
-            StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (Completions? completions in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
+            ChatMessage chatMessage = ChatMessage.CreateUserMessage(prompt);
+
+            IEnumerable<ChatMessage> messages = new List<ChatMessage> { chatMessage };
+
+            var chatClient = this._client.GetChatClient(this._model);
+            AsyncCollectionResult<StreamingChatCompletionUpdate> response = chatClient.CompleteChatStreamingAsync(messages: messages, options: chatCompletionOptions, cancellationToken: cancellationToken);
+
+            await foreach (StreamingChatCompletionUpdate update in response.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                foreach (Choice? choice in completions.Choices)
+                foreach (var part in update.ContentUpdate)
                 {
-                    yield return choice.Text;
+                    yield return part.Text;
                 }
             }
+
         }
         else
         {
             this._log.LogTrace("Sending chat message generation request, model '{0}'", this._model);
 
-            var openaiOptions = new ChatCompletionsOptions
+            var chatCompletionOptions = new ChatCompletionOptions
             {
-                DeploymentName = this._model,
                 MaxTokens = options.MaxTokens,
                 Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
+                TopP = (float)options.NucleusSampling,
                 FrequencyPenalty = (float)options.FrequencyPenalty,
                 PresencePenalty = (float)options.PresencePenalty,
-                // ChoiceCount = 1,
             };
 
             if (options.StopSequences is { Count: > 0 })
             {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
+                foreach (var s in options.StopSequences) { chatCompletionOptions.StopSequences.Add(s); }
             }
 
-            if (options.TokenSelectionBiases is { Count: > 0 })
+            if (options.LogitBiases is { Count: > 0 })
             {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
+                foreach (var (token, bias) in options.LogitBiases) { chatCompletionOptions.LogitBiases.Add(token, (int)bias); }
             }
 
-            openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));
+            ChatMessage chatMessage = ChatMessage.CreateUserMessage(prompt);
 
-            StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
+            IEnumerable<ChatMessage> messages = new List<ChatMessage> { chatMessage };
+
+            var chatClient = this._client.GetChatClient(this._model);
+            AsyncCollectionResult<StreamingChatCompletionUpdate> response = chatClient.CompleteChatStreamingAsync(messages: messages, options: chatCompletionOptions, cancellationToken: cancellationToken);
+
+            await foreach (StreamingChatCompletionUpdate update in response.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                yield return update.ContentUpdate;
+                foreach (var part in update.ContentUpdate)
+                {
+                    yield return part.Text;
+                }
             }
         }
     }

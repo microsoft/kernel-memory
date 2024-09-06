@@ -6,6 +6,7 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.KernelMemory.Diagnostics;
+using OpenAI;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 

@@ -57,5 +57,5 @@ public class TextGenerationOptions
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
-    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
+    public Dictionary<int, float> LogitBiases { get; set; } = new();
 }
