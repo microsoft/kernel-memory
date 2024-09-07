@@ -229,7 +229,7 @@ internal sealed class PostgresDbClient
             {
                 // Check if the custom SQL contains the lock placeholder (assuming it's not commented out)
                 bool missingLockStatement = !string.IsNullOrEmpty(this._createTableSql)
-                    && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
+                                            && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
 
                 if (missingLockStatement)
                 {
@@ -747,9 +747,9 @@ internal sealed class PostgresDbClient
     private static bool IsVectorTypeDoesNotExistException(Npgsql.PostgresException e)
     {
         return e.SqlState == PgErrTypeDoesNotExist
-            && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
-            && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
-            && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
+               && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
