@@ -19,6 +19,7 @@ public static class Program
         // new ConfigurationBuilder()
         //     // Read settings from files
         //     .AddJsonFile("appsettings.json")
+        //     .AddJsonFile("appsettings.development.json", optional: true)
         //     .AddJsonFile("appsettings.Development.json", optional: true)
         //     .AddIniFile("...")
         //     .AddXmlFile("...")
