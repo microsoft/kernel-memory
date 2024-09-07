@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Azure;
-using Azure.Core;
+using System.ClientModel.Primitives;
 
-namespace Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
+namespace Microsoft.KernelMemory.AI.OpenAI;
 
-internal sealed class SequentialDelayStrategy : DelayStrategy
+internal sealed class ClientSequentialRetryPolicy : ClientRetryPolicy
 {
     private static readonly TimeSpan[] s_pollingSequence =
     {
@@ -22,13 +21,13 @@ internal sealed class SequentialDelayStrategy : DelayStrategy
 
     private static readonly TimeSpan s_maxDelay = s_pollingSequence[^1];
 
-    public SequentialDelayStrategy() : base(s_maxDelay, 0)
+    public ClientSequentialRetryPolicy(int maxRetries = 3) : base(maxRetries)
     {
     }
 
-    protected override TimeSpan GetNextDelayCore(Response? response, int retryNumber)
+    protected override TimeSpan GetNextDelay(PipelineMessage message, int tryCount)
     {
-        int index = Math.Max(0, retryNumber - 1);
+        int index = Math.Max(0, tryCount - 1);
         return index >= s_pollingSequence.Length ? s_maxDelay : s_pollingSequence[index];
     }
 }
