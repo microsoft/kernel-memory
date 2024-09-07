@@ -32,6 +32,7 @@ public static class Program
     {
         var cfg = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 

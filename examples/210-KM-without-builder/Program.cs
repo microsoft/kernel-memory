@@ -51,6 +51,7 @@ public static class Program
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
         appBuilder.Configuration
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .AddEnvironmentVariables();
         var app = appBuilder.Build();
