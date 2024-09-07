@@ -53,7 +53,7 @@
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <!--
-    OpenXml blocked, do not upgrade these
+    OpenXml version blocked, do not upgrade these
     Excel import breaks with 'System.MissingMethodException: Method not found: 'DocumentFormat.OpenXml.OpenXmlElementList DocumentFormat.OpenXml.OpenXmlElement.get_ChildElements()
     History:
     - Sept 2024:
