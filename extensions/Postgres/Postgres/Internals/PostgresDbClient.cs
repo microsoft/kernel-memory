@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
-internal sealed class PostgresDbClient : IDisposable
+internal sealed class PostgresDbClient
 {
     // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
     private const string PgErrUndefinedTable = "42P01"; // undefined_table
@@ -28,7 +28,7 @@ internal sealed class PostgresDbClient : IDisposable
     private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
 
     private readonly ILogger _log;
-    private readonly NpgsqlDataSource _dataSource;
+    private readonly NpgsqlDataSourceBuilder _dataSourceBuilder;
 
     private readonly string _schema;
     private readonly string _tableNamePrefix;
@@ -52,10 +52,10 @@ internal sealed class PostgresDbClient : IDisposable
         config.Validate();
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<PostgresDbClient>();
 
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(config.ConnectionString);
+        this._dataSourceBuilder = new(config.ConnectionString);
+        this._dataSourceBuilder.UseVector();
+
         this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);
-        dataSourceBuilder.UseVector();
-        this._dataSource = dataSourceBuilder.Build();
         this._schema = config.Schema;
         this._tableNamePrefix = config.TableNamePrefix;
 
@@ -228,8 +228,8 @@ internal sealed class PostgresDbClient : IDisposable
             if (await this.DoesTableExistAsync(origInputTableName, cancellationToken).ConfigureAwait(false))
             {
                 // Check if the custom SQL contains the lock placeholder (assuming it's not commented out)
-                bool missingLockStatement = (!string.IsNullOrEmpty(this._createTableSql)
-                                             && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal));
+                bool missingLockStatement = !string.IsNullOrEmpty(this._createTableSql)
+                                            && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
 
                 if (missingLockStatement)
                 {
@@ -658,24 +658,6 @@ internal sealed class PostgresDbClient : IDisposable
         }
     }
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Disposes the managed resources
-    /// </summary>
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            (this._dataSource as IDisposable)?.Dispose();
-        }
-    }
-
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
     /// </summary>
@@ -685,7 +667,11 @@ internal sealed class PostgresDbClient : IDisposable
     {
         try
         {
-            return await this._dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            var dataSource = this._dataSourceBuilder.Build();
+            await using (dataSource.ConfigureAwait(false))
+            {
+                return await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Npgsql.PostgresException e) when (IsDbNotFoundException(e))
         {
@@ -750,20 +736,20 @@ internal sealed class PostgresDbClient : IDisposable
 
     private static bool IsDbNotFoundException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrDatabaseDoesNotExist);
+        return e.SqlState == PgErrDatabaseDoesNotExist;
     }
 
     private static bool IsTableNotFoundException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
+        return e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsVectorTypeDoesNotExistException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrTypeDoesNotExist
-                && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
+        return e.SqlState == PgErrTypeDoesNotExist
+               && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

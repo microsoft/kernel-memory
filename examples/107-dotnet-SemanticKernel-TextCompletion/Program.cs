@@ -2,7 +2,7 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 var endpoint = Environment.GetEnvironmentVariable("AOAI_ENDPOINT")!;
 var apiKey = Environment.GetEnvironmentVariable("AOAI_API_KEY")!;
