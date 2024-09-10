@@ -13,7 +13,7 @@ Kernel Memory is a flexible solution that can be deployed with different configu
 This section provides instructions on how to deploy Kernel Memory in Azure.
 
 Kernel Memory relies on various services to store data and run the ingestion pipeline.
-The [Extensions](./kernel-memory/extensions) page explains how to enhance Kernel Memory with additional services.
+The [Extensions](./extensions) page explains how to enhance Kernel Memory with additional services.
 
 In the following pages, we will discuss how to deploy Kernel Memory in Azure, how to configure it, how to use it, and the associated costs.
 While a predefined architecture is covered, Kernel Memory can be customized to meet your specific requirements.
