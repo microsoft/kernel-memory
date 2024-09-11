@@ -50,7 +50,7 @@ public static partial class DependencyInjection
     /// Inject SQL Server as the default implementation of IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
-    /// <param name="config">SQL Service configuration</param>
+    /// <param name="config">SQL Server configuration</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,
         SqlServerConfig config)
