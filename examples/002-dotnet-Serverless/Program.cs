@@ -301,7 +301,7 @@ public static class Program
     {
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
-        Console.WriteLine($"Expected result: formula explanatino using the information loaded");
+        Console.WriteLine($"Expected result: formula explanation using the information loaded");
 
         var answer = await s_memory.AskAsync(question, minRelevance: 0.6);
         Console.WriteLine($"\nAnswer: {answer.Result}");
