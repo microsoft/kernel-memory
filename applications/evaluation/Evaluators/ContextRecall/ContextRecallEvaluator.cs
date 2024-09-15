@@ -20,6 +20,8 @@ internal sealed class ContextRecallEvaluator : EvaluationEngine
     private KernelFunction EvaluateContextRecall => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Evaluation", "ContextRecall"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.EvaluateContextRecall));
 
     public ContextRecallEvaluator(Kernel kernel)
@@ -29,7 +31,7 @@ internal sealed class ContextRecallEvaluator : EvaluationEngine
 
     internal async Task<float> Evaluate(TestSetItem testSet, MemoryAnswer answer, Dictionary<string, object?> metadata)
     {
-        var evaluations = await this.Try(3, async (remainingTry) =>
+        var classification = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.EvaluateContextRecall.InvokeAsync(this._kernel, new KernelArguments
             {
@@ -38,16 +40,16 @@ internal sealed class ContextRecallEvaluator : EvaluationEngine
                 { "ground_truth", testSet.GroundTruth }
             }).ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<IEnumerable<GroundTruthClassification>>(extraction.GetValue<string>()!);
+            return JsonSerializer.Deserialize<GroundTruthClassifications>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
 
-        if (evaluations is null)
+        if (classification is null)
         {
             return 0;
         }
 
-        metadata.Add($"{nameof(ContextRecallEvaluator)}-Evaluation", evaluations);
+        metadata.Add($"{nameof(ContextRecallEvaluator)}-Evaluation", classification);
 
-        return (float)evaluations.Count(c => c.Attributed > 0) / (float)evaluations.Count();
+        return (float)classification.Evaluations.Count(c => c.Attributed > 0) / (float)classification.Evaluations.Count;
     }
 }

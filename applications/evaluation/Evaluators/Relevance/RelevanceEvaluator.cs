@@ -25,6 +25,8 @@ internal sealed class RelevanceEvaluator : EvaluationEngine
     private KernelFunction ExtractQuestion => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Extraction", "Question"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.ExtractQuestion));
 
     public RelevanceEvaluator(Kernel kernel)

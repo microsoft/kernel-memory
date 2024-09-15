@@ -19,6 +19,8 @@ internal sealed class ContextRelevancyEvaluator : EvaluationEngine
     private KernelFunction EvaluateContext => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Evaluation", "ContextPrecision"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     });
 
     public ContextRelevancyEvaluator(Kernel kernel)
