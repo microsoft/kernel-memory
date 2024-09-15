@@ -17,6 +17,7 @@ Complicate the given question by rewriting question into a multi-hop reasoning q
     2. Do not frame questions that contains more than 15 words. Use abbreviation wherever possible.
     3. Make sure the question is clear and unambiguous.
     4. phrases like 'based on the provided context','according to the context',etc are not allowed to appear in the question.
+    5. always answer in json format.
 
 Let's do it with a real data.
 
