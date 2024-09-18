@@ -323,6 +323,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ollama", "extensions\Ollama
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{70DBBE75-3896-4890-AADE-224ECC7DF653}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx.FunctionalTests", "extensions\Onnx\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{255CF5A9-CCD4-4D71-89E7-47691981C880}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -595,6 +597,10 @@ Global
 		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Release|Any CPU.Build.0 = Release|Any CPU
+		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -690,6 +696,7 @@ Global
 		{B303885D-F64F-4EEB-B085-0014E863AF61} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{F192513B-265B-4943-A2A9-44E23B15BA18} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{70DBBE75-3896-4890-AADE-224ECC7DF653} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{255CF5A9-CCD4-4D71-89E7-47691981C880} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
