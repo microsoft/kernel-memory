@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.ML.OnnxRuntimeGenAI;
+using static Microsoft.KernelMemory.OnnxConfig;
 
 namespace Microsoft.KernelMemory.AI.Onnx;
 
@@ -42,6 +43,9 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         }
 
         config.Validate();
+        this._config = config;
+        this.MaxTokenTotal = (int)config.MaxTokens;
+
         this._model = new Model(config.ModelPath);
         this._tokenizer = new Tokenizer(this._model);
         this._textTokenizer = textTokenizer;
@@ -53,74 +57,12 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         this._log.LogDebug("Onnx model loaded");
     }
 
-    public int MaxTokenTotal { get; set; } = 2048;
+    internal OnnxConfig _config { get; } = new OnnxConfig();
 
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GenerateTextAsync(
-        string prompt,
-        OnnxTextGenerationOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var tokens = this._tokenizer?.Encode(prompt);
-        using var generatorParams = new GeneratorParams(this._model);
+    public int MaxTokenTotal { get; internal set; }
 
-        if (options == null)
-        {
-            options = new OnnxTextGenerationOptions();
-            if (options.MaxTokens > 0)
-            {
-                this.MaxTokenTotal = (int)options.MaxTokens;
-            }
-        }
-        if (options.SearchType == OnnxSearchType.GreedySearch)
-        {
-            generatorParams.SetSearchOption("do_sample", false);
-            generatorParams.SetSearchOption("num_beams", 1);
-        }
-        if (options.SearchType == OnnxSearchType.BeamSearch)
-        {
-            generatorParams.SetSearchOption("do_sample", false);
-            generatorParams.SetSearchOption("early_stopping", options.EarlyStopping);
-            if (options.NumBeams != null)
-            {
-                generatorParams.SetSearchOption("num_beams", (double)options.NumBeams);
-            }
-        }
-        if (options.SearchType == OnnxSearchType.TopN)
-        {
-            generatorParams.SetSearchOption("do_sample", true);
-            generatorParams.SetSearchOption("top_k", options.TopK);
-            generatorParams.SetSearchOption("top_p", options.NucleusSampling);
-        }
+    public double Temperature { get; internal set; }
 
-        generatorParams.SetSearchOption("max_length", options.MaxTokens);
-        generatorParams.SetSearchOption("min_length", options.MinLength);
-        generatorParams.SetSearchOption("num_return_sequences", options.ResultsPerPrompt);
-        generatorParams.SetSearchOption("temperature", options.Temperature);
-        generatorParams.SetSearchOption("repetition_penalty", options.RepetitionPenalty);
-        generatorParams.SetSearchOption("length_penalty", options.LengthPenalty);
-
-        generatorParams.SetInputSequences(tokens);
-
-        using (var generator = new Generator(this._model, generatorParams))
-        {
-            List<int> outputTokens = new();
-
-            while (!generator.IsDone() && cancellationToken.IsCancellationRequested == false)
-            {
-                generator.ComputeLogits();
-                generator.GenerateNextToken();
-
-                await Task.Run(() => outputTokens.AddRange(generator.GetSequence(0)), cancellationToken).ConfigureAwait(true);
-
-                if (outputTokens.Count > 0 && this._tokenizer != null)
-                {
-                    var newToken = outputTokens[^1];
-                    yield return this._tokenizer.Decode(new int[] { newToken });
-                }
-            }
-        }
-    }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
@@ -130,7 +72,54 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     {
         var tokens = this._tokenizer?.Encode(prompt);
         using var generatorParams = new GeneratorParams(this._model);
+
+        if (options != null)
+        {
+            if (options.NucleusSampling > 0 && options.NucleusSampling <= 1)
+            {
+                this._config.NucleusSampling = options.NucleusSampling;
+            }
+            if (options.MaxTokens > 0)
+            {
+                this.MaxTokenTotal = (int)options.MaxTokens;
+            }
+            this._config.ResultsPerPrompt = options.ResultsPerPrompt;
+            this.Temperature = options.Temperature;
+        }
+
         generatorParams.SetSearchOption("max_length", this.MaxTokenTotal);
+        generatorParams.SetSearchOption("min_length", this._config.MinLength);
+        generatorParams.SetSearchOption("num_return_sequences", this._config.ResultsPerPrompt);
+        generatorParams.SetSearchOption("temperature", this.Temperature);
+        generatorParams.SetSearchOption("repetition_penalty", this._config.RepetitionPenalty);
+        generatorParams.SetSearchOption("length_penalty", this._config.LengthPenalty);
+
+        switch (this._config.SearchType)
+        {
+            case OnnxSearchType.BeamSearch:
+                generatorParams.SetSearchOption("do_sample", false);
+                generatorParams.SetSearchOption("early_stopping", this._config.EarlyStopping);
+
+                if (this._config.NumBeams != null)
+                {
+                    generatorParams.SetSearchOption("num_beams", (double)this._config.NumBeams);
+                }
+                break;
+            case OnnxSearchType.TopN:
+                generatorParams.SetSearchOption("do_sample", true);
+                generatorParams.SetSearchOption("top_k", this._config.TopK);
+                generatorParams.SetSearchOption("top_p", this._config.NucleusSampling);
+                break;
+            default:
+
+                generatorParams.SetSearchOption("do_sample", false);
+
+                if (this._config.NumBeams != null)
+                {
+                    generatorParams.SetSearchOption("num_beams", (double)this._config.NumBeams);
+                }
+                break;
+        }
 
         generatorParams.SetInputSequences(tokens);
 
