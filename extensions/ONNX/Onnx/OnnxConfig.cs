@@ -37,7 +37,7 @@ public class OnnxConfig
     /// Only includes the most probable tokens with probabilities that add up to P or higher.
     /// Defaults to 1, which includes all of the tokens. Range is 0 to 1, exclusive of 0.
     /// </summary>
-    public double NucleusSampling { get; internal set; } = 1.0;
+    public double NucleusSampling { get; set; } = 1.0;
 
     /// <summary>
     /// Whether to stop the beam search when at least NumBeams sentences are finished per batch or not. Defaults to false.
