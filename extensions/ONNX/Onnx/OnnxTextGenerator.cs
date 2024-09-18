@@ -42,9 +42,6 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         }
 
         config.Validate();
-        this.MaxTokenTotal = (int)config.MaxLength;
-        this.MinLength = config.MinLength;
-        this.PastPresentShareBuffer = config.PastPresentShareBuffer;
         this._model = new Model(config.ModelPath);
         this._tokenizer = new Tokenizer(this._model);
         this._textTokenizer = textTokenizer;
@@ -57,33 +54,47 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public int MaxTokenTotal { get; }
-
-    /// <inheritdoc/>
-    public double MinLength { get; }
-
-    /// <inheritdoc/>
-    public bool PastPresentShareBuffer { get; }
-
-    /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,
-        TextGenerationOptions? options = null,
+        OnnxTextGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var tokens = this._tokenizer?.Encode(prompt);
         using var generatorParams = new GeneratorParams(this._model);
 
-        generatorParams.SetSearchOption("max_length", (double)this.MaxTokenTotal);
-        generatorParams.SetSearchOption("min_length", this.MinLength);
-        generatorParams.SetSearchOption("past_present_share_buffer", this.PastPresentShareBuffer);
-
-        if (options != null)
+        if (options == null)
         {
-            generatorParams.SetSearchOption("temperature", options.Temperature);
+            options = new OnnxTextGenerationOptions();
+        }
+        if (options.SearchType == OnnxSearchType.GreedySearch)
+        {
+            generatorParams.SetSearchOption("do_sample", false);
+            generatorParams.SetSearchOption("num_beams", 1);
+        }
+        if (options.SearchType == OnnxSearchType.BeamSearch)
+        {
+            generatorParams.SetSearchOption("do_sample", false);
+            generatorParams.SetSearchOption("early_stopping", options.EarlyStopping);
+            if (options.NumBeams != null)
+            {
+                generatorParams.SetSearchOption("num_beams", (double)options.NumBeams);
+            }
+        }
+        if (options.SearchType == OnnxSearchType.TopN)
+        {
+            generatorParams.SetSearchOption("do_sample", true);
+            generatorParams.SetSearchOption("top_k", options.TopK);
+            generatorParams.SetSearchOption("top_p", options.NucleusSampling);
         }
 
-        await Task.Run(() => generatorParams.SetInputSequences(tokens), cancellationToken).ConfigureAwait(true);
+        generatorParams.SetSearchOption("max_length", options.MaxLength);
+        generatorParams.SetSearchOption("min_length", options.MinLength);
+        generatorParams.SetSearchOption("num_return_sequences", options.ResultsPerPrompt);
+        generatorParams.SetSearchOption("temperature", options.Temperature);
+        generatorParams.SetSearchOption("repetition_penalty", options.RepetitionPenalty);
+        generatorParams.SetSearchOption("length_penalty", options.LengthPenalty);
+
+        generatorParams.SetInputSequences(tokens);
 
         using (var generator = new Generator(this._model, generatorParams))
         {
@@ -93,6 +104,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
             {
                 generator.ComputeLogits();
                 generator.GenerateNextToken();
+
+                await Task.Run(() => outputTokens.AddRange(generator.GetSequence(0)), cancellationToken).ConfigureAwait(true);
 
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
@@ -118,11 +131,11 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose();
+        this._model?.Dispose();
+        this._tokenizer?.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    /// <inheritdoc/>
     private void Dispose(bool disposing)
     {
         if (!disposing) { return; }

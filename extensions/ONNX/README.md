@@ -12,7 +12,7 @@ Sample code:
 ```csharp
 var config = new OnnxConfig
 {
-    ModelPath = "C:\\..\\Phi-3-mini-128k-instruct-onnx\\..\\cpu-int4-rtn-block-32"
+    ModelPath = "C:\\....\\Phi-3-mini-128k-instruct-onnx\\....\\cpu-int4-rtn-block-32"
 };
 
 var memory = new KernelMemoryBuilder()
