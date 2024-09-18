@@ -7,7 +7,7 @@ public class OnnxTextGenerationOptions : TextGenerationOptions
     /// <summary>
     /// The maximum length of the response that the model will generate. See https://onnxruntime.ai/docs/genai/reference/config.html
     /// </summary>
-    public uint MaxLength { get; set; } = 2048;
+    new public uint MaxTokens { get; set; } = 2048;
 
     /// <summary>
     /// The minimum length of the response that the model will generate. See https://onnxruntime.ai/docs/genai/reference/config.html

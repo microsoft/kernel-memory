@@ -53,6 +53,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         this._log.LogDebug("Onnx model loaded");
     }
 
+    public int MaxTokenTotal { get; set; } = 2048;
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
         string prompt,
@@ -65,6 +67,10 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         if (options == null)
         {
             options = new OnnxTextGenerationOptions();
+            if (options.MaxTokens > 0)
+            {
+                this.MaxTokenTotal = (int)options.MaxTokens;
+            }
         }
         if (options.SearchType == OnnxSearchType.GreedySearch)
         {
@@ -87,12 +93,44 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
             generatorParams.SetSearchOption("top_p", options.NucleusSampling);
         }
 
-        generatorParams.SetSearchOption("max_length", options.MaxLength);
+        generatorParams.SetSearchOption("max_length", options.MaxTokens);
         generatorParams.SetSearchOption("min_length", options.MinLength);
         generatorParams.SetSearchOption("num_return_sequences", options.ResultsPerPrompt);
         generatorParams.SetSearchOption("temperature", options.Temperature);
         generatorParams.SetSearchOption("repetition_penalty", options.RepetitionPenalty);
         generatorParams.SetSearchOption("length_penalty", options.LengthPenalty);
+
+        generatorParams.SetInputSequences(tokens);
+
+        using (var generator = new Generator(this._model, generatorParams))
+        {
+            List<int> outputTokens = new();
+
+            while (!generator.IsDone() && cancellationToken.IsCancellationRequested == false)
+            {
+                generator.ComputeLogits();
+                generator.GenerateNextToken();
+
+                await Task.Run(() => outputTokens.AddRange(generator.GetSequence(0)), cancellationToken).ConfigureAwait(true);
+
+                if (outputTokens.Count > 0 && this._tokenizer != null)
+                {
+                    var newToken = outputTokens[^1];
+                    yield return this._tokenizer.Decode(new int[] { newToken });
+                }
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> GenerateTextAsync(
+        string prompt,
+        TextGenerationOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var tokens = this._tokenizer?.Encode(prompt);
+        using var generatorParams = new GeneratorParams(this._model);
+        generatorParams.SetSearchOption("max_length", this.MaxTokenTotal);
 
         generatorParams.SetInputSequences(tokens);
 
