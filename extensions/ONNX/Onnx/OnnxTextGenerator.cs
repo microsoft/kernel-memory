@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.ML.OnnxRuntimeGenAI;
+using Microsoft.ML.Tokenizers;
 using static Microsoft.KernelMemory.OnnxConfig;
 
 namespace Microsoft.KernelMemory.AI.Onnx;
@@ -17,10 +18,30 @@ namespace Microsoft.KernelMemory.AI.Onnx;
 [Experimental("KMEXP01")]
 public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 {
+    /// <summary>
+    /// The ONNX Model used for text generation
+    /// </summary>
     private readonly Model? _model = default;
-    private readonly Tokenizer? _tokenizer = default;
-    private readonly ILogger<OnnxTextGenerator> _log;
+
+    /// <summary>
+    /// Tokenizer used with the Onnx Generator and Model classes to produce tokens.
+    /// This has the potential to contain a null value, depending on the contents of the Model Directory.
+    /// Currently unused in GetTokens() and CountTokens() 
+    /// </summary>
+    private readonly Microsoft.ML.OnnxRuntimeGenAI.Tokenizer? _tokenizer = default;
+
+    /// <summary>
+    /// Tokenizer used for GetTokens() and CountTokens() when the ONNX Tokenizer isn't initialized.
+    /// </summary>
     private readonly ITextTokenizer _textTokenizer;
+
+    private readonly ILogger<OnnxTextGenerator> _log;
+
+    private OnnxConfig _config { get; } = new OnnxConfig();
+
+    public int MaxTokenTotal { get; internal set; }
+
+    public double Temperature { get; internal set; }
 
     /// <summary>
     /// Create a new instance
@@ -47,22 +68,15 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         this.MaxTokenTotal = (int)config.MaxTokens;
 
         this._model = new Model(config.TextModelDir);
-        this._tokenizer = new Tokenizer(this._model);
+        this._tokenizer = new Microsoft.ML.OnnxRuntimeGenAI.Tokenizer(this._model);
         this._textTokenizer = textTokenizer;
 
         var modelFilename = config.TextModelDir.TrimEnd('/').Split('/').Last();
         this._log.LogDebug("Loading Onnx model: {0}", modelFilename);
         this._model = new Model(config.TextModelDir);
-        this._tokenizer = new Tokenizer(this._model);
+        this._tokenizer = new Microsoft.ML.OnnxRuntimeGenAI.Tokenizer(this._model);
         this._log.LogDebug("Onnx model loaded");
     }
-
-    internal OnnxConfig _config { get; } = new OnnxConfig();
-
-    public int MaxTokenTotal { get; internal set; }
-
-    public double Temperature { get; internal set; }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GenerateTextAsync(
@@ -132,7 +146,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 generator.ComputeLogits();
                 generator.GenerateNextToken();
 
-                await Task.Run(() => outputTokens.AddRange(generator.GetSequence(0)), cancellationToken).ConfigureAwait(true);
+                outputTokens.AddRange(generator.GetSequence(0));
 
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
@@ -141,6 +155,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 }
             }
         }
+
+        await Task.CompletedTask.ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
