@@ -6,7 +6,7 @@ permalink: /azure/architecture
 layout: default
 ---
 
-# Azure Infrastacture Architecture
+# Azure Infrastructure Architecture
 
 This section explains the infrastructure of Kernel Memory in Azure, which implements an asynchronous microservices architecture.
 
