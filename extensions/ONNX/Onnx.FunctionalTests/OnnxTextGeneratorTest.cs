@@ -23,7 +23,7 @@ public sealed class OnnxTextGeneratorTest : BaseFunctionalTestCase
 
         this.OnnxConfig.Validate();
         this._target = new OnnxTextGenerator(this.OnnxConfig, loggerFactory: null);
-        var modelDirectory = Path.GetFullPath(this.OnnxConfig.ModelPath);
+        var modelDirectory = Path.GetFullPath(this.OnnxConfig.TextModelDir);
         Console.WriteLine($"Using model from: {modelDirectory}");
     }
 
@@ -44,7 +44,6 @@ public sealed class OnnxTextGeneratorTest : BaseFunctionalTestCase
         var result = new StringBuilder();
         await foreach (string token in tokens)
         {
-            // Console.WriteLine(token);
             result.Append(token);
         }
 

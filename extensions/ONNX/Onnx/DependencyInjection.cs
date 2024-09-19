@@ -22,7 +22,7 @@ public static partial class KernelMemoryBuilderExtensions
     {
         var config = new OnnxConfig
         {
-            ModelPath = modelPath
+            TextModelDir = modelPath
         };
 
         builder.Services.AddOnnxTextGeneration(config, textTokenizer);

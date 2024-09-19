@@ -7,9 +7,9 @@ namespace Microsoft.KernelMemory;
 public class OnnxConfig
 {
     /// <summary>
-    /// Path to the directory containing the .ONNX file.
+    /// Path to the directory containing the .ONNX file for Text Generation.
     /// </summary>
-    public string ModelPath { get; set; } = string.Empty;
+    public string TextModelDir { get; set; } = string.Empty;
 
     /// <summary>
     /// The maximum length of the response that the model will generate. See https://onnxruntime.ai/docs/genai/reference/config.html
@@ -72,45 +72,43 @@ public class OnnxConfig
     /// </summary>
     public void Validate(bool allowIO = true)
     {
-        if (string.IsNullOrWhiteSpace(this.ModelPath))
+        if (string.IsNullOrEmpty(this.TextModelDir) && string.IsNullOrEmpty(this.TextModelDir))
         {
-            throw new ConfigurationException($"Onnx: {nameof(this.ModelPath)} is empty");
+            throw new ConfigurationException($"Onnx: {nameof(this.TextModelDir)} is a required field.");
         }
 
-        if (allowIO && !Directory.Exists(this.ModelPath))
+        if (!string.IsNullOrEmpty(this.TextModelDir))
         {
-            throw new ConfigurationException($"Onnx: Directory {Path.GetDirectoryName(this.ModelPath)} not found");
-        }
+            if (this.SearchType == OnnxSearchType.GreedySearch)
+            {
+                if (this.NumBeams != 1)
+                {
+                    throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} is only used with Beam Search. Change {nameof(this.NumBeams)} to 1, or change {nameof(this.SearchType)} to BeamSearch.");
+                }
+                if (this.EarlyStopping != false)
+                {
+                    throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
+                }
+            }
 
-        if (this.SearchType == OnnxSearchType.GreedySearch)
-        {
-            if (this.NumBeams != 1)
+            if (this.SearchType == OnnxSearchType.BeamSearch)
             {
-                throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} is only used with Beam Search. Change {nameof(this.NumBeams)} to 1, or change {nameof(this.SearchType)} to BeamSearch.");
+                if (this.NumBeams == null)
+                {
+                    throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} is required for Beam Search. Change {nameof(this.NumBeams)} to a value >= 1, or change the {nameof(this.SearchType)}.");
+                }
             }
-            if (this.EarlyStopping != false)
-            {
-                throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
-            }
-        }
 
-        if (this.SearchType == OnnxSearchType.BeamSearch)
-        {
-            if (this.NumBeams == null)
+            if (this.SearchType == OnnxSearchType.TopN)
             {
-                throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} is required for Beam Search. Change {nameof(this.NumBeams)} to a value >= 1, or change the {nameof(this.SearchType)}.");
-            }
-        }
-
-        if (this.SearchType == OnnxSearchType.TopN)
-        {
-            if (this.NumBeams != null)
-            {
-                throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} isn't required with TopN Search. Change {nameof(this.NumBeams)} to null, or change the {nameof(this.SearchType)}.");
-            }
-            if (this.EarlyStopping != false)
-            {
-                throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
+                if (this.NumBeams != null)
+                {
+                    throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} isn't required with TopN Search. Change {nameof(this.NumBeams)} to null, or change the {nameof(this.SearchType)}.");
+                }
+                if (this.EarlyStopping != false)
+                {
+                    throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
+                }
             }
         }
     }

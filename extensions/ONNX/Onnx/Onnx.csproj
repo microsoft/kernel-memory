@@ -24,6 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" />
         <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" />
         <PackageReference Include="Microsoft.SemanticKernel" />
     </ItemGroup>

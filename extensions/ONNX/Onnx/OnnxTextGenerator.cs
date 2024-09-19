@@ -46,13 +46,13 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         this._config = config;
         this.MaxTokenTotal = (int)config.MaxTokens;
 
-        this._model = new Model(config.ModelPath);
+        this._model = new Model(config.TextModelDir);
         this._tokenizer = new Tokenizer(this._model);
         this._textTokenizer = textTokenizer;
 
-        var modelFilename = config.ModelPath.TrimEnd('/').Split('/').Last();
+        var modelFilename = config.TextModelDir.TrimEnd('/').Split('/').Last();
         this._log.LogDebug("Loading Onnx model: {0}", modelFilename);
-        this._model = new Model(config.ModelPath);
+        this._model = new Model(config.TextModelDir);
         this._tokenizer = new Tokenizer(this._model);
         this._log.LogDebug("Onnx model loaded");
     }
