@@ -26,6 +26,7 @@ internal sealed class Context
     public BoundedBoolean CfgAzureOpenAIEmbedding = new();
     public BoundedBoolean CfgOpenAI = new();
     public BoundedBoolean CfgLlamaSharp = new();
+    public BoundedBoolean CfgOllama = new();
     public BoundedBoolean CfgAzureAIDocIntel = new();
 
     // Vectors

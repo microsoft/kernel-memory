@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +20,7 @@
         <ProjectReference Include="..\..\extensions\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
         <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
         <ProjectReference Include="..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\extensions\Ollama\Ollama\Ollama.csproj" />
         <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
         <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />

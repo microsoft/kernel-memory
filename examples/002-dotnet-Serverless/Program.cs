@@ -34,6 +34,7 @@ public static class Program
 
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build()
             .BindSection("KernelMemory", memoryConfiguration)
@@ -51,7 +52,7 @@ public static class Program
         var builder = new KernelMemoryBuilder()
             .Configure(builder => builder.Services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Trace);
+                l.SetMinimumLevel(LogLevel.Warning);
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }))
             .AddSingleton(memoryConfiguration)
@@ -94,6 +95,7 @@ public static class Program
         await StoreImage();
         await StoreExcel();
         await StoreJson();
+        Console.WriteLine("\n====================================\n");
 
         // =======================
         // === RETRIEVAL =========
@@ -299,8 +301,9 @@ public static class Program
     {
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: formula explanation using the information loaded");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0.6);
         Console.WriteLine($"\nAnswer: {answer.Result}");
 
         Console.WriteLine("\n====================================\n");
@@ -324,8 +327,9 @@ public static class Program
     {
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: it should explain what KM project is (not generic kernel memory)");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0.5);
         Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
 
         // Show sources / citations
@@ -372,8 +376,9 @@ public static class Program
     {
         var question = "Which conference is Microsoft sponsoring?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: Microsoft is sponsoring the Automotive News World Congress 2023 event");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.76);
+        var answer = await s_memory.AskAsync(question, minRelevance: 0.5);
 
         Console.WriteLine(s_imageSupportDemoEnabled
             ? $"\nAnswer: {answer.Result}\n\n  Sources:\n"
@@ -407,6 +412,7 @@ public static class Program
     {
         var question = "What's the latest version of Apache Submarine?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: The latest version of Apache Submarine is 0.8.0, released on 2023-09-23");
 
         var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Ela"));
         Console.WriteLine($"\nAnswer: {answer.Result}");
@@ -427,6 +433,7 @@ public static class Program
         // Filter question by "user" tag
         var question = "Any news from NASA about Orion?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: Blake no answer, Taylor: info about Orion");
 
         // Blake doesn't know
         var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByTag("user", "Blake"));
@@ -477,6 +484,7 @@ public static class Program
         // Filter question by "type" tag, there are news but no articles
         var question = "What is Orion?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: Articles none, Taylor: News about Orion");
 
         var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByTag("type", "article"));
         Console.WriteLine($"\nArticles (none expected): {answer.Result}");
@@ -507,6 +515,7 @@ public static class Program
     {
         var question = "Which countries don't have a long name set (explain rationale)?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: Italy and Japan");
 
         var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByDocument("xls01"));
         Console.WriteLine($"\nAnswer: {answer.Result}");
@@ -528,6 +537,7 @@ public static class Program
     {
         var question = "What authentication mechanisms can I use with Azure Embeddings?";
         Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Expected result: you can use either an API Key or Azure Identity");
 
         var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByDocument("json01"));
         Console.WriteLine($"\nAnswer: {answer.Result}");

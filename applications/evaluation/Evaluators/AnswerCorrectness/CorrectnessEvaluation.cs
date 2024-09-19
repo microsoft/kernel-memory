@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable InconsistentNaming
 // ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerCorrectness;

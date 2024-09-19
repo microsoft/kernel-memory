@@ -13,7 +13,7 @@ public sealed class OpenAITextEmbeddingGeneratorTest : BaseFunctionalTestCase
     public OpenAITextEmbeddingGeneratorTest(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         var config = this.OpenAiConfig;
-        config.EmbeddingModel = "text-embedding-ada-002";
+        config.EmbeddingModel = "text-embedding-3-small";
         this._target = new OpenAITextEmbeddingGenerator(config, loggerFactory: null);
     }
 
@@ -35,8 +35,8 @@ public sealed class OpenAITextEmbeddingGeneratorTest : BaseFunctionalTestCase
         Console.WriteLine("e1 <--> e2: " + e1.CosineSimilarity(e2));
         Console.WriteLine("e1 <--> e3: " + e1.CosineSimilarity(e3));
         Console.WriteLine("e2 <--> e3: " + e2.CosineSimilarity(e3));
-        Assert.True(e1.CosineSimilarity(e2) > 0.8);
-        Assert.True(e1.CosineSimilarity(e3) < 0.8);
-        Assert.True(e2.CosineSimilarity(e3) < 0.8);
+        Assert.True(e1.CosineSimilarity(e2) > 0.66);
+        Assert.True(e1.CosineSimilarity(e3) < 0.2);
+        Assert.True(e2.CosineSimilarity(e3) < 0.2);
     }
 }

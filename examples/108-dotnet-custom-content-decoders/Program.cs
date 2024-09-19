@@ -17,6 +17,7 @@ var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
 
 new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.development.json", optional: true)
     .AddJsonFile("appsettings.Development.json", optional: true)
     .Build()
     .BindSection("KernelMemory:Services:OpenAI", openAIConfig)

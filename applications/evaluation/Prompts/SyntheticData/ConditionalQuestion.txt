@@ -17,6 +17,7 @@ Follow the rules given below while rewriting the question.
     2. The rewritten question must be reasonable and must be understood and responded by humans.
     3. The rewritten question must be fully answerable from information present context.
     4. phrases like 'provided context','according to the context?',etc are not allowed to appear in the question.
+    5. always answer in json format.
 
 Let's do it with a real data.
 

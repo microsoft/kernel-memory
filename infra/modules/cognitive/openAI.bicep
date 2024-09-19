@@ -1,10 +1,12 @@
 param suffix string = uniqueString(resourceGroup().id)
-param managedIdentityPrincipalId string
 
 metadata description = 'Creates an Azure Cognitive Services instance.'
 param name string
 param location string = resourceGroup().location
-param tags object = {}
+
+@description('The tags to be assigned to the created resources.')
+param tags object
+
 @description('The custom subdomain name used to access the API. Defaults to the value of the name parameter.')
 param customSubDomainName string = name
 param deployments array = []
@@ -17,6 +19,12 @@ param sku object = {
 }
 
 param allowedIpRules array = []
+
+param vnetId string
+param privateEndpointSubnetId string
+
+param managedIdentityPrincipalId string
+
 param networkAcls object = empty(allowedIpRules)
   ? {
       defaultAction: 'Allow'
@@ -47,16 +55,36 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
     name: deployment.name
     properties: {
       model: deployment.model
-      raiPolicyName: contains(deployment, 'raiPolicyName') ? deployment.raiPolicyName : null
+      raiPolicyName: deployment.?raiPolicyName ?? null
     }
-    sku: contains(deployment, 'sku')
-      ? deployment.sku
-      : {
-          name: 'Standard'
-          capacity: 1
-        }
+    sku: deployment.?sku ?? {
+      name: 'Standard'
+      capacity: 1
+    }
   }
 ]
+
+////////////////////////// Private endpoint
+
+module module_openai_pe '../network/private-endpoint.bicep' = {
+  name: 'module_openai_pe_${suffix}'
+  params: {
+    suffix: suffix
+    location: location
+    tags: tags
+
+    serviceName_Used_for_PE: name
+
+    DNSZoneName: 'privatelink.openai.azure.com' // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns
+    vnetId: vnetId
+    privateEndpointSubnetId: privateEndpointSubnetId
+
+    privateLinkServiceId: account.id
+    privateLinkServiceConnections_GroupIds: ['account'] // https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource
+  }
+}
+
+////////////////////////// RBAC
 
 // Cognitive Services OpenAI Contributor
 resource roleAssignment1 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -85,6 +113,8 @@ resource roleAssignment2 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
     principalType: 'ServicePrincipal'
   }
 }
+
+////////////////////////// Output
 
 output endpoint string = account.properties.endpoint
 output id string = account.id

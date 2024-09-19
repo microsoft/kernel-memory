@@ -25,7 +25,7 @@ answer: {
 
 ## Instructions
 
-Answer the question using the information from the given context. Output verdict as '1' if answer is present '-1' if answer is not present in the context.
+Answer the question using the information from the given context. Output verdict as '1' if answer is present '-1' if answer is not present in the context. Always answer in json format.
 Let's do it with a real data.
 
 context: {{$context}}}}

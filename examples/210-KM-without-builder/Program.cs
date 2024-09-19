@@ -51,6 +51,7 @@ public static class Program
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
         appBuilder.Configuration
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .AddEnvironmentVariables();
         var app = appBuilder.Build();
@@ -73,7 +74,7 @@ public static class Program
         var promptProvider = new EmbeddedPromptProvider();
 
         // AI dependencies
-        var tokenizer = new GPT4Tokenizer();
+        var tokenizer = new GPT4oTokenizer();
         var embeddingGeneratorHttpClient = new HttpClient();
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizer, loggerFactory, embeddingGeneratorHttpClient);
         var textGeneratorHttpClient = new HttpClient();

@@ -26,7 +26,7 @@ verification: {
 
 ## Instructions
 
-Given question, answer and context verify if the context was useful in arriving at the given answer. Give verdict as "1" if useful and "0" if not with output.
+Given question, answer and context verify if the context was useful in arriving at the given answer. Give verdict as "1" if useful and "0" if not with output. Your output should always be a json data.
 Let's do it with a real data.
 
 question: {{$question}}

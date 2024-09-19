@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.AI.Ollama</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.AI.Ollama</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.AI.Ollama</PackageId>
+        <Product>Ollama LLM connector for Kernel Memory</Product>
+        <Description>Provide access to Ollama LLM models in Kernel Memory to generate embeddings and text</Description>
+        <PackageTags>Ollama, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Semantic Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="OllamaSharp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\OpenAI\OpenAI\OpenAI.csproj" />
+    </ItemGroup>
+
+</Project>

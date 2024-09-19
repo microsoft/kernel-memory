@@ -26,6 +26,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     public IKernelMemory KernelMemory { get; }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsMultipleFiltersAsync()
     {
@@ -105,6 +106,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItSupportsTagsAsync()
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
@@ -172,6 +174,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItSupportsASingleFilterAsync()
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
@@ -238,6 +241,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanImportOneDocumentAndAskAsync()
     {
         var indexName = nameof(this.CanImportOneDocumentAndAskAsync);
@@ -267,6 +271,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanImportTwoDocumentsAndAskAsync()
     {
         var indexName = nameof(this.CanImportTwoDocumentsAndAskAsync);

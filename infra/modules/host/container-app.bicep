@@ -4,14 +4,18 @@ param suffix string = uniqueString(resourceGroup().id)
 
 param location string = resourceGroup().location
 
+@description('The tags to be assigned to the created resources.')
+param tags object
+
 param managedIdentityId string
 param managedIdentityClientId string
+param KernelMemoryImageTag string = 'latest'
 
 param kmServiceName string = 'km-service-${suffix}'
 
 param containerAppsEnvironmentId string
-param appInsightsInstrumentationKey string
-param applicationInsightsConnectionString string
+@description('The name of the application insights resource create in another module.')
+param applicationInsightsName string
 
 param AzureBlobs_Account string
 param AzureQueues_Account string
@@ -26,16 +30,25 @@ param AzureAIDocIntel_Endpoint string
 param KernelMemory__ServiceAuthorization__AccessKey1 string
 param KernelMemory__ServiceAuthorization__AccessKey2 string
 
+//////// Previously created resources
+
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: applicationInsightsName
+}
+
+////////
+
 resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
   name: kmServiceName
   location: location
+  tags: tags
   properties: {
     environmentId: containerAppsEnvironmentId
     configuration: {
       secrets: [
         {
           name: 'appinsights-key'
-          value: appInsightsInstrumentationKey
+          value: applicationInsights.properties.InstrumentationKey
         }
       ]
       registries: []
@@ -56,7 +69,7 @@ resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: 'kernelmemory-service'
-          image: 'docker.io/kernelmemory/service:latest'
+          image: 'docker.io/kernelmemory/service:${KernelMemoryImageTag}'
           command: []
           resources: {
             cpu: json('0.25')
@@ -69,7 +82,7 @@ resource kmService 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-              value: applicationInsightsConnectionString
+              value: applicationInsights.properties.ConnectionString
             }
 
             {

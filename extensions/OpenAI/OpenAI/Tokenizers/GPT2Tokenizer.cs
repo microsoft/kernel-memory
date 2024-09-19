@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Tokenizers;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
@@ -12,7 +13,7 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// </summary>
 public sealed class GPT2Tokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt2");
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt2");
 
     /// <inheritdoc />
     public int CountTokens(string text)
@@ -23,6 +24,6 @@ public sealed class GPT2Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text, out string? _).Select(t => t.Value).ToList();
+        return s_tokenizer.EncodeToTokens(text, out string? _).Select(t => t.Value).ToList();
     }
 }

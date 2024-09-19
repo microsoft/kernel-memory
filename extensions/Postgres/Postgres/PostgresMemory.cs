@@ -21,7 +21,7 @@ namespace Microsoft.KernelMemory.Postgres;
 /// Postgres connector for Kernel Memory.
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class PostgresMemory : IMemoryDb, IDisposable
+public sealed class PostgresMemory : IMemoryDb
 {
     private readonly ILogger<PostgresMemory> _log;
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
@@ -207,24 +207,6 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
         index = NormalizeIndexName(index);
 
         return this._db.DeleteAsync(tableName: index, id: record.Id, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Disposes the managed resources.
-    /// </summary>
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            (this._db as IDisposable)?.Dispose();
-        }
     }
 
     #region private ================================================================================

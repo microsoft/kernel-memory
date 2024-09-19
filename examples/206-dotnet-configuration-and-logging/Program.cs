@@ -8,7 +8,7 @@ public static class Program
     {
         var openAIConfig = new OpenAIConfig
         {
-            TextModel = "gpt-3.5-turbo-16k",
+            TextModel = "gpt-4o-mini",
             EmbeddingModel = "text-embedding-ada-002",
             EmbeddingModelMaxTokenTotal = 8191,
             APIKey = "sk-..."
@@ -19,6 +19,7 @@ public static class Program
         // new ConfigurationBuilder()
         //     // Read settings from files
         //     .AddJsonFile("appsettings.json")
+        //     .AddJsonFile("appsettings.development.json", optional: true)
         //     .AddJsonFile("appsettings.Development.json", optional: true)
         //     .AddIniFile("...")
         //     .AddXmlFile("...")

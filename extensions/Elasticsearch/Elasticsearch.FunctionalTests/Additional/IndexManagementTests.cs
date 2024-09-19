@@ -16,6 +16,7 @@ public class IndexManagementTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanCreateAndDeleteIndexAsync()
     {
         var indexName = nameof(this.CanCreateAndDeleteIndexAsync);
@@ -44,6 +45,7 @@ public class IndexManagementTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanGetIndicesAsync()
     {
         var indexNames = new[]

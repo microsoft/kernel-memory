@@ -21,6 +21,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanUpsertOneTextDocumentAndDeleteAsync()
     {
         // We upsert the file
@@ -54,6 +55,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanUpsertTwoTextFilesAndGetSimilarListAsync()
     {
         await UpsertTextFilesAsync(

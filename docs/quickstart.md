@@ -18,8 +18,8 @@ we will set up the service and demonstrate how to use the Memory API from Python
 * [.NET 6](https://dotnet.microsoft.com/download) or higher
 * Either an [OpenAI API Key](https://platform.openai.com/api-keys) or
   [Azure OpenAI deployment](https://azure.microsoft.com/products/ai-services/openai-service). If you are familiar
-  with llama.cpp or LLamaSharp you can also use a LLama model. However, this may result in slower AI code execution,
-  depending on your device.
+  with [Ollama](https://ollama.com) you can also use a local model such as [Microsoft phi3](https://azure.microsoft.com/products/phi-3) and [Meta LLama](https://llama.meta.com).
+  However, this may result in slower AI code execution, depending on your device.
 * A vector database, such as Azure AI Search, Qdrant, or Postgres+pgvector. For basic tests, you can use KM
   SimpleVectorDb.
 * A copy of the [KM repository](https://github.com/microsoft/kernel-memory).

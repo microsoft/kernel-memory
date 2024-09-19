@@ -26,6 +26,10 @@ public class GPTTokenizersTests(ITestOutputHelper output) : BaseUnitTestCase(out
         var gpt4 = new GPT4Tokenizer();
         tokens = gpt4.GetTokens(helloWorld);
         Assert.Equal(["hello", " world"], tokens);
+
+        var gpt4o = new GPT4oTokenizer();
+        tokens = gpt4o.GetTokens(helloWorld);
+        Assert.Equal(["hello", " world"], tokens);
     }
 
     [Fact]
@@ -38,5 +42,6 @@ public class GPTTokenizersTests(ITestOutputHelper output) : BaseUnitTestCase(out
         Assert.Equal(29, new GPT2Tokenizer().CountTokens(text));
         Assert.Equal(29, new GPT3Tokenizer().CountTokens(text));
         Assert.Equal(21, new GPT4Tokenizer().CountTokens(text));
+        Assert.Equal(22, new GPT4oTokenizer().CountTokens(text));
     }
 }

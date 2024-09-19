@@ -14,6 +14,7 @@ var openAIConfig = new OpenAIConfig();
 WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
 appBuilder.Configuration
     .AddJsonFile("appsettings.json")
+    .AddJsonFile("appsettings.development.json", optional: true)
     .AddJsonFile("appsettings.Development.json", optional: true)
     .AddEnvironmentVariables()
     .Build()

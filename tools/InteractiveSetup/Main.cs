@@ -46,7 +46,7 @@ public static class Main
             // Embedding generation
             EmbeddingGeneratorSetup(ctx);
             AzureOpenAIEmbedding.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
 
             // Memory DB
             MemoryDbTypeSetup(ctx);
@@ -60,8 +60,9 @@ public static class Main
             // Text generation
             TextGeneratorTypeSetup(ctx);
             AzureOpenAIText.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
             LlamaSharp.Setup(ctx);
+            Ollama.Setup(ctx);
 
             Logger.Setup();
 
@@ -120,7 +121,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    OpenAI.Setup(ctx, true);
+                    Services.OpenAI.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
@@ -198,6 +199,18 @@ public static class Main
                     ctx.CfgOpenAI.Value = true;
                 }),
 
+                new("Ollama service", config.Retrieval.EmbeddingGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "Ollama";
+                        x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
+                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
+                            : new List<string> { };
+                    });
+                    ctx.CfgOllama.Value = true;
+                }),
+
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
                 {
                     AppSettings.Change(x =>
@@ -233,7 +246,13 @@ public static class Main
                     ctx.CfgOpenAI.Value = true;
                 }),
 
-                new("LLama model", config.TextGeneratorType == "LlamaSharp", () =>
+                new("Ollama service", config.TextGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = "Ollama"; });
+                    ctx.CfgOllama.Value = true;
+                }),
+
+                new("LlamaSharp library", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
                     ctx.CfgLlamaSharp.Value = true;

@@ -19,6 +19,7 @@ public class IndexNameTests : BaseFunctionalTestCase
     }
 
     [Theory]
+    [Trait("Category", "Elasticsearch")]
     [InlineData("")] // default index
     [InlineData("nondefault")]
     [InlineData("WithUppercase")]
@@ -33,6 +34,7 @@ public class IndexNameTests : BaseFunctionalTestCase
     }
 
     [Theory]
+    [Trait("Category", "Elasticsearch")]
     // An index name cannot start with a hyphen (-) or underscore (_).
     //[InlineData("-test", 1)]
     //[InlineData("test_", 1)]
@@ -75,6 +77,7 @@ public class IndexNameTests : BaseFunctionalTestCase
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public void IndexNameCannotBeLongerThan255Bytes()
     {
         var indexName = new string('a', 256);

@@ -84,7 +84,7 @@ Given a ground truth and an answer statements, analyze each statement and classi
 - FP (false positive): statements present in the answer but not directly supported by any statement in ground truth,
 - FN (false negative): statements found in the ground truth but not present in answer.
 
-Each statement can only belong to one of the categories. Provide a reason for each classification.
+Each statement can only belong to one of the categories. Provide a reason for each classification. Your output should always be a json data.
 
 question: {{$question}}
 answer: {{$answer}}

@@ -324,7 +324,7 @@ public sealed class SearchClient : ISearchClient
 
         if (factsUsedCount == 0)
         {
-            this._log.LogWarning("No memories available");
+            this._log.LogWarning("No memories available (min relevance: {0})", minRelevance);
             noAnswerFound.NoResultReason = "No memories available";
             return noAnswerFound;
         }
@@ -347,6 +347,7 @@ public sealed class SearchClient : ISearchClient
         watch.Stop();
 
         answer.Result = text.ToString();
+        this._log.LogSensitive("Answer: {0}", answer.Result);
         answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
         {
@@ -391,6 +392,8 @@ public sealed class SearchClient : ISearchClient
             this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
                 this._textGenerator.CountTokens(prompt),
                 this._config.AnswerTokens);
+
+            this._log.LogSensitive("Prompt: {0}", prompt);
         }
 
         return this._textGenerator.GenerateTextAsync(prompt, options, token);

@@ -9,6 +9,7 @@ using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 
@@ -19,11 +20,15 @@ internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
     private KernelFunction ExtractStatements => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Extraction", "Statements"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.ExtractStatements));
 
     private KernelFunction EvaluateCorrectness => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Evaluation", "Correctness"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.EvaluateCorrectness));
 
     public AnswerCorrectnessEvaluator(Kernel kernel)
@@ -41,7 +46,7 @@ internal sealed class AnswerCorrectnessEvaluator : EvaluationEngine
                 { "answer", answer.Result }
             }).ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<IEnumerable<string>>(extraction.GetValue<string>()!);
+            return JsonSerializer.Deserialize<StatementExtraction>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
 
         if (statements is null)

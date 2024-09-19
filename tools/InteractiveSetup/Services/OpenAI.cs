@@ -18,7 +18,7 @@ internal static class OpenAI
         {
             config = new Dictionary<string, object>
             {
-                { "TextModel", "gpt-3.5-turbo-16k" },
+                { "TextModel", "gpt-4o-mini" },
                 { "EmbeddingModel", "text-embedding-ada-002" },
                 { "APIKey", "" },
                 { "OrgId", "" },

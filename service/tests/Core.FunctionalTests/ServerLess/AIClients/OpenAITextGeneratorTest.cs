@@ -40,7 +40,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         Assert.True(count > 10);
     }
 
-    [Fact]
+    [Fact(Skip = "Dropped support for old OpenAI text completion models")]
     [Trait("Category", "Serverless")]
     public async Task ItStreamsFromTextModel()
     {

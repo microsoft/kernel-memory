@@ -38,6 +38,18 @@ public struct Embedding : IEquatable<Embedding>
         this.Data = vector;
     }
 
+    /// <summary>
+    /// This is not a ctor on purpose so we can use collections syntax with
+    /// the main ctor, and surface the extra casting cost when not using floats.
+    /// </summary>
+    public static Embedding FromDoubles(double[] vector)
+    {
+        float[] f = new float[vector.Length];
+        for (int i = 0; i < vector.Length; i++) { f[i] = (float)vector[i]; }
+
+        return new Embedding(f);
+    }
+
     public Embedding(ReadOnlyMemory<float> vector)
     {
         this.Data = vector;

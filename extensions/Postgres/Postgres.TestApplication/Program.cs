@@ -19,6 +19,7 @@ internal static class Program
     {
         var cfg = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
@@ -96,6 +97,7 @@ internal static class Program
 
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build()
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
@@ -145,6 +147,7 @@ internal static class Program
         new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.custom-sql.json")
             .Build()
             .BindSection("KernelMemory:Services:Postgres", postgresConfig)
