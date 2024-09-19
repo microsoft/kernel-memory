@@ -14,7 +14,7 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 // ReSharper disable once InconsistentNaming
 public sealed class GPT4oTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4o",
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o",
         new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />
@@ -26,6 +26,6 @@ public sealed class GPT4oTokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text, out string? _).Select(t => t.Value).ToList();
+        return s_tokenizer.EncodeToTokens(text, out string? _).Select(t => t.Value).ToList();
     }
 }

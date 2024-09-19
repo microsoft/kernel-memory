@@ -13,7 +13,7 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// </summary>
 public sealed class GPT4Tokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("gpt-4",
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4",
         new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />
@@ -25,6 +25,6 @@ public sealed class GPT4Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text, out string? _).Select(t => t.Value).ToList();
+        return s_tokenizer.EncodeToTokens(text, out string? _).Select(t => t.Value).ToList();
     }
 }
