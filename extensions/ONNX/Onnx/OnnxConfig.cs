@@ -85,11 +85,11 @@ public class OnnxConfig
         {
             if (!Directory.Exists(modelDir))
             {
-                throw new ConfigurationException($"Onnx: {nameof(this.TextModelDir)} does not exist.");
+                throw new ConfigurationException($"Onnx: {this.TextModelDir} does not exist.");
             }
             if (Directory.GetFiles(modelDir) == null)
             {
-                throw new ConfigurationException($"Onnx: {nameof(this.TextModelDir)} is an empty directory.");
+                throw new ConfigurationException($"Onnx: {this.TextModelDir} is an empty directory.");
             }
 
             var modelFiles = Directory.GetFiles(modelDir)
@@ -97,7 +97,7 @@ public class OnnxConfig
 
             if (modelFiles == null)
             {
-                throw new ConfigurationException($"Onnx: {nameof(this.TextModelDir)} does not contain a valid .ONNX model.");
+                throw new ConfigurationException($"Onnx: {this.TextModelDir} does not contain a valid .ONNX model.");
             }
         }
 
