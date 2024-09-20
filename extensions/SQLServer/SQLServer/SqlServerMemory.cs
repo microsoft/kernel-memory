@@ -466,7 +466,6 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         return collections.Any(x => x.Equals(indexName, StringComparison.OrdinalIgnoreCase));
     }
 
-
     private async Task<MemoryRecord> ReadEntryAsync(SqlDataReader dataReader, bool withEmbedding, CancellationToken cancellationToken = default)
     {
         var entry = new MemoryRecord

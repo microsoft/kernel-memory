@@ -8,11 +8,11 @@ namespace Microsoft.KernelMemory.MemoryDb.SQLServer.QueryProviders;
 
 internal abstract class SqlServerQueryProvider
 {
-    protected readonly SqlServerConfig _config;
+    protected readonly SqlServerConfig Config;
 
     protected SqlServerQueryProvider(SqlServerConfig config)
     {
-        this._config = config;
+        this.Config = config;
     }
 
     public abstract string GetCreateIndexQuery(int sqlServerVersion, string index, int vectorSize);
@@ -44,7 +44,7 @@ internal abstract class SqlServerQueryProvider
     /// <returns></returns>
     protected string GetFullTableName(string tableName)
     {
-        return $"[{this._config.Schema}].[{tableName}]";
+        return $"[{this.Config.Schema}].[{tableName}]";
     }
 
     /// <summary>
@@ -90,9 +90,9 @@ internal abstract class SqlServerQueryProvider
                 filterBuilder.Append(CultureInfo.CurrentCulture, $@"EXISTS (
                          SELECT
 	                        1
-                        FROM {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tags]
+                        FROM {this.GetFullTableName($"{this.Config.TagsTableName}_{index}")} AS [tags]
                         WHERE
-	                        [tags].[memory_id] = {this.GetFullTableName(this._config.MemoryTableName)}.[id]
+	                        [tags].[memory_id] = {this.GetFullTableName(this.Config.MemoryTableName)}.[id]
                             AND [name] = @filter_{i}_{j}_name
                             AND [value] = @filter_{i}_{j}_value
                         )
