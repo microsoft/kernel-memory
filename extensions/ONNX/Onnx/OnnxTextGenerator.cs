@@ -165,12 +165,14 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
+        // TODO: Implement with _tokenizer and remove _textTokenizer
         return this._textTokenizer.CountTokens(text);
     }
 
     /// <inheritdoc/>
     public IReadOnlyList<string> GetTokens(string text)
     {
+        // TODO: Implement with _tokenizer and remove _textTokenizer
         return this._textTokenizer.GetTokens(text);
     }
 
