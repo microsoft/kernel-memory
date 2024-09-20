@@ -323,7 +323,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ollama", "extensions\Ollama
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{70DBBE75-3896-4890-AADE-224ECC7DF653}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{255CF5A9-CCD4-4D71-89E7-47691981C880}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{255CF5A9-CCD4-4D71-89E7-47691981C880}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
