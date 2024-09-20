@@ -26,12 +26,11 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     /// <summary>
     /// Tokenizer used with the Onnx Generator and Model classes to produce tokens.
     /// This has the potential to contain a null value, depending on the contents of the Model Directory.
-    /// Currently unused in GetTokens() and CountTokens() 
     /// </summary>
     private readonly Microsoft.ML.OnnxRuntimeGenAI.Tokenizer? _tokenizer = default;
 
     /// <summary>
-    /// Tokenizer used for GetTokens() and CountTokens() when the ONNX Tokenizer isn't initialized.
+    /// Tokenizer used for GetTokens() and CountTokens()
     /// </summary>
     private readonly ITextTokenizer _textTokenizer;
 
