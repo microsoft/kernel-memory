@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.Evaluation;
+using Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -20,11 +21,15 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
     private KernelFunction ExtractStatements => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Extraction", "Statements"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.ExtractStatements));
 
     private KernelFunction FaithfulnessEvaluation => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Evaluation", "Faithfulness"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.FaithfulnessEvaluation));
 
     public FaithfulnessEvaluator(Kernel kernel)
@@ -34,7 +39,7 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
 
     internal async Task<float> Evaluate(MemoryAnswer answer, Dictionary<string, object?> metadata)
     {
-        var statements = await this.Try(3, async (remainingTry) =>
+        var extraction = await this.Try(3, async (remainingTry) =>
         {
             var extraction = await this.ExtractStatements.InvokeAsync(this._kernel, new KernelArguments
             {
@@ -42,10 +47,10 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
                 { "answer", answer.Result }
             }).ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<IEnumerable<string>>(extraction.GetValue<string>()!);
+            return JsonSerializer.Deserialize<StatementExtraction>(extraction.GetValue<string>()!);
         }).ConfigureAwait(false);
 
-        if (statements is null)
+        if (extraction is null)
         {
             return 0;
         }
@@ -56,10 +61,10 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
             {
                 { "context", string.Join(Environment.NewLine, answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
                 { "answer", answer.Result },
-                { "statements", JsonSerializer.Serialize(statements) }
+                { "statements", JsonSerializer.Serialize(extraction) }
             }).ConfigureAwait(false);
 
-            var faithfulness = JsonSerializer.Deserialize<IEnumerable<StatementEvaluation>>(evaluation.GetValue<string>()!);
+            var faithfulness = JsonSerializer.Deserialize<FaithfulnessEvaluations>(evaluation.GetValue<string>()!);
 
             return faithfulness;
         }).ConfigureAwait(false);
@@ -71,6 +76,6 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
 
         metadata.Add($"{nameof(FaithfulnessEvaluator)}-Evaluation", faithfulness);
 
-        return faithfulness.Count(c => c.Verdict > 0) / (float)statements.Count();
+        return faithfulness.Evaluations.Count(c => c.Verdict > 0) / (float)extraction.Statements.Count;
     }
 }
