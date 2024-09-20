@@ -31,12 +31,13 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="connString">SQL Server connection string</param>
-    /// <param name="useVectorSearch">A value that determines if we want to use Vector Search</param>    
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
-        string connString, bool useVectorSearch = false)
+        string connString,
+        bool useNativeVectorSearch = false)
     {
-        builder.Services.AddSqlServerAsMemoryDb(connString, useVectorSearch);
+        builder.Services.AddSqlServerAsMemoryDb(connString, useNativeVectorSearch);
         return builder;
     }
 }
@@ -65,12 +66,13 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="connString">SQL Server connection string</param>
-    /// <param name="useVectorSearch">A value that determines if we want to use Vector Search</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,
-        string connString, bool useVectorSearch = false)
+        string connString,
+        bool useNativeVectorSearch = false)
     {
-        var config = new SqlServerConfig { ConnectionString = connString, UseVectorSearch = useVectorSearch };
+        var config = new SqlServerConfig { ConnectionString = connString, UseNativeVectorSearch = useNativeVectorSearch };
         return services.AddSqlServerAsMemoryDb(config);
     }
 }

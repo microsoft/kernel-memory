@@ -68,7 +68,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         this._config = config;
         this._embeddingGenerator = embeddingGenerator ?? throw new ConfigurationException("Embedding generator not configured");
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SqlServerMemory>();
-        this._queryProvider = this._config.UseVectorSearch ? new VectorQueryProvider(this._config) : new DefaultQueryProvider(this._config);
+        this._queryProvider = this._config.UseNativeVectorSearch ? new VectorQueryProvider(this._config) : new DefaultQueryProvider(this._config);
     }
 
     /// <inheritdoc/>
@@ -293,7 +293,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 double cosineSimilarity = 0;
-                if (this._config.UseVectorSearch)
+                if (this._config.UseNativeVectorSearch)
                 {
                     double distance = dataReader.GetDouble(dataReader.GetOrdinal("distance"));
                     cosineSimilarity = 1 - distance;
