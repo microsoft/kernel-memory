@@ -6,54 +6,27 @@ using Microsoft.Data.SqlClient;
 
 namespace Microsoft.KernelMemory.MemoryDb.SQLServer.QueryProviders;
 
-internal abstract class SqlServerQueryProvider
+internal static class Utils
 {
-    protected readonly SqlServerConfig Config;
-
-    protected SqlServerQueryProvider(SqlServerConfig config)
-    {
-        this.Config = config;
-    }
-
-    public abstract string GetCreateIndexQuery(int sqlServerVersion, string index, int vectorSize);
-
-    public abstract string GetDeleteQuery(string index);
-
-    public abstract string GetDeleteIndexQuery(string index);
-
-    public abstract string GetIndexesQuery();
-
-    public abstract string GetListQuery(string index,
-        ICollection<MemoryFilter>? filters,
-        bool withEmbedding,
-        SqlParameterCollection parameters);
-
-    public abstract string GetSimilarityListQuery(string index,
-        ICollection<MemoryFilter>? filters,
-        bool withEmbedding,
-        SqlParameterCollection parameters);
-
-    public abstract string GetUpsertBatchQuery(string index);
-
-    public abstract string GetCreateTablesQuery();
-
     /// <summary>
     /// Gets the full table name with schema.
     /// </summary>
+    /// <param name="config">Server settings</param>
     /// <param name="tableName">The table name.</param>
-    /// <returns></returns>
-    protected string GetFullTableName(string tableName)
+    internal static string GetFullTableName(SqlServerConfig config, string tableName)
     {
-        return $"[{this.Config.Schema}].[{tableName}]";
+        return $"[{config.Schema}].[{tableName}]";
     }
 
     /// <summary>
     /// Generates the filters as SQL commands and sets the SQL parameters
     /// </summary>
+    /// <param name="config">Server settings</param>
     /// <param name="index">The index name.</param>
     /// <param name="parameters">The SQL parameters to populate.</param>
     /// <param name="filters">The filters to apply</param>
-    protected string GenerateFilters(
+    internal static string GenerateFilters(
+        SqlServerConfig config,
         string index,
         SqlParameterCollection parameters,
         ICollection<MemoryFilter>? filters)
@@ -90,9 +63,9 @@ internal abstract class SqlServerQueryProvider
                 filterBuilder.Append(CultureInfo.CurrentCulture, $@"EXISTS (
                          SELECT
 	                        1
-                        FROM {this.GetFullTableName($"{this.Config.TagsTableName}_{index}")} AS [tags]
+                        FROM {GetFullTableName(config, $"{config.TagsTableName}_{index}")} AS [tags]
                         WHERE
-	                        [tags].[memory_id] = {this.GetFullTableName(this.Config.MemoryTableName)}.[id]
+	                        [tags].[memory_id] = {GetFullTableName(config, config.MemoryTableName)}.[id]
                             AND [name] = @filter_{i}_{j}_name
                             AND [value] = @filter_{i}_{j}_value
                         )

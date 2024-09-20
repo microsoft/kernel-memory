@@ -47,7 +47,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <summary>
     /// The interface that is responsible for getting queries against the SQL Server database.
     /// </summary>
-    private readonly SqlServerQueryProvider _queryProvider;
+    private readonly ISqlServerQueryProvider _queryProvider;
 
     /// <summary>
     /// SQL Server version, retrieved on the first connection
@@ -59,16 +59,21 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// </summary>
     /// <param name="config">The SQL server instance configuration.</param>
     /// <param name="embeddingGenerator">The text embedding generator.</param>
+    /// <param name="queryProvider">SQL queries provider</param>
     /// <param name="loggerFactory">Application logger factory</param>
     public SqlServerMemory(
         SqlServerConfig config,
         ITextEmbeddingGenerator embeddingGenerator,
+        ISqlServerQueryProvider? queryProvider = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._config = config;
         this._embeddingGenerator = embeddingGenerator ?? throw new ConfigurationException("Embedding generator not configured");
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<SqlServerMemory>();
-        this._queryProvider = this._config.UseNativeVectorSearch ? new VectorQueryProvider(this._config) : new DefaultQueryProvider(this._config);
+        this._queryProvider = queryProvider
+                              ?? (this._config.UseNativeVectorSearch
+                                  ? new VectorQueryProvider(this._config)
+                                  : new DefaultQueryProvider(this._config));
     }
 
     /// <inheritdoc/>
@@ -84,7 +89,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var sql = this._queryProvider.GetCreateIndexQuery(this._cachedServerVersion, index, vectorSize);
+        var sql = this._queryProvider.PrepareCreateIndexQuery(this._cachedServerVersion, index, vectorSize);
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -116,7 +121,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var sql = this._queryProvider.GetDeleteQuery(index);
+        var sql = this._queryProvider.PrepareDeleteRecordQuery(index);
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -150,7 +155,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             return;
         }
 
-        var sql = this._queryProvider.GetDeleteIndexQuery(index);
+        var sql = this._queryProvider.PrepareDeleteIndexQuery(index);
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -176,7 +181,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
         List<string> indexes = new();
 
-        var sql = this._queryProvider.GetIndexesQuery();
+        var sql = this._queryProvider.PrepareGetIndexesQuery();
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -231,7 +236,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         {
             var tagFilters = new TagCollection();
 
-            var sql = this._queryProvider.GetListQuery(index, filters, withEmbeddings, command.Parameters);
+            var sql = this._queryProvider.PrepareGetRecordsListQuery(index, filters, withEmbeddings, command.Parameters);
             command.CommandText = sql;
 
             command.Parameters.AddWithValue("@index", index);
@@ -280,7 +285,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         SqlCommand command = connection.CreateCommand();
         try
         {
-            var sql = this._queryProvider.GetSimilarityListQuery(index, filters, withEmbeddings, command.Parameters);
+            var sql = this._queryProvider.PrepareGetSimilarRecordsListQuery(index, filters, withEmbeddings, command.Parameters);
             command.CommandText = sql;
 
             command.Parameters.AddWithValue("@min_relevance_score", minRelevance);
@@ -344,7 +349,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
             throw new IndexNotFoundException($"The index '{index}' does not exist.");
         }
 
-        var sql = this._queryProvider.GetUpsertBatchQuery(index);
+        var sql = this._queryProvider.PrepareUpsertRecordsBatchQuery(index);
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -435,7 +440,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     /// <returns></returns>
     private async Task CreateTablesIfNotExistsAsync(CancellationToken cancellationToken)
     {
-        var sql = this._queryProvider.GetCreateTablesQuery();
+        var sql = this._queryProvider.PrepareCreateAllSupportingTablesQuery();
 
         var connection = new SqlConnection(this._config.ConnectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
