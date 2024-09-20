@@ -22,8 +22,13 @@ public sealed class OnnxTextGeneratorTest : BaseFunctionalTestCase
 
         this.OnnxConfig.Validate();
         this._target = new OnnxTextGenerator(this.OnnxConfig, loggerFactory: null);
+
         var modelDirectory = Path.GetFullPath(this.OnnxConfig.TextModelDir);
-        Console.WriteLine($"Using model from: {modelDirectory}");
+        var modelFile = Directory.GetFiles(modelDirectory)
+                        .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault();
+
+        Console.WriteLine($"Using model {Path.GetFileNameWithoutExtension(modelFile)} from: {modelDirectory}");
     }
 
     [Fact]
