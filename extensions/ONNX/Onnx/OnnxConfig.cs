@@ -2,6 +2,8 @@
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
 namespace Microsoft.KernelMemory;
 
 public class OnnxConfig
@@ -85,6 +87,7 @@ public class OnnxConfig
                 {
                     throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} is only used with Beam Search. Change {nameof(this.NumBeams)} to 1, or change {nameof(this.SearchType)} to BeamSearch.");
                 }
+
                 if (this.EarlyStopping != false)
                 {
                     throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
@@ -105,6 +108,7 @@ public class OnnxConfig
                 {
                     throw new ConfigurationException($"Onnx: {nameof(this.NumBeams)} isn't required with TopN Search. Change {nameof(this.NumBeams)} to null, or change the {nameof(this.SearchType)}.");
                 }
+
                 if (this.EarlyStopping != false)
                 {
                     throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
@@ -125,11 +129,13 @@ public class OnnxConfig
         /// coherent and higher quality text generation than Greedy Search would.
         /// </summary>
         BeamSearch,
+
         /// <summary>
         /// The default and simplest decoding algorithm. At each step, a token is selected with the highest
         /// probability as the next word in the sequence.
         /// </summary>
         GreedySearch,
+
         /// <summary>
         /// Combined Top-P (Nucleus) and Top-K Sampling: A decoding algorithm that samples from the top k tokens
         /// with the highest probabilities, while also considering the smallest set of tokens whose cumulative
