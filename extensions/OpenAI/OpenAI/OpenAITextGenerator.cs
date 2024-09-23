@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -41,7 +42,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
         HttpClient? httpClient = null)
         : this(
             config,
-            OpenAIClientBuilder.Build(config, httpClient),
+            OpenAIClientBuilder.Build(config, httpClient, loggerFactory),
             textTokenizer,
             loggerFactory)
     {

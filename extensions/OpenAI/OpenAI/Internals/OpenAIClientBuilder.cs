@@ -3,20 +3,22 @@
 using System;
 using System.ClientModel.Primitives;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using OpenAI;
 
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI.OpenAI.Internals;
 
 internal static class OpenAIClientBuilder
 {
     internal static OpenAIClient Build(
         OpenAIConfig config,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         OpenAIClientOptions options = new()
         {
-            RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries)),
+            RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), loggerFactory),
             ApplicationId = Telemetry.HttpUserAgent,
         };
 
