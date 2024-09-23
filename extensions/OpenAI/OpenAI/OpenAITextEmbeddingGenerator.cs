@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Embeddings;
@@ -45,7 +46,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         HttpClient? httpClient = null)
         : this(
             config,
-            OpenAIClientBuilder.Build(config, httpClient),
+            OpenAIClientBuilder.Build(config, httpClient, loggerFactory),
             textTokenizer,
             loggerFactory)
     {

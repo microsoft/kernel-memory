@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI.OpenAI.Internals;
 
 internal static class SkClientBuilder
 {

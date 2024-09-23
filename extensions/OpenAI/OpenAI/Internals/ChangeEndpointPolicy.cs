@@ -5,7 +5,7 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI.OpenAI.Internals;
 
 internal sealed class ChangeEndpointPolicy : PipelinePolicy
 {

@@ -44,7 +44,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         HttpClient? httpClient = null)
         : this(
             config,
-            AzureOpenAIClientBuilder.Build(config, httpClient),
+            AzureOpenAIClientBuilder.Build(config, httpClient, loggerFactory),
             textTokenizer,
             loggerFactory)
     {

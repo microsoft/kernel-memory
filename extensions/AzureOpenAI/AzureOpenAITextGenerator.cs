@@ -39,7 +39,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         HttpClient? httpClient = null)
         : this(
             config,
-            AzureOpenAIClientBuilder.Build(config, httpClient),
+            AzureOpenAIClientBuilder.Build(config, httpClient, loggerFactory),
             textTokenizer,
             loggerFactory)
     {

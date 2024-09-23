@@ -6,13 +6,17 @@ using System.Net.Http;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 
 internal static class AzureOpenAIClientBuilder
 {
-    internal static AzureOpenAIClient Build(AzureOpenAIConfig config, HttpClient? httpClient = null)
+    internal static AzureOpenAIClient Build(
+        AzureOpenAIConfig config,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -21,7 +25,7 @@ internal static class AzureOpenAIClientBuilder
 
         AzureOpenAIClientOptions options = new()
         {
-            RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries)),
+            RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), loggerFactory),
             ApplicationId = Telemetry.HttpUserAgent,
         };
 
