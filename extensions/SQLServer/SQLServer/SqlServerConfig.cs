@@ -30,7 +30,12 @@ public class SqlServerConfig
     /// <summary>
     /// The default schema used by the SQL Server memory store.
     /// </summary>
-    public const string DefaultSchema = "dbo";
+    internal const string DefaultSchema = "dbo";
+
+    /// <summary>
+    /// The default vector size when using the native VECTOR type.
+    /// </summary>
+    internal const int DefaultVectorSize = 1536;
 
     /// <summary>
     /// The connection string to the SQL Server database.
@@ -66,8 +71,28 @@ public class SqlServerConfig
     /// Whether to use native vector search or not.
     /// </summary>
     /// <remarks>
-    /// Currently, Vector Search supports only Azure SQL Database and can handle vectors up to 1998 dimensions.
-    /// See https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database for more information.
+    /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
     /// </remarks>
+    /// <seealso cref="VectorSize"/>
     public bool UseNativeVectorSearch { get; set; } = false;
+
+    /// <summary>
+    /// The vector size when using the native vector search.
+    /// </summary>
+    /// <remarks>
+    /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
+    /// </remarks>
+    /// <seealso cref="UseNativeVectorSearch"/>
+    public int VectorSize { get; set; } = DefaultVectorSize;
+
+    /// <summary>
+    /// Verify that the current state is valid.
+    /// </summary>
+    public void Validate()
+    {
+        if (this.UseNativeVectorSearch && this.VectorSize < 0)
+        {
+            throw new ConfigurationException("The vector size must be greater than 0");
+        }
+    }
 }
