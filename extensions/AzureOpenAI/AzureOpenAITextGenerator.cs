@@ -12,13 +12,14 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
 [Experimental("KMEXP01")]
 public sealed class AzureOpenAITextGenerator : ITextGenerator
 {
-    private readonly AzureOpenAIChatCompletionService _client;
+    private readonly ITextGenerationService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<AzureOpenAITextGenerator> _log;
 
@@ -75,7 +76,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     /// <exception cref="ConfigurationException"></exception>
     public AzureOpenAITextGenerator(
         AzureOpenAIConfig config,
-        AzureOpenAIChatCompletionService skClient,
+        ITextGenerationService skClient,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
