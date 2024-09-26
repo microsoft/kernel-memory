@@ -3,8 +3,8 @@
 ARG BUILD_IMAGE_TAG="8.0-jammy"
 ARG RUN_IMAGE_TAG="8.0-alpine"
 
-ARG PLATFORM=$BUILDPLATFORM
-#ARG PLATFORM=$TARGETPLATFORM
+#ARG PLATFORM=$BUILDPLATFORM
+ARG PLATFORM=$TARGETPLATFORM
 
 #########################################################################
 # .NET build
@@ -24,7 +24,7 @@ RUN dotnet publish "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 # prepare final content
 #########################################################################
 
-ARG PLATFORM
+#ARG PLATFORM
 FROM --platform=$PLATFORM mcr.microsoft.com/dotnet/aspnet:$RUN_IMAGE_TAG AS base
 
 # Non-root user that will run the service
