@@ -11,7 +11,7 @@
     <PackageVersion Include="Azure.Search.Documents" Version="11.6.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.22.1" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.20.0" />
-    <PackageVersion Include="ClosedXML" Version="0.104.0-rc1" />
+    <PackageVersion Include="ClosedXML" Version="0.104.1" />
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.12.1" />
     <PackageVersion Include="Discord.Net" Version="3.16.0" />
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.0" />
