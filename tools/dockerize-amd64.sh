@@ -3,7 +3,7 @@
 set -e
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
-cd "$HERE"
+cd "$HERE/.."
 
 USR=kernelmemory
 IMG=${USR}/service
@@ -14,9 +14,9 @@ docker rmi ${IMG}${TAG} >/dev/null 2>&1
 set -e
 
 if [ -z "$(docker images -q ${IMG}${TAG})" ]; then
-  echo "All ${IMG}${TAG} images have been deleted."
+  echo "All ${IMG}${TAG} local images have been deleted."
 else
-  echo "Some ${IMG}${TAG} images are still present:"
+  echo "Some ${IMG}${TAG} local images are still present:"
   docker images ${IMG}${TAG}
   exit -1
 fi
@@ -28,6 +28,8 @@ docker buildx build --no-cache --load \
     --build-arg RUN_IMAGE_TAG=8.0-alpine-amd64 \
     -t ${IMG}${TAG} .
 
-docker login -u ${USR} --password-stdin
+echo "Signing in as ${USR}..."
+docker login -u ${USR}
 
-docker push ${IMG}${TAG}
+echo "Pushing ${IMG}${TAG}..."
+docker push "${IMG}${TAG}"
