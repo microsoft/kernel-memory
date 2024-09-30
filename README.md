@@ -186,6 +186,12 @@ to **start the Kernel Memory Service** using OpenAI:
 docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service
 ```
 
+on Linux ARM/MacOS
+
+```shell
+docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
+```
+
 If you prefer using custom settings and services such as Azure OpenAI, Azure
 Document Intelligence, etc., you should create an `appsettings.Development.json`
 file overriding the default values set in `appsettings.json`, or using the
@@ -201,9 +207,13 @@ on Windows:
 
     docker run --volume .\appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
-on macOS/Linux:
+on Linux (AMD64):
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
+
+on ARM64 / macOS:
+
+    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
 # Import files using KM web service and `MemoryWebClient`
 
