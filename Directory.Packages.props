@@ -42,6 +42,7 @@
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="OllamaSharp" Version="3.0.8" />
+    <PackageVersion Include="Npgsql" Version="8.0.4" />
     <PackageVersion Include="PdfPig" Version="0.1.8" />
     <PackageVersion Include="Pgvector" Version="0.3.0" />
     <PackageVersion Include="Polly.Core" Version="8.4.1" />
