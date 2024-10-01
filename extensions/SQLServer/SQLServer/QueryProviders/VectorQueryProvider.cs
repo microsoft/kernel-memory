@@ -126,7 +126,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         if (withEmbedding)
         {
             queryColumns += $"," +
-                            $"VECTOR_TO_JSON_ARRAY({this.GetFullTableName(this._config.MemoryTableName)}.[embedding]) AS [embedding]";
+                            $"CAST({this.GetFullTableName(this._config.MemoryTableName)}.[embedding] AS NVARCHAR(MAX)) AS [embedding]";
         }
 
         var generatedFilters = this.GenerateFilters(index, parameters, filters);
@@ -158,8 +158,8 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
                            WHEN MATCHED THEN
                                UPDATE SET payload=@payload, embedding=CAST(@embedding AS VECTOR({this._config.VectorSize})), tags=@tags
                            WHEN NOT MATCHED THEN
-                               INSERT ([id], [key], [collection], [payload], [tags], [embedding])
-                               VALUES (NEWID(), @key, @index, @payload, @tags, CAST(@embedding AS VECTOR({this._config.VectorSize})));
+                               INSERT ([key], [collection], [payload], [tags], [embedding])
+                               VALUES (@key, @index, @payload, @tags, CAST(@embedding AS VECTOR({this._config.VectorSize})));
 
                        DELETE FROM [tgt]
                            FROM  {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
@@ -211,7 +211,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
 
                    IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryTableName)}', N'U') IS NULL
                        CREATE TABLE {this.GetFullTableName(this._config.MemoryTableName)}
-                       (   [id] UNIQUEIDENTIFIER NOT NULL,
+                       (   [id] UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID(),
                            [key] NVARCHAR(256)  NOT NULL,
                            [collection] NVARCHAR(256) NOT NULL,
                            [payload] NVARCHAR(MAX),

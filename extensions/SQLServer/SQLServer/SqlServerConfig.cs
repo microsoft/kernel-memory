@@ -80,6 +80,7 @@ public class SqlServerConfig
     /// The vector size when using the native vector search.
     /// </summary>
     /// <remarks>
+    /// Currently, the maximum supported vector size is 1998.
     /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
     /// </remarks>
     /// <seealso cref="UseNativeVectorSearch"/>
@@ -90,9 +91,17 @@ public class SqlServerConfig
     /// </summary>
     public void Validate()
     {
-        if (this.UseNativeVectorSearch && this.VectorSize < 0)
+        if (this.UseNativeVectorSearch)
         {
-            throw new ConfigurationException("The vector size must be greater than 0");
+            if (this.VectorSize < 0)
+            {
+                throw new ConfigurationException("The vector size must be greater than 0");
+            }
+
+            if (this.VectorSize > 1998)
+            {
+                throw new ConfigurationException("The vector size must be less than or equal to 1998");
+            }
         }
     }
 }
