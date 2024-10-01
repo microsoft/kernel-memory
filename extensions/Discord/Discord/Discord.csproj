@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Sources.DiscordBot</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Sources.DiscordBot</RootNamespace>
-        <NoWarn>$(NoWarn);CA1303;</NoWarn>
+        <NoWarn>$(NoWarn);CA1303;CS8002;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
