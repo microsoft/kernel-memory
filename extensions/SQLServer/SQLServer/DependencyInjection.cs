@@ -22,8 +22,6 @@ public static partial class KernelMemoryBuilderExtensions
         this IKernelMemoryBuilder builder,
         SqlServerConfig config)
     {
-        config.Validate();
-
         builder.Services.AddSqlServerAsMemoryDb(config);
         return builder;
     }
@@ -34,12 +32,14 @@ public static partial class KernelMemoryBuilderExtensions
     /// <param name="builder">KM builder instance</param>
     /// <param name="connectionString">SQL Server connection string</param>
     /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
+    /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR SQL Server type.</param>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
         string connectionString,
-        bool useNativeVectorSearch = false)
+        bool useNativeVectorSearch = false,
+        int vectorSize = SqlServerConfig.DefaultVectorSize)
     {
-        builder.Services.AddSqlServerAsMemoryDb(connectionString, useNativeVectorSearch);
+        builder.Services.AddSqlServerAsMemoryDb(connectionString, useNativeVectorSearch, vectorSize);
         return builder;
     }
 }
