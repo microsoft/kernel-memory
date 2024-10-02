@@ -31,7 +31,7 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="connectionString">SQL Server connection string</param>
-    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not. Currently, the native Vector search is in Early Access Preview (EAP) and is available on Azure SQL Database and Managed Instance only.
     /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR SQL Server type.</param>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
@@ -70,7 +70,7 @@ public static partial class DependencyInjection
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="connectionString">SQL Server connection string</param>
-    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not. Currently, the native Vector search is in Early Access Preview (EAP) and is available on Azure SQL Database and Managed Instance only.
     /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR SQL Server type.</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,

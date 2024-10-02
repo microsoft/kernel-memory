@@ -71,6 +71,7 @@ public class SqlServerConfig
     /// Whether to use native vector search or not.
     /// </summary>
     /// <remarks>
+    /// Currently, the native Vector search is in Early Access Preview (EAP) and is available on Azure SQL Database and Managed Instance only.
     /// See <a href="https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database">Announcing EAP for Vector Support in Azure SQL Database</a> for more information.
     /// </remarks>
     /// <seealso cref="VectorSize"/>
