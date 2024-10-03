@@ -69,7 +69,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
         var indexName = "create_index_test";
         var vectorSize = 1536;
 
-        var target = new PostgresMemory(config, new FakeEmbeddingGenerator());
+        using var target = new PostgresMemory(config, new FakeEmbeddingGenerator());
 
         var tasks = new List<Task>();
         for (int i = 0; i < concurrency; i++)
@@ -96,7 +96,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
         var vectorSize = 4;
         var indexName = "upsert_test" + Guid.NewGuid().ToString("D");
 
-        var target = new PostgresMemory(this.PostgresConfig, new FakeEmbeddingGenerator());
+        using var target = new PostgresMemory(this.PostgresConfig, new FakeEmbeddingGenerator());
 
         await target.CreateIndexAsync(indexName, vectorSize);
 
