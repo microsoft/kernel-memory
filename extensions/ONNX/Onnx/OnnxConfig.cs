@@ -87,13 +87,14 @@ public class OnnxConfig
             {
                 throw new ConfigurationException($"Onnx: {this.TextModelDir} does not exist.");
             }
+
             if (Directory.GetFiles(modelDir) == null)
             {
                 throw new ConfigurationException($"Onnx: {this.TextModelDir} is an empty directory.");
             }
 
             var modelFiles = Directory.GetFiles(modelDir)
-                            .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase));
+                .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase));
 
             if (modelFiles == null)
             {

@@ -67,8 +67,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 
         var modelDir = Path.GetFullPath(config.TextModelDir);
         var modelFile = Directory.GetFiles(modelDir)
-                        .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase))
-                        .FirstOrDefault();
+            .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
 
         this._log.LogDebug("Loading Onnx model: {1} from directory {0}", modelDir, Path.GetFileNameWithoutExtension(modelFile));
         this._model = new Model(config.TextModelDir);
