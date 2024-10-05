@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -62,6 +61,28 @@ public class RabbitMQConfig
     /// </summary>
     public void Validate()
     {
+        const int MinTTLSecs = 5;
+
+        if (string.IsNullOrWhiteSpace(this.Host) || this.Host != $"{this.Host}".Trim())
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.Host)} cannot be empty or have leading or trailing spaces");
+        }
+
+        if (this.Port < 1)
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.Port)} value {this.Port} is not valid");
+        }
+
+        if (this.MessageTTLSecs < MinTTLSecs)
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.MessageTTLSecs)} value {this.MessageTTLSecs} is too low, cannot be less than {MinTTLSecs}");
+        }
+
+        if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix) || this.PoisonQueueSuffix != $"{this.PoisonQueueSuffix}".Trim())
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot be empty or have leading or trailing spaces");
+        }
+
         if (this.MaxRetriesBeforePoisonQueue < 0)
         {
             throw new ConfigurationException($"RabbitMQ: {nameof(this.MaxRetriesBeforePoisonQueue)} cannot be a negative number");
@@ -72,16 +93,8 @@ public class RabbitMQConfig
             throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} is empty");
         }
 
-        // Queue names must follow the rules described at
-        // https://www.rabbitmq.com/docs/queues#names.
-        if (this.PoisonQueueSuffix.StartsWith("amq.", StringComparison.InvariantCulture))
-        {
-            throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} cannot start with 'amp.', as it's reserved for internal use");
-        }
-
         // Queue names can be up to 255 bytes of UTF-8 characters.
-        // We define a maximum length of 60 bytes for the suffix,
-        // so there is room for the other name part.
+        // Allow a max of 60 bytes for the suffix, so there is room for the queue name.
         if (Encoding.UTF8.GetByteCount(this.PoisonQueueSuffix) > 60)
         {
             throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} can be up to 60 characters length");
