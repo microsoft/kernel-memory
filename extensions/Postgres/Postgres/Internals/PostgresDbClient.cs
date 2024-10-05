@@ -19,28 +19,11 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
-internal sealed class PostgresDbClient : IDisposable
+internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 {
-    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
-    private const string PgErrUndefinedTable = "42P01"; // undefined_table
-    private const string PgErrUniqueViolation = "23505"; // unique_violation
-    private const string PgErrTypeDoesNotExist = "42704"; // undefined_object
-    private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
-
-    private readonly ILogger _log;
+    // Dependencies
     private readonly NpgsqlDataSource _dataSource;
-
-    private readonly string _schema;
-    private readonly string _tableNamePrefix;
-    private readonly string _createTableSql;
-    private readonly string _colId;
-    private readonly string _colEmbedding;
-    private readonly string _colTags;
-    private readonly string _colContent;
-    private readonly string _colPayload;
-    private readonly string _columnsListNoEmbeddings;
-    private readonly string _columnsListWithEmbeddings;
-    private readonly bool _dbNamePresent;
+    private readonly ILogger _log;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
@@ -663,26 +646,46 @@ internal sealed class PostgresDbClient : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._dataSource?.Dispose();
     }
 
-    /// <summary>
-    /// Disposes the managed resources
-    /// </summary>
-    private void Dispose(bool disposing)
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
     {
-        if (disposing)
+        try
         {
-            (this._dataSource as IDisposable)?.Dispose();
+            await this._dataSource.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (NullReferenceException)
+        {
+            // ignore
         }
     }
+
+    #region private ================================================================================
+
+    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
+    private const string PgErrUndefinedTable = "42P01"; // undefined_table
+    private const string PgErrUniqueViolation = "23505"; // unique_violation
+    private const string PgErrTypeDoesNotExist = "42704"; // undefined_object
+    private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
+
+    private readonly string _schema;
+    private readonly string _tableNamePrefix;
+    private readonly string _createTableSql;
+    private readonly string _colId;
+    private readonly string _colEmbedding;
+    private readonly string _colTags;
+    private readonly string _colContent;
+    private readonly string _colPayload;
+    private readonly string _columnsListNoEmbeddings;
+    private readonly string _columnsListWithEmbeddings;
+    private readonly bool _dbNamePresent;
 
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     private async Task<NpgsqlConnection> ConnectAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -780,4 +783,6 @@ internal sealed class PostgresDbClient : IDisposable
         return BitConverter.ToUInt32(SHA256.HashData(Encoding.UTF8.GetBytes(resourceId)), 0)
                % short.MaxValue;
     }
+
+    #endregion
 }
