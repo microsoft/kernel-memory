@@ -119,6 +119,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-s3ninja.sh = tools\run-s3ninja.sh
 		tools\search.sh = tools\search.sh
 		tools\upload-file.sh = tools\upload-file.sh
+		tools\dockerize-amd64.sh = tools\dockerize-amd64.sh
+		tools\dockerize-arm64.sh = tools\dockerize-arm64.sh
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -271,29 +273,29 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch", "extensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elasticsearch.FunctionalTests", "extensions\Elasticsearch\Elasticsearch.FunctionalTests\Elasticsearch.FunctionalTests.csproj", "{C5E6B28C-F54D-423D-954D-A9EAEFB89732}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Discord", "extensions\Discord\Discord\Discord.csproj", "{43877864-6AE8-4B03-BEDA-6B6FA8BB1D8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "301-discord-test-application", "examples\301-discord-test-application\301-discord-test-application.csproj", "{FAE4C6B8-38B2-43E7-8881-99693C9CEDC6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "applications", "applications", "{DBEA0A6B-474A-4E8C-BCC8-D5D43C063A54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{432AC1B4-8275-4284-9A44-44988A6F0C24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evaluation", "applications\evaluation\Evaluation.csproj", "{432AC1B4-8275-4284-9A44-44988A6F0C24}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Anthropic", "extensions\Anthropic\Anthropic.csproj", "{A0C81A29-715F-463E-A243-7E45DB8AE53F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anthropic", "extensions\Anthropic\Anthropic.csproj", "{A0C81A29-715F-463E-A243-7E45DB8AE53F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "110-dotnet-anthropic", "examples\110-dotnet-anthropic\110-dotnet-anthropic.csproj", "{EE0D8645-2770-4E12-8E18-019B30970FE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "110-dotnet-anthropic", "examples\110-dotnet-anthropic\110-dotnet-anthropic.csproj", "{EE0D8645-2770-4E12-8E18-019B30970FE6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "302-dotnet-sk-km-chat", "examples\302-dotnet-sk-km-chat\302-dotnet-sk-km-chat.csproj", "{37FA99CB-AD22-4BAC-B76F-961F84422DEE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "302-dotnet-sk-km-chat", "examples\302-dotnet-sk-km-chat\302-dotnet-sk-km-chat.csproj", "{37FA99CB-AD22-4BAC-B76F-961F84422DEE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "401-evaluation", "examples\401-evaluation\401-evaluation.csproj", "{D1308C73-79B6-4635-B50D-420742D09C20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "401-evaluation", "examples\401-evaluation\401-evaluation.csproj", "{D1308C73-79B6-4635-B50D-420742D09C20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evaluation.FunctionalTests", "applications\tests\Evaluation.Tests\Evaluation.FunctionalTests.csproj", "{C746CE00-8BAE-4B46-A757-FE85D68747CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Evaluation.FunctionalTests", "applications\tests\Evaluation.Tests\Evaluation.FunctionalTests.csproj", "{C746CE00-8BAE-4B46-A757-FE85D68747CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "209-dotnet-using-context-overrides", "examples\209-dotnet-using-context-overrides\209-dotnet-using-context-overrides.csproj", "{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "209-dotnet-using-context-overrides", "examples\209-dotnet-using-context-overrides\209-dotnet-using-context-overrides.csproj", "{06A507C7-46B9-4D36-B88B-B4E4A0E8C0AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "210-KM-without-builder", "examples\210-KM-without-builder\210-KM-without-builder.csproj", "{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "210-KM-without-builder", "examples\210-KM-without-builder\210-KM-without-builder.csproj", "{00A3DDF3-2230-4AEC-8B5B-B75F958D194B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "S3", "extensions\AWS\S3\S3.csproj", "{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3", "extensions\AWS\S3\S3.csproj", "{5A14582B-C6D0-459E-BBB8-EA46CE8DC52E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure", "azure", "{795CD089-05A9-4800-B6FF-3243CAD7D41B}"
 	ProjectSection(SolutionItems) = preProject
@@ -315,15 +317,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "how-to", "how-to", "{6B992E
 		docs\how-to\multitenancy.md = docs\how-to\multitenancy.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "211-dotnet-WebClient-Intent-Detection", "examples\211-dotnet-WebClient-Intent-Detection\211-dotnet-WebClient-Intent-Detection.csproj", "{84AEC1DD-CBAE-400A-949C-91BA373C587D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "211-dotnet-WebClient-Intent-Detection", "examples\211-dotnet-WebClient-Intent-Detection\211-dotnet-WebClient-Intent-Detection.csproj", "{84AEC1DD-CBAE-400A-949C-91BA373C587D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "212-dotnet-ollama", "examples\212-dotnet-ollama\212-dotnet-ollama.csproj", "{B303885D-F64F-4EEB-B085-0014E863AF61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "212-dotnet-ollama", "examples\212-dotnet-ollama\212-dotnet-ollama.csproj", "{B303885D-F64F-4EEB-B085-0014E863AF61}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ollama", "extensions\Ollama\Ollama\Ollama.csproj", "{F192513B-265B-4943-A2A9-44E23B15BA18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ollama", "extensions\Ollama\Ollama\Ollama.csproj", "{F192513B-265B-4943-A2A9-44E23B15BA18}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{70DBBE75-3896-4890-AADE-224ECC7DF653}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{7BBD348E-CDD9-4462-B8C9-47613C5EC682}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{255CF5A9-CCD4-4D71-89E7-47691981C880}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -593,13 +595,13 @@ Global
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70DBBE75-3896-4890-AADE-224ECC7DF653}.Release|Any CPU.Build.0 = Release|Any CPU
-		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{255CF5A9-CCD4-4D71-89E7-47691981C880}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -694,8 +696,8 @@ Global
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{B303885D-F64F-4EEB-B085-0014E863AF61} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{F192513B-265B-4943-A2A9-44E23B15BA18} = {155DA079-E267-49AF-973A-D1D44681970F}
-		{70DBBE75-3896-4890-AADE-224ECC7DF653} = {155DA079-E267-49AF-973A-D1D44681970F}
-		{255CF5A9-CCD4-4D71-89E7-47691981C880} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
