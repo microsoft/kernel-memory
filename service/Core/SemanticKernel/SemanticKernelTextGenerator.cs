@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory.SemanticKernel;
 
-internal sealed class SemanticKernelTextGenerator : ITextGenerator
+public sealed class SemanticKernelTextGenerator : ITextGenerator
 {
     private readonly ITextGenerationService _service;
     private readonly ITextTokenizer _tokenizer;
@@ -45,8 +45,8 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                nameof(GPT4oTokenizer));
+            textTokenizer = new GPT4oTokenizer();
         }
 
         this._tokenizer = textTokenizer;

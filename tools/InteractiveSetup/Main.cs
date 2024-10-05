@@ -46,7 +46,7 @@ public static class Main
             // Embedding generation
             EmbeddingGeneratorSetup(ctx);
             AzureOpenAIEmbedding.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
 
             // Memory DB
             MemoryDbTypeSetup(ctx);
@@ -60,8 +60,9 @@ public static class Main
             // Text generation
             TextGeneratorTypeSetup(ctx);
             AzureOpenAIText.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
             LlamaSharp.Setup(ctx);
+            Ollama.Setup(ctx);
 
             Logger.Setup();
 
@@ -120,7 +121,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    OpenAI.Setup(ctx, true);
+                    Services.OpenAI.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
@@ -153,26 +154,27 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When importing data, generate embeddings, or let the memory Db class take care of it?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Yes, generate embeddings", config.DataIngestion.EmbeddingGenerationEnabled, () =>
                 {
                     AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = true);
                     ctx.CfgEmbeddingGenerationEnabled.Value = true;
                 }),
+
                 new("No, my memory Db class/engine takes care of it", !config.DataIngestion.EmbeddingGenerationEnabled, () =>
                 {
                     AppSettings.Change(x => x.DataIngestion.EmbeddingGenerationEnabled = false);
                     ctx.CfgEmbeddingGenerationEnabled.Value = false;
                 })
-            }
+            ]
         });
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When searching for text and/or answers, which embedding generator should be used for vector search?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Azure OpenAI embedding model", config.Retrieval.EmbeddingGeneratorType == "AzureOpenAIEmbedding", () =>
                 {
                     AppSettings.Change(x =>
@@ -184,6 +186,7 @@ public static class Main
                     });
                     ctx.CfgAzureOpenAIEmbedding.Value = true;
                 }),
+
                 new("OpenAI embedding model", config.Retrieval.EmbeddingGeneratorType == "OpenAI", () =>
                 {
                     AppSettings.Change(x =>
@@ -195,6 +198,19 @@ public static class Main
                     });
                     ctx.CfgOpenAI.Value = true;
                 }),
+
+                new("Ollama service", config.Retrieval.EmbeddingGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "Ollama";
+                        x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
+                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
+                            : new List<string> { };
+                    });
+                    ctx.CfgOllama.Value = true;
+                }),
+
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
                 {
                     AppSettings.Change(x =>
@@ -203,8 +219,9 @@ public static class Main
                         x.DataIngestion.EmbeddingGeneratorTypes = new List<string>();
                     });
                 }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 
@@ -215,29 +232,39 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When generating answers and synthetic data, which LLM text generator should be used?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Azure OpenAI text/chat model", config.TextGeneratorType == "AzureOpenAIText", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "AzureOpenAIText"; });
                     ctx.CfgAzureOpenAIText.Value = true;
                 }),
+
                 new("OpenAI text/chat model", config.TextGeneratorType == "OpenAI", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "OpenAI"; });
                     ctx.CfgOpenAI.Value = true;
                 }),
-                new("LLama model", config.TextGeneratorType == "LlamaSharp", () =>
+
+                new("Ollama service", config.TextGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = "Ollama"; });
+                    ctx.CfgOllama.Value = true;
+                }),
+
+                new("LlamaSharp library", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
                     ctx.CfgLlamaSharp.Value = true;
                 }),
+
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.TextGeneratorType), () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = ""; });
                 }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 
@@ -248,19 +275,21 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Which service should be used to extract text from images?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("None", config.DataIngestion.ImageOcrType == "None", () =>
                 {
                     AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "None"; });
                 }),
+
                 new("Azure AI Document Intelligence", config.DataIngestion.ImageOcrType == "AzureAIDocIntel", () =>
                 {
                     AppSettings.Change(x => { x.DataIngestion.ImageOcrType = "AzureAIDocIntel"; });
                     ctx.CfgAzureAIDocIntel.Value = true;
                 }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 
@@ -274,8 +303,8 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Which queue service will be used?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Azure Queue",
                     config.DataIngestion.DistributedOrchestration.QueueType == "AzureQueues",
                     () =>
@@ -283,6 +312,7 @@ public static class Main
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "AzureQueues"; });
                         ctx.CfgAzureQueue.Value = true;
                     }),
+
                 new("RabbitMQ",
                     config.DataIngestion.DistributedOrchestration.QueueType == "RabbitMQ",
                     () =>
@@ -290,6 +320,7 @@ public static class Main
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "RabbitMQ"; });
                         ctx.CfgRabbitMq.Value = true;
                     }),
+
                 new("SimpleQueues (only for tests, data stored in memory or disk, see config file)",
                     config.DataIngestion.DistributedOrchestration.QueueType == "SimpleQueues",
                     () =>
@@ -297,8 +328,9 @@ public static class Main
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
                         ctx.CfgSimpleQueues.Value = true;
                     }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 
@@ -311,8 +343,8 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Where should the service store files? A persistent storage is required to handle updates, downloads, etc.",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Azure Blobs",
                     config.DocumentStorageType == "AzureBlobs",
                     () =>
@@ -320,6 +352,7 @@ public static class Main
                         AppSettings.Change(x => { x.DocumentStorageType = "AzureBlobs"; });
                         ctx.CfgAzureBlobs.Value = true;
                     }),
+
                 new("AWS S3",
                     config.DocumentStorageType == "AWSS3",
                     () =>
@@ -327,6 +360,7 @@ public static class Main
                         AppSettings.Change(x => { x.DocumentStorageType = "AWSS3"; });
                         ctx.CfgAWSS3.Value = true;
                     }),
+
                 new("MongoDB Atlas",
                     config.DocumentStorageType == "MongoDbAtlas",
                     () =>
@@ -334,6 +368,7 @@ public static class Main
                         AppSettings.Change(x => { x.DocumentStorageType = "MongoDbAtlas"; });
                         ctx.CfgMongoDbAtlasDocumentStorage.Value = true;
                     }),
+
                 new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)",
                     config.DocumentStorageType == "SimpleFileStorage",
                     () =>
@@ -341,8 +376,9 @@ public static class Main
                         AppSettings.Change(x => { x.DocumentStorageType = "SimpleFileStorage"; });
                         ctx.CfgSimpleFileStorage.Value = true;
                     }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 
@@ -353,8 +389,8 @@ public static class Main
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "When searching for answers, which memory DB service contains the records to search?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Azure AI Search",
                     config.Retrieval.MemoryDbType == "AzureAISearch",
                     () =>
@@ -366,6 +402,7 @@ public static class Main
                         });
                         ctx.CfgAzureAISearch.Value = true;
                     }),
+
                 new("Postgres",
                     config.Retrieval.MemoryDbType == "Postgres",
                     () =>
@@ -377,6 +414,7 @@ public static class Main
                         });
                         ctx.CfgPostgres.Value = true;
                     }),
+
                 new("MongoDB Atlas",
                     config.Retrieval.MemoryDbType == "MongoDbAtlas",
                     () =>
@@ -388,6 +426,7 @@ public static class Main
                         });
                         ctx.CfgMongoDbAtlasMemory.Value = true;
                     }),
+
                 new("Redis",
                     config.Retrieval.MemoryDbType == "Redis",
                     () =>
@@ -399,6 +438,7 @@ public static class Main
                         });
                         ctx.CfgRedis.Value = true;
                     }),
+
                 new("Qdrant",
                     config.Retrieval.MemoryDbType == "Qdrant",
                     () =>
@@ -410,6 +450,7 @@ public static class Main
                         });
                         ctx.CfgQdrant.Value = true;
                     }),
+
                 new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)",
                     config.Retrieval.MemoryDbType == "SimpleVectorDb",
                     () =>
@@ -421,6 +462,7 @@ public static class Main
                         });
                         ctx.CfgSimpleVectorDb.Value = true;
                     }),
+
                 new("None/Custom (manually set in code)",
                     string.IsNullOrEmpty(config.Retrieval.MemoryDbType),
                     () =>
@@ -431,8 +473,9 @@ public static class Main
                             x.DataIngestion.MemoryDbTypes = new List<string>();
                         });
                     }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 }

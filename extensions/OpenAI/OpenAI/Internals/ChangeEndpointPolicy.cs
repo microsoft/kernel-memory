@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Core;
-using Azure.Core.Pipeline;
 
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI.OpenAI.Internals;
 
-internal sealed class ChangeEndpointPolicy : HttpPipelinePolicy
+internal sealed class ChangeEndpointPolicy : PipelinePolicy
 {
     internal const string DefaultEndpoint = "https://api.openai.com/v1";
     private readonly string _endpoint;
@@ -17,15 +17,19 @@ internal sealed class ChangeEndpointPolicy : HttpPipelinePolicy
         this._endpoint = endpoint.TrimEnd('/');
     }
 
-    public override ValueTask ProcessAsync(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
+    public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
-        var uri = message.Request.Uri.ToString().Replace(DefaultEndpoint, this._endpoint, StringComparison.OrdinalIgnoreCase);
-        message.Request.Uri.Reset(new Uri(uri));
-        return ProcessNextAsync(message, pipeline);
+        ProcessNext(message, pipeline, currentIndex);
     }
 
-    public override void Process(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
+    public override ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
-        ProcessNext(message, pipeline);
+        if (message.Request.Uri != null)
+        {
+            var uri = message.Request.Uri.ToString().Replace(DefaultEndpoint, this._endpoint, StringComparison.OrdinalIgnoreCase);
+            message.Request.Uri = new Uri(uri);
+        }
+
+        return ProcessNextAsync(message, pipeline, currentIndex);
     }
 }

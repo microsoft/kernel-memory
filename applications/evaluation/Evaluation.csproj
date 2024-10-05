@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <AssemblyName>Microsoft.KernelMemory.Evaluation</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Evaluation</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1574;NU5104;SKEXP0001;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CA1711;CS1574;NU5104;SKEXP0001;CS8002;SKEXP0010;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>

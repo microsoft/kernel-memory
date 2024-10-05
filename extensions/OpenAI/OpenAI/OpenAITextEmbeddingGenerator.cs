@@ -6,12 +6,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using OpenAI;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
@@ -22,10 +22,35 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 [Experimental("KMEXP01")]
 public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {
-    private readonly ITextEmbeddingGenerationService _client = null!;
+    private readonly ITextEmbeddingGenerationService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextEmbeddingGenerator> _log;
-    private readonly string _model;
+
+    /// <inheritdoc/>
+    public int MaxTokens { get; }
+
+    /// <inheritdoc/>
+    public int MaxBatchSize { get; }
+
+    /// <summary>
+    /// Create a new instance.
+    /// </summary>
+    /// <param name="config">Client and model configuration</param>
+    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
+    /// <param name="loggerFactory">App logger factory</param>
+    /// <param name="httpClient">Optional HTTP client with custom settings</param>
+    public OpenAITextEmbeddingGenerator(
+        OpenAIConfig config,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null,
+        HttpClient? httpClient = null)
+        : this(
+            config,
+            OpenAIClientBuilder.Build(config, httpClient, loggerFactory),
+            textTokenizer,
+            loggerFactory)
+    {
+    }
 
     /// <summary>
     /// Create a new instance, using the given OpenAI pre-configured client.
@@ -39,13 +64,13 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         OpenAIConfig config,
         OpenAIClient openAIClient,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null) : this(config, textTokenizer, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
+        : this(
+            config,
+            SkClientBuilder.BuildEmbeddingClient(config.EmbeddingModel, openAIClient, config.EmbeddingDimensions, loggerFactory),
+            textTokenizer,
+            loggerFactory)
     {
-        this._client = new OpenAITextEmbeddingGenerationService(
-            modelId: config.EmbeddingModel,
-            openAIClient: openAIClient,
-            dimensions: config.EmbeddingDimensions,
-            loggerFactory: loggerFactory);
     }
 
     /// <summary>
@@ -60,36 +85,23 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         OpenAIConfig config,
         ITextEmbeddingGenerationService skService,
         ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null) : this(config, textTokenizer, loggerFactory)
+        ILoggerFactory? loggerFactory = null)
     {
         this._client = skService;
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
+        this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
+        this.MaxBatchSize = config.MaxEmbeddingBatchSize;
+
+        if (textTokenizer == null)
+        {
+            this._log.LogWarning(
+                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
+                nameof(GPT4oTokenizer));
+            textTokenizer = new GPT4oTokenizer();
+        }
+
+        this._textTokenizer = textTokenizer;
     }
-
-    /// <summary>
-    /// Create new instance.
-    /// </summary>
-    /// <param name="config">Endpoint and model configuration</param>
-    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
-    /// <param name="loggerFactory">App logger factory</param>
-    /// <param name="httpClient">Optional HTTP client with custom settings</param>
-    public OpenAITextEmbeddingGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null,
-        HttpClient? httpClient = null) : this(config, textTokenizer, loggerFactory)
-    {
-        this._client = new OpenAITextEmbeddingGenerationService(
-            modelId: config.EmbeddingModel,
-            openAIClient: OpenAIClientBuilder.BuildOpenAIClient(config, httpClient),
-            loggerFactory: loggerFactory,
-            dimensions: config.EmbeddingDimensions);
-    }
-
-    /// <inheritdoc/>
-    public int MaxTokens { get; }
-
-    /// <inheritdoc/>
-    public int MaxBatchSize { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
@@ -106,7 +118,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     /// <inheritdoc/>
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Generating embedding, model '{0}'", this._model);
+        this._log.LogTrace("Generating embedding");
         return this._client.GenerateEmbeddingAsync(text, cancellationToken);
     }
 
@@ -114,36 +126,8 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     public async Task<Embedding[]> GenerateEmbeddingBatchAsync(IEnumerable<string> textList, CancellationToken cancellationToken = default)
     {
         var list = textList.ToList();
-        this._log.LogTrace("Generating embeddings, model '{0}', batch size '{1}'", this._model, list.Count);
+        this._log.LogTrace("Generating embeddings, batch size '{0}'", list.Count);
         var embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
         return embeddings.Select(e => new Embedding(e)).ToArray();
-    }
-
-    /// <summary>
-    /// Internal common constructor code
-    /// </summary>
-    /// <param name="config">Endpoint and model configuration</param>
-    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
-    /// <param name="loggerFactory">App logger factory</param>
-    private OpenAITextEmbeddingGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
-        ILoggerFactory? loggerFactory = null)
-    {
-        this._model = config.EmbeddingModel;
-        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextEmbeddingGenerator>();
-
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
-
-        this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
-        this.MaxBatchSize = config.MaxEmbeddingBatchSize;
     }
 }

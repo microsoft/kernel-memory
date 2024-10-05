@@ -1,19 +1,19 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.ML.Tokenizers;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
 /// <summary>
 /// TikToken GPT3 tokenizer (p50k_base.tiktoken)
 /// </summary>
-[Experimental("KMEXP01")]
 public sealed class GPT3Tokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = Tokenizer.CreateTiktokenForModel("text-davinci-003");
+    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("text-davinci-003");
 
     /// <inheritdoc />
     public int CountTokens(string text)
@@ -24,6 +24,6 @@ public sealed class GPT3Tokenizer : ITextTokenizer
     /// <inheritdoc />
     public IReadOnlyList<string> GetTokens(string text)
     {
-        return s_tokenizer.Encode(text).Tokens;
+        return s_tokenizer.EncodeToTokens(text, out string? _).Select(t => t.Value).ToList();
     }
 }

@@ -1,105 +1,98 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
-using Azure;
 using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
-using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
 [Experimental("KMEXP01")]
 public sealed class AzureOpenAITextGenerator : ITextGenerator
 {
+    private readonly AzureOpenAIChatCompletionService _client;
     private readonly ITextTokenizer _textTokenizer;
-    private readonly OpenAIClient _client;
     private readonly ILogger<AzureOpenAITextGenerator> _log;
-    private readonly bool _useTextCompletionProtocol;
-    private readonly string _deployment;
 
+    /// <inheritdoc/>
+    public int MaxTokenTotal { get; }
+
+    /// <summary>
+    /// Create a new instance.
+    /// </summary>
+    /// <param name="config">Client and service configuration</param>
+    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
+    /// <param name="loggerFactory">App logger factory</param>
+    /// <param name="httpClient">Optional HTTP client with custom settings</param>
     public AzureOpenAITextGenerator(
         AzureOpenAIConfig config,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
+        : this(
+            config,
+            AzureOpenAIClientBuilder.Build(config, httpClient, loggerFactory),
+            textTokenizer,
+            loggerFactory)
     {
+    }
+
+    /// <summary>
+    /// Create a new instance.
+    /// </summary>
+    /// <param name="config">Client and service configuration</param>
+    /// <param name="azureClient">Azure OpenAI client with custom settings</param>
+    /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
+    /// <param name="loggerFactory">App logger factory</param>
+    public AzureOpenAITextGenerator(
+        AzureOpenAIConfig config,
+        AzureOpenAIClient azureClient,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null)
+        : this(
+            config,
+            SkClientBuilder.BuildChatClient(config.Deployment, azureClient, loggerFactory),
+            textTokenizer,
+            loggerFactory)
+    {
+    }
+
+    /// <summary>
+    /// Create a new instance.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <param name="skClient"></param>
+    /// <param name="textTokenizer"></param>
+    /// <param name="loggerFactory"></param>
+    /// <exception cref="ConfigurationException"></exception>
+    public AzureOpenAITextGenerator(
+        AzureOpenAIConfig config,
+        AzureOpenAIChatCompletionService skClient,
+        ITextTokenizer? textTokenizer = null,
+        ILoggerFactory? loggerFactory = null)
+    {
+        this._client = skClient;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureOpenAITextGenerator>();
+        this.MaxTokenTotal = config.MaxTokenTotal;
 
         if (textTokenizer == null)
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                nameof(GPT4oTokenizer));
+            textTokenizer = new GPT4oTokenizer();
         }
 
         this._textTokenizer = textTokenizer;
-
-        if (string.IsNullOrEmpty(config.Endpoint))
-        {
-            throw new ConfigurationException($"Azure OpenAI: {config.Endpoint} is empty");
-        }
-
-        if (string.IsNullOrEmpty(config.Deployment))
-        {
-            throw new ConfigurationException($"Azure OpenAI: {config.Deployment} is empty");
-        }
-
-        this._useTextCompletionProtocol = config.APIType == AzureOpenAIConfig.APITypes.TextCompletion;
-        this._deployment = config.Deployment;
-        this.MaxTokenTotal = config.MaxTokenTotal;
-
-        OpenAIClientOptions options = new()
-        {
-            RetryPolicy = new RetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), new SequentialDelayStrategy()),
-            Diagnostics =
-            {
-                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
-                ApplicationId = Telemetry.HttpUserAgent,
-            }
-        };
-
-        if (httpClient is not null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
-
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new DefaultAzureCredential(), options);
-                break;
-
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                this._client = new OpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
-                break;
-
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                if (string.IsNullOrEmpty(config.APIKey))
-                {
-                    throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
-                }
-
-                this._client = new OpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
-                break;
-
-            default:
-                throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
-        }
     }
-
-    /// <inheritdoc/>
-    public int MaxTokenTotal { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
@@ -119,72 +112,34 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (this._useTextCompletionProtocol)
+        var skOptions = new AzureOpenAIPromptExecutionSettings
         {
-            this._log.LogTrace("Sending text generation request, deployment '{0}'", this._deployment);
+            MaxTokens = options.MaxTokens,
+            Temperature = options.Temperature,
+            FrequencyPenalty = options.FrequencyPenalty,
+            PresencePenalty = options.PresencePenalty,
+            TopP = options.NucleusSampling
+        };
 
-            var openaiOptions = new CompletionsOptions
-            {
-                DeploymentName = this._deployment,
-                MaxTokens = options.MaxTokens,
-                Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
-                FrequencyPenalty = (float)options.FrequencyPenalty,
-                PresencePenalty = (float)options.PresencePenalty,
-                ChoicesPerPrompt = 1,
-            };
-
-            if (options.StopSequences is { Count: > 0 })
-            {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
-            }
-
-            if (options.TokenSelectionBiases is { Count: > 0 })
-            {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
-            }
-
-            StreamingResponse<Completions>? response = await this._client.GetCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (Completions? completions in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                foreach (Choice? choice in completions.Choices)
-                {
-                    yield return choice.Text;
-                }
-            }
+        if (options.StopSequences is { Count: > 0 })
+        {
+            skOptions.StopSequences = new List<string>();
+            foreach (var s in options.StopSequences) { skOptions.StopSequences.Add(s); }
         }
-        else
+
+        if (options.TokenSelectionBiases is { Count: > 0 })
         {
-            this._log.LogTrace("Sending chat message generation request, deployment '{0}'", this._deployment);
+            skOptions.TokenSelectionBiases = new Dictionary<int, int>();
+            foreach (var (token, bias) in options.TokenSelectionBiases) { skOptions.TokenSelectionBiases.Add(token, (int)bias); }
+        }
 
-            var openaiOptions = new ChatCompletionsOptions
-            {
-                DeploymentName = this._deployment,
-                MaxTokens = options.MaxTokens,
-                Temperature = (float)options.Temperature,
-                NucleusSamplingFactor = (float)options.NucleusSampling,
-                FrequencyPenalty = (float)options.FrequencyPenalty,
-                PresencePenalty = (float)options.PresencePenalty,
-                // ChoiceCount = 1,
-            };
+        this._log.LogTrace("Sending chat message generation request");
+        IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
+        await foreach (StreamingTextContent x in result)
+        {
+            if (x.Text == null) { continue; }
 
-            if (options.StopSequences is { Count: > 0 })
-            {
-                foreach (var s in options.StopSequences) { openaiOptions.StopSequences.Add(s); }
-            }
-
-            if (options.TokenSelectionBiases is { Count: > 0 })
-            {
-                foreach (var (token, bias) in options.TokenSelectionBiases) { openaiOptions.TokenSelectionBiases.Add(token, (int)bias); }
-            }
-
-            openaiOptions.Messages.Add(new ChatRequestSystemMessage(prompt));
-
-            StreamingResponse<StreamingChatCompletionsUpdate>? response = await this._client.GetChatCompletionsStreamingAsync(openaiOptions, cancellationToken).ConfigureAwait(false);
-            await foreach (StreamingChatCompletionsUpdate? update in response.EnumerateValues().WithCancellation(cancellationToken).ConfigureAwait(false))
-            {
-                yield return update.ContentUpdate;
-            }
+            yield return x.Text;
         }
     }
 }
