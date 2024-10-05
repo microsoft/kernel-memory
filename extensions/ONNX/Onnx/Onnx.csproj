@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.Onnx</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.Onnx</RootNamespace>
@@ -25,7 +23,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" />
-        <PackageReference Include="Microsoft.SemanticKernel" />
     </ItemGroup>
 
     <ItemGroup>

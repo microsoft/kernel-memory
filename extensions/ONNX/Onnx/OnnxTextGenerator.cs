@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
@@ -11,7 +17,7 @@ using static Microsoft.KernelMemory.OnnxConfig;
 namespace Microsoft.KernelMemory.AI.Onnx;
 
 /// <summary>
-/// Text generator based on Onnx models, via OnnxRuntimeGenAi
+/// Text generator based on ONNX models, via OnnxRuntimeGenAi
 /// See https://github.com/microsoft/onnxruntime-genai
 /// </summary>
 [Experimental("KMEXP01")]
@@ -67,8 +73,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 
         var modelDir = Path.GetFullPath(config.TextModelDir);
         var modelFile = Directory.GetFiles(modelDir)
-            .Where(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault();
+            .FirstOrDefault(file => string.Equals(Path.GetExtension(file), ".ONNX", StringComparison.OrdinalIgnoreCase));
 
         this._log.LogDebug("Loading Onnx model: {1} from directory {0}", modelDir, Path.GetFileNameWithoutExtension(modelFile));
         this._model = new Model(config.TextModelDir);
@@ -181,19 +186,5 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     {
         this._model?.Dispose();
         this._tokenizer?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!disposing) { return; }
-
-        this._model?.Dispose();
-        this._tokenizer?.Dispose();
-    }
-
-    ~OnnxTextGenerator()
-    {
-        this.Dispose(false);
     }
 }

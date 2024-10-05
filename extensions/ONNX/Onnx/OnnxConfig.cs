@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.IO;
+using System.Linq;
+
 #pragma warning disable IDE0130 // reduce number of "using" statements
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -8,6 +12,34 @@ namespace Microsoft.KernelMemory;
 
 public class OnnxConfig
 {
+    /// <summary>
+    /// An enum representing the possible text generation search types used by OnnxTextGenerator.
+    /// See https://onnxruntime.ai/docs/genai/reference/config.html#search-combinations for more details.
+    /// </summary>
+    public enum OnnxSearchType
+    {
+        /// <summary>
+        /// A decoding algorithm that keeps track of the top K sequences at each step. It explores
+        /// multiple paths simultaneously, balancing exploration and exploitation. Often results in more
+        /// coherent and higher quality text generation than Greedy Search would.
+        /// </summary>
+        BeamSearch,
+
+        /// <summary>
+        /// The default and simplest decoding algorithm. At each step, a token is selected with the highest
+        /// probability as the next word in the sequence.
+        /// </summary>
+        GreedySearch,
+
+        /// <summary>
+        /// Combined Top-P (Nucleus) and Top-K Sampling: A decoding algorithm that samples from the top k tokens
+        /// with the highest probabilities, while also considering the smallest set of tokens whose cumulative
+        /// probability exceeds a threshold p. This approach dynamically balances diversity and coherence in
+        /// text generation by adjusting the sampling pool based on both fixed and cumulative probability criteria.
+        /// </summary>
+        TopN
+    }
+
     /// <summary>
     /// Path to the directory containing the .ONNX file for Text Generation.
     /// </summary>
@@ -88,7 +120,7 @@ public class OnnxConfig
                 throw new ConfigurationException($"Onnx: {this.TextModelDir} does not exist.");
             }
 
-            if (Directory.GetFiles(modelDir) == null)
+            if (Directory.GetFiles(modelDir).Length == 0)
             {
                 throw new ConfigurationException($"Onnx: {this.TextModelDir} is an empty directory.");
             }
@@ -135,33 +167,5 @@ public class OnnxConfig
                 throw new ConfigurationException($"Onnx: {nameof(this.EarlyStopping)} is only used with Beam Search. Change {nameof(this.EarlyStopping)} to false, or change {nameof(this.SearchType)} to BeamSearch.");
             }
         }
-    }
-
-    /// <summary>
-    /// An enum representing the possible text generation search types used by OnnxTextGenerator.
-    /// See https://onnxruntime.ai/docs/genai/reference/config.html#search-combinations for more details.
-    /// </summary>
-    public enum OnnxSearchType
-    {
-        /// <summary>
-        /// A decoding algorithm that keeps track of the top K sequences at each step. It explores
-        /// multiple paths simultaneously, balancing exploration and exploitation. Often results in more
-        /// coherent and higher quality text generation than Greedy Search would.
-        /// </summary>
-        BeamSearch,
-
-        /// <summary>
-        /// The default and simplest decoding algorithm. At each step, a token is selected with the highest
-        /// probability as the next word in the sequence.
-        /// </summary>
-        GreedySearch,
-
-        /// <summary>
-        /// Combined Top-P (Nucleus) and Top-K Sampling: A decoding algorithm that samples from the top k tokens
-        /// with the highest probabilities, while also considering the smallest set of tokens whose cumulative
-        /// probability exceeds a threshold p. This approach dynamically balances diversity and coherence in
-        /// text generation by adjusting the sampling pool based on both fixed and cumulative probability criteria.
-        /// </summary>
-        TopN
     }
 }
