@@ -7,6 +7,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-19E2-46EB-B000-513EE2F65769}"
 	ProjectSection(SolutionItems) = preProject
 		docs\404.html = docs\404.html
+		docs\azure.md = docs\azure.md
 		docs\concepts.md = docs\concepts.md
 		docs\csharp.png = docs\csharp.png
 		docs\extensions.md = docs\extensions.md
@@ -31,7 +32,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7BA7F1B2-1
 		docs\service.md = docs\service.md
 		docs\_config.local.yml = docs\_config.local.yml
 		docs\_config.yml = docs\_config.yml
-		docs\azure.md = docs\azure.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{0A43C65C-6007-4BB4-B3FE-8D439FC91841}"
@@ -70,18 +70,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		azure.yaml = azure.yaml
 		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		COMMUNITY.md = COMMUNITY.md
 		CONTRIBUTING.md = CONTRIBUTING.md
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		Dockerfile = Dockerfile
+		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
 		LICENSE = LICENSE
 		nuget.config = nuget.config
 		README.md = README.md
 		SECURITY.md = SECURITY.md
-		KernelMemory.sln.DotSettings = KernelMemory.sln.DotSettings
-		azure.yaml = azure.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"
@@ -94,10 +94,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{48E79819-1E9E-4075-90DA-BAEC761C89B2}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\docker-build-push.yml = .github\workflows\docker-build-push.yml
+		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
+		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
 		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
 		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
-		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
-		.github\workflows\dotnet-build.yml = .github\workflows\dotnet-build.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
@@ -116,9 +116,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-qdrant.sh = tools\run-qdrant.sh
 		tools\run-rabbitmq.sh = tools\run-rabbitmq.sh
 		tools\run-redis.sh = tools\run-redis.sh
+		tools\run-s3ninja.sh = tools\run-s3ninja.sh
 		tools\search.sh = tools\search.sh
 		tools\upload-file.sh = tools\upload-file.sh
-		tools\run-s3ninja.sh = tools\run-s3ninja.sh
 		tools\dockerize-amd64.sh = tools\dockerize-amd64.sh
 		tools\dockerize-arm64.sh = tools\dockerize-arm64.sh
 	EndProjectSection
@@ -243,12 +243,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "109-dotnet-custom-webscrape
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{B488168B-AD86-4CC5-9D89-324B6EB743D9}"
 	ProjectSection(SolutionItems) = preProject
+		infra\AZD.md = infra\AZD.md
 		infra\build-main.json.sh = infra\build-main.json.sh
 		infra\main.bicep = infra\main.bicep
 		infra\main.json = infra\main.json
-		infra\README.md = infra\README.md
-		infra\AZD.md = infra\AZD.md
 		infra\main.parameters.json = infra\main.parameters.json
+		infra\README.md = infra\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{C2D3A947-B6F9-4306-BD42-21D8D1F42750}"
@@ -322,6 +322,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "212-dotnet-ollama", "examples\212-dotnet-ollama\212-dotnet-ollama.csproj", "{B303885D-F64F-4EEB-B085-0014E863AF61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ollama", "extensions\Ollama\Ollama\Ollama.csproj", "{F192513B-265B-4943-A2A9-44E23B15BA18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{7BBD348E-CDD9-4462-B8C9-47613C5EC682}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -591,6 +595,13 @@ Global
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F192513B-265B-4943-A2A9-44E23B15BA18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -685,6 +696,8 @@ Global
 		{84AEC1DD-CBAE-400A-949C-91BA373C587D} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{B303885D-F64F-4EEB-B085-0014E863AF61} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{F192513B-265B-4943-A2A9-44E23B15BA18} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{7BBD348E-CDD9-4462-B8C9-47613C5EC682} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
