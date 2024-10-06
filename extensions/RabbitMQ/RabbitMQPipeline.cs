@@ -61,21 +61,29 @@ public sealed class RabbitMQPipeline : IQueue
     }
 
     /// <inheritdoc />
+    /// About dead letters, see https://www.rabbitmq.com/docs/dlx
     public Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
+        ArgumentExceptionEx.ThrowIf(queueName.StartsWith("amq.", StringComparison.OrdinalIgnoreCase), nameof(queueName), "The queue name cannot start with 'amq.'");
+
+        var poisonExchangeName = $"{this._queueName}.dlx";
+        var poisonQueueName = $"{this._queueName}{this._config.PoisonQueueSuffix}";
+
+        ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(queueName) > 255), nameof(queueName),
+            $"The queue name '{queueName}' is too long, max 255 UTF8 bytes allowed");
+        ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(poisonExchangeName) > 255), nameof(poisonExchangeName),
+            $"The exchange name '{poisonExchangeName}' is too long, max 255 UTF8 bytes allowed, try using a shorter queue name");
+        ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(poisonQueueName) > 255), nameof(poisonQueueName),
+            $"The dead letter queue name '{poisonQueueName}' is too long, max 255 UTF8 bytes allowed, try using a shorter queue name");
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
             throw new InvalidOperationException($"The client is already connected to `{this._queueName}`");
         }
 
+        // Define queue where messages are sent by the orchestrator
         this._queueName = queueName;
-
-        var poisonExchange = $"{this._queueName}.exchange";
-        this._channel.ExchangeDeclare(poisonExchange, "fanout");
-        this._log.LogTrace("Exchange {0} for dead-letter messages related to queue {1} ready", poisonExchange, this._queueName);
-
         try
         {
             this._channel.QueueDeclare(
@@ -87,16 +95,31 @@ public sealed class RabbitMQPipeline : IQueue
                 {
                     ["x-queue-type"] = "quorum",
                     ["x-delivery-limit"] = this._config.MaxRetriesBeforePoisonQueue,
-                    ["x-dead-letter-exchange"] = poisonExchange
+                    ["x-dead-letter-exchange"] = poisonExchangeName
                 });
+            this._log.LogTrace("Queue name: {0}", this._queueName);
         }
         catch (OperationInterruptedException ex) when (ex.Message.Contains("inequivalent arg 'x-delivery-limit'", StringComparison.InvariantCulture))
         {
-            this._log.LogError(ex, "The queue '{0}' already exists, it is not possible to change the 'x-delivery-limit' value to {1}", this._queueName, this._config.MaxRetriesBeforePoisonQueue);
-            throw new KernelMemoryException($"The queue '{this._queueName}' already exists, it is not possible to change the 'x-delivery-limit' value to {this._config.MaxRetriesBeforePoisonQueue}", ex);
+            this._log.LogError(ex, "The queue '{0}' already exists, it is not possible to change the 'x-delivery-limit' value to {1}",
+                this._queueName, this._config.MaxRetriesBeforePoisonQueue);
+            throw new KernelMemoryException(
+                $"The queue '{this._queueName}' already exists, it is not possible to change the 'x-delivery-limit' value to {this._config.MaxRetriesBeforePoisonQueue}", ex);
         }
 
-        this._log.LogTrace("Queue name: {0}", this._queueName);
+        // Define poison queue where failed messages are stored
+        this._poisonQueueName = poisonQueueName;
+        this._channel.QueueDeclare(
+            queue: this._poisonQueueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
+
+        // Define exchange to route failed messages to poison queue
+        this._channel.ExchangeDeclare(poisonExchangeName, "fanout", durable: true, autoDelete: false);
+        this._channel.QueueBind(this._poisonQueueName, poisonExchangeName, routingKey: string.Empty, arguments: null);
+        this._log.LogTrace("Poison queue name '{0}' bound to exchange '{1}' for queue '{2}'", this._poisonQueueName, poisonExchangeName, this._queueName);
 
         if (options.DequeueEnabled)
         {
@@ -106,18 +129,6 @@ public sealed class RabbitMQPipeline : IQueue
 
             this._log.LogTrace("Enabling dequeue on queue `{0}`", this._queueName);
         }
-
-        this._poisonQueueName = this._queueName + this._config.PoisonQueueSuffix;
-        this._channel.QueueDeclare(
-            queue: this._poisonQueueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null);
-
-        this._channel.QueueBind(this._poisonQueueName, poisonExchange, string.Empty, null);
-
-        this._log.LogTrace("Poison queue name: {0}", this._poisonQueueName);
 
         return Task.FromResult<IQueue>(this);
     }
@@ -165,6 +176,7 @@ public sealed class RabbitMQPipeline : IQueue
                 else
                 {
                     this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue", args.BasicProperties.MessageId);
+                    // Note: if "requeue == false" the message would be moved to the dead letter exchange
                     this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                 }
             }
@@ -179,6 +191,7 @@ public sealed class RabbitMQPipeline : IQueue
                 this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.BasicProperties.MessageId);
 
                 // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
+                // Note: if "requeue == false" the message would be moved to the dead letter exchange
                 this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
             }
 #pragma warning restore CA1031

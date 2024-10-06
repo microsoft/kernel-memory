@@ -28,6 +28,8 @@ public static partial class DependencyInjection
 {
     public static IServiceCollection AddRabbitMQOrchestration(this IServiceCollection services, RabbitMQConfig config)
     {
+        config.Validate();
+
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<RabbitMQPipeline>()
