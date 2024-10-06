@@ -223,7 +223,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qdrant.TestApplication", "e
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qdrant.FunctionalTests", "extensions\Qdrant\Qdrant.FunctionalTests\Qdrant.FunctionalTests.csproj", "{62B96766-AA6C-4CFF-A6FB-6370C89C2509}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitMQ", "extensions\RabbitMQ\RabbitMQ.csproj", "{E3877E49-958E-4DC8-B5E8-834010F5C4B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RabbitMQ", "extensions\RabbitMQ\RabbitMQ\RabbitMQ.csproj", "{E3877E49-958E-4DC8-B5E8-834010F5C4B7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenAI", "extensions\OpenAI\OpenAI\OpenAI.csproj", "{A6AE31A1-4F60-47B0-8534-7B083D68118C}"
 EndProject
@@ -326,6 +326,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx.FunctionalTests", "extensions\ONNX\Onnx.FunctionalTests\Onnx.FunctionalTests.csproj", "{7BBD348E-CDD9-4462-B8C9-47613C5EC682}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Onnx", "extensions\ONNX\Onnx\Onnx.csproj", "{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ.TestApplication", "extensions\RabbitMQ\RabbitMQ.TestApplication\RabbitMQ.TestApplication.csproj", "{82670921-FDCD-4672-84BD-4353F5AC24A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -602,6 +604,9 @@ Global
 		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82670921-FDCD-4672-84BD-4353F5AC24A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82670921-FDCD-4672-84BD-4353F5AC24A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82670921-FDCD-4672-84BD-4353F5AC24A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -698,6 +703,7 @@ Global
 		{F192513B-265B-4943-A2A9-44E23B15BA18} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{7BBD348E-CDD9-4462-B8C9-47613C5EC682} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{82670921-FDCD-4672-84BD-4353F5AC24A0} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

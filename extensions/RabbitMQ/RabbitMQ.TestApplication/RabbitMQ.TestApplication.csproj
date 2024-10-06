@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <AssemblyName>Microsoft.RabbitMQ.TestApplication</AssemblyName>
+        <RootNamespace>Microsoft.RabbitMQ.TestApplication</RootNamespace>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+    </ItemGroup>
+
+</Project>
