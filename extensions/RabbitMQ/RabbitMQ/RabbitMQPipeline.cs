@@ -42,6 +42,7 @@ public sealed class RabbitMQPipeline : IQueue
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         var factory = new ConnectionFactory
         {
+            ClientProvidedName = "KernelMemory",
             HostName = config.Host,
             Port = config.Port,
             UserName = config.Username,
