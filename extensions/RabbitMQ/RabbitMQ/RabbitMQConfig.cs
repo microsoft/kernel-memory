@@ -47,7 +47,10 @@ public class RabbitMQConfig
     public bool SslEnabled { get; set; } = false;
 
     /// <summary>
-    /// How many times to dequeue a messages and process before moving it to a poison queue.
+    /// How many times to retry processing a message before moving it to a poison queue.
+    /// Example: a value of 20 means that a message will be processed up to 21 times.
+    /// Note: this value cannot be changed after queues have been created. In such case
+    ///       you might need to drain all queues, delete them, and restart the ingestion service(s).
     /// </summary>
     public int MaxRetriesBeforePoisonQueue { get; set; } = 20;
 

@@ -67,8 +67,8 @@ public sealed class RabbitMQPipeline : IQueue
         ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
         ArgumentExceptionEx.ThrowIf(queueName.StartsWith("amq.", StringComparison.OrdinalIgnoreCase), nameof(queueName), "The queue name cannot start with 'amq.'");
 
-        var poisonExchangeName = $"{this._queueName}.dlx";
-        var poisonQueueName = $"{this._queueName}{this._config.PoisonQueueSuffix}";
+        var poisonExchangeName = $"{queueName}.dlx";
+        var poisonQueueName = $"{queueName}{this._config.PoisonQueueSuffix}";
 
         ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(queueName) > 255), nameof(queueName),
             $"The queue name '{queueName}' is too long, max 255 UTF8 bytes allowed");
@@ -99,13 +99,25 @@ public sealed class RabbitMQPipeline : IQueue
                 });
             this._log.LogTrace("Queue name: {0}", this._queueName);
         }
-        catch (OperationInterruptedException ex) when (ex.Message.Contains("inequivalent arg 'x-delivery-limit'", StringComparison.InvariantCulture))
+#pragma warning disable CA2254
+        catch (OperationInterruptedException ex)
         {
-            this._log.LogError(ex, "The queue '{0}' already exists, it is not possible to change the 'x-delivery-limit' value to {1}",
-                this._queueName, this._config.MaxRetriesBeforePoisonQueue);
-            throw new KernelMemoryException(
-                $"The queue '{this._queueName}' already exists, it is not possible to change the 'x-delivery-limit' value to {this._config.MaxRetriesBeforePoisonQueue}", ex);
+            var err = ex.Message;
+            if (ex.Message.Contains("inequivalent arg 'x-delivery-limit'", StringComparison.OrdinalIgnoreCase))
+            {
+                err = $"The queue '{this._queueName}' is already configured with a different value for 'x-delivery-limit' " +
+                      $"({nameof(this._config.MaxRetriesBeforePoisonQueue)}), the value cannot be changed to {this._config.MaxRetriesBeforePoisonQueue}";
+            }
+            else if (ex.Message.Contains("inequivalent arg 'x-dead-letter-exchange'", StringComparison.OrdinalIgnoreCase))
+            {
+                err = $"The queue '{this._queueName}' is already linked to a different dead letter exchange, " +
+                      $"it is not possible to change the 'x-dead-letter-exchange' value to {poisonExchangeName}";
+            }
+
+            this._log.LogError(ex, err);
+            throw new KernelMemoryException(err, ex);
         }
+#pragma warning restore CA2254
 
         // Define poison queue where failed messages are stored
         this._poisonQueueName = poisonQueueName;
@@ -121,12 +133,10 @@ public sealed class RabbitMQPipeline : IQueue
         this._channel.QueueBind(this._poisonQueueName, poisonExchangeName, routingKey: string.Empty, arguments: null);
         this._log.LogTrace("Poison queue name '{0}' bound to exchange '{1}' for queue '{2}'", this._poisonQueueName, poisonExchangeName, this._queueName);
 
+        // Activate consumer
         if (options.DequeueEnabled)
         {
-            this._channel.BasicConsume(queue: this._queueName,
-                autoAck: false,
-                consumer: this._consumer);
-
+            this._channel.BasicConsume(queue: this._queueName, autoAck: false, consumer: this._consumer);
             this._log.LogTrace("Enabling dequeue on queue `{0}`", this._queueName);
         }
 
@@ -160,9 +170,18 @@ public sealed class RabbitMQPipeline : IQueue
     {
         this._consumer.Received += async (object sender, BasicDeliverEventArgs args) =>
         {
+            // Just for logging, extract the attempt number from the message headers
+            var maxAttempts = this._config.MaxRetriesBeforePoisonQueue + 1;
+            var attemptNumber = 1;
+            if (args.BasicProperties?.Headers != null && args.BasicProperties.Headers.TryGetValue("x-delivery-count", out object? value))
+            {
+                attemptNumber = int.TryParse(value.ToString(), out var parsedResult) ? ++parsedResult : -1;
+            }
+
             try
             {
-                this._log.LogDebug("Message '{0}' received, expires after {1}ms", args.BasicProperties.MessageId, args.BasicProperties.Expiration);
+                this._log.LogDebug("Message '{0}' received, expires after {1}ms, attempt {2} of {3}",
+                    args.BasicProperties?.MessageId, args.BasicProperties?.Expiration, attemptNumber, maxAttempts);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
@@ -170,12 +189,22 @@ public sealed class RabbitMQPipeline : IQueue
                 bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
                 if (success)
                 {
-                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties.MessageId);
+                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties?.MessageId);
                     this._channel.BasicAck(args.DeliveryTag, multiple: false);
                 }
                 else
                 {
-                    this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue", args.BasicProperties.MessageId);
+                    if (attemptNumber < maxAttempts)
+                    {
+                        this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
+                            args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
+                    }
+                    else
+                    {
+                        this._log.LogError("Message '{0}' failed to process (attempt {1} of {2}), moving message to dead letter queue",
+                            args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
+                    }
+
                     // Note: if "requeue == false" the message would be moved to the dead letter exchange
                     this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                 }
@@ -188,7 +217,8 @@ public sealed class RabbitMQPipeline : IQueue
                 // - failed to delete message from queue
                 // - failed to unlock message in the queue
 
-                this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue", args.BasicProperties.MessageId);
+                this._log.LogWarning(e, "Message '{0}' processing failed with exception (attempt {1} of {2}), putting message back in the queue",
+                    args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
 
                 // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
                 // Note: if "requeue == false" the message would be moved to the dead letter exchange
