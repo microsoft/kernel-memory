@@ -138,8 +138,8 @@ internal sealed class ServiceConfiguration
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
                     // Check 2 keys for backward compatibility
-                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMqConfig>("RabbitMQ")
-                                                              ?? this.GetServiceConfig<RabbitMqConfig>("RabbitMq"));
+                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMQConfig>("RabbitMQ")
+                                                              ?? this.GetServiceConfig<RabbitMQConfig>("RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):

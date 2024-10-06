@@ -14,7 +14,7 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
-    public static IKernelMemoryBuilder WithRabbitMQOrchestration(this IKernelMemoryBuilder builder, RabbitMqConfig config)
+    public static IKernelMemoryBuilder WithRabbitMQOrchestration(this IKernelMemoryBuilder builder, RabbitMQConfig config)
     {
         builder.Services.AddRabbitMQOrchestration(config);
         return builder;
@@ -26,8 +26,10 @@ public static partial class KernelMemoryBuilderExtensions
 /// </summary>
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddRabbitMQOrchestration(this IServiceCollection services, RabbitMqConfig config)
+    public static IServiceCollection AddRabbitMQOrchestration(this IServiceCollection services, RabbitMQConfig config)
     {
+        config.Validate();
+
         IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<RabbitMQPipeline>()
@@ -37,7 +39,7 @@ public static partial class DependencyInjection
         // The orchestrator uses multiple queue clients, each linked to a specific queue,
         // so it requires a factory rather than a single queue injected to the ctor.
         return services
-            .AddSingleton<RabbitMqConfig>(config)
+            .AddSingleton<RabbitMQConfig>(config)
             .AddTransient<RabbitMQPipeline>()
             .AddSingleton<QueueClientFactory>(serviceProvider => new QueueClientFactory(() => QueueFactory(serviceProvider)));
     }

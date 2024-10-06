@@ -23,7 +23,7 @@
         <ProjectReference Include="..\..\extensions\Ollama\Ollama\Ollama.csproj" />
         <ProjectReference Include="..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\extensions\Qdrant\Qdrant\Qdrant.csproj" />
-        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\..\extensions\RabbitMQ\RabbitMQ\RabbitMQ.csproj" />
         <ProjectReference Include="..\..\extensions\Redis\Redis\Redis.csproj" />
         <ProjectReference Include="..\..\extensions\SQLServer\SQLServer\SQLServer.csproj" />
     </ItemGroup>
