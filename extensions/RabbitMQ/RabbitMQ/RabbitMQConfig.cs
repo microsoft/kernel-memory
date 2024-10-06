@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -16,7 +17,7 @@ public class RabbitMQConfig
     /// <summary>
     /// TCP port for the connection, e.g. 5672
     /// </summary>
-    public int Port { get; set; } = 0;
+    public int Port { get; set; } = 5672;
 
     /// <summary>
     /// Authentication username
@@ -47,12 +48,36 @@ public class RabbitMQConfig
     public bool SslEnabled { get; set; } = false;
 
     /// <summary>
+    /// How many messages to process asynchronously at a time, in each queue.
+    /// Note that this applies to each queue, and each queue is used
+    /// for a specific pipeline step.
+    /// </summary>
+    public ushort ConcurrentThreads { get; set; } = 2;
+
+    /// <summary>
+    /// How many messages to fetch at a time from each queue.
+    /// The value should be higher than ConcurrentThreads to make sure each
+    /// thread has some work to do.
+    /// Note that this applies to each queue, and each queue is used
+    /// for a specific pipeline step.
+    /// </summary>
+    public ushort PrefetchCount { get; set; } = 3;
+
+    /// <summary>
     /// How many times to retry processing a message before moving it to a poison queue.
     /// Example: a value of 20 means that a message will be processed up to 21 times.
     /// Note: this value cannot be changed after queues have been created. In such case
     ///       you might need to drain all queues, delete them, and restart the ingestion service(s).
     /// </summary>
     public int MaxRetriesBeforePoisonQueue { get; set; } = 20;
+
+    /// <summary>
+    /// How long to wait before putting a message back to the queue in case of failure.
+    /// Note: currently a basic strategy not based on RabbitMQ exchanges, potentially
+    /// affecting the pipeline concurrency performance: consumers hold
+    /// messages for N msecs, slowing down the delivery of other messages.
+    /// </summary>
+    public int DelayBeforeRetryingMsecs { get; set; } = 500;
 
     /// <summary>
     /// Suffix used for the poison queues.
@@ -62,7 +87,7 @@ public class RabbitMQConfig
     /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
-    public void Validate()
+    public void Validate(ILogger? log = null)
     {
         const int MinTTLSecs = 5;
 
@@ -79,6 +104,11 @@ public class RabbitMQConfig
         if (this.MessageTTLSecs < MinTTLSecs)
         {
             throw new ConfigurationException($"RabbitMQ: {nameof(this.MessageTTLSecs)} value {this.MessageTTLSecs} is too low, cannot be less than {MinTTLSecs}");
+        }
+
+        if (this.ConcurrentThreads < 1)
+        {
+            throw new ConfigurationException($"RabbitMQ: {nameof(this.ConcurrentThreads)} value cannot be less than 1");
         }
 
         if (string.IsNullOrWhiteSpace(this.PoisonQueueSuffix) || this.PoisonQueueSuffix != $"{this.PoisonQueueSuffix}".Trim())
@@ -102,5 +132,12 @@ public class RabbitMQConfig
         {
             throw new ConfigurationException($"RabbitMQ: {nameof(this.PoisonQueueSuffix)} can be up to 60 characters length");
         }
+
+#pragma warning disable CA2254
+        if (this.PrefetchCount < this.ConcurrentThreads)
+        {
+            log?.LogWarning($"The value of {nameof(this.PrefetchCount)} ({this.PrefetchCount}) should not be lower than the value of {nameof(this.ConcurrentThreads)} ({this.ConcurrentThreads})");
+        }
+#pragma warning restore CA2254
     }
 }

@@ -45,7 +45,12 @@ internal static class Program
 
         ListenToDeadLetterQueue(rabbitMQConfig);
 
-        await pipeline.EnqueueAsync($"test {DateTimeOffset.Now:T}");
+        // Change ConcurrentThreads and PrefetchCount to 1 to see
+        // how they affect total execution time
+        for (int i = 1; i <= 3; i++)
+        {
+            await pipeline.EnqueueAsync($"test #{i} {DateTimeOffset.Now:T}");
+        }
 
         while (true)
         {
