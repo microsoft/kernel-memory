@@ -24,6 +24,8 @@ public sealed class RabbitMQPipeline : IQueue
     private readonly AsyncEventingBasicConsumer _consumer;
     private readonly RabbitMQConfig _config;
     private readonly int _messageTTLMsecs;
+    private readonly int _delayBeforeRetryingMsecs;
+    private readonly int _maxAttempts;
     private string _queueName = string.Empty;
     private string _poisonQueueName = string.Empty;
 
@@ -32,20 +34,22 @@ public sealed class RabbitMQPipeline : IQueue
     /// </summary>
     public RabbitMQPipeline(RabbitMQConfig config, ILoggerFactory? loggerFactory = null)
     {
-        this._config = config;
-        this._config.Validate();
-
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<RabbitMQPipeline>();
+
+        this._config = config;
+        this._config.Validate(this._log);
 
         // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         var factory = new ConnectionFactory
         {
+            ClientProvidedName = "KernelMemory",
             HostName = config.Host,
             Port = config.Port,
             UserName = config.Username,
             Password = config.Password,
             VirtualHost = !string.IsNullOrWhiteSpace(config.VirtualHost) ? config.VirtualHost : "/",
             DispatchConsumersAsync = true,
+            ConsumerDispatchConcurrency = config.ConcurrentThreads,
             Ssl = new SslOption
             {
                 Enabled = config.SslEnabled,
@@ -56,8 +60,11 @@ public sealed class RabbitMQPipeline : IQueue
         this._messageTTLMsecs = config.MessageTTLSecs * 1000;
         this._connection = factory.CreateConnection();
         this._channel = this._connection.CreateModel();
-        this._channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+        this._channel.BasicQos(prefetchSize: 0, prefetchCount: config.PrefetchCount, global: false);
         this._consumer = new AsyncEventingBasicConsumer(this._channel);
+
+        this._delayBeforeRetryingMsecs = Math.Max(0, this._config.DelayBeforeRetryingMsecs);
+        this._maxAttempts = Math.Max(0, this._config.MaxRetriesBeforePoisonQueue) + 1;
     }
 
     /// <inheritdoc />
@@ -171,7 +178,6 @@ public sealed class RabbitMQPipeline : IQueue
         this._consumer.Received += async (object sender, BasicDeliverEventArgs args) =>
         {
             // Just for logging, extract the attempt number from the message headers
-            var maxAttempts = this._config.MaxRetriesBeforePoisonQueue + 1;
             var attemptNumber = 1;
             if (args.BasicProperties?.Headers != null && args.BasicProperties.Headers.TryGetValue("x-delivery-count", out object? value))
             {
@@ -181,7 +187,7 @@ public sealed class RabbitMQPipeline : IQueue
             try
             {
                 this._log.LogDebug("Message '{0}' received, expires after {1}ms, attempt {2} of {3}",
-                    args.BasicProperties?.MessageId, args.BasicProperties?.Expiration, attemptNumber, maxAttempts);
+                    args.BasicProperties?.MessageId, args.BasicProperties?.Expiration, attemptNumber, this._maxAttempts);
 
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
@@ -194,15 +200,19 @@ public sealed class RabbitMQPipeline : IQueue
                 }
                 else
                 {
-                    if (attemptNumber < maxAttempts)
+                    if (attemptNumber < this._maxAttempts)
                     {
                         this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
-                            args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
+                            args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
+                        if (this._delayBeforeRetryingMsecs > 0)
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(this._delayBeforeRetryingMsecs)).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
                         this._log.LogError("Message '{0}' failed to process (attempt {1} of {2}), moving message to dead letter queue",
-                            args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
+                            args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
                     }
 
                     // Note: if "requeue == false" the message would be moved to the dead letter exchange
@@ -217,8 +227,20 @@ public sealed class RabbitMQPipeline : IQueue
                 // - failed to delete message from queue
                 // - failed to unlock message in the queue
 
-                this._log.LogWarning(e, "Message '{0}' processing failed with exception (attempt {1} of {2}), putting message back in the queue",
-                    args.BasicProperties?.MessageId, attemptNumber, maxAttempts);
+                if (attemptNumber < this._maxAttempts)
+                {
+                    this._log.LogWarning(e, "Message '{0}' processing failed with exception (attempt {1} of {2}), putting message back in the queue",
+                        args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
+                    if (this._delayBeforeRetryingMsecs > 0)
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(this._delayBeforeRetryingMsecs)).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    this._log.LogError(e, "Message '{0}' processing failed with exception (attempt {1} of {2}), putting message back in the queue",
+                        args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
+                }
 
                 // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
                 // Note: if "requeue == false" the message would be moved to the dead letter exchange
