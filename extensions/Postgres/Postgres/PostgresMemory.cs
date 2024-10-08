@@ -21,11 +21,12 @@ namespace Microsoft.KernelMemory.Postgres;
 /// Postgres connector for Kernel Memory.
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class PostgresMemory : IMemoryDb
+public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
 {
-    private readonly ILogger<PostgresMemory> _log;
-    private readonly ITextEmbeddingGenerator _embeddingGenerator;
+    // Dependencies
     private readonly PostgresDbClient _db;
+    private readonly ITextEmbeddingGenerator _embeddingGenerator;
+    private readonly ILogger<PostgresMemory> _log;
 
     /// <summary>
     /// Create a new instance of Postgres KM connector
@@ -207,6 +208,25 @@ public sealed class PostgresMemory : IMemoryDb
         index = NormalizeIndexName(index);
 
         return this._db.DeleteAsync(tableName: index, id: record.Id, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this._db?.Dispose();
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await this._db.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (NullReferenceException)
+        {
+            // ignore
+        }
     }
 
     #region private ================================================================================

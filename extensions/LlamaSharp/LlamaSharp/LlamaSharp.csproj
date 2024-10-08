@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.LlamaSharp</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.LlamaSharp</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA2208;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA2208;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
