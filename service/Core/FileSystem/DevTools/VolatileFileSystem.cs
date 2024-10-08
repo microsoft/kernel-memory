@@ -367,7 +367,7 @@ internal sealed class VolatileFileSystem : IFileSystem
 
         if (s_invalidCharsRegex.Match(volume).Success)
         {
-            throw new ArgumentException("The volume name contains some invalid chars or empty spaces");
+            throw new ArgumentException($"The volume name '{volume}' contains some invalid chars or empty spaces");
         }
 
         return volume;

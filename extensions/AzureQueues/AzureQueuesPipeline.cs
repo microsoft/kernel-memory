@@ -255,7 +255,7 @@ public sealed class AzureQueuesPipeline : IQueue
         {
             this._busy = true;
 
-            QueueMessage[] messages = Array.Empty<QueueMessage>();
+            QueueMessage[] messages = [];
 
             // Fetch messages
             try
