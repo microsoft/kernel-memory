@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Postgres</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Postgres</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1724;NU5104;CA1308;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1724;NU5104;CA1308;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

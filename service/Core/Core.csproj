@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Azure.Core" />
         <PackageReference Include="ClosedXML" />
         <PackageReference Include="DocumentFormat.OpenXml" />
         <PackageReference Include="HtmlAgilityPack" />
