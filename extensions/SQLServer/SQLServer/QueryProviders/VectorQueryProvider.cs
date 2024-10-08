@@ -90,7 +90,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         SqlParameterCollection parameters)
     {
         var queryColumns = "[key], [payload], [tags]";
-        if (withEmbeddings) { queryColumns += ", VECTOR_TO_JSON_ARRAY([embedding]) AS [embedding]"; }
+        if (withEmbeddings) { queryColumns += ", CAST([embedding] AS NVARCHAR(MAX)) AS [embedding]"; }
 
         var sql = $"""
                    WITH [filters] AS
@@ -126,7 +126,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         if (withEmbedding)
         {
             queryColumns += $"," +
-                            $"VECTOR_TO_JSON_ARRAY({this.GetFullTableName(this._config.MemoryTableName)}.[embedding]) AS [embedding]";
+                            $"CAST({this.GetFullTableName(this._config.MemoryTableName)}.[embedding] AS NVARCHAR(MAX)) AS [embedding]";
         }
 
         var generatedFilters = this.GenerateFilters(index, parameters, filters);
@@ -134,11 +134,11 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
         var sql = $"""
                    SELECT TOP (@limit)
                        {queryColumns},
-                       VECTOR_DISTANCE('cosine', JSON_ARRAY_TO_VECTOR(@vector), Embedding) AS [distance]
+                       VECTOR_DISTANCE('cosine', CAST(@vector AS VECTOR({this._config.VectorSize})), Embedding) AS [distance]
                    FROM
                        {this.GetFullTableName(this._config.MemoryTableName)}
                    WHERE
-                       VECTOR_DISTANCE('cosine', JSON_ARRAY_TO_VECTOR(@vector), Embedding) <= @max_distance
+                       VECTOR_DISTANCE('cosine', CAST(@vector AS VECTOR({this._config.VectorSize})), Embedding) <= @max_distance
                        {generatedFilters}
                    ORDER BY [distance] ASC
                    """;
@@ -156,10 +156,10 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
                            USING (SELECT @key) as [src]([key])
                            ON {this.GetFullTableName(this._config.MemoryTableName)}.[key] = [src].[key]
                            WHEN MATCHED THEN
-                               UPDATE SET payload=@payload, embedding=JSON_ARRAY_TO_VECTOR(@embedding), tags=@tags
+                               UPDATE SET payload=@payload, embedding=CAST(@embedding AS VECTOR({this._config.VectorSize})), tags=@tags
                            WHEN NOT MATCHED THEN
-                               INSERT ([id], [key], [collection], [payload], [tags], [embedding])
-                               VALUES (NEWID(), @key, @index, @payload, @tags, JSON_ARRAY_TO_VECTOR(@embedding));
+                               INSERT ([key], [collection], [payload], [tags], [embedding])
+                               VALUES (@key, @index, @payload, @tags, CAST(@embedding AS VECTOR({this._config.VectorSize})));
 
                        DELETE FROM [tgt]
                            FROM  {this.GetFullTableName($"{this._config.TagsTableName}_{index}")} AS [tgt]
@@ -211,12 +211,12 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
 
                    IF OBJECT_ID(N'{this.GetFullTableName(this._config.MemoryTableName)}', N'U') IS NULL
                        CREATE TABLE {this.GetFullTableName(this._config.MemoryTableName)}
-                       (   [id] UNIQUEIDENTIFIER NOT NULL,
+                       (   [id] UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID(),
                            [key] NVARCHAR(256)  NOT NULL,
                            [collection] NVARCHAR(256) NOT NULL,
                            [payload] NVARCHAR(MAX),
                            [tags] NVARCHAR(MAX),
-                           [embedding] VARBINARY(8000),
+                           [embedding] VECTOR({this._config.VectorSize}),
                            PRIMARY KEY ([id]),
                            FOREIGN KEY ([collection]) REFERENCES {this.GetFullTableName(this._config.MemoryCollectionTableName)}([id]) ON DELETE CASCADE,
                            CONSTRAINT UK_{this._config.MemoryTableName} UNIQUE([collection], [key])
