@@ -447,6 +447,7 @@ dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, chan
 dotnet_diagnostic.CA1054.severity = none # URI parameters should not be strings
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CS1591.severity = none # Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS8002.severity = none # Referenced assembly does not have a strong name.
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates

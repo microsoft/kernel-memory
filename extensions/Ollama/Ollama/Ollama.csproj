@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.Ollama</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.Ollama</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CS8002;</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
