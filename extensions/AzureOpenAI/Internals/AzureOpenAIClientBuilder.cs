@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
-using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -26,7 +26,7 @@ internal static class AzureOpenAIClientBuilder
         AzureOpenAIClientOptions options = new()
         {
             RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), loggerFactory),
-            ApplicationId = Telemetry.HttpUserAgent,
+            UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
         if (httpClient is not null)
@@ -48,7 +48,7 @@ internal static class AzureOpenAIClientBuilder
                     throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
                 }
 
-                return new AzureOpenAIClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), options);
+                return new AzureOpenAIClient(new Uri(config.Endpoint), new ApiKeyCredential(config.APIKey), options);
 
             default:
                 throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
