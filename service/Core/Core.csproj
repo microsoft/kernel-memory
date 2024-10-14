@@ -37,6 +37,7 @@
         <PackageReference Include="Microsoft.Extensions.Http" />
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
+        <PackageReference Include="System.IO.Packaging" />
         <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 
