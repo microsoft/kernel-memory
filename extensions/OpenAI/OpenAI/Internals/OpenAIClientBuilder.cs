@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ internal static class OpenAIClientBuilder
         OpenAIClientOptions options = new()
         {
             RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), loggerFactory),
-            ApplicationId = Telemetry.HttpUserAgent,
+            UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
         if (httpClient is not null)
@@ -34,6 +35,6 @@ internal static class OpenAIClientBuilder
             options.AddPolicy(new ChangeEndpointPolicy(config.Endpoint), PipelinePosition.PerTry);
         }
 
-        return new OpenAIClient(config.APIKey, options);
+        return new OpenAIClient(new ApiKeyCredential(config.APIKey), options);
     }
 }
