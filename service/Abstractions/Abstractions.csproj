@@ -16,6 +16,7 @@
         <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
         <PackageReference Include="System.Memory.Data" />
         <PackageReference Include="System.Numerics.Tensors" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <PropertyGroup>
