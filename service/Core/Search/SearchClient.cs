@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -17,10 +18,12 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
+[Experimental("KMEXP05")]
 public sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
+    private readonly IContentModeration? _contentModeration;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
@@ -30,10 +33,12 @@ public sealed class SearchClient : ISearchClient
         ITextGenerator textGenerator,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
+        IContentModeration? contentModeration = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
+        this._contentModeration = contentModeration;
         this._config = config ?? new SearchClientConfig();
         this._config.Validate();
 
@@ -357,6 +362,18 @@ public sealed class SearchClient : ISearchClient
         else
         {
             this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
+        }
+
+        if (this._contentModeration != null && this._config.UseContentModeration)
+        {
+            var isSafe = await this._contentModeration.IsSafeAsync(answer.Result, cancellationToken).ConfigureAwait(false);
+            if (!isSafe)
+            {
+                this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
+                this._log.LogSensitive("Unsafe answer: {0}", answer.Result);
+                answer.NoResultReason = "Content moderation failure";
+                answer.Result = this._config.ModeratedAnswer;
+            }
         }
 
         return answer;

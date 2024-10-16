@@ -14,6 +14,7 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
+using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 
 namespace Microsoft.KernelMemory.Service;
 
@@ -95,6 +96,8 @@ internal sealed class ServiceConfiguration
         // - config.Retrieval.EmbeddingGeneratorType      => one embedding generator, used to search, and usually injected into Memory DB constructor
 
         this.ConfigureIngestionEmbeddingGenerators(builder);
+
+        this.ConfigureContentModeration(builder);
 
         this.ConfigureSearchClient(builder);
 
@@ -345,6 +348,20 @@ internal sealed class ServiceConfiguration
                     break;
                 }
             }
+        }
+    }
+
+    private void ConfigureContentModeration(IKernelMemoryBuilder builder)
+    {
+        switch (this._memoryConfiguration.ContentModerationType)
+        {
+            case string x when x.Equals("AzureAIContentSafety", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddAzureAIContentSafetyModeration(config: this.GetServiceConfig<AzureAIContentSafetyConfig>("AzureAIContentSafety"));
+                break;
+
+            default:
+                // NOOP - content moderation is optional
+                break;
         }
     }
 

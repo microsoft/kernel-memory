@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.Search;
 
@@ -9,6 +10,7 @@ namespace Microsoft.KernelMemory;
 /// <summary>
 /// Kernel Memory builder extensions
 /// </summary>
+[Experimental("KMEXP05")]
 public static partial class KernelMemoryBuilderExtensions
 {
     public static IKernelMemoryBuilder WithDefaultSearchClient(
@@ -45,6 +47,7 @@ public static partial class KernelMemoryBuilderExtensions
 /// <summary>
 /// .NET IServiceCollection dependency injection extensions.
 /// </summary>
+[Experimental("KMEXP05")]
 public static partial class DependencyInjection
 {
     public static IServiceCollection AddDefaultSearchClient(
