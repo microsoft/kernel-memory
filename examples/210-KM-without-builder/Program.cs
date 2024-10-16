@@ -19,6 +19,7 @@ using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
+using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 using Microsoft.KernelMemory.Search;
 
 /// <summary>
@@ -43,6 +44,7 @@ public static class Program
         var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
         var azureOpenAITextConfig = new AzureOpenAIConfig();
         var azureAIDocIntelConfig = new AzureAIDocIntelConfig();
+        var azureAIContentSafetyModerationConfig = new AzureAIContentSafetyConfig();
         var textPartitioningOptions = new TextPartitioningOptions();
         var msExcelDecoderConfig = new MsExcelDecoderConfig();
         var msPowerPointDecoderConfig = new MsPowerPointDecoderConfig();
@@ -63,7 +65,8 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
             .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
-            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig);
+            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig)
+            .BindSection("KernelMemory:Services:AzureAIContentSafety", azureAIContentSafetyModerationConfig);
         // =================================================================
 
         // Logger
@@ -79,6 +82,7 @@ public static class Program
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizer, loggerFactory, embeddingGeneratorHttpClient);
         var textGeneratorHttpClient = new HttpClient();
         var textGenerator = new AzureOpenAITextGenerator(azureOpenAITextConfig, tokenizer, loggerFactory, textGeneratorHttpClient);
+        var contentModeration = new AzureAIContentSafetyModeration(azureAIContentSafetyModerationConfig, loggerFactory);
 
         // Storage
         var documentStorage = new AzureBlobsStorage(azureBlobsConfig, mimeTypeDetection, loggerFactory);
@@ -116,7 +120,7 @@ public static class Program
         orchestrator.AddHandler(new DeleteDocumentHandler("private_delete_document", documentStorage, memoryDbs, loggerFactory));
 
         // Create memory instance
-        var searchClient = new SearchClient(memoryDb, textGenerator, searchClientConfig, promptProvider, loggerFactory);
+        var searchClient = new SearchClient(memoryDb, textGenerator, searchClientConfig, promptProvider, contentModeration, loggerFactory);
         var memory = new MemoryServerless(orchestrator, searchClient, kernelMemoryConfig);
 
         // End-to-end test

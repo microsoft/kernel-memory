@@ -90,6 +90,18 @@ public class SearchClientConfig
     public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
 
     /// <summary>
+    /// Whether to check is the generated answers are safe.
+    /// A content moderation service must be present in the system.
+    /// </summary>
+    public bool UseContentModeration { get; set; } = true;
+
+    /// <summary>
+    /// Answer to return when AI generates content considered unsafe by the
+    /// text moderation service.
+    /// </summary>
+    public string ModeratedAnswer { get; set; } = "Sorry, the generated content contains unsafe or inappropriate information.";
+
+    /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
     public void Validate()
