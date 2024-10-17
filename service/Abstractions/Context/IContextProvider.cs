@@ -23,6 +23,14 @@ public static class ContextProviderExtensions
         return provider;
     }
 
+    public static IContextProvider? InitContext(this IContextProvider? provider, IContext? context)
+    {
+        if (provider == null) { return null; }
+
+        provider.GetContext().InitArgs(context?.Arguments ?? new Dictionary<string, object?>());
+        return provider;
+    }
+
     public static IContextProvider? SetContextArgs(this IContextProvider? provider, IDictionary<string, object?> args)
     {
         if (provider == null) { return null; }

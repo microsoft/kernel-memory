@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using OllamaSharp;
 using OllamaSharp.Models;
@@ -20,8 +21,9 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
 
     private readonly IOllamaApiClient _client;
     private readonly OllamaModelConfig _modelConfig;
-    private readonly ILogger<OllamaTextEmbeddingGenerator> _log;
     private readonly ITextTokenizer _textTokenizer;
+    private readonly IContextProvider _contextProvider;
+    private readonly ILogger<OllamaTextEmbeddingGenerator> _log;
 
     public int MaxTokens { get; }
 
@@ -31,6 +33,7 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
         IOllamaApiClient ollamaClient,
         OllamaModelConfig modelConfig,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._client = ollamaClient;
@@ -47,6 +50,7 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
         }
 
         this._textTokenizer = textTokenizer;
+        this._contextProvider = contextProvider ?? new RequestContextProvider();
 
         this.MaxTokens = modelConfig.MaxTokenTotal ?? MaxTokensIfUndefined;
     }
@@ -54,11 +58,13 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
     public OllamaTextEmbeddingGenerator(
         OllamaConfig config,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
         : this(
             new OllamaApiClient(new Uri(config.Endpoint), config.EmbeddingModel.ModelName),
             config.EmbeddingModel,
             textTokenizer,
+            contextProvider,
             loggerFactory)
     {
     }
@@ -67,11 +73,13 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
         HttpClient httpClient,
         OllamaConfig config,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
         : this(
             new OllamaApiClient(httpClient, config.EmbeddingModel.ModelName),
             config.EmbeddingModel,
             textTokenizer,
+            contextProvider,
             loggerFactory)
     {
     }
@@ -104,11 +112,13 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
         CancellationToken cancellationToken = default)
     {
         var list = textList.ToList();
-        this._log.LogTrace("Generating embeddings batch, size {0} texts", list.Count);
+
+        string modelName = this._contextProvider.GetContext().GetCustomOllamaEmbeddingModelNameOrDefault(this._client.SelectedModel);
+        this._log.LogTrace("Generating embeddings batch, size {0} texts, with model {1}", list.Count, modelName);
 
         var request = new EmbedRequest
         {
-            Model = this._client.SelectedModel,
+            Model = modelName,
             Input = list,
             Options = new RequestOptions
             {
