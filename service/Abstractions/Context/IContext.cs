@@ -219,4 +219,24 @@ public static class CustomContextExtensions
 
         return defaultValue;
     }
+
+    public static string GetCustomOllamaTextModelNameOrDefault(this IContext? context, string defaultValue)
+    {
+        if (context.TryGetArg<string>(Constants.CustomContext.Ollama.TextModelName, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
+    public static string GetCustomOllamaEmbeddingModelNameOrDefault(this IContext? context, string defaultValue)
+    {
+        if (context.TryGetArg<string>(Constants.CustomContext.Ollama.EmbeddingModelName, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
 }

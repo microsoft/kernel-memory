@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Ollama;
+using Microsoft.KernelMemory.Context;
 using OllamaSharp;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -72,6 +73,7 @@ public static partial class DependencyInjection
                     new OllamaApiClient(new Uri(endpoint), modelName),
                     new OllamaModelConfig { ModelName = modelName },
                     textTokenizer,
+                    serviceProvider.GetService<IContextProvider>(),
                     serviceProvider.GetService<ILoggerFactory>()));
     }
 
@@ -86,6 +88,7 @@ public static partial class DependencyInjection
                     new OllamaApiClient(new Uri(config.Endpoint), config.TextModel.ModelName),
                     config.TextModel,
                     textTokenizer,
+                    serviceProvider.GetService<IContextProvider>(),
                     serviceProvider.GetService<ILoggerFactory>()));
     }
 
@@ -101,6 +104,7 @@ public static partial class DependencyInjection
                     new OllamaApiClient(new Uri(endpoint), modelName),
                     new OllamaModelConfig { ModelName = modelName },
                     textTokenizer,
+                    serviceProvider.GetService<IContextProvider>(),
                     serviceProvider.GetService<ILoggerFactory>()));
     }
 
@@ -115,6 +119,7 @@ public static partial class DependencyInjection
                     new OllamaApiClient(new Uri(config.Endpoint), config.EmbeddingModel.ModelName),
                     config.EmbeddingModel,
                     textTokenizer,
+                    serviceProvider.GetService<IContextProvider>(),
                     serviceProvider.GetService<ILoggerFactory>()));
     }
 }
