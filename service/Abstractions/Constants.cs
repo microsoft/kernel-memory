@@ -78,6 +78,15 @@ public static class Constants
             // Used to override the number of overlapping tokens
             public const string OverlappingTokens = "custom_summary_overlapping_tokens_int";
         }
+
+        public static class Ollama
+        {
+            // Used to override the name of the model used to generate text
+            public const string TextModelName = "custom_ollama_text_model_name";
+
+            // Used to override the name of the model used to generate embeddings
+            public const string EmbeddingModelName = "custom_ollama_embedding_model_name";
+        }
     }
 
     // // Default User ID owning documents uploaded without specifying a user
