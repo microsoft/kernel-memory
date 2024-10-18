@@ -95,7 +95,7 @@ public class OllamaTextGenerator : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        string modelName = this._contextProvider.GetContext().GetCustomOllamaTextModelNameOrDefault(this._client.SelectedModel);
+        string modelName = this._contextProvider.GetContext().GetCustomTextGenerationModelNameOrDefault(this._client.SelectedModel);
         this._log.LogTrace("Generating text with model {0}", modelName);
 
         var request = new GenerateRequest

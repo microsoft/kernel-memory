@@ -113,7 +113,7 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
     {
         var list = textList.ToList();
 
-        string modelName = this._contextProvider.GetContext().GetCustomOllamaEmbeddingModelNameOrDefault(this._client.SelectedModel);
+        string modelName = this._contextProvider.GetContext().GetCustomEmbeddingGenerationModelNameOrDefault(this._client.SelectedModel);
         this._log.LogTrace("Generating embeddings batch, size {0} texts, with model {1}", list.Count, modelName);
 
         var request = new EmbedRequest

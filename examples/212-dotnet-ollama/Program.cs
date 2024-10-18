@@ -70,8 +70,8 @@ public static class Program
 
         // How to override config with Request Context
         var context = new RequestContext();
-        context.SetArg("custom_ollama_text_model_name", "llama2:70b");
-        // context.SetArg("custom_ollama_embedding_model_name", "...");
+        context.SetArg("custom_text_generation_model_name", "llama2:70b");
+        // context.SetArg("custom_embedding_generation_model_name", "...");
 
         answer = await memory.AskAsync("What's the current date (don't check for validity)?", context: context);
         Console.WriteLine("-------------------");

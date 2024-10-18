@@ -220,9 +220,9 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
-    public static string GetCustomOllamaTextModelNameOrDefault(this IContext? context, string defaultValue)
+    public static string GetCustomTextGenerationModelNameOrDefault(this IContext? context, string defaultValue)
     {
-        if (context.TryGetArg<string>(Constants.CustomContext.Ollama.TextModelName, out var customValue))
+        if (context.TryGetArg<string>(Constants.CustomContext.TextGeneration.ModelName, out var customValue))
         {
             return customValue;
         }
@@ -230,9 +230,9 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
-    public static string GetCustomOllamaEmbeddingModelNameOrDefault(this IContext? context, string defaultValue)
+    public static string GetCustomEmbeddingGenerationModelNameOrDefault(this IContext? context, string defaultValue)
     {
-        if (context.TryGetArg<string>(Constants.CustomContext.Ollama.EmbeddingModelName, out var customValue))
+        if (context.TryGetArg<string>(Constants.CustomContext.EmbeddingGeneration.ModelName, out var customValue))
         {
             return customValue;
         }

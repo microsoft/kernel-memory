@@ -43,6 +43,15 @@ public static class Constants
         {
             // Used to override MaxBatchSize embedding generators config
             public const string BatchSize = "custom_embedding_generation_batch_size_int";
+
+            // Used to override the name of the model used to generate embeddings
+            public const string ModelName = "custom_embedding_generation_model_name";
+        }
+
+        public static class TextGeneration
+        {
+            // Used to override the name of the model used to generate text
+            public const string ModelName = "custom_text_generation_model_name";
         }
 
         public static class Rag
@@ -77,15 +86,6 @@ public static class Constants
 
             // Used to override the number of overlapping tokens
             public const string OverlappingTokens = "custom_summary_overlapping_tokens_int";
-        }
-
-        public static class Ollama
-        {
-            // Used to override the name of the model used to generate text
-            public const string TextModelName = "custom_ollama_text_model_name";
-
-            // Used to override the name of the model used to generate embeddings
-            public const string EmbeddingModelName = "custom_ollama_embedding_model_name";
         }
     }
 
