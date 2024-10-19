@@ -6,6 +6,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.AzureAIDocIntel;
 using Microsoft.KernelMemory.DataFormats.Image;
@@ -73,6 +74,7 @@ public static class Program
         LoggerFactory? loggerFactory = null; // Alternative: app.Services.GetService<ILoggerFactory>();
 
         // Generic dependencies
+        var requestContextProvider = new RequestContextProvider();
         var mimeTypeDetection = new MimeTypesDetection();
         var promptProvider = new EmbeddedPromptProvider();
 
@@ -121,7 +123,7 @@ public static class Program
 
         // Create memory instance
         var searchClient = new SearchClient(memoryDb, textGenerator, searchClientConfig, promptProvider, contentModeration, loggerFactory);
-        var memory = new MemoryServerless(orchestrator, searchClient, kernelMemoryConfig);
+        var memory = new MemoryServerless(orchestrator, searchClient, requestContextProvider, kernelMemoryConfig);
 
         // End-to-end test
         await memory.ImportTextAsync("I'm waiting for Godot", documentId: "tg01");

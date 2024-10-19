@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using OllamaSharp;
 using OllamaSharp.Models;
@@ -19,8 +20,9 @@ public class OllamaTextGenerator : ITextGenerator
 
     private readonly IOllamaApiClient _client;
     private readonly OllamaModelConfig _modelConfig;
-    private readonly ILogger<OllamaTextGenerator> _log;
     private readonly ITextTokenizer _textTokenizer;
+    private readonly IContextProvider _contextProvider;
+    private readonly ILogger<OllamaTextGenerator> _log;
 
     public int MaxTokenTotal { get; }
 
@@ -28,6 +30,7 @@ public class OllamaTextGenerator : ITextGenerator
         IOllamaApiClient ollamaClient,
         OllamaModelConfig modelConfig,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._client = ollamaClient;
@@ -43,6 +46,7 @@ public class OllamaTextGenerator : ITextGenerator
         }
 
         this._textTokenizer = textTokenizer;
+        this._contextProvider = contextProvider ?? new RequestContextProvider();
 
         this.MaxTokenTotal = modelConfig.MaxTokenTotal ?? MaxTokensIfUndefined;
     }
@@ -50,11 +54,13 @@ public class OllamaTextGenerator : ITextGenerator
     public OllamaTextGenerator(
         OllamaConfig config,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
         : this(
             new OllamaApiClient(new Uri(config.Endpoint), config.TextModel.ModelName),
             config.TextModel,
             textTokenizer,
+            contextProvider,
             loggerFactory)
     {
     }
@@ -63,11 +69,13 @@ public class OllamaTextGenerator : ITextGenerator
         HttpClient httpClient,
         OllamaConfig config,
         ITextTokenizer? textTokenizer = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
         : this(
             new OllamaApiClient(httpClient, config.TextModel.ModelName),
             config.TextModel,
             textTokenizer,
+            contextProvider,
             loggerFactory)
     {
     }
@@ -87,9 +95,12 @@ public class OllamaTextGenerator : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        string modelName = this._contextProvider.GetContext().GetCustomTextGenerationModelNameOrDefault(this._client.SelectedModel);
+        this._log.LogTrace("Generating text with model {0}", modelName);
+
         var request = new GenerateRequest
         {
-            Model = this._client.SelectedModel,
+            Model = modelName,
             Prompt = prompt,
             Stream = true,
             Options = new RequestOptions
