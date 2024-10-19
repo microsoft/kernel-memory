@@ -1,120 +1,205 @@
-# Kernel Memory
+Kernel Memory
+=============
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
 
-This repository presents best practices and a reference implementation for Memory in specific AI and LLMs application
-scenarios. Please note that **the code provided serves as a demonstration** and is **not an officially supported**
-Microsoft offering.
+This repository presents best practices and a reference implementation for Memory in specific AI
+and LLMs application scenarios. Please note that **the code provided serves as a demonstration**
+and is **not an officially supported** Microsoft offering.
 
-**Kernel Memory** (KM) is a **multi-modal [AI Service](service/Service/README.md)** specialized in the efficient indexing of datasets through
-custom continuous data hybrid pipelines, with support for **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
-synthetic memory, prompt engineering, and custom semantic memory processing.
+**Kernel Memory** (KM) is a **multi-modal [AI Service](service/Service/README.md)** specialized
+in the efficient indexing of datasets through custom continuous data hybrid pipelines, with support
+for **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)**
+(RAG), synthetic memory, prompt engineering, and custom semantic memory processing.
 
-KM is available as a **Web Service**, as a **[Docker container](https://hub.docker.com/r/kernelmemory/service)**, a **[Plugin](https://learn.microsoft.com/copilot/plugins/overview)** for ChatGPT/Copilot/Semantic
+KM is available as a **Web Service**, as a **[Docker container](https://hub.docker.com/r/kernelmemory/service)**,
+a **[Plugin](https://learn.microsoft.com/copilot/plugins/overview)** for ChatGPT/Copilot/Semantic
 Kernel, and as a .NET library for embedded applications.
 
-Utilizing advanced embeddings and LLMs, the system enables Natural Language querying for obtaining answers from the
-indexed data, complete with citations and links to the original sources.
+Utilizing advanced embeddings and LLMs, the system enables Natural Language querying for obtaining
+answers from the indexed data, complete with citations and links to the original sources.
 
-Kernel Memory is designed for seamless integration as a Plugin with [Semantic Kernel](https://github.com/microsoft/semantic-kernel), Microsoft Copilot and ChatGPT.
+Kernel Memory is designed for seamless integration as a Plugin with [Semantic Kernel](https://github.com/microsoft/semantic-kernel),
+Microsoft Copilot and ChatGPT.
 
 ![image](docs/img/kernel-memory-lambda-architecture.png)
 
-# Memory as a Service - Asynchronous API
 
-Depending on your scenarios, you might want to run all the code **remotely through an asynchronous and scalable service,
-or locally inside your process.**
 
-![image](docs/img/kernel-memory-as-a-service.png)
 
-If you're importing small files, and use only .NET and can block the application process while importing documents, 
-then local-in-process execution can be fine, using the **MemoryServerless** described below.
-
-However, if you are in one of these scenarios:
-
-- My app is written in **TypeScript, Java, Rust, or some other language**
-- I'd just like a web service to import data and send questions to answer
-- I'm importing **big documents that can require minutes to process**, and I don't want to block the user interface
-- I need memory import to **run independently, supporting failures and retry logic**
-- I want to define **custom pipelines mixing multiple languages** like Python, TypeScript, etc
-
-then you're likely looking for a **Memory Service**, and you can deploy Kernel Memory as a backend service, using the
-default ingestion logic, or your custom workflow including steps coded in Python/TypeScript/Java/etc., leveraging the
-asynchronous non-blocking memory encoding process, uploading documents and asking questions using the **MemoryWebClient**.
-
-![image](docs/img/kernel-memory-client.png)
-
-[Here](service/Service/README.md) you can find a complete set of instruction about [how to run the Kernel Memory service](service/Service/README.md).
-
-# Kernel Memory on Azure
+Kernel Memory Service on Azure
+==============================
 
 Kernel Memory can be deployed in various configurations, including as a **Service** in Azure.
 To learn more about deploying Kernel Memory in Azure, please refer to the
 [Azure deployment guide](https://microsoft.github.io/kernel-memory/azure).
 For detailed instructions on deploying to Azure, you can check the [infrastructure documentation](/infra/README.md).
 
-If you are already familiar with these resources, you can quickly deploy by clicking the following button.
+If you are already familiar with these resources, you can quickly deploy by clicking the following
+button.
+
+<center>
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
 
-# Embedded Memory Component (aka "serverless")
+</center>
 
-Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to ingest thousands of
-documents and information without blocking your app.
+🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image)
 
-However, Kernel Memory can also run in serverless mode, embedding `MemoryServerless` class instance in .NET
-backend/console/desktop apps in synchronous mode. 
-Each request is processed immediately, although calling clients are responsible for handling transient errors.
 
-![image](docs/img/kernel-memory-embedded-serverless.png)
 
-> ### Importing documents into your Kernel Memory can be as simple as this:
+
+Data Ingestion using Kernel Memory OpenAPI Web Service
+======================================================
+
+The example showw the default documents ingestion pipeline:
+
+1. Extract text: automatically recognize the file format and extract the information
+2. Partition the text in small chunks, ready for search and RAG prompts
+3. Extract embeddings using any LLM embedding generator
+4. Save embeddings into a vector index such as
+   [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
+   [Qdrant](https://qdrant.tech/) or other DBs.
+
+The example shows how to **safeguard private information** specifying who owns each document, and
+how to **organize data** for search and faceted navigation, using **Tags**.
+
+## C#
+
+> ```csharp
+> #r "nuget: Microsoft.KernelMemory.WebClient"
 >
+> var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL of KM web service
+>
+> // Import a file
+> await memory.ImportDocumentAsync("meeting-transcript.docx");
+>
+> // Import a file specifying Document ID and Tags
+> await memory.ImportDocumentAsync("business-plan.docx",
+>     new Document("doc01")
+>         .AddTag("user", "devis@contoso.com")
+>         .AddTag("collection", "business")
+>         .AddTag("collection", "plans")
+>         .AddTag("fiscalYear", "2025"));
+> ```
+
+## Python
+
+> ```python
+> import requests
+>
+> # Files to import
+> files = {
+>           "file1": ("business-plan.docx", open("business-plan.docx", "rb")),
+>         }
+>
+> # Tags to apply, used by queries to filter memory
+> data = { "documentId": "doc01",
+>          "tags": [ "user:devis@contoso.com",
+>                    "collection:business",
+>                    "collection:plans",
+>                    "fiscalYear:2025" ]
+>        }
+>
+> response = requests.post("http://127.0.0.1:9001/upload", files=files, data=data)
+> ```
+
+
+
+
+Direct Data Ingestion using embedded Serverless .NET component
+==============================================================
+
 > ```csharp
 > var memory = new KernelMemoryBuilder()
 >     .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
 >     .Build<MemoryServerless>();
 >
 > // Import a file
-> await memory.ImportDocumentAsync("meeting-transcript.docx", tags: new() { { "user", "Blake" } });
+> await memory.ImportDocumentAsync("meeting-transcript.docx");
 >
-> // Import multiple files and apply multiple tags
-> await memory.ImportDocumentAsync(new Document("file001")
->     .AddFile("business-plan.docx")
->     .AddFile("project-timeline.pdf")
->     .AddTag("user", "Blake")
->     .AddTag("collection", "business")
->     .AddTag("collection", "plans")
->     .AddTag("fiscalYear", "2023"));
+> // Import a file specifying Document ID and Tags
+> await memory.ImportDocumentAsync("business-plan.docx",
+>     new Document("doc01")
+>         .AddTag("collection", "business")
+>         .AddTag("collection", "plans")
+>         .AddTag("fiscalYear", "2025"));
 > ```
+
+🔗 See also:
+* [How to retrieve memories and run RAG](#memory-retrieval-and-rag).
+* [Full example with ingestion, search and RAG queries](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient/README.md).
+
+
+
+
+Memory as a Service: Data Ingestion Pipelines + RAG Web Service
+===============================================================
+
+Depending on your scenarios, you might want to run all the code **remotely through an asynchronous
+and scalable service,
+or locally inside your process.**
+
+![image](docs/img/kernel-memory-as-a-service.png)
+
+If you're importing small files, and use only .NET and can block the application process while
+importing documents, then local-in-process execution can be fine, using the **MemoryServerless**
+described below.
+
+However, if you are in one of these scenarios:
+
+- My app is written in **TypeScript, Java, Rust, or some other language**
+- I'd just like a web service to import data and send questions to answer
+- I'm importing **big documents that can require minutes to process**, and I don't want to block the
+  user interface
+- I need memory import to **run independently, supporting failures and retry logic**
+- I want to define **custom pipelines mixing multiple languages** like Python, TypeScript, etc
+
+then you're likely looking for a **Memory Service**, and you can deploy Kernel Memory as a backend
+service, using the default ingestion logic, or your custom workflow including steps coded in
+Python/TypeScript/Java/etc., leveraging the asynchronous non-blocking memory encoding process,
+uploading documents and asking questions using the **MemoryWebClient**.
+
+![image](docs/img/kernel-memory-client.png)
+
+[Here](service/Service/README.md) you can find a complete set of instruction about
+[how to run the Kernel Memory service](service/Service/README.md).
+
+## Embedded Memory Component (aka "serverless")
+
+Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to
+ingest thousands of documents and information without blocking your app.
+
+However, Kernel Memory can also run in serverless mode, embedding `MemoryServerless` class instance
+in .NET backend/console/desktop apps in synchronous mode.
+Each request is processed immediately, although calling clients are responsible for handling
+transient errors.
+
+![image](docs/img/kernel-memory-embedded-serverless.png)
+
+
+
+
+Memory retrieval and RAG
+========================
+
+Asking questions, running RAG prompts, and filtering by user and other criteria is simple, with
+answers including citations and all the information needed to verify their accuracy, pointing to
+which documents ground the response.
+
+## C#
 
 > ### Asking questions:
 >
 > ```csharp
 > var answer1 = await memory.AskAsync("How many people attended the meeting?");
 >
-> var answer2 = await memory.AskAsync("what's the project timeline?", filter: new MemoryFilter().ByTag("user", "Blake"));
+> var answer2 = await memory.AskAsync("what's the project timeline?",
+>                                     filter: MemoryFilters.ByTag("user", "devis@contoso.com"));
 > ```
 
-The example leverages the default documents ingestion pipeline:
-
-1. Extract text: recognize the file format and extract the information
-2. Partition the text in small chunks, to optimize search
-3. Extract embedding using an LLM embedding generator
-4. Save embedding into a vector index such as
-   [Azure AI Search](https://learn.microsoft.com/azure/search/vector-search-overview),
-   [Qdrant](https://qdrant.tech/) or other DBs.
-
-In the example, memories are organized by users using tags, safeguarding private information.
-Furthermore, memories can be categorized and structured using **tags**, enabling efficient
-search and retrieval through faceted navigation.
-
 > ### Data lineage, citations, referencing sources:
->
-> All memories and answers are fully correlated to the data provided. When
-> producing an answer, Kernel Memory includes all the information needed
-> to verify its accuracy:
 >
 > ```csharp
 > await memory.ImportFileAsync("NASA-news.pdf");
@@ -135,41 +220,69 @@ search and retrieval through faceted navigation.
 > >
 > > - **NASA-news.pdf -- Tuesday, August 1, 2023**
 
+## Python
+
+> ### Asking questions:
+>
+> ```python
+> import requests
+> import json
+>
+> data = {
+>     "question": "what's the project timeline?",
+>     "filters":  [ {"user": ["devis@contoso.com"]} ]
+> }
+>
+> response = requests.post(
+>     "http://127.0.0.1:9001/ask",
+>     headers={"Content-Type": "application/json"},
+>     data=json.dumps(data),
+> ).json()
+>
+> print(response["text"])
+> ```
+
+## OpenAPI
+
+> ```
+> curl http://127.0.0.1:9001/ask -d'{"query":"Any news from NASA about Orion?"}' -H 'Content-Type: application/json'
+> ```
+>
+> ```json
+> {
+>   "Query": "Any news from NASA about Orion?",
+>   "Text": "Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version [......] For more information about the Artemis program, you can visit the NASA website.",
+>   "RelevantSources": [
+>     {
+>       "Link": "...",
+>       "SourceContentType": "application/pdf",
+>       "SourceName": "file5-NASA-news.pdf",
+>       "Partitions": [
+>         {
+>           "Text": "Skip to main content\nJul 28, 2023\nMEDIA ADVISORY M23-095\nNASA Invites Media to See Recovery Craft for\nArtemis Moon Mission\n(/sites/default/ﬁles/thumbnails/image/ksc-20230725-ph-fmx01_0003orig.jpg)\nAboard the [......] to Mars (/topics/moon-to-\nmars/),Orion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n2 of 3 7/28/23, 4:51 PM",
+>           "Relevance": 0.8430657,
+>           "SizeInTokens": 863,
+>           "LastUpdate": "2023-08-01T08:15:02-07:00"
+>         }
+>       ]
+>     }
+>   ]
+> }
+> ```
+
+The OpenAPI schema ("swagger") is available at http://127.0.0.1:9001/swagger/index.html when
+running the service locally with OpenAPI enabled.
 
 
-# Kernel Memory (KM) and Semantic Kernel (SK)
+🔗 See also: 
+- [How to import documents with Kernel Memory](#data-ingestion-using-kernel-memory-openapi-web-service).
+- [Full example with ingestion, search and RAG queries](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient/README.md).
 
-**Semantic Kernel is an SDK for C#, Python, and Java** used to develop solutions
-with AI. SK includes libraries that wrap direct calls to databases, supporting
-vector search.
 
-Semantic Kernel is maintained in three languages, while the list of supported
-storage engines (known as "connectors") varies across languages.
 
-**Kernel Memory (KM) is a SERVICE** built on Semantic Kernel, with additional
-features developed for RAG, Security, and Cloud deployment. As a service, **KM
-can be used from any language, tool, or platform, e.g. browser extensions and
-ChatGPT assistants.**
 
-Kernel Memory provides several features out of the scope of Semantic Kernel, that
-usually would be developed manually, such as storing files, extracting text from
-documents, providing a framework to secure users' data, content moderation etc.
-
-Kernel Memory is also leveraged to explore new AI patterns, which sometimes are
-backported to Semantic Kernel and Microsoft libraries, for instance vector stores
-flexible schemas, advanced filtering, authentications.
-
-Here's comparison table:
-
-| Feature                   | Kernel Memory                                                         | Semantic Kernel    |
-|---------------------------|-----------------------------------------------------------------------|--------------------|
-| Runtime                   | Memory as a Service, Web service                                      | SDK packages       |
-| Data formats              | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON | Text only          |
-| Language support          | Any language                                                          | .NET, Python, Java |
-| RAG                       | Yes                                                                   | -                  |
-| Cloud deployment          | Yes                                                                   | -                  |
-
-## Quick test using the Docker image
+Kernel Memory Docker image
+==========================
 
 If you want to give the service a quick test, use the following command
 to **start the Kernel Memory Service** using OpenAI:
@@ -207,57 +320,21 @@ on ARM64 / macOS:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
-# Import files using KM web service and `MemoryWebClient`
+🔗 See also: [Deploy Kernel Memory to Azure](#kernel-memory-service-on-azure).
 
-> ```csharp
-> #reference clients/WebClient/WebClient.csproj
->
-> var memory = new MemoryWebClient("http://127.0.0.1:9001"); // <== URL where the web service is running
->
-> // Import a file (default user)
-> await memory.ImportDocumentAsync("meeting-transcript.docx");
->
-> // Import a file specifying a Document ID, User and Tags
-> await memory.ImportDocumentAsync("business-plan.docx",
->     new DocumentDetails("user@some.email", "file001")
->         .AddTag("collection", "business")
->         .AddTag("collection", "plans")
->         .AddTag("fiscalYear", "2023"));
-> ```
 
-# Get answers via the web service
 
-> ```
-> curl http://127.0.0.1:9001/ask -d'{"query":"Any news from NASA about Orion?"}' -H 'Content-Type: application/json'
-> ```
->
-> ```json
-> {
->   "Query": "Any news from NASA about Orion?",
->   "Text": "Yes, there is news from NASA about the Orion spacecraft. NASA has invited the media to see a new test version [......] For more information about the Artemis program, you can visit the NASA website.",
->   "RelevantSources": [
->     {
->       "Link": "...",
->       "SourceContentType": "application/pdf",
->       "SourceName": "file5-NASA-news.pdf",
->       "Partitions": [
->         {
->           "Text": "Skip to main content\nJul 28, 2023\nMEDIA ADVISORY M23-095\nNASA Invites Media to See Recovery Craft for\nArtemis Moon Mission\n(/sites/default/ﬁles/thumbnails/image/ksc-20230725-ph-fmx01_0003orig.jpg)\nAboard the [......] to Mars (/topics/moon-to-\nmars/),Orion Spacecraft (/exploration/systems/orion/index.html)\nNASA Invites Media to See Recovery Craft for Artemis Moon Miss... https://www.nasa.gov/press-release/nasa-invites-media-to-see-recov...\n2 of 3 7/28/23, 4:51 PM",
->           "Relevance": 0.8430657,
->           "SizeInTokens": 863,
->           "LastUpdate": "2023-08-01T08:15:02-07:00"
->         }
->       ]
->     }
->   ]
-> }
-> ```
 
-You can find a [full example here](examples/001-dotnet-WebClient/README.md).
+Custom memory ingestion pipelines
+===================================
 
-# Custom memory ingestion pipelines
+Document ingestion operates as a stateful pipeline, executing steps in a defined sequence.
+By default, Kernel Memory employs a pipeline to **extract** text, **chunk** content, **vectorize**,
+and **store** data.
 
-On the other hand, if you need a custom data pipeline, you can also customize the steps, which will be handled by your custom business logic:
+If you need a custom data pipeline, you can modify the sequence, add new steps, or replace existing
+ones by providing custom “handlers” for each desired stage. This allows complete flexibility in
+defining how data is processed. For example:
 
 ```csharp
 // Memory setup, e.g. how to calculate and where to store embeddings
@@ -282,12 +359,62 @@ await memory.ImportDocumentAsync(
 
 ![image](docs/img/kernel-memory-pipelines.png)
 
-# Web API specs with OpenAI swagger
 
-The API schema is available at http://127.0.0.1:9001/swagger/index.html when
-running the service locally with OpenAPI enabled.
 
-# Examples and Tools
+
+Extensions
+==========
+
+Kernel Memory relies on external services to run stateful pipelines, store data, handle embeddings,
+and generate text responses. The project includes extensions that allow customization of file
+storage, queues, vector stores, and LLMs to fit specific requirements.
+
+- **AI**: Azure OpenAI, OpenAI, ONNX, Ollama, Anthropic, Azure AI Document Intelligence, Azure AI
+  Content Safety
+- **Vector Store**: Azure AI Search, Postgres, SQL Server, Elasticsearch, Qdrant, Redis, MongoDB
+  Atlas, In memory store
+- **File Storage**: Azure Blob storage, AWS S3, MongoDB Atlas, Local disk, In memory storage
+- **Ingestion pipelines**: Azure Queues, RabbitMQ, In memory queues
+
+
+
+
+Kernel Memory (KM) and Semantic Kernel (SK)
+===========================================
+
+**Semantic Kernel is an SDK for C#, Python, and Java** used to develop solutions with AI. SK
+includes libraries that wrap direct calls to databases, supporting vector search.
+
+Semantic Kernel is maintained in three languages, while the list of supported storage engines
+(known as "connectors") varies across languages.
+
+**Kernel Memory (KM) is a SERVICE** built on Semantic Kernel, with additional features developed for
+RAG, Security, and Cloud deployment. As a service, **KM can be used from any language, tool, or
+platform, e.g. browser extensions and ChatGPT assistants.**
+
+Kernel Memory provides several features out of the scope of Semantic Kernel, that would usually be
+developed manually, such as storing files, extracting text from documents, providing a framework to
+secure users' data, content moderation etc.
+
+Kernel Memory is also leveraged to explore new AI patterns, which sometimes are backported to
+Semantic Kernel and Microsoft libraries, for instance vector stores flexible schemas, advanced
+filtering, authentications.
+
+Here's comparison table:
+
+| Feature          | Kernel Memory                                                         | Semantic Kernel    |
+|------------------|-----------------------------------------------------------------------|--------------------|
+| Runtime          | Memory as a Service, Web service                                      | SDK packages       |
+| Data formats     | Web pages, PDF, Images, Word, PowerPoint, Excel, Markdown, Text, JSON | Text only          |
+| Language support | Any language                                                          | .NET, Python, Java |
+| RAG              | Yes                                                                   | -                  |
+| Cloud deployment | Yes                                                                   | -                  |
+
+
+
+
+Examples and Tools
+==================
 
 ## Examples
 
@@ -338,42 +465,49 @@ running the service locally with OpenAPI enabled.
 9. [Script to start RabbitMQ for development tasks](tools/run-rabbitmq.sh)
 10. [Script to start MongoDB Atlas for development tasks](tools/run-mongodb-atlas.sh)
 
-### .NET packages
+## .NET packages
 
-- **Microsoft.KernelMemory.WebClient:** .NET web client to call a running instance of Kernel Memory web service.
+- **Microsoft.KernelMemory.WebClient:** .NET web client to call a running instance of Kernel Memory
+  web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-WebClient)
 
-- **Microsoft.KernelMemory.Core:** Kernel Memory core library including all extensions, can be used to build custom pipelines and handlers, contains
-  also the serverless client to use memory in a synchronous way without the web service.
+- **Microsoft.KernelMemory.Core:** Kernel Memory core library including all extensions, can be used
+  to build custom pipelines and handlers, contains also the serverless client to use memory in a
+  synchronous way without the web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
 
-- **Microsoft.KernelMemory.Service.AspNetCore:** an extension to load Kernel Memory into your ASP.NET apps.
+- **Microsoft.KernelMemory.Service.AspNetCore:** an extension to load Kernel Memory into your
+  ASP.NET apps.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Service.AspNetCore)](https://www.nuget.org/packages/Microsoft.KernelMemory.Service.AspNetCore/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/204-dotnet-ASP.NET-MVC-integration)
 
-- **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel,
-  replacing the original Semantic Memory available in SK.
+- **Microsoft.KernelMemory.SemanticKernelPlugin:** a Memory plugin for Semantic Kernel, replacing
+  the original Semantic Memory available in SK.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/003-dotnet-SemanticKernel-plugin)
 
 ### Packages for Python, Java and other languages
 
-Kernel Memory service offers a **Web API** out of the box, including the **OpenAPI
-swagger** documentation that you can leverage to test the API and create custom
-web clients. For instance, after starting the service locally, see http://127.0.0.1:9001/swagger/index.html.
+Kernel Memory service offers a **Web API** out of the box, including the **OpenAPI swagger**
+documentation that you can leverage to test the API and create custom web clients. For instance,
+after starting the service locally, see http://127.0.0.1:9001/swagger/index.html.
 
 A .NET Web Client and a Semantic Kernel plugin are available, see the nugets packages above.
 
-A python package with a Web Client and Semantic Kernel plugin will soon be available.
-We also welcome PR contributions to support more languages.
+For Python, TypeScript, Java and other languages we recommend leveraging the Web Service. We also welcome
+PR contributions to support more languages.
 
-# Contributors
+
+
+
+Contributors
+============
 
 <!--
 githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
