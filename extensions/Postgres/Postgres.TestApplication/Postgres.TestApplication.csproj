@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\KM\KernelMemory\KernelMemory.csproj" />
     </ItemGroup>
 
 </Project>

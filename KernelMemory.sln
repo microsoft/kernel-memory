@@ -331,6 +331,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQ.TestApplication", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAIContentSafety", "extensions\AzureAIContentSafety\AzureAIContentSafety\AzureAIContentSafety.csproj", "{58E65B3F-EFF0-401A-AC76-A49835AE0220}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelMemory", "extensions\KM\KernelMemory\KernelMemory.csproj", "{AB097B62-5A0B-4D74-9F8B-A41FE8241447}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -613,6 +615,10 @@ Global
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -711,6 +717,7 @@ Global
 		{345DEF9B-6EE1-49DF-B46A-25E38CE9B151} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{82670921-FDCD-4672-84BD-4353F5AC24A0} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{AB097B62-5A0B-4D74-9F8B-A41FE8241447} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
