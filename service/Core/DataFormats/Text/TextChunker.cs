@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
