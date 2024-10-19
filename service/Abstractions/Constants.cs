@@ -45,12 +45,16 @@ public static class Constants
             public const string BatchSize = "custom_embedding_generation_batch_size_int";
 
             // Used to override the name of the model used to generate embeddings
+            // Supported only by Ollama and Anthropic connectors
+            // See https://github.com/microsoft/semantic-kernel/issues/9337
             public const string ModelName = "custom_embedding_generation_model_name";
         }
 
         public static class TextGeneration
         {
             // Used to override the name of the model used to generate text
+            // Supported only by Ollama and Anthropic connectors
+            // See https://github.com/microsoft/semantic-kernel/issues/9337
             public const string ModelName = "custom_text_generation_model_name";
         }
 

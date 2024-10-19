@@ -220,6 +220,15 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    /// <summary>
+    /// Extensions supported:
+    /// - Ollama
+    /// - Anthropic
+    /// Extensions not supported:
+    /// - Azure OpenAI
+    /// - ONNX
+    /// - OpenAI
+    /// </summary>
     public static string GetCustomTextGenerationModelNameOrDefault(this IContext? context, string defaultValue)
     {
         if (context.TryGetArg<string>(Constants.CustomContext.TextGeneration.ModelName, out var customValue))
@@ -230,6 +239,15 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    /// <summary>
+    /// Extensions supported:
+    /// - Ollama
+    /// - Anthropic
+    /// Extensions not supported:
+    /// - Azure OpenAI
+    /// - ONNX
+    /// - OpenAI
+    /// </summary>
     public static string GetCustomEmbeddingGenerationModelNameOrDefault(this IContext? context, string defaultValue)
     {
         if (context.TryGetArg<string>(Constants.CustomContext.EmbeddingGeneration.ModelName, out var customValue))

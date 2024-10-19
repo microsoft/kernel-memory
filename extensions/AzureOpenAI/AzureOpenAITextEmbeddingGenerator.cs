@@ -17,6 +17,12 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
+/// <summary>
+/// Azure OpenAI connector
+///
+/// Note: does not support model name override via request context
+///       see https://github.com/microsoft/semantic-kernel/issues/9337
+/// </summary>
 [Experimental("KMEXP01")]
 public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
 {

@@ -18,6 +18,9 @@ namespace Microsoft.KernelMemory.AI.OpenAI;
 /// <summary>
 /// Text embedding generator. The class can be used with any service
 /// supporting OpenAI HTTP schema.
+///
+/// Note: does not support model name override via request context
+///       see https://github.com/microsoft/semantic-kernel/issues/9337
 /// </summary>
 [Experimental("KMEXP01")]
 public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbeddingBatchGenerator
