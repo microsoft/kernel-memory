@@ -34,4 +34,4 @@ Some examples about how to use Kernel Memory.
 15. [Creating a Memory instance without KernelMemoryBuilder](210-KM-without-builder)
 16. [Intent Detection](211-dotnet-WebClient-Intent-Detection)
 17. [Fetching data from Discord](301-discord-test-application)
-18. [Test project using KM package from nuget.org](203-dotnet-using-core-nuget)
+18. [Test project using KM package from nuget.org](203-dotnet-using-KM-nuget)

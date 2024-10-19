@@ -445,7 +445,7 @@ Examples and Tools
 15. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
 16. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
 17. [Fetching data from Discord](examples/301-discord-test-application) 
-18. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+18. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
 
 ## Tools
 

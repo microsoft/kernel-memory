@@ -171,7 +171,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "201-dotnet-serverless-custo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "202-dotnet-custom-handler-as-a-service", "examples\202-dotnet-custom-handler-as-a-service\202-dotnet-custom-handler-as-a-service.csproj", "{DE115127-C77F-40FF-BA5A-E888A32F2289}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "203-dotnet-using-core-nuget", "examples\203-dotnet-using-core-nuget\203-dotnet-using-core-nuget.csproj", "{1B41A9A1-0B57-4297-B579-D04FC0BA3227}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "203-dotnet-using-KM-nuget", "examples\203-dotnet-using-KM-nuget\203-dotnet-using-KM-nuget.csproj", "{1B41A9A1-0B57-4297-B579-D04FC0BA3227}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "204-dotnet-ASP.NET-MVC-integration", "examples\204-dotnet-ASP.NET-MVC-integration\204-dotnet-ASP.NET-MVC-integration.csproj", "{10A6C940-AECC-4CEF-963E-9908DDA816B2}"
 EndProject
