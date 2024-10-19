@@ -123,10 +123,6 @@ Direct Data Ingestion using embedded Serverless .NET component
 >         .AddTag("fiscalYear", "2025"));
 > ```
 
-🔗 See also:
-* [How to retrieve memories and run RAG](#memory-retrieval-and-rag).
-* [Full example with ingestion, search and RAG queries](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient/README.md).
-
 
 
 
@@ -225,8 +221,8 @@ running the service locally with OpenAPI enabled.
 
 
 🔗 See also: 
-- [How to import documents with Kernel Memory](#data-ingestion-using-kernel-memory-openapi-web-service).
-- [Full example with ingestion, search and RAG queries](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient/README.md).
+- [Full example with ingestion, search and RAG queries](https://github.com/microsoft/kernel-memory/tree/main/examples/001-dotnet-WebClient).
+- [Full example using serverless .NET component](https://github.com/microsoft/kernel-memory/blob/main/examples/002-dotnet-Serverless).
 
 
 
@@ -270,7 +266,9 @@ on ARM64 / macOS:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
-🔗 See also: [Deploy Kernel Memory to Azure](#kernel-memory-service-on-azure).
+🔗 See also: 
+* [How to configure KM service](https://github.com/microsoft/kernel-memory/blob/main/service/Service/README.md#%EF%B8%8F-configuration)
+* [Deploy Kernel Memory to Azure](#kernel-memory-service-on-azure).
 
 
 
@@ -322,6 +320,23 @@ transient errors.
 
 
 
+Extensions
+==========
+
+Kernel Memory relies on external services to run stateful pipelines, store data, handle embeddings,
+and generate text responses. The project includes extensions that allow customization of file
+storage, queues, vector stores, and LLMs to fit specific requirements.
+
+- **AI**: Azure OpenAI, OpenAI, ONNX, Ollama, Anthropic, Azure AI Document Intelligence, Azure AI
+  Content Safety
+- **Vector Store**: Azure AI Search, Postgres, SQL Server, Elasticsearch, Qdrant, Redis, MongoDB
+  Atlas, In memory store
+- **File Storage**: Azure Blob storage, AWS S3, MongoDB Atlas, Local disk, In memory storage
+- **Ingestion pipelines**: Azure Queues, RabbitMQ, In memory queues
+
+
+
+
 Custom memory ingestion pipelines
 ===================================
 
@@ -355,23 +370,6 @@ await memory.ImportDocumentAsync(
 ```
 
 ![image](docs/img/kernel-memory-pipelines.png)
-
-
-
-
-Extensions
-==========
-
-Kernel Memory relies on external services to run stateful pipelines, store data, handle embeddings,
-and generate text responses. The project includes extensions that allow customization of file
-storage, queues, vector stores, and LLMs to fit specific requirements.
-
-- **AI**: Azure OpenAI, OpenAI, ONNX, Ollama, Anthropic, Azure AI Document Intelligence, Azure AI
-  Content Safety
-- **Vector Store**: Azure AI Search, Postgres, SQL Server, Elasticsearch, Qdrant, Redis, MongoDB
-  Atlas, In memory store
-- **File Storage**: Azure Blob storage, AWS S3, MongoDB Atlas, Local disk, In memory storage
-- **Ingestion pipelines**: Azure Queues, RabbitMQ, In memory queues
 
 
 
