@@ -51,12 +51,15 @@
     <PackageVersion Include="NRedisStack" Version="0.13.0" />
     <PackageVersion Include="ReadLine" Version="2.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
-    <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
+  <!-- Security fixes -->
+  <ItemGroup>
+    <!--    <PackageVersion Include="System.Text.Json" Version="8.0.5" />-->
+    <!--    <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />-->
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>

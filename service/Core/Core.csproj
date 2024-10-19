@@ -39,9 +39,7 @@
         <PackageReference Include="Microsoft.ML.Tokenizers" />
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
-        <PackageReference Include="System.IO.Packaging" />
         <PackageReference Include="System.Linq.Async" />
-        <PackageReference Include="System.Runtime.Caching" />
     </ItemGroup>
 
     <ItemGroup>
