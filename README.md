@@ -49,7 +49,7 @@ button.
 Data Ingestion using Kernel Memory OpenAPI Web Service
 ======================================================
 
-The example showw the default documents ingestion pipeline:
+The example show the default documents ingestion pipeline:
 
 1. Extract text: automatically recognize the file format and extract the information
 2. Partition the text in small chunks, ready for search and RAG prompts
