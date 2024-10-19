@@ -55,8 +55,6 @@
   </ItemGroup>
   <!-- Security fixes -->
   <ItemGroup>
-    <!--    <PackageVersion Include="System.Text.Json" Version="8.0.5" />-->
-    <!--    <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />-->
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
   </ItemGroup>
   <!-- KM examples -->
