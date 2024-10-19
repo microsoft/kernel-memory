@@ -130,53 +130,6 @@ Direct Data Ingestion using embedded Serverless .NET component
 
 
 
-Memory as a Service: Data Ingestion Pipelines + RAG Web Service
-===============================================================
-
-Depending on your scenarios, you might want to run all the code **remotely through an asynchronous
-and scalable service,
-or locally inside your process.**
-
-![image](docs/img/kernel-memory-as-a-service.png)
-
-If you're importing small files, and use only .NET and can block the application process while
-importing documents, then local-in-process execution can be fine, using the **MemoryServerless**
-described below.
-
-However, if you are in one of these scenarios:
-
-- My app is written in **TypeScript, Java, Rust, or some other language**
-- I'd just like a web service to import data and send questions to answer
-- I'm importing **big documents that can require minutes to process**, and I don't want to block the
-  user interface
-- I need memory import to **run independently, supporting failures and retry logic**
-- I want to define **custom pipelines mixing multiple languages** like Python, TypeScript, etc
-
-then you're likely looking for a **Memory Service**, and you can deploy Kernel Memory as a backend
-service, using the default ingestion logic, or your custom workflow including steps coded in
-Python/TypeScript/Java/etc., leveraging the asynchronous non-blocking memory encoding process,
-uploading documents and asking questions using the **MemoryWebClient**.
-
-![image](docs/img/kernel-memory-client.png)
-
-[Here](service/Service/README.md) you can find a complete set of instruction about
-[how to run the Kernel Memory service](service/Service/README.md).
-
-## Embedded Memory Component (aka "serverless")
-
-Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to
-ingest thousands of documents and information without blocking your app.
-
-However, Kernel Memory can also run in serverless mode, embedding `MemoryServerless` class instance
-in .NET backend/console/desktop apps in synchronous mode.
-Each request is processed immediately, although calling clients are responsible for handling
-transient errors.
-
-![image](docs/img/kernel-memory-embedded-serverless.png)
-
-
-
-
 Memory retrieval and RAG
 ========================
 
@@ -267,7 +220,8 @@ which documents ground the response.
 > ```
 
 The OpenAPI schema ("swagger") is available at http://127.0.0.1:9001/swagger/index.html when
-running the service locally with OpenAPI enabled.
+running the service locally with OpenAPI enabled. 
+[Here's a copy](https://editor.swagger.io/?url=https://github.com/microsoft/kernel-memory/blob/main/swagger.json).
 
 
 🔗 See also: 
@@ -317,6 +271,53 @@ on ARM64 / macOS:
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
 🔗 See also: [Deploy Kernel Memory to Azure](#kernel-memory-service-on-azure).
+
+
+
+
+Memory as a Service: Data Ingestion Pipelines + RAG Web Service
+===============================================================
+
+Depending on your scenarios, you might want to run all the code **remotely through an asynchronous
+and scalable service,
+or locally inside your process.**
+
+![image](docs/img/kernel-memory-as-a-service.png)
+
+If you're importing small files, and use only .NET and can block the application process while
+importing documents, then local-in-process execution can be fine, using the **MemoryServerless**
+described below.
+
+However, if you are in one of these scenarios:
+
+- My app is written in **TypeScript, Java, Rust, or some other language**
+- I'd just like a web service to import data and send questions to answer
+- I'm importing **big documents that can require minutes to process**, and I don't want to block the
+  user interface
+- I need memory import to **run independently, supporting failures and retry logic**
+- I want to define **custom pipelines mixing multiple languages** like Python, TypeScript, etc
+
+then you're likely looking for a **Memory Service**, and you can deploy Kernel Memory as a backend
+service, using the default ingestion logic, or your custom workflow including steps coded in
+Python/TypeScript/Java/etc., leveraging the asynchronous non-blocking memory encoding process,
+uploading documents and asking questions using the **MemoryWebClient**.
+
+![image](docs/img/kernel-memory-client.png)
+
+[Here](service/Service/README.md) you can find a complete set of instruction about
+[how to run the Kernel Memory service](service/Service/README.md).
+
+## Embedded Memory Component (aka "serverless")
+
+Kernel Memory works and scales at best when running as an asynchronous **Web Service**, allowing to
+ingest thousands of documents and information without blocking your app.
+
+However, Kernel Memory can also run in serverless mode, embedding `MemoryServerless` class instance
+in .NET backend/console/desktop apps in synchronous mode.
+Each request is processed immediately, although calling clients are responsible for handling
+transient errors.
+
+![image](docs/img/kernel-memory-embedded-serverless.png)
 
 
 
@@ -490,7 +491,8 @@ Examples and Tools
 
 ### Packages for Python, Java and other languages
 
-Kernel Memory service offers a **Web API** out of the box, including the **OpenAPI swagger**
+Kernel Memory service offers a **Web API** out of the box, including the
+[**OpenAPI swagger**](https://editor.swagger.io/?url=https://github.com/microsoft/kernel-memory/blob/main/swagger.json)
 documentation that you can leverage to test the API and create custom web clients. For instance,
 after starting the service locally, see http://127.0.0.1:9001/swagger/index.html.
 
