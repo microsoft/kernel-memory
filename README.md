@@ -39,11 +39,7 @@ For detailed instructions on deploying to Azure, you can check the [infrastructu
 If you are already familiar with these resources, you can quickly deploy by clicking the following
 button.
 
-<p align="center">
-   
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
-
-</p>
 
 🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image)
 
