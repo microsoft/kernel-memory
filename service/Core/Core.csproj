@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Core" />
         <PackageReference Include="ClosedXML" /> <!-- missing strong name (CS8002) -->
         <PackageReference Include="DocumentFormat.OpenXml" />
         <PackageReference Include="HtmlAgilityPack" />

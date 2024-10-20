@@ -14,7 +14,6 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.AI.ContentSafety" />
-        <PackageReference Include="Azure.Core" />
         <PackageReference Include="Azure.Identity" />
     </ItemGroup>
 
