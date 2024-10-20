@@ -22,10 +22,4 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" />
-    </ItemGroup>
-
 </Project>
