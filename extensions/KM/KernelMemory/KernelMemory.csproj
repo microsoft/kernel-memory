@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.All</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn)</NoWarn>
+        <NoWarn>$(NoWarn);CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

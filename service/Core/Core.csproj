@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);CS1700;KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,12 +14,12 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Core" />
-        <PackageReference Include="ClosedXML" />
+        <PackageReference Include="ClosedXML" /> <!-- missing strong name (CS8002) -->
         <PackageReference Include="DocumentFormat.OpenXml" />
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Microsoft.ML.Tokenizers" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
