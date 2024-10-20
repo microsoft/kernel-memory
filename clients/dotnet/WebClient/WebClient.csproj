@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.WebClient</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);NU5104;</NoWarn>
+        <NoWarn>$(NoWarn);</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

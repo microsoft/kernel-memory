@@ -5,14 +5,14 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.All</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);NU5104;CS8002;</NoWarn>
+        <NoWarn>$(NoWarn)</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
-        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
         <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
         <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
+        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
         <ProjectReference Include="..\..\Anthropic\Anthropic.csproj" />
         <ProjectReference Include="..\..\AWS\S3\S3.csproj" />
         <ProjectReference Include="..\..\AzureAIContentSafety\AzureAIContentSafety\AzureAIContentSafety.csproj" />

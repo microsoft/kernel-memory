@@ -5,15 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Sources.DiscordBot</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.Sources.DiscordBot</RootNamespace>
-        <NoWarn>$(NoWarn);CA1303;CS8002;</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <IsPackable>false</IsPackable>
-        <PackageId>Microsoft.KernelMemory.Sources.Discord</PackageId>
-        <Product>Discord connector for Kernel Memory</Product>
-        <Description>Discord connector for Kernel Memory</Description>
-        <PackageTags>Discord, Kernel Memory, AI, Artificial Intelligence, ETL</PackageTags>
+        <NoWarn>$(NoWarn);CA1303;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,5 +16,13 @@
     <ItemGroup>
       <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Sources.Discord</PackageId>
+        <Product>Discord connector for Kernel Memory</Product>
+        <Description>Discord connector for Kernel Memory</Description>
+        <PackageTags>Discord, Kernel Memory, AI, Artificial Intelligence, ETL</PackageTags>
+    </PropertyGroup>
 
 </Project>
