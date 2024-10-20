@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.LlamaSharp;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 

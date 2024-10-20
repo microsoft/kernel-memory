@@ -445,7 +445,7 @@ Examples and Tools
 15. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
 16. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
 17. [Fetching data from Discord](examples/301-discord-test-application) 
-18. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+18. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
 
 ## Tools
 
@@ -468,12 +468,14 @@ Examples and Tools
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.WebClient)](https://www.nuget.org/packages/Microsoft.KernelMemory.WebClient/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/001-dotnet-WebClient)
 
-- **Microsoft.KernelMemory.Core:** Kernel Memory core library including all extensions, can be used
-  to build custom pipelines and handlers, contains also the serverless client to use memory in a
-  synchronous way without the web service.
+- **Microsoft.KernelMemory:** Kernel Memory library including all extensions and clients, it can be
+  used to build custom pipelines and handlers. It contains also the serverless client to use memory
+  in a synchronous way without the web service.
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.Core)](https://www.nuget.org/packages/Microsoft.KernelMemory.Core/)
-  [![Example code](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
+  [![Serverless example](https://img.shields.io/badge/example-code-blue)](examples/002-dotnet-Serverless)
+  [![Custom pipeline example](https://img.shields.io/badge/example-code-blue)](examples/004-dotnet-serverless-custom-pipeline)
+  [![Custom pipeline example](https://img.shields.io/badge/example-code-blue)](examples/005-dotnet-async-memory-custom-pipeline)
 
 - **Microsoft.KernelMemory.Service.AspNetCore:** an extension to load Kernel Memory into your
   ASP.NET apps.
@@ -486,6 +488,9 @@ Examples and Tools
 
   [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.KernelMemory.SemanticKernelPlugin)](https://www.nuget.org/packages/Microsoft.KernelMemory.SemanticKernelPlugin/)
   [![Example code](https://img.shields.io/badge/example-code-blue)](examples/003-dotnet-SemanticKernel-plugin)
+
+- [**Microsoft.KernelMemory.\*** packages](https://www.nuget.org/packages?q=microsoft.kernelmemory):
+  Kernel Memory Core and all KM extensions split into distinct packages.
 
 ### Packages for Python, Java and other languages
 
