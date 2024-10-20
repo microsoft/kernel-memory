@@ -43,7 +43,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="OllamaSharp" Version="3.0.14" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
-    <PackageVersion Include="Pgvector" Version="0.3.0" />
+    <PackageVersion Include="Pgvector" Version="0.3.0" /> <!-- missing strong name (CS8002) -->
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageVersion Include="NRedisStack" Version="0.13.0" /> <!-- missing strong name (CS8002) -->
