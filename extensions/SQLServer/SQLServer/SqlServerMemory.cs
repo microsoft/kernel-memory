@@ -290,7 +290,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
             command.Parameters.AddWithValue("@min_relevance_score", minRelevance);
             command.Parameters.AddWithValue("@max_distance", 1 - minRelevance);
-            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data.ToArray()));
+            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data));
             command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@limit", limit);
 
