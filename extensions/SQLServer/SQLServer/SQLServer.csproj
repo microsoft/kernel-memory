@@ -15,8 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Core" />
         <PackageReference Include="Microsoft.Data.SqlClient" />
+        <PackageReference Include="System.Runtime.Caching" />
     </ItemGroup>
 
     <PropertyGroup>

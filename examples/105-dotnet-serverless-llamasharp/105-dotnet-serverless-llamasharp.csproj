@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <NoWarn>$(NoWarn);CS8002;</NoWarn>
+        <NoWarn>$(NoWarn);</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,8 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
-        <ProjectReference Include="..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
     </ItemGroup>
 
 </Project>

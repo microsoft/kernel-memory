@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-        <PackageReference Include="Microsoft.ML.Tokenizers" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
     </ItemGroup>
 
     <PropertyGroup>

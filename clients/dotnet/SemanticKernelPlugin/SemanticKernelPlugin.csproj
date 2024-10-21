@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.SemanticKernelPlugin</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.SemanticKernelPlugin</RootNamespace>
-        <NoWarn>$(NoWarn);NU5104;</NoWarn>
+        <NoWarn>$(NoWarn);</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

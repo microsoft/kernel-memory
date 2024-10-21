@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="LLamaSharp" />
+        <PackageReference Include="LLamaSharp" /> <!-- missing strong name (CS8002) -->
 
         <!-- Kernel Memory web service is configured to not have ANY pre-configured LLamaSharp backend, e.g. KM Docker
              image does not work with LLamaSharp without manually mounting a LLamaSharp backend assembly into the

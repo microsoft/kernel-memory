@@ -19,6 +19,8 @@ namespace Microsoft.KernelMemory.AI.Onnx;
 /// <summary>
 /// Text generator based on ONNX models, via OnnxRuntimeGenAi
 /// See https://github.com/microsoft/onnxruntime-genai
+///
+/// Note: does not support model name override via request context
 /// </summary>
 [Experimental("KMEXP01")]
 public sealed class OnnxTextGenerator : ITextGenerator, IDisposable

@@ -6,35 +6,38 @@ namespace Microsoft.KernelMemory.InteractiveSetup;
 
 internal sealed class Context
 {
-    public BoundedBoolean CfgWebService = new();
+    public readonly BoundedBoolean CfgWebService = new();
 
     // Storage
-    public BoundedBoolean CfgDocumentStorage = new(initialState: true);
-    public BoundedBoolean CfgAzureBlobs = new();
-    public BoundedBoolean CfgAWSS3 = new();
-    public BoundedBoolean CfgMongoDbAtlasDocumentStorage = new();
-    public BoundedBoolean CfgSimpleFileStorage = new();
+    public readonly BoundedBoolean CfgDocumentStorage = new(initialState: true);
+    public readonly BoundedBoolean CfgAzureBlobs = new();
+    public readonly BoundedBoolean CfgAWSS3 = new();
+    public readonly BoundedBoolean CfgMongoDbAtlasDocumentStorage = new();
+    public readonly BoundedBoolean CfgSimpleFileStorageVolatile = new();
+    public readonly BoundedBoolean CfgSimpleFileStoragePersistent = new();
 
     // Queues
-    public BoundedBoolean CfgQueue = new();
-    public BoundedBoolean CfgAzureQueue = new();
-    public BoundedBoolean CfgRabbitMq = new();
-    public BoundedBoolean CfgSimpleQueues = new();
+    public readonly BoundedBoolean CfgQueue = new();
+    public readonly BoundedBoolean CfgAzureQueue = new();
+    public readonly BoundedBoolean CfgRabbitMq = new();
+    public readonly BoundedBoolean CfgSimpleQueuesVolatile = new();
+    public readonly BoundedBoolean CfgSimpleQueuesPersistent = new();
 
     // AI
-    public BoundedBoolean CfgAzureOpenAIText = new();
-    public BoundedBoolean CfgAzureOpenAIEmbedding = new();
-    public BoundedBoolean CfgOpenAI = new();
-    public BoundedBoolean CfgLlamaSharp = new();
-    public BoundedBoolean CfgOllama = new();
-    public BoundedBoolean CfgAzureAIDocIntel = new();
+    public readonly BoundedBoolean CfgAzureOpenAIText = new();
+    public readonly BoundedBoolean CfgAzureOpenAIEmbedding = new();
+    public readonly BoundedBoolean CfgOpenAI = new();
+    public readonly BoundedBoolean CfgLlamaSharp = new();
+    public readonly BoundedBoolean CfgOllama = new();
+    public readonly BoundedBoolean CfgAzureAIDocIntel = new();
 
     // Vectors
-    public BoundedBoolean CfgEmbeddingGenerationEnabled = new(initialState: true);
-    public BoundedBoolean CfgAzureAISearch = new();
-    public BoundedBoolean CfgMongoDbAtlasMemory = new();
-    public BoundedBoolean CfgPostgres = new();
-    public BoundedBoolean CfgQdrant = new();
-    public BoundedBoolean CfgRedis = new();
-    public BoundedBoolean CfgSimpleVectorDb = new();
+    public readonly BoundedBoolean CfgEmbeddingGenerationEnabled = new(initialState: true);
+    public readonly BoundedBoolean CfgAzureAISearch = new();
+    public readonly BoundedBoolean CfgMongoDbAtlasMemory = new();
+    public readonly BoundedBoolean CfgPostgres = new();
+    public readonly BoundedBoolean CfgQdrant = new();
+    public readonly BoundedBoolean CfgRedis = new();
+    public readonly BoundedBoolean CfgSimpleVectorDbVolatile = new();
+    public readonly BoundedBoolean CfgSimpleVectorDbPersistent = new();
 }

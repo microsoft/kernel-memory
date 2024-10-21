@@ -16,7 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="System.Linq.Async" />
-        <PackageReference Include="NRedisStack" />
+        <PackageReference Include="NRedisStack" /><!-- missing strong name (CS8002) -->
     </ItemGroup>
 
     <PropertyGroup>

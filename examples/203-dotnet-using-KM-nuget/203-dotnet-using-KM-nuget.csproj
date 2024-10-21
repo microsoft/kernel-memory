@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Core" />
+        <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>
