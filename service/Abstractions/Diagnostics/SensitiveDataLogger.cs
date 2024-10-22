@@ -19,7 +19,7 @@ public static class SensitiveDataLogger
         set
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+            if (value && !string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
             {
 #pragma warning disable CA2201
                 throw new ApplicationException("Sensitive data logging can be enabled only in a development environment. Check ASPNETCORE_ENVIRONMENT env var.");
