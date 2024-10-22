@@ -54,5 +54,9 @@ public sealed class SensitiveDataLoggerTests : IDisposable
         Assert.False(SensitiveDataLogger.Enabled);
     }
 
-    public void Dispose() => Environment.SetEnvironmentVariable(EnvironmentVariableName, null);
+    public void Dispose()
+    {
+        Environment.SetEnvironmentVariable(EnvironmentVariableName, null);
+        SensitiveDataLogger.Enabled = false;
+    }
 }
