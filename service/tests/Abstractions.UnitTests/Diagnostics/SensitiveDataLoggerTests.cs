@@ -47,7 +47,7 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     [InlineData("Staging")]
     [InlineData("Production")]
     [Trait("Category", "UnitTest")]
-    public void ItCanBeDisabledForAllEnvironments(string environment)
+    public void ItCanBeDisabledInAnyEnvironment(string environment)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
