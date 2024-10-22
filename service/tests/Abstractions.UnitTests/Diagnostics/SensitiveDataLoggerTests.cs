@@ -41,7 +41,11 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     [InlineData("any")]
     public void ItCannotBeEnabledInNonDevelopmentEnvironments(string environment)
     {
+
+        // Arrange
         Environment.SetEnvironmentVariable(EnvironmentVariableName, environment);
+
+        // Act/Assert
         Assert.Throws<InvalidOperationException>(() => SensitiveDataLogger.Enabled = true);
     }
 
