@@ -28,7 +28,11 @@ public sealed class SensitiveDataLoggerTests : IDisposable
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
         Environment.SetEnvironmentVariable(EnvironmentVariableName, environment);
+
+        // Act
         SensitiveDataLogger.Enabled = true;
+
+        // Assert
         Assert.True(SensitiveDataLogger.Enabled);
     }
 
