@@ -9,6 +9,13 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     private const string EnvironmentVariableName = "ASPNETCORE_ENVIRONMENT";
 
     [Fact]
+    public void ItIsDisabledByDefault()
+    {
+        // Assert
+        Assert.False(SensitiveDataLogger.Enabled);
+    }
+
+    [Fact]
     [Trait("Category", "UnitTest")]
     public void ItCanBeEnabledInDevelopmentEnvironment()
     {
