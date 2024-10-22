@@ -43,10 +43,14 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Development")]
-    [InlineData("Staging")]
-    [InlineData("Production")]
     [Trait("Category", "UnitTest")]
+    [InlineData("development")]
+    [InlineData("Development")]
+    [InlineData("staging")]
+    [InlineData("Staging")]
+    [InlineData("production")]
+    [InlineData("Production")]
+    [InlineData("any")]
     public void ItCanBeDisabledInAnyEnvironment(string environment)
     {
         // Arrange
