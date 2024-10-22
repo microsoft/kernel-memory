@@ -12,21 +12,14 @@ public static class SensitiveDataLogger
 
     public static bool Enabled
     {
-        get
-        {
-            return s_enabled;
-        }
+        get => s_enabled;
         set
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
-            {
-#pragma warning disable CA2201
-                throw new ApplicationException("Sensitive data logging can be enabled only in a development environment. Check ASPNETCORE_ENVIRONMENT env var.");
-#pragma warning restore CA0000
-            }
+            if (s_enabled == value) { return; }
 
-            s_enabled = value && string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase);
+            if (value) { EnsureDevelopmentEnvironment(); }
+
+            s_enabled = value;
         }
     }
 
@@ -71,5 +64,14 @@ public static class SensitiveDataLogger
         if (!Enabled) { return; }
 
         logger.Log(LoggingLevel, eventId, message, args);
+    }
+
+    private static void EnsureDevelopmentEnvironment()
+    {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Sensitive data logging can be enabled only in a development environment. Check ASPNETCORE_ENVIRONMENT env var.");
+        }
     }
 }
