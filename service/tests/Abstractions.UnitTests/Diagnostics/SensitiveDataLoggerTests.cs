@@ -33,9 +33,12 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Staging")]
-    [InlineData("Production")]
     [Trait("Category", "UnitTest")]
+    [InlineData("staging")]
+    [InlineData("Staging")]
+    [InlineData("production")]
+    [InlineData("Production")]
+    [InlineData("any")]
     public void ItCannotBeEnabledInNonDevelopmentEnvironments(string environment)
     {
         Environment.SetEnvironmentVariable(EnvironmentVariableName, environment);
