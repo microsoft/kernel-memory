@@ -19,7 +19,15 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     [Trait("Category", "UnitTest")]
     public void ItCanBeEnabledInDevelopmentEnvironment()
     {
-        Environment.SetEnvironmentVariable(EnvironmentVariableName, "Development");
+    [Theory]
+    [Trait("Category", "UnitTest")]
+    [InlineData("development")]
+    [InlineData("Development")]
+    public void ItCanBeEnabledInDevelopmentEnvironment(string environment)
+    {
+        // Arrange
+        Assert.False(SensitiveDataLogger.Enabled);
+        Environment.SetEnvironmentVariable(EnvironmentVariableName, environment);
         SensitiveDataLogger.Enabled = true;
         Assert.True(SensitiveDataLogger.Enabled);
     }
