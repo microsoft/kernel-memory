@@ -73,6 +73,9 @@ public static class Constants
             // Used to override the max tokens to generate when using the RAG prompt
             public const string MaxTokens = "custom_rag_max_tokens_int";
 
+            // Used to override the max matches count used with the RAG prompt
+            public const string MaxMatchesCount = "custom_rag_max_matches_count_int";
+
             // Used to override the temperature (default 0) used with the RAG prompt
             public const string Temperature = "custom_rag_temperature_float";
 
