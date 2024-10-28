@@ -6,8 +6,8 @@ namespace Microsoft.KM.Abstractions.UnitTests.Diagnostics;
 
 public sealed class SensitiveDataLoggerTests : IDisposable
 {
-    private const string AspNetCoreEnvironmentVariableName = "ASPNETCORE_ENVIRONMENT";
-    private const string DotNetEnvironmentVariableName = "DOTNET_ENVIRONMENT";
+    private const string AspNetCoreEnvVar = "ASPNETCORE_ENVIRONMENT";
+    private const string DotNetEnvVar = "DOTNET_ENVIRONMENT";
 
     [Fact]
     public void ItIsDisabledByDefault()
@@ -18,13 +18,15 @@ public sealed class SensitiveDataLoggerTests : IDisposable
 
     [Theory]
     [Trait("Category", "UnitTest")]
-    [InlineData("development")]
-    [InlineData("Development")]
-    public void ItCanBeEnabledInAspNetCoreDevelopmentEnvironment(string environment)
+    [InlineData(AspNetCoreEnvVar, "development")]
+    [InlineData(AspNetCoreEnvVar, "Development")]
+    [InlineData(DotNetEnvVar, "development")]
+    [InlineData(DotNetEnvVar, "Development")]
+    public void ItCanBeEnabledInDevEnvironments(string envVar, string envType)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, environment);
+        Environment.SetEnvironmentVariable(envVar, envType);
 
         // Act
         SensitiveDataLogger.Enabled = true;
@@ -35,33 +37,21 @@ public sealed class SensitiveDataLoggerTests : IDisposable
 
     [Theory]
     [Trait("Category", "UnitTest")]
-    [InlineData("development")]
-    [InlineData("Development")]
-    public void ItCanBeEnabledInDotNetDevelopmentEnvironment(string environment)
+    [InlineData(AspNetCoreEnvVar, "staging")]
+    [InlineData(AspNetCoreEnvVar, "Staging")]
+    [InlineData(AspNetCoreEnvVar, "production")]
+    [InlineData(AspNetCoreEnvVar, "Production")]
+    [InlineData(AspNetCoreEnvVar, "any")]
+    [InlineData(DotNetEnvVar, "staging")]
+    [InlineData(DotNetEnvVar, "Staging")]
+    [InlineData(DotNetEnvVar, "production")]
+    [InlineData(DotNetEnvVar, "Production")]
+    [InlineData(DotNetEnvVar, "any")]
+    public void ItCannotBeEnabledInNonDevEnvironments(string envVar, string envType)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, environment);
-
-        // Act
-        SensitiveDataLogger.Enabled = true;
-
-        // Assert
-        Assert.True(SensitiveDataLogger.Enabled);
-    }
-
-    [Theory]
-    [Trait("Category", "UnitTest")]
-    [InlineData("staging")]
-    [InlineData("Staging")]
-    [InlineData("production")]
-    [InlineData("Production")]
-    [InlineData("any")]
-    public void ItCannotBeEnabledInNonAspNetCoreDevelopmentEnvironments(string environment)
-    {
-        // Arrange
-        Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, environment);
+        Environment.SetEnvironmentVariable(envVar, envType);
 
         // Act/Assert
         Assert.Throws<InvalidOperationException>(() => SensitiveDataLogger.Enabled = true);
@@ -69,57 +59,25 @@ public sealed class SensitiveDataLoggerTests : IDisposable
 
     [Theory]
     [Trait("Category", "UnitTest")]
-    [InlineData("staging")]
-    [InlineData("Staging")]
-    [InlineData("production")]
-    [InlineData("Production")]
-    [InlineData("any")]
-    public void ItCannotBeEnabledInNonDotNetDevelopmentEnvironments(string environment)
+    [InlineData(AspNetCoreEnvVar, "development")]
+    [InlineData(AspNetCoreEnvVar, "Development")]
+    [InlineData(AspNetCoreEnvVar, "staging")]
+    [InlineData(AspNetCoreEnvVar, "Staging")]
+    [InlineData(AspNetCoreEnvVar, "production")]
+    [InlineData(AspNetCoreEnvVar, "Production")]
+    [InlineData(AspNetCoreEnvVar, "any")]
+    [InlineData(DotNetEnvVar, "development")]
+    [InlineData(DotNetEnvVar, "Development")]
+    [InlineData(DotNetEnvVar, "staging")]
+    [InlineData(DotNetEnvVar, "Staging")]
+    [InlineData(DotNetEnvVar, "production")]
+    [InlineData(DotNetEnvVar, "Production")]
+    [InlineData(DotNetEnvVar, "any")]
+    public void ItCanBeDisabledInAnyEnvironment(string envVar, string envType)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, environment);
-
-        // Act/Assert
-        Assert.Throws<InvalidOperationException>(() => SensitiveDataLogger.Enabled = true);
-    }
-
-    [Theory]
-    [Trait("Category", "UnitTest")]
-    [InlineData("development")]
-    [InlineData("Development")]
-    [InlineData("staging")]
-    [InlineData("Staging")]
-    [InlineData("production")]
-    [InlineData("Production")]
-    [InlineData("any")]
-    public void ItCanBeDisabledInAnyAspNetCoreEnvironment(string environment)
-    {
-        // Arrange
-        Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, environment);
-
-        // Act
-        SensitiveDataLogger.Enabled = false;
-
-        // Assert
-        Assert.False(SensitiveDataLogger.Enabled);
-    }
-
-    [Theory]
-    [Trait("Category", "UnitTest")]
-    [InlineData("development")]
-    [InlineData("Development")]
-    [InlineData("staging")]
-    [InlineData("Staging")]
-    [InlineData("production")]
-    [InlineData("Production")]
-    [InlineData("any")]
-    public void ItCanBeDisabledInAnyDotNetEnvironment(string environment)
-    {
-        // Arrange
-        Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, environment);
+        Environment.SetEnvironmentVariable(envVar, envType);
 
         // Act
         SensitiveDataLogger.Enabled = false;
@@ -138,12 +96,12 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     [InlineData("Staging", "Development", true)]
     [InlineData("production", "development", true)]
     [InlineData("Production", "Development", true)]
-    public void AspNetCoreEnvironmentHasThePrecedence(string aspNetCoreEnvironment, string dotNetEnvironment, bool fail)
+    public void AspNetCoreEnvTypeHasThePrecedence(string aspNetCoreEnvType, string dotNetEnvType, bool fail)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
-        Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, aspNetCoreEnvironment);
-        Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, dotNetEnvironment);
+        Environment.SetEnvironmentVariable(AspNetCoreEnvVar, aspNetCoreEnvType);
+        Environment.SetEnvironmentVariable(DotNetEnvVar, dotNetEnvType);
 
         if (fail)
         {
@@ -161,8 +119,8 @@ public sealed class SensitiveDataLoggerTests : IDisposable
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, null);
-        Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, null);
+        Environment.SetEnvironmentVariable(AspNetCoreEnvVar, null);
+        Environment.SetEnvironmentVariable(DotNetEnvVar, null);
         SensitiveDataLogger.Enabled = false;
     }
 }
