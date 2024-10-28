@@ -130,6 +130,16 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    public static int GetCustomRagMaxMatchesCountOrDefault(this IContext? context, int defaultValue)
+    {
+        if (context.TryGetArg<int>(Constants.CustomContext.Rag.MaxMatchesCount, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
     public static double GetCustomRagTemperatureOrDefault(this IContext? context, double defaultValue)
     {
         if (context.TryGetArg<double>(Constants.CustomContext.Rag.Temperature, out var customValue))
