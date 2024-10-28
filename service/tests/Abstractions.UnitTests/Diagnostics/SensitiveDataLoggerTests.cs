@@ -130,20 +130,33 @@ public sealed class SensitiveDataLoggerTests : IDisposable
 
     [Theory]
     [Trait("Category", "UnitTest")]
-    [InlineData("development", "staging")]
-    [InlineData("Development", "Staging")]
-    public void AspNetCoreEnvironmentHasThePrecedence(string aspNetCoreEnvironment, string dotNetEnvironment)
+    [InlineData("development", "staging", false)]
+    [InlineData("Development", "Staging", false)]
+    [InlineData("development", "production", false)]
+    [InlineData("Development", "Production", false)]
+    [InlineData("staging", "development", true)]
+    [InlineData("Staging", "Development", true)]
+    [InlineData("production", "development", true)]
+    [InlineData("Production", "Development", true)]
+    public void AspNetCoreEnvironmentHasThePrecedence(string aspNetCoreEnvironment, string dotNetEnvironment, bool fail)
     {
         // Arrange
         Assert.False(SensitiveDataLogger.Enabled);
         Environment.SetEnvironmentVariable(AspNetCoreEnvironmentVariableName, aspNetCoreEnvironment);
         Environment.SetEnvironmentVariable(DotNetEnvironmentVariableName, dotNetEnvironment);
 
-        // Act
-        SensitiveDataLogger.Enabled = true;
+        if (fail)
+        {
+            Assert.Throws<InvalidOperationException>(() => SensitiveDataLogger.Enabled = true);
+        }
+        else
+        {
+            // Act
+            SensitiveDataLogger.Enabled = true;
 
-        // Assert
-        Assert.True(SensitiveDataLogger.Enabled);
+            // Assert
+            Assert.True(SensitiveDataLogger.Enabled);
+        }
     }
 
     public void Dispose()
