@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -68,10 +68,11 @@ public static class SensitiveDataLogger
 
     private static void EnsureDevelopmentEnvironment()
     {
-        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        if (!string.Equals(env, "Development", StringComparison.OrdinalIgnoreCase))
+        // The ASPNETCORE_ENVIRONMENT environment variable has the precedence. If it does not exist, checks for DOTNET_ENVIRONMENT.
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        if (!string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Sensitive data logging can be enabled only in a development environment. Check ASPNETCORE_ENVIRONMENT env var.");
+            throw new InvalidOperationException("Sensitive data logging can be enabled only in a development environment. Check ASPNETCORE_ENVIRONMENT or DOTNET_ENVIRONMENT env vars.");
         }
     }
 }
