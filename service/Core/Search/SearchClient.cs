@@ -199,6 +199,8 @@ public sealed class SearchClient : ISearchClient
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
+        int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
+
         if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
 
         var noAnswerFound = new MemoryAnswer
@@ -234,7 +236,7 @@ public sealed class SearchClient : ISearchClient
             text: question,
             filters: filters,
             minRelevance: minRelevance,
-            limit: this._config.MaxMatchesCount,
+            limit: limit,
             withEmbeddings: false,
             cancellationToken: cancellationToken);
 
