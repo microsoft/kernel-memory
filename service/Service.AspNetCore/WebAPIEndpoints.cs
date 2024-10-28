@@ -7,10 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
@@ -21,10 +23,11 @@ public static class WebAPIEndpoints
 {
     public static IEndpointRouteBuilder AddKernelMemoryEndpoints(
         this IEndpointRouteBuilder builder,
+        ServiceConfig serviceConfig,
         string apiPrefix = "/",
         IEndpointFilter? authFilter = null)
     {
-        builder.AddPostUploadEndpoint(apiPrefix, authFilter);
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter, serviceConfig.MaxUploadRequestBodySize);
         builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
@@ -37,7 +40,7 @@ public static class WebAPIEndpoints
     }
 
     public static void AddPostUploadEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null, long? maxRequestBodySize = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -49,6 +52,13 @@ public static class WebAPIEndpoints
                 IContextProvider contextProvider,
                 CancellationToken cancellationToken) =>
             {
+                if (maxRequestBodySize is not null
+                    && request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } feature)
+                {
+                    log.LogTrace("Max upload request body size set to {0} bytes", maxRequestBodySize);
+                    feature.MaxRequestBodySize = maxRequestBodySize;
+                }
+
                 log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
 
                 // Note: .NET doesn't yet support binding multipart forms including data and files

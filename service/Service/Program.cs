@@ -138,7 +138,7 @@ internal static class Program
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-            app.AddKernelMemoryEndpoints("/", authFilter);
+            app.AddKernelMemoryEndpoints(config.Service, "/", authFilter);
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))

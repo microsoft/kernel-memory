@@ -13,6 +13,12 @@ public class ServiceConfig
     public bool RunWebService { get; set; } = true;
 
     /// <summary>
+    /// The maximum allowed size in bytes for a request body posted to the upload endpoint.
+    /// If not set, the default ASP.NET Core limit of 30 MB (~28.6 MiB) is applied.
+    /// </summary>
+    public long? MaxUploadRequestBodySize { get; set; } = null;
+
+    /// <summary>
     /// Whether to run the asynchronous pipeline handlers
     /// Use these booleans to deploy the web service and the handlers on same/different VMs
     /// </summary>
