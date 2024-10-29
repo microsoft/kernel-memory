@@ -341,7 +341,7 @@ public sealed class SearchClient : ISearchClient
         var charsGenerated = 0;
         var watch = new Stopwatch();
         watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
+        await foreach (var x in this.GenerateAnswer(question, emptyAnswer, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
             if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
@@ -531,7 +531,7 @@ public sealed class SearchClient : ISearchClient
             yield break;
         }
         var charsGenerated = 0;
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(true))
+        await foreach (var x in this.GenerateAnswer(question, emptyAnswer,facts.ToString(), context, cancellationToken).ConfigureAwait(true))
         {
             var text = new StringBuilder();
             text.Append(x);
@@ -554,7 +554,7 @@ public sealed class SearchClient : ISearchClient
         yield return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
+    private IAsyncEnumerable<string> GenerateAnswer(string question, string emptyAnswer, string facts, IContext? context, CancellationToken token)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
@@ -565,7 +565,7 @@ public sealed class SearchClient : ISearchClient
 
         question = question.Trim();
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
-        prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
+        prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
 
         var options = new TextGenerationOptions
         {
