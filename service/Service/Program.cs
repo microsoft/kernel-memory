@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -97,6 +99,19 @@ internal static class Program
                 syncHandlersCount = AddHandlersToServerlessMemory(config, memory);
 
                 memoryType = ((memory is MemoryServerless) ? "Sync - " : "Async - ") + memory.GetType().FullName;
+            },
+            services =>
+            {
+                long? maxSize = config.Service.GetMaxUploadSizeInBytes();
+                if (!maxSize.HasValue) { return; }
+
+                services.Configure<IISServerOptions>(x => { x.MaxRequestBodySize = maxSize.Value; });
+                services.Configure<KestrelServerOptions>(x => { x.Limits.MaxRequestBodySize = maxSize.Value; });
+                services.Configure<FormOptions>(x =>
+                {
+                    x.MultipartBodyLengthLimit = maxSize.Value;
+                    x.ValueLengthLimit = int.MaxValue;
+                });
             });
 
         // CORS
@@ -138,7 +153,7 @@ internal static class Program
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-            app.AddKernelMemoryEndpoints("/", authFilter);
+            app.AddKernelMemoryEndpoints("/", config, authFilter);
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))
