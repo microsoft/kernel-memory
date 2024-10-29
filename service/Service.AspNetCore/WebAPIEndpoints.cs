@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
@@ -23,11 +22,11 @@ public static class WebAPIEndpoints
 {
     public static IEndpointRouteBuilder AddKernelMemoryEndpoints(
         this IEndpointRouteBuilder builder,
-        ServiceConfig serviceConfig,
         string apiPrefix = "/",
+        KernelMemoryConfig? kmConfig = null,
         IEndpointFilter? authFilter = null)
     {
-        builder.AddPostUploadEndpoint(apiPrefix, authFilter, serviceConfig.MaxUploadRequestBodySize);
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter, kmConfig?.Service.GetMaxUploadSizeInBytes());
         builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
@@ -40,7 +39,10 @@ public static class WebAPIEndpoints
     }
 
     public static void AddPostUploadEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null, long? maxRequestBodySize = null)
+        this IEndpointRouteBuilder builder,
+        string apiPrefix = "/",
+        IEndpointFilter? authFilter = null,
+        long? maxUploadSizeInBytes = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -52,11 +54,10 @@ public static class WebAPIEndpoints
                 IContextProvider contextProvider,
                 CancellationToken cancellationToken) =>
             {
-                if (maxRequestBodySize is not null
-                    && request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } feature)
+                if (maxUploadSizeInBytes.HasValue && request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } feature)
                 {
-                    log.LogTrace("Max upload request body size set to {0} bytes", maxRequestBodySize);
-                    feature.MaxRequestBodySize = maxRequestBodySize;
+                    log.LogTrace("Max upload request body size set to {0} bytes", maxUploadSizeInBytes.Value);
+                    feature.MaxRequestBodySize = maxUploadSizeInBytes;
                 }
 
                 log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
