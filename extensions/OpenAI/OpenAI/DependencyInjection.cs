@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
+using OpenAI;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable once CheckNamespace - reduce number of "using" statements
@@ -16,16 +16,16 @@ namespace Microsoft.KernelMemory;
 /// </summary>
 public static partial class KernelMemoryBuilderExtensions
 {
-    // Using GPT 3.5 Turbo - https://platform.openai.com/docs/models/gpt-3-5
-    private const string DefaultTextModel = "gpt-3.5-turbo-16k";
-    private const int DefaultTextModelMaxToken = 16_384;
+    // Models at https://platform.openai.com/docs/models/gpt-4o-mini
+    private const string DefaultTextModel = "gpt-4o-mini";
+    private const int DefaultTextModelMaxToken = 32_768; // using 2 x max output tokens
 
-    // Using Ada v2
+    // Models at https://platform.openai.com/docs/guides/embeddings/embedding-models
     private const string DefaultEmbeddingModel = "text-embedding-ada-002";
     private const int DefaultEmbeddingModelMaxToken = 8_191;
 
     /// <summary>
-    /// Use default OpenAI models (3.5-Turbo and Ada-002) and settings for ingestion and retrieval.
+    /// Use default OpenAI models and settings for ingestion and retrieval.
     /// </summary>
     /// <param name="builder">Kernel Memory builder</param>
     /// <param name="apiKey">OpenAI API Key</param>

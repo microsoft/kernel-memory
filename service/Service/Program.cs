@@ -49,6 +49,8 @@ internal static class Program
 
     public static void Main(string[] args)
     {
+        SensitiveDataLogger.Enabled = false;
+
         // *************************** CONFIG WIZARD ***************************
 
         // Run `dotnet run setup` to run this code and setup the service
@@ -170,6 +172,7 @@ internal static class Program
         Console.WriteLine("* Document storage    : " + app.Services.GetService<IDocumentStorage>()?.GetType().FullName);
         Console.WriteLine("* Embedding generation: " + app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName);
         Console.WriteLine("* Text generation     : " + app.Services.GetService<ITextGenerator>()?.GetType().FullName);
+        Console.WriteLine("* Content moderation  : " + app.Services.GetService<IContentModeration>()?.GetType().FullName);
         Console.WriteLine("* Log level           : " + app.Logger.GetLogLevelName());
         Console.WriteLine("***************************************************************************************************************************");
 

@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;</NoWarn>
+        <NoWarn>$(NoWarn);CS1700;KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,6 +33,7 @@
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Http" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
@@ -51,8 +52,8 @@
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Core</PackageId>
-        <Product>Kernel Memory library, including extensions and Serverless and Web client</Product>
-        <Description>The package contains all the core logic and extensions of Kernel Memory, to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
+        <Product>Kernel Memory core library</Product>
+        <Description>The package contains the the core logic and abstractions of Kernel Memory, not including extensions.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
         <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>

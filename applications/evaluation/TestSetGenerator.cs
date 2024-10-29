@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.Evaluation.TestSet;
+using Microsoft.KernelMemory.Evaluators.AnswerCorrectness;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -24,36 +25,45 @@ public sealed partial class TestSetGenerator : EvaluationEngine
     private KernelFunction Translate => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("Transmutation", "Translate"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0
     });
 
     private KernelFunction QuestionAnswerGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "QuestionAnswer"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     });
 
     private KernelFunction KeyPhraseExtraction => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("Extraction", "Keyphrase"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     });
 
     private KernelFunction SeedQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "SeedQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0
     });
 
     private KernelFunction ReasoningQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "ReasoningQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0
     });
 
     private KernelFunction MultiContextQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "MultiContextQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0
     });
 
     private KernelFunction ConditioningQuestionGeneration => this._evaluatorKernel.CreateFunctionFromPrompt(this.GetSKPrompt("SyntheticData", "ConditionalQuestion"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0
     });
 
     internal TestSetGenerator(
@@ -343,10 +353,10 @@ public sealed partial class TestSetGenerator : EvaluationEngine
                 { "input", context }
             }).ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<IEnumerable<string>>(generatedKeyPhrases.GetValue<string>()!);
+            return JsonSerializer.Deserialize<StatementExtraction>(generatedKeyPhrases.GetValue<string>()!);
         }).ConfigureAwait(false);
 
-        return this.Shuffle(keyPhrases!);
+        return this.Shuffle(keyPhrases!.Statements!);
     }
 
     private Task<QuestionAnswer> GetQuestionAnswerAsync(string context, string question, string language = null!, int retryCount = 3)

@@ -61,4 +61,13 @@ public class SqlServerConfig
     /// The SQL Server tags table name.
     /// </summary>
     public string TagsTableName { get; set; } = DefaultTagsTableName;
+
+    /// <summary>
+    /// Whether to use native vector search or not.
+    /// </summary>
+    /// <remarks>
+    /// Currently, Vector Search supports only Azure SQL Database and can handle vectors up to 1998 dimensions.
+    /// See https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database for more information.
+    /// </remarks>
+    public bool UseNativeVectorSearch { get; set; } = false;
 }

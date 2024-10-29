@@ -34,7 +34,7 @@ output:
 
 ## Instructions
 
-Generate a question for the given answer and Identify if answer is noncommittal. Give committal as 1 if the answer is committal and 0 if the answer is noncommittal. A noncommittal answer is one that is evasive, vague, or ambiguous. For example, "I don't know" or "I'm not sure" are noncommittal answers
+Generate a question for the given answer and Identify if answer is noncommittal. Give committal as 1 if the answer is committal and 0 if the answer is noncommittal. A noncommittal answer is one that is evasive, vague, or ambiguous. For example, "I don't know" or "I'm not sure" are noncommittal answers Your output should always be a json data.
 
 Let's do it with a real data.
 

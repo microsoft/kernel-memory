@@ -257,7 +257,7 @@ public static class WebAPIEndpoints
                     log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
                     try
                     {
-                        var answerStream = await service.AskAsyncChunk(
+                        var answerStream =  service.AskAsyncChunk(
                             question: query.Question,
                             index: query.Index,
                             filters: query.Filters,

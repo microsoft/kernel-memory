@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -18,10 +19,12 @@ using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
 
+[Experimental("KMEXP05")]
 public sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
+    private readonly IContentModeration? _contentModeration;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
     private readonly string _answerPrompt;
@@ -31,10 +34,12 @@ public sealed class SearchClient : ISearchClient
         ITextGenerator textGenerator,
         SearchClientConfig? config = null,
         IPromptProvider? promptProvider = null,
+        IContentModeration? contentModeration = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
+        this._contentModeration = contentModeration;
         this._config = config ?? new SearchClientConfig();
         this._config.Validate();
 
@@ -195,6 +200,8 @@ public sealed class SearchClient : ISearchClient
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
+        int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
+
         if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
 
         var noAnswerFound = new MemoryAnswer
@@ -230,7 +237,7 @@ public sealed class SearchClient : ISearchClient
             text: question,
             filters: filters,
             minRelevance: minRelevance,
-            limit: this._config.MaxMatchesCount,
+            limit: limit,
             withEmbeddings: false,
             cancellationToken: cancellationToken);
 
@@ -325,7 +332,7 @@ public sealed class SearchClient : ISearchClient
 
         if (factsUsedCount == 0)
         {
-            this._log.LogWarning("No memories available");
+            this._log.LogWarning("No memories available (min relevance: {0})", minRelevance);
             noAnswerFound.NoResultReason = "No memories available";
             return noAnswerFound;
         }
@@ -347,6 +354,7 @@ public sealed class SearchClient : ISearchClient
         watch.Stop();
 
         answer.Result = text.ToString();
+        this._log.LogSensitive("Answer: {0}", answer.Result);
         answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
         {
@@ -356,6 +364,18 @@ public sealed class SearchClient : ISearchClient
         else
         {
             this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
+        }
+
+        if (this._contentModeration != null && this._config.UseContentModeration)
+        {
+            var isSafe = await this._contentModeration.IsSafeAsync(answer.Result, cancellationToken).ConfigureAwait(false);
+            if (!isSafe)
+            {
+                this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
+                this._log.LogSensitive("Unsafe answer: {0}", answer.Result);
+                answer.NoResultReason = "Content moderation failure";
+                answer.Result = this._config.ModeratedAnswer;
+            }
         }
 
         return answer;
@@ -370,7 +390,7 @@ public sealed class SearchClient : ISearchClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
-        string eosToken = context.GetCustomEosTokenOrDefault("end");
+        string eosToken = context.GetCustomEosTokenOrDefault("#DONE#");
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
         if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
@@ -563,6 +583,8 @@ public sealed class SearchClient : ISearchClient
             this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
                 this._textGenerator.CountTokens(prompt),
                 this._config.AnswerTokens);
+
+            this._log.LogSensitive("Prompt: {0}", prompt);
         }
 
         return this._textGenerator.GenerateTextAsync(prompt, options, token);

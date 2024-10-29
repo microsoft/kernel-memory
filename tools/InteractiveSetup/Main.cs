@@ -46,7 +46,7 @@ public static class Main
             // Embedding generation
             EmbeddingGeneratorSetup(ctx);
             AzureOpenAIEmbedding.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
 
             // Memory DB
             MemoryDbTypeSetup(ctx);
@@ -60,8 +60,9 @@ public static class Main
             // Text generation
             TextGeneratorTypeSetup(ctx);
             AzureOpenAIText.Setup(ctx);
-            OpenAI.Setup(ctx);
+            Services.OpenAI.Setup(ctx);
             LlamaSharp.Setup(ctx);
+            Ollama.Setup(ctx);
 
             Logger.Setup();
 
@@ -120,7 +121,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    OpenAI.Setup(ctx, true);
+                    Services.OpenAI.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
@@ -198,6 +199,18 @@ public static class Main
                     ctx.CfgOpenAI.Value = true;
                 }),
 
+                new("Ollama service", config.Retrieval.EmbeddingGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "Ollama";
+                        x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
+                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
+                            : new List<string> { };
+                    });
+                    ctx.CfgOllama.Value = true;
+                }),
+
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
                 {
                     AppSettings.Change(x =>
@@ -233,7 +246,13 @@ public static class Main
                     ctx.CfgOpenAI.Value = true;
                 }),
 
-                new("LLama model", config.TextGeneratorType == "LlamaSharp", () =>
+                new("Ollama service", config.TextGeneratorType == "Ollama", () =>
+                {
+                    AppSettings.Change(x => { x.TextGeneratorType = "Ollama"; });
+                    ctx.CfgOllama.Value = true;
+                }),
+
+                new("LlamaSharp library", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
                     ctx.CfgLlamaSharp.Value = true;
@@ -302,12 +321,23 @@ public static class Main
                         ctx.CfgRabbitMq.Value = true;
                     }),
 
-                new("SimpleQueues (only for tests, data stored in memory or disk, see config file)",
-                    config.DataIngestion.DistributedOrchestration.QueueType == "SimpleQueues",
+                new("SimpleQueues volatile (only for tests, data stored in memory)",
+                    config.DataIngestion.DistributedOrchestration.QueueType == "SimpleQueues"
+                    && (!config.Services.TryGetValue("SimpleQueues", out _) ||
+                        (config.Services.TryGetValue("SimpleQueues", out var c1) && (string)c1["StorageType"] == "Volatile")),
                     () =>
                     {
                         AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
-                        ctx.CfgSimpleQueues.Value = true;
+                        ctx.CfgSimpleQueuesVolatile.Value = true;
+                    }),
+
+                new("SimpleQueues persistent (only for tests, data stored on disk)",
+                    config.DataIngestion.DistributedOrchestration.QueueType == "SimpleQueues"
+                    && config.Services.TryGetValue("SimpleQueues", out var c2) && (string)c2["StorageType"] == "Disk",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DataIngestion.DistributedOrchestration.QueueType = "SimpleQueues"; });
+                        ctx.CfgSimpleQueuesPersistent.Value = true;
                     }),
 
                 new("-exit-", false, SetupUI.Exit)
@@ -350,12 +380,23 @@ public static class Main
                         ctx.CfgMongoDbAtlasDocumentStorage.Value = true;
                     }),
 
-                new("SimpleFileStorage (only for tests, data stored in memory or disk, see config file)",
-                    config.DocumentStorageType == "SimpleFileStorage",
+                new("SimpleFileStorage volatile (only for tests, data stored in memory)",
+                    config.DocumentStorageType == "SimpleFileStorage"
+                    && (!config.Services.TryGetValue("SimpleFileStorage", out _) ||
+                        (config.Services.TryGetValue("SimpleFileStorage", out var c1) && (string)c1["StorageType"] == "Volatile")),
                     () =>
                     {
                         AppSettings.Change(x => { x.DocumentStorageType = "SimpleFileStorage"; });
-                        ctx.CfgSimpleFileStorage.Value = true;
+                        ctx.CfgSimpleFileStorageVolatile.Value = true;
+                    }),
+
+                new("SimpleFileStorage persistent (only for tests, data stored on disk)",
+                    config.DocumentStorageType == "SimpleFileStorage"
+                    && config.Services.TryGetValue("SimpleFileStorage", out var c2) && (string)c2["StorageType"] == "Disk",
+                    () =>
+                    {
+                        AppSettings.Change(x => { x.DocumentStorageType = "SimpleFileStorage"; });
+                        ctx.CfgSimpleFileStoragePersistent.Value = true;
                     }),
 
                 new("-exit-", false, SetupUI.Exit)
@@ -379,7 +420,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "AzureAISearch";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
                         ctx.CfgAzureAISearch.Value = true;
                     }),
@@ -391,7 +432,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "Postgres";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
                         ctx.CfgPostgres.Value = true;
                     }),
@@ -403,7 +444,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "MongoDbAtlas";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
                         ctx.CfgMongoDbAtlasMemory.Value = true;
                     }),
@@ -415,7 +456,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "Redis";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
                         ctx.CfgRedis.Value = true;
                     }),
@@ -427,21 +468,36 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "Qdrant";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
                         ctx.CfgQdrant.Value = true;
                     }),
 
-                new("SimpleVectorDb (only for tests, data stored in memory or disk, see config file)",
-                    config.Retrieval.MemoryDbType == "SimpleVectorDb",
+                new("SimpleVectorDb volatile (only for tests, data stored in memory)",
+                    config.Retrieval.MemoryDbType == "SimpleVectorDb"
+                    && (!config.Services.TryGetValue("SimpleVectorDb", out _) ||
+                        (config.Services.TryGetValue("SimpleVectorDb", out var c1) && (string)c1["StorageType"] == "Volatile")),
                     () =>
                     {
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "SimpleVectorDb";
-                            x.DataIngestion.MemoryDbTypes = new List<string> { x.Retrieval.MemoryDbType };
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
                         });
-                        ctx.CfgSimpleVectorDb.Value = true;
+                        ctx.CfgSimpleVectorDbVolatile.Value = true;
+                    }),
+
+                new("SimpleVectorDb persistent (only for tests, data stored on disk)",
+                    config.Retrieval.MemoryDbType == "SimpleVectorDb"
+                    && config.Services.TryGetValue("SimpleVectorDb", out var c2) && (string)c2["StorageType"] == "Disk",
+                    () =>
+                    {
+                        AppSettings.Change(x =>
+                        {
+                            x.Retrieval.MemoryDbType = "SimpleVectorDb";
+                            x.DataIngestion.MemoryDbTypes = [x.Retrieval.MemoryDbType];
+                        });
+                        ctx.CfgSimpleVectorDbPersistent.Value = true;
                     }),
 
                 new("None/Custom (manually set in code)",
@@ -451,7 +507,7 @@ public static class Main
                         AppSettings.Change(x =>
                         {
                             x.Retrieval.MemoryDbType = "";
-                            x.DataIngestion.MemoryDbTypes = new List<string>();
+                            x.DataIngestion.MemoryDbTypes = [];
                         });
                     }),
 

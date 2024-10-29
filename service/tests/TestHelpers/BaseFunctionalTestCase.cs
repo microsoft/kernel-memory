@@ -31,6 +31,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
     protected readonly SimpleVectorDbConfig SimpleVectorDbConfig;
     protected readonly LlamaSharpConfig LlamaSharpConfig;
     protected readonly ElasticsearchConfig ElasticsearchConfig;
+    protected readonly OnnxConfig OnnxConfig;
 
     // IMPORTANT: install Xunit.DependencyInjection package
     protected BaseFunctionalTestCase(IConfiguration cfg, ITestOutputHelper output)
@@ -50,6 +51,7 @@ public abstract class BaseFunctionalTestCase : IDisposable
         this.SimpleVectorDbConfig = cfg.GetSection("KernelMemory:Services:SimpleVectorDb").Get<SimpleVectorDbConfig>() ?? new();
         this.LlamaSharpConfig = cfg.GetSection("KernelMemory:Services:LlamaSharp").Get<LlamaSharpConfig>() ?? new();
         this.ElasticsearchConfig = cfg.GetSection("KernelMemory:Services:Elasticsearch").Get<ElasticsearchConfig>() ?? new();
+        this.OnnxConfig = cfg.GetSection("KernelMemory:Services:Onnx").Get<OnnxConfig>() ?? new();
     }
 
     protected IKernelMemory GetMemoryWebClient()

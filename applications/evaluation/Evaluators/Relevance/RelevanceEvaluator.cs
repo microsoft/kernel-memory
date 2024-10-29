@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 
+#pragma warning disable IDE0130 // reduce number of "using" statements
 // ReSharper disable CheckNamespace
 namespace Microsoft.KernelMemory.Evaluators.Relevance;
 
@@ -24,6 +25,8 @@ internal sealed class RelevanceEvaluator : EvaluationEngine
     private KernelFunction ExtractQuestion => this._kernel.CreateFunctionFromPrompt(this.GetSKPrompt("Extraction", "Question"), new OpenAIPromptExecutionSettings
     {
         Temperature = 1e-8f,
+        Seed = 0,
+        ResponseFormat = "json_object"
     }, functionName: nameof(this.ExtractQuestion));
 
     public RelevanceEvaluator(Kernel kernel)

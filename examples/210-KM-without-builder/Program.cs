@@ -6,6 +6,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.AzureAIDocIntel;
 using Microsoft.KernelMemory.DataFormats.Image;
@@ -19,6 +20,7 @@ using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
+using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 using Microsoft.KernelMemory.Search;
 
 /// <summary>
@@ -43,6 +45,7 @@ public static class Program
         var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
         var azureOpenAITextConfig = new AzureOpenAIConfig();
         var azureAIDocIntelConfig = new AzureAIDocIntelConfig();
+        var azureAIContentSafetyModerationConfig = new AzureAIContentSafetyConfig();
         var textPartitioningOptions = new TextPartitioningOptions();
         var msExcelDecoderConfig = new MsExcelDecoderConfig();
         var msPowerPointDecoderConfig = new MsPowerPointDecoderConfig();
@@ -51,6 +54,7 @@ public static class Program
         WebApplicationBuilder appBuilder = WebApplication.CreateBuilder();
         appBuilder.Configuration
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .AddEnvironmentVariables();
         var app = appBuilder.Build();
@@ -62,22 +66,25 @@ public static class Program
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
             .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
-            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig);
+            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig)
+            .BindSection("KernelMemory:Services:AzureAIContentSafety", azureAIContentSafetyModerationConfig);
         // =================================================================
 
         // Logger
         LoggerFactory? loggerFactory = null; // Alternative: app.Services.GetService<ILoggerFactory>();
 
         // Generic dependencies
+        var requestContextProvider = new RequestContextProvider();
         var mimeTypeDetection = new MimeTypesDetection();
         var promptProvider = new EmbeddedPromptProvider();
 
         // AI dependencies
-        var tokenizer = new GPT4Tokenizer();
+        var tokenizer = new GPT4oTokenizer();
         var embeddingGeneratorHttpClient = new HttpClient();
         var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizer, loggerFactory, embeddingGeneratorHttpClient);
         var textGeneratorHttpClient = new HttpClient();
         var textGenerator = new AzureOpenAITextGenerator(azureOpenAITextConfig, tokenizer, loggerFactory, textGeneratorHttpClient);
+        var contentModeration = new AzureAIContentSafetyModeration(azureAIContentSafetyModerationConfig, loggerFactory);
 
         // Storage
         var documentStorage = new AzureBlobsStorage(azureBlobsConfig, mimeTypeDetection, loggerFactory);
@@ -115,8 +122,8 @@ public static class Program
         orchestrator.AddHandler(new DeleteDocumentHandler("private_delete_document", documentStorage, memoryDbs, loggerFactory));
 
         // Create memory instance
-        var searchClient = new SearchClient(memoryDb, textGenerator, searchClientConfig, promptProvider, loggerFactory);
-        var memory = new MemoryServerless(orchestrator, searchClient, kernelMemoryConfig);
+        var searchClient = new SearchClient(memoryDb, textGenerator, searchClientConfig, promptProvider, contentModeration, loggerFactory);
+        var memory = new MemoryServerless(orchestrator, searchClient, requestContextProvider, kernelMemoryConfig);
 
         // End-to-end test
         await memory.ImportTextAsync("I'm waiting for Godot", documentId: "tg01");

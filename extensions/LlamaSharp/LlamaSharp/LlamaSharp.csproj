@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.LlamaSharp</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI.LlamaSharp</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA2208;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;CA2208;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="LLamaSharp" />
+        <PackageReference Include="LLamaSharp" /> <!-- missing strong name (CS8002) -->
 
         <!-- Kernel Memory web service is configured to not have ANY pre-configured LLamaSharp backend, e.g. KM Docker
              image does not work with LLamaSharp without manually mounting a LLamaSharp backend assembly into the

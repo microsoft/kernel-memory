@@ -19,6 +19,7 @@ Follow the rules given below while rewriting the question.
 	3. The rewritten question must be fully answerable from information present in context1 and context2. 
 	4. Read and understand both contexts and rewrite the question so that answering requires insight from both context1 and context2.
 	5. phrases like 'based on the provided context','according to the context?',etc are not allowed to appear in the question.
+    6. always answer in json format.
 
 Let's do it with a real data.
 

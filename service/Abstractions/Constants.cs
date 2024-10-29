@@ -43,6 +43,19 @@ public static class Constants
         {
             // Used to override MaxBatchSize embedding generators config
             public const string BatchSize = "custom_embedding_generation_batch_size_int";
+
+            // Used to override the name of the model used to generate embeddings
+            // Supported only by Ollama and Anthropic connectors
+            // See https://github.com/microsoft/semantic-kernel/issues/9337
+            public const string ModelName = "custom_embedding_generation_model_name";
+        }
+
+        public static class TextGeneration
+        {
+            // Used to override the name of the model used to generate text
+            // Supported only by Ollama and Anthropic connectors
+            // See https://github.com/microsoft/semantic-kernel/issues/9337
+            public const string ModelName = "custom_text_generation_model_name";
         }
 
         public static class Rag
@@ -61,6 +74,9 @@ public static class Constants
 
             // Used to override the max tokens to generate when using the RAG prompt
             public const string MaxTokens = "custom_rag_max_tokens_int";
+
+            // Used to override the max matches count used with the RAG prompt
+            public const string MaxMatchesCount = "custom_rag_max_matches_count_int";
 
             // Used to override the temperature (default 0) used with the RAG prompt
             public const string Temperature = "custom_rag_temperature_float";

@@ -373,7 +373,7 @@ public sealed class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
-    public async Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+    public async IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
         string question,
         string? index = null,
         MemoryFilter? filter = null,

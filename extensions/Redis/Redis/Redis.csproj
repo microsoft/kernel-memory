@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.MemoryDb.Redis</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.MemoryDb.Redis</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1724;CA1308;CA1859;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP03;CA1724;CA1308;CA1859;CS8002;</NoWarn>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -16,7 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="System.Linq.Async" />
-        <PackageReference Include="NRedisStack" />
+        <PackageReference Include="NRedisStack" /><!-- missing strong name (CS8002) -->
     </ItemGroup>
 
     <PropertyGroup>

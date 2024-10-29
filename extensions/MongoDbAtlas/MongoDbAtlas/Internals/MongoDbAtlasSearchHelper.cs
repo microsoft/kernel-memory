@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 
 namespace Microsoft.KernelMemory.MongoDbAtlas;
@@ -148,6 +150,8 @@ internal sealed class MongoDbAtlasSearchHelper
     /// <returns></returns>
     public BsonDocument CreateCreationCommand(string collectionName, int embeddingDimension)
     {
+        var hasCamelCaseFields = CamelCaseConventionEnabled();
+
         return new BsonDocument
         {
             { "createSearchIndexes", collectionName },
@@ -166,7 +170,7 @@ internal sealed class MongoDbAtlasSearchHelper
                                     {
                                         new BsonDocument
                                         {
-                                            { "path", "Embedding" },
+                                            { "path", ToLowerIfTrue("Embedding", hasCamelCaseFields) },
                                             { "type", "vector" },
                                             { "numDimensions", embeddingDimension },
                                             { "similarity", "cosine" }
@@ -174,17 +178,17 @@ internal sealed class MongoDbAtlasSearchHelper
                                         new BsonDocument
                                         {
                                             { "type", "filter" },
-                                            { "path", "Index" }
+                                            { "path", ToLowerIfTrue("Index", hasCamelCaseFields) }
                                         },
                                         new BsonDocument
                                         {
                                             { "type", "filter" },
-                                            { "path", "Tags.Key" }
+                                            { "path", ToLowerIfTrue("Tags.Key", hasCamelCaseFields) }
                                         },
                                         new BsonDocument
                                         {
                                             { "type", "filter" },
-                                            { "path", "Tags.Values" }
+                                            { "path", ToLowerIfTrue("Tags.Values", hasCamelCaseFields) }
                                         }
                                     }
                                 }
@@ -297,4 +301,16 @@ internal sealed class MongoDbAtlasSearchHelper
     }
 
     private static readonly IndexInfo s_falseIndexInfo = new(false, "", false);
+
+    private static bool CamelCaseConventionEnabled()
+    {
+        var conventionPack = ConventionRegistry.Lookup(typeof(CamelCaseElementNameConvention));
+
+        return conventionPack.Conventions.Any(c => c is CamelCaseElementNameConvention);
+    }
+
+    private static string ToLowerIfTrue(string value, bool toLower)
+    {
+        return toLower ? value.ToLower(CultureInfo.InvariantCulture) : value;
+    }
 }

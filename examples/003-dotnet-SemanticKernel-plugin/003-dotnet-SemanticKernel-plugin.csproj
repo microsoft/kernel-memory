@@ -6,8 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
-        <ProjectReference Include="..\..\clients\dotnet\WebClient\WebClient.csproj" />
+        <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>

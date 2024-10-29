@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -19,28 +19,11 @@ namespace Microsoft.KernelMemory.Postgres;
 /// <summary>
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
-internal sealed class PostgresDbClient : IDisposable
+internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 {
-    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
-    private const string PgErrUndefinedTable = "42P01"; // undefined_table
-    private const string PgErrUniqueViolation = "23505"; // unique_violation
-    private const string PgErrTypeDoesNotExist = "42704"; // undefined_object
-    private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
-
-    private readonly ILogger _log;
+    // Dependencies
     private readonly NpgsqlDataSource _dataSource;
-
-    private readonly string _schema;
-    private readonly string _tableNamePrefix;
-    private readonly string _createTableSql;
-    private readonly string _colId;
-    private readonly string _colEmbedding;
-    private readonly string _colTags;
-    private readonly string _colContent;
-    private readonly string _colPayload;
-    private readonly string _columnsListNoEmbeddings;
-    private readonly string _columnsListWithEmbeddings;
-    private readonly bool _dbNamePresent;
+    private readonly ILogger _log;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
@@ -53,9 +36,10 @@ internal sealed class PostgresDbClient : IDisposable
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<PostgresDbClient>();
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(config.ConnectionString);
-        this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);
         dataSourceBuilder.UseVector();
         this._dataSource = dataSourceBuilder.Build();
+
+        this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);
         this._schema = config.Schema;
         this._tableNamePrefix = config.TableNamePrefix;
 
@@ -106,13 +90,13 @@ internal sealed class PostgresDbClient : IDisposable
                 {
 #pragma warning disable CA2100 // SQL reviewed
                     cmd.CommandText = $@"
-                SELECT table_name
-                FROM information_schema.tables
-                    WHERE table_schema = @schema
-                        AND table_name = @table
-                        AND table_type = 'BASE TABLE'
-                LIMIT 1
-            ";
+                        SELECT table_name
+                        FROM information_schema.tables
+                            WHERE table_schema = @schema
+                                AND table_name = @table
+                                AND table_type = 'BASE TABLE'
+                        LIMIT 1
+                    ";
 
                     cmd.Parameters.AddWithValue("@schema", this._schema);
                     cmd.Parameters.AddWithValue("@table", tableName);
@@ -182,17 +166,18 @@ internal sealed class PostgresDbClient : IDisposable
                     else
                     {
                         cmd.CommandText = $@"
-                    BEGIN;
-                    SELECT pg_advisory_xact_lock({lockId});
-                    CREATE TABLE IF NOT EXISTS {tableName} (
-                        {this._colId}        TEXT NOT NULL PRIMARY KEY,
-                        {this._colEmbedding} vector({vectorSize}),
-                        {this._colTags}      TEXT[] DEFAULT '{{}}'::TEXT[] NOT NULL,
-                        {this._colContent}   TEXT DEFAULT '' NOT NULL,
-                        {this._colPayload}   JSONB DEFAULT '{{}}'::JSONB NOT NULL
-                    );
-                    CREATE INDEX IF NOT EXISTS idx_tags ON {tableName} USING GIN({this._colTags});
-                    COMMIT;";
+                            BEGIN;
+                            SELECT pg_advisory_xact_lock({lockId});
+                            CREATE TABLE IF NOT EXISTS {tableName} (
+                                {this._colId}        TEXT NOT NULL PRIMARY KEY,
+                                {this._colEmbedding} vector({vectorSize}),
+                                {this._colTags}      TEXT[] DEFAULT '{{}}'::TEXT[] NOT NULL,
+                                {this._colContent}   TEXT DEFAULT '' NOT NULL,
+                                {this._colPayload}   JSONB DEFAULT '{{}}'::JSONB NOT NULL
+                            );
+                            CREATE INDEX IF NOT EXISTS idx_tags ON {tableName} USING GIN({this._colTags});
+                            COMMIT;
+                        ";
 #pragma warning restore CA2100
 
                         this._log.LogTrace("Creating table with default SQL: {0}", cmd.CommandText);
@@ -228,8 +213,8 @@ internal sealed class PostgresDbClient : IDisposable
             if (await this.DoesTableExistAsync(origInputTableName, cancellationToken).ConfigureAwait(false))
             {
                 // Check if the custom SQL contains the lock placeholder (assuming it's not commented out)
-                bool missingLockStatement = (!string.IsNullOrEmpty(this._createTableSql)
-                                             && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal));
+                bool missingLockStatement = !string.IsNullOrEmpty(this._createTableSql)
+                                            && !this._createTableSql.Contains(PostgresConfig.SqlPlaceholdersLockId, StringComparison.Ordinal);
 
                 if (missingLockStatement)
                 {
@@ -360,17 +345,17 @@ internal sealed class PostgresDbClient : IDisposable
                 {
 #pragma warning disable CA2100 // SQL reviewed
                     cmd.CommandText = $@"
-                INSERT INTO {tableName}
-                    ({this._colId}, {this._colEmbedding}, {this._colTags}, {this._colContent}, {this._colPayload})
-                    VALUES
-                    (@id, @embedding, @tags, @content, @payload)
-                ON CONFLICT ({this._colId})
-                DO UPDATE SET
-                    {this._colEmbedding} = @embedding,
-                    {this._colTags}      = @tags,
-                    {this._colContent}   = @content,
-                    {this._colPayload}   = @payload
-            ";
+                        INSERT INTO {tableName}
+                            ({this._colId}, {this._colEmbedding}, {this._colTags}, {this._colContent}, {this._colPayload})
+                            VALUES
+                            (@id, @embedding, @tags, @content, @payload)
+                        ON CONFLICT ({this._colId})
+                        DO UPDATE SET
+                            {this._colEmbedding} = @embedding,
+                            {this._colTags}      = @tags,
+                            {this._colContent}   = @content,
+                            {this._colPayload}   = @payload
+                    ";
 
                     cmd.Parameters.AddWithValue("@id", record.Id);
                     cmd.Parameters.AddWithValue("@embedding", record.Embedding);
@@ -458,13 +443,13 @@ internal sealed class PostgresDbClient : IDisposable
                     // When using 1 - (embedding <=> target) the index is not being used, therefore we calculate
                     // the similarity (1 - distance) later. Furthermore, colDistance can't be used in the WHERE clause.
                     cmd.CommandText = @$"
-                SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDistance}
-                FROM {tableName}
-                WHERE {filterSql}
-                ORDER BY {colDistance} ASC
-                LIMIT @limit
-                OFFSET @offset
-            ";
+                        SELECT {columns}, {this._colEmbedding} <=> @embedding AS {colDistance}
+                        FROM {tableName}
+                        WHERE {filterSql}
+                        ORDER BY {colDistance} ASC
+                        LIMIT @limit
+                        OFFSET @offset
+                    ";
 
                     cmd.Parameters.AddWithValue("@embedding", target);
                     cmd.Parameters.AddWithValue("@maxDistance", maxDistance);
@@ -563,12 +548,12 @@ internal sealed class PostgresDbClient : IDisposable
                 {
 #pragma warning disable CA2100 // SQL reviewed
                     cmd.CommandText = @$"
-                SELECT {columns} FROM {tableName}
-                WHERE {filterSql}
-                ORDER BY {orderBySql}
-                LIMIT @limit
-                OFFSET @offset
-            ";
+                        SELECT {columns} FROM {tableName}
+                        WHERE {filterSql}
+                        ORDER BY {orderBySql}
+                        LIMIT @limit
+                        OFFSET @offset
+                    ";
 
                     cmd.Parameters.AddWithValue("@limit", limit);
                     cmd.Parameters.AddWithValue("@offset", offset);
@@ -661,26 +646,46 @@ internal sealed class PostgresDbClient : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._dataSource?.Dispose();
     }
 
-    /// <summary>
-    /// Disposes the managed resources
-    /// </summary>
-    private void Dispose(bool disposing)
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
     {
-        if (disposing)
+        try
         {
-            (this._dataSource as IDisposable)?.Dispose();
+            await this._dataSource.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (NullReferenceException)
+        {
+            // ignore
         }
     }
+
+    #region private ================================================================================
+
+    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
+    private const string PgErrUndefinedTable = "42P01"; // undefined_table
+    private const string PgErrUniqueViolation = "23505"; // unique_violation
+    private const string PgErrTypeDoesNotExist = "42704"; // undefined_object
+    private const string PgErrDatabaseDoesNotExist = "3D000"; // invalid_catalog_name
+
+    private readonly string _schema;
+    private readonly string _tableNamePrefix;
+    private readonly string _createTableSql;
+    private readonly string _colId;
+    private readonly string _colEmbedding;
+    private readonly string _colTags;
+    private readonly string _colContent;
+    private readonly string _colPayload;
+    private readonly string _columnsListNoEmbeddings;
+    private readonly string _columnsListWithEmbeddings;
+    private readonly bool _dbNamePresent;
 
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
     /// </summary>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     private async Task<NpgsqlConnection> ConnectAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -750,20 +755,20 @@ internal sealed class PostgresDbClient : IDisposable
 
     private static bool IsDbNotFoundException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrDatabaseDoesNotExist);
+        return e.SqlState == PgErrDatabaseDoesNotExist;
     }
 
     private static bool IsTableNotFoundException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
+        return e.SqlState == PgErrUndefinedTable || e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsVectorTypeDoesNotExistException(Npgsql.PostgresException e)
     {
-        return (e.SqlState == PgErrTypeDoesNotExist
-                && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
-                && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
+        return e.SqlState == PgErrTypeDoesNotExist
+               && e.Message.Contains("type", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("vector", StringComparison.OrdinalIgnoreCase)
+               && e.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -778,4 +783,6 @@ internal sealed class PostgresDbClient : IDisposable
         return BitConverter.ToUInt32(SHA256.HashData(Encoding.UTF8.GetBytes(resourceId)), 0)
                % short.MaxValue;
     }
+
+    #endregion
 }

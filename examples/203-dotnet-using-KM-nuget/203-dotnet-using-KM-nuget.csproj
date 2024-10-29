@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="sample-KM-Readme.pdf" />
+        <Content Include="sample-KM-Readme.pdf">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+</Project>

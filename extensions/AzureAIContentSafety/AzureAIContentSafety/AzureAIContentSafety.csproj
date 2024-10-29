@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Safety.AzureAIContentSafety</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Safety.AzureAIContentSafety</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP02;CA1024;CA1724;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Azure.AI.ContentSafety" />
+        <PackageReference Include="Azure.Identity" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Safety.AzureAIContentSafety</PackageId>
+        <Product>Azure AI Content Safety for Kernel Memory</Product>
+        <Description>Add Azure AI Content Safety to Kernel Memory to moderate user content.</Description>
+        <PackageTags>Moderation, Safety, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

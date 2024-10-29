@@ -14,10 +14,10 @@ namespace Microsoft.KernelMemory;
 public static partial class KernelMemoryBuilderExtensions
 {
     /// <summary>
-    /// Kernel Memory Builder extension method to add SqlServer memory connector.
+    /// Kernel Memory Builder extension method to add SQL Server memory connector.
     /// </summary>
     /// <param name="builder">KM builder instance</param>
-    /// <param name="config">SqlServer configuration</param>
+    /// <param name="config">SQL Server configuration</param>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
         SqlServerConfig config)
@@ -27,15 +27,17 @@ public static partial class KernelMemoryBuilderExtensions
     }
 
     /// <summary>
-    /// Kernel Memory Builder extension method to add SqlServer memory connector.
+    /// Kernel Memory Builder extension method to add SQL Server memory connector.
     /// </summary>
     /// <param name="builder">KM builder instance</param>
-    /// <param name="connString">SqlServer connection string</param>
+    /// <param name="connString">SQL Server connection string</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
-        string connString)
+        string connString,
+        bool useNativeVectorSearch = false)
     {
-        builder.Services.AddSqlServerAsMemoryDb(connString);
+        builder.Services.AddSqlServerAsMemoryDb(connString, useNativeVectorSearch);
         return builder;
     }
 }
@@ -46,10 +48,10 @@ public static partial class KernelMemoryBuilderExtensions
 public static partial class DependencyInjection
 {
     /// <summary>
-    /// Inject SqlServer as the default implementation of IMemoryDb
+    /// Inject SQL Server as the default implementation of IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
-    /// <param name="config">Postgres configuration</param>
+    /// <param name="config">SQL Server configuration</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,
         SqlServerConfig config)
@@ -60,15 +62,17 @@ public static partial class DependencyInjection
     }
 
     /// <summary>
-    /// Inject SqlServer as the default implementation of IMemoryDb
+    /// Inject SQL Server as the default implementation of IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
     /// <param name="connString">SQL Server connection string</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,
-        string connString)
+        string connString,
+        bool useNativeVectorSearch = false)
     {
-        var config = new SqlServerConfig { ConnectionString = connString };
+        var config = new SqlServerConfig { ConnectionString = connString, UseNativeVectorSearch = useNativeVectorSearch };
         return services.AddSqlServerAsMemoryDb(config);
     }
 }
