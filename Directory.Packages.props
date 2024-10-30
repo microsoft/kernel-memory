@@ -3,24 +3,16 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.2.1" />
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.405" />
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.405.6" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.13.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.13.1" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.6.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.22.2" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.20.1" />
-    <PackageVersion Include="ClosedXML" Version="0.104.1" /> <!-- missing strong name (CS8002) -->
     <PackageVersion Include="Elastic.Clients.Elasticsearch" Version="8.12.1" />
-    <PackageVersion Include="Discord.Net" Version="3.16.0" /> <!-- missing strong name (CS8002) -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="3.1.1" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.67" />
-    <PackageVersion Include="LLamaSharp" Version="0.16.0" /> <!-- missing strong name (CS8002) -->
-    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.16.0" /> <!-- missing strong name (CS8002) -->
-    <PackageVersion Include="LLamaSharp.Backend.Cuda11" Version="0.12.0" /> <!-- missing strong name (CS8002) -->
-    <PackageVersion Include="LLamaSharp.Backend.Cuda12" Version="0.12.0" /> <!-- missing strong name (CS8002) -->
-    <PackageVersion Include="LLamaSharp.Backend.OpenCL" Version="0.12.0" /> <!-- missing strong name (CS8002) -->
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.70" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -33,34 +25,41 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.4.0" />
-    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.22.0-preview.24378.1" /> <!-- prerelease dependency (NU5104) -->
     <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.30.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OllamaSharp" Version="3.0.14" />
+    <PackageVersion Include="OllamaSharp" Version="4.0.2" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
-    <PackageVersion Include="Pgvector" Version="0.3.0" /> <!-- missing strong name (CS8002) -->
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
-    <PackageVersion Include="NRedisStack" Version="0.13.0" /> <!-- missing strong name (CS8002) -->
     <PackageVersion Include="ReadLine" Version="2.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
-    <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" /> <!-- version with security fixes -->
   </ItemGroup>
-  <!-- KM examples -->
+  <!-- Security upgrades -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.KernelMemory.Core" Version="0.80.241017.2" />
-    <PackageVersion Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.80.241017.2" />
+    <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
+  </ItemGroup>
+  <!-- Pre-release dependencies -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.22.0-preview.24378.1" />
+  </ItemGroup>
+  <!-- Missing Strong Name (CS8002) -->
+  <ItemGroup>
+    <PackageVersion Include="ClosedXML" Version="0.104.1" />
+    <PackageVersion Include="LLamaSharp" Version="0.18.0" />
+    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.18.0" />
+    <PackageVersion Include="Pgvector" Version="0.3.0" />
+    <PackageVersion Include="NRedisStack" Version="0.13.0" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.24.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.24.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.24.1" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.24.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.25.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.25.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.25.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.25.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -81,11 +80,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.8">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.8">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>

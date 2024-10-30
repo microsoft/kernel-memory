@@ -142,7 +142,7 @@ public class OllamaTextGenerator : ITextGenerator
         // }
 
         var chat = new Chat(this._client);
-        IAsyncEnumerable<string?> stream = chat.Send(prompt, cancellationToken);
+        IAsyncEnumerable<string?> stream = chat.SendAsync(prompt, cancellationToken);
         await foreach (string? token in stream)
         {
             if (token != null) { yield return token; }

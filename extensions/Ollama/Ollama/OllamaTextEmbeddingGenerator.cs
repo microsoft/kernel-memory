@@ -139,8 +139,8 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
             }
         };
 
-        EmbedResponse response = await this._client.Embed(request, cancellationToken).ConfigureAwait(false);
-        Embedding[] result = response.Embeddings.Select(Embedding.FromDoubles).ToArray();
+        EmbedResponse response = await this._client.EmbedAsync(request, cancellationToken).ConfigureAwait(false);
+        Embedding[] result = response.Embeddings.Select(x => new Embedding(x)).ToArray();
 
         this._log.LogTrace("Embeddings batch ready, size {0} texts", result.Length);
 
