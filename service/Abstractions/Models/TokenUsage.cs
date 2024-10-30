@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.KernelMemory.Models;
 
+/// <summary>
+/// Represents the usage of tokens in a request and response cycle.
+/// </summary>
 public class TokenUsage
 {
     /// <summary>
