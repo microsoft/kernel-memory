@@ -23,8 +23,6 @@ public class LlamaSharpConfig
     /// </summary>
     public int? GpuLayerCount { get; set; }
 
-    public uint? Seed { get; set; } = 1337;
-
     /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
