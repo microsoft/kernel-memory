@@ -39,11 +39,11 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         this._timer.Stop();
 
         // Assert
-        Console.WriteLine("Llama token count: " + tokenCount);
-        Console.WriteLine("GPT3 token count: " + DefaultGPTTokenizer.StaticCountTokens(text));
+        Console.WriteLine("Phi3 token count: " + tokenCount);
+        Console.WriteLine("GPT4 token count: " + DefaultGPTTokenizer.StaticCountTokens(text));
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
 
-        // Note: value for llama-2-13b.Q2_K.gguf
+        // Expected result with Phi-3-mini-4k-instruct-q4.gguf, without BoS (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf)
         Assert.Equal(8, tokenCount);
     }
 
@@ -55,18 +55,18 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         this._target.CountTokens("");
         this._target.CountTokens("\r");
 
-        // To be fixed by LLamaSharp
+        // Make sure these don't throw an exception
         // See https://github.com/SciSharp/LLamaSharp/issues/430
-        // this._target.CountTokens("\n");
-        // this._target.CountTokens("\n\n");
-        // this._target.CountTokens("\t");
-        // this._target.CountTokens("\t\t");
-        // this._target.CountTokens("\v");
-        // this._target.CountTokens("\v\v");
-        // this._target.CountTokens("\0");
-        // this._target.CountTokens("\0\0");
-        // this._target.CountTokens("\b");
-        // this._target.CountTokens("\b\b");
+        this._target.CountTokens("\n");
+        this._target.CountTokens("\n\n");
+        this._target.CountTokens("\t");
+        this._target.CountTokens("\t\t");
+        this._target.CountTokens("\v");
+        this._target.CountTokens("\v\v");
+        this._target.CountTokens("\0");
+        this._target.CountTokens("\0\0");
+        this._target.CountTokens("\b");
+        this._target.CountTokens("\b\b");
     }
 
     [Fact]

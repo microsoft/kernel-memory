@@ -15,8 +15,8 @@ internal sealed class AzureAISearchMemoryRecord
 {
     internal const string IdField = "id";
     internal const string VectorField = "embedding";
-    private const string TagsField = "tags";
-    private const string PayloadField = "payload";
+    internal const string TagsField = "tags";
+    internal const string PayloadField = "payload";
 
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {

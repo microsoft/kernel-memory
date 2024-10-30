@@ -8,9 +8,9 @@ using System.Threading;
 using LLama;
 using LLama.Abstractions;
 using LLama.Common;
+using LLama.Native;
 using LLama.Sampling;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
@@ -43,36 +43,20 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         config.Validate();
         this.MaxTokenTotal = (int)config.MaxTokenTotal;
 
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
-
         var parameters = new ModelParams(config.ModelPath)
         {
-            ContextSize = config.MaxTokenTotal
+            ContextSize = config.MaxTokenTotal,
+            GpuLayerCount = config.GpuLayerCount ?? 20,
         };
-
-        if (config.GpuLayerCount.HasValue)
-        {
-            parameters.GpuLayerCount = config.GpuLayerCount.Value;
-        }
-
-        if (config.Seed.HasValue)
-        {
-            parameters.Seed = config.Seed.Value;
-        }
 
         var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
         this._log.LogDebug("Loading LLama model: {1}", modelFilename);
+
         this._model = LLamaWeights.LoadFromFile(parameters);
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
+
+        this._textTokenizer = textTokenizer ?? new LlamaSharpTokenizer(this._context);
     }
 
     /// <inheritdoc/>
@@ -81,13 +65,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
-        int? value = this._textTokenizer?.CountTokens(text);
-        if (!value.HasValue)
-        {
-            value = this._context.Tokenize(text, addBos: false, special: false).Length;
-        }
-
-        return value.Value;
+        return this._textTokenizer.CountTokens(text);
     }
 
     /// <inheritdoc/>
@@ -104,19 +82,18 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     {
         var executor = new InteractiveExecutor(this._context);
 
-        var samplingPipeline = new DefaultSamplingPipeline();
-        samplingPipeline.Temperature = (float)options.Temperature;
-        samplingPipeline.TopP = (float)options.NucleusSampling;
-        samplingPipeline.AlphaPresence = (float)options.PresencePenalty;
-        samplingPipeline.AlphaFrequency = (float)options.FrequencyPenalty;
+        var logitBias = options.TokenSelectionBiases.Count > 0
+            ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
+            : new Dictionary<LLamaToken, float>();
 
-        if (options.TokenSelectionBiases is { Count: > 0 })
+        var samplingPipeline = new DefaultSamplingPipeline()
         {
-            foreach (var (token, bias) in options.TokenSelectionBiases)
-            {
-                samplingPipeline.LogitBias!.Add(token, bias);
-            }
-        }
+            Temperature = (float)options.Temperature,
+            TopP = (float)options.NucleusSampling,
+            AlphaPresence = (float)options.PresencePenalty,
+            AlphaFrequency = (float)options.FrequencyPenalty,
+            LogitBias = logitBias,
+        };
 
         IInferenceParams settings = new InferenceParams
         {
@@ -126,26 +103,14 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             SamplingPipeline = samplingPipeline
         };
 
+        this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
         return executor.InferAsync(prompt, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!disposing) { return; }
-
-        this._context.Dispose();
         this._model.Dispose();
-    }
-
-    ~LlamaSharpTextGenerator()
-    {
-        this.Dispose(false);
+        this._context.Dispose();
     }
 }

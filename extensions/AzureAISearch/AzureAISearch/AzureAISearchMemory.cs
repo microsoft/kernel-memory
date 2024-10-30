@@ -190,6 +190,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 FilterMode = VectorFilterMode.PreFilter
             }
         };
+        DefineFieldsToSelect(options, withEmbeddings);
 
         if (limit > 0)
         {
@@ -253,6 +254,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         var client = this.GetSearchClient(index);
 
         SearchOptions options = new();
+        DefineFieldsToSelect(options, withEmbeddings);
 
         if (limit > 0)
         {
@@ -515,7 +517,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
          * - searchable: Full-text searchable, subject to lexical analysis such as word-breaking during indexing.
          * - filterable: Filterable fields of type Edm.String or Collection(Edm.String) don't undergo word-breaking.
          * - facetable: Used for counting. Fields of type Edm.String that are filterable, "sortable", or "facetable" can be at most 32kb. */
-        SearchField? vectorField = null;
+        VectorSearchField? vectorField = null;
         foreach (var field in schema.Fields)
         {
             switch (field.Type)
@@ -525,15 +527,10 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                     throw new AzureAISearchMemoryException($"Unsupported field type {field.Type:G}");
 
                 case MemoryDbField.FieldType.Vector:
-                    vectorField = new SearchField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                    vectorField = new VectorSearchField(field.Name, field.VectorSize, VectorSearchProfileName)
                     {
-                        IsKey = false,
-                        IsFilterable = false,
-                        IsSearchable = true,
-                        IsFacetable = false,
-                        IsSortable = false,
-                        VectorSearchDimensions = field.VectorSize,
-                        VectorSearchProfileName = VectorSearchProfileName,
+                        IsHidden = false,
+                        IsStored = true
                     };
 
                     break;
@@ -628,6 +625,17 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         indexSchema.Fields.Add(vectorField);
 
         return indexSchema;
+    }
+
+    private static void DefineFieldsToSelect(SearchOptions options, bool withEmbeddings)
+    {
+        options.Select.Add(AzureAISearchMemoryRecord.IdField);
+        options.Select.Add(AzureAISearchMemoryRecord.TagsField);
+        options.Select.Add(AzureAISearchMemoryRecord.PayloadField);
+        if (withEmbeddings)
+        {
+            options.Select.Add(AzureAISearchMemoryRecord.VectorField);
+        }
     }
 
     private static double ScoreToCosineSimilarity(double score)
