@@ -268,7 +268,7 @@ public sealed class SearchClient : ISearchClient
             var fact = PromptUtils.RenderFactTemplate(
                 template: factTemplate,
                 factContent: partitionText,
-                source: (fileName == "content.url" ? webPageUrl : fileName),
+                source: fileName == "content.url" ? webPageUrl : fileName,
                 relevance: relevance.ToString("P1", CultureInfo.CurrentCulture),
                 recordId: memory.Id,
                 tags: memory.Tags,
@@ -336,11 +336,15 @@ public sealed class SearchClient : ISearchClient
             return noAnswerFound;
         }
 
+        var (prompt, tokenCount) = this.CreatePrompt(question, facts.ToString(), context);
+        answer.TokenUsage.InputTokenCount = tokenCount;
+
         var text = new StringBuilder();
         var charsGenerated = 0;
+
         var watch = new Stopwatch();
         watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
+        await foreach (var x in this.GenerateAnswer(prompt, context, cancellationToken).ConfigureAwait(false))
         {
             text.Append(x);
 
@@ -354,6 +358,8 @@ public sealed class SearchClient : ISearchClient
         watch.Stop();
 
         answer.Result = text.ToString();
+        answer.TokenUsage.OutputTokenCount = this._textGenerator.CountTokens(answer.Result);
+
         this._log.LogSensitive("Answer: {0}", answer.Result);
         answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
@@ -381,12 +387,9 @@ public sealed class SearchClient : ISearchClient
         return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
+    private (string Text, int TokenCount) CreatePrompt(string question, string facts, IContext? context)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
-        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
-        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
 
@@ -394,6 +397,17 @@ public sealed class SearchClient : ISearchClient
         question = question.EndsWith('?') ? question : $"{question}?";
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
+
+        var tokenCount = this._textGenerator.CountTokens(prompt);
+
+        return (prompt, tokenCount);
+    }
+
+    private IAsyncEnumerable<string> GenerateAnswer(string prompt, IContext? context, CancellationToken token)
+    {
+        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
+        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
+        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         var options = new TextGenerationOptions
         {
