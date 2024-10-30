@@ -21,8 +21,8 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         this._timer = new Stopwatch();
 
         this.LlamaSharpConfig.Validate();
-        this._target = new LlamaSharpTextGenerator(this.LlamaSharpConfig, loggerFactory: null);
-        var modelFilename = this.LlamaSharpConfig.ModelPath.Split('/').Last().Split('\\').Last();
+        this._target = new LlamaSharpTextGenerator(this.LlamaSharpConfig.TextModel, loggerFactory: null);
+        var modelFilename = this.LlamaSharpConfig.TextModel.ModelPath.Split('/').Last().Split('\\').Last();
         Console.WriteLine($"Model in use: {modelFilename}");
     }
 

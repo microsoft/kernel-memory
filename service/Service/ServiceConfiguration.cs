@@ -244,6 +244,15 @@ internal sealed class ServiceConfiguration
                     break;
                 }
 
+                case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
+                {
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                        s => s.AddLlamaSharpTextEmbeddingGeneration(
+                            config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").EmbeddingModel));
+                    builder.AddIngestionEmbeddingGenerator(instance);
+                    break;
+                }
+
                 default:
                     // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
                     break;
@@ -395,6 +404,11 @@ internal sealed class ServiceConfiguration
                     textTokenizer: new GPT4oTokenizer());
                 break;
 
+            case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
+                builder.Services.AddLlamaSharpTextEmbeddingGeneration(
+                    config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").EmbeddingModel);
+                break;
+
             default:
                 // NOOP - allow custom implementations, via WithCustomEmbeddingGeneration()
                 break;
@@ -479,7 +493,8 @@ internal sealed class ServiceConfiguration
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddLlamaTextGeneration(this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp"));
+                builder.Services.AddLlamaSharpTextGeneration(
+                    config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").TextModel);
                 break;
 
             default:
