@@ -56,7 +56,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
 
-        this._textTokenizer = textTokenizer ?? new LLamaSharpTokenizer(this._context);
+        this._textTokenizer = textTokenizer ?? new LlamaSharpTokenizer(this._context);
     }
 
     /// <inheritdoc/>

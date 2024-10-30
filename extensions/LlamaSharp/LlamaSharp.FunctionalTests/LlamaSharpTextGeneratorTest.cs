@@ -43,8 +43,8 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         Console.WriteLine("GPT4 token count: " + DefaultGPTTokenizer.StaticCountTokens(text));
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
 
-        // Expected result using Phi-3-mini-4k-instruct-q4.gguf (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf)
-        Assert.Equal(9, tokenCount);
+        // Expected result with Phi-3-mini-4k-instruct-q4.gguf, without BoS (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf)
+        Assert.Equal(8, tokenCount);
     }
 
     [Fact]
