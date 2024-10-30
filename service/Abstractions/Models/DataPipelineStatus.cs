@@ -15,7 +15,7 @@ public class DataPipelineStatus
     /// <summary>
     /// Currently used to track deleted documents.
     /// </summary>
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     [JsonPropertyName("empty")]
     public bool Empty { get; set; } = false;
 
