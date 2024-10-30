@@ -190,7 +190,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 FilterMode = VectorFilterMode.PreFilter
             }
         };
-        AddSelectFields(options, withEmbeddings);
+        DefineFieldsToSelect(options, withEmbeddings);
 
         if (limit > 0)
         {
@@ -254,7 +254,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         var client = this.GetSearchClient(index);
 
         SearchOptions options = new();
-        AddSelectFields(options, withEmbeddings);
+        DefineFieldsToSelect(options, withEmbeddings);
 
         if (limit > 0)
         {
@@ -627,7 +627,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         return indexSchema;
     }
 
-    private static void AddSelectFields(SearchOptions options, bool withEmbeddings)
+    private static void DefineFieldsToSelect(SearchOptions options, bool withEmbeddings)
     {
         options.Select.Add(AzureAISearchMemoryRecord.IdField);
         options.Select.Add(AzureAISearchMemoryRecord.TagsField);
