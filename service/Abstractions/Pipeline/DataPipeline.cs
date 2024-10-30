@@ -154,11 +154,7 @@ public sealed class DataPipeline
         /// <param name="text">Text to store for the end user</param>
         public void Log(IPipelineStepHandler handler, string text)
         {
-            if (this.LogEntries == null)
-            {
-                this.LogEntries = new List<PipelineLogEntry>();
-            }
-
+            this.LogEntries ??= [];
             this.LogEntries.Add(new PipelineLogEntry(source: handler.StepName, text: text));
         }
     }
@@ -438,7 +434,6 @@ public sealed class DataPipeline
         return new DataPipelineStatus
         {
             Completed = this.Complete,
-            Failed = false, // TODO
             Empty = this.Files.Count == 0,
             Index = this.Index,
             DocumentId = this.DocumentId,
