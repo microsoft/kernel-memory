@@ -34,4 +34,14 @@ public sealed class LlamaSharpTextEmbeddingGeneratorTest : BaseFunctionalTestCas
         // Expected result using nomic-embed-text-v1.5.Q8_0.gguf
         Assert.Equal(768, embedding.Length);
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._target.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
 }
