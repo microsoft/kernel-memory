@@ -51,19 +51,12 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 
         var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
         this._log.LogDebug("Loading LLama model: {1}", modelFilename);
+
         this._model = LLamaWeights.LoadFromFile(parameters);
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
 
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
+        this._textTokenizer = textTokenizer ?? new LLamaSharpTokenizer(this._context);
     }
 
     /// <inheritdoc/>
@@ -110,8 +103,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             SamplingPipeline = samplingPipeline
         };
 
-        this._log.LogTrace("Generating text, temperature {0}, max tokens {1}",
-            samplingPipeline.Temperature, settings.MaxTokens);
+        this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
         return executor.InferAsync(prompt, settings, cancellationToken);
     }
 
