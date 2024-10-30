@@ -14,6 +14,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
@@ -268,7 +269,7 @@ public sealed class SearchClient : ISearchClient
             var fact = PromptUtils.RenderFactTemplate(
                 template: factTemplate,
                 factContent: partitionText,
-                source: (fileName == "content.url" ? webPageUrl : fileName),
+                source: fileName == "content.url" ? webPageUrl : fileName,
                 relevance: relevance.ToString("P1", CultureInfo.CurrentCulture),
                 recordId: memory.Id,
                 tags: memory.Tags,
@@ -337,12 +338,20 @@ public sealed class SearchClient : ISearchClient
         }
 
         var text = new StringBuilder();
+        TokenUsage? tokenUsage = null;
+
         var charsGenerated = 0;
         var watch = new Stopwatch();
         watch.Restart();
+
         await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
         {
-            text.Append(x);
+            if (x.Text is not null)
+            {
+                text.Append(x.Text);
+            }
+
+            tokenUsage ??= x.TokenUsage;
 
             if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
             {
@@ -354,6 +363,8 @@ public sealed class SearchClient : ISearchClient
         watch.Stop();
 
         answer.Result = text.ToString();
+        answer.TokenUsage = tokenUsage;
+
         this._log.LogSensitive("Answer: {0}", answer.Result);
         answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
         if (answer.NoResult)
@@ -381,7 +392,7 @@ public sealed class SearchClient : ISearchClient
         return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
+    private IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);

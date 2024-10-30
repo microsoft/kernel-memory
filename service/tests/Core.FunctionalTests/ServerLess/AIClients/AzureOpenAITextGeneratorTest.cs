@@ -26,12 +26,12 @@ public class AzureOpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new AzureOpenAITextGenerator(this._config, loggerFactory: null);
 
         // Act
-        IAsyncEnumerable<string> text = client.GenerateTextAsync(
+        var tokens = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (string word in text)
+        await foreach (var (word, _) in tokens)
         {
             Console.Write(word);
             if (count++ > 10) { break; }

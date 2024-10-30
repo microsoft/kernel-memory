@@ -10,8 +10,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.KernelMemory.AI.AzureOpenAI;
 
@@ -113,7 +115,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -143,9 +145,13 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
         await foreach (StreamingTextContent x in result)
         {
-            if (x.Text == null) { continue; }
+            var tokenUsage = x.Metadata?["Usage"] is ChatTokenUsage { } usage
+                ? new TokenUsage { InputTokenCount = usage.InputTokenCount, OutputTokenCount = usage.OutputTokenCount, TotalTokenCount = usage.TotalTokenCount }
+                : null;
 
-            yield return x.Text;
+            if (x.Text is null && tokenUsage is null) { continue; }
+
+            yield return (x.Text, tokenUsage);
         }
     }
 }

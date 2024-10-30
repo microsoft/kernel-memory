@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using LLama;
 using LLama.Abstractions;
@@ -12,6 +13,7 @@ using LLama.Native;
 using LLama.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
 
@@ -75,10 +77,10 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var executor = new InteractiveExecutor(this._context);
 
@@ -104,7 +106,12 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         };
 
         this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
-        return executor.InferAsync(prompt, settings, cancellationToken);
+
+        IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
+        await foreach (var x in streamingResponse)
+        {
+            yield return (x, null);
+        }
     }
 
     /// <inheritdoc/>

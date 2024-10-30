@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Models;
 using Microsoft.ML.OnnxRuntimeGenAI;
 using static Microsoft.KernelMemory.OnnxConfig;
 
@@ -84,7 +85,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
         string prompt,
         TextGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -161,7 +162,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
                     var newToken = outputTokens[^1];
-                    yield return this._tokenizer.Decode(new int[] { newToken });
+                    yield return (this._tokenizer.Decode(new int[] { newToken }), null);
                 }
             }
         }

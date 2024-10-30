@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -52,7 +53,7 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -66,7 +67,7 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
         {
             if (content != null)
             {
-                yield return content.ToString();
+                yield return (content.ToString(), null);
             }
         }
     }
