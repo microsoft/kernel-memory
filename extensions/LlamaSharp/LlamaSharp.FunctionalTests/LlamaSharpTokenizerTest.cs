@@ -18,13 +18,13 @@ public sealed class LlamaSharpTokenizerTest : BaseFunctionalTestCase
     {
         this.LlamaSharpConfig.Validate();
 
-        var modelFilename = this.LlamaSharpConfig.ModelPath.Split('/').Last().Split('\\').Last();
+        var modelFilename = this.LlamaSharpConfig.TextModel.ModelPath.Split('/').Last().Split('\\').Last();
         Console.WriteLine($"Model in use: {modelFilename}");
 
-        var parameters = new ModelParams(this.LlamaSharpConfig.ModelPath)
+        var parameters = new ModelParams(this.LlamaSharpConfig.TextModel.ModelPath)
         {
-            ContextSize = this.LlamaSharpConfig.MaxTokenTotal,
-            GpuLayerCount = this.LlamaSharpConfig.GpuLayerCount ?? 20,
+            ContextSize = this.LlamaSharpConfig.TextModel.MaxTokenTotal,
+            GpuLayerCount = this.LlamaSharpConfig.TextModel.GpuLayerCount ?? 20,
         };
 
         LLamaWeights model = LLamaWeights.LoadFromFile(parameters);
