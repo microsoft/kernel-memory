@@ -336,8 +336,8 @@ public sealed class SearchClient : ISearchClient
             return noAnswerFound;
         }
 
-        var (prompt, tokenCount) = this.CreatePrompt(question, facts.ToString(), context);
-        answer.TokenUsage.InputTokenCount = tokenCount;
+        var prompt = this.CreatePrompt(question, facts.ToString(), context);
+        answer.TokenUsage.InputTokenCount = this._textGenerator.CountTokens(prompt);
 
         var text = new StringBuilder();
         var charsGenerated = 0;
@@ -387,7 +387,7 @@ public sealed class SearchClient : ISearchClient
         return answer;
     }
 
-    private (string Text, int TokenCount) CreatePrompt(string question, string facts, IContext? context)
+    private string CreatePrompt(string question, string facts, IContext? context)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
 
@@ -398,9 +398,7 @@ public sealed class SearchClient : ISearchClient
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
 
-        var tokenCount = this._textGenerator.CountTokens(prompt);
-
-        return (prompt, tokenCount);
+        return prompt;
     }
 
     private IAsyncEnumerable<string> GenerateAnswer(string prompt, IContext? context, CancellationToken token)
