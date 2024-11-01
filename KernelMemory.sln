@@ -187,7 +187,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureQueues", "extensions\A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAIDocIntel", "extensions\AzureAIDocIntel\AzureAIDocIntel.csproj", "{CFE7C192-2561-40CC-8592-136293451EC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureOpenAI", "extensions\AzureOpenAI\AzureOpenAI.csproj", "{93FA6DD6-D0B2-4751-8680-3F959E1F7AF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureOpenAI", "extensions\AzureOpenAI\AzureOpenAI\AzureOpenAI.csproj", "{93FA6DD6-D0B2-4751-8680-3F959E1F7AF2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAISearch.TestApplication", "extensions\AzureAISearch\AzureAISearch.TestApplication\AzureAISearch.TestApplication.csproj", "{11445C36-1B94-4AFB-AC23-976C94924603}"
 EndProject
@@ -330,6 +330,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAIContentSafety", "extensions\AzureAIContentSafety\AzureAIContentSafety\AzureAIContentSafety.csproj", "{58E65B3F-EFF0-401A-AC76-A49835AE0220}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelMemory", "extensions\KM\KernelMemory\KernelMemory.csproj", "{AB097B62-5A0B-4D74-9F8B-A41FE8241447}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOpenAI.FunctionalTests", "extensions\AzureOpenAI\AzureOpenAI.FunctionalTests\AzureOpenAI.FunctionalTests.csproj", "{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -613,6 +615,9 @@ Global
 		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB097B62-5A0B-4D74-9F8B-A41FE8241447}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -711,6 +716,7 @@ Global
 		{82670921-FDCD-4672-84BD-4353F5AC24A0} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{AB097B62-5A0B-4D74-9F8B-A41FE8241447} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
