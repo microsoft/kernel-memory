@@ -29,6 +29,9 @@ internal static class AzureOpenAIClientBuilder
             UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
+        // See https://github.com/Azure/azure-sdk-for-net/issues/46109
+        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
+
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
