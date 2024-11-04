@@ -48,7 +48,7 @@ public class MemoryAnswer
     /// <remarks>Not all the models and text generators return token usage information.</remarks>
     [JsonPropertyName("tokenUsage")]
     [JsonPropertyOrder(11)]
-    public TokenUsage? TokenUsage { get; set; }
+    public IList<TokenUsage> TokenUsages { get; set; } = [];
 
     /// <summary>
     /// List of the relevant sources used to produce the answer.

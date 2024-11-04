@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -29,6 +30,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
     private readonly OpenAIChatCompletionService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextGenerator> _log;
+
+    private readonly string _textModel;
 
     /// <inheritdoc/>
     public int MaxTokenTotal { get; }
@@ -88,6 +91,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
     {
         this._client = skClient;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
+        this._textModel = config.TextModel;
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
         if (textTokenizer == null)
@@ -144,10 +148,28 @@ public sealed class OpenAITextGenerator : ITextGenerator
         IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
         await foreach (StreamingTextContent x in result)
         {
-            var tokenUsage = x.Metadata?["Usage"] is ChatTokenUsage { } usage
-                ? new TokenUsage { InputTokenCount = usage.InputTokenCount, OutputTokenCount = usage.OutputTokenCount, TotalTokenCount = usage.TotalTokenCount }
-                : null;
+            TokenUsage? tokenUsage = null;
 
+            if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
+            {
+                this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
+                                  usage?.InputTokenCount, usage?.OutputTokenCount, usage?.OutputTokenDetails.ReasoningTokenCount);
+
+                tokenUsage = new TokenUsage
+                {
+                    Timestamp = DateTime.UtcNow,
+                    ServiceType = "OpenAI",
+                    ModelType = "TextGeneration",
+                    ModelName = this._textModel,
+                    ServiceTokensIn = usage!.InputTokenCount,
+                    ServiceTokensOut = usage.OutputTokenCount,
+                    ServiceReasoningTokens = usage.OutputTokenDetails?.ReasoningTokenCount
+                };
+            }
+
+            // NOTE: as stated at https://platform.openai.com/docs/api-reference/chat/streaming#chat/streaming-choices,
+            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so we can continue
+            // only if both x.Text and tokenUsage are null.
             if (x.Text is null && tokenUsage is null) { continue; }
 
             yield return (x.Text, tokenUsage);

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.KernelMemory.Models;
@@ -9,21 +10,38 @@ namespace Microsoft.KernelMemory.Models;
 /// </summary>
 public class TokenUsage
 {
+    public DateTime Timestamp { get; set; }
+
+    public string? ServiceType { get; set; }
+
+    public string? ModelType { get; set; }
+
+    public string? ModelName { get; set; }
+
     /// <summary>
-    /// The number of tokens in the request message input, spanning all message content items.
+    /// The number of tokens in the request message input, spanning all message content items, measured by the tokenizer.
     /// </summary>
-    [JsonPropertyOrder(0)]
-    public int InputTokenCount { get; set; }
+    [JsonPropertyName("tokenizer_tokens_in")]
+    public int TokeninzerTokensIn { get; set; }
+
+    /// <summary>
+    /// The combined number of output tokens in the generated completion, measured by the tokenizer.
+    /// </summary>
+    [JsonPropertyName("tokenizer_tokens_out")]
+    public int TokeninzerTokensOut { get; set; }
+
+    /// <summary>
+    /// The number of tokens in the request message input, spanning all message content items, measured by the service.
+    /// </summary>
+    [JsonPropertyName("service_tokens_in")]
+    public int? ServiceTokensIn { get; set; }
 
     /// <summary>
     /// The combined number of output tokens in the generated completion, as consumed by the model.
     /// </summary>
-    [JsonPropertyOrder(1)]
-    public int OutputTokenCount { get; set; }
+    [JsonPropertyName("service_tokens_out")]
+    public int? ServiceTokensOut { get; set; }
 
-    /// <summary>
-    /// The total number of combined input (prompt) and output (completion) tokens used.
-    /// </summary>
-    [JsonPropertyOrder(2)]
-    public int TotalTokenCount { get; set; }
+    [JsonPropertyName("service_reasoning_tokens")]
+    public int? ServiceReasoningTokens { get; set; }
 }
