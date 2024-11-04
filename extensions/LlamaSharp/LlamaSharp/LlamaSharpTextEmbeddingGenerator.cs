@@ -2,28 +2,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using LLama;
-using LLama.Abstractions;
 using LLama.Common;
 using LLama.Native;
-using LLama.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
 
-/// <summary>
-/// Text generator based on LLama models, via LLamaSharp / llama.cpp
-/// See https://github.com/SciSharp/LLamaSharp
-/// </summary>
-[Experimental("KMEXP01")]
-public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
+public sealed class LlamaSharpTextEmbeddingGenerator : ITextEmbeddingGenerator, IDisposable
 {
+    private readonly LLamaEmbedder _embedder;
     private readonly LLamaWeights _model;
     private readonly LLamaContext _context;
     private readonly ITextTokenizer _textTokenizer;
@@ -35,7 +27,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// <param name="config">Configuration settings</param>
     /// <param name="textTokenizer">Optional text tokenizer, replacing the one provided by the model</param>
     /// <param name="loggerFactory">Application logger instance</param>
-    public LlamaSharpTextGenerator(
+    public LlamaSharpTextEmbeddingGenerator(
         LlamaSharpModelConfig config,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
@@ -43,12 +35,14 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<LlamaSharpTextGenerator>();
 
         config.Validate();
-        this.MaxTokenTotal = (int)config.MaxTokenTotal;
+        this.MaxTokens = (int)config.MaxTokenTotal;
 
         var parameters = new ModelParams(config.ModelPath)
         {
             ContextSize = config.MaxTokenTotal,
             GpuLayerCount = config.GpuLayerCount ?? 20,
+            Embeddings = true,
+            PoolingType = LLamaPoolingType.None,
         };
 
         var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
@@ -58,11 +52,12 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
 
+        this._embedder = new LLamaEmbedder(this._model, parameters);
         this._textTokenizer = textTokenizer ?? new LlamaSharpTokenizer(this._context);
     }
 
     /// <inheritdoc/>
-    public int MaxTokenTotal { get; }
+    public int MaxTokens { get; }
 
     /// <inheritdoc/>
     public int CountTokens(string text)
@@ -77,46 +72,21 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
-        string prompt,
-        TextGenerationOptions options,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
-        var executor = new InteractiveExecutor(this._context);
-
-        var logitBias = options.TokenSelectionBiases.Count > 0
-            ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
-            : new Dictionary<LLamaToken, float>();
-
-        var samplingPipeline = new DefaultSamplingPipeline()
+        if (this._log.IsEnabled(LogLevel.Trace))
         {
-            Temperature = (float)options.Temperature,
-            TopP = (float)options.NucleusSampling,
-            AlphaPresence = (float)options.PresencePenalty,
-            AlphaFrequency = (float)options.FrequencyPenalty,
-            LogitBias = logitBias,
-        };
-
-        IInferenceParams settings = new InferenceParams
-        {
-            TokensKeep = this.MaxTokenTotal,
-            MaxTokens = options.MaxTokens ?? -1,
-            AntiPrompts = options.StopSequences?.ToList() ?? new(),
-            SamplingPipeline = samplingPipeline
-        };
-
-        this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
-
-        IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
-        await foreach (var x in streamingResponse)
-        {
-            yield return (x, null);
+            this._log.LogTrace("Generating embedding, input token size: {0}, text length: {1}", this._textTokenizer.CountTokens(text), text.Length);
         }
+
+        IReadOnlyList<float[]> embeddings = await this._embedder.GetEmbeddings(text, cancellationToken).ConfigureAwait(false);
+        return new Embedding(embeddings[0]);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
+        this._embedder.Dispose();
         this._model.Dispose();
         this._context.Dispose();
     }

@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\extensions\AzureOpenAI\AzureOpenAI.csproj" />
+      <ProjectReference Include="..\..\..\extensions\AzureOpenAI\AzureOpenAI\AzureOpenAI.csproj" />
       <ProjectReference Include="..\..\evaluation\Evaluation.csproj" />
     </ItemGroup>
 

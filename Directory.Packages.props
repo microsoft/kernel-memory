@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.405.6" />
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.405.7" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.13.1" />
@@ -28,7 +28,7 @@
     <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.30.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OllamaSharp" Version="4.0.2" />
+    <PackageVersion Include="OllamaSharp" Version="4.0.3" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
@@ -56,10 +56,10 @@
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.25.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.25.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.25.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.25.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.26.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.26.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.26.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.26.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -103,7 +103,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Xunit.DependencyInjection" Version="9.5.0" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="9.6.0" />
     <PackageVersion Include="Xunit.DependencyInjection.Logging" Version="9.0.0" />
   </ItemGroup>
 </Project>

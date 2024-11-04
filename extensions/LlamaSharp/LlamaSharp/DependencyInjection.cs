@@ -20,14 +20,49 @@ public static partial class KernelMemoryBuilderExtensions
         uint maxTokenTotal,
         ITextTokenizer? textTokenizer = null)
     {
-        var config = new LlamaSharpConfig
+        var config = new LlamaSharpModelConfig
         {
             ModelPath = modelPath,
             MaxTokenTotal = maxTokenTotal
         };
 
-        builder.Services.AddLlamaTextGeneration(config, textTokenizer);
+        builder.Services.AddLlamaSharpTextGeneration(config, textTokenizer);
 
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithLlamaTextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        string modelPath,
+        uint maxTokenTotal,
+        ITextTokenizer? textTokenizer = null)
+    {
+        var config = new LlamaSharpModelConfig
+        {
+            ModelPath = modelPath,
+            MaxTokenTotal = maxTokenTotal
+        };
+
+        builder.Services.AddLlamaSharpTextEmbeddingGeneration(config, textTokenizer);
+
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithLlamaTextGeneration(
+        this IKernelMemoryBuilder builder,
+        LlamaSharpModelConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        builder.Services.AddLlamaSharpTextGeneration(config, textTokenizer);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithLlamaTextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        LlamaSharpModelConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        builder.Services.AddLlamaSharpTextEmbeddingGeneration(config, textTokenizer);
         return builder;
     }
 
@@ -36,7 +71,16 @@ public static partial class KernelMemoryBuilderExtensions
         LlamaSharpConfig config,
         ITextTokenizer? textTokenizer = null)
     {
-        builder.Services.AddLlamaTextGeneration(config, textTokenizer);
+        builder.Services.AddLlamaSharpTextGeneration(config.TextModel, textTokenizer);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithLlamaTextEmbeddingGeneration(
+        this IKernelMemoryBuilder builder,
+        LlamaSharpConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        builder.Services.AddLlamaSharpTextEmbeddingGeneration(config.EmbeddingModel, textTokenizer);
         return builder;
     }
 }
@@ -46,14 +90,27 @@ public static partial class KernelMemoryBuilderExtensions
 /// </summary>
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddLlamaTextGeneration(
+    public static IServiceCollection AddLlamaSharpTextGeneration(
         this IServiceCollection services,
-        LlamaSharpConfig config,
+        LlamaSharpModelConfig config,
         ITextTokenizer? textTokenizer = null)
     {
         config.Validate();
         return services
             .AddSingleton<ITextGenerator, LlamaSharpTextGenerator>(serviceProvider => new LlamaSharpTextGenerator(
+                config: config,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+    }
+
+    public static IServiceCollection AddLlamaSharpTextEmbeddingGeneration(
+        this IServiceCollection services,
+        LlamaSharpModelConfig config,
+        ITextTokenizer? textTokenizer = null)
+    {
+        config.Validate();
+        return services
+            .AddSingleton<ITextEmbeddingGenerator, LlamaSharpTextEmbeddingGenerator>(serviceProvider => new LlamaSharpTextEmbeddingGenerator(
                 config: config,
                 textTokenizer: textTokenizer,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
