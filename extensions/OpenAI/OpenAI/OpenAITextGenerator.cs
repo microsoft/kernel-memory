@@ -142,6 +142,14 @@ public sealed class OpenAITextGenerator : ITextGenerator
         IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
         await foreach (StreamingTextContent x in result)
         {
+            // TODO: try catch
+            // if (x.Metadata?["Usage"] is not null)
+            // {
+            //     var usage = x.Metadata["Usage"] as ChatTokenUsage;
+            //     this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
+            //         usage?.InputTokenCount, usage?.OutputTokenCount, usage?.OutputTokenDetails.ReasoningTokenCount);
+            // }
+
             if (x.Text == null) { continue; }
 
             yield return x.Text;
