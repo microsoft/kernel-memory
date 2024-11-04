@@ -520,16 +520,13 @@ public sealed class SearchClient : ISearchClient
             this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
             noAnswerFound.NoResultReason = "Unable to use memories";
             yield return noAnswerFound;
+            answer.Result = eosToken;
+            yield return answer;
             yield break;
         }
 
         if (factsUsedCount == 0)
-        {
             this._log.LogWarning("No memories available");
-            noAnswerFound.NoResultReason = "No memories available";
-            yield return noAnswerFound;
-            yield break;
-        }
         var charsGenerated = 0;
         await foreach (var x in this.GenerateAnswer(question, emptyAnswer,facts.ToString(), context, cancellationToken).ConfigureAwait(true))
         {
@@ -562,7 +559,7 @@ public sealed class SearchClient : ISearchClient
         double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
-
+        this._log.LogInformation("prompt: {0}", prompt);
         question = question.Trim();
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
