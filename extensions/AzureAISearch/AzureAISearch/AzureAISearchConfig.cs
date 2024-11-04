@@ -31,6 +31,13 @@ public class AzureAISearchConfig
     /// </summary>
     public bool UseHybridSearch { get; set; } = false;
 
+    /// <summary>
+    /// Helps improve relevance score consistency for search services with multiple replicas by
+    /// attempting to route a given request to the same replica for that session. Use this when
+    /// favoring consistent scoring over lower latency.
+    /// </summary>
+    public bool UseSessionId { get; set; } = false;
+
     public void SetCredential(TokenCredential credential)
     {
         this.Auth = AuthTypes.ManualTokenCredential;

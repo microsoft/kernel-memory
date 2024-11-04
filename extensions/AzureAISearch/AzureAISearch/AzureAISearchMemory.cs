@@ -34,6 +34,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
     private readonly bool _useHybridSearch;
+    private readonly bool _useSessionId;
 
     /// <summary>
     /// Create a new instance
@@ -49,6 +50,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         this._embeddingGenerator = embeddingGenerator;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAISearchMemory>();
         this._useHybridSearch = config.UseHybridSearch;
+        this._useSessionId = config.UseSessionId;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -190,22 +192,13 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 FilterMode = VectorFilterMode.PreFilter
             }
         };
-        DefineFieldsToSelect(options, withEmbeddings);
+        this.ApplyCommonSearchOptions(options, withEmbeddings, filters);
 
         if (limit > 0)
         {
             vectorQuery.KNearestNeighborsCount = limit;
             options.Size = limit;
             this._log.LogDebug("KNearestNeighborsCount and max results: {0}", limit);
-        }
-
-        // Remove empty filters
-        filters = filters?.Where(f => !f.IsEmpty()).ToList();
-
-        if (filters is { Count: > 0 })
-        {
-            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
         }
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
@@ -254,32 +247,13 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         var client = this.GetSearchClient(index);
 
         SearchOptions options = new();
-        DefineFieldsToSelect(options, withEmbeddings);
+        this.ApplyCommonSearchOptions(options, withEmbeddings, filters);
 
         if (limit > 0)
         {
             options.Size = limit;
             this._log.LogDebug("Max results: {0}", limit);
         }
-
-        // Remove empty filters
-        filters = filters?.Where(f => !f.IsEmpty()).ToList();
-
-        if (filters is { Count: > 0 })
-        {
-            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
-        }
-
-        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        // fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
-        // var options = new SearchOptions
-        // {
-        //     Filter = fieldIsCollection
-        //         ? $"{fieldName}/any(s: s eq '{fieldValue}')"
-        //         : $"{fieldName} eq '{fieldValue}')",
-        //     Size = limit
-        // };
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
@@ -627,7 +601,10 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         return indexSchema;
     }
 
-    private static void DefineFieldsToSelect(SearchOptions options, bool withEmbeddings)
+    private void ApplyCommonSearchOptions(
+        SearchOptions options,
+        bool withEmbeddings,
+        ICollection<MemoryFilter>? filters = null)
     {
         options.Select.Add(AzureAISearchMemoryRecord.IdField);
         options.Select.Add(AzureAISearchMemoryRecord.TagsField);
@@ -635,6 +612,30 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         if (withEmbeddings)
         {
             options.Select.Add(AzureAISearchMemoryRecord.VectorField);
+        }
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
+        if (filters is { Count: > 0 })
+        {
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
+            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
+        }
+
+        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
+        // fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
+        // var options = new SearchOptions
+        // {
+        //     Filter = fieldIsCollection
+        //         ? $"{fieldName}/any(s: s eq '{fieldValue}')"
+        //         : $"{fieldName} eq '{fieldValue}')",
+        //     Size = limit
+        // };
+
+        if (this._useSessionId)
+        {
+            options.SessionId = Guid.NewGuid().ToString("N");
         }
     }
 
