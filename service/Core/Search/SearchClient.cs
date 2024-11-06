@@ -368,16 +368,12 @@ public sealed class SearchClient : ISearchClient
 
         if (this._contentModeration != null && this._config.UseContentModeration)
         {
-            var isSafe = await this._contentModeration.IsSafeAsync(answer.Result, cancellationToken).ConfigureAwait(false);
-            if (!isSafe)
-            {
-                this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
-                this._log.LogSensitive("Unsafe answer: {0}", answer.Result);
-                answer.NoResultReason = "Content moderation failure";
+            var moderatedAnswer = await this.isSafe(question, answer.Result, cancellationToken).ConfigureAwait(false);
+            if(moderatedAnswer.NoResultReason == "Content moderation failure"){
+                answer.NoResultReason = moderatedAnswer.NoResultReason;
                 answer.Result = this._config.ModeratedAnswer;
             }
         }
-
         return answer;
     }
 
@@ -528,10 +524,12 @@ public sealed class SearchClient : ISearchClient
         if (factsUsedCount == 0)
             this._log.LogWarning("No memories available");
         var charsGenerated = 0;
+        var wholeText = new StringBuilder();
         await foreach (var x in this.GenerateAnswer(question, emptyAnswer,facts.ToString(), context, cancellationToken).ConfigureAwait(true))
         {
             var text = new StringBuilder();
             text.Append(x);
+            wholeText.Append(x);
             if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
             {
                 charsGenerated = text.Length;
@@ -546,9 +544,34 @@ public sealed class SearchClient : ISearchClient
             this._log.LogInformation("Chunk: '{0}", newAnswer.Result);
             yield return newAnswer;
         }
+        if (this._contentModeration != null && this._config.UseContentModeration)
+        {
+            var moderatedAnswer = await this.isSafe(question, wholeText.ToString(), cancellationToken).ConfigureAwait(false);
+            if(moderatedAnswer.NoResultReason == "Content moderation failure")
+                yield return moderatedAnswer;
+        }
         answer.Result = eosToken;
         this._log.LogInformation("Eos token: '{0}", answer.Result);
         yield return answer;
+    }
+
+    private async Task<MemoryAnswer> isSafe(string question, string answerToDetect, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var isSafe = await this._contentModeration.IsSafeAsync(answerToDetect, cancellationToken).ConfigureAwait(false);
+        var newAnswer = new MemoryAnswer
+        {
+            Question = question,
+            NoResult = false,
+            Result = answerToDetect
+        };
+        if (!isSafe)
+        {
+            this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
+            this._log.LogSensitive("Unsafe answer: {0}", answerToDetect);
+            newAnswer.NoResultReason = "Content moderation failure";
+            newAnswer.Result = this._config.ModeratedAnswer;
+        }
+        return newAnswer;
     }
 
     private IAsyncEnumerable<string> GenerateAnswer(string question, string emptyAnswer, string facts, IContext? context, CancellationToken token)
