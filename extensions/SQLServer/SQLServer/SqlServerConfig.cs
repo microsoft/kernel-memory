@@ -72,7 +72,7 @@ public class SqlServerConfig
     /// </summary>
     /// <remarks>
     /// Currently, the native Vector search is available on Azure SQL Database only.
-    /// See <a href="https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/">Public Preview of Native Vector Support in Azure SQL Database</a> for more information.
+    /// See <a href="https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server">Overview of vectors in the SQL Database Engine</a> for more information.
     /// </remarks>
     /// <seealso cref="VectorSize"/>
     public bool UseNativeVectorSearch { get; set; } = false;
@@ -82,7 +82,7 @@ public class SqlServerConfig
     /// </summary>
     /// <remarks>
     /// Currently, the maximum supported vector size is 1998.
-    /// See <a href="https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/">Public Preview of Native Vector Support in Azure SQL Database</a> for more information.
+    /// See <a href="https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server">Overview of vectors in the SQL Database Engine</a> for more information.
     /// </remarks>
     /// <seealso cref="UseNativeVectorSearch"/>
     public int VectorSize { get; set; } = DefaultVectorSize;

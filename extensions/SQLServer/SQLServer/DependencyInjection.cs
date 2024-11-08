@@ -31,10 +31,11 @@ public static partial class KernelMemoryBuilderExtensions
     /// </summary>
     /// <param name="builder">KM builder instance</param>
     /// <param name="connectionString">SQL Server connection string</param>
-    /// <param name="useNativeVectorSearch">Whether to use native vector search or not. Currently, the native Vector search is available on Azure SQL Database only.</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not.</param>
     /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR data type.</param>
     /// <remarks>
-    /// See <a href="https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/">Public Preview of Native Vector Support in Azure SQL Database</a> for more information about native Vector support.
+    /// Currently, the native Vector search is available on Azure SQL Database only.
+    /// See <a href="https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server">Overview of vectors in the SQL Database Engine</a> for more information about native Vectors support.
     /// </remarks>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
