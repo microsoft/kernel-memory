@@ -397,10 +397,11 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         if (this._isReady) { return; }
 
         await this._initSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        if (this._isReady) { return; }
 
         try
         {
+            if (this._isReady) { return; }
+
             await this.CacheSqlServerMajorVersionNumberAsync(cancellationToken).ConfigureAwait(false);
             await this.CreateTablesIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
             this._isReady = true;
