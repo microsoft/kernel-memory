@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -23,9 +24,10 @@ public static class WebAPIEndpoints
     public static IEndpointRouteBuilder AddKernelMemoryEndpoints(
         this IEndpointRouteBuilder builder,
         string apiPrefix = "/",
+        KernelMemoryConfig? kmConfig = null,
         IEndpointFilter? authFilter = null)
     {
-        builder.AddPostUploadEndpoint(apiPrefix, authFilter);
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter, kmConfig?.Service.GetMaxUploadSizeInBytes());
         builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
@@ -39,7 +41,10 @@ public static class WebAPIEndpoints
     }
 
     public static void AddPostUploadEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+        this IEndpointRouteBuilder builder,
+        string apiPrefix = "/",
+        IEndpointFilter? authFilter = null,
+        long? maxUploadSizeInBytes = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -51,6 +56,12 @@ public static class WebAPIEndpoints
                 IContextProvider contextProvider,
                 CancellationToken cancellationToken) =>
             {
+                if (maxUploadSizeInBytes.HasValue && request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } feature)
+                {
+                    log.LogTrace("Max upload request body size set to {0} bytes", maxUploadSizeInBytes.Value);
+                    feature.MaxRequestBodySize = maxUploadSizeInBytes;
+                }
+
                 log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
 
                 // Note: .NET doesn't yet support binding multipart forms including data and files

@@ -19,7 +19,7 @@
         <ProjectReference Include="..\..\AzureAIDocIntel\AzureAIDocIntel.csproj" />
         <ProjectReference Include="..\..\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
         <ProjectReference Include="..\..\AzureBlobs\AzureBlobs.csproj" />
-        <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI\AzureOpenAI.csproj" />
         <ProjectReference Include="..\..\AzureQueues\AzureQueues.csproj" />
         <ProjectReference Include="..\..\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
         <ProjectReference Include="..\..\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />

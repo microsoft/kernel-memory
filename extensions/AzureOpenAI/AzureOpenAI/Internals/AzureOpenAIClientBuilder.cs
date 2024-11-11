@@ -29,6 +29,9 @@ internal static class AzureOpenAIClientBuilder
             UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
+        // See https://github.com/Azure/azure-sdk-for-net/issues/46109
+        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
+
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
@@ -55,3 +58,50 @@ internal static class AzureOpenAIClientBuilder
         }
     }
 }
+
+// Use only for local debugging - Usage:
+//
+// 1. Add this code in the builder above:
+//
+//      options.Transport = new HttpClientPipelineTransport(new HttpClient(new DebuggingHandler(new HttpClientHandler())));
+//
+// 2. Add these at the top:
+//
+//      using System.Threading;
+//      using System.Threading.Tasks;
+//
+// 3. Uncomment this class:
+//
+// #pragma warning disable CA1303
+// internal class DebuggingHandler : DelegatingHandler
+// {
+//     public DebuggingHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+//     {
+//     }
+//
+//     protected override async Task<HttpResponseMessage> SendAsync(
+//         HttpRequestMessage request, CancellationToken cancellationToken)
+//     {
+//         // Log request URI
+//         Console.WriteLine("#### Request URI: " + request.RequestUri);
+//
+//         // Log request headers
+//         Console.WriteLine("#### Request Headers:");
+//         foreach (var header in request.Headers)
+//         {
+//             Console.WriteLine($"#### {header.Key}: {string.Join(", ", header.Value)}");
+//         }
+//
+//         // Send the request to the inner handler
+//         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+//
+//         // Optionally, log response headers here
+//         Console.WriteLine("#### Response Headers:");
+//         foreach (var header in response.Headers)
+//         {
+//             Console.WriteLine($"#### {header.Key}: {string.Join(", ", header.Value)}");
+//         }
+//
+//         return response;
+//     }
+// }

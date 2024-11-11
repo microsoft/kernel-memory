@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.KernelMemory.Configuration;
@@ -27,4 +28,20 @@ public class ServiceConfig
     /// List of handlers to enable
     /// </summary>
     public Dictionary<string, HandlerConfig> Handlers { get; set; } = new();
+
+    /// <summary>
+    /// The maximum allowed size in megabytes for a request body posted to the upload endpoint.
+    /// If not set the solution defaults to 30,000,000 bytes (~28.6 MB) (ASP.NET default).
+    /// </summary>
+    public long? MaxUploadSizeMb { get; set; } = null;
+
+    public long? GetMaxUploadSizeInBytes()
+    {
+        if (this.MaxUploadSizeMb.HasValue)
+        {
+            return Math.Min(10, this.MaxUploadSizeMb.Value) * 1024 * 1024;
+        }
+
+        return null;
+    }
 }
