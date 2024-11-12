@@ -41,7 +41,7 @@ public class AzureAISearchConfig
     /// Be wary that reusing the same replica repeatedly can interfere with the load balancing of
     /// the requests across replicas and adversely affect the performance of the search service.
     ///
-    /// See https://learn.microsoft.com/rest/api/searchservice/documents/search-post?view=rest-searchservice-2024-07-01&tabs=HTTP#request-body
+    /// See https://learn.microsoft.com/rest/api/searchservice/documents/search-post?view=rest-searchservice-2024-07-01&amp;tabs=HTTP#request-body
     /// </summary>
     public bool UseStickySessions { get; set; } = false;
 
