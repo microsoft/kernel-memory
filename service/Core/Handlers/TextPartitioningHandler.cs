@@ -141,7 +141,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         partitionsMimeType = MimeTypes.MarkDown;
                         sentences = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitMarkdownParagraphs(
-                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter);
+                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter, chunkHeader: chunkHeader);
                         break;
                     }
 
