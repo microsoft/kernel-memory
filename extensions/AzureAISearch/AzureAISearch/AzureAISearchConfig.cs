@@ -34,7 +34,14 @@ public class AzureAISearchConfig
     /// <summary>
     /// Helps improve relevance score consistency for search services with multiple replicas by
     /// attempting to route a given request to the same replica for that session. Use this when
-    /// favoring consistent scoring over lower latency.
+    /// favoring consistent scoring over lower latency. Can adversely affect performance.
+    ///
+    /// Whether to use sticky sessions, which can help getting more consistent results.
+    /// When using sticky sessions, a best-effort attempt will be made to target the same replica set.
+    /// Be wary that reusing the same replica repeatedly can interfere with the load balancing of
+    /// the requests across replicas and adversely affect the performance of the search service.
+    ///
+    /// See https://learn.microsoft.com/rest/api/searchservice/documents/search-post?view=rest-searchservice-2024-07-01&tabs=HTTP#request-body
     /// </summary>
     public bool UseSessionId { get; set; } = false;
 
