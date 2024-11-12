@@ -43,7 +43,7 @@ public class AzureAISearchConfig
     ///
     /// See https://learn.microsoft.com/rest/api/searchservice/documents/search-post?view=rest-searchservice-2024-07-01&tabs=HTTP#request-body
     /// </summary>
-    public bool UseSessionId { get; set; } = false;
+    public bool UseStickySessions { get; set; } = false;
 
     public void SetCredential(TokenCredential credential)
     {

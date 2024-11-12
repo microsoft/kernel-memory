@@ -34,7 +34,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
     private readonly bool _useHybridSearch;
-    private readonly bool _useSessionId;
+    private readonly bool _useStickySessions;
 
     /// <summary>
     /// Create a new instance
@@ -50,7 +50,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         this._embeddingGenerator = embeddingGenerator;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAISearchMemory>();
         this._useHybridSearch = config.UseHybridSearch;
-        this._useSessionId = config.UseSessionId;
+        this._useStickySessions = config.UseStickySessions;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -192,13 +192,12 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 FilterMode = VectorFilterMode.PreFilter
             }
         };
-        this.ApplyCommonSearchOptions(options, withEmbeddings, filters);
+        options = this.PrepareSearchOptions(options, withEmbeddings, filters, limit);
 
         if (limit > 0)
         {
             vectorQuery.KNearestNeighborsCount = limit;
-            options.Size = limit;
-            this._log.LogDebug("KNearestNeighborsCount and max results: {0}", limit);
+            this._log.LogDebug("KNearestNeighborsCount: {0}", limit);
         }
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
@@ -246,14 +245,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     {
         var client = this.GetSearchClient(index);
 
-        SearchOptions options = new();
-        this.ApplyCommonSearchOptions(options, withEmbeddings, filters);
-
-        if (limit > 0)
-        {
-            options.Size = limit;
-            this._log.LogDebug("Max results: {0}", limit);
-        }
+        SearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
@@ -601,14 +593,20 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         return indexSchema;
     }
 
-    private void ApplyCommonSearchOptions(
-        SearchOptions options,
+    private SearchOptions PrepareSearchOptions(
+        SearchOptions? options,
         bool withEmbeddings,
-        ICollection<MemoryFilter>? filters = null)
+        ICollection<MemoryFilter>? filters = null,
+        int limit = 1)
     {
+        options ??= new SearchOptions();
+
+        // Define which fields to fetch
         options.Select.Add(AzureAISearchMemoryRecord.IdField);
         options.Select.Add(AzureAISearchMemoryRecord.TagsField);
         options.Select.Add(AzureAISearchMemoryRecord.PayloadField);
+
+        // Embeddings are fetched only when needed, to reduce latency and cost
         if (withEmbeddings)
         {
             options.Select.Add(AzureAISearchMemoryRecord.VectorField);
@@ -633,10 +631,19 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         //     Size = limit
         // };
 
-        if (this._useSessionId)
+        if (limit > 0)
+        {
+            options.Size = limit;
+            this._log.LogDebug("Max results: {0}", limit);
+        }
+
+        // Decide whether to use a sticky session for the current request
+        if (this._useStickySessions)
         {
             options.SessionId = Guid.NewGuid().ToString("N");
         }
+
+        return options;
     }
 
     private static double ScoreToCosineSimilarity(double score)
