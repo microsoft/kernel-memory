@@ -290,7 +290,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
             command.Parameters.AddWithValue("@min_relevance_score", minRelevance);
             command.Parameters.AddWithValue("@max_distance", 1 - minRelevance);
-            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data.ToArray()));
+            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data));
             command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@limit", limit);
 
@@ -326,7 +326,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
-        await foreach (var item in this.UpsertBatchAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
+        await foreach (var item in this.UpsertBatchAsync(index, [record], cancellationToken).ConfigureAwait(false))
         {
             return item;
         }
@@ -363,7 +363,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                 command.Parameters.AddWithValue("@key", record.Id);
                 command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
+                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data));
                 await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 command.Dispose();
 
