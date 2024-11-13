@@ -120,7 +120,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                 string partitionsMimeType = MimeTypes.PlainText;
 
                 // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
-                if (partitionContent.ToArray().Length == 0) { continue; }
+                if (partitionContent.IsEmpty) { continue; }
 
                 switch (file.MimeType)
                 {
