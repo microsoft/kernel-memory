@@ -16,6 +16,7 @@ public class MsExcelDecoderTest : BaseFunctionalTestCase
     [Fact]
     [Trait("Category", "UnitTest")]
     [Trait("Category", "DataFormats")]
+    [Trait("Category", "Excel")]
     public async Task ItExtractsAllTypes()
     {
         // Arrange
