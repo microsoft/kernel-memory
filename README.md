@@ -217,7 +217,7 @@ which documents ground the response.
 
 The OpenAPI schema ("swagger") is available at http://127.0.0.1:9001/swagger/index.html when
 running the service locally with OpenAPI enabled. 
-[Here's a copy](https://editor.swagger.io/?url=https://github.com/microsoft/kernel-memory/blob/main/swagger.json).
+[Here's a copy](https://editor.swagger.io/?url=https://raw.githubusercontent.com/microsoft/kernel-memory/refs/heads/main/swagger.json).
 
 
 🔗 See also: 
