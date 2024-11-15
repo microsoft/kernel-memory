@@ -102,7 +102,7 @@ internal static class Program
             },
             services =>
             {
-                long? maxSize = config.Service.GetMaxUploadSizeInBytes();
+                long? maxSize = config.Service.MaxUploadSize;
                 if (!maxSize.HasValue) { return; }
 
                 services.Configure<IISServerOptions>(x => { x.MaxRequestBodySize = maxSize.Value; });
