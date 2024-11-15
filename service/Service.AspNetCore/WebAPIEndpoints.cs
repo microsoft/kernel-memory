@@ -26,7 +26,7 @@ public static class WebAPIEndpoints
         KernelMemoryConfig? kmConfig = null,
         IEndpointFilter? authFilter = null)
     {
-        builder.AddPostUploadEndpoint(apiPrefix, authFilter, kmConfig?.Service.GetMaxUploadSizeInBytes());
+        builder.AddPostUploadEndpoint(apiPrefix, authFilter, kmConfig?.Service.MaxUploadSize);
         builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
         builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
