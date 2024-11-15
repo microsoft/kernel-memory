@@ -48,7 +48,7 @@
   </ItemGroup>
   <!-- Missing Strong Name (CS8002) -->
   <ItemGroup>
-    <PackageVersion Include="ClosedXML" Version="0.104.1" />
+    <PackageVersion Include="ClosedXML" Version="0.104.2" />
     <PackageVersion Include="LLamaSharp" Version="0.18.0" />
     <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.18.0" />
     <PackageVersion Include="Pgvector" Version="0.3.0" />
