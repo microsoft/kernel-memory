@@ -34,7 +34,7 @@ public sealed class DeleteIndexHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Deleting index, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -50,6 +50,6 @@ public sealed class DeleteIndexHandler : IPipelineStepHandler
             index: pipeline.Index,
             cancellationToken).ConfigureAwait(false);
 
-        return (true, pipeline);
+        return (ResultType.Success, pipeline);
     }
 }

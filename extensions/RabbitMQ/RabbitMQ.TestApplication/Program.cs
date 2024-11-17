@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Orchestration.RabbitMQ;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -38,7 +39,7 @@ internal static class Program
         {
             Console.WriteLine($"{++counter} Received message: {msg}");
             await Task.Delay(0);
-            return false;
+            return ResultType.RetriableError;
         });
 
         await pipeline.ConnectToQueueAsync(QueueName, QueueOptions.PubSub);

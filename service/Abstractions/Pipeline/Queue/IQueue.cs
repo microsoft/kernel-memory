@@ -28,5 +28,5 @@ public interface IQueue : IDisposable
     /// Define the logic to execute when a new message is in the queue.
     /// </summary>
     /// <param name="processMessageAction">Async action to execute</param>
-    void OnDequeue(Func<string, Task<bool>> processMessageAction);
+    void OnDequeue(Func<string, Task<ResultType>> processMessageAction);
 }

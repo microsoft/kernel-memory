@@ -171,21 +171,30 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
             }
 
             // Run handler
-            (bool success, DataPipeline updatedPipeline) = await stepHandler
+            (ResultType resultType, DataPipeline updatedPipeline) = await stepHandler
                 .InvokeAsync(pipeline, this.CancellationTokenSource.Token)
                 .ConfigureAwait(false);
-            if (success)
+
+            switch (resultType)
             {
-                pipeline = updatedPipeline;
-                pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
-                pipeline.MoveToNextStep();
-                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
-                throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
+                case ResultType.Success:
+                    pipeline = updatedPipeline;
+                    pipeline.LastUpdate = DateTimeOffset.UtcNow;
+                    this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    pipeline.MoveToNextStep();
+                    await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+                    break;
+
+                case ResultType.RetriableError:
+                    this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
+
+                case ResultType.NonRetriableError:
+                    this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}' due to an unrecoverable error", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    throw new NonRetriableException($"Unrecoverable pipeline error, step {currentStepName} failed and cannot be retried");
+
+                default:
+                    throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result type");
             }
         }
 

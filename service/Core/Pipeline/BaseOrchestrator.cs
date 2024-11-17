@@ -123,7 +123,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         }
         catch (Exception e)
         {
-            this.Log.LogError(e, "Pipeline start failed");
+            this.Log.LogError(e, "Pipeline start failed.");
             throw;
         }
     }
@@ -327,7 +327,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             }
             catch (Exception e)
             {
-                this.Log.LogError(e, "Error while trying to delete the document directory");
+                this.Log.LogError(e, "Error while trying to delete the document directory.");
             }
         }
 
@@ -339,7 +339,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             }
             catch (Exception e)
             {
-                this.Log.LogError(e, "Error while trying to delete the index directory");
+                this.Log.LogError(e, "Error while trying to delete the index directory.");
             }
         }
 #pragma warning restore CA1031

@@ -14,6 +14,7 @@ using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Timer = System.Timers.Timer;
 
@@ -180,7 +181,7 @@ public sealed class AzureQueuesPipeline : IQueue
     }
 
     /// <inheritdoc />
-    public void OnDequeue(Func<string, Task<bool>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ResultType>> processMessageAction)
     {
         this.Received += async (object sender, MessageEventArgs args) =>
         {
@@ -191,20 +192,30 @@ public sealed class AzureQueuesPipeline : IQueue
 
             try
             {
+                ResultType resultType = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
                 if (message.DequeueCount <= this._config.MaxRetriesBeforePoisonQueue)
                 {
-                    bool success = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
-                    if (success)
+                    switch (resultType)
                     {
-                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
-                        await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
-                        this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
-                            message.MessageId, backoffDelay.TotalMilliseconds);
-                        await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
+                        case ResultType.Success:
+                            this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
+                            await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        case ResultType.RetriableError:
+                            var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
+                            this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
+                                message.MessageId, backoffDelay.TotalMilliseconds);
+                            await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        case ResultType.NonRetriableError:
+                            this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
+                            await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
                     }
                 }
                 else
@@ -212,6 +223,11 @@ public sealed class AzureQueuesPipeline : IQueue
                     this._log.LogError("Message '{0}' reached max attempts, moving to poison queue", message.MessageId);
                     await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                 }
+            }
+            catch (NonRetriableException e)
+            {
+                this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
+                await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)

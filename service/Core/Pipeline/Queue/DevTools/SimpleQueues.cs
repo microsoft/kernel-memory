@@ -177,7 +177,7 @@ public sealed class SimpleQueues : IQueue
 
     /// <inheritdoc />
     /// <see cref="DistributedPipelineOrchestrator.AddHandlerAsync"/> about the logic handling dequeued messages.
-    public void OnDequeue(Func<string, Task<bool>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ResultType>> processMessageAction)
     {
         this._log.LogInformation("Queue {0}: subscribing...", this._queueName);
         this.Received += async (sender, args) =>
@@ -193,26 +193,42 @@ public sealed class SimpleQueues : IQueue
                 this._log.LogInformation("Queue {0}: message {0} received", this._queueName, message.Id);
 
                 // Process message with the logic provided by the orchestrator
-                bool success = await processMessageAction.Invoke(message.Content).ConfigureAwait(false);
-                if (success)
+                var resultType = await processMessageAction.Invoke(message.Content).ConfigureAwait(false);
+                switch (resultType)
                 {
-                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.Id);
-                    await this.DeleteMessageAsync(message.Id, this._cancellation.Token).ConfigureAwait(false);
-                }
-                else
-                {
-                    message.LastError = "Message handler returned false";
-                    if (message.DequeueCount == this._maxAttempts)
-                    {
-                        this._log.LogError("Message '{0}' processing failed to process, max attempts reached, moving to dead letter queue. Message content: {1}", message.Id, message.Content);
+                    case ResultType.Success:
+                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.Id);
+                        await this.DeleteMessageAsync(message.Id, this._cancellation.Token).ConfigureAwait(false);
+                        break;
+
+                    case ResultType.RetriableError:
+                        message.LastError = "Message handler returned false";
+                        if (message.DequeueCount == this._maxAttempts)
+                        {
+                            this._log.LogError("Message '{0}' processing failed to process, max attempts reached, moving to poison queue. Message content: {1}", message.Id, message.Content);
+                            poison = true;
+                        }
+                        else
+                        {
+                            this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue. Message content: {1}", message.Id, message.Content);
+                            retry = true;
+                        }
+
+                        break;
+
+                    case ResultType.NonRetriableError:
+                        this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
                         poison = true;
-                    }
-                    else
-                    {
-                        this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue. Message content: {1}", message.Id, message.Content);
-                        retry = true;
-                    }
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
                 }
+            }
+            catch (NonRetriableException e)
+            {
+                this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue.", message.Id);
+                poison = true;
             }
             // Note: must catch all also because using a void event handler
             catch (Exception e)
@@ -220,12 +236,12 @@ public sealed class SimpleQueues : IQueue
                 message.LastError = $"{e.GetType().FullName}: {e.Message}";
                 if (message.DequeueCount == this._maxAttempts)
                 {
-                    this._log.LogError(e, "Message '{0}' processing failed with exception, max attempts reached, moving to dead letter queue. Message content: {1}", message.Id, message.Content);
+                    this._log.LogError(e, "Message '{0}' processing failed with exception, max attempts reached, moving to poison queue. Message content: {1}.", message.Id, message.Content);
                     poison = true;
                 }
                 else
                 {
-                    this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue. Message content: {1}", message.Id, message.Content);
+                    this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue. Message content: {1}.", message.Id, message.Content);
                     retry = true;
                 }
             }
@@ -260,8 +276,9 @@ public sealed class SimpleQueues : IQueue
                 await s_lock.WaitAsync(this._cancellation.Token).ConfigureAwait(false);
 
                 // Loop through all messages on storage
-                this._log.LogTrace("Queue {0}: polling...", this._queueName);
                 var messagesOnStorage = (await this._fileSystem.GetAllFileNamesAsync(this._queueName, "", this._cancellation.Token).ConfigureAwait(false)).ToList();
+                if (messagesOnStorage.Count == 0) { return; }
+
                 this._log.LogTrace("Queue {0}: {1} messages on storage, {2} ready to dispatch, max batch size {3}",
                     this._queueName, messagesOnStorage.Count, this._queue.Count, this._config.FetchBatchSize);
 
@@ -313,12 +330,12 @@ public sealed class SimpleQueues : IQueue
             }
             catch (DirectoryNotFoundException e)
             {
-                this._log.LogError(e, "Directory missing, recreating");
+                this._log.LogError(e, "Directory missing, recreating.");
                 await this.CreateDirectoriesAsync(this._cancellation.Token).ConfigureAwait(false);
             }
             catch (Exception e)
             {
-                this._log.LogError(e, "Queue {0}: Unexpected error while polling", this._queueName);
+                this._log.LogError(e, "Queue {0}: Unexpected error while polling.", this._queueName);
             }
             finally
             {

@@ -58,12 +58,19 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
     ///<inheritdoc/>
     public async Task<string> ExtractTextFromImageAsync(Stream imageContent, CancellationToken cancellationToken = default)
     {
-        // Start the OCR operation
-        var operation = await this._recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent, cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // Start the OCR operation
+            var operation = await this._recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        // Wait for the result
-        Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
+            // Wait for the result
+            Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
 
-        return operationResponse.Value.Content;
+            return operationResponse.Value.Content;
+        }
+        catch (RequestFailedException e) when (e.Status is >= 400 and < 500)
+        {
+            throw new NonRetriableException(e.Message, e);
+        }
     }
 }
