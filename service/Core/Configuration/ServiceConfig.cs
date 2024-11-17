@@ -30,16 +30,20 @@ public class ServiceConfig
     public Dictionary<string, HandlerConfig> Handlers { get; set; } = new();
 
     /// <summary>
-    /// The maximum allowed size in megabytes for a request body posted to the upload endpoint.
+    /// The maximum allowed size in megabytes for an HTTP request body posted to the upload endpoint.
     /// If not set the solution defaults to 30,000,000 bytes (~28.6 MB) (ASP.NET default).
+    /// Note: this applies only to KM HTTP service.
     /// </summary>
     public long? MaxUploadSizeMb { get; set; } = null;
+}
 
-    public long? GetMaxUploadSizeInBytes()
+public static partial class ServiceConfigExtensions
+{
+    public static long? GetMaxUploadSizeInBytes(this ServiceConfig config)
     {
-        if (this.MaxUploadSizeMb.HasValue)
+        if (config.MaxUploadSizeMb.HasValue)
         {
-            return Math.Min(10, this.MaxUploadSizeMb.Value) * 1024 * 1024;
+            return Math.Max(1, config.MaxUploadSizeMb.Value) * 1024 * 1024;
         }
 
         return null;
