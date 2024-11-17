@@ -142,18 +142,20 @@ internal static class Program
             if (enableCORS) { app.UseCors(CORSPolicyName); }
 
             app.UseSwagger(config);
+            var errorFilter = new HttpErrorsEndpointFilter();
             var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
             app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                              "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                                                            - s_start.ToUnixTimeSeconds()) + " secs " +
                                              $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+                .AddEndpointFilter(errorFilter)
                 .AddEndpointFilter(authFilter)
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-            app.AddKernelMemoryEndpoints("/", config, authFilter);
+            app.AddKernelMemoryEndpoints("/", config, [errorFilter, authFilter]);
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))
