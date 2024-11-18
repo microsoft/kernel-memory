@@ -8,6 +8,7 @@ namespace Microsoft.KM.Abstractions.UnitTests.Diagnostics;
 public sealed class HttpErrorsTests
 {
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItRecognizesErrorsFromNulls()
     {
         HttpStatusCode? statusCode = null;
@@ -17,6 +18,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.Continue)] // 100
     [InlineData(HttpStatusCode.SwitchingProtocols)] // 101
     [InlineData(HttpStatusCode.Processing)] // 102
@@ -46,6 +48,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.Continue)] // 100
     [InlineData(HttpStatusCode.SwitchingProtocols)] // 101
     [InlineData(HttpStatusCode.Processing)] // 102
@@ -72,6 +75,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.RequestTimeout)] // 408
     [InlineData(HttpStatusCode.PreconditionFailed)] // 412
     [InlineData(HttpStatusCode.Locked)] // 423
@@ -91,6 +95,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.RequestTimeout)] // 408
     [InlineData(HttpStatusCode.PreconditionFailed)] // 412
     [InlineData(HttpStatusCode.Locked)] // 423
@@ -107,6 +112,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.BadRequest)] // 400
     [InlineData(HttpStatusCode.Unauthorized)] // 401
     [InlineData(HttpStatusCode.PaymentRequired)] // 402
@@ -142,6 +148,7 @@ public sealed class HttpErrorsTests
     }
 
     [Theory]
+    [Trait("Category", "UnitTest")]
     [InlineData(HttpStatusCode.BadRequest)] // 400
     [InlineData(HttpStatusCode.Unauthorized)] // 401
     [InlineData(HttpStatusCode.PaymentRequired)] // 402
