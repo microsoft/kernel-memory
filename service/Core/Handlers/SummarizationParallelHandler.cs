@@ -61,7 +61,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
-            Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = new();
+            Dictionary<string, DataPipeline.GeneratedFileDetails> summaryFiles = [];
 
             var options = new ParallelOptions()
             {

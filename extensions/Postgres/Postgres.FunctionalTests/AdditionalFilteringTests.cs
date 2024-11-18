@@ -42,7 +42,7 @@ public class AdditionalFilteringTests : BaseFunctionalTestCase
         Assert.Contains("green", answer.Result, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("red", answer.Result, StringComparison.OrdinalIgnoreCase);
 
-        answer = await this._memory.AskAsync(Q, filters: new[] { MemoryFilters.ByTag("user", "x"), MemoryFilters.ByTag("user", "hulk") });
+        answer = await this._memory.AskAsync(Q, filters: [MemoryFilters.ByTag("user", "x"), MemoryFilters.ByTag("user", "hulk")]);
         Assert.Contains("green", answer.Result, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("red", answer.Result, StringComparison.OrdinalIgnoreCase);
 
@@ -59,12 +59,12 @@ public class AdditionalFilteringTests : BaseFunctionalTestCase
         Assert.Contains("red", answer.Result, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("green", answer.Result, StringComparison.OrdinalIgnoreCase);
 
-        answer = await this._memory.AskAsync(Q, filters: new[] { MemoryFilters.ByTag("user", "x"), MemoryFilters.ByTag("user", "flash") });
+        answer = await this._memory.AskAsync(Q, filters: [MemoryFilters.ByTag("user", "x"), MemoryFilters.ByTag("user", "flash")]);
         Assert.Contains("red", answer.Result, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("green", answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Act + Assert - See both memories
-        answer = await this._memory.AskAsync(Q, filters: new[] { MemoryFilters.ByTag("user", "hulk"), MemoryFilters.ByTag("user", "flash") });
+        answer = await this._memory.AskAsync(Q, filters: [MemoryFilters.ByTag("user", "hulk"), MemoryFilters.ByTag("user", "flash")]);
         Assert.Contains("green", answer.Result, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("red", answer.Result, StringComparison.OrdinalIgnoreCase);
 

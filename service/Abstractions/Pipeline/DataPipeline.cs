@@ -104,14 +104,14 @@ public sealed class DataPipeline
         /// </summary>
         [JsonPropertyOrder(7)]
         [JsonPropertyName("tags")]
-        public TagCollection Tags { get; set; } = new();
+        public TagCollection Tags { get; set; } = [];
 
         /// <summary>
         /// List of handlers who have already processed this file
         /// </summary>
         [JsonPropertyOrder(17)]
         [JsonPropertyName("processed_by")]
-        public List<string> ProcessedBy { get; set; } = new();
+        public List<string> ProcessedBy { get; set; } = [];
 
         /// <summary>
         /// Optional log describing how the file has been processed.
@@ -191,7 +191,7 @@ public sealed class DataPipeline
         /// </summary>
         [JsonPropertyOrder(24)]
         [JsonPropertyName("generated_files")]
-        public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = new();
+        public Dictionary<string, GeneratedFileDetails> GeneratedFiles { get; set; } = [];
 
         public string GetPartitionFileName(int partitionNumber)
         {
@@ -234,28 +234,28 @@ public sealed class DataPipeline
     /// </summary>
     [JsonPropertyOrder(3)]
     [JsonPropertyName("steps")]
-    public List<string> Steps { get; set; } = new();
+    public List<string> Steps { get; set; } = [];
 
     /// <summary>
     /// List of the steps remaining.
     /// </summary>
     [JsonPropertyOrder(4)]
     [JsonPropertyName("remaining_steps")]
-    public List<string> RemainingSteps { get; set; } = new();
+    public List<string> RemainingSteps { get; set; } = [];
 
     /// <summary>
     /// List of steps already completed.
     /// </summary>
     [JsonPropertyOrder(5)]
     [JsonPropertyName("completed_steps")]
-    public List<string> CompletedSteps { get; set; } = new();
+    public List<string> CompletedSteps { get; set; } = [];
 
     /// <summary>
     /// Document tags
     /// </summary>
     [JsonPropertyOrder(7)]
     [JsonPropertyName("tags")]
-    public TagCollection Tags { get; set; } = new();
+    public TagCollection Tags { get; set; } = [];
 
     [JsonPropertyOrder(8)]
     [JsonPropertyName("creation")]
@@ -267,7 +267,7 @@ public sealed class DataPipeline
 
     [JsonPropertyOrder(10)]
     [JsonPropertyName("files")]
-    public List<FileDetails> Files { get; set; } = new();
+    public List<FileDetails> Files { get; set; } = [];
 
     /// <summary>
     /// Unstructured dictionary available to support custom tasks and business logic.
@@ -285,13 +285,13 @@ public sealed class DataPipeline
     /// </summary>
     [JsonPropertyOrder(21)]
     [JsonPropertyName("previous_executions_to_purge")]
-    public List<DataPipeline> PreviousExecutionsToPurge { get; set; } = new();
+    public List<DataPipeline> PreviousExecutionsToPurge { get; set; } = [];
 
     [JsonIgnore]
     public bool Complete => this.RemainingSteps.Count == 0;
 
     [JsonIgnore]
-    public List<DocumentUploadRequest.UploadedFile> FilesToUpload { get; set; } = new();
+    public List<DocumentUploadRequest.UploadedFile> FilesToUpload { get; set; } = [];
 
     [JsonIgnore]
     public bool UploadComplete { get; set; }

@@ -61,7 +61,7 @@ public class TagCollection : IDictionary<string, List<string?>>
     {
         if (!this._data.ContainsKey(key))
         {
-            this._data[key] = new List<string?>();
+            this._data[key] = [];
         }
     }
 
@@ -76,7 +76,7 @@ public class TagCollection : IDictionary<string, List<string?>>
         else
         {
             // Add the key, but the value only if not null
-            this._data[key] = value == null ? new List<string?>() : new List<string?> { value };
+            this._data[key] = value == null ? [] : [value];
         }
     }
 
@@ -89,7 +89,7 @@ public class TagCollection : IDictionary<string, List<string?>>
     public bool TryGetValue(string key, out List<string?> value)
     {
         bool result = this._data.TryGetValue(key, out var valueOut);
-        value = valueOut ?? new List<string?>();
+        value = valueOut ?? [];
         return result;
     }
 

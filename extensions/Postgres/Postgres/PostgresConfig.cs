@@ -105,7 +105,7 @@ public class PostgresConfig
     ///   CREATE INDEX IF NOT EXISTS idx_tags ON %%table_name%% USING GIN(tags);
     ///   COMMIT;
     /// </summary>
-    public List<string> CreateTableSql { get; set; } = new();
+    public List<string> CreateTableSql { get; set; } = [];
 
     /// <summary>
     /// Create a new instance of the configuration

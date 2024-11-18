@@ -149,7 +149,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 
         using (var generator = new Generator(this._model, generatorParams))
         {
-            List<int> outputTokens = new();
+            List<int> outputTokens = [];
 
             while (!generator.IsDone() && cancellationToken.IsCancellationRequested == false)
             {
@@ -161,7 +161,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
                     var newToken = outputTokens[^1];
-                    yield return this._tokenizer.Decode(new int[] { newToken });
+                    yield return this._tokenizer.Decode([newToken]);
                 }
             }
         }

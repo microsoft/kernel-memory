@@ -44,7 +44,7 @@ public static class Program
             Id = "memory 1",
             Vector = embeddings[0],
             Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
-            Payload = new Dictionary<string, object>()
+            Payload = []
         };
 
         var memoryRecord2 = new MemoryRecord
@@ -52,7 +52,7 @@ public static class Program
             Id = "memory 2",
             Vector = embeddings[0],
             Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
-            Payload = new Dictionary<string, object>()
+            Payload = []
         };
 
         var id1 = await memory.UpsertAsync("test", memoryRecord1);
@@ -76,7 +76,7 @@ public static class Program
             Id = "memory three",
             Vector = embeddings[1],
             Tags = new TagCollection { { "type", "news" } },
-            Payload = new Dictionary<string, object>()
+            Payload = []
         };
 
         var id3 = await memory.UpsertAsync("test", memoryRecord3);
@@ -103,7 +103,7 @@ public static class Program
 
         similarList = memory.GetSimilarListAsync(
             "test", text: Text1, limit: 10, withEmbeddings: true,
-            filters: new List<MemoryFilter> { MemoryFilters.ByTag("type", "email") });
+            filters: [MemoryFilters.ByTag("type", "email")]);
         await foreach ((MemoryRecord, double) record in similarList)
         {
             Console.WriteLine(record.Item1.Id);

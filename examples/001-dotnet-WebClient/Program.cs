@@ -13,10 +13,10 @@ using Microsoft.KernelMemory;
  *       handlers are running to get the pipeline to complete,
  *       otherwise the web service might just upload the files
  *       without extracting memories. */
-public static class Program
+internal static class Program
 {
     private static MemoryWebClient? s_memory;
-    private static readonly List<string> s_toDelete = new();
+    private static readonly List<string> s_toDelete = [];
 
     // Change this to True and configure Azure Document Intelligence to test OCR and support for images
     private const bool ImageSupportDemoEnabled = true;

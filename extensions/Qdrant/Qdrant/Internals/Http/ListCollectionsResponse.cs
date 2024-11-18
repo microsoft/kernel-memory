@@ -22,7 +22,7 @@ internal sealed class ListCollectionsResponse : QdrantResponse
         /// List of the collection names that the qdrant database contains.
         /// </summary>
         [JsonPropertyName("collections")]
-        public IList<CollectionDescription> Collections { get; set; } = new List<CollectionDescription>();
+        public IList<CollectionDescription> Collections { get; set; } = [];
     }
 
     /// <summary>

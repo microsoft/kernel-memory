@@ -15,8 +15,8 @@ internal static class Ollama
         ctx.CfgOllama.Value = false;
         const string ServiceName = "Ollama";
 
-        Dictionary<string, object> textModel = new();
-        Dictionary<string, object> embeddingModel = new();
+        Dictionary<string, object> textModel = [];
+        Dictionary<string, object> embeddingModel = [];
 
         if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {

@@ -26,7 +26,7 @@ public static partial class TextEmbeddingGenerationExtensions
         this ITextEmbeddingGenerationService generator, string text, CancellationToken cancellationToken = default)
     {
         IList<ReadOnlyMemory<float>>? embeddings = await generator
-            .GenerateEmbeddingsAsync(new List<string> { text }, null, cancellationToken)
+            .GenerateEmbeddingsAsync([text], null, cancellationToken)
             .ConfigureAwait(false);
         if (embeddings.Count == 0)
         {

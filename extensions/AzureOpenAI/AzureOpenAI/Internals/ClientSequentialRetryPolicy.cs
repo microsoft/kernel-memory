@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 internal sealed class ClientSequentialRetryPolicy : ClientRetryPolicy
 {
     private static readonly TimeSpan[] s_retryDelaySequence =
-    {
+    [
         TimeSpan.FromSeconds(1),
         TimeSpan.FromSeconds(1),
         TimeSpan.FromSeconds(1),
@@ -19,7 +19,7 @@ internal sealed class ClientSequentialRetryPolicy : ClientRetryPolicy
         TimeSpan.FromSeconds(6),
         TimeSpan.FromSeconds(6),
         TimeSpan.FromSeconds(8)
-    };
+    ];
 
     private static readonly TimeSpan s_maxDelay = s_retryDelaySequence[^1];
 

@@ -12,9 +12,9 @@ internal sealed class MongoDbAtlasMemoryRecord
 
     public float[] Embedding { get; set; } = null!;
 
-    public List<Tag> Tags { get; set; } = new();
+    public List<Tag> Tags { get; set; } = [];
 
-    public List<Payload> Payloads { get; set; } = new();
+    public List<Payload> Payloads { get; set; } = [];
 
     internal sealed class Payload
     {

@@ -15,7 +15,7 @@ public sealed class TestSetItem
 
     public int GroundTruthVerdict { get; set; }
 
-    public IEnumerable<string> Context { get; set; } = Array.Empty<string>();
+    public IEnumerable<string> Context { get; set; } = [];
 
     public ICollection<MemoryFilter> Filters { get; set; } = Array.Empty<MemoryFilter>();
 

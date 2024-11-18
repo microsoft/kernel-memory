@@ -93,7 +93,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         // Here we split the list of DBs in two lists, those supporting batching and those not, prioritizing
         // the single upsert if possible, to have the best retry strategy when possible.
         this._memoryDbsWithSingleUpsert = this._memoryDbs;
-        this._memoryDbsWithBatchUpsert = new List<IMemoryDb>();
+        this._memoryDbsWithBatchUpsert = [];
         if (this._upsertBatchSize > 1)
         {
             this._memoryDbsWithSingleUpsert = this._memoryDbs.Where(x => x is not IMemoryDbUpsertBatch).ToList();
@@ -109,7 +109,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         this._log.LogDebug("Saving memory records, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         await this.DeletePreviousRecordsAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+        pipeline.PreviousExecutionsToPurge = [];
 
         var recordsFound = false;
 

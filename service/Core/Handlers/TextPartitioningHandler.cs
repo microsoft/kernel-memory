@@ -95,7 +95,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
-            Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
+            Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = [];
 
             foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {

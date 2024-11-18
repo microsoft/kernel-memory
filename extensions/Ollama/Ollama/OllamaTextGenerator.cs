@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
@@ -143,7 +144,7 @@ public class OllamaTextGenerator : ITextGenerator
 
         var chat = new Chat(this._client);
         IAsyncEnumerable<string?> stream = chat.SendAsync(prompt, cancellationToken);
-        await foreach (string? token in stream)
+        await foreach (string? token in stream.ConfigureAwait(false))
         {
             if (token != null) { yield return token; }
         }

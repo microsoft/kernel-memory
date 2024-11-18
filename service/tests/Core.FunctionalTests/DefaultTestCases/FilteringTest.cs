@@ -92,47 +92,47 @@ public static class FilteringTest
         }
 
         // Multiple filters: unknown users cannot see the memory
-        var answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        var answer = await memory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "someone2"),
-        }, index: indexName);
+        ], index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: unknown users cannot see the memory even if the type is correct (testing AND logic)
-        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await memory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "someone2").ByTag("type", "news"),
-        }, index: indexName);
+        ], index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: AND + OR logic works
-        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await memory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "fact"),
-        }, index: indexName);
+        ], index: indexName);
         log(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: OR logic works
-        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await memory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "admin"),
-        }, index: indexName);
+        ], index: indexName);
         log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: OR logic works
-        answer = await memory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await memory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "news"),
-        }, index: indexName);
+        ], index: indexName);
         log(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
@@ -170,7 +170,7 @@ public static class FilteringTest
 
         // Act
         // Simple filter: empty filters have no impact
-        var answer = await memory.AskAsync(Question, filter: new(), index: indexName);
+        var answer = await memory.AskAsync(Question, filter: [], index: indexName);
 
         // Retry, e.g. let the index populate
         if (withRetries)
@@ -183,7 +183,7 @@ public static class FilteringTest
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
-                answer = await memory.AskAsync(Question, filter: new(), index: indexName);
+                answer = await memory.AskAsync(Question, filter: [], index: indexName);
             }
         }
 
@@ -193,8 +193,7 @@ public static class FilteringTest
 
         // Act
         // Multiple filters: empty filters have no impact
-        answer = await memory.AskAsync(Question,
-            filters: new List<MemoryFilter> { new() }, index: indexName);
+        answer = await memory.AskAsync(Question, filters: [[]], index: indexName);
         log(answer.Result);
 
         // Assert

@@ -179,7 +179,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
-        List<string> indexes = new();
+        List<string> indexes = [];
 
         var sql = this._queryProvider.PrepareGetIndexesQuery();
 

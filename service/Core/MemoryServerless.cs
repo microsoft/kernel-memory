@@ -245,7 +245,7 @@ public sealed class MemoryServerless : IKernelMemory
         this._contextProvider.InitContext(context);
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }
@@ -274,7 +274,7 @@ public sealed class MemoryServerless : IKernelMemory
         this._contextProvider.InitContext(context);
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }

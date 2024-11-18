@@ -9,5 +9,5 @@ public class IndexCollection
 {
     [JsonPropertyName("results")]
     [JsonPropertyOrder(1)]
-    public List<IndexDetails> Results { get; set; } = new();
+    public List<IndexDetails> Results { get; set; } = [];
 }

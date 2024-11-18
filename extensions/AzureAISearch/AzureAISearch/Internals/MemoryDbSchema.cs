@@ -7,7 +7,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
 internal sealed class MemoryDbSchema
 {
-    public List<MemoryDbField> Fields { get; set; } = new();
+    public List<MemoryDbField> Fields { get; set; } = [];
 
     public void Validate(bool vectorSizeRequired = false)
     {

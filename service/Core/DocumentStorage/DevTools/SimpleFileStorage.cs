@@ -113,7 +113,7 @@ public class SimpleFileStorage : IDocumentStorage
         {
             return await this._fileSystem.ReadFileInfoAsync(volume: index, relPath: documentId, fileName: fileName, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+        catch (Exception e) when (e is DirectoryNotFoundException or FileNotFoundException)
         {
             if (logErrIfNotFound)
             {

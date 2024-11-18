@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.KernelMemory.InteractiveSetup.UI;
 using Newtonsoft.Json.Linq;
 
@@ -14,16 +13,16 @@ internal static class Logger
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions
         {
             Title = "Log level?",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Trace", false, () => { logLevel = "Trace"; }),
                 new("Debug", false, () => { logLevel = "Debug"; }),
                 new("Information", false, () => { logLevel = "Information"; }),
                 new("Warning", true, () => { logLevel = "Warning"; }),
                 new("Error", false, () => { logLevel = "Error"; }),
                 new("Critical", false, () => { logLevel = "Critical"; }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
 
         AppSettings.GlobalChange(data =>

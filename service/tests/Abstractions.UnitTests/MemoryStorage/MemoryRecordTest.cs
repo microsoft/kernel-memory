@@ -26,7 +26,7 @@ public class MemoryRecordTest
 
         // Arrange
         record.Id = "123";
-        record.Tags["foo"] = new List<string?> { "bar" };
+        record.Tags["foo"] = ["bar"];
         record.Payload["bar"] = "foo";
 
         // Act

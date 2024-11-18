@@ -79,7 +79,7 @@ public sealed class SearchClient : ISearchClient
         var result = new SearchResult
         {
             Query = query,
-            Results = new List<Citation>()
+            Results = []
         };
 
         if (string.IsNullOrWhiteSpace(query) && (filters == null || filters.Count == 0))
