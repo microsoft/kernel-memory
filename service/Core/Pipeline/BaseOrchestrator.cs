@@ -477,7 +477,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             {
                 mimeType = this._mimeTypeDetection.GetFileType(file.FileName);
             }
-            catch (NotSupportedException)
+            catch (MimeTypeException)
             {
                 this.Log.LogWarning("File type not supported, the ingestion pipeline might skip it");
             }
