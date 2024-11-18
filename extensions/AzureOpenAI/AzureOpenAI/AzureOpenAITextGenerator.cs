@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
@@ -140,8 +141,17 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         }
 
         this._log.LogTrace("Sending chat message generation request");
-        IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
-        await foreach (StreamingTextContent x in result)
+        IAsyncEnumerable<StreamingTextContent> result;
+        try
+        {
+            result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
+        }
+        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        {
+            throw new NonRetriableException(e.Message, e);
+        }
+
+        await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
         {
             if (x.Text == null) { continue; }
 

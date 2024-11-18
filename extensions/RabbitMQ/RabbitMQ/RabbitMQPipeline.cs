@@ -69,7 +69,7 @@ public sealed class RabbitMQPipeline : IQueue
     }
 
     /// <inheritdoc />
-    /// About posion queue and dead letters, see https://www.rabbitmq.com/docs/dlx
+    /// About poison queue and dead letters, see https://www.rabbitmq.com/docs/dlx
     public Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");

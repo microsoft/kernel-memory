@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -121,7 +122,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Generating embedding");
-        return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        try
+        {
+            return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        }
+        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        {
+            throw new NonRetriableException(e.Message, e);
+        }
     }
 
     /// <inheritdoc/>
@@ -129,7 +137,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     {
         var list = textList.ToList();
         this._log.LogTrace("Generating embeddings, batch size '{0}'", list.Count);
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return embeddings.Select(e => new Embedding(e)).ToArray();
+        try
+        {
+            IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return embeddings.Select(e => new Embedding(e)).ToArray();
+        }
+        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        {
+            throw new NonRetriableException(e.Message, e);
+        }
     }
 }

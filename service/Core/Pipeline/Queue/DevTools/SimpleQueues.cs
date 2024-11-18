@@ -227,6 +227,7 @@ public sealed class SimpleQueues : IQueue
             }
             catch (NonRetriableException e)
             {
+                message.LastError = $"{e.GetType().FullName} [{e.InnerException?.GetType().FullName}]: {e.Message}";
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue.", message.Id);
                 poison = true;
             }
