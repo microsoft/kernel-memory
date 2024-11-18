@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Net.Http;
+using System.Net.Security;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,14 @@ internal static class AzureOpenAIClientBuilder
         // See https://github.com/Azure/azure-sdk-for-net/issues/46109
         options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
+        if (httpClient is null && config.TrustedCertificateThumbprints.Count > 0)
+        {
+#pragma warning disable CA2000
+            // False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
+            httpClient = BuildHttpClientWithCustomCertificateValidation(config);
+#pragma warning restore CA2000
+        }
+
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
@@ -56,6 +65,46 @@ internal static class AzureOpenAIClientBuilder
             default:
                 throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
         }
+    }
+
+    private static HttpClient BuildHttpClientWithCustomCertificateValidation(AzureOpenAIConfig config)
+    {
+#pragma warning disable CA2000
+        // False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
+        var handler = new HttpClientHandler();
+#pragma warning restore CA2000
+
+        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+        handler.ServerCertificateCustomValidationCallback =
+            (_, cert, _, policyErrors) =>
+            {
+                if (policyErrors == SslPolicyErrors.None)
+                {
+                    // Return true if there are no policy errors.
+                    return true;
+                }
+
+                // Attempt to get the thumbprint of the remote certificate.
+                string? remoteCertThumbprint = cert?.GetCertHashString();
+                if (remoteCertThumbprint is null)
+                {
+                    return false;
+                }
+
+                // Check if the thumbprint matches any of the trusted thumbprints.
+                foreach (string trustedThumbprint in config.TrustedCertificateThumbprints)
+                {
+                    if (string.Equals(remoteCertThumbprint, trustedThumbprint, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                // Reject if no thumbprint matches.
+                return false;
+            };
+
+        return new HttpClient(handler);
     }
 }
 
