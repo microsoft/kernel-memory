@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
@@ -139,8 +140,18 @@ public sealed class OpenAITextGenerator : ITextGenerator
         }
 
         this._log.LogTrace("Sending chat message generation request");
-        IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
-        await foreach (StreamingTextContent x in result)
+
+        IAsyncEnumerable<StreamingTextContent> result;
+        try
+        {
+            result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
+        }
+        catch (HttpOperationException e)
+        {
+            throw new OpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
+
+        await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
         {
             // TODO: try catch
             // if (x.Metadata?["Usage"] is not null)

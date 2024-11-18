@@ -67,7 +67,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -75,7 +75,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         if (pipeline.Files.Count == 0)
         {
             this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
-            return (true, pipeline);
+            return (ReturnType.Success, pipeline);
         }
 
         var context = pipeline.GetContext();
@@ -197,7 +197,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
             }
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
 #pragma warning disable CA2254 // the msg is always used

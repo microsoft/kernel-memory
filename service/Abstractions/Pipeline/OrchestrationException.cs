@@ -7,11 +7,20 @@ namespace Microsoft.KernelMemory.Pipeline;
 public class OrchestrationException : KernelMemoryException
 {
     /// <inheritdoc />
-    public OrchestrationException() { }
+    public OrchestrationException(bool? isTransient = null)
+    {
+        this.IsTransient = isTransient;
+    }
 
     /// <inheritdoc />
-    public OrchestrationException(string message) : base(message) { }
+    public OrchestrationException(string message, bool? isTransient = null) : base(message)
+    {
+        this.IsTransient = isTransient;
+    }
 
     /// <inheritdoc />
-    public OrchestrationException(string message, Exception? innerException) : base(message, innerException) { }
+    public OrchestrationException(string message, Exception? innerException, bool? isTransient = null) : base(message, innerException)
+    {
+        this.IsTransient = isTransient;
+    }
 }

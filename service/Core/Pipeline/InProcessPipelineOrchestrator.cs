@@ -171,21 +171,30 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
             }
 
             // Run handler
-            (bool success, DataPipeline updatedPipeline) = await stepHandler
+            (ReturnType returnType, DataPipeline updatedPipeline) = await stepHandler
                 .InvokeAsync(pipeline, this.CancellationTokenSource.Token)
                 .ConfigureAwait(false);
-            if (success)
+
+            switch (returnType)
             {
-                pipeline = updatedPipeline;
-                pipeline.LastUpdate = DateTimeOffset.UtcNow;
-                this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
-                pipeline.MoveToNextStep();
-                await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
-                throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
+                case ReturnType.Success:
+                    pipeline = updatedPipeline;
+                    pipeline.LastUpdate = DateTimeOffset.UtcNow;
+                    this.Log.LogInformation("Handler '{0}' processed pipeline '{1}/{2}' successfully", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    pipeline.MoveToNextStep();
+                    await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
+                    break;
+
+                case ReturnType.TransientError:
+                    this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    throw new OrchestrationException($"Pipeline error, step {currentStepName} failed", isTransient: true);
+
+                case ReturnType.FatalError:
+                    this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}' due to an unrecoverable error", currentStepName, pipeline.Index, pipeline.DocumentId);
+                    throw new OrchestrationException($"Unrecoverable pipeline error, step {currentStepName} failed and cannot be retried", isTransient: false);
+
+                default:
+                    throw new ArgumentOutOfRangeException($"Unknown {returnType:G} return type");
             }
         }
 

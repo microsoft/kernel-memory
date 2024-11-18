@@ -53,7 +53,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Generating summary, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -133,7 +133,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
             }
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     private async Task<(string summary, bool skip)> SummarizeAsync(string content)

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI;
@@ -122,7 +123,14 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Generating embedding");
-        return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        try
+        {
+            return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        }
+        catch (HttpOperationException e)
+        {
+            throw new OpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
     }
 
     /// <inheritdoc/>
@@ -130,7 +138,14 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
     {
         var list = textList.ToList();
         this._log.LogTrace("Generating embeddings, batch size '{0}'", list.Count);
-        var embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return embeddings.Select(e => new Embedding(e)).ToArray();
+        try
+        {
+            var embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return embeddings.Select(e => new Embedding(e)).ToArray();
+        }
+        catch (HttpOperationException e)
+        {
+            throw new OpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
     }
 }

@@ -221,7 +221,7 @@ public class MimeTypesDetection : IMimeTypeDetection
             return mimeType;
         }
 
-        throw new NotSupportedException($"File type not supported: {filename}");
+        throw new MimeTypeException($"File type not supported: {filename}", isTransient: false);
     }
 
     public bool TryGetFileType(string filename, out string? mimeType)

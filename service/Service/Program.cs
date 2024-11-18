@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -182,8 +184,15 @@ internal static class Program
         Console.WriteLine("* Memory type         : " + memoryType);
         Console.WriteLine("* Pipeline handlers   : " + $"{syncHandlersCount} synchronous / {asyncHandlersCount} asynchronous");
         Console.WriteLine("* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
-        Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
-        Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+
+        if (config.Service.RunWebService)
+        {
+            const double AspnetDefaultMaxUploadSize = 30000000d / 1024 / 1024;
+            Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
+            Console.WriteLine("* Max HTTP req size   : " + (config.Service.MaxUploadSizeMb ?? AspnetDefaultMaxUploadSize).ToString("0.#", CultureInfo.CurrentCulture) + " Mb");
+            Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+        }
+
         Console.WriteLine("* Memory Db           : " + app.Services.GetService<IMemoryDb>()?.GetType().FullName);
         Console.WriteLine("* Document storage    : " + app.Services.GetService<IDocumentStorage>()?.GetType().FullName);
         Console.WriteLine("* Embedding generation: " + app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName);
@@ -201,7 +210,15 @@ internal static class Program
             config.Service.RunHandlers);
 
         // Start web service and handler services
-        app.Run();
+        try
+        {
+            app.Run();
+        }
+        catch (IOException e)
+        {
+            Console.WriteLine($"I/O error: {e.Message}");
+            Environment.Exit(-1);
+        }
     }
 
     /// <summary>
