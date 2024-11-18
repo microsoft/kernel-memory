@@ -128,7 +128,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         }
         catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
         {
-            throw new NonRetriableException(e.Message, e);
+            throw new AzureOpenAIException(e.Message, e, isTransient: false);
         }
     }
 
@@ -144,7 +144,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         }
         catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
         {
-            throw new NonRetriableException(e.Message, e);
+            throw new AzureOpenAIException(e.Message, e, isTransient: false);
         }
     }
 }

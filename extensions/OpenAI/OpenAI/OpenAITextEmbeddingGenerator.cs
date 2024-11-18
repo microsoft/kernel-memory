@@ -129,7 +129,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         }
         catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
         {
-            throw new NonRetriableException(e.Message, e);
+            throw new OpenAIException(e.Message, e, isTransient: false);
         }
     }
 
@@ -145,7 +145,7 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         }
         catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
         {
-            throw new NonRetriableException(e.Message, e);
+            throw new OpenAIException(e.Message, e, isTransient: false);
         }
     }
 }

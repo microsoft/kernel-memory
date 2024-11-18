@@ -202,14 +202,14 @@ public sealed class AzureQueuesPipeline : IQueue
                             await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
                             break;
 
-                        case ResultType.RetriableError:
+                        case ResultType.TransientError:
                             var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
                             this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
                                 message.MessageId, backoffDelay.TotalMilliseconds);
                             await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
                             break;
 
-                        case ResultType.NonRetriableError:
+                        case ResultType.UnrecoverableError:
                             this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                             await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                             break;
@@ -224,7 +224,7 @@ public sealed class AzureQueuesPipeline : IQueue
                     await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                 }
             }
-            catch (NonRetriableException e)
+            catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
             {
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                 await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);

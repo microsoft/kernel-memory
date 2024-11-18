@@ -5,6 +5,6 @@ namespace Microsoft.KernelMemory.Pipeline;
 public enum ResultType
 {
     Success = 0,
-    RetriableError = 1,
-    NonRetriableError = 2,
+    TransientError = 1,
+    UnrecoverableError = 2,
 }

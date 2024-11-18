@@ -201,7 +201,7 @@ public sealed class RabbitMQPipeline : IQueue
                         this._channel.BasicAck(args.DeliveryTag, multiple: false);
                         break;
 
-                    case ResultType.RetriableError:
+                    case ResultType.TransientError:
                         if (attemptNumber < this._maxAttempts)
                         {
                             this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
@@ -220,7 +220,7 @@ public sealed class RabbitMQPipeline : IQueue
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                         break;
 
-                    case ResultType.NonRetriableError:
+                    case ResultType.UnrecoverableError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
                         break;
@@ -229,7 +229,7 @@ public sealed class RabbitMQPipeline : IQueue
                         throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
                 }
             }
-            catch (NonRetriableException e)
+            catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
             {
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
                 this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);

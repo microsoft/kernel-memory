@@ -185,13 +185,13 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
                     await this.UpdatePipelineStatusAsync(pipeline, cancellationToken).ConfigureAwait(false);
                     break;
 
-                case ResultType.RetriableError:
+                case ResultType.TransientError:
                     this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
-                    throw new OrchestrationException($"Pipeline error, step {currentStepName} failed");
+                    throw new OrchestrationException($"Pipeline error, step {currentStepName} failed", isTransient: true);
 
-                case ResultType.NonRetriableError:
+                case ResultType.UnrecoverableError:
                     this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}' due to an unrecoverable error", currentStepName, pipeline.Index, pipeline.DocumentId);
-                    throw new NonRetriableException($"Unrecoverable pipeline error, step {currentStepName} failed and cannot be retried");
+                    throw new OrchestrationException($"Unrecoverable pipeline error, step {currentStepName} failed and cannot be retried", isTransient: false);
 
                 default:
                     throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result type");

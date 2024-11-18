@@ -39,7 +39,7 @@ internal static class Program
         {
             Console.WriteLine($"{++counter} Received message: {msg}");
             await Task.Delay(0);
-            return ResultType.RetriableError;
+            return ResultType.TransientError;
         });
 
         await pipeline.ConnectToQueueAsync(QueueName, QueueOptions.PubSub);

@@ -93,7 +93,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             if (pipelinePointer == null)
             {
                 this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`. Message discarded.", handler.StepName);
-                return ResultType.NonRetriableError;
+                return ResultType.UnrecoverableError;
             }
 
             DataPipeline? pipeline;
@@ -121,18 +121,18 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 }
 
                 this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.NonRetriableError;
+                return ResultType.UnrecoverableError;
             }
             catch (InvalidPipelineDataException)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.RetriableError;
+                return ResultType.TransientError;
             }
 
             if (pipeline == null)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.RetriableError;
+                return ResultType.TransientError;
             }
 
             if (pipelinePointer.ExecutionId != pipeline.ExecutionId)
@@ -228,11 +228,11 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
                 break;
 
-            case ResultType.RetriableError:
+            case ResultType.TransientError:
                 this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
                 break;
 
-            case ResultType.NonRetriableError:
+            case ResultType.UnrecoverableError:
                 this.Log.LogError("Handler {0} failed to process pipeline {1} due to an unrecoverable error", currentStepName, pipeline.DocumentId);
                 break;
 

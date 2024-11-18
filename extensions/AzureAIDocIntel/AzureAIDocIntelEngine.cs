@@ -70,7 +70,7 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
         }
         catch (RequestFailedException e) when (e.Status is >= 400 and < 500)
         {
-            throw new NonRetriableException(e.Message, e);
+            throw new AzureAIDocIntelException(e.Message, e, isTransient: false);
         }
     }
 }

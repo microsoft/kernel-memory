@@ -201,7 +201,7 @@ public sealed class SimpleQueues : IQueue
                         await this.DeleteMessageAsync(message.Id, this._cancellation.Token).ConfigureAwait(false);
                         break;
 
-                    case ResultType.RetriableError:
+                    case ResultType.TransientError:
                         message.LastError = "Message handler returned false";
                         if (message.DequeueCount == this._maxAttempts)
                         {
@@ -216,7 +216,7 @@ public sealed class SimpleQueues : IQueue
 
                         break;
 
-                    case ResultType.NonRetriableError:
+                    case ResultType.UnrecoverableError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
                         poison = true;
                         break;
@@ -225,7 +225,7 @@ public sealed class SimpleQueues : IQueue
                         throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
                 }
             }
-            catch (NonRetriableException e)
+            catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
             {
                 message.LastError = $"{e.GetType().FullName} [{e.InnerException?.GetType().FullName}]: {e.Message}";
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue.", message.Id);
