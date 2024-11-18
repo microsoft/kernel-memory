@@ -189,7 +189,7 @@ public sealed class InProcessPipelineOrchestrator : BaseOrchestrator
                     this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}'", currentStepName, pipeline.Index, pipeline.DocumentId);
                     throw new OrchestrationException($"Pipeline error, step {currentStepName} failed", isTransient: true);
 
-                case ResultType.UnrecoverableError:
+                case ResultType.FatalError:
                     this.Log.LogError("Handler '{0}' failed to process pipeline '{1}/{2}' due to an unrecoverable error", currentStepName, pipeline.Index, pipeline.DocumentId);
                     throw new OrchestrationException($"Unrecoverable pipeline error, step {currentStepName} failed and cannot be retried", isTransient: false);
 

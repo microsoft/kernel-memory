@@ -146,7 +146,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
         {
             result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
         }
-        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        catch (HttpOperationException e) when (e.StatusCode.IsFatalError())
         {
             throw new OpenAIException(e.Message, e, isTransient: false);
         }

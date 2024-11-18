@@ -220,7 +220,7 @@ public sealed class RabbitMQPipeline : IQueue
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                         break;
 
-                    case ResultType.UnrecoverableError:
+                    case ResultType.FatalError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
                         break;

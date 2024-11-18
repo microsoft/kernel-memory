@@ -216,7 +216,7 @@ public sealed class SimpleQueues : IQueue
 
                         break;
 
-                    case ResultType.UnrecoverableError:
+                    case ResultType.FatalError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
                         poison = true;
                         break;

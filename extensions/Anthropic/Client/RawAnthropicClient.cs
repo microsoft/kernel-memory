@@ -64,8 +64,8 @@ internal sealed class RawAnthropicClient
         if (!response.IsSuccessStatusCode)
         {
             var responseError = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var isTransient = (new List<int> { 500, 502, 503, 504 }).Contains((int)response.StatusCode);
-            throw new KernelMemoryException($"Failed to send request: {response.StatusCode} - {responseError}", isTransient: isTransient);
+            throw new KernelMemoryException($"Failed to send request: {response.StatusCode} - {responseError}",
+                isTransient: response.StatusCode.IsTransientError());
         }
 
         var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);

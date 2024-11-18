@@ -126,7 +126,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         {
             return this._client.GenerateEmbeddingAsync(text, cancellationToken);
         }
-        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        catch (HttpOperationException e) when (e.StatusCode.IsFatalError())
         {
             throw new AzureOpenAIException(e.Message, e, isTransient: false);
         }
@@ -142,7 +142,7 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
             IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
             return embeddings.Select(e => new Embedding(e)).ToArray();
         }
-        catch (HttpOperationException e) when (e.StatusCode.HasValue && (int)e.StatusCode >= 400 && (int)e.StatusCode < 500)
+        catch (HttpOperationException e) when (e.StatusCode.IsFatalError())
         {
             throw new AzureOpenAIException(e.Message, e, isTransient: false);
         }

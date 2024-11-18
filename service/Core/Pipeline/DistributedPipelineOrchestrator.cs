@@ -93,7 +93,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             if (pipelinePointer == null)
             {
                 this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`. Message discarded.", handler.StepName);
-                return ResultType.UnrecoverableError;
+                return ResultType.FatalError;
             }
 
             DataPipeline? pipeline;
@@ -121,7 +121,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 }
 
                 this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.UnrecoverableError;
+                return ResultType.FatalError;
             }
             catch (InvalidPipelineDataException)
             {
@@ -232,7 +232,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
                 break;
 
-            case ResultType.UnrecoverableError:
+            case ResultType.FatalError:
                 this.Log.LogError("Handler {0} failed to process pipeline {1} due to an unrecoverable error", currentStepName, pipeline.DocumentId);
                 break;
 

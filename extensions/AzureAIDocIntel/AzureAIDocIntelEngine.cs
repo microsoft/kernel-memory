@@ -68,7 +68,7 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
 
             return operationResponse.Value.Content;
         }
-        catch (RequestFailedException e) when (e.Status is >= 400 and < 500)
+        catch (RequestFailedException e) when (HttpErrors.IsFatalError(e.Status))
         {
             throw new AzureAIDocIntelException(e.Message, e, isTransient: false);
         }

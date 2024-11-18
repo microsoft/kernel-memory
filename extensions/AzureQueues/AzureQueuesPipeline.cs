@@ -209,7 +209,7 @@ public sealed class AzureQueuesPipeline : IQueue
                             await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
                             break;
 
-                        case ResultType.UnrecoverableError:
+                        case ResultType.FatalError:
                             this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                             await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                             break;
