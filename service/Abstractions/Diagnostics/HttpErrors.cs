@@ -10,11 +10,15 @@ public static class HttpErrors
     // Errors that might disappear by retrying
     private static readonly HashSet<int> s_transientErrors =
     [
-        (int)HttpStatusCode.InternalServerError,
-        (int)HttpStatusCode.BadGateway,
-        (int)HttpStatusCode.ServiceUnavailable,
-        (int)HttpStatusCode.GatewayTimeout,
-        (int)HttpStatusCode.InsufficientStorage
+        (int)HttpStatusCode.RequestTimeout, // 408
+        (int)HttpStatusCode.PreconditionFailed, // 412
+        (int)HttpStatusCode.Locked, // 423
+        (int)HttpStatusCode.TooManyRequests, // 429
+        (int)HttpStatusCode.InternalServerError, // 500
+        (int)HttpStatusCode.BadGateway, // 502
+        (int)HttpStatusCode.ServiceUnavailable, // 503
+        (int)HttpStatusCode.GatewayTimeout, // 504
+        (int)HttpStatusCode.InsufficientStorage // 507
     ];
 
     public static bool IsTransientError(this HttpStatusCode statusCode)
