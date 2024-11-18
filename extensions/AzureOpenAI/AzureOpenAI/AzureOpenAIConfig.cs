@@ -122,21 +122,9 @@ public class AzureOpenAIConfig
             throw new ConfigurationException($"Azure OpenAI: {nameof(this.Endpoint)} is empty");
         }
 
-        if (!Uri.TryCreate(this.Endpoint, UriKind.Absolute, out var endpoint))
+        if (!this.Endpoint.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ConfigurationException($"Azure OpenAI: {nameof(this.Endpoint)} must be a valid absolute URI");
-        }
-
-        if (endpoint.Host.EndsWith(".openai.azure.com", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(endpoint.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConfigurationException($"Azure OpenAI: {nameof(this.Endpoint)} must start with https:// when the host is a subdomain of openai.azure.com");
-        }
-
-        if (!string.Equals(endpoint.Scheme, "http", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(endpoint.Scheme, "https", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new ConfigurationException($"Azure OpenAI: {nameof(this.Endpoint)} must start with http:// or https://");
+            throw new ConfigurationException($"Azure OpenAI: {nameof(this.Endpoint)} must start with https://");
         }
 
         if (string.IsNullOrWhiteSpace(this.Deployment))
