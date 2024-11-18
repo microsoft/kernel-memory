@@ -68,9 +68,9 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
 
             return operationResponse.Value.Content;
         }
-        catch (RequestFailedException e) when (HttpErrors.IsFatalError(e.Status))
+        catch (RequestFailedException e)
         {
-            throw new AzureAIDocIntelException(e.Message, e, isTransient: false);
+            throw new AzureAIDocIntelException(e.Message, e, isTransient: HttpErrors.IsTransientError(e.Status));
         }
     }
 }

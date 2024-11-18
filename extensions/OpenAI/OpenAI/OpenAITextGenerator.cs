@@ -146,9 +146,9 @@ public sealed class OpenAITextGenerator : ITextGenerator
         {
             result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
         }
-        catch (HttpOperationException e) when (e.StatusCode.IsFatalError())
+        catch (HttpOperationException e)
         {
-            throw new OpenAIException(e.Message, e, isTransient: false);
+            throw new OpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
         }
 
         await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
