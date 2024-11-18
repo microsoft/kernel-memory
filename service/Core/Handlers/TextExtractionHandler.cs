@@ -54,7 +54,7 @@ public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Extracting text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -135,7 +135,7 @@ public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
             uploadedFile.MarkProcessedBy(this);
         }
 
-        return (ResultType.Success, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     public void Dispose()

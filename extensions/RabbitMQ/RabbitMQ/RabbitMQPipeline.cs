@@ -174,7 +174,7 @@ public sealed class RabbitMQPipeline : IQueue
     }
 
     /// <inheritdoc />
-    public void OnDequeue(Func<string, Task<ResultType>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
         this._consumer.Received += async (object sender, BasicDeliverEventArgs args) =>
         {
@@ -193,15 +193,15 @@ public sealed class RabbitMQPipeline : IQueue
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
 
-                var resultType = await processMessageAction.Invoke(message).ConfigureAwait(false);
-                switch (resultType)
+                var returnType = await processMessageAction.Invoke(message).ConfigureAwait(false);
+                switch (returnType)
                 {
-                    case ResultType.Success:
+                    case ReturnType.Success:
                         this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties?.MessageId);
                         this._channel.BasicAck(args.DeliveryTag, multiple: false);
                         break;
 
-                    case ResultType.TransientError:
+                    case ReturnType.TransientError:
                         if (attemptNumber < this._maxAttempts)
                         {
                             this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
@@ -220,13 +220,13 @@ public sealed class RabbitMQPipeline : IQueue
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
                         break;
 
-                    case ResultType.FatalError:
+                    case ReturnType.FatalError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
                         this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
+                        throw new ArgumentOutOfRangeException($"Unknown {returnType:G} result");
                 }
             }
             catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)

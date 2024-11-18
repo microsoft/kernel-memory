@@ -177,7 +177,7 @@ public sealed class SimpleQueues : IQueue
 
     /// <inheritdoc />
     /// <see cref="DistributedPipelineOrchestrator.AddHandlerAsync"/> about the logic handling dequeued messages.
-    public void OnDequeue(Func<string, Task<ResultType>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
         this._log.LogInformation("Queue {0}: subscribing...", this._queueName);
         this.Received += async (sender, args) =>
@@ -193,15 +193,15 @@ public sealed class SimpleQueues : IQueue
                 this._log.LogInformation("Queue {0}: message {0} received", this._queueName, message.Id);
 
                 // Process message with the logic provided by the orchestrator
-                var resultType = await processMessageAction.Invoke(message.Content).ConfigureAwait(false);
-                switch (resultType)
+                var returnType = await processMessageAction.Invoke(message.Content).ConfigureAwait(false);
+                switch (returnType)
                 {
-                    case ResultType.Success:
+                    case ReturnType.Success:
                         this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.Id);
                         await this.DeleteMessageAsync(message.Id, this._cancellation.Token).ConfigureAwait(false);
                         break;
 
-                    case ResultType.TransientError:
+                    case ReturnType.TransientError:
                         message.LastError = "Message handler returned false";
                         if (message.DequeueCount == this._maxAttempts)
                         {
@@ -216,13 +216,13 @@ public sealed class SimpleQueues : IQueue
 
                         break;
 
-                    case ResultType.FatalError:
+                    case ReturnType.FatalError:
                         this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
                         poison = true;
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
+                        throw new ArgumentOutOfRangeException($"Unknown {returnType:G} result");
                 }
             }
             catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)

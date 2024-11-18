@@ -2,7 +2,7 @@
 
 namespace Microsoft.KernelMemory.Pipeline;
 
-public enum ResultType
+public enum ReturnType
 {
     Success = 0,
     TransientError = 1,

@@ -58,13 +58,13 @@ public sealed class GenerateEmbeddingsHandler : GenerateEmbeddingsHandlerBase, I
     }
 
     /// <inheritdoc />
-    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         if (!this._embeddingGenerationEnabled)
         {
             this._log.LogTrace("Embedding generation is disabled, skipping - pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
-            return (ResultType.Success, pipeline);
+            return (ReturnType.Success, pipeline);
         }
 
         foreach (ITextEmbeddingGenerator generator in this._embeddingGenerators)
@@ -83,7 +83,7 @@ public sealed class GenerateEmbeddingsHandler : GenerateEmbeddingsHandlerBase, I
             }
         }
 
-        return (ResultType.Success, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     protected override IPipelineStepHandler ActualInstance => this;

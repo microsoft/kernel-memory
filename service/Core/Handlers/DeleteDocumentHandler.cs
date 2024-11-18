@@ -34,7 +34,7 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -60,6 +60,6 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 
-        return (ResultType.Success, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 }

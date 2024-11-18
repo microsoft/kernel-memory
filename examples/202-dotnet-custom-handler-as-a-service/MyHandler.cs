@@ -38,7 +38,7 @@ public class MyHandler : IHostedService, IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         /* ... your custom ...
          * ... handler ...
@@ -49,6 +49,6 @@ public class MyHandler : IHostedService, IPipelineStepHandler
         // Remove this - here only to avoid build errors
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
-        return (ResultType.Success, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 }

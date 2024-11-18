@@ -93,7 +93,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             if (pipelinePointer == null)
             {
                 this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`. Message discarded.", handler.StepName);
-                return ResultType.FatalError;
+                return ReturnType.FatalError;
             }
 
             DataPipeline? pipeline;
@@ -121,18 +121,18 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 }
 
                 this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.FatalError;
+                return ReturnType.FatalError;
             }
             catch (InvalidPipelineDataException)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.TransientError;
+                return ReturnType.TransientError;
             }
 
             if (pipeline == null)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return ResultType.TransientError;
+                return ReturnType.TransientError;
             }
 
             if (pipelinePointer.ExecutionId != pipeline.ExecutionId)
@@ -141,7 +141,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                     "Document `{0}/{1}` has been updated without waiting for the previous pipeline execution `{2}` to complete (current execution: `{3}`). " +
                     "Step `{4}` and any consecutive steps from the previous execution have been cancelled.",
                     pipelinePointer.Index, pipelinePointer.DocumentId, pipelinePointer.ExecutionId, pipeline.ExecutionId, handler.StepName);
-                return ResultType.Success;
+                return ReturnType.Success;
             }
 
             var currentStepName = pipeline.RemainingSteps.First();
@@ -201,7 +201,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
 
     #region private
 
-    private async Task<ResultType> RunPipelineStepAsync(
+    private async Task<ReturnType> RunPipelineStepAsync(
         DataPipeline pipeline,
         IPipelineStepHandler handler,
         CancellationToken cancellationToken)
@@ -210,16 +210,16 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
         if (pipeline.Complete)
         {
             this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
-            return ResultType.Success;
+            return ReturnType.Success;
         }
 
         string currentStepName = pipeline.RemainingSteps.First();
 
         // Execute the business logic - exceptions are automatically handled by IQueue
-        (ResultType resultType, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        switch (resultType)
+        (ReturnType returnType, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
+        switch (returnType)
         {
-            case ResultType.Success:
+            case ReturnType.Success:
                 pipeline = updatedPipeline;
                 pipeline.LastUpdate = DateTimeOffset.UtcNow;
 
@@ -228,19 +228,19 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
                 break;
 
-            case ResultType.TransientError:
+            case ReturnType.TransientError:
                 this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
                 break;
 
-            case ResultType.FatalError:
+            case ReturnType.FatalError:
                 this.Log.LogError("Handler {0} failed to process pipeline {1} due to an unrecoverable error", currentStepName, pipeline.DocumentId);
                 break;
 
             default:
-                throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result type");
+                throw new ArgumentOutOfRangeException($"Unknown {returnType:G} return type");
         }
 
-        return resultType;
+        return returnType;
     }
 
     private async Task MoveForwardAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)

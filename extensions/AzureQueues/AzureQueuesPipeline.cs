@@ -181,7 +181,7 @@ public sealed class AzureQueuesPipeline : IQueue
     }
 
     /// <inheritdoc />
-    public void OnDequeue(Func<string, Task<ResultType>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
         this.Received += async (object sender, MessageEventArgs args) =>
         {
@@ -192,30 +192,30 @@ public sealed class AzureQueuesPipeline : IQueue
 
             try
             {
-                ResultType resultType = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
+                ReturnType returnType = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
                 if (message.DequeueCount <= this._config.MaxRetriesBeforePoisonQueue)
                 {
-                    switch (resultType)
+                    switch (returnType)
                     {
-                        case ResultType.Success:
+                        case ReturnType.Success:
                             this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
                             await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
                             break;
 
-                        case ResultType.TransientError:
+                        case ReturnType.TransientError:
                             var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
                             this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
                                 message.MessageId, backoffDelay.TotalMilliseconds);
                             await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
                             break;
 
-                        case ResultType.FatalError:
+                        case ReturnType.FatalError:
                             this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                             await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                             break;
 
                         default:
-                            throw new ArgumentOutOfRangeException($"Unknown {resultType:G} result");
+                            throw new ArgumentOutOfRangeException($"Unknown {returnType:G} result");
                     }
                 }
                 else

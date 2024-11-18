@@ -103,7 +103,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(ResultType resultType, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Saving memory records, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -241,7 +241,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
             this._log.LogWarning("Pipeline '{0}/{1}': step {2}: no records found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId, this.StepName);
         }
 
-        return (ResultType.Success, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     private static IEnumerable<FileDetailsWithRecordId> GetListOfEmbeddingFiles(DataPipeline pipeline)
