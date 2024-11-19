@@ -57,7 +57,7 @@ internal static class Program
 
         // *************************** CONFIG WIZARD ***************************
 
-        // Run `dotnet run setup` to run this code and setup the service
+        // Run `dotnet run setup` to run this code and set up the service
         if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
             InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
@@ -77,7 +77,8 @@ internal static class Program
             appBuilder.Services.AddApplicationInsightsTelemetry();
         }
 
-        appBuilder.Configuration.AddKMConfigurationSources();
+        // Add config files, user secretes, and env vars
+        appBuilder.Configuration.AddKernelMemoryConfigurationSources();
 
         // Read KM settings, needed before building the app.
         KernelMemoryConfig config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
@@ -90,7 +91,8 @@ internal static class Program
         // Internally build the memory client and make it available for dependency injection
         appBuilder.AddKernelMemory(memoryBuilder =>
             {
-                memoryBuilder.FromAppSettings().WithoutDefaultHandlers();
+                // Prepare the builder with settings from config files
+                memoryBuilder.ConfigureDependencies(appBuilder.Configuration).WithoutDefaultHandlers();
 
                 // When using distributed orchestration, handlers are hosted in the current app and need to be con
                 asyncHandlersCount = AddHandlersAsHostedServices(config, memoryBuilder, appBuilder);
