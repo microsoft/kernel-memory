@@ -3,8 +3,10 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Security;
+using System.Security.Cryptography;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -76,30 +78,32 @@ internal static class AzureOpenAIClientBuilder
         handler.ServerCertificateCustomValidationCallback =
             (_, cert, _, policyErrors) =>
             {
-                if (policyErrors == SslPolicyErrors.None)
-                {
-                    // Return true if there are no policy errors.
-                    return true;
-                }
+                // Pass if there are no policy errors.
+                if (policyErrors == SslPolicyErrors.None) { return true; }
 
                 // Attempt to get the thumbprint of the remote certificate.
-                string? remoteCertThumbprint = cert?.GetCertHashString();
-                if (remoteCertThumbprint is null)
+                string? remoteCert;
+                try
                 {
+                    remoteCert = cert?.GetCertHashString();
+                }
+                catch (CryptographicException)
+                {
+                    // Fail if crypto lib is not working
+                    return false;
+                }
+                catch (ArgumentException)
+                {
+                    // Fail if thumbprint format is invalid
                     return false;
                 }
 
-                // Check if the thumbprint matches any of the trusted thumbprints.
-                foreach (string trustedThumbprint in config.TrustedCertificateThumbprints)
-                {
-                    if (string.Equals(remoteCertThumbprint, trustedThumbprint, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
+                // Fail if no thumbprint available
+                if (remoteCert == null) { return false; }
 
-                // Reject if no thumbprint matches.
-                return false;
+                // Success if the remote cert thumbprint matches any of the trusted ones.
+                return config.TrustedCertificateThumbprints.Any(
+                    trustedCert => string.Equals(remoteCert, trustedCert, StringComparison.OrdinalIgnoreCase));
             };
 
         return new HttpClient(handler);
