@@ -83,7 +83,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         {
             MaxTokens = 60,
             Temperature = 0,
-            StopSequences = new List<string> { "Question" }
+            StopSequences = ["Question"]
         };
 
         // Act

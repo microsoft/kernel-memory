@@ -7,7 +7,7 @@ namespace Microsoft.Redis.TestApplication;
 
 internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
 {
-    private readonly Dictionary<string, Embedding> _embeddings = new();
+    private readonly Dictionary<string, Embedding> _embeddings = [];
 
     internal void AddFakeEmbedding(string str, Embedding vector)
     {
@@ -18,7 +18,7 @@ internal sealed class MockEmbeddingGenerator : ITextEmbeddingGenerator
     public int CountTokens(string text) => 0;
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetTokens(string text) => Array.Empty<string>();
+    public IReadOnlyList<string> GetTokens(string text) => [];
 
     /// <inheritdoc />
     public int MaxTokens => 0;

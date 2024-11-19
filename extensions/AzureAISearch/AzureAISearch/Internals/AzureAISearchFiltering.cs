@@ -8,7 +8,7 @@ namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
 internal static class AzureAISearchFiltering
 {
-    private static readonly char[] s_searchInDelimitersAvailable = { '|', ',', ';', '-', '_', '.', ' ', '^', '$', '*', '`', '#', '@', '&', '/', '~' };
+    private static readonly char[] s_searchInDelimitersAvailable = ['|', ',', ';', '-', '_', '.', ' ', '^', '$', '*', '`', '#', '@', '&', '/', '~'];
 
     /// <summary>
     /// Build a search query optimized to scale for in case a key has several (hundreds+) values
@@ -23,10 +23,10 @@ internal static class AzureAISearchFiltering
     /// <returns>Query string for Azure AI Search</returns>
     internal static string BuildSearchFilter(IEnumerable<MemoryFilter> filters)
     {
-        List<string> conditions = new();
-        var filterList = filters?.ToList() ?? new List<MemoryFilter>();
+        List<string> conditions = [];
+        var filterList = filters?.ToList() ?? [];
 
-        // Get all non empty filters with the same key and more than one value, and combine them using "search.in"
+        // Get all non-empty filters with the same key and more than one value, and combine them using "search.in"
         // - If the filter has more than one filter we will exclude it, it means that needs to be composed with an AND (f.i. memoryFilter.ByTag("tag1", "value1").ByTag("tag2", "value2"))
         // - If the filter has only one filter, it means that it can be grouped with other filters with the same key to be composed with an OR
         var filtersForSearchInQuery = filterList

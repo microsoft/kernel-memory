@@ -31,17 +31,17 @@ internal static class Redis
             SetupUI.AskQuestionWithOptions(new QuestionWithOptions
             {
                 Title = $"{additionalMessage}[Redis] Do you want to add a tag (or another tag) to filter memory records?",
-                Options = new List<Answer>
-                {
+                Options =
+                [
                     new("Yes", false, () => { answer = "Yes"; }),
-                    new("No", true, () => { answer = "No"; }),
-                }
+                    new("No", true, () => { answer = "No"; })
+                ]
             });
 
             return answer.Equals("Yes", StringComparison.OrdinalIgnoreCase);
         }
 
-        Dictionary<string, string> tagFields = new();
+        Dictionary<string, string> tagFields = [];
 
         string additionalMessage = string.Empty;
         while (AskMoreTags(additionalMessage))

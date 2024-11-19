@@ -41,8 +41,8 @@ public abstract class GenerateEmbeddingsHandlerBase
                 DataPipeline.GeneratedFileDetails partitionFile = generatedFile.Value;
 
                 // Calc embeddings only for partitions (text chunks) and synthetic data
-                if (partitionFile.ArtifactType != DataPipeline.ArtifactTypes.TextPartition
-                    && partitionFile.ArtifactType != DataPipeline.ArtifactTypes.SyntheticData)
+                if (partitionFile.ArtifactType is not DataPipeline.ArtifactTypes.TextPartition
+                    and not DataPipeline.ArtifactTypes.SyntheticData)
                 {
                     this._log.LogTrace("Skipping file {0} (not a partition, not synthetic data)", partitionFile.Name);
                     continue;

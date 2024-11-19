@@ -11,7 +11,7 @@ using Microsoft.KernelMemory.MemoryStorage;
 
 namespace Microsoft.AzureAISearch.TestApplication;
 
-public static class Program
+internal static class Program
 {
     // Azure Search Index name
     private const string Index = "test01";
@@ -124,7 +124,7 @@ public static class Program
 
         var indexSchema = new SearchIndex(name)
         {
-            Fields = new List<SearchField>(),
+            Fields = [],
             VectorSearch = new VectorSearch
             {
                 Profiles =
@@ -285,7 +285,7 @@ public static class Program
 
         Console.WriteLine($"DELETING {recordId}\n");
 
-        Response<IndexDocumentsResult>? response = await client.DeleteDocumentsAsync("id", new List<string> { recordId });
+        Response<IndexDocumentsResult>? response = await client.DeleteDocumentsAsync("id", [recordId]);
 
         Console.WriteLine("Status: " + response.GetRawResponse().Status);
         Console.WriteLine("IsError: " + response.GetRawResponse().IsError);

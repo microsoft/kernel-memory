@@ -37,7 +37,7 @@ internal sealed class AzureAISearchMemoryRecord
 #pragma warning restore CA1819
 
     [JsonPropertyName(TagsField)]
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
 
     [JsonPropertyName(PayloadField)]
     public string Payload { get; set; } = string.Empty;
@@ -46,13 +46,13 @@ internal sealed class AzureAISearchMemoryRecord
     {
         return new MemoryDbSchema
         {
-            Fields = new List<MemoryDbField>
-            {
+            Fields =
+            [
                 new() { Name = IdField, Type = MemoryDbField.FieldType.Text, IsKey = true },
                 new() { Name = VectorField, Type = MemoryDbField.FieldType.Vector, VectorSize = vectorSize },
                 new() { Name = TagsField, Type = MemoryDbField.FieldType.ListOfStrings, IsFilterable = true },
-                new() { Name = PayloadField, Type = MemoryDbField.FieldType.Text, IsFilterable = false },
-            }
+                new() { Name = PayloadField, Type = MemoryDbField.FieldType.Text, IsFilterable = false }
+            ]
         };
     }
 
@@ -61,8 +61,7 @@ internal sealed class AzureAISearchMemoryRecord
         MemoryRecord result = new()
         {
             Id = DecodeId(this.Id),
-            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload, s_jsonOptions)
-                      ?? new Dictionary<string, object>()
+            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload, s_jsonOptions) ?? []
         };
 
         if (withEmbedding)

@@ -14,7 +14,7 @@ internal sealed class Filter
 
         internal OrClause()
         {
-            this.Clauses = new();
+            this.Clauses = [];
         }
 
         internal OrClause Or(object condition)
@@ -59,7 +59,7 @@ internal sealed class Filter
 
         internal AndClause()
         {
-            this.Clauses = new();
+            this.Clauses = [];
         }
 
         internal AndClause And(object condition)

@@ -90,6 +90,7 @@ public sealed class AzureBlobsStorage : IDocumentStorage
             }
 
             default:
+            case AzureBlobsConfig.AuthTypes.Unknown:
                 this._log.LogCritical("Azure Blob authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Azure Blob authentication type '{config.Auth}' undefined or not supported");
         }

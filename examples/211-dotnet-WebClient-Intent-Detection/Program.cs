@@ -10,7 +10,7 @@ using Microsoft.KernelMemory;
 public static class Program
 {
     private static MemoryWebClient? s_memory;
-    private static readonly List<string> s_toDelete = new();
+    private static readonly List<string> s_toDelete = [];
 
     public static async Task Main()
     {

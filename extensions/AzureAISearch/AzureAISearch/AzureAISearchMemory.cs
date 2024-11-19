@@ -93,6 +93,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 break;
 
             default:
+            case AzureAISearchConfig.AuthTypes.Unknown:
                 this._log.LogCritical("Azure AI Search authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Azure AI Search authentication type '{config.Auth}' undefined or not supported");
         }
@@ -129,7 +130,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.UpsertBatchAsync(index, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(index, [record], cancellationToken);
         var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
         return id;
     }
@@ -286,7 +287,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             this._log.LogDebug("Deleting record {0} from index {1}", id, index);
             Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync(
                     AzureAISearchMemoryRecord.IdField,
-                    new List<string> { id },
+                    [id],
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             this._log.LogTrace("Delete response status: {0}, content: {1}", result.GetRawResponse().Status, result.GetRawResponse().Content.ToString());
@@ -459,7 +460,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         var indexSchema = new SearchIndex(index)
         {
-            Fields = new List<SearchField>(),
+            Fields = [],
             VectorSearch = new VectorSearch
             {
                 Profiles =

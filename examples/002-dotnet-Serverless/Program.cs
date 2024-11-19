@@ -13,7 +13,7 @@ using Microsoft.KernelMemory;
 public static class Program
 {
     private static MemoryServerless? s_memory;
-    private static readonly List<string> s_toDelete = new();
+    private static readonly List<string> s_toDelete = [];
 
     // Remember to configure Azure Document Intelligence to test OCR and support for images
     private static bool s_imageSupportDemoEnabled = true;

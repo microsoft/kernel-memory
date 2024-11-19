@@ -11,8 +11,8 @@ public class EmbeddingTest
     public void ItShowsEmbeddingSizeWhenThrowing()
     {
         // Arrange
-        var vec1 = new Embedding(new float[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0 });
-        var vec2 = new Embedding(new float[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 0, 0 });
+        var vec1 = new Embedding([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0]);
+        var vec2 = new Embedding([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 0, 0]);
 
         // Act - Assert
         var e = Assert.Throws<InvalidOperationException>(() => vec1.CosineSimilarity(vec2));

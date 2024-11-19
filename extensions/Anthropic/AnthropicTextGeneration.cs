@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
 using Microsoft.KernelMemory.AI.OpenAI;
@@ -113,7 +114,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
 
         IAsyncEnumerable<StreamingResponseMessage> streamedResponse = this._client.CallClaudeStreamingAsync(parameters, cancellationToken);
 
-        await foreach (StreamingResponseMessage response in streamedResponse)
+        await foreach (StreamingResponseMessage response in streamedResponse.ConfigureAwait(false))
         {
             //now we simply yield the response
             switch (response)

@@ -11,5 +11,5 @@ internal sealed class GetVectorsResponse<T> : QdrantResponse where T : DefaultQd
     /// Array of vectors and their associated metadata
     /// </summary>
     [JsonPropertyName("result")]
-    public IEnumerable<QdrantPoint<T>> Results { get; set; } = new List<QdrantPoint<T>>();
+    public IEnumerable<QdrantPoint<T>> Results { get; set; } = [];
 }

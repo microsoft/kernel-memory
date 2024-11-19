@@ -149,11 +149,11 @@ public sealed class RedisMemory : IMemoryDb
             args.Add(JsonSerializer.Serialize(record.Payload));
         }
 
-        var scriptResult = (await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false)).ToString()!;
+        var scriptResult = (await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, [key], args.ToArray()).ConfigureAwait(false)).ToString()!;
         if (scriptResult == "false")
         {
             await this.CreateIndexAsync(index, record.Vector.Length, cancellationToken).ConfigureAwait(false);
-            await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, new RedisKey[] { key }, args.ToArray()).ConfigureAwait(false);
+            await this._db.ScriptEvaluateAsync(Scripts.CheckIndexAndUpsert, [key], args.ToArray()).ConfigureAwait(false);
         }
         else if (scriptResult.StartsWith("(error)", StringComparison.Ordinal))
         {
@@ -272,7 +272,7 @@ public sealed class RedisMemory : IMemoryDb
             query.ReturnFields(this._fieldNamesNoEmbeddings);
         }
 
-        List<NRedisStack.Search.Document> documents = new();
+        List<NRedisStack.Search.Document> documents = [];
         try
         {
             // handle the case of negative indexes (-1 = end, -2 = 1 from end, etc. . .)
@@ -342,10 +342,10 @@ public sealed class RedisMemory : IMemoryDb
     /// Characters to escape when serializing a tag expression.
     /// </summary>
     private static readonly char[] s_tagEscapeChars =
-    {
+    [
         ',', '.', '<', '>', '{', '}', '[', ']', '"', '\'', ':', ';',
-        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '+', '=', '~', '|', ' ', '/',
-    };
+        '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '+', '=', '~', '|', ' ', '/'
+    ];
 
     /// <summary>
     /// Special chars to specifically replace within index names to keep
@@ -376,7 +376,7 @@ public sealed class RedisMemory : IMemoryDb
             else if (field.Key == PayloadFieldName)
             {
                 var payload = JsonSerializer.Deserialize<Dictionary<string, object>>(field.Value.ToString());
-                memoryRecord.Payload = payload ?? new Dictionary<string, object>();
+                memoryRecord.Payload = payload ?? [];
             }
             else if (field.Key == DistanceFieldName)
             {

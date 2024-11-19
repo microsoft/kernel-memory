@@ -129,7 +129,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
 
         if (options.StopSequences is { Count: > 0 })
         {
-            skOptions.StopSequences = new List<string>();
+            skOptions.StopSequences = [];
             foreach (var s in options.StopSequences) { skOptions.StopSequences.Add(s); }
         }
 

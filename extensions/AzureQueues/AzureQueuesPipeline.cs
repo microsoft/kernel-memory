@@ -124,6 +124,7 @@ public sealed class AzureQueuesPipeline : IQueue
             }
 
             default:
+            case AzureQueuesConfig.AuthTypes.Unknown:
                 this._log.LogCritical("Azure Queue authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
         }

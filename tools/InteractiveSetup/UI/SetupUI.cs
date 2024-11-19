@@ -15,8 +15,8 @@ internal static class SetupUI
 
     public static bool AskBoolean(string question, bool defaultValue)
     {
-        string[] yes = { "YES", "Y" };
-        string[] no = { "NO", "N" };
+        string[] yes = ["YES", "Y"];
+        string[] no = ["NO", "N"];
         while (true)
         {
             var answer = AskOpenQuestion(question: question, defaultValue: defaultValue ? "Yes" : "No", optional: false).ToUpperInvariant();

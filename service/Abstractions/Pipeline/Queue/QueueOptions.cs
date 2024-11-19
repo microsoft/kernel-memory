@@ -15,17 +15,17 @@ public struct QueueOptions : IEquatable<QueueOptions>
     {
     }
 
-    public override bool Equals(object? obj)
+    public override readonly bool Equals(object? obj)
     {
         return obj is QueueOptions options && this.Equals(options);
     }
 
-    public bool Equals(QueueOptions other)
+    public readonly bool Equals(QueueOptions other)
     {
         return this.DequeueEnabled == other.DequeueEnabled;
     }
 
-    public override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         return this.DequeueEnabled ? 1 : 2;
     }

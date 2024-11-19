@@ -300,7 +300,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             this._log.LogDebug("HTTP 404: {0}", content);
-            return new List<QdrantPoint<T>>();
+            return [];
         }
 
         this.ValidateResponse(response, content, nameof(this.GetListAsync));
@@ -315,7 +315,7 @@ internal sealed class QdrantClient<T> where T : DefaultQdrantPayload, new()
         if (!data.Results.Points.Any())
         {
             this._log.LogDebug("No vectors found");
-            return new List<QdrantPoint<T>>();
+            return [];
         }
 
         return data.Results.Points.ToList();

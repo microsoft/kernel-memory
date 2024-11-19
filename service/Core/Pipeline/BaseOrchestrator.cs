@@ -138,7 +138,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
 
-        filesToUpload ??= new List<DocumentUploadRequest.UploadedFile>();
+        filesToUpload ??= [];
 
         var pipeline = new DataPipeline
         {
@@ -406,14 +406,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 if (dedupe.Contains(oldExecution.ExecutionId)) { continue; }
 
                 // Reset the list to avoid wasting space with nested trees
-                oldExecution.PreviousExecutionsToPurge = new List<DataPipeline>();
+                oldExecution.PreviousExecutionsToPurge = [];
 
                 currentPipeline.PreviousExecutionsToPurge.Add(oldExecution);
                 dedupe.Add(oldExecution.ExecutionId);
             }
 
             // Reset the list to avoid wasting space with nested trees
-            previousPipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+            previousPipeline.PreviousExecutionsToPurge = [];
 
             currentPipeline.PreviousExecutionsToPurge.Add(previousPipeline);
         }

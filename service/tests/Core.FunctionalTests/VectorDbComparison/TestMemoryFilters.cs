@@ -27,7 +27,7 @@ public class TestMemoryFilters : BaseFunctionalTestCase
     private readonly bool _qdrantEnabled = false;
     private readonly bool _redisEnabled = false;
 
-    private readonly Dictionary<string, IMemoryDb> _memoryDbs = new();
+    private readonly Dictionary<string, IMemoryDb> _memoryDbs = [];
 
     public TestMemoryFilters(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)
     {

@@ -17,13 +17,13 @@ public struct Distribution : IEquatable<Distribution>
     public Distribution() { }
 
     // TODO: use tolerance when comparing floating numbers for equality
-    public override bool Equals(object? obj) => obj is Distribution distribution &&
-                                                this.Simple == distribution.Simple &&
-                                                this.Reasoning == distribution.Reasoning &&
-                                                this.MultiContext == distribution.MultiContext &&
-                                                this.Conditioning == distribution.Conditioning;
+    public override readonly bool Equals(object? obj) => obj is Distribution distribution &&
+                                                         this.Simple == distribution.Simple &&
+                                                         this.Reasoning == distribution.Reasoning &&
+                                                         this.MultiContext == distribution.MultiContext &&
+                                                         this.Conditioning == distribution.Conditioning;
 
-    public override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         return HashCode.Combine(this.Simple, this.Reasoning, this.MultiContext, this.Conditioning);
     }
@@ -38,9 +38,8 @@ public struct Distribution : IEquatable<Distribution>
         return !(left == right);
     }
 
-    public bool Equals(Distribution other)
+    public readonly bool Equals(Distribution other)
     {
         return this == other;
     }
 }
-

@@ -27,7 +27,7 @@ public class ServiceConfig
     /// <summary>
     /// List of handlers to enable
     /// </summary>
-    public Dictionary<string, HandlerConfig> Handlers { get; set; } = new();
+    public Dictionary<string, HandlerConfig> Handlers { get; set; } = [];
 
     /// <summary>
     /// The maximum allowed size in megabytes for an HTTP request body posted to the upload endpoint.

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.KernelMemory.InteractiveSetup.UI;
 
 namespace Microsoft.KernelMemory.InteractiveSetup.Service;
@@ -19,8 +18,8 @@ internal static class KMService
                           "When running asynchronously, handlers run in the background and use distributed queues to enable " +
                           "long running tasks, to retry in case of errors, and to allow scaling the service horizontally. " +
                           "The web service can also be disabled in case the queued jobs are populated differently.",
-            Options = new List<Answer>
-            {
+            Options =
+            [
                 new("Web Service with Asynchronous Ingestion Handlers (better for retry logic and long operations)",
                     config.Service.RunWebService && config.Service.RunHandlers,
                     () =>
@@ -34,6 +33,7 @@ internal static class KMService
                             x.DataIngestion.OrchestrationType = "Distributed";
                         });
                     }),
+
                 new("Web Service with Synchronous Ingestion Handlers",
                     config.Service.RunWebService && !config.Service.RunHandlers,
                     () =>
@@ -48,6 +48,7 @@ internal static class KMService
                             x.DataIngestion.DistributedOrchestration.QueueType = "";
                         });
                     }),
+
                 new("No web Service, run only asynchronous Ingestion Handlers in the background",
                     !config.Service.RunWebService && config.Service.RunHandlers,
                     () =>
@@ -61,8 +62,9 @@ internal static class KMService
                             x.DataIngestion.OrchestrationType = "Distributed";
                         });
                     }),
-                new("-exit-", false, SetupUI.Exit),
-            }
+
+                new("-exit-", false, SetupUI.Exit)
+            ]
         });
     }
 }

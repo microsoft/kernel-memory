@@ -81,14 +81,13 @@ public class TestsetGenerationTests
                 documentId: "file1-NASA-news",
                 steps: Constants.PipelineWithoutSummary);
 
-        var evaluation = await this._testSetEvaluator.EvaluateTestSetAsync("default4tests", new[]
-        {
+        var evaluation = await this._testSetEvaluator.EvaluateTestSetAsync("default4tests", [
             new TestSetItem
             {
                 Question = "What is the role of the Department of Defense in the recovery operations for the Artemis II mission?",
                 GroundTruth = "The Department of Defense personnel are involved in practicing recovery operations for the Artemis II mission. They use a crew module test article to help verify the recovery team's readiness to recover the Artemis II crew and the Orion spacecraft.",
             }
-        }).ToArrayAsync();
+        ]).ToArrayAsync();
 
         Assert.NotEmpty(evaluation);
     }

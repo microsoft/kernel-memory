@@ -97,7 +97,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
 
         var documentIds = new List<string>();
 
-        await foreach (var record in this._memory.GetListAsync(index, limit: int.MaxValue))
+        await foreach (var record in this._memory.GetListAsync(index, limit: int.MaxValue).ConfigureAwait(false))
         {
             if (documentIds.Contains(record.GetDocumentId()))
             {
@@ -110,7 +110,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
         foreach (var documentId in documentIds)
         {
             var partitionRecords = await this._memory.GetListAsync(index,
-                    filters: new[] { new MemoryFilter().ByDocument(documentId) },
+                    filters: [new MemoryFilter().ByDocument(documentId)],
                     limit: int.MaxValue)
                 .ToArrayAsync()
                 .ConfigureAwait(false);
@@ -123,7 +123,7 @@ public sealed partial class TestSetGenerator : EvaluationEngine
                     .Concat(this.GetMultiContextTestSetsAsync(nodes.Skip(simpleCount + reasoningCount).Take(multiContextCount), language: language, retryCount: retryCount))
                     .Concat(this.GetConditioningTestSetsAsync(nodes.Skip(simpleCount + reasoningCount + multiContextCount).Take(conditioningCount), language: language, retryCount: retryCount));
 
-            await foreach (var item in questions)
+            await foreach (var item in questions.ConfigureAwait(false))
             {
                 yield return item;
             }

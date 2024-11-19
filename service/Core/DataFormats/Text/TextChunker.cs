@@ -25,9 +25,9 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
-    private static readonly char[] s_spaceChar = { ' ' };
-    private static readonly string?[] s_plaintextSplitOptions = { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
-    private static readonly string?[] s_markdownSplitOptions = { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+    private static readonly char[] s_spaceChar = [' '];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null];
+    private static readonly string?[] s_markdownSplitOptions = [".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
     /// Split plain text into lines.
@@ -140,7 +140,7 @@ public static class TextChunker
 
         if (lines.Count == 0)
         {
-            return new List<string>();
+            return [];
         }
 
         var chunkHeaderTokens = chunkHeader is { Length: > 0 } ? GetTokenCount(chunkHeader, tokenCounter) : 0;
@@ -166,7 +166,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
-        List<string> paragraphs = new();
+        List<string> paragraphs = [];
 
         foreach (string line in truncatedLines)
         {
@@ -305,7 +305,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         bool inputWasSplit = false;
-        List<string> result = new();
+        List<string> result = [];
         int count = input.Count;
         for (int i = 0; i < count; i++)
         {
@@ -326,7 +326,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
-        List<string> result = new();
+        List<string> result = [];
         var inputWasSplit = false;
 
         int inputTokenCount = GetTokenCount(inputString ??= input.ToString(), tokenCounter);
