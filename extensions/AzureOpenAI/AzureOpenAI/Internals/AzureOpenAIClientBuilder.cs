@@ -68,8 +68,7 @@ internal static class AzureOpenAIClientBuilder
 
     private static HttpClient BuildHttpClientWithCustomCertificateValidation(AzureOpenAIConfig config)
     {
-#pragma warning disable CA2000
-        // False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
+#pragma warning disable CA2000 - False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
         var handler = new HttpClientHandler();
 #pragma warning restore CA2000
 
