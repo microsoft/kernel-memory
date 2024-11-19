@@ -35,8 +35,7 @@ internal static class AzureOpenAIClientBuilder
 
         if (httpClient is null && config.TrustedCertificateThumbprints.Count > 0)
         {
-#pragma warning disable CA2000
-            // False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
+#pragma warning disable CA2000 - False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
             httpClient = BuildHttpClientWithCustomCertificateValidation(config);
 #pragma warning restore CA2000
         }
