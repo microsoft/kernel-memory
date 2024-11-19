@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Azure.Core;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -82,6 +83,12 @@ public class AzureOpenAIConfig
     /// How many times to retry in case of throttling.
     /// </summary>
     public int MaxRetries { get; set; } = 10;
+
+    /// <summary>
+    /// Thumbprints of certificates that should be trusted for HTTPS requests when SSL policy errors are detected.
+    /// This should only be used for local development when using a proxy to call the OpenAI endpoints.
+    /// </summary>
+    public HashSet<string> TrustedCertificateThumbprints { get; set; } = [];
 
     /// <summary>
     /// Set credentials manually from code
