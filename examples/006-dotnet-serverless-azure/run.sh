@@ -6,5 +6,5 @@ cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
 
 dotnet restore
 dotnet build
-dotnet run setup
+ASPNETCORE_ENVIRONMENT=Development dotnet run
 
