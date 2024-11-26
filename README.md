@@ -416,7 +416,7 @@ Examples and Tools
 1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
 3. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
-4. [Kernel Memory RAG with Azure services](examples/006-dotnet-serverless-azure) 
+4. [Kernel Memory RAG with Azure services](examples/007-dotnet-serverless-azure)
 5. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
 6. Customizations
    * [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
