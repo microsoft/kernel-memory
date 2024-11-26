@@ -333,7 +333,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelMemory", "extensions\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOpenAI.FunctionalTests", "extensions\AzureOpenAI\AzureOpenAI.FunctionalTests\AzureOpenAI.FunctionalTests.csproj", "{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "006-dotnet-serverless-azure", "examples\006-dotnet-serverless-azure\006-dotnet-serverless-azure.csproj", "{AF1E12A9-D8A1-4815-995E-C6F7B2022016}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-dotnet-serverless-azure", "examples\007-dotnet-serverless-azure\007-dotnet-serverless-azure.csproj", "{AF1E12A9-D8A1-4815-995E-C6F7B2022016}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
