@@ -39,5 +39,6 @@ Note that as soon as `ImportDocumentAsync` is done, the memories are available f
 
 # Run the example
 
-To run the example, either set the `OPENAI_API_KEY` environment variable with your
-OpenAI API key, or adjust the memory builder code to use Azure or other LLMs.
+To run the example, first set the `OPENAI_API_KEY` environment variable with your
+OpenAI API key, or adjust the memory builder code to use Azure or other LLMs, then
+execute `dotnet run` from this folder.
