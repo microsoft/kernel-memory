@@ -333,6 +333,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelMemory", "extensions\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOpenAI.FunctionalTests", "extensions\AzureOpenAI\AzureOpenAI.FunctionalTests\AzureOpenAI.FunctionalTests.csproj", "{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-dotnet-serverless-azure", "examples\007-dotnet-serverless-azure\007-dotnet-serverless-azure.csproj", "{AF1E12A9-D8A1-4815-995E-C6F7B2022016}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -618,6 +620,9 @@ Global
 		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF1E12A9-D8A1-4815-995E-C6F7B2022016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF1E12A9-D8A1-4815-995E-C6F7B2022016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF1E12A9-D8A1-4815-995E-C6F7B2022016}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -717,6 +722,7 @@ Global
 		{58E65B3F-EFF0-401A-AC76-A49835AE0220} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{AB097B62-5A0B-4D74-9F8B-A41FE8241447} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
+		{AF1E12A9-D8A1-4815-995E-C6F7B2022016} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
