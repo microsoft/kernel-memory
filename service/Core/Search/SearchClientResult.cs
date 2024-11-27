@@ -21,6 +21,7 @@ internal class SearchClientResult
 {
     public SearchMode Mode { get; private init; }
     public SearchState State { get; set; }
+    public int RecordCount { get; set; }
 
     // Use by in Search and Ask mode
     public MemoryAnswer AskResult { get; private init; } = new();

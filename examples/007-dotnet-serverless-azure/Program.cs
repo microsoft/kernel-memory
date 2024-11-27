@@ -15,7 +15,12 @@ using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 public static class Program
 {
     private static MemoryServerless? s_memory;
+
     private const string IndexName = "example006";
+
+    // Use these booleans in case you don't want to use these Azure Services
+    private const bool UseAzureAIDocIntelligence = true;
+    private const bool UseAzureAIContentSafety = true;
 
     public static async Task Main()
     {
@@ -43,37 +48,49 @@ public static class Program
 
         var builder = new KernelMemoryBuilder()
             .WithAzureBlobsDocumentStorage(azureBlobConfig)
-            .WithAzureAIDocIntel(azureAIDocIntelConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig)
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureAISearchMemoryDb(azureAISearchConfig)
-            .WithAzureAIContentSafetyModeration(azureAIContentSafetyConfig)
+            // .WithAzureAIDocIntel(azureAIDocIntelConfig) // see below
+            // .WithAzureAIContentSafetyModeration(azureAIContentSafetyConfig) // see below
             .Configure(builder => builder.Services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Warning);
+                l.SetMinimumLevel(LogLevel.Error);
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }));
 
+        // We split this builder code out in case you don't have these Azure services
+        if (UseAzureAIDocIntelligence) { builder.WithAzureAIContentSafetyModeration(azureAIContentSafetyConfig); }
+
+        if (UseAzureAIContentSafety) { builder.WithAzureAIDocIntel(azureAIDocIntelConfig); }
+
         s_memory = builder.Build<MemoryServerless>();
 
-        await StoreWebPage();
-        await StoreImage();
+        // ====== Store some data ======
 
-        // Test 1
+        await StoreWebPageAsync(); // Works with Azure AI Search and Azure OpenAI
+        await StoreImageAsync(); // Works only if Azure AI Document Intelligence is used
+
+        // ====== Answer some questions ======
+
+        // When using hybrid search, relevance is much lower than cosine similarity
+        var minRelevance = azureAISearchConfig.UseHybridSearch ? 0 : 0.5;
+
+        // Test 1 (answer from the web page)
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.5, index: IndexName);
+        var answer = await s_memory.AskAsync(question, minRelevance: minRelevance, index: IndexName);
         Console.WriteLine($"Answer: {answer.Result}\n\n");
 
-        // Test 2
+        // Test 2 (requires Azure AI Document Intelligence to have parsed the image)
         question = "Which conference is Microsoft sponsoring?";
         Console.WriteLine($"Question: {question}");
-        answer = await s_memory.AskAsync(question, minRelevance: 0.5, index: IndexName);
+        answer = await s_memory.AskAsync(question, minRelevance: minRelevance, index: IndexName);
         Console.WriteLine($"Answer: {answer.Result}\n\n");
     }
 
     // Downloading web pages
-    private static async Task StoreWebPage()
+    private static async Task StoreWebPageAsync()
     {
         const string DocId = "webPage1";
         if (!await s_memory!.IsDocumentReadyAsync(DocId, index: IndexName))
@@ -87,9 +104,11 @@ public static class Program
         }
     }
 
-    // Extract memory from images (OCR required)
-    private static async Task StoreImage()
+    // Extract memory from images (requires Azure AI Document Intelligence)
+    private static async Task StoreImageAsync()
     {
+        if (!UseAzureAIDocIntelligence) { return; }
+
         const string DocId = "img001";
         if (!await s_memory!.IsDocumentReadyAsync(DocId, index: IndexName))
         {

@@ -102,6 +102,8 @@ public sealed class SearchClient : ISearchClient
             if (result.State == SearchState.Stop) { break; }
         }
 
+        this._log.LogTrace("{Count} records processed", result.RecordCount);
+
         if (result.SearchResult.Results.Count == 0)
         {
             this._log.LogDebug("No memories found");
@@ -167,6 +169,8 @@ public sealed class SearchClient : ISearchClient
             if (result.State == SearchState.Stop) { break; }
         }
 
+        this._log.LogTrace("{Count} records processed", result.RecordCount);
+
         return await this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false);
     }
 
@@ -188,6 +192,9 @@ public sealed class SearchClient : ISearchClient
             this._log.LogError("The document partition is empty, doc: {0}", record.Id);
             return result.SkipRecord();
         }
+
+        // Keep track of how many records have been processed
+        result.RecordCount++;
 
         // Note: a document can be composed by multiple files
         string documentId = record.GetDocumentId(this._log);
