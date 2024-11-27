@@ -16,6 +16,12 @@ public class OllamaModelConfig
     public int? MaxTokenTotal { get; set; }
 
     /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty if unsure.
+    /// </summary>
+    public string Tokenizer { get; set; } = "cl100k";
+
+    /// <summary>
     /// Enable Mirostat sampling for controlling perplexity.
     /// (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
     /// </summary>

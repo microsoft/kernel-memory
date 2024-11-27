@@ -89,12 +89,18 @@ public sealed class OpenAITextGenerator : ITextGenerator
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
+        if (textTokenizer == null && !string.IsNullOrEmpty(config.TextModelTokenizer))
+        {
+            textTokenizer = TokenizerFactory.GetTokenizerForEncoding(config.TextModelTokenizer);
+        }
+
+        textTokenizer ??= TokenizerFactory.GetTokenizerForModel(config.TextModel);
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;

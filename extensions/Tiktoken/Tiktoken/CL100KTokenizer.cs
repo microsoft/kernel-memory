@@ -4,16 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Tokenizers;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI;
 
-/// <summary>
-/// GPT 3.5 and GPT 4 tokenizer (cl100k_base.tiktoken + special tokens)
-/// </summary>
-public sealed class GPT4Tokenizer : ITextTokenizer
+public class CL100KTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4",
+    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("cl100k_base",
         new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />

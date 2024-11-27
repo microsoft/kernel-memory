@@ -21,6 +21,7 @@ internal static class AzureOpenAIEmbedding
                 { "APIType", "EmbeddingGeneration" },
                 { "Endpoint", "" },
                 { "Deployment", "" },
+                { "Tokenizer", "cl100k" },
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
             };
@@ -47,5 +48,6 @@ internal static class AzureOpenAIEmbedding
         AppSettings.Change(x => x.Services[ServiceName]["APIType"] = "EmbeddingGeneration");
         AppSettings.Change(x => x.Services[ServiceName]["Endpoint"] = SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()));
         AppSettings.Change(x => x.Services[ServiceName]["Deployment"] = SetupUI.AskOpenQuestion("Azure OpenAI <embedding model deployment name>", config["Deployment"].ToString()));
+        AppSettings.Change(x => x.Services[ServiceName]["Tokenizer"] = SetupUI.AskOpenQuestion("Tokenizer (p50k/cl100k/o200k)", config["Tokenizer"].ToString()));
     }
 }
