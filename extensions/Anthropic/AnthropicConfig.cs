@@ -49,6 +49,12 @@ public class AnthropicConfig
     public int MaxTokenOut { get; set; } = 4096;
 
     /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty if unsure.
+    /// </summary>
+    public string Tokenizer { get; set; } = "cl100k";
+
+    /// <summary>
     /// System prompt used when generating text
     /// </summary>
     public string DefaultSystemPrompt { get; set; } = "You are an assistant that will answer user query based on a context";

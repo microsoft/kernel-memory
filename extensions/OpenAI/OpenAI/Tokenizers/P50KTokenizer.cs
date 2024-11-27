@@ -8,13 +8,9 @@ using Microsoft.ML.Tokenizers;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
-/// <summary>
-/// GPT 3.5 and GPT 4 tokenizer (cl100k_base.tiktoken + special tokens)
-/// </summary>
-public sealed class GPT4Tokenizer : ITextTokenizer
+public class P50KTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4",
-        new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
+    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("p50k_base");
 
     /// <inheritdoc />
     public int CountTokens(string text)

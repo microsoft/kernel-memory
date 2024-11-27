@@ -79,11 +79,12 @@ public static class Program
         var promptProvider = new EmbeddedPromptProvider();
 
         // AI dependencies
-        var tokenizer = new GPT4oTokenizer();
+        var tokenizerForChat = new O200KTokenizer();
+        var tokenizerForEmbeddings = new CL100KTokenizer();
         var embeddingGeneratorHttpClient = new HttpClient();
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizer, loggerFactory, embeddingGeneratorHttpClient);
+        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerator(azureOpenAIEmbeddingConfig, tokenizerForEmbeddings, loggerFactory, embeddingGeneratorHttpClient);
         var textGeneratorHttpClient = new HttpClient();
-        var textGenerator = new AzureOpenAITextGenerator(azureOpenAITextConfig, tokenizer, loggerFactory, textGeneratorHttpClient);
+        var textGenerator = new AzureOpenAITextGenerator(azureOpenAITextConfig, tokenizerForChat, loggerFactory, textGeneratorHttpClient);
         var contentModeration = new AzureAIContentSafetyModeration(azureAIContentSafetyModerationConfig, loggerFactory);
 
         // Storage

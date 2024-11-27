@@ -8,12 +8,10 @@ using Microsoft.ML.Tokenizers;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
-/// <summary>
-/// TikToken GPT2 tokenizer (gpt2.tiktoken)
-/// </summary>
-public sealed class GPT2Tokenizer : ITextTokenizer
+public class O200KTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt2");
+    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("o200k_base",
+        new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />
     public int CountTokens(string text)

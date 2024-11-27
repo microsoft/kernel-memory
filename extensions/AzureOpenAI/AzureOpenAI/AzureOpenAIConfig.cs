@@ -64,6 +64,12 @@ public class AzureOpenAIConfig
     public int MaxTokenTotal { get; set; } = 8191;
 
     /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty if unsure.
+    /// </summary>
+    public string Tokenizer { get; set; } = "cl100k";
+
+    /// <summary>
     /// The number of dimensions output embeddings should have.
     /// Only supported in "text-embedding-3" and later models developed with
     /// MRL, see https://arxiv.org/abs/2205.13147

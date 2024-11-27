@@ -8,13 +8,9 @@ using Microsoft.ML.Tokenizers;
 // ReSharper disable once CheckNamespace
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
-/// <summary>
-/// GPT 4o / 4o mini tokenizer (cl200k_base.tiktoken + special tokens)
-/// </summary>
-// ReSharper disable once InconsistentNaming
-public sealed class GPT4oTokenizer : ITextTokenizer
+public class CL100KTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o",
+    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("cl100k_base",
         new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
 
     /// <inheritdoc />

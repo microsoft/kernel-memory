@@ -70,12 +70,13 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         var endpointVersion = string.IsNullOrWhiteSpace(config.Endpoint) ? DefaultEndpointVersion : config.EndpointVersion;
         this._client = new RawAnthropicClient(this._httpClient, endpoint, endpointVersion, config.ApiKey);
 
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                nameof(CL100KTokenizer));
+            textTokenizer = new CL100KTokenizer();
         }
 
         this._textTokenizer = textTokenizer;

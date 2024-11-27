@@ -95,12 +95,13 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         this.MaxTokens = config.MaxTokenTotal;
         this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                nameof(CL100KTokenizer));
+            textTokenizer = new CL100KTokenizer();
         }
 
         this._textTokenizer = textTokenizer;

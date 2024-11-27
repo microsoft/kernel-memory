@@ -96,12 +96,18 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         this.MaxTokens = config.EmbeddingModelMaxTokenTotal;
         this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
+        if (textTokenizer == null && !string.IsNullOrEmpty(config.EmbeddingModelTokenizer))
+        {
+            textTokenizer = TokenizerFactory.GetTokenizerForEncoding(config.EmbeddingModelTokenizer);
+        }
+
+        textTokenizer ??= TokenizerFactory.GetTokenizerForModel(config.EmbeddingModel);
         if (textTokenizer == null)
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                nameof(CL100KTokenizer));
+            textTokenizer = new CL100KTokenizer();
         }
 
         this._textTokenizer = textTokenizer;

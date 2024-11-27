@@ -64,8 +64,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         {
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                nameof(O200KTokenizer));
+            textTokenizer = new O200KTokenizer();
         }
 
         config.Validate();
