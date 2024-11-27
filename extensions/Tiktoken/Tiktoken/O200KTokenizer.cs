@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Tokenizers;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI;
 
 public class O200KTokenizer : ITextTokenizer
 {

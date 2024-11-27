@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.OpenAI.UnitTests;
+namespace Microsoft.Tiktoken.UnitTests;
 
-public class GPTTokenizersTests(ITestOutputHelper output) : BaseUnitTestCase(output)
+public class TokenizersTests(ITestOutputHelper output) : BaseUnitTestCase(output)
 {
     [Fact]
     [Trait("Category", "UnitTest")]

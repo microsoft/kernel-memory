@@ -49,7 +49,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextPartitioningHandler>();
         this._log.LogInformation("Handler '{0}' ready", stepName);
 
-        this._tokenCounter = DefaultGPTTokenizer.StaticCountTokens;
+        this._tokenCounter = (new CL100KTokenizer()).CountTokens;
         if (orchestrator.EmbeddingGenerationEnabled)
         {
             foreach (var gen in orchestrator.GetEmbeddingGenerators())

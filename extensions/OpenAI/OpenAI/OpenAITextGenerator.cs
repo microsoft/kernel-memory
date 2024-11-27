@@ -97,10 +97,10 @@ public sealed class OpenAITextGenerator : ITextGenerator
         textTokenizer ??= TokenizerFactory.GetTokenizerForModel(config.TextModel);
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(O200KTokenizer));
-            textTokenizer = new O200KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;

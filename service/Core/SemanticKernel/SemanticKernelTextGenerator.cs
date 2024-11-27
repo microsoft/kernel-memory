@@ -42,10 +42,10 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
 
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(DefaultGPTTokenizer));
-            textTokenizer = new DefaultGPTTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._tokenizer = textTokenizer;

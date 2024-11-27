@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Ollama;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 

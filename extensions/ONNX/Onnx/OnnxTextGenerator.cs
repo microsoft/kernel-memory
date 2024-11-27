@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.ML.OnnxRuntimeGenAI;
 using static Microsoft.KernelMemory.OnnxConfig;
@@ -62,10 +61,10 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OnnxTextGenerator>();
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(O200KTokenizer));
-            textTokenizer = new O200KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         config.Validate();

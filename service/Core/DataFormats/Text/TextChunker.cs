@@ -25,6 +25,9 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
+    // Fallback when TokenCounter is not set
+    private static readonly TokenCounter s_defaultTokenCounter = (new CL100KTokenizer()).CountTokens;
+
     private static readonly char[] s_spaceChar = [' '];
     private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null];
     private static readonly string?[] s_markdownSplitOptions = [".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null];
@@ -47,7 +50,7 @@ public static class TextChunker
             s_plaintextSplitOptions, tokenCounter);
 
     /// <summary>
-    /// Split markdown text into lines.
+    /// Split Markdown text into lines.
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
@@ -93,7 +96,7 @@ public static class TextChunker
             tokenCounter);
 
     /// <summary>
-    /// Split markdown text into paragraphs.
+    /// Split Markdown text into paragraphs.
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
@@ -399,6 +402,6 @@ public static class TextChunker
     private static int GetTokenCount(string input, TokenCounter? tokenCounter)
     {
         // Fall back to GPT tokenizer if none configured
-        return tokenCounter?.Invoke(input) ?? DefaultGPTTokenizer.StaticCountTokens(input);
+        return tokenCounter?.Invoke(input) ?? s_defaultTokenCounter(input);
     }
 }

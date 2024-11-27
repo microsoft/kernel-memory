@@ -104,10 +104,10 @@ public sealed class OpenAITextEmbeddingGenerator : ITextEmbeddingGenerator, ITex
         textTokenizer ??= TokenizerFactory.GetTokenizerForModel(config.EmbeddingModel);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(CL100KTokenizer));
-            textTokenizer = new CL100KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;

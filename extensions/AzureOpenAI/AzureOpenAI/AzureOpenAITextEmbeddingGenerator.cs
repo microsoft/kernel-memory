@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
@@ -98,10 +97,10 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(CL100KTokenizer));
-            textTokenizer = new CL100KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;

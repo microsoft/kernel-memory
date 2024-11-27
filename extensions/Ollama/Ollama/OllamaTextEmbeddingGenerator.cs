@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using OllamaSharp;
@@ -44,10 +43,10 @@ public class OllamaTextEmbeddingGenerator : ITextEmbeddingGenerator, ITextEmbedd
         textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(modelConfig.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(CL100KTokenizer));
-            textTokenizer = new CL100KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;

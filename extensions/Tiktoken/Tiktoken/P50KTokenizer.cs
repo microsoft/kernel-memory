@@ -4,14 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Tokenizers;
 
-#pragma warning disable IDE0130 // reduce number of "using" statements
-// ReSharper disable once CheckNamespace
-namespace Microsoft.KernelMemory.AI.OpenAI;
+namespace Microsoft.KernelMemory.AI;
 
-public class CL100KTokenizer : ITextTokenizer
+public class P50KTokenizer : ITextTokenizer
 {
-    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("cl100k_base",
-        new Dictionary<string, int> { { "<|im_start|>", 100264 }, { "<|im_end|>", 100265 } });
+    private static readonly Tokenizer s_tokenizer = ML.Tokenizers.TiktokenTokenizer.CreateForEncoding("p50k_base");
 
     /// <inheritdoc />
     public int CountTokens(string text)

@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using OllamaSharp;
@@ -41,10 +40,10 @@ public class OllamaTextGenerator : ITextGenerator
         textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(modelConfig.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(O200KTokenizer));
-            textTokenizer = new O200KTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;
