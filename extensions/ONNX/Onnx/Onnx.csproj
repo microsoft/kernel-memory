@@ -15,6 +15,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" />
+        <!-- <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" /> -->
+        <!-- <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" /> -->
     </ItemGroup>
 
     <PropertyGroup>

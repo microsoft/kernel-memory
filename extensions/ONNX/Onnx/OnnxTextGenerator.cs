@@ -59,6 +59,8 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         ILoggerFactory? loggerFactory = null)
     {
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OnnxTextGenerator>();
+
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
             textTokenizer = new O200KTokenizer();

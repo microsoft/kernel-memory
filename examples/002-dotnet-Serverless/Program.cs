@@ -57,7 +57,7 @@ public static class Program
         var builder = new KernelMemoryBuilder()
             .Configure(builder => builder.Services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Warning);
+                l.SetMinimumLevel(LogLevel.Error);
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }))
             .AddSingleton(memoryConfiguration)
