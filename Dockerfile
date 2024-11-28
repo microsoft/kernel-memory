@@ -44,7 +44,6 @@ COPY --from=build --chown=km:km --chmod=0550 /app/publish .
 #########################################################################
 
 LABEL org.opencontainers.image.authors="Devis Lucato, https://github.com/dluc"
-LABEL MAINTAINER="Carlo De Chellis"
 
 # Define current user
 USER $USER
