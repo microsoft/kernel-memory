@@ -265,7 +265,10 @@ public sealed class MemoryService : IKernelMemory
     {
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null)
+            {
+                filters = new List<MemoryFilter>();
+            }
 
             filters.Add(filter);
         }
