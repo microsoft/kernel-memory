@@ -260,7 +260,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
             }
 
             this._log.LogTrace("Point ID {0} found, deleting...", existingPoint.Id);
-            await this._qdrantClient.DeleteVectorsAsync(index, new List<Guid> { existingPoint.Id }, cancellationToken).ConfigureAwait(false);
+            await this._qdrantClient.DeleteVectorsAsync(index, [existingPoint.Id], cancellationToken).ConfigureAwait(false);
         }
         catch (IndexNotFoundException e)
         {

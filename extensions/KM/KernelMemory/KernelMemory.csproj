@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.All</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory</RootNamespace>
+        <NoWarn>$(NoWarn);CS8002;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
+        <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\AWS\S3\S3.csproj" />
+        <ProjectReference Include="..\..\Anthropic\Anthropic.csproj" />
+        <ProjectReference Include="..\..\AzureAIContentSafety\AzureAIContentSafety\AzureAIContentSafety.csproj" />
+        <ProjectReference Include="..\..\AzureAIDocIntel\AzureAIDocIntel.csproj" />
+        <ProjectReference Include="..\..\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
+        <ProjectReference Include="..\..\AzureBlobs\AzureBlobs.csproj" />
+        <ProjectReference Include="..\..\AzureOpenAI\AzureOpenAI\AzureOpenAI.csproj" />
+        <ProjectReference Include="..\..\AzureQueues\AzureQueues.csproj" />
+        <ProjectReference Include="..\..\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
+        <ProjectReference Include="..\..\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
+        <ProjectReference Include="..\..\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
+        <ProjectReference Include="..\..\ONNX\Onnx\Onnx.csproj" />
+        <ProjectReference Include="..\..\Ollama\Ollama\Ollama.csproj" />
+        <ProjectReference Include="..\..\OpenAI\OpenAI\OpenAI.csproj" />
+        <ProjectReference Include="..\..\Postgres\Postgres\Postgres.csproj" />
+        <ProjectReference Include="..\..\Qdrant\Qdrant\Qdrant.csproj" />
+        <ProjectReference Include="..\..\RabbitMQ\RabbitMQ\RabbitMQ.csproj" />
+        <ProjectReference Include="..\..\Redis\Redis\Redis.csproj" />
+        <ProjectReference Include="..\..\SQLServer\SQLServer\SQLServer.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory</PackageId>
+        <Product>Kernel Memory library, including all extensions</Product>
+        <Description>The package contains all the core logic and extensions of Kernel Memory, to index and query any data and documents, using LLM and natural language, tracking sources and showing citations.</Description>
+        <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../../README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

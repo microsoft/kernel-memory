@@ -10,11 +10,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\Tiktoken\Tiktoken\Tiktoken.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-        <PackageReference Include="Microsoft.ML.Tokenizers" />
+        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
     </ItemGroup>
 
     <PropertyGroup>

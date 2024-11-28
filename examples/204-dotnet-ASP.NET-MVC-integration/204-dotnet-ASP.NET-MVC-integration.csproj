@@ -2,11 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <LangVersion>12</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);NU1900</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" />
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.90.241021.1" />
     </ItemGroup>
 
 </Project>

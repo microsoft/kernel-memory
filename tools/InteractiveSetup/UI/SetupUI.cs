@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.KernelMemory.InteractiveSetup.UI;
@@ -14,8 +15,8 @@ internal static class SetupUI
 
     public static bool AskBoolean(string question, bool defaultValue)
     {
-        string[] yes = { "YES", "Y" };
-        string[] no = { "NO", "N" };
+        string[] yes = ["YES", "Y"];
+        string[] no = ["NO", "N"];
         while (true)
         {
             var answer = AskOpenQuestion(question: question, defaultValue: defaultValue ? "Yes" : "No", optional: false).ToUpperInvariant();
@@ -28,6 +29,12 @@ internal static class SetupUI
     public static string AskOptionalOpenQuestion(string question, string? defaultValue)
     {
         return AskOpenQuestion(question: question, defaultValue: defaultValue, optional: true);
+    }
+
+    public static int AskOpenQuestionInt(string question, int defaultValue, bool optional = false)
+    {
+        string value = AskOpenQuestion(question: question, defaultValue: $"{defaultValue}", trim: true, optional: optional, isPassword: false);
+        return int.Parse(value, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
     }
 
     public static string AskOpenQuestion(string question, string? defaultValue, bool trim = true, bool optional = false, bool isPassword = false)

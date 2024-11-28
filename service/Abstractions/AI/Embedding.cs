@@ -31,11 +31,23 @@ public struct Embedding : IEquatable<Embedding>
     /// Note: use Embedding.JsonConverter to serialize objects using this type.
     /// </summary>
     [JsonIgnore]
-    public int Length => this.Data.Length;
+    public readonly int Length => this.Data.Length;
 
     public Embedding(float[] vector)
     {
         this.Data = vector;
+    }
+
+    /// <summary>
+    /// This is not a ctor on purpose so we can use collections syntax with
+    /// the main ctor, and surface the extra casting cost when not using floats.
+    /// </summary>
+    public static Embedding FromDoubles(double[] vector)
+    {
+        float[] f = new float[vector.Length];
+        for (int i = 0; i < vector.Length; i++) { f[i] = (float)vector[i]; }
+
+        return new Embedding(f);
     }
 
     public Embedding(ReadOnlyMemory<float> vector)
@@ -48,7 +60,7 @@ public struct Embedding : IEquatable<Embedding>
         this.Data = new ReadOnlyMemory<float>(new float[size]);
     }
 
-    public double CosineSimilarity(Embedding embedding)
+    public readonly double CosineSimilarity(Embedding embedding)
     {
         var size1 = this.Data.Span.Length;
         var size2 = embedding.Data.Span.Length;
@@ -72,15 +84,15 @@ public struct Embedding : IEquatable<Embedding>
     /// </summary>
     public static implicit operator Embedding(float[] data) => new(data);
 
-    public bool Equals(Embedding other) => this.Data.Equals(other.Data);
+    public readonly bool Equals(Embedding other) => this.Data.Equals(other.Data);
 
-    public override bool Equals(object? obj) => (obj is Embedding other && this.Equals(other));
+    public override readonly bool Equals(object? obj) => (obj is Embedding other && this.Equals(other));
 
     public static bool operator ==(Embedding v1, Embedding v2) => v1.Equals(v2);
 
     public static bool operator !=(Embedding v1, Embedding v2) => !(v1 == v2);
 
-    public override int GetHashCode() => this.Data.GetHashCode();
+    public override readonly int GetHashCode() => this.Data.GetHashCode();
 
     /// <summary>
     /// Note: use Embedding.JsonConverter to serialize objects using
@@ -97,7 +109,7 @@ public struct Embedding : IEquatable<Embedding>
 
         public override Embedding Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return new Embedding(s_converter.Read(ref reader, typeof(float[]), options) ?? Array.Empty<float>());
+            return new Embedding(s_converter.Read(ref reader, typeof(float[]), options) ?? []);
         }
 
         public override void Write(Utf8JsonWriter writer, Embedding value, JsonSerializerOptions options)

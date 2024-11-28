@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.AI.Onnx</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.AI.Onnx</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP00;KMEXP01;CA1724;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\Tiktoken\Tiktoken\Tiktoken.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" />
+        <!-- <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" /> -->
+        <!-- <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" /> -->
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.AI.Onnx</PackageId>
+        <Product>ONNX LLM connector for Kernel Memory</Product>
+        <Description>Provide access to ONNX LLM models in Kernel Memory to generate text</Description>
+        <PackageTags>ONNX, Memory, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Semantic Search, Memory DB</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

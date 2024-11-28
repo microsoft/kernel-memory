@@ -50,7 +50,6 @@ public interface ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default);
 
-
     IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
         string index,
         string question,

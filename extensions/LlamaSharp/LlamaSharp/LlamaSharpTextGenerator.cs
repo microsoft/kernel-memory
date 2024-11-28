@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using LLama;
-using LLama.Abstractions;
 using LLama.Common;
+using LLama.Native;
+using LLama.Sampling;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
@@ -33,7 +33,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// <param name="textTokenizer">Optional text tokenizer, replacing the one provided by the model</param>
     /// <param name="loggerFactory">Application logger instance</param>
     public LlamaSharpTextGenerator(
-        LlamaSharpConfig config,
+        LlamaSharpModelConfig config,
         ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -42,36 +42,20 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         config.Validate();
         this.MaxTokenTotal = (int)config.MaxTokenTotal;
 
-        if (textTokenizer == null)
-        {
-            this._log.LogWarning(
-                "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
-        }
-
-        this._textTokenizer = textTokenizer;
-
         var parameters = new ModelParams(config.ModelPath)
         {
-            ContextSize = config.MaxTokenTotal
+            ContextSize = config.MaxTokenTotal,
+            GpuLayerCount = config.GpuLayerCount ?? 20,
         };
-
-        if (config.GpuLayerCount.HasValue)
-        {
-            parameters.GpuLayerCount = config.GpuLayerCount.Value;
-        }
-
-        if (config.Seed.HasValue)
-        {
-            parameters.Seed = config.Seed.Value;
-        }
 
         var modelFilename = config.ModelPath.Split('/').Last().Split('\\').Last();
         this._log.LogDebug("Loading LLama model: {1}", modelFilename);
+
         this._model = LLamaWeights.LoadFromFile(parameters);
         this._context = this._model.CreateContext(parameters);
         this._log.LogDebug("LLama model loaded");
+
+        this._textTokenizer = textTokenizer ?? new LlamaSharpTokenizer(this._context);
     }
 
     /// <inheritdoc/>
@@ -80,13 +64,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     /// <inheritdoc/>
     public int CountTokens(string text)
     {
-        int? value = this._textTokenizer?.CountTokens(text);
-        if (!value.HasValue)
-        {
-            value = this._context.Tokenize(text, addBos: false, special: false).Length;
-        }
-
-        return value.Value;
+        return this._textTokenizer.CountTokens(text);
     }
 
     /// <inheritdoc/>
@@ -102,57 +80,36 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         CancellationToken cancellationToken = default)
     {
         var executor = new InteractiveExecutor(this._context);
-        IInferenceParams settings = new InferenceParams
+
+        var logitBias = options.TokenSelectionBiases.Count > 0
+            ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
+            : [];
+
+        var samplingPipeline = new DefaultSamplingPipeline()
+        {
+            Temperature = (float)options.Temperature,
+            TopP = (float)options.NucleusSampling,
+            AlphaPresence = (float)options.PresencePenalty,
+            AlphaFrequency = (float)options.FrequencyPenalty,
+            LogitBias = logitBias,
+        };
+
+        var settings = new InferenceParams
         {
             TokensKeep = this.MaxTokenTotal,
             MaxTokens = options.MaxTokens ?? -1,
-            Temperature = (float)options.Temperature,
-            TopP = (float)options.NucleusSampling,
-            PresencePenalty = (float)options.PresencePenalty,
-            FrequencyPenalty = (float)options.FrequencyPenalty,
-            AntiPrompts = options.StopSequences?.ToList() ?? new(),
-            LogitBias = new(),
-            // RepeatLastTokensCount = 0, // [int] last n tokens to penalize (0 = disable penalty, -1 = context size)
-            // TopK = 0, // [int] The number of highest probability vocabulary tokens to keep for top-k-filtering.
-            // MinP = 0, // [float]
-            // TfsZ = 0, // [float]
-            // TypicalP = 0, // [float]
-            // RepeatPenalty = 0, // [float]
-            // MirostatTau = 0, // [float]
-            // MirostatEta = 0, // [float]
-            // PenalizeNL = false, // consider newlines as a repeatable token
-            // Mirostat = MirostatType.Disable, // see https://github.com/basusourya/mirostat
-            // Grammar = null // SafeLLamaGrammarHandle
+            AntiPrompts = options.StopSequences?.ToList() ?? [],
+            SamplingPipeline = samplingPipeline
         };
 
-        if (options.TokenSelectionBiases is { Count: > 0 })
-        {
-            foreach (var (token, bias) in options.TokenSelectionBiases)
-            {
-                settings.LogitBias!.Add(token, bias);
-            }
-        }
-
+        this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
         return executor.InferAsync(prompt, settings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!disposing) { return; }
-
-        this._context.Dispose();
         this._model.Dispose();
-    }
-
-    ~LlamaSharpTextGenerator()
-    {
-        this.Dispose(false);
+        this._context.Dispose();
     }
 }

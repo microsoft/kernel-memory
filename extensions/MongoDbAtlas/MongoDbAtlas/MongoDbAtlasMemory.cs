@@ -215,11 +215,11 @@ public sealed class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
 
     private FilterDefinition<MongoDbAtlasMemoryRecord>? TranslateFilters(ICollection<MemoryFilter>? filters, string index)
     {
-        List<FilterDefinition<MongoDbAtlasMemoryRecord>> outerFiltersArray = new();
+        List<FilterDefinition<MongoDbAtlasMemoryRecord>> outerFiltersArray = [];
         foreach (var filter in filters ?? Array.Empty<MemoryFilter>())
         {
             var thisFilter = filter.GetFilters().ToArray();
-            List<FilterDefinition<MongoDbAtlasMemoryRecord>> filtersArray = new();
+            List<FilterDefinition<MongoDbAtlasMemoryRecord>> filtersArray = [];
             foreach (var singleFilter in thisFilter)
             {
                 var condition = Builders<MongoDbAtlasMemoryRecord>.Filter.And(
@@ -327,7 +327,7 @@ public sealed class MongoDbAtlasMemory : MongoDbAtlasBaseStorage, IMemoryDb
         var record = new MemoryRecord
         {
             Id = doc.Id,
-            Vector = withEmbeddings ? doc.Embedding : Array.Empty<float>(),
+            Vector = withEmbeddings ? doc.Embedding : [],
         };
 
         foreach (var tag in doc.Tags)

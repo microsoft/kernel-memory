@@ -141,6 +141,7 @@ public static class FileExtensions
 public interface IMimeTypeDetection
 {
     public string GetFileType(string filename);
+    public bool TryGetFileType(string filename, out string? mimeType);
 }
 
 public class MimeTypesDetection : IMimeTypeDetection
@@ -220,6 +221,11 @@ public class MimeTypesDetection : IMimeTypeDetection
             return mimeType;
         }
 
-        throw new NotSupportedException($"File type not supported: {filename}");
+        throw new MimeTypeException($"File type not supported: {filename}", isTransient: false);
+    }
+
+    public bool TryGetFileType(string filename, out string? mimeType)
+    {
+        return s_extensionTypes.TryGetValue(Path.GetExtension(filename), out mimeType);
     }
 }

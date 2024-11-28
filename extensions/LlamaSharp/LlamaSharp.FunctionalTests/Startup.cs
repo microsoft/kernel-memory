@@ -12,6 +12,7 @@ public class Startup
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.development.json", optional: true)
+            .AddJsonFile("appsettings.Development.json", optional: true)
             .AddUserSecrets<Startup>()
             .AddEnvironmentVariables()
             .Build();

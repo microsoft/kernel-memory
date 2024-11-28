@@ -28,7 +28,7 @@ public abstract class MongoDbAtlasBaseStorage
     /// Keys are mongo collection of T but since we do not know T we cache them
     /// as simple object then cast to the correct value.
     /// </summary>
-    private Dictionary<string, object> Collections { get; set; } = new();
+    private Dictionary<string, object> Collections { get; set; } = [];
 
     /// <summary>
     /// Create an instance of the storage based on configuration

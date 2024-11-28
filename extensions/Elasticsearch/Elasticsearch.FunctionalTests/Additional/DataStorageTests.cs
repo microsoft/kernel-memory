@@ -21,6 +21,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanUpsertOneTextDocumentAndDeleteAsync()
     {
         // We upsert the file
@@ -29,10 +30,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
             textEmbeddingGenerator: this.TextEmbeddingGenerator,
             output: this.Output,
             indexName: nameof(this.CanUpsertOneTextDocumentAndDeleteAsync),
-            fileNames: new[]
-            {
-                TestsHelper.WikipediaCarbonFileName
-            }).ConfigureAwait(false);
+            fileNames: [TestsHelper.WikipediaCarbonFileName]).ConfigureAwait(false);
 
         // Deletes the document
         var deletes = docIds.Select(id => new MemoryRecord()
@@ -54,6 +52,7 @@ public class DataStorageTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanUpsertTwoTextFilesAndGetSimilarListAsync()
     {
         await UpsertTextFilesAsync(
@@ -61,11 +60,11 @@ public class DataStorageTests : MemoryDbFunctionalTest
             textEmbeddingGenerator: this.TextEmbeddingGenerator,
             output: this.Output,
             indexName: nameof(this.CanUpsertTwoTextFilesAndGetSimilarListAsync),
-            fileNames: new[]
-            {
+            fileNames:
+            [
                 TestsHelper.WikipediaCarbonFileName,
                 TestsHelper.WikipediaMoonFilename
-            }).ConfigureAwait(false);
+            ]).ConfigureAwait(false);
 
         // Gets documents that are similar to the word "carbon" .
         var foundSomething = false;

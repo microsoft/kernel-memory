@@ -123,7 +123,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         }
         catch (Exception e)
         {
-            this.Log.LogError(e, "Pipeline start failed");
+            this.Log.LogError(e, "Pipeline start failed.");
             throw;
         }
     }
@@ -138,7 +138,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
 
-        filesToUpload ??= new List<DocumentUploadRequest.UploadedFile>();
+        filesToUpload ??= [];
 
         var pipeline = new DataPipeline
         {
@@ -215,11 +215,21 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
 
         try
         {
+            this.Log.LogDebug("Checking if document {Id} on index {Index} is ready", documentId, index);
             DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-            return pipeline != null && pipeline.Complete && pipeline.Files.Count > 0;
+
+            if (pipeline == null)
+            {
+                this.Log.LogWarning("Document {Id} on index {Index} is not ready, pipeline is NULL", documentId, index);
+                return false;
+            }
+
+            this.Log.LogDebug("Document {Id} on index {Index}, Complete = {Complete}, Files Count = {Count}", documentId, index, pipeline.Complete, pipeline.Files.Count);
+            return pipeline.Complete && pipeline.Files.Count > 0;
         }
         catch (PipelineNotFoundException)
         {
+            this.Log.LogWarning("Document {Id} on index {Index} not found", documentId, index);
             return false;
         }
     }
@@ -327,7 +337,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             }
             catch (Exception e)
             {
-                this.Log.LogError(e, "Error while trying to delete the document directory");
+                this.Log.LogError(e, "Error while trying to delete the document directory.");
             }
         }
 
@@ -339,7 +349,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             }
             catch (Exception e)
             {
-                this.Log.LogError(e, "Error while trying to delete the index directory");
+                this.Log.LogError(e, "Error while trying to delete the index directory.");
             }
         }
 #pragma warning restore CA1031
@@ -406,14 +416,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                 if (dedupe.Contains(oldExecution.ExecutionId)) { continue; }
 
                 // Reset the list to avoid wasting space with nested trees
-                oldExecution.PreviousExecutionsToPurge = new List<DataPipeline>();
+                oldExecution.PreviousExecutionsToPurge = [];
 
                 currentPipeline.PreviousExecutionsToPurge.Add(oldExecution);
                 dedupe.Add(oldExecution.ExecutionId);
             }
 
             // Reset the list to avoid wasting space with nested trees
-            previousPipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+            previousPipeline.PreviousExecutionsToPurge = [];
 
             currentPipeline.PreviousExecutionsToPurge.Add(previousPipeline);
         }
@@ -477,7 +487,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             {
                 mimeType = this._mimeTypeDetection.GetFileType(file.FileName);
             }
-            catch (NotSupportedException)
+            catch (MimeTypeException)
             {
                 this.Log.LogWarning("File type not supported, the ingestion pipeline might skip it");
             }

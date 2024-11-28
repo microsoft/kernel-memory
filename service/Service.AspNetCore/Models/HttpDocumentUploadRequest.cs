@@ -30,7 +30,7 @@ public class HttpDocumentUploadRequest
     /// Optional tags to apply to the memories extracted from the document.
     /// Tags allow to filter memory records when searching and asking questions.
     /// </summary>
-    public TagCollection Tags { get; set; } = new();
+    public TagCollection Tags { get; set; } = [];
 
     /// <summary>
     /// Pipeline steps to execute, aka handlers uses to process the data uploaded.
@@ -46,12 +46,12 @@ public class HttpDocumentUploadRequest
     /// These steps can be changed and customized, using custom handlers, implementing bespoke flows.
     /// For example, you can create handlers to zip files, send emails, write to DBs, etc.
     /// </summary>
-    public List<string> Steps { get; set; } = new();
+    public List<string> Steps { get; set; } = [];
 
     /// <summary>
     /// Files uploaded
     /// </summary>
-    public IEnumerable<IFormFile> Files { get; set; } = new List<IFormFile>();
+    public IEnumerable<IFormFile> Files { get; set; } = [];
 
     /// <summary>
     /// Optional custom arguments passed to handlers and other internal components.

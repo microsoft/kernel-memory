@@ -229,7 +229,7 @@ public interface IKernelMemory
         IContext? context = null,
         CancellationToken cancellationToken = default);
 
-    public Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+    public IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
         string question,
         string? index = null,
         MemoryFilter? filter = null,

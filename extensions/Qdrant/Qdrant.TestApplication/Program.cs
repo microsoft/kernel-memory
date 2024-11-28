@@ -13,6 +13,7 @@ public static class Program
     {
         var cfg = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.development.json", optional: true)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
@@ -42,7 +43,7 @@ public static class Program
             Id = "memory 1",
             Vector = embedding,
             Tags = new TagCollection { { "updated", "no" }, { "type", "email" } },
-            Payload = new Dictionary<string, object>()
+            Payload = []
         };
 
         var id1 = await memory.UpsertAsync("test", memoryRecord1);
@@ -55,7 +56,7 @@ public static class Program
             Id = "memory two",
             Vector = new[] { 0f, 0, 1, 0, 1 },
             Tags = new TagCollection { { "type", "news" } },
-            Payload = new Dictionary<string, object>()
+            Payload = []
         };
 
         var id2 = await memory.UpsertAsync("test", memoryRecord2);
@@ -80,7 +81,7 @@ public static class Program
         Console.WriteLine("===== SEARCH 2 =====");
 
         similarList = memory.GetSimilarListAsync("test", text: Text,
-            limit: 10, withEmbeddings: true, filters: new List<MemoryFilter> { MemoryFilters.ByTag("type", "email") });
+            limit: 10, withEmbeddings: true, filters: [MemoryFilters.ByTag("type", "email")]);
         await foreach ((MemoryRecord, double) record in similarList)
         {
             Console.WriteLine(record.Item1.Id);

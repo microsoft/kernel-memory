@@ -21,11 +21,12 @@ namespace Microsoft.KernelMemory.Postgres;
 /// Postgres connector for Kernel Memory.
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class PostgresMemory : IMemoryDb, IDisposable
+public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
 {
-    private readonly ILogger<PostgresMemory> _log;
-    private readonly ITextEmbeddingGenerator _embeddingGenerator;
+    // Dependencies
     private readonly PostgresDbClient _db;
+    private readonly ITextEmbeddingGenerator _embeddingGenerator;
+    private readonly ILogger<PostgresMemory> _log;
 
     /// <summary>
     /// Create a new instance of Postgres KM connector
@@ -212,18 +213,19 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._db?.Dispose();
     }
 
-    /// <summary>
-    /// Disposes the managed resources.
-    /// </summary>
-    private void Dispose(bool disposing)
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
     {
-        if (disposing)
+        try
         {
-            (this._db as IDisposable)?.Dispose();
+            await this._db.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (NullReferenceException)
+        {
+            // ignore
         }
     }
 
@@ -257,7 +259,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
         ICollection<MemoryFilter>? filters = null)
     {
         var sql = "";
-        Dictionary<string, object> unsafeSqlUserValues = new();
+        Dictionary<string, object> unsafeSqlUserValues = [];
 
         if (filters is not { Count: > 0 })
         {
@@ -279,7 +281,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable
             }
 
             List<string> requiredTags = filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}").ToList();
-            List<string> safeSqlPlaceholders = new();
+            List<string> safeSqlPlaceholders = [];
             if (requiredTags.Count > 0)
             {
                 var safeSqlPlaceholder = $"@placeholder{tagCounter++}";

@@ -26,6 +26,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     public IKernelMemory KernelMemory { get; }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsMultipleFiltersAsync()
     {
@@ -54,47 +55,47 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         }
 
         // Multiple filters: unknown users cannot see the memory
-        var answer = await this.KernelMemory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        var answer = await this.KernelMemory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "someone2"),
-        }, index: indexName);
+        ], index: indexName);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: unknown users cannot see the memory even if the type is correct (testing AND logic)
-        answer = await this.KernelMemory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await this.KernelMemory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "someone2").ByTag("type", "news"),
-        }, index: indexName);
+        ], index: indexName);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: AND + OR logic works
-        answer = await this.KernelMemory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await this.KernelMemory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "fact"),
-        }, index: indexName);
+        ], index: indexName);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(NotFound, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: OR logic works
-        answer = await this.KernelMemory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await this.KernelMemory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1"),
             MemoryFilters.ByTag("user", "admin"),
-        }, index: indexName);
+        ], index: indexName);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
         // Multiple filters: OR logic works
-        answer = await this.KernelMemory.AskAsync("What is Orion?", filters: new List<MemoryFilter>
-        {
+        answer = await this.KernelMemory.AskAsync("What is Orion?", filters:
+        [
             MemoryFilters.ByTag("user", "someone1").ByTag("type", "news"),
             MemoryFilters.ByTag("user", "admin").ByTag("type", "news"),
-        }, index: indexName);
+        ], index: indexName);
         this.Output.WriteLine(answer.Result);
         Assert.Contains(Found, answer.Result, StringComparison.OrdinalIgnoreCase);
 
@@ -105,6 +106,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItSupportsTagsAsync()
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
@@ -172,6 +174,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task ItSupportsASingleFilterAsync()
     {
         // This is an adaptation of the same test in Elasticsearch.FunctionalTests
@@ -238,6 +241,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanImportOneDocumentAndAskAsync()
     {
         var indexName = nameof(this.CanImportOneDocumentAndAskAsync);
@@ -267,6 +271,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanImportTwoDocumentsAndAskAsync()
     {
         var indexName = nameof(this.CanImportTwoDocumentsAndAskAsync);
@@ -281,12 +286,11 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
         docId = await this.KernelMemory.ImportDocumentAsync(
                 new Document("doc002")
-                    .AddFiles(new[]
-                    {
+                    .AddFiles([
                         TestsHelper.WikipediaMoonFilename,
                         TestsHelper.LoremIpsumFileName,
                         TestsHelper.SKReadmeFileName
-                    })
+                    ])
                     .AddTag("user", "Blake"),
                 index: indexName)
             .ConfigureAwait(false);

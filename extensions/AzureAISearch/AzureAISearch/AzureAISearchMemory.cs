@@ -34,6 +34,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<AzureAISearchMemory> _log;
     private readonly bool _useHybridSearch;
+    private readonly bool _useStickySessions;
 
     /// <summary>
     /// Create a new instance
@@ -49,6 +50,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         this._embeddingGenerator = embeddingGenerator;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAISearchMemory>();
         this._useHybridSearch = config.UseHybridSearch;
+        this._useStickySessions = config.UseStickySessions;
 
         if (string.IsNullOrEmpty(config.Endpoint))
         {
@@ -91,6 +93,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 break;
 
             default:
+            case AzureAISearchConfig.AuthTypes.Unknown:
                 this._log.LogCritical("Azure AI Search authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Azure AI Search authentication type '{config.Auth}' undefined or not supported");
         }
@@ -127,7 +130,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string index, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        var result = this.UpsertBatchAsync(index, new[] { record }, cancellationToken);
+        var result = this.UpsertBatchAsync(index, [record], cancellationToken);
         var id = await result.SingleAsync(cancellationToken).ConfigureAwait(false);
         return id;
     }
@@ -190,21 +193,12 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 FilterMode = VectorFilterMode.PreFilter
             }
         };
+        options = this.PrepareSearchOptions(options, withEmbeddings, filters, limit);
 
         if (limit > 0)
         {
             vectorQuery.KNearestNeighborsCount = limit;
-            options.Size = limit;
-            this._log.LogDebug("KNearestNeighborsCount and max results: {0}", limit);
-        }
-
-        // Remove empty filters
-        filters = filters?.Where(f => !f.IsEmpty()).ToList();
-
-        if (filters is { Count: > 0 })
-        {
-            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
+            this._log.LogDebug("KNearestNeighborsCount: {0}", limit);
         }
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
@@ -252,32 +246,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     {
         var client = this.GetSearchClient(index);
 
-        SearchOptions options = new();
-
-        if (limit > 0)
-        {
-            options.Size = limit;
-            this._log.LogDebug("Max results: {0}", limit);
-        }
-
-        // Remove empty filters
-        filters = filters?.Where(f => !f.IsEmpty()).ToList();
-
-        if (filters is { Count: > 0 })
-        {
-            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
-            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
-        }
-
-        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
-        // fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
-        // var options = new SearchOptions
-        // {
-        //     Filter = fieldIsCollection
-        //         ? $"{fieldName}/any(s: s eq '{fieldValue}')"
-        //         : $"{fieldName} eq '{fieldValue}')",
-        //     Size = limit
-        // };
+        SearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
@@ -318,7 +287,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             this._log.LogDebug("Deleting record {0} from index {1}", id, index);
             Response<IndexDocumentsResult>? result = await client.DeleteDocumentsAsync(
                     AzureAISearchMemoryRecord.IdField,
-                    new List<string> { id },
+                    [id],
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             this._log.LogTrace("Delete response status: {0}, content: {1}", result.GetRawResponse().Status, result.GetRawResponse().Content.ToString());
@@ -403,7 +372,9 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     private SearchClient GetSearchClient(string index)
     {
         var normalIndexName = this.NormalizeIndexName(index);
-        this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", index, normalIndexName);
+
+        if (index != normalIndexName) { this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", index, normalIndexName); }
+        else { this._log.LogTrace("Preparing search client, index name '{0}'", normalIndexName); }
 
         // Search an available client from the local cache
         if (!this._clientsByIndex.TryGetValue(normalIndexName, out SearchClient? client))
@@ -491,7 +462,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         var indexSchema = new SearchIndex(index)
         {
-            Fields = new List<SearchField>(),
+            Fields = [],
             VectorSearch = new VectorSearch
             {
                 Profiles =
@@ -515,7 +486,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
          * - searchable: Full-text searchable, subject to lexical analysis such as word-breaking during indexing.
          * - filterable: Filterable fields of type Edm.String or Collection(Edm.String) don't undergo word-breaking.
          * - facetable: Used for counting. Fields of type Edm.String that are filterable, "sortable", or "facetable" can be at most 32kb. */
-        SearchField? vectorField = null;
+        VectorSearchField? vectorField = null;
         foreach (var field in schema.Fields)
         {
             switch (field.Type)
@@ -525,15 +496,10 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                     throw new AzureAISearchMemoryException($"Unsupported field type {field.Type:G}");
 
                 case MemoryDbField.FieldType.Vector:
-                    vectorField = new SearchField(field.Name, SearchFieldDataType.Collection(SearchFieldDataType.Single))
+                    vectorField = new VectorSearchField(field.Name, field.VectorSize, VectorSearchProfileName)
                     {
-                        IsKey = false,
-                        IsFilterable = false,
-                        IsSearchable = true,
-                        IsFacetable = false,
-                        IsSortable = false,
-                        VectorSearchDimensions = field.VectorSize,
-                        VectorSearchProfileName = VectorSearchProfileName,
+                        IsHidden = false,
+                        IsStored = true
                     };
 
                     break;
@@ -628,6 +594,59 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         indexSchema.Fields.Add(vectorField);
 
         return indexSchema;
+    }
+
+    private SearchOptions PrepareSearchOptions(
+        SearchOptions? options,
+        bool withEmbeddings,
+        ICollection<MemoryFilter>? filters = null,
+        int limit = 1)
+    {
+        options ??= new SearchOptions();
+
+        // Define which fields to fetch
+        options.Select.Add(AzureAISearchMemoryRecord.IdField);
+        options.Select.Add(AzureAISearchMemoryRecord.TagsField);
+        options.Select.Add(AzureAISearchMemoryRecord.PayloadField);
+
+        // Embeddings are fetched only when needed, to reduce latency and cost
+        if (withEmbeddings)
+        {
+            options.Select.Add(AzureAISearchMemoryRecord.VectorField);
+        }
+
+        // Remove empty filters
+        filters = filters?.Where(f => !f.IsEmpty()).ToList();
+
+        if (filters is { Count: > 0 })
+        {
+            options.Filter = AzureAISearchFiltering.BuildSearchFilter(filters);
+            this._log.LogDebug("Filtering vectors, condition: {0}", options.Filter);
+        }
+
+        // See: https://learn.microsoft.com/azure/search/search-query-understand-collection-filters
+        // fieldValue = fieldValue.Replace("'", "''", StringComparison.Ordinal);
+        // var options = new SearchOptions
+        // {
+        //     Filter = fieldIsCollection
+        //         ? $"{fieldName}/any(s: s eq '{fieldValue}')"
+        //         : $"{fieldName} eq '{fieldValue}')",
+        //     Size = limit
+        // };
+
+        if (limit > 0)
+        {
+            options.Size = limit;
+            this._log.LogDebug("Max results: {0}", limit);
+        }
+
+        // Decide whether to use a sticky session for the current request
+        if (this._useStickySessions)
+        {
+            options.SessionId = Guid.NewGuid().ToString("N");
+        }
+
+        return options;
     }
 
     private static double ScoreToCosineSimilarity(double score)

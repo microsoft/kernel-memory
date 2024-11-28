@@ -45,7 +45,7 @@ public sealed class ElasticsearchMemoryRecord
     /// TBC
     /// </summary>
     [JsonPropertyName(TagsField)]
-    public List<ElasticsearchTag> Tags { get; set; } = new();
+    public List<ElasticsearchTag> Tags { get; set; } = [];
 
     /// <summary>
     /// TBC
@@ -74,8 +74,7 @@ public sealed class ElasticsearchMemoryRecord
         MemoryRecord result = new()
         {
             Id = this.Id,
-            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload, s_jsonOptions)
-                      ?? new Dictionary<string, object>()
+            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload, s_jsonOptions) ?? []
         };
         // TODO: remove magic string
         result.Payload["text"] = this.Content;

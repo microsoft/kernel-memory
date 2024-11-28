@@ -12,13 +12,8 @@ public class DataPipelineStatus
     [JsonPropertyName("completed")]
     public bool Completed { get; set; } = false;
 
-    [JsonPropertyOrder(1)]
-    [JsonPropertyName("failed")]
-    public bool Failed { get; set; } = false;
-
     /// <summary>
     /// Currently used to track deleted documents.
-    /// TODO: replace with "isDeleting" and "Deleted"
     /// </summary>
     [JsonPropertyOrder(2)]
     [JsonPropertyName("empty")]
@@ -37,7 +32,7 @@ public class DataPipelineStatus
 
     [JsonPropertyOrder(12)]
     [JsonPropertyName("tags")]
-    public TagCollection Tags { get; set; } = new();
+    public TagCollection Tags { get; set; } = [];
 
     [JsonPropertyOrder(13)]
     [JsonPropertyName("creation")]
@@ -52,19 +47,19 @@ public class DataPipelineStatus
     /// </summary>
     [JsonPropertyOrder(15)]
     [JsonPropertyName("steps")]
-    public List<string> Steps { get; set; } = new();
+    public List<string> Steps { get; set; } = [];
 
     /// <summary>
     /// List of the steps remaining.
     /// </summary>
     [JsonPropertyOrder(16)]
     [JsonPropertyName("remaining_steps")]
-    public List<string> RemainingSteps { get; set; } = new();
+    public List<string> RemainingSteps { get; set; } = [];
 
     /// <summary>
     /// List of steps already completed.
     /// </summary>
     [JsonPropertyOrder(17)]
     [JsonPropertyName("completed_steps")]
-    public List<string> CompletedSteps { get; set; } = new();
+    public List<string> CompletedSteps { get; set; } = [];
 }

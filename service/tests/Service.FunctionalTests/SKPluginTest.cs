@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
 using Microsoft.KernelMemory;
 using Microsoft.KM.TestHelpers;
 using Microsoft.SemanticKernel;
@@ -18,12 +19,27 @@ public class SKPluginTest : BaseFunctionalTestCase
     public async Task ItSupportsQuestionsOnUploadedFiles()
     {
         // Arrange
-        var kernel = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(
-                deploymentName: this.AzureOpenAITextConfiguration.Deployment,
-                modelId: this.AzureOpenAITextConfiguration.Deployment,
-                endpoint: this.AzureOpenAITextConfiguration.Endpoint,
-                apiKey: this.AzureOpenAITextConfiguration.APIKey)
-            .Build();
+        Kernel kernel;
+        if (string.IsNullOrEmpty(this.AzureOpenAITextConfiguration.APIKey))
+        {
+            // MS Entra auth
+            kernel = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(
+                    deploymentName: this.AzureOpenAITextConfiguration.Deployment,
+                    modelId: this.AzureOpenAITextConfiguration.Deployment,
+                    endpoint: this.AzureOpenAITextConfiguration.Endpoint,
+                    credentials: new DefaultAzureCredential())
+                .Build();
+        }
+        else
+        {
+            // API key auth
+            kernel = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(
+                    deploymentName: this.AzureOpenAITextConfiguration.Deployment,
+                    modelId: this.AzureOpenAITextConfiguration.Deployment,
+                    endpoint: this.AzureOpenAITextConfiguration.Endpoint,
+                    apiKey: this.AzureOpenAITextConfiguration.APIKey)
+                .Build();
+        }
 
         var skPrompt = """
                        Question to Kernel Memory: {{$input}}

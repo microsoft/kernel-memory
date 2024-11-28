@@ -35,7 +35,7 @@ public sealed class DataPipelinePointer
     /// </summary>
     [JsonPropertyOrder(3)]
     [JsonPropertyName("steps")]
-    public List<string> Steps { get; set; } = new();
+    public List<string> Steps { get; set; } = [];
 
     public DataPipelinePointer()
     {

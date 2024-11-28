@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.KernelMemory.SemanticKernel;
 
-internal sealed class SemanticKernelTextGenerator : ITextGenerator
+public sealed class SemanticKernelTextGenerator : ITextGenerator
 {
     private readonly ITextGenerationService _service;
     private readonly ITextTokenizer _tokenizer;
@@ -43,10 +42,10 @@ internal sealed class SemanticKernelTextGenerator : ITextGenerator
 
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._tokenizer = textTokenizer;

@@ -36,7 +36,7 @@ internal sealed class PostgresMemoryRecord
     /// <summary>
     /// List of tags
     /// </summary>
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
 
     /// <summary>
     /// Memory content
@@ -59,8 +59,7 @@ internal sealed class PostgresMemoryRecord
         {
             Id = pgRecord.Id,
             Vector = new Embedding(pgRecord.Embedding.ToArray()),
-            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(pgRecord.Payload, s_jsonOptions)
-                      ?? new Dictionary<string, object>()
+            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(pgRecord.Payload, s_jsonOptions) ?? []
         };
 
         result.Payload[Constants.ReservedPayloadTextField] = pgRecord.Content;

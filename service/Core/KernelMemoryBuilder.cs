@@ -40,10 +40,10 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     private readonly IServiceCollection? _hostServiceCollection;
 
     // List of all the embedding generators to use during ingestion
-    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators = new();
+    private readonly List<ITextEmbeddingGenerator> _embeddingGenerators = [];
 
     // List of all the memory DBs to use during ingestion
-    private readonly List<IMemoryDb> _memoryDbs = new();
+    private readonly List<IMemoryDb> _memoryDbs = [];
 
     // Normalized configuration
     private readonly KernelMemoryConfig? _memoryConfiguration = null;

@@ -82,12 +82,24 @@ public class SearchClientConfig
     /// <summary>
     /// Up to 4 sequences where the completion will stop generating further tokens.
     /// </summary>
-    public IList<string> StopSequences { get; set; } = new List<string>();
+    public IList<string> StopSequences { get; set; } = [];
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
-    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
+    public Dictionary<int, float> TokenSelectionBiases { get; set; } = [];
+
+    /// <summary>
+    /// Whether to check is the generated answers are safe.
+    /// A content moderation service must be present in the system.
+    /// </summary>
+    public bool UseContentModeration { get; set; } = true;
+
+    /// <summary>
+    /// Answer to return when AI generates content considered unsafe by the
+    /// text moderation service.
+    /// </summary>
+    public string ModeratedAnswer { get; set; } = "Sorry, the generated content contains unsafe or inappropriate information.";
 
     /// <summary>
     /// Verify that the current state is valid.

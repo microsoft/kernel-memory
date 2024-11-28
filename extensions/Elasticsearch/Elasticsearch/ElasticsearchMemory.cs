@@ -321,11 +321,11 @@ public class ElasticsearchMemory : IMemoryDb
             return qd;
         }
 
-        List<Query> super = new();
+        List<Query> super = [];
 
         foreach (MemoryFilter filter in filters)
         {
-            List<Query> thisMust = new();
+            List<Query> thisMust = [];
 
             // Each filter is a list of key/value pairs.
             foreach (var pair in filter.Pairs)

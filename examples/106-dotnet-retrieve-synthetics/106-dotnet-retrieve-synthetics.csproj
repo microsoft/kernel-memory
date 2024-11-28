@@ -6,8 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\clients\dotnet\WebClient\WebClient.csproj" />
-        <ProjectReference Include="..\..\service\Core\Core.csproj" />
+        <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>

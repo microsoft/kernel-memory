@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -29,37 +29,35 @@ public class ConcurrencyTests : BaseFunctionalTestCase
                 break;
 
             case "customSQL":
-                config = new PostgresConfig
+                config = this.PostgresConfig;
+                config.TableNamePrefix = "custom_sql";
+                config.Columns = new Dictionary<string, string>
                 {
-                    ConnectionString = this.PostgresConfig.ConnectionString,
-                    TableNamePrefix = "custom_sql",
-                    Columns = new Dictionary<string, string>()
-                    {
-                        { "id", "id" },
-                        { "embedding", "embedding" },
-                        { "tags", "tags" },
-                        { "content", "content" },
-                        { "payload", "payload" }
-                    },
-                    CreateTableSql = new List<string>
-                    {
-                        """
-                        BEGIN;
-                        SELECT pg_advisory_xact_lock(%%lock_id%%);
-                        CREATE TABLE IF NOT EXISTS %%table_name%% (
-                            id            TEXT NOT NULL PRIMARY KEY,
-                            embedding     vector(%%vector_size%%),
-                            tags          TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
-                            content       TEXT DEFAULT '' NOT NULL,
-                            payload       JSONB DEFAULT '{}'::JSONB NOT NULL,
-                            some_text     TEXT DEFAULT '',
-                            last_update   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
-                        );
-                        CREATE INDEX IF NOT EXISTS idx_tags ON %%table_name%% USING GIN(tags);
-                        COMMIT;
-                        """
-                    }
+                    { "id", "id" },
+                    { "embedding", "embedding" },
+                    { "tags", "tags" },
+                    { "content", "content" },
+                    { "payload", "payload" }
                 };
+                config.CreateTableSql =
+                [
+                    """
+                    BEGIN;
+                    SELECT pg_advisory_xact_lock(%%lock_id%%);
+                    CREATE TABLE IF NOT EXISTS %%table_name%% (
+                        id            TEXT NOT NULL PRIMARY KEY,
+                        embedding     vector(%%vector_size%%),
+                        tags          TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+                        content       TEXT DEFAULT '' NOT NULL,
+                        payload       JSONB DEFAULT '{}'::JSONB NOT NULL,
+                        some_text     TEXT DEFAULT '',
+                        last_update   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_tags ON %%table_name%% USING GIN(tags);
+                    COMMIT;
+                    """
+                ];
+
                 break;
         }
 
@@ -81,7 +79,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
 
         await Task.WhenAll(tasks);
 
-        tasks = new List<Task>();
+        tasks = [];
         for (int i = 0; i < concurrency; i++)
         {
             tasks.Add(target.DeleteIndexAsync(indexName));
@@ -105,7 +103,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
         var record = new MemoryRecord
         {
             Id = "one",
-            Vector = new Embedding(new float[] { 0, 1, 2, 3 })
+            Vector = new Embedding([0, 1, 2, 3])
         };
 
         var tasks = new List<Task>();
@@ -116,7 +114,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
 
         await Task.WhenAll(tasks);
 
-        tasks = new List<Task>();
+        tasks = [];
         for (int i = 0; i < concurrency; i++)
         {
             tasks.Add(target.DeleteAsync(indexName, record));

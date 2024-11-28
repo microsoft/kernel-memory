@@ -503,3 +503,5 @@ swa-cli.config.json
 **/copilot-chat-app/webapp/node_modules
 
 *.orig
+.azure
+service/Service/AzureOpenAiDevelopment.json

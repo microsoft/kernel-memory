@@ -3,16 +3,17 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <LangVersion>12</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);NU1900</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\extensions\Discord\Discord\Discord.csproj" />
-        <ProjectReference Include="..\..\service\Service.AspNetCore\Service.AspNetCore.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.2.2" />
+        <PackageReference Include="Discord.Net" Version="3.16.0" />
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.90.241021.1" />
     </ItemGroup>
 
 </Project>

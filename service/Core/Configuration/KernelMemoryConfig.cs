@@ -47,13 +47,13 @@ public class KernelMemoryConfig
         /// List of embedding types to generate during document ingestion.
         /// Using multiple types can help with migration from two different models, or for comparing models performance.
         /// </summary>
-        public List<string> EmbeddingGeneratorTypes { get; set; } = new();
+        public List<string> EmbeddingGeneratorTypes { get; set; } = [];
 
         /// <summary>
         /// List of vector storages where embeddings will be saved during ingestion.
         /// Multiple storages can help with data migrations and testing purposes.
         /// </summary>
-        public List<string> MemoryDbTypes { get; set; } = new();
+        public List<string> MemoryDbTypes { get; set; } = [];
 
         /// <summary>
         /// How many memory DB records to insert at once when extracting memories
@@ -83,7 +83,7 @@ public class KernelMemoryConfig
         /// * gen_embeddings: generate embeddings for new chunks (e.g. the summary)
         /// * save_records: save new records generated from the summary
         /// </summary>
-        public List<string> DefaultSteps { get; set; } = new();
+        public List<string> DefaultSteps { get; set; } = [];
 
         /// <summary>
         /// Note: do not store these values in DefaultSteps, to avoid
@@ -158,6 +158,11 @@ public class KernelMemoryConfig
     public string TextGeneratorType { get; set; } = string.Empty;
 
     /// <summary>
+    /// The content moderaton service used to check if content is safe for the user.
+    /// </summary>
+    public string ContentModerationType { get; set; } = string.Empty;
+
+    /// <summary>
     /// Name of the index to use when none is specified.
     /// </summary>
     public string DefaultIndexName { get; set; } = "default";
@@ -180,7 +185,7 @@ public class KernelMemoryConfig
     /// <summary>
     /// Dependencies settings, e.g. credentials, endpoints, etc.
     /// </summary>
-    public Dictionary<string, Dictionary<string, object>> Services { get; set; } = new();
+    public Dictionary<string, Dictionary<string, object>> Services { get; set; } = [];
 
     /// <summary>
     /// Fetch a service configuration from the "Services" node

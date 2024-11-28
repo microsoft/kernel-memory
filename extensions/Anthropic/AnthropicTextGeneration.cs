@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
-using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
@@ -23,6 +24,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
 
     private readonly RawAnthropicClient _client;
     private readonly ITextTokenizer _textTokenizer;
+    private readonly IContextProvider _contextProvider;
     private readonly HttpClient _httpClient;
     private readonly ILogger<AnthropicTextGeneration> _log;
     private readonly string _modelName;
@@ -34,11 +36,13 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
     /// <param name="config">Client configuration, including credentials and model details</param>
     /// <param name="textTokenizer">Tokenizer used to count tokens</param>
     /// <param name="httpClientFactory">Optional factory used to inject a pre-configured HTTP client for requests to Anthropic API</param>
+    /// <param name="contextProvider">Request context provider with runtime configuration overrides</param>
     /// <param name="loggerFactory">Optional factory used to inject configured loggers</param>
     public AnthropicTextGeneration(
         AnthropicConfig config,
         ITextTokenizer? textTokenizer = null,
         IHttpClientFactory? httpClientFactory = null,
+        IContextProvider? contextProvider = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._modelName = config.TextModelName;
@@ -48,6 +52,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         this.MaxTokenTotal = config.MaxTokenOut;
 
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AnthropicTextGeneration>();
+        this._contextProvider = contextProvider ?? new RequestContextProvider();
 
         if (httpClientFactory == null)
         {
@@ -64,12 +69,13 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         var endpointVersion = string.IsNullOrWhiteSpace(config.Endpoint) ? DefaultEndpointVersion : config.EndpointVersion;
         this._client = new RawAnthropicClient(this._httpClient, endpoint, endpointVersion, config.ApiKey);
 
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4Tokenizer));
-            textTokenizer = new GPT4Tokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;
@@ -96,9 +102,11 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Sending text generation request, model '{0}'", this._modelName);
+        string modelName = this._contextProvider.GetContext().GetCustomTextGenerationModelNameOrDefault(this._modelName);
 
-        CallClaudeStreamingParams parameters = new(this._modelName, prompt)
+        this._log.LogTrace("Sending text generation request, model '{0}'", modelName);
+
+        CallClaudeStreamingParams parameters = new(modelName, prompt)
         {
             System = this._defaultSystemPrompt,
             Temperature = options.Temperature,
@@ -106,7 +114,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
 
         IAsyncEnumerable<StreamingResponseMessage> streamedResponse = this._client.CallClaudeStreamingAsync(parameters, cancellationToken);
 
-        await foreach (StreamingResponseMessage response in streamedResponse)
+        await foreach (StreamingResponseMessage response in streamedResponse.ConfigureAwait(false))
         {
             //now we simply yield the response
             switch (response)

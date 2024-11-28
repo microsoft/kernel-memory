@@ -43,7 +43,7 @@ internal sealed class DeleteVectorsRequest
 
     private DeleteVectorsRequest(string collectionName)
     {
-        this.Ids = new List<Guid>();
+        this.Ids = [];
         this._collectionName = collectionName;
     }
 

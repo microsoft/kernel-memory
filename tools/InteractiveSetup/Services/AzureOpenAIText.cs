@@ -21,6 +21,7 @@ internal static class AzureOpenAIText
                 { "APIType", "ChatCompletion" },
                 { "Endpoint", "" },
                 { "Deployment", "" },
+                { "Tokenizer", "o200k" },
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
             };
@@ -47,5 +48,6 @@ internal static class AzureOpenAIText
         AppSettings.Change(x => x.Services[ServiceName]["APIType"] = "ChatCompletion");
         AppSettings.Change(x => x.Services[ServiceName]["Endpoint"] = SetupUI.AskOpenQuestion("Azure OpenAI <endpoint>", config["Endpoint"].ToString()));
         AppSettings.Change(x => x.Services[ServiceName]["Deployment"] = SetupUI.AskOpenQuestion("Azure OpenAI <text/chat model deployment name>", config["Deployment"].ToString()));
+        AppSettings.Change(x => x.Services[ServiceName]["Tokenizer"] = SetupUI.AskOpenQuestion("Tokenizer (p50k/cl100k/o200k)", config["Tokenizer"].ToString()));
     }
 }

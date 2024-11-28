@@ -140,6 +140,16 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    public static int GetCustomRagMaxMatchesCountOrDefault(this IContext? context, int defaultValue)
+    {
+        if (context.TryGetArg<int>(Constants.CustomContext.Rag.MaxMatchesCount, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
     public static double GetCustomRagTemperatureOrDefault(this IContext? context, double defaultValue)
     {
         if (context.TryGetArg<double>(Constants.CustomContext.Rag.Temperature, out var customValue))
@@ -223,6 +233,44 @@ public static class CustomContextExtensions
     public static int GetCustomEmbeddingGenerationBatchSizeOrDefault(this IContext? context, int defaultValue)
     {
         if (context.TryGetArg<int>(Constants.CustomContext.EmbeddingGeneration.BatchSize, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
+    /// <summary>
+    /// Extensions supported:
+    /// - Ollama
+    /// - Anthropic
+    /// Extensions not supported:
+    /// - Azure OpenAI
+    /// - ONNX
+    /// - OpenAI
+    /// </summary>
+    public static string GetCustomTextGenerationModelNameOrDefault(this IContext? context, string defaultValue)
+    {
+        if (context.TryGetArg<string>(Constants.CustomContext.TextGeneration.ModelName, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
+    /// <summary>
+    /// Extensions supported:
+    /// - Ollama
+    /// - Anthropic
+    /// Extensions not supported:
+    /// - Azure OpenAI
+    /// - ONNX
+    /// - OpenAI
+    /// </summary>
+    public static string GetCustomEmbeddingGenerationModelNameOrDefault(this IContext? context, string defaultValue)
+    {
+        if (context.TryGetArg<string>(Constants.CustomContext.EmbeddingGeneration.ModelName, out var customValue))
         {
             return customValue;
         }

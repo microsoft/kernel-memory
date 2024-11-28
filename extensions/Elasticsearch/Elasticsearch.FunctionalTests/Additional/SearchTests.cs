@@ -36,11 +36,11 @@ public class SearchTests : MemoryDbFunctionalTest
                 textEmbeddingGenerator: this.TextEmbeddingGenerator,
                 output: this.Output,
                 indexName: nameof(this.CanGetListWithTagsAsync),
-                fileNames: new[]
-                {
+                fileNames:
+                [
                     TestsHelper.WikipediaCarbonFileName,
-                    TestsHelper.WikipediaMoonFilename,
-                })
+                    TestsHelper.WikipediaMoonFilename
+                ])
             .ConfigureAwait(false);
 
         // docsIds is a list of values like "d=3ed7b0787d484496ab25d50b2a887f8cf63193954fc844689116766434c11887//p=b84ee5e4841c4ab2877e30293752f7cc"
@@ -52,16 +52,18 @@ public class SearchTests : MemoryDbFunctionalTest
         var expectedDocs = docIds.Count();
 
         // Gets documents that are similar to the word "carbon" .
-        var filter = new MemoryFilter();
-        filter.Add("__file_type", "text/plain");
-        filter.Add("__document_id", docIds.Select(x => (string?)x).ToList());
+        var filter = new MemoryFilter
+        {
+            { "__file_type", "text/plain" },
+            { "__document_id", docIds.Select(x => (string?)x).ToList() }
+        };
 
         var idx = 0;
         this.Output.WriteLine($"Filter: {filter.ToDebugString()}.\n");
 
         await foreach (var result in this.MemoryDb.GetListAsync(
                            index: nameof(this.CanGetListWithTagsAsync),
-                           filters: new[] { filter },
+                           filters: [filter],
                            limit: 100,
                            withEmbeddings: false))
         {
@@ -69,17 +71,16 @@ public class SearchTests : MemoryDbFunctionalTest
             this.Output.WriteLine($"Match #{idx++}: {fileName}");
         }
 
-        ;
-
         Assert.Equal(expected: ExpectedTotalParagraphs, actual: idx);
     }
 
     [Fact]
+    [Trait("Category", "Elasticsearch")]
     public async Task CanGetListWithEmptyFiltersAsync()
     {
         await foreach (var result in this.MemoryDb.GetListAsync(
                            index: nameof(this.CanGetListWithTagsAsync),
-                           filters: new[] { new MemoryFilter() }, // <-- KM has a test to make sure this works.
+                           filters: [[]], // <-- KM has a test to make sure this works.
                            limit: 100,
                            withEmbeddings: false))
         {

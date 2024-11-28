@@ -8,6 +8,7 @@ namespace Microsoft.KM.Core.UnitTests.Prompts;
 public class PromptUtilsTest
 {
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItRendersSimpleFactTemplates()
     {
         Assert.Equal("", PromptUtils.RenderFactTemplate(template: "", factContent: ""));
@@ -20,6 +21,7 @@ public class PromptUtilsTest
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItRendersFactTemplatesWithTags()
     {
         Assert.Equal("text; Foo:-", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$tags[foo]}}", factContent: "text"));
@@ -43,10 +45,11 @@ public class PromptUtilsTest
     }
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItRendersFactTemplatesWithMetadata()
     {
         Assert.Equal("text; Foo:-", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}", factContent: "text"));
-        Assert.Equal("text; Foo:-", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}", factContent: "text", metadata: new Dictionary<string, object>()));
+        Assert.Equal("text; Foo:-", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}", factContent: "text", metadata: []));
         Assert.Equal("text; Foo:bar", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}", factContent: "text", metadata: new Dictionary<string, object> { { "foo", "bar" } }));
         Assert.Equal("text; Foo:bar", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}", factContent: "text", metadata: new Dictionary<string, object> { { "foo", "bar" }, { "car", "red" } }));
         Assert.Equal("text; Foo:bar; Car:red", PromptUtils.RenderFactTemplate(template: "{{$content}}; Foo:{{$meta[foo]}}; Car:{{$meta[car]}}", factContent: "text", metadata: new Dictionary<string, object> { { "foo", "bar" }, { "car", "red" } }));

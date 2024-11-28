@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.AI;
 
 namespace Microsoft.KernelMemory.DataFormats.Text;
 
@@ -25,9 +25,12 @@ public static class TextChunker
     /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
-    private static readonly char[] s_spaceChar = { ' ' };
-    private static readonly string?[] s_plaintextSplitOptions = { "\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null };
-    private static readonly string?[] s_markdownSplitOptions = { ".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null };
+    // Fallback when TokenCounter is not set
+    private static readonly TokenCounter s_defaultTokenCounter = (new CL100KTokenizer()).CountTokens;
+
+    private static readonly char[] s_spaceChar = [' '];
+    private static readonly string?[] s_plaintextSplitOptions = ["\n\r", ".", "?!", ";", ":", ",", ")]}", " ", "-", null];
+    private static readonly string?[] s_markdownSplitOptions = [".", "?!", ";", ":", ",", ")]}", " ", "-", "\n\r", null];
 
     /// <summary>
     /// Split plain text into lines.
@@ -47,7 +50,7 @@ public static class TextChunker
             s_plaintextSplitOptions, tokenCounter);
 
     /// <summary>
-    /// Split markdown text into lines.
+    /// Split Markdown text into lines.
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
@@ -93,7 +96,7 @@ public static class TextChunker
             tokenCounter);
 
     /// <summary>
-    /// Split markdown text into paragraphs.
+    /// Split Markdown text into paragraphs.
     /// </summary>
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
@@ -140,7 +143,7 @@ public static class TextChunker
 
         if (lines.Count == 0)
         {
-            return new List<string>();
+            return [];
         }
 
         var chunkHeaderTokens = chunkHeader is { Length: > 0 } ? GetTokenCount(chunkHeader, tokenCounter) : 0;
@@ -166,7 +169,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         StringBuilder paragraphBuilder = new();
-        List<string> paragraphs = new();
+        List<string> paragraphs = [];
 
         foreach (string line in truncatedLines)
         {
@@ -305,7 +308,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         bool inputWasSplit = false;
-        List<string> result = new();
+        List<string> result = [];
         int count = input.Count;
         for (int i = 0; i < count; i++)
         {
@@ -326,7 +329,7 @@ public static class TextChunker
         TokenCounter? tokenCounter)
     {
         Debug.Assert(inputString is null || input.SequenceEqual(inputString.AsSpan()));
-        List<string> result = new();
+        List<string> result = [];
         var inputWasSplit = false;
 
         int inputTokenCount = GetTokenCount(inputString ??= input.ToString(), tokenCounter);
@@ -399,6 +402,6 @@ public static class TextChunker
     private static int GetTokenCount(string input, TokenCounter? tokenCounter)
     {
         // Fall back to GPT tokenizer if none configured
-        return tokenCounter?.Invoke(input) ?? DefaultGPTTokenizer.StaticCountTokens(input);
+        return tokenCounter?.Invoke(input) ?? s_defaultTokenCounter(input);
     }
 }

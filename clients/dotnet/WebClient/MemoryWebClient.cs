@@ -313,7 +313,7 @@ public sealed class MemoryWebClient : IKernelMemory
     {
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }
@@ -322,7 +322,7 @@ public sealed class MemoryWebClient : IKernelMemory
         {
             Index = index,
             Query = query,
-            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : [],
             MinRelevance = minRelevance,
             Limit = limit,
             ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
@@ -349,7 +349,7 @@ public sealed class MemoryWebClient : IKernelMemory
     {
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }
@@ -358,7 +358,7 @@ public sealed class MemoryWebClient : IKernelMemory
         {
             Index = index,
             Question = question,
-            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : [],
             MinRelevance = minRelevance,
             ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
         };
@@ -373,14 +373,14 @@ public sealed class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
-    public async Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+    public async IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
         IContext? context = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (filter != null)
         {
@@ -476,7 +476,7 @@ public sealed class MemoryWebClient : IKernelMemory
         CancellationToken cancellationToken)
     {
         // Populate form with values and files from disk
-        using MultipartFormDataContent formData = new();
+        using MultipartFormDataContent formData = [];
 
         using StringContent indexContent = new(index);
         using StringContent contextArgsContent = new(JsonSerializer.Serialize(context?.Arguments));

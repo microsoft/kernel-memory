@@ -211,7 +211,7 @@ public sealed class MemoryService : IKernelMemory
     {
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }
@@ -239,7 +239,7 @@ public sealed class MemoryService : IKernelMemory
     {
         if (filter != null)
         {
-            if (filters == null) { filters = new List<MemoryFilter>(); }
+            if (filters == null) { filters = []; }
 
             filters.Add(filter);
         }
@@ -254,7 +254,7 @@ public sealed class MemoryService : IKernelMemory
             cancellationToken: cancellationToken);
     }
 
-    public Task<IAsyncEnumerable<MemoryAnswer>> AskAsyncChunk(
+    public IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
@@ -271,12 +271,12 @@ public sealed class MemoryService : IKernelMemory
         }
 
         index = IndexName.CleanName(index, this._defaultIndexName);
-        return Task.FromResult<IAsyncEnumerable<MemoryAnswer>>(this._searchClient.AskAsyncChunk(
+        return this._searchClient.AskAsyncChunk(
             index: index,
             question: question,
             filters: filters,
             minRelevance: minRelevance,
             context: context,
-            cancellationToken: cancellationToken));
+            cancellationToken: cancellationToken);
     }
 }

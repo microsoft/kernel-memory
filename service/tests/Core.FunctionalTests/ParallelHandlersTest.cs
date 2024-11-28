@@ -37,13 +37,13 @@ public class ParallelHandlersTest : BaseFunctionalTestCase
         await this._memory.ImportDocumentAsync(
             "file2-largePDF.pdf",
             documentId: Id,
-            steps: new[]
-            {
+            steps:
+            [
                 Constants.PipelineStepsExtract,
                 Constants.PipelineStepsPartition,
                 "gen_embeddings_parallel", // alternative to default "gen_embeddings", 3 secs vs 12 secs
                 Constants.PipelineStepsSaveRecords
-            });
+            ]);
 
         var count = 0;
         while (!await this._memory.IsDocumentReadyAsync(documentId: Id))
@@ -80,13 +80,13 @@ public class ParallelHandlersTest : BaseFunctionalTestCase
         await this._memory.ImportDocumentAsync(
             "file2-largePDF.pdf",
             documentId: Id,
-            steps: new[]
-            {
+            steps:
+            [
                 Constants.PipelineStepsExtract,
                 "summarize", // alternative to default "summarize", 55secs vs 50secs
                 Constants.PipelineStepsGenEmbeddings,
-                Constants.PipelineStepsSaveRecords,
-            });
+                Constants.PipelineStepsSaveRecords
+            ]);
 
         var count = 0;
         while (!await this._memory.IsDocumentReadyAsync(documentId: Id))

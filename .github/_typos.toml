@@ -15,12 +15,14 @@ extend-exclude = [
     "encoder.json",
     "appsettings.development.json",
     "appsettings.Development.json",
-    "AzureAISearchFilteringTest.cs"
+    "AzureAISearchFilteringTest.cs",
+    "KernelMemory.sln.DotSettings"
 ]
 
 [default.extend-words]
 ACI = "ACI" # Azure Container Instance
 IIF = "IIF" # SQL Function
+Contextful = "Contextful" # Used in swagger.json
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
