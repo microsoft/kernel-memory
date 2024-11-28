@@ -39,11 +39,26 @@ For detailed instructions on deploying to Azure, you can check the [infrastructu
 If you are already familiar with these resources, you can quickly deploy by clicking the following
 button.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
+[![Deploy to Azure](docs/azure-button.png)](https://aka.ms/KernelMemoryDeploy2Azure)
 
-🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image)
+🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image) and [Serverless Kernel Memory with Azure services example](examples/007-dotnet-serverless-azure).
 
+## Running Kernel Memory with Aspire
 
+Kernel Memory can be easily run and imported in other projects also via .NET Aspire. For example:
+```csharp
+var builder = DistributedApplication.CreateBuilder();
+
+builder.AddContainer("kernel-memory", "kernelmemory/service")
+    .WithEnvironment("KernelMemory__TextGeneratorType", "OpenAI")
+    .WithEnvironment("KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0", "OpenAI")
+    .WithEnvironment("KernelMemory__Retrieval__EmbeddingGeneratorType", "OpenAI")
+    .WithEnvironment("KernelMemory__Services__OpenAI__APIKey", "...your OpenAI key...");
+
+builder.Build().Run();
+```
+
+[![Run with .NET Aspire](docs/aspire-button.png)](examples/303-dotnet-aspire/Program.cs)
 
 
 Data Ingestion using Kernel Memory OpenAPI Web Service
@@ -417,8 +432,9 @@ Examples and Tools
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
 3. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
 4. [Kernel Memory RAG with Azure services](examples/007-dotnet-serverless-azure)
-5. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
-6. Customizations
+5. [Kernel Memory with .NET Aspire](examples/303-dotnet-aspire)
+6. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
+7. Customizations
    * [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
    * [Processing files with custom logic (custom handlers) in asynchronous mode](examples/005-dotnet-AsyncMemoryCustomPipeline)
    * [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
@@ -428,25 +444,25 @@ Examples and Tools
    * [Using a custom web scraper to fetch web pages](examples/109-dotnet-custom-webscraper)
    * [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
    * [Using Context Parameters to customize RAG prompt during a request](examples/209-dotnet-using-context-overrides)
-7. Local models and external connectors
+8. Local models and external connectors
    * [Using custom LLMs](examples/104-dotnet-custom-LLM)
    * [Using local LLMs with Ollama](examples/212-dotnet-ollama) 
    * [Using local LLMs with llama.cpp via LlamaSharp](examples/105-dotnet-serverless-llamasharp)
    * [Using local models with LM Studio](examples/208-dotnet-lmstudio)
    * [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
    * [Generating answers with Anthropic LLMs](examples/110-dotnet-anthropic)
-8. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
-9. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
-10. [Hybrid Search with Azure AI Search](examples/111-dotnet-azure-ai-hybrid-search)
-11. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
-12. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-13. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-14. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
-15. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
-16. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
-17. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
-18. [Fetching data from Discord](examples/301-discord-test-application)
-19. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
+9. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
+10. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
+11. [Hybrid Search with Azure AI Search](examples/111-dotnet-azure-ai-hybrid-search)
+12. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+13. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+14. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+15. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+16. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+17. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
+18. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
+19. [Fetching data from Discord](examples/301-discord-test-application)
+20. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
 
 ## Tools
 
