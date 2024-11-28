@@ -24,7 +24,7 @@ public class AzureAIContentSafetyConfig
     public string Endpoint { get; set; } = string.Empty;
     public string APIKey { get; set; } = string.Empty;
     public double GlobalSafetyThreshold { get; set; } = 0.0;
-    public List<string> IgnoredWords { get; set; } = new();
+    public List<string> IgnoredWords { get; set; } = [];
 
     public void SetCredential(TokenCredential credential)
     {

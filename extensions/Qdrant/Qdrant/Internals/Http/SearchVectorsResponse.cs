@@ -17,5 +17,5 @@ internal sealed class SearchVectorsResponse<T> : QdrantResponse where T : Defaul
     }
 
     [JsonPropertyName("result")]
-    public IEnumerable<ScoredPoint> Results { get; set; } = new List<ScoredPoint>();
+    public IEnumerable<ScoredPoint> Results { get; set; } = [];
 }

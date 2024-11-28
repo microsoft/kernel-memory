@@ -259,7 +259,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
         ICollection<MemoryFilter>? filters = null)
     {
         var sql = "";
-        Dictionary<string, object> unsafeSqlUserValues = new();
+        Dictionary<string, object> unsafeSqlUserValues = [];
 
         if (filters is not { Count: > 0 })
         {
@@ -281,7 +281,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
             }
 
             List<string> requiredTags = filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}").ToList();
-            List<string> safeSqlPlaceholders = new();
+            List<string> safeSqlPlaceholders = [];
             if (requiredTags.Count > 0)
             {
                 var safeSqlPlaceholder = $"@placeholder{tagCounter++}";

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -13,7 +14,7 @@ using Microsoft.KernelMemory;
 public static class Program
 {
     private static MemoryServerless? s_memory;
-    private static readonly List<string> s_toDelete = new();
+    private static readonly List<string> s_toDelete = [];
 
     // Remember to configure Azure Document Intelligence to test OCR and support for images
     private static bool s_imageSupportDemoEnabled = true;
@@ -21,15 +22,18 @@ public static class Program
     public static async Task Main()
     {
         var memoryConfiguration = new KernelMemoryConfig();
-        var openAIConfig = new OpenAIConfig();
-        var azureOpenAITextConfig = new AzureOpenAIConfig();
-        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
-        var llamaConfig = new LlamaSharpConfig();
         var searchClientConfig = new SearchClientConfig();
-        var azDocIntelConfig = new AzureAIDocIntelConfig();
+
+        var azureAIContentSafetyConfig = new AzureAIContentSafetyConfig();
+        var azureAIDocIntelConfig = new AzureAIDocIntelConfig();
         var azureAISearchConfig = new AzureAISearchConfig();
-        var postgresConfig = new PostgresConfig();
         var azureBlobConfig = new AzureBlobsConfig();
+        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+        var azureOpenAITextConfig = new AzureOpenAIConfig();
+
+        var openAIConfig = new OpenAIConfig();
+        var llamaConfig = new LlamaSharpConfig();
+        var postgresConfig = new PostgresConfig();
         var awsS3Config = new AWSS3Config();
 
         new ConfigurationBuilder()
@@ -38,45 +42,47 @@ public static class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build()
             .BindSection("KernelMemory", memoryConfiguration)
-            .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-            .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
-            .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
+            .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig)
+            .BindSection("KernelMemory:Services:AzureAIContentSafety", azureAIContentSafetyConfig)
+            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+            .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+            .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
             .BindSection("KernelMemory:Services:AWSS3", awsS3Config)
-            .BindSection("KernelMemory:Services:Postgres", postgresConfig)
-            .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+            .BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
         var builder = new KernelMemoryBuilder()
             .Configure(builder => builder.Services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Warning);
+                l.SetMinimumLevel(LogLevel.Error);
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }))
             .AddSingleton(memoryConfiguration)
             // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
-            // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
-            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers and summaries using LLama
-            // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
-            // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
-            // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
-            // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
-            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
-            // .WithAWSS3DocumentStorage(awsS3Config)                       // Store files on AWS S3
+            // .WithOpenAI(openAIConfig)                                       // Use OpenAI for text generation and embedding
+            // .WithLlamaTextGeneration(llamaConfig)                           // Generate answers and summaries using LLama
+            // .WithAzureAIContentSafetyModeration(azureAIContentSafetyConfig) // Content moderation
+            // .WithAzureAISearchMemoryDb(azureAISearchConfig)                 // Store memories in Azure AI Search
+            // .WithPostgresMemoryDb(postgresConfig)                           // Store memories in Postgres
+            // .WithQdrantMemoryDb("http://127.0.0.1:6333")                    // Store memories in Qdrant
+            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)            // Store memories on disk
+            // .WithAzureBlobsDocumentStorage(azureBlobConfig)                 // Store files in Azure Blobs
+            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)      // Store files on disk
+            // .WithAWSS3DocumentStorage(awsS3Config)                          // Store files on AWS S3
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig);
 
         if (s_imageSupportDemoEnabled)
         {
-            if (azDocIntelConfig.Auth == AzureAIDocIntelConfig.AuthTypes.APIKey && string.IsNullOrWhiteSpace(azDocIntelConfig.APIKey))
+            if (azureAIDocIntelConfig.Auth == AzureAIDocIntelConfig.AuthTypes.APIKey && string.IsNullOrWhiteSpace(azureAIDocIntelConfig.APIKey))
             {
                 Console.WriteLine("Azure AI Document Intelligence API key not found. OCR demo disabled.");
                 s_imageSupportDemoEnabled = false;
             }
-            else { builder.WithAzureAIDocIntel(azDocIntelConfig); }
+            else { builder.WithAzureAIDocIntel(azureAIDocIntelConfig); }
         }
 
         s_memory = builder.Build<MemoryServerless>();

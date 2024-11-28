@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\extensions\Tiktoken\Tiktoken\Tiktoken.csproj" />
         <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 

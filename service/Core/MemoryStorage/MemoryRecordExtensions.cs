@@ -72,14 +72,14 @@ public static class MemoryRecordExtensions
     /// </summary>
     public static string GetWebPageUrl(this MemoryRecord record, string indexName, ILogger? log = null)
     {
-        var fileDownloadUrl = Constants.HttpDownloadEndpointWithParams
+        var webPageUrl = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
+
+        if (!string.IsNullOrWhiteSpace(webPageUrl)) { return webPageUrl; }
+
+        return Constants.HttpDownloadEndpointWithParams
             .Replace(Constants.HttpIndexPlaceholder, indexName, StringComparison.Ordinal)
             .Replace(Constants.HttpDocumentIdPlaceholder, record.GetDocumentId(), StringComparison.Ordinal)
             .Replace(Constants.HttpFilenamePlaceholder, record.GetFileName(), StringComparison.Ordinal);
-
-        var webPageUrl = record.GetPayloadValue(Constants.ReservedPayloadUrlField, log)?.ToString();
-
-        return string.IsNullOrWhiteSpace(webPageUrl) ? fileDownloadUrl : webPageUrl;
     }
 
     /// <summary>

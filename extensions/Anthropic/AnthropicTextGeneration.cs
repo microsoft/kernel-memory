@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 
@@ -69,12 +69,13 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
         var endpointVersion = string.IsNullOrWhiteSpace(config.Endpoint) ? DefaultEndpointVersion : config.EndpointVersion;
         this._client = new RawAnthropicClient(this._httpClient, endpoint, endpointVersion, config.ApiKey);
 
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;
@@ -113,7 +114,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
 
         IAsyncEnumerable<StreamingResponseMessage> streamedResponse = this._client.CallClaudeStreamingAsync(parameters, cancellationToken);
 
-        await foreach (StreamingResponseMessage response in streamedResponse)
+        await foreach (StreamingResponseMessage response in streamedResponse.ConfigureAwait(false))
         {
             //now we simply yield the response
             switch (response)

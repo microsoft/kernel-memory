@@ -5,22 +5,27 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.KernelMemory.Service;
+#pragma warning disable IDE0130 // reduce number of "using" statements
+// ReSharper disable once CheckNamespace - reduce number of "using" statements
+namespace Microsoft.KernelMemory;
 
-internal static class ConfigurationBuilderExtensions
+public static partial class ConfigurationBuilderExtensions
 {
     // ASP.NET env var
-    private const string AspnetEnvVar = "ASPNETCORE_ENVIRONMENT";
+    private const string AspNetCoreEnvVar = "ASPNETCORE_ENVIRONMENT";
 
-    public static void AddKMConfigurationSources(
+    // .NET env var
+    private const string DotNetEnvVar = "DOTNET_ENVIRONMENT";
+
+    public static void AddKernelMemoryConfigurationSources(
         this IConfigurationBuilder builder,
         bool useAppSettingsFiles = true,
         bool useEnvVars = true,
         bool useSecretManager = true,
         string? settingsDirectory = null)
     {
-        // Load env var name, either Development or Production
-        var env = Environment.GetEnvironmentVariable(AspnetEnvVar) ?? string.Empty;
+        // ASPNETCORE_ENVIRONMENT env var takes precedence. Env should be either Development or Production.
+        var env = Environment.GetEnvironmentVariable(AspNetCoreEnvVar) ?? Environment.GetEnvironmentVariable(DotNetEnvVar) ?? string.Empty;
 
         // Detect the folder containing configuration files
         settingsDirectory ??= Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

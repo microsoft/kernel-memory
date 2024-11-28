@@ -47,7 +47,7 @@ public sealed class WebScraper : IWebScraper, IDisposable
     private async Task<WebScraperResult> GetAsync(Uri url, CancellationToken cancellationToken = default)
     {
         var scheme = url.Scheme.ToUpperInvariant();
-        if ((scheme != "HTTP") && (scheme != "HTTPS"))
+        if (scheme is not "HTTP" and not "HTTPS")
         {
             return new WebScraperResult { Success = false, Error = $"Unknown URL protocol: {url.Scheme}" };
         }

@@ -14,14 +14,14 @@ public class DefaultTests : BaseFunctionalTestCase
     public DefaultTests(IConfiguration cfg, ITestOutputHelper output) : base(cfg, output)
     {
         Assert.False(string.IsNullOrEmpty(this.AzureAiSearchConfig.Endpoint));
-        Assert.False(string.IsNullOrEmpty(this.AzureAiSearchConfig.APIKey));
+        Assert.False(this.AzureAiSearchConfig.Auth == AzureAISearchConfig.AuthTypes.APIKey && string.IsNullOrEmpty(this.AzureAiSearchConfig.APIKey));
         Assert.False(string.IsNullOrEmpty(this.OpenAiConfig.APIKey));
 
         this._memory = new KernelMemoryBuilder()
             .With(new KernelMemoryConfig { DefaultIndexName = "default4tests" })
             .WithSearchClientConfig(new SearchClientConfig { EmptyAnswer = NotFound })
             .WithOpenAI(this.OpenAiConfig)
-            .WithAzureAISearchMemoryDb(this.AzureAiSearchConfig.Endpoint, this.AzureAiSearchConfig.APIKey)
+            .WithAzureAISearchMemoryDb(this.AzureAiSearchConfig)
             .Build<MemoryServerless>();
     }
 

@@ -82,12 +82,12 @@ public class SearchClientConfig
     /// <summary>
     /// Up to 4 sequences where the completion will stop generating further tokens.
     /// </summary>
-    public IList<string> StopSequences { get; set; } = new List<string>();
+    public IList<string> StopSequences { get; set; } = [];
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
-    public Dictionary<int, float> TokenSelectionBiases { get; set; } = new();
+    public Dictionary<int, float> TokenSelectionBiases { get; set; } = [];
 
     /// <summary>
     /// Whether to check is the generated answers are safe.

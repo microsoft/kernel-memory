@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
@@ -88,12 +89,18 @@ public sealed class OpenAITextGenerator : ITextGenerator
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
+        if (textTokenizer == null && !string.IsNullOrEmpty(config.TextModelTokenizer))
+        {
+            textTokenizer = TokenizerFactory.GetTokenizerForEncoding(config.TextModelTokenizer);
+        }
+
+        textTokenizer ??= TokenizerFactory.GetTokenizerForModel(config.TextModel);
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;
@@ -128,7 +135,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
 
         if (options.StopSequences is { Count: > 0 })
         {
-            skOptions.StopSequences = new List<string>();
+            skOptions.StopSequences = [];
             foreach (var s in options.StopSequences) { skOptions.StopSequences.Add(s); }
         }
 
@@ -139,8 +146,18 @@ public sealed class OpenAITextGenerator : ITextGenerator
         }
 
         this._log.LogTrace("Sending chat message generation request");
-        IAsyncEnumerable<StreamingTextContent> result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
-        await foreach (StreamingTextContent x in result)
+
+        IAsyncEnumerable<StreamingTextContent> result;
+        try
+        {
+            result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
+        }
+        catch (HttpOperationException e)
+        {
+            throw new OpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
+
+        await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
         {
             // TODO: try catch
             // if (x.Metadata?["Usage"] is not null)

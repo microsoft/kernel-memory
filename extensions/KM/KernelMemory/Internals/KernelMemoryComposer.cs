@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Anthropic;
 using Microsoft.KernelMemory.AI.Ollama;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -16,78 +15,53 @@ using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
 using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 
-namespace Microsoft.KernelMemory.Service;
+namespace Microsoft.KernelMemory.Internals;
 
-internal sealed class ServiceConfiguration
+/// <summary>
+/// Meta factory class responsible for configuring IKernelMemoryBuilder
+/// with the components selected in the configuration.
+/// </summary>
+internal sealed class KernelMemoryComposer
 {
-    // Content of appsettings.json, used to access dynamic data under "Services"
-    private IConfiguration _rawAppSettings;
+    // appsettings.json root node name (and prefix of env vars)
+    public const string ConfigRoot = "KernelMemory";
 
-    // Normalized configuration
-    private KernelMemoryConfig _memoryConfiguration;
-
-    // appsettings.json root node name
-    private const string ConfigRoot = "KernelMemory";
-
-    // ASP.NET env var
-    private const string AspnetEnvVar = "ASPNETCORE_ENVIRONMENT";
-
-    // OpenAI env var
-    private const string OpenAIEnvVar = "OPENAI_API_KEY";
-
-    public ServiceConfiguration(string? settingsDirectory = null)
-        : this(ReadAppSettings(settingsDirectory))
-    {
-    }
-
-    public ServiceConfiguration(IConfiguration rawAppSettings)
-        : this(rawAppSettings,
-            rawAppSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()
-            ?? throw new ConfigurationException($"Unable to load Kernel Memory settings from the given configuration. " +
-                                                $"There should be a '{ConfigRoot}' root node, " +
-                                                $"with data mapping to '{nameof(KernelMemoryConfig)}'"))
-    {
-    }
-
-    public ServiceConfiguration(
-        IConfiguration rawAppSettings,
+    public KernelMemoryComposer(
+        IKernelMemoryBuilder builder,
+        IConfiguration globalSettings,
         KernelMemoryConfig memoryConfiguration)
     {
-        this._rawAppSettings = rawAppSettings ?? throw new ConfigurationException("The given app settings configuration is NULL");
-        this._memoryConfiguration = memoryConfiguration ?? throw new ConfigurationException("The given memory configuration is NULL");
+        this._builder = builder;
+        this._globalSettings = globalSettings;
+        this._memoryConfiguration = memoryConfiguration;
 
         if (!this.MinimumConfigurationIsAvailable(false)) { this.SetupForOpenAI(); }
 
         this.MinimumConfigurationIsAvailable(true);
     }
 
-    public IKernelMemoryBuilder PrepareBuilder(IKernelMemoryBuilder builder)
-    {
-        return this.BuildUsingConfiguration(builder);
-    }
-
-    private IKernelMemoryBuilder BuildUsingConfiguration(IKernelMemoryBuilder builder)
+    public void ConfigureBuilder()
     {
         if (this._memoryConfiguration == null)
         {
             throw new ConfigurationException("The given memory configuration is NULL");
         }
 
-        if (this._rawAppSettings == null)
+        if (this._globalSettings == null)
         {
             throw new ConfigurationException("The given app settings configuration is NULL");
         }
 
         // Required by ctors expecting KernelMemoryConfig via DI
-        builder.AddSingleton<KernelMemoryConfig>(this._memoryConfiguration);
+        this._builder.AddSingleton<KernelMemoryConfig>(this._memoryConfiguration);
 
-        this.ConfigureMimeTypeDetectionDependency(builder);
+        this.ConfigureMimeTypeDetectionDependency();
 
-        this.ConfigureTextPartitioning(builder);
+        this.ConfigureTextPartitioning();
 
-        this.ConfigureQueueDependency(builder);
+        this.ConfigureQueueDependency();
 
-        this.ConfigureStorageDependency(builder);
+        this.ConfigureStorageDependency();
 
         // The ingestion embedding generators is a list of generators that the "gen_embeddings" handler uses,
         // to generate embeddings for each partition. While it's possible to use multiple generators (e.g. to compare embedding quality)
@@ -95,38 +69,46 @@ internal sealed class ServiceConfiguration
         // - config.DataIngestion.EmbeddingGeneratorTypes => list of generators, embeddings to generate and store in memory DB
         // - config.Retrieval.EmbeddingGeneratorType      => one embedding generator, used to search, and usually injected into Memory DB constructor
 
-        this.ConfigureIngestionEmbeddingGenerators(builder);
+        this.ConfigureIngestionEmbeddingGenerators();
 
-        this.ConfigureContentModeration(builder);
+        this.ConfigureContentModeration();
 
-        this.ConfigureSearchClient(builder);
+        this.ConfigureSearchClient();
 
-        this.ConfigureRetrievalEmbeddingGenerator(builder);
+        this.ConfigureRetrievalEmbeddingGenerator();
 
         // The ingestion Memory DBs is a list of DBs where handlers write records to. While it's possible
         // to write to multiple DBs, e.g. for replication purpose, there is only one Memory DB used to
         // read/search, and it doesn't come from this list. See "config.Retrieval.MemoryDbType".
         // Note: use the aux service collection to avoid mixing ingestion and retrieval dependencies.
 
-        this.ConfigureIngestionMemoryDb(builder);
+        this.ConfigureIngestionMemoryDb();
 
-        this.ConfigureRetrievalMemoryDb(builder);
+        this.ConfigureRetrievalMemoryDb();
 
-        this.ConfigureTextGenerator(builder);
+        this.ConfigureTextGenerator();
 
-        this.ConfigureImageOCR(builder);
-
-        return builder;
+        this.ConfigureImageOCR();
     }
 
-    private static IConfiguration ReadAppSettings(string? settingsDirectory)
-    {
-        var builder = new ConfigurationBuilder();
-        builder.AddKMConfigurationSources(settingsDirectory: settingsDirectory);
-        return builder.Build();
-    }
+    #region private ===============================
 
-    private void ConfigureQueueDependency(IKernelMemoryBuilder builder)
+    // Builder to be configured with the required components
+    private readonly IKernelMemoryBuilder _builder;
+
+    // Content of appsettings.json, used to access dynamic data under "Services"
+    private IConfiguration _globalSettings;
+
+    // Normalized configuration
+    private KernelMemoryConfig _memoryConfiguration;
+
+    // ASP.NET env var
+    private const string AspnetEnvVar = "ASPNETCORE_ENVIRONMENT";
+
+    // OpenAI env var
+    private const string OpenAIEnvVar = "OPENAI_API_KEY";
+
+    private void ConfigureQueueDependency()
     {
         if (string.Equals(this._memoryConfiguration.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
         {
@@ -135,18 +117,18 @@ internal sealed class ServiceConfiguration
                 case string y1 when y1.Equals("AzureQueue", StringComparison.OrdinalIgnoreCase):
                 case string y2 when y2.Equals("AzureQueues", StringComparison.OrdinalIgnoreCase):
                     // Check 2 keys for backward compatibility
-                    builder.Services.AddAzureQueuesOrchestration(this.GetServiceConfig<AzureQueuesConfig>("AzureQueues")
-                                                                 ?? this.GetServiceConfig<AzureQueuesConfig>("AzureQueue"));
+                    this._builder.Services.AddAzureQueuesOrchestration(this.GetServiceConfig<AzureQueuesConfig>("AzureQueues")
+                                                                       ?? this.GetServiceConfig<AzureQueuesConfig>("AzureQueue"));
                     break;
 
                 case string y when y.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
                     // Check 2 keys for backward compatibility
-                    builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMQConfig>("RabbitMQ")
-                                                              ?? this.GetServiceConfig<RabbitMQConfig>("RabbitMq"));
+                    this._builder.Services.AddRabbitMQOrchestration(this.GetServiceConfig<RabbitMQConfig>("RabbitMQ")
+                                                                    ?? this.GetServiceConfig<RabbitMQConfig>("RabbitMq"));
                     break;
 
                 case string y when y.Equals("SimpleQueues", StringComparison.OrdinalIgnoreCase):
-                    builder.Services.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>("SimpleQueues"));
+                    this._builder.Services.AddSimpleQueues(this.GetServiceConfig<SimpleQueuesConfig>("SimpleQueues"));
                     break;
 
                 default:
@@ -156,27 +138,27 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureStorageDependency(IKernelMemoryBuilder builder)
+    private void ConfigureStorageDependency()
     {
         switch (this._memoryConfiguration.DocumentStorageType)
         {
             case string x1 when x1.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase):
             case string x2 when x2.Equals("AzureBlobs", StringComparison.OrdinalIgnoreCase):
                 // Check 2 keys for backward compatibility
-                builder.Services.AddAzureBlobsAsDocumentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
-                                                                ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
+                this._builder.Services.AddAzureBlobsAsDocumentStorage(this.GetServiceConfig<AzureBlobsConfig>("AzureBlobs")
+                                                                      ?? this.GetServiceConfig<AzureBlobsConfig>("AzureBlob"));
                 break;
 
             case string x when x.Equals("AWSS3", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAWSS3AsDocumentStorage(this.GetServiceConfig<AWSS3Config>("AWSS3"));
+                this._builder.Services.AddAWSS3AsDocumentStorage(this.GetServiceConfig<AWSS3Config>("AWSS3"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddMongoDbAtlasAsDocumentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
+                this._builder.Services.AddMongoDbAtlasAsDocumentStorage(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
 
             case string x when x.Equals("SimpleFileStorage", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSimpleFileStorageAsDocumentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
+                this._builder.Services.AddSimpleFileStorageAsDocumentStorage(this.GetServiceConfig<SimpleFileStorageConfig>("SimpleFileStorage"));
                 break;
 
             default:
@@ -185,21 +167,21 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureTextPartitioning(IKernelMemoryBuilder builder)
+    private void ConfigureTextPartitioning()
     {
         if (this._memoryConfiguration.DataIngestion.TextPartitioning != null)
         {
             this._memoryConfiguration.DataIngestion.TextPartitioning.Validate();
-            builder.WithCustomTextPartitioningOptions(this._memoryConfiguration.DataIngestion.TextPartitioning);
+            this._builder.WithCustomTextPartitioningOptions(this._memoryConfiguration.DataIngestion.TextPartitioning);
         }
     }
 
-    private void ConfigureMimeTypeDetectionDependency(IKernelMemoryBuilder builder)
+    private void ConfigureMimeTypeDetectionDependency()
     {
-        builder.WithDefaultMimeTypeDetection();
+        this._builder.WithDefaultMimeTypeDetection();
     }
 
-    private void ConfigureIngestionEmbeddingGenerators(IKernelMemoryBuilder builder)
+    private void ConfigureIngestionEmbeddingGenerators()
     {
         // Note: using multiple embeddings is not fully supported yet and could cause write errors or incorrect search results
         if (this._memoryConfiguration.DataIngestion.EmbeddingGeneratorTypes.Count > 1)
@@ -216,40 +198,37 @@ internal sealed class ServiceConfiguration
                 case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
                 case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddAzureOpenAIEmbeddingGeneration(
-                            config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                            textTokenizer: new GPT4oTokenizer()));
-                    builder.AddIngestionEmbeddingGenerator(instance);
+                            config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding")));
+                    this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddOpenAITextEmbeddingGeneration(
-                            config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                            textTokenizer: new GPT4oTokenizer()));
-                    builder.AddIngestionEmbeddingGenerator(instance);
+                            config: this.GetServiceConfig<OpenAIConfig>("OpenAI")));
+                    this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
 
                 case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddOllamaTextEmbeddingGeneration(
-                            config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                            textTokenizer: new GPT4oTokenizer()));
-                    builder.AddIngestionEmbeddingGenerator(instance);
+                            config: this.GetServiceConfig<OllamaConfig>("Ollama")));
+                    this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
 
                 case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(builder,
+                    var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddLlamaSharpTextEmbeddingGeneration(
                             config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").EmbeddingModel));
-                    builder.AddIngestionEmbeddingGenerator(instance);
+                    this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
 
@@ -260,7 +239,7 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureIngestionMemoryDb(IKernelMemoryBuilder builder)
+    private void ConfigureIngestionMemoryDb()
     {
         foreach (var type in this._memoryConfiguration.DataIngestion.MemoryDbTypes)
         {
@@ -278,94 +257,94 @@ internal sealed class ServiceConfiguration
 
                 case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>("SimpleVectorDb"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
 
                 case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
                 {
-                    var instance = this.GetServiceInstance<IMemoryDb>(builder,
+                    var instance = this.GetServiceInstance<IMemoryDb>(
                         s => s.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"))
                     );
-                    builder.AddIngestionMemoryDb(instance);
+                    this._builder.AddIngestionMemoryDb(instance);
                     break;
                 }
             }
         }
     }
 
-    private void ConfigureContentModeration(IKernelMemoryBuilder builder)
+    private void ConfigureContentModeration()
     {
         switch (this._memoryConfiguration.ContentModerationType)
         {
             case string x when x.Equals("AzureAIContentSafety", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureAIContentSafetyModeration(config: this.GetServiceConfig<AzureAIContentSafetyConfig>("AzureAIContentSafety"));
+                this._builder.Services.AddAzureAIContentSafetyModeration(config: this.GetServiceConfig<AzureAIContentSafetyConfig>("AzureAIContentSafety"));
                 break;
 
             default:
@@ -374,38 +353,35 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureSearchClient(IKernelMemoryBuilder builder)
+    private void ConfigureSearchClient()
     {
         // Search settings
-        builder.WithSearchClientConfig(this._memoryConfiguration.Retrieval.SearchClient);
+        this._builder.WithSearchClientConfig(this._memoryConfiguration.Retrieval.SearchClient);
     }
 
-    private void ConfigureRetrievalEmbeddingGenerator(IKernelMemoryBuilder builder)
+    private void ConfigureRetrievalEmbeddingGenerator()
     {
         // Retrieval embeddings - ITextEmbeddingGeneration interface
         switch (this._memoryConfiguration.Retrieval.EmbeddingGeneratorType)
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureOpenAIEmbeddingGeneration(
-                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddAzureOpenAIEmbeddingGeneration(
+                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"));
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddOpenAITextEmbeddingGeneration(
-                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddOpenAITextEmbeddingGeneration(
+                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"));
                 break;
 
             case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddOllamaTextEmbeddingGeneration(
-                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddOllamaTextEmbeddingGeneration(
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddLlamaSharpTextEmbeddingGeneration(
+                this._builder.Services.AddLlamaSharpTextEmbeddingGeneration(
                     config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").EmbeddingModel);
                 break;
 
@@ -415,45 +391,45 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureRetrievalMemoryDb(IKernelMemoryBuilder builder)
+    private void ConfigureRetrievalMemoryDb()
     {
         // Retrieval Memory DB - IMemoryDb interface
         switch (this._memoryConfiguration.Retrieval.MemoryDbType)
         {
             case string x when x.Equals("AzureAISearch", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
+                this._builder.Services.AddAzureAISearchAsMemoryDb(this.GetServiceConfig<AzureAISearchConfig>("AzureAISearch"));
                 break;
 
             case string x when x.Equals("Elasticsearch", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"));
+                this._builder.Services.AddElasticsearchAsMemoryDb(this.GetServiceConfig<ElasticsearchConfig>("Elasticsearch"));
                 break;
 
             case string x when x.Equals("MongoDbAtlas", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
+                this._builder.Services.AddMongoDbAtlasAsMemoryDb(this.GetServiceConfig<MongoDbAtlasConfig>("MongoDbAtlas"));
                 break;
 
             case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"));
+                this._builder.Services.AddPostgresAsMemoryDb(this.GetServiceConfig<PostgresConfig>("Postgres"));
                 break;
 
             case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"));
+                this._builder.Services.AddQdrantAsMemoryDb(this.GetServiceConfig<QdrantConfig>("Qdrant"));
                 break;
 
             case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"));
+                this._builder.Services.AddRedisAsMemoryDb(this.GetServiceConfig<RedisConfig>("Redis"));
                 break;
 
             case string x when x.Equals("SimpleVectorDb", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>("SimpleVectorDb"));
+                this._builder.Services.AddSimpleVectorDbAsMemoryDb(this.GetServiceConfig<SimpleVectorDbConfig>("SimpleVectorDb"));
                 break;
 
             case string x when x.Equals("SimpleTextDb", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"));
+                this._builder.Services.AddSimpleTextDbAsMemoryDb(this.GetServiceConfig<SimpleTextDbConfig>("SimpleTextDb"));
                 break;
 
             case string x when x.Equals("SqlServer", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"));
+                this._builder.Services.AddSqlServerAsMemoryDb(this.GetServiceConfig<SqlServerConfig>("SqlServer"));
                 break;
 
             default:
@@ -462,38 +438,34 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureTextGenerator(IKernelMemoryBuilder builder)
+    private void ConfigureTextGenerator()
     {
         // Text generation
         switch (this._memoryConfiguration.TextGeneratorType)
         {
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureOpenAITextGeneration(
-                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddAzureOpenAITextGeneration(
+                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"));
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddOpenAITextGeneration(
-                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddOpenAITextGeneration(
+                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"));
                 break;
 
             case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAnthropicTextGeneration(
-                    config: this.GetServiceConfig<AnthropicConfig>("Anthropic"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddAnthropicTextGeneration(
+                    config: this.GetServiceConfig<AnthropicConfig>("Anthropic"));
                 break;
 
             case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddOllamaTextGeneration(
-                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                    textTokenizer: new GPT4oTokenizer());
+                this._builder.Services.AddOllamaTextGeneration(
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddLlamaSharpTextGeneration(
+                this._builder.Services.AddLlamaSharpTextGeneration(
                     config: this.GetServiceConfig<LlamaSharpConfig>("LlamaSharp").TextModel);
                 break;
 
@@ -503,7 +475,7 @@ internal sealed class ServiceConfiguration
         }
     }
 
-    private void ConfigureImageOCR(IKernelMemoryBuilder builder)
+    private void ConfigureImageOCR()
     {
         // Image OCR
         switch (this._memoryConfiguration.DataIngestion.ImageOcrType)
@@ -513,7 +485,7 @@ internal sealed class ServiceConfiguration
                 break;
 
             case string x when x.Equals("AzureAIDocIntel", StringComparison.OrdinalIgnoreCase):
-                builder.Services.AddAzureAIDocIntel(this.GetServiceConfig<AzureAIDocIntelConfig>("AzureAIDocIntel"));
+                this._builder.Services.AddAzureAIDocIntel(this.GetServiceConfig<AzureAIDocIntelConfig>("AzureAIDocIntel"));
                 break;
 
             default:
@@ -616,11 +588,11 @@ internal sealed class ServiceConfiguration
         };
 
         var newAppSettings = new ConfigurationBuilder();
-        newAppSettings.AddConfiguration(this._rawAppSettings);
+        newAppSettings.AddConfiguration(this._globalSettings);
         newAppSettings.AddInMemoryCollection(inMemoryConfig);
 
-        this._rawAppSettings = newAppSettings.Build();
-        this._memoryConfiguration = this._rawAppSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()!;
+        this._globalSettings = newAppSettings.Build();
+        this._memoryConfiguration = this._globalSettings.GetSection(ConfigRoot).Get<KernelMemoryConfig>()!;
     }
 
     /// <summary>
@@ -630,14 +602,13 @@ internal sealed class ServiceConfiguration
     /// Return an instance of T built using the definition provided by
     /// the action.
     /// </summary>
-    /// <param name="builder">KM builder</param>
     /// <param name="addCustomService">Action used to configure the service collection</param>
     /// <typeparam name="T">Target type/interface</typeparam>
-    private T GetServiceInstance<T>(IKernelMemoryBuilder builder, Action<IServiceCollection> addCustomService)
+    private T GetServiceInstance<T>(Action<IServiceCollection> addCustomService)
     {
         // Clone the list of service descriptors, skipping T descriptor
         IServiceCollection services = new ServiceCollection();
-        foreach (ServiceDescriptor d in builder.Services)
+        foreach (ServiceDescriptor d in this._builder.Services)
         {
             if (d.ServiceType == typeof(T)) { continue; }
 
@@ -671,6 +642,8 @@ internal sealed class ServiceConfiguration
     /// <returns>Configuration instance, settings for the dependency specified</returns>
     private T GetServiceConfig<T>(string serviceName)
     {
-        return this._memoryConfiguration.GetServiceConfig<T>(this._rawAppSettings, serviceName);
+        return this._memoryConfiguration.GetServiceConfig<T>(this._globalSettings, serviceName);
     }
+
+    #endregion
 }

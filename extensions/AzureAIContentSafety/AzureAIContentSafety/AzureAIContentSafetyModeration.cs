@@ -75,7 +75,7 @@ public class AzureAIContentSafetyModeration : IContentModeration
 
         if (!isSafe)
         {
-            IEnumerable<string> report = result.HasValue ? result.Value.CategoriesAnalysis.Select(x => $"{x.Category}: {x.Severity}") : Array.Empty<string>();
+            IEnumerable<string> report = result.HasValue ? result.Value.CategoriesAnalysis.Select(x => $"{x.Category}: {x.Severity}") : [];
             this._log.LogWarning("Unsafe content detected, report: {0}", string.Join("; ", report));
             this._log.LogSensitive("Unsafe content: {0}", text);
         }

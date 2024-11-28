@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.ML.OnnxRuntimeGenAI;
 using static Microsoft.KernelMemory.OnnxConfig;
@@ -60,12 +59,14 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
         ILoggerFactory? loggerFactory = null)
     {
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OnnxTextGenerator>();
+
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new O200KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         config.Validate();
@@ -149,7 +150,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 
         using (var generator = new Generator(this._model, generatorParams))
         {
-            List<int> outputTokens = new();
+            List<int> outputTokens = [];
 
             while (!generator.IsDone() && cancellationToken.IsCancellationRequested == false)
             {
@@ -161,7 +162,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
                     var newToken = outputTokens[^1];
-                    yield return this._tokenizer.Decode(new int[] { newToken });
+                    yield return this._tokenizer.Decode([newToken]);
                 }
             }
         }

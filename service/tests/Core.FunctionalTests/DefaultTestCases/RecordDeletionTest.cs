@@ -56,12 +56,12 @@ public static class RecordDeletionTest
         IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
             index: IndexName,
             limit: -1,
-            filters: new List<MemoryFilter>
-            {
+            filters:
+            [
                 MemoryFilters.ByDocument(DocId3),
                 MemoryFilters.ByDocument(DocId2),
                 MemoryFilters.ByDocument(DocId1),
-            });
+            ]);
 
         log("Deleting records");
         var count = 0;

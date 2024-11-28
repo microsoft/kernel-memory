@@ -93,11 +93,10 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
         var request = ScrollVectorsRequest
             .Create("coll")
             .HavingAllTags(["user:devis", "type:blog"])
-            .HavingSomeTags(new[]
-            {
-                new[] { "month:january", "year:2000" },
-                new[] { "month:july", "year:2003" },
-            });
+            .HavingSomeTags([
+                ["month:january", "year:2000"],
+                ["month:july", "year:2003"]
+            ]);
 
         // Act
         var actual = JsonSerializer.Serialize(request);
@@ -158,7 +157,7 @@ public class ScrollVectorsRequestTest : BaseUnitTestCase
         var request = ScrollVectorsRequest
             .Create("coll")
             .HavingAllTags(["user:devis", "type:blog"])
-            .HavingSomeTags([new[] { "month:january", "year:2000" }]);
+            .HavingSomeTags([["month:january", "year:2000"]]);
 
         // Act
         var actual = JsonSerializer.Serialize(request);

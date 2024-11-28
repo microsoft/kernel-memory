@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
@@ -25,25 +26,23 @@ public static class WebAPIEndpoints
         this IEndpointRouteBuilder builder,
         string apiPrefix = "/",
         KernelMemoryConfig? kmConfig = null,
-        IEndpointFilter? authFilter = null)
+        IEndpointFilter[]? filters = null)
     {
-        builder.AddPostUploadEndpoint(apiPrefix, authFilter, kmConfig?.Service.GetMaxUploadSizeInBytes());
-        builder.AddGetIndexesEndpoint(apiPrefix, authFilter);
-        builder.AddDeleteIndexesEndpoint(apiPrefix, authFilter);
-        builder.AddDeleteDocumentsEndpoint(apiPrefix, authFilter);
-        builder.AddAskEndpoint(apiPrefix, authFilter);
-        builder.AddAskChunkEndpoint(apiPrefix, authFilter);
-        builder.AddSearchEndpoint(apiPrefix, authFilter);
-        builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
-        builder.AddGetDownloadEndpoint(apiPrefix, authFilter);
-
+        builder.AddPostUploadEndpoint(apiPrefix, kmConfig?.Service.GetMaxUploadSizeInBytes()).AddFilters(filters);
+        builder.AddGetIndexesEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddDeleteIndexesEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddDeleteDocumentsEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddAskEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddAskChunkEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddSearchEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddUploadStatusEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddGetDownloadEndpoint(apiPrefix).AddFilters(filters);
         return builder;
     }
 
-    public static void AddPostUploadEndpoint(
+    public static RouteHandlerBuilder AddPostUploadEndpoint(
         this IEndpointRouteBuilder builder,
         string apiPrefix = "/",
-        IEndpointFilter? authFilter = null,
         long? maxUploadSizeInBytes = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
@@ -110,11 +109,11 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddGetIndexesEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddGetIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/")
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -142,11 +141,11 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddDeleteIndexesEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddDeleteIndexesEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -174,11 +173,11 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddDeleteDocumentsEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddDeleteDocumentsEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -210,11 +209,11 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddAskEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddAskEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -245,13 +244,13 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
-    public static void AddAskChunkEndpoint(
+
+    public static RouteHandlerBuilder AddAskChunkEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
-
         // Ask endpoint
         var route = group.MapPost(Constants.HttpAskChunkEndpoint,
                 async Task (
@@ -268,7 +267,7 @@ public static class WebAPIEndpoints
                     log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
                     try
                     {
-                        var answerStream =  service.AskAsyncChunk(
+                        var answerStream = service.AskAsyncChunk(
                             question: query.Question,
                             index: query.Index,
                             filters: query.Filters,
@@ -294,13 +293,15 @@ public static class WebAPIEndpoints
                 })
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
-            .RequireCors("KM-CORS");
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+
+        return route;
     }
-    public static void AddSearchEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+
+    public static RouteHandlerBuilder AddSearchEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -332,11 +333,11 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddUploadStatusEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddUploadStatusEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -375,12 +376,14 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
-            .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status413PayloadTooLarge);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
-    public static void AddGetDownloadEndpoint(this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
+    public static RouteHandlerBuilder AddGetDownloadEndpoint(
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
@@ -458,11 +461,25 @@ public static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
-        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+        return route;
     }
 
 #pragma warning disable CA1812 // used by logger, can't be static
     // Class used to tag log entries and allow log filtering
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class KernelMemoryWebAPI;
 #pragma warning restore CA1812
+}
+
+internal static class EndpointConventionBuilderExtensions
+{
+    internal static void AddFilters(this IEndpointConventionBuilder route, IEndpointFilter[]? filters = null)
+    {
+        if (filters == null || filters.Length == 0) { return; }
+
+        foreach (var filter in filters)
+        {
+            route.AddEndpointFilter(filter);
+        }
+    }
 }

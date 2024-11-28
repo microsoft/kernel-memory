@@ -63,6 +63,7 @@ public static class Constants
         {
             // Used to override EosToken config for streaming
             public const string EosToken = "custom_rag_eos_token_str";
+
             // Used to override No Answer config
             public const string EmptyAnswer = "custom_rag_empty_answer_str";
 
@@ -159,25 +160,25 @@ public static class Constants
 
     // Pipeline steps
     public static readonly string[] DefaultPipeline =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineWithoutSummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineWithSummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords,
         PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineOnlySummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";

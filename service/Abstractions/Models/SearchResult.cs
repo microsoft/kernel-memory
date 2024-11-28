@@ -40,7 +40,7 @@ public class SearchResult
     /// </summary>
     [JsonPropertyName("results")]
     [JsonPropertyOrder(3)]
-    public List<Citation> Results { get; set; } = new();
+    public List<Citation> Results { get; set; } = [];
 
     /// <summary>
     /// Serialize using .NET JSON serializer, e.g. to avoid ambiguity

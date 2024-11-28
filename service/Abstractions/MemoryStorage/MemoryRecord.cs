@@ -13,8 +13,8 @@ public class MemoryRecord
     private const string CurrentSchemaVersion = SchemaVersion20231218A;
 
     // Internal data
-    private TagCollection _tags = new();
-    private Dictionary<string, object> _payload = new();
+    private TagCollection _tags = [];
+    private Dictionary<string, object> _payload = [];
 
     /// <summary>
     /// Unique record ID
@@ -110,9 +110,9 @@ public class MemoryRecord
     /// </summary>
     private void Upgrade()
     {
-        if (this._payload == null) { this._payload = new(); }
+        if (this._payload == null) { this._payload = []; }
 
-        if (this._tags == null) { this._tags = new(); }
+        if (this._tags == null) { this._tags = []; }
 
         string version = SchemaVersionZero;
         if (this._payload.TryGetValue(Constants.ReservedPayloadSchemaVersionField, out object? versionValue))

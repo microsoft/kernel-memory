@@ -424,7 +424,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 
-        if (sqlUserValues == null) { sqlUserValues = new(); }
+        if (sqlUserValues == null) { sqlUserValues = []; }
 
         this._log.LogTrace("Searching by similarity. Table: {0}. Threshold: {1}. Limit: {2}. Offset: {3}. Using SQL filter: {4}",
             tableName, minSimilarity, limit, offset, string.IsNullOrWhiteSpace(filterSql) ? "false" : "true");

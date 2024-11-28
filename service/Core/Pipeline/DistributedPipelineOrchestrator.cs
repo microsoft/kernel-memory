@@ -83,12 +83,6 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             throw new ArgumentException($"There is already a handler for step '{handler.StepName}'");
         }
 
-        // When returning False a message is put back in the queue and processed again
-        const bool Retry = false;
-
-        // When returning True a message is removed from the queue and deleted
-        const bool Complete = true;
-
         // Create a new queue client and start listening for messages
         this._queues[handler.StepName] = this._queueClientFactory.Build();
         this._queues[handler.StepName].OnDequeue(async msg =>
@@ -99,7 +93,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             if (pipelinePointer == null)
             {
                 this.Log.LogError("Pipeline pointer deserialization failed, queue `{0}`. Message discarded.", handler.StepName);
-                return Complete;
+                return ReturnType.FatalError;
             }
 
             DataPipeline? pipeline;
@@ -127,18 +121,18 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                 }
 
                 this.Log.LogError("Pipeline `{0}/{1}` not found, cancelling step `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return Complete;
+                return ReturnType.FatalError;
             }
             catch (InvalidPipelineDataException)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, invalid state, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return Retry;
+                return ReturnType.TransientError;
             }
 
             if (pipeline == null)
             {
                 this.Log.LogError("Pipeline `{0}/{1}` state load failed, the state is null, queue `{2}`", pipelinePointer.Index, pipelinePointer.DocumentId, handler.StepName);
-                return Retry;
+                return ReturnType.TransientError;
             }
 
             if (pipelinePointer.ExecutionId != pipeline.ExecutionId)
@@ -147,7 +141,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
                     "Document `{0}/{1}` has been updated without waiting for the previous pipeline execution `{2}` to complete (current execution: `{3}`). " +
                     "Step `{4}` and any consecutive steps from the previous execution have been cancelled.",
                     pipelinePointer.Index, pipelinePointer.DocumentId, pipelinePointer.ExecutionId, pipeline.ExecutionId, handler.StepName);
-                return Complete;
+                return ReturnType.Success;
             }
 
             var currentStepName = pipeline.RemainingSteps.First();
@@ -207,7 +201,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
 
     #region private
 
-    private async Task<bool> RunPipelineStepAsync(
+    private async Task<ReturnType> RunPipelineStepAsync(
         DataPipeline pipeline,
         IPipelineStepHandler handler,
         CancellationToken cancellationToken)
@@ -216,31 +210,37 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
         if (pipeline.Complete)
         {
             this.Log.LogInformation("Pipeline '{0}/{1}' complete", pipeline.Index, pipeline.DocumentId);
-            // Note: returning True, the message is removed from the queue
-            return true;
+            return ReturnType.Success;
         }
 
         string currentStepName = pipeline.RemainingSteps.First();
 
         // Execute the business logic - exceptions are automatically handled by IQueue
-        (bool success, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        if (success)
+        (ReturnType returnType, DataPipeline updatedPipeline) = await handler.InvokeAsync(pipeline, cancellationToken).ConfigureAwait(false);
+        switch (returnType)
         {
-            pipeline = updatedPipeline;
-            pipeline.LastUpdate = DateTimeOffset.UtcNow;
+            case ReturnType.Success:
+                pipeline = updatedPipeline;
+                pipeline.LastUpdate = DateTimeOffset.UtcNow;
 
-            this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
-            pipeline.MoveToNextStep();
-            await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
+                this.Log.LogInformation("Handler {0} processed pipeline {1} successfully", currentStepName, pipeline.DocumentId);
+                pipeline.MoveToNextStep();
+                await this.MoveForwardAsync(pipeline, cancellationToken).ConfigureAwait(false);
+                break;
+
+            case ReturnType.TransientError:
+                this.Log.LogError("Handler {0} failed to process pipeline {1}", currentStepName, pipeline.DocumentId);
+                break;
+
+            case ReturnType.FatalError:
+                this.Log.LogError("Handler {0} failed to process pipeline {1} due to an unrecoverable error", currentStepName, pipeline.DocumentId);
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException($"Unknown {returnType:G} return type");
         }
 
-        // Note: returning True, the message is removed from the queue
-        // Note: returning False, the message is put back in the queue and processed again
-        return success;
+        return returnType;
     }
 
     private async Task MoveForwardAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
