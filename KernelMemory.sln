@@ -337,6 +337,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "007-dotnet-serverless-azure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiktoken", "extensions\Tiktoken\Tiktoken\Tiktoken.csproj", "{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "303-dotnet-aspire", "examples\303-dotnet-aspire\303-dotnet-aspire.csproj", "{DD643765-8D45-4574-92C3-CBEF0C330242}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -629,6 +631,9 @@ Global
 		{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD643765-8D45-4574-92C3-CBEF0C330242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD643765-8D45-4574-92C3-CBEF0C330242}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD643765-8D45-4574-92C3-CBEF0C330242}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -730,6 +735,7 @@ Global
 		{8E907766-4A7D-46E2-B5E3-EB2994B1AA54} = {3C17F42B-CFC8-4900-8CFB-88936311E919}
 		{AF1E12A9-D8A1-4815-995E-C6F7B2022016} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{DD643765-8D45-4574-92C3-CBEF0C330242} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
