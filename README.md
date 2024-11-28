@@ -2,7 +2,11 @@ Kernel Memory
 =============
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&color=d82679&logo=discord&logoColor=white)](https://aka.ms/KMdiscord)
+[![Docker Image Version](https://img.shields.io/docker/v/kernelmemory/service?label=Docker&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
+[![Docker Image Version](https://img.shields.io/docker/v/kernelmemory/service/latest-arm64?arch=arm64&label=Docker+ARM&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
+[![NuGet Version](https://img.shields.io/nuget/v/Microsoft.KernelMemory?label=nuget&color=%23512BD4&logo=.net&logoColor=white)](https://www.nuget.org/packages/Microsoft.KernelMemory)
+[![GitHub Release](https://img.shields.io/github/v/release/microsoft/kernel-memory?color=%23dddddd&label=tag&logo=github&logoColor=white)](https://github.com/microsoft/kernel-memory/releases)
 
 This repository presents best practices and a reference implementation for Memory in specific AI
 and LLMs application scenarios. Please note that **the code provided serves as a demonstration**
