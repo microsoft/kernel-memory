@@ -403,19 +403,23 @@ public sealed class MemoryWebClient : IKernelMemory
         HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var eosToken = context.GetCustomEosTokenOrDefault("#DONE#");
         using (var reader = new StreamReader(stream, Encoding.UTF8))
         {
             string? line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+            while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) != null)
             {
-                if (line.StartsWith("data:"))
+                if (line.StartsWith("data:", StringComparison.Ordinal))
                 {
                     var jsonData = line.Substring(6);
                     var chunk = JsonSerializer.Deserialize<MemoryAnswer>(jsonData);
-                    yield return chunk;
-                    if (chunk?.Result == "end")
+                    if (chunk != null)
                     {
-                        break;
+                        yield return chunk;
+                        if (chunk.Result == eosToken)
+                        {
+                            break;
+                        }
                     }
                 }
             }
