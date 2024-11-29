@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ClosedXML" />
+        <PackageReference Include="ClosedXML" /> <!-- missing strong name (CS8002) -->
         <PackageReference Include="DocumentFormat.OpenXml" />
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
