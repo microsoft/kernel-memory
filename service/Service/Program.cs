@@ -130,6 +130,8 @@ internal static class Program
                     policy
                         .WithMethods("HEAD", "GET", "POST", "PUT", "DELETE")
                         .WithExposedHeaders("Content-Type", "Content-Length", "Last-Modified");
+                    // .AllowAnyOrigin()
+                    // .WithOrigins(...)
                     // .AllowAnyHeader()
                     // .WithHeaders(...)
                 });
