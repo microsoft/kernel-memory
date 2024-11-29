@@ -347,7 +347,7 @@ public sealed class SearchClient : ISearchClient
             string fact = PromptUtils.RenderFactTemplate(
                 template: factTemplate!,
                 factContent: partitionText,
-                source: fileNameForLlm,
+                source: fileNameForLLM,
                 relevance: recordRelevance.ToString("P1", CultureInfo.CurrentCulture),
                 recordId: record.Id,
                 tags: record.Tags,
