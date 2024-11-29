@@ -128,9 +128,6 @@ internal static class Program
                 options.AddPolicy(name: CORSPolicyName, policy =>
                 {
                     policy
-                        //.WithOrigins("http://127.0.0.1:5500") these three are to test in local for js and html, supposing you're opening 5500 port
-                        //.AllowAnyHeader()
-                        //.AllowAnyMethod()
                         .WithMethods("HEAD", "GET", "POST", "PUT", "DELETE")
                         .WithExposedHeaders("Content-Type", "Content-Length", "Last-Modified");
                     // .AllowAnyHeader()
