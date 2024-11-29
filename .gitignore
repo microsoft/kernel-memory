@@ -504,4 +504,3 @@ swa-cli.config.json
 
 *.orig
 .azure
-service/Service/AzureOpenAiDevelopment.json
