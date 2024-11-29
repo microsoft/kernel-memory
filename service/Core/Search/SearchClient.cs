@@ -323,7 +323,7 @@ public sealed class SearchClient : ISearchClient
         // Identify the file in case there are multiple files
         string fileId = record.GetFileId(this._log);
 
-        // Note: this is not a URL and perhaps could be dropped. For now, it acts as a unique identifier. See also SourceUrl.
+        // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
         string linkToFile = $"{index}/{documentId}/{fileId}";
 
         // Note: this is "content.url" when importing web pages
