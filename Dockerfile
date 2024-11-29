@@ -11,7 +11,7 @@ ARG RUN_IMAGE_TAG="8.0-alpine"
 
 FROM mcr.microsoft.com/dotnet/sdk:$BUILD_IMAGE_TAG AS build
 
-ARG BUILD_CONFIGURATION=Debug
+ARG BUILD_CONFIGURATION=Release
 
 COPY . /src/
 WORKDIR "/src/service/Service"
