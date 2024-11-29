@@ -49,7 +49,7 @@ LABEL org.opencontainers.image.authors="Devis Lucato, https://github.com/dluc"
 USER $USER
 
 # Used by .NET and KM to load appsettings.Production.json
-ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_HTTP_PORTS=9001
 
 EXPOSE 9001
