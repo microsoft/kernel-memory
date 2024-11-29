@@ -333,7 +333,7 @@ public sealed class SearchClient : ISearchClient
         string fileDownloadUrl = record.GetWebPageUrl(index);
 
         // Name of the file to show to the LLM, avoiding "content.url"
-        string fileNameForLlm = (fileName == "content.url" ? fileDownloadUrl : fileName);
+        string fileNameForLLM = (fileName == "content.url" ? fileDownloadUrl : fileName);
 
         if (result.Mode == SearchMode.SearchMode)
         {
