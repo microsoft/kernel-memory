@@ -16,4 +16,4 @@ infra
 
 # To make sure that the local appsettings files are not copied when building the image locally.
 # These files are not in GitHub thanks to .gitignore
-
+**/*appsettings.*.json
