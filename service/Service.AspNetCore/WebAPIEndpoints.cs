@@ -263,7 +263,7 @@ public static class WebAPIEndpoints
                 {
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
-                    httpContext.Response.ContentType = "text/event-stream";
+                    httpContext.Response.ContentType = "text/event-stream; charset=utf-8";
                     log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
                     try
                     {
