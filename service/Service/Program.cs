@@ -119,7 +119,7 @@ internal static class Program
             });
 
         // CORS
-        bool enableCORS = true;
+        bool enableCORS = false;
         const string CORSPolicyName = "KM-CORS";
         if (enableCORS && config.Service.RunWebService)
         {
