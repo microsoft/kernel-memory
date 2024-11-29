@@ -254,11 +254,11 @@ public sealed class SearchClient : ISearchClient
         this._log.LogTrace("{Count} records processed", result.RecordCount);
         var charsGenerated = 0;
         var wholeText = new StringBuilder();
-        await foreach (var x in this._answerGenerator.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(true))
+        await foreach (var token in this._answerGenerator.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(true))
         {
             var text = new StringBuilder();
-            text.Append(x);
-            wholeText.Append(x);
+            text.Append(token);
+            wholeText.Append(token);
             if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
             {
                 charsGenerated = text.Length;
