@@ -8,6 +8,7 @@ using Azure.Search.Documents.Models;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
+using AISearchOptions = Azure.Search.Documents.SearchOptions;
 
 namespace Microsoft.AzureAISearch.TestApplication;
 
@@ -246,7 +247,7 @@ internal static class Program
 
         fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
         fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
-        SearchOptions options = new()
+        AISearchOptions options = new()
         {
             Filter = fieldIsCollection
                 ? $"{fieldName}/any(s: s eq '{fieldValue1}') and {fieldName}/any(s: s eq '{fieldValue2}')"

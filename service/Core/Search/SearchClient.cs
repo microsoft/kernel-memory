@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -121,6 +123,81 @@ public sealed class SearchClient : ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new MemoryAnswer();
+
+        var stream = this.AskStreamingAsync(
+                index: index, question: question, filters, minRelevance, context, cancellationToken)
+            .ConfigureAwait(false);
+
+        var done = false;
+        StringBuilder text = new(result.Result);
+        await foreach (var part in stream.ConfigureAwait(false))
+        {
+            if (done) { break; }
+
+            switch (part.StreamState)
+            {
+                case StreamStates.Error:
+                    text.Clear();
+                    result = part;
+
+                    done = true;
+                    break;
+
+                case StreamStates.Reset:
+                    text.Clear();
+                    text.Append(part.Result);
+                    result = part;
+                    break;
+
+                case StreamStates.Append:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    break;
+
+                case StreamStates.Last:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    done = true;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(part.StreamState));
+            }
+        }
+
+        result.Question = question;
+        result.StreamState = null;
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
@@ -129,9 +206,11 @@ public sealed class SearchClient : ISearchClient
             ? this._config.MaxAskPromptSize
             : this._textGenerator.MaxTokenTotal;
 
+        // Prepare results (empty, error, etc.)
         SearchClientResult result = SearchClientResult.AskResultInstance(
             question: question,
             emptyAnswer: emptyAnswer,
+            moderatedAnswer: this._config.ModeratedAnswer,
             maxGroundingFacts: limit,
             tokensAvailable: maxTokens
                              - this._textGenerator.CountTokens(answerPrompt)
@@ -142,7 +221,8 @@ public sealed class SearchClient : ISearchClient
         if (string.IsNullOrEmpty(question))
         {
             this._log.LogWarning("No question provided");
-            return result.AskResult;
+            yield return result.NoQuestionResult;
+            yield break;
         }
 
         this._log.LogTrace("Fetching relevant memories");
@@ -171,7 +251,22 @@ public sealed class SearchClient : ISearchClient
 
         this._log.LogTrace("{Count} records processed", result.RecordCount);
 
-        return await this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false);
+        var first = true;
+        await foreach (var answer in this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false))
+        {
+            yield return answer;
+
+            if (first)
+            {
+                // Remove redundant data, sent only once in the first record, to reduce payload
+                first = false;
+
+                // Note: we keep the sources in the other collections (e.g. AskResult.ErrorResult.RelevantSources),
+                //       so in case of a stream reset the sources are sent again.
+                result.AskResult.RelevantSources.Clear();
+                result.AskResult.Question = null!;
+            }
+        }
     }
 
     /// <summary>
@@ -248,29 +343,17 @@ public sealed class SearchClient : ISearchClient
             this._log.LogTrace("Adding content #{0} with relevance {1}", result.FactsUsedCount, recordRelevance);
         }
 
-        Citation? citation;
-        if (result.Mode == SearchMode.SearchMode)
+        var citation = result.Mode switch
         {
-            citation = result.SearchResult.Results.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.SearchResult.Results.Add(citation);
-            }
-        }
-        else if (result.Mode == SearchMode.AskMode)
+            SearchMode.SearchMode => result.SearchResult.Results.FirstOrDefault(x => x.Link == linkToFile),
+            SearchMode.AskMode => result.AskResult.RelevantSources.FirstOrDefault(x => x.Link == linkToFile),
+            _ => throw new ArgumentOutOfRangeException(nameof(result.Mode))
+        };
+
+        if (citation == null)
         {
-            // If the file is already in the list of citations, only add the partition
-            citation = result.AskResult.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.AskResult.RelevantSources.Add(citation);
-            }
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(result.Mode));
+            citation = new Citation();
+            result.AddSource(citation);
         }
 
         citation.Index = index;

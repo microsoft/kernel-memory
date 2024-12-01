@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -15,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.HTTP;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
@@ -31,11 +34,10 @@ public static class WebAPIEndpoints
         builder.AddGetIndexesEndpoint(apiPrefix).AddFilters(filters);
         builder.AddDeleteIndexesEndpoint(apiPrefix).AddFilters(filters);
         builder.AddDeleteDocumentsEndpoint(apiPrefix).AddFilters(filters);
-        builder.AddAskEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddAskEndpoint(apiPrefix, kmConfig?.Service.SendSSEDoneMessage ?? true).AddFilters(filters);
         builder.AddSearchEndpoint(apiPrefix).AddFilters(filters);
         builder.AddUploadStatusEndpoint(apiPrefix).AddFilters(filters);
         builder.AddGetDownloadEndpoint(apiPrefix).AddFilters(filters);
-
         return builder;
     }
 
@@ -212,13 +214,14 @@ public static class WebAPIEndpoints
     }
 
     public static RouteHandlerBuilder AddAskEndpoint(
-        this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
+        this IEndpointRouteBuilder builder, string apiPrefix = "/", bool sseSendDoneMessage = true, IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
 
         // Ask endpoint
         var route = group.MapPost(Constants.HttpAskEndpoint,
-                async Task<IResult> (
+                async Task (
+                    HttpContext httpContext,
                     MemoryQuery query,
                     IKernelMemory service,
                     ILogger<KernelMemoryWebAPI> log,
@@ -228,20 +231,75 @@ public static class WebAPIEndpoints
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
 
-                    log.LogTrace("New search request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
-                    MemoryAnswer answer = await service.AskAsync(
-                            question: query.Question,
-                            index: query.Index,
-                            filters: query.Filters,
-                            minRelevance: query.MinRelevance,
-                            context: contextProvider.GetContext(),
-                            cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-                    return Results.Ok(answer);
+                    log.LogTrace("New ask request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+
+                    IAsyncEnumerable<MemoryAnswer> answerStream = service.AskStreamingAsync(
+                        question: query.Question,
+                        index: query.Index,
+                        filters: query.Filters,
+                        minRelevance: query.MinRelevance,
+                        options: new SearchOptions { Stream = query.Stream },
+                        context: contextProvider.GetContext(),
+                        cancellationToken: cancellationToken);
+
+                    httpContext.Response.StatusCode = StatusCodes.Status200OK;
+
+                    try
+                    {
+                        if (query.Stream)
+                        {
+                            httpContext.Response.ContentType = "text/event-stream; charset=utf-8";
+                            await foreach (var answer in answerStream.ConfigureAwait(false))
+                            {
+                                string json = answer.ToJson(true);
+                                await httpContext.Response.WriteAsync($"{SSE.DataPrefix}{json}\n\n", cancellationToken).ConfigureAwait(false);
+                                await httpContext.Response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            httpContext.Response.ContentType = "application/json; charset=utf-8";
+                            MemoryAnswer answer = await answerStream.FirstAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+                            string json = answer.ToJson(false);
+                            await httpContext.Response.WriteAsync(json, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.LogError(e, "An error occurred while preparing the response");
+
+                        // Attempt to set the status code, in case the output hasn't started yet
+                        httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+
+                        var json = query.Stream
+                            ? JsonSerializer.Serialize(new MemoryAnswer
+                            {
+                                StreamState = StreamStates.Error,
+                                Question = query.Question,
+                                NoResult = true,
+                                NoResultReason = $"Error: {e.Message} [{e.GetType().FullName}]"
+                            })
+                            : JsonSerializer.Serialize(new ProblemDetails
+                            {
+                                Status = StatusCodes.Status503ServiceUnavailable,
+                                Title = "Service Unavailable",
+                                Detail = $"{e.Message} [{e.GetType().FullName}]"
+                            });
+
+                        await httpContext.Response.WriteAsync(query.Stream ? $"{SSE.DataPrefix}{json}\n\n" : json, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    if (query.Stream && sseSendDoneMessage)
+                    {
+                        await httpContext.Response.WriteAsync($"{SSE.DoneMessage}\n\n", cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }
+
+                    await httpContext.Response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
                 })
             .Produces<MemoryAnswer>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+            .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
         return route;
     }
