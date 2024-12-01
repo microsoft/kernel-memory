@@ -23,6 +23,10 @@ public class MemoryQuery
     [JsonPropertyOrder(2)]
     public double MinRelevance { get; set; } = 0;
 
+    [JsonPropertyName("stream")]
+    [JsonPropertyOrder(3)]
+    public bool Stream { get; set; } = false;
+
     [JsonPropertyName("args")]
     [JsonPropertyOrder(100)]
     public Dictionary<string, object?> ContextArguments { get; set; } = [];

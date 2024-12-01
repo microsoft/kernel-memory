@@ -19,6 +19,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
+using AISearchOptions = Azure.Search.Documents.SearchOptions;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
@@ -184,7 +185,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             Exhaustive = false
         };
 
-        SearchOptions options = new()
+        AISearchOptions options = new()
         {
             VectorSearch = new()
             {
@@ -246,7 +247,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     {
         var client = this.GetSearchClient(index);
 
-        SearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
+        AISearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
@@ -596,13 +597,13 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         return indexSchema;
     }
 
-    private SearchOptions PrepareSearchOptions(
-        SearchOptions? options,
+    private AISearchOptions PrepareSearchOptions(
+        AISearchOptions? options,
         bool withEmbeddings,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1)
     {
-        options ??= new SearchOptions();
+        options ??= new AISearchOptions();
 
         // Define which fields to fetch
         options.Select.Add(AzureAISearchMemoryRecord.IdField);

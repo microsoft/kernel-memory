@@ -123,6 +123,81 @@ public sealed class SearchClient : ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new MemoryAnswer();
+
+        var stream = this.AskStreamingAsync(
+                index: index, question: question, filters, minRelevance, context, cancellationToken)
+            .ConfigureAwait(false);
+
+        var done = false;
+        StringBuilder text = new(result.Result);
+        await foreach (var part in stream.ConfigureAwait(false))
+        {
+            if (done) { break; }
+
+            switch (part.StreamState)
+            {
+                case StreamStates.Error:
+                    text.Clear();
+                    result = part;
+
+                    done = true;
+                    break;
+
+                case StreamStates.Reset:
+                    text.Clear();
+                    text.Append(part.Result);
+                    result = part;
+                    break;
+
+                case StreamStates.Append:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    break;
+
+                case StreamStates.Last:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    done = true;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(part.StreamState));
+            }
+        }
+
+        result.Question = question;
+        result.StreamState = null;
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
@@ -131,9 +206,11 @@ public sealed class SearchClient : ISearchClient
             ? this._config.MaxAskPromptSize
             : this._textGenerator.MaxTokenTotal;
 
+        // Prepare results (empty, error, etc.)
         SearchClientResult result = SearchClientResult.AskResultInstance(
             question: question,
             emptyAnswer: emptyAnswer,
+            moderatedAnswer: this._config.ModeratedAnswer,
             maxGroundingFacts: limit,
             tokensAvailable: maxTokens
                              - this._textGenerator.CountTokens(answerPrompt)
@@ -144,7 +221,8 @@ public sealed class SearchClient : ISearchClient
         if (string.IsNullOrEmpty(question))
         {
             this._log.LogWarning("No question provided");
-            return result.AskResult;
+            yield return result.NoQuestionResult;
+            yield break;
         }
 
         this._log.LogTrace("Fetching relevant memories");
@@ -173,126 +251,22 @@ public sealed class SearchClient : ISearchClient
 
         this._log.LogTrace("{Count} records processed", result.RecordCount);
 
-        return await this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
-        string index,
-        string question,
-        ICollection<MemoryFilter>? filters = null,
-        double minRelevance = 0,
-        IContext? context = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        this._log.LogInformation("question: '{0}'", question);
-        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
-        string eosToken = context.GetCustomEosTokenOrDefault("#DONE#");
-        string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
-        var maxTokens = this._config.MaxAskPromptSize > 0
-            ? this._config.MaxAskPromptSize
-            : this._textGenerator.MaxTokenTotal;
-        SearchClientResult result = SearchClientResult.AskResultInstance(
-            question: question,
-            emptyAnswer: emptyAnswer,
-            maxGroundingFacts: limit,
-            tokensAvailable: maxTokens
-                             - this._textGenerator.CountTokens(answerPrompt)
-                             - this._textGenerator.CountTokens(question)
-                             - this._config.AnswerTokens
-        );
-        if (string.IsNullOrEmpty(question))
+        var first = true;
+        await foreach (var answer in this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false))
         {
-            this._log.LogWarning("No question provided");
-            yield return result.AskResult;
-            result.AskResult.Result = eosToken;
-            this._log.LogInformation("Eos token: '{0}", result.AskResult.Result);
-            yield return result.AskResult;
-            yield break;
-        }
+            yield return answer;
 
-        this._log.LogTrace("Fetching relevant memories");
-        IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
-            index: index,
-            text: question,
-            filters: filters,
-            minRelevance: minRelevance,
-            limit: this._config.MaxMatchesCount,
-            withEmbeddings: false,
-            cancellationToken: cancellationToken);
-
-        string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
-        if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
-
-        // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memoryRecord, double recordRelevance) in matches.ConfigureAwait(false))
-        {
-            result.State = SearchState.Continue;
-            result = this.ProcessMemoryRecord(result, index, memoryRecord, recordRelevance, factTemplate);
-
-            if (result.State == SearchState.SkipRecord) { continue; }
-
-            if (result.State == SearchState.Stop) { break; }
-        }
-
-        if (result.FactsAvailableCount > 0 && result.FactsUsedCount == 0)
-        {
-            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            result.AskResult.NoResultReason = "Unable to use memories";
-            yield return result.AskResult;
-            yield break;
-        }
-
-        if (result.FactsUsedCount == 0)
-        {
-            this._log.LogWarning("No memories available");
-            result.AskResult.NoResultReason = "No memories available";
-            yield return result.AskResult;
-            yield break;
-        }
-
-        this._log.LogTrace("{Count} records processed", result.RecordCount);
-        var charsGenerated = 0;
-        var wholeText = new StringBuilder();
-        await foreach (var token in this._answerGenerator.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(true))
-        {
-            var text = new StringBuilder();
-            text.Append(token);
-            wholeText.Append(token);
-            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
+            if (first)
             {
-                charsGenerated = text.Length;
-                this._log.LogTrace("{0} chars generated", charsGenerated);
+                // Remove redundant data, sent only once in the first record, to reduce payload
+                first = false;
+
+                // Note: we keep the sources in the other collections (e.g. AskResult.ErrorResult.RelevantSources),
+                //       so in case of a stream reset the sources are sent again.
+                result.AskResult.RelevantSources.Clear();
+                result.AskResult.Question = null!;
             }
-
-            var newAnswer = new MemoryAnswer
-            {
-                Question = question,
-                NoResult = false,
-                Result = text.ToString()
-            };
-            this._log.LogInformation("Chunk: '{0}", newAnswer.Result);
-            yield return newAnswer;
         }
-
-        var current = new MemoryAnswer
-        {
-            Question = question,
-            NoResult = false,
-            Result = wholeText.ToString(),
-        };
-        MemoryAnswer moderatedResult = await this._answerGenerator.ModeratedAnswerAsync(current, cancellationToken).ConfigureAwait(false);
-        result.AskResult.Result = moderatedResult.Result;
-        result.AskResult.NoResult = moderatedResult.NoResult;
-        result.AskResult.NoResultReason = moderatedResult.NoResultReason;
-        if (result.AskResult.NoResultReason == "Content moderation failure")
-        {
-            yield return result.AskResult;
-        }
-
-        result.AskResult.Result = eosToken;
-        this._log.LogInformation("Eos token: '{0}", result.AskResult.Result);
-        yield return result.AskResult;
     }
 
     /// <summary>
@@ -369,29 +343,17 @@ public sealed class SearchClient : ISearchClient
             this._log.LogTrace("Adding content #{0} with relevance {1}", result.FactsUsedCount, recordRelevance);
         }
 
-        Citation? citation;
-        if (result.Mode == SearchMode.SearchMode)
+        var citation = result.Mode switch
         {
-            citation = result.SearchResult.Results.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.SearchResult.Results.Add(citation);
-            }
-        }
-        else if (result.Mode == SearchMode.AskMode)
+            SearchMode.SearchMode => result.SearchResult.Results.FirstOrDefault(x => x.Link == linkToFile),
+            SearchMode.AskMode => result.AskResult.RelevantSources.FirstOrDefault(x => x.Link == linkToFile),
+            _ => throw new ArgumentOutOfRangeException(nameof(result.Mode))
+        };
+
+        if (citation == null)
         {
-            // If the file is already in the list of citations, only add the partition
-            citation = result.AskResult.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.AskResult.RelevantSources.Add(citation);
-            }
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(result.Mode));
+            citation = new Citation();
+            result.AddSource(citation);
         }
 
         citation.Index = index;

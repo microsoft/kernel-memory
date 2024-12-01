@@ -50,7 +50,17 @@ public interface ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
+    /// <summary>
+    /// Answer the given question, if possible, grounding the response with relevant memories matching the given criteria.
+    /// </summary>
+    /// <param name="index">Index (aka collection) to search for grounding information</param>
+    /// <param name="question">Question to answer</param>
+    /// <param name="filters">Filtering criteria to select memories to consider</param>
+    /// <param name="minRelevance">Minimum relevance of the memories considered</param>
+    /// <param name="context">Optional context carrying optional information used by internal logic</param>
+    /// <param name="cancellationToken">Async task cancellation token</param>
+    /// <returns>Answer to the given question</returns>
+    IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string index,
         string question,
         ICollection<MemoryFilter>? filters = null,

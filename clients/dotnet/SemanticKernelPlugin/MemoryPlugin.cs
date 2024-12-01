@@ -404,6 +404,7 @@ public class MemoryPlugin
         MemoryAnswer answer = await this._memory.AskAsync(
             question: question,
             index: index ?? this._defaultIndex,
+            options: new SearchOptions { Stream = false },
             filter: TagsToMemoryFilter(tags ?? this._defaultRetrievalTags),
             minRelevance: minRelevance,
             cancellationToken: cancellationToken).ConfigureAwait(false);

@@ -15,7 +15,7 @@ using Microsoft.KernelMemory;
  *       without extracting memories. */
 internal static class Program
 {
-    private static MemoryWebClient? s_memory;
+    private static MemoryWebClient s_memory = null!;
     private static readonly List<string> s_toDelete = [];
 
     // Change this to True and configure Azure Document Intelligence to test OCR and support for images
@@ -55,8 +55,8 @@ internal static class Program
         // === RETRIEVAL =========
         // =======================
 
-        await AskSimpleQuestion();
-        await AskSimpleQuestionAndShowSources();
+        await AskSimpleQuestionStreamingTheAnswer();
+        await AskSimpleQuestionStreamingAndShowSources();
         await AskQuestionAboutImageContent();
         await AskQuestionUsingFilter();
         await AskQuestionsFilteringByUser();
@@ -249,16 +249,25 @@ internal static class Program
     // =======================
 
     // Question without filters
-    private static async Task AskSimpleQuestion()
+    private static async Task AskSimpleQuestionStreamingTheAnswer()
     {
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
         Console.WriteLine($"Expected result: formula explanation using the information loaded");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.6);
-        Console.WriteLine($"\nAnswer: {answer.Result}");
+        Console.Write("\nAnswer: ");
+        var answerStream = s_memory.AskStreamingAsync(question, minRelevance: 0.6,
+            options: new SearchOptions { Stream = true });
 
-        Console.WriteLine("\n====================================\n");
+        await foreach (var answer in answerStream)
+        {
+            // Print token received by LLM
+            Console.Write(answer.Result);
+            // Slow down the stream for demo purpose
+            await Task.Delay(25);
+        }
+
+        Console.WriteLine("\n\n====================================\n");
 
         /* OUTPUT
 
@@ -275,17 +284,32 @@ internal static class Program
     }
 
     // Another question without filters and show sources
-    private static async Task AskSimpleQuestionAndShowSources()
+    private static async Task AskSimpleQuestionStreamingAndShowSources()
     {
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
         Console.WriteLine($"Expected result: it should explain what KM project is (not generic kernel memory)");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.5);
-        Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
+        Console.Write("\nAnswer: ");
+        var answerStream = s_memory.AskStreamingAsync(question, minRelevance: 0.5,
+            options: new SearchOptions { Stream = true });
+
+        List<Citation> sources = [];
+        await foreach (var answer in answerStream)
+        {
+            // Print token received by LLM
+            Console.Write(answer.Result);
+
+            // Collect sources
+            sources.AddRange(answer.RelevantSources);
+
+            // Slow down the stream for demo purpose
+            await Task.Delay(5);
+        }
 
         // Show sources / citations
-        foreach (var x in answer.RelevantSources)
+        Console.WriteLine("\n\nSources:\n");
+        foreach (var x in sources)
         {
             Console.WriteLine(x.SourceUrl != null
                 ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"

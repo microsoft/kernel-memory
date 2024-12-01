@@ -211,30 +211,28 @@ public interface IKernelMemory
 
     /// <summary>
     /// Search the given index for an answer to the given query.
+    ///
+    /// Use this method to work with IAsyncEnumerable and optionally stream the output.
+    /// - Note: you must set options.Stream = true to enable token streaming.
+    ///
+    /// Use the .AskAsync() extension method to receive the complete answer without streaming.
     /// </summary>
     /// <param name="question">Question to answer</param>
     /// <param name="index">Optional index name</param>
     /// <param name="filter">Filter to match</param>
     /// <param name="filters">Filters to match (using inclusive OR logic). If 'filter' is provided too, the value is merged into this list.</param>
     /// <param name="minRelevance">Minimum Cosine Similarity required</param>
+    /// <param name="options">Options for the request, such as whether to stream results</param>
     /// <param name="context">Unstructured data supporting custom business logic in the current request.</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Answer to the query, if possible</returns>
-    public Task<MemoryAnswer> AskAsync(
+    public IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
-        IContext? context = null,
-        CancellationToken cancellationToken = default);
-
-    public IAsyncEnumerable<MemoryAnswer> AskAsyncChunk(
-        string question,
-        string? index = null,
-        MemoryFilter? filter = null,
-        ICollection<MemoryFilter>? filters = null,
-        double minRelevance = 0,
+        SearchOptions? options = null,
         IContext? context = null,
         CancellationToken cancellationToken = default);
 }
