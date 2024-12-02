@@ -5,7 +5,7 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.AI.Tiktoken</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.AI</RootNamespace>
-        <NoWarn>$(NoWarn);KMEXP00;CA1308;NU5104;</NoWarn>
+        <NoWarn>$(NoWarn);KMEXP00;CA1308;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,7 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.P50kBase" />
     </ItemGroup>
 
     <PropertyGroup>

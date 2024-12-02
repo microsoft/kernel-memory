@@ -39,14 +39,14 @@
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
+    <!-- Tokenizers Data Packages -->
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.P50kBase" Version="1.0.0" />
   </ItemGroup>
   <!-- Security upgrades -->
   <ItemGroup>
     <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
-  </ItemGroup>
-  <!-- Pre-release dependencies -->
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.22.0-preview.24378.1" />
   </ItemGroup>
   <!-- Missing Strong Name (CS8002) -->
   <ItemGroup>
