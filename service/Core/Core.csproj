@@ -19,9 +19,6 @@
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.P50kBase" />
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
