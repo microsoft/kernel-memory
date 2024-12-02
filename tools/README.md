@@ -1,33 +1,41 @@
-# Kernel memory web service scripts
+# Tools
 
-### upload-file.sh
+This folder contains a list of various tools used during development.
+
+- `aspire` folder: some .NET Aspire configurations
+- `dev` folder: build, test, release scripts
+- `InteractiveSetup` folder: project used to generate/update `appsettings.development.json` files
+
+# Kernel Memory from CLI
+
+### km-cli/upload-file.sh
 
 Simple client for command line uploads to Kernel Memory.
 
 Instructions:
 
 ```bash
-./upload-file.sh -h
+./km-cli/upload-file.sh -h
 ```
 
-### ask.sh
+### km-cli/ask.sh
 
 Simple client for asking questions about your documents from the command line.
 
 Instructions:
 
 ```bash
-./ask.sh -h
+./km-cli/ask.sh -h
 ```
 
-### search.sh
+### km-cli/search.sh
 
 Simple client for searching your indexed documents from the command line.
 
 Instructions:
 
 ```bash
-./search.sh -h
+./km-cli/search.sh -h
 ```
 
 # Vector DB scripts

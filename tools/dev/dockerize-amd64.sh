@@ -28,8 +28,10 @@ docker buildx build --no-cache --load \
     --build-arg RUN_IMAGE_TAG=8.0-alpine-amd64 \
     -t ${IMG}${TAG} .
 
-echo "Signing in as ${USR}..."
-docker login -u ${USR}
+# echo "Signing in as ${USR}..."
+# docker login -u ${USR}
 
 echo "Pushing ${IMG}${TAG}..."
 docker push "${IMG}${TAG}"
+
+echo "Docker image push complete."
