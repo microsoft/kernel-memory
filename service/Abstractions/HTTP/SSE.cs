@@ -34,8 +34,8 @@ public static class SSE
                 buffer.Clear();
                 if (message.Trim() == DoneMessage) { yield break; }
 
-                var memoryAnswer = ParseMessage<T>(message);
-                if (memoryAnswer != null) { yield return memoryAnswer; }
+                var value = ParseMessage<T>(message);
+                if (value != null) { yield return value; }
             }
             else
             {
@@ -49,8 +49,8 @@ public static class SSE
             string message = buffer.ToString();
             if (message.Trim() == DoneMessage) { yield break; }
 
-            var memoryAnswer = ParseMessage<T>(message);
-            if (memoryAnswer != null) { yield return memoryAnswer; }
+            var value = ParseMessage<T>(message);
+            if (value != null) { yield return value; }
         }
     }
 

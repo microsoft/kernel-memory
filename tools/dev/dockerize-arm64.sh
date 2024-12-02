@@ -54,8 +54,8 @@ docker buildx build --no-cache --load \
     -t ${IMG}${TAG1} -t ${IMG}${TAG2} \
     .
 
-echo "Signing in as ${USR}..."
-docker login -u ${USR}
+# echo "Signing in as ${USR}..."
+# docker login -u ${USR}
 
 # Push images to Docker registry
 for IMAGE_TAG in "${TAG1}" "${TAG2}"; do
