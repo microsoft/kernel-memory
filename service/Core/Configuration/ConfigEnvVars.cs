@@ -73,7 +73,7 @@ public static class ConfigEnvVars
                 {
                     if (dictionary[key] != null)
                     {
-                        var dictKey = $"{fullKey}_{key}";
+                        var dictKey = $"{fullKey}__{key}";
                         result[dictKey] = dictionary[key]?.ToString() ?? string.Empty;
                     }
                 }
