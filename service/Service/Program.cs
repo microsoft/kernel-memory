@@ -154,6 +154,10 @@ internal static class Program
                                              $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
                 .AddEndpointFilter(errorFilter)
                 .AddEndpointFilter(authFilter)
+                .WithName("ServiceStatus")
+                .WithDisplayName("ServiceStatus")
+                .WithDescription("Show the service status and uptime.")
+                .WithSummary("Show the service status and uptime.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -163,6 +167,10 @@ internal static class Program
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))
+                .WithName("ServiceHealth")
+                .WithDisplayName("ServiceHealth")
+                .WithDescription("Show if the service is healthy.")
+                .WithSummary("Show if the service is healthy.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -204,7 +212,7 @@ internal static class Program
         Console.WriteLine("***************************************************************************************************************************");
 
         app.Logger.LogInformation(
-            "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
+            "Starting Kernel Memory service, .NET Env: {EnvironmentType}, Log Level: {LogLevel}, Web service: {WebServiceEnabled}, Auth: {WebServiceAuthEnabled}, Pipeline handlers: {HandlersEnabled}",
             env,
             app.Logger.GetLogLevelName(),
             config.Service.RunWebService,
