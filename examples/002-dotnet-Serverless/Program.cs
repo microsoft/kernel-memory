@@ -310,8 +310,7 @@ public static class Program
         Console.WriteLine($"Expected result: formula explanation using the information loaded");
 
         Console.Write("\nAnswer: ");
-        var answerStream = s_memory.AskStreamingAsync(question, minRelevance: 0.6,
-            options: new SearchOptions { Stream = true });
+        var answerStream = s_memory.AskStreamingAsync(question, options: new SearchOptions { Stream = true });
 
         await foreach (var answer in answerStream)
         {

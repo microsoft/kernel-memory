@@ -31,13 +31,13 @@ public static class WebAPIEndpoints
         IEndpointFilter[]? filters = null)
     {
         builder.AddPostUploadEndpoint(apiPrefix, kmConfig?.Service.GetMaxUploadSizeInBytes()).AddFilters(filters);
-        builder.AddGetIndexesEndpoint(apiPrefix).AddFilters(filters);
-        builder.AddDeleteIndexesEndpoint(apiPrefix).AddFilters(filters);
-        builder.AddDeleteDocumentsEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddUploadStatusEndpoint(apiPrefix).AddFilters(filters);
         builder.AddAskEndpoint(apiPrefix, kmConfig?.Service.SendSSEDoneMessage ?? true).AddFilters(filters);
         builder.AddSearchEndpoint(apiPrefix).AddFilters(filters);
-        builder.AddUploadStatusEndpoint(apiPrefix).AddFilters(filters);
         builder.AddGetDownloadEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddListIndexesEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddDeleteIndexEndpoint(apiPrefix).AddFilters(filters);
+        builder.AddDeleteDocumentEndpoint(apiPrefix).AddFilters(filters);
         return builder;
     }
 
@@ -58,11 +58,11 @@ public static class WebAPIEndpoints
             {
                 if (maxUploadSizeInBytes.HasValue && request.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } feature)
                 {
-                    log.LogTrace("Max upload request body size set to {0} bytes", maxUploadSizeInBytes.Value);
+                    log.LogTrace("Max upload request body size set to {MaxSize} bytes", maxUploadSizeInBytes.Value);
                     feature.MaxRequestBodySize = maxUploadSizeInBytes;
                 }
 
-                log.LogTrace("New upload HTTP request, content length {0}", request.ContentLength);
+                log.LogTrace("New upload HTTP request, content length {ContentLength}", request.ContentLength);
 
                 // Note: .NET doesn't yet support binding multipart forms including data and files
                 (HttpDocumentUploadRequest input, bool isValid, string errMsg)
@@ -72,7 +72,7 @@ public static class WebAPIEndpoints
                 // Allow internal classes to access custom arguments via IContextProvider
                 contextProvider.InitContextArgs(input.ContextArguments);
 
-                log.LogTrace("Index '{0}'", input.Index);
+                log.LogTrace("Index '{IndexName}'", input.Index);
 
                 if (!isValid)
                 {
@@ -87,7 +87,7 @@ public static class WebAPIEndpoints
                         .ImportDocumentAsync(input.ToDocumentUploadRequest(), contextProvider.GetContext(), cancellationToken)
                         .ConfigureAwait(false);
 
-                    log.LogTrace("Doc Id '{1}'", documentId);
+                    log.LogTrace("Doc Id '{DocumentId}'", documentId);
 
                     var url = Constants.HttpUploadStatusEndpointWithParams
                         .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
@@ -104,6 +104,10 @@ public static class WebAPIEndpoints
                     return Results.Problem(title: "Document upload failed", detail: e.Message, statusCode: 503);
                 }
             })
+            .WithName("UploadDocument")
+            .WithDisplayName("UploadDocument")
+            .WithDescription("Upload a new document to the knowledge base and extract memories from it.")
+            .WithSummary("Upload a document to the knowledge base and extract memories from it. If a document with the same ID already exists, it will be overwritten and the memories previously extracted will be updated. Note: a document can contain multiple files.")
             .Produces<UploadAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
@@ -113,7 +117,7 @@ public static class WebAPIEndpoints
         return route;
     }
 
-    public static RouteHandlerBuilder AddGetIndexesEndpoint(
+    public static RouteHandlerBuilder AddListIndexesEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/")
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
@@ -138,6 +142,10 @@ public static class WebAPIEndpoints
 
                     return Results.Ok(result);
                 })
+            .WithName("ListIndexes")
+            .WithDisplayName("ListIndexes")
+            .WithDescription("Get the list of containers (aka 'indexes') from the knowledge base.")
+            .WithSummary("Get the list of containers (aka 'indexes') from the knowledge base. Each index has a unique name. Indexes are collections of memories extracted from the documents uploaded.")
             .Produces<IndexCollection>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -145,7 +153,7 @@ public static class WebAPIEndpoints
         return route;
     }
 
-    public static RouteHandlerBuilder AddDeleteIndexesEndpoint(
+    public static RouteHandlerBuilder AddDeleteIndexEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
@@ -159,7 +167,7 @@ public static class WebAPIEndpoints
                     ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request, index '{0}'", index);
+                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index);
                     await service.DeleteIndexAsync(index: index, cancellationToken)
                         .ConfigureAwait(false);
                     // There's no API to check the index deletion progress, so the URL is empty
@@ -170,6 +178,10 @@ public static class WebAPIEndpoints
                         Message = "Index deletion request received, pipeline started"
                     });
                 })
+            .WithName("DeleteIndexByName")
+            .WithDisplayName("DeleteIndexByName")
+            .WithDescription("Delete a container of documents (aka 'index') from the knowledge base.")
+            .WithSummary("Delete a container of documents (aka 'index') from the knowledge base. Indexes are collections of memories extracted from the documents uploaded.")
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -177,7 +189,7 @@ public static class WebAPIEndpoints
         return route;
     }
 
-    public static RouteHandlerBuilder AddDeleteDocumentsEndpoint(
+    public static RouteHandlerBuilder AddDeleteDocumentEndpoint(
         this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter[]? filters = null)
     {
         RouteGroupBuilder group = builder.MapGroup(apiPrefix);
@@ -193,7 +205,7 @@ public static class WebAPIEndpoints
                     ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request, index '{0}'", index);
+                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index);
                     await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
@@ -206,6 +218,10 @@ public static class WebAPIEndpoints
                         Message = "Document deletion request received, pipeline started"
                     });
                 })
+            .WithName("DeleteDocumentById")
+            .WithDisplayName("DeleteDocumentById")
+            .WithDescription("Delete a document from the knowledge base.")
+            .WithSummary("Delete a document from the knowledge base. When deleting a document, which can consist of multiple files, all the memories previously extracted are deleted too.")
             .Produces<DeleteAccepted>(StatusCodes.Status202Accepted)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -231,7 +247,7 @@ public static class WebAPIEndpoints
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
 
-                    log.LogTrace("New ask request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+                    log.LogTrace("New ask request, index '{IndexName}', minRelevance {MinRelevance}", query.Index, query.MinRelevance);
 
                     IAsyncEnumerable<MemoryAnswer> answerStream = service.AskStreamingAsync(
                         question: query.Question,
@@ -296,6 +312,10 @@ public static class WebAPIEndpoints
 
                     await httpContext.Response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
                 })
+            .WithName("AnswerQuestion")
+            .WithDisplayName("AnswerQuestion")
+            .WithDescription("Answer a user question using the internal knowledge base.")
+            .WithSummary("Use the memories extracted from the files uploaded to generate an answer. The query can include filters to use only a subset of the memories available.")
             .Produces<MemoryAnswer>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
@@ -321,7 +341,7 @@ public static class WebAPIEndpoints
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
 
-                    log.LogTrace("New search HTTP request, index '{0}', minRelevance {1}", query.Index, query.MinRelevance);
+                    log.LogTrace("New search HTTP request, index '{IndexName}', minRelevance {MinRelevance}", query.Index, query.MinRelevance);
                     SearchResult answer = await service.SearchAsync(
                             query: query.Query,
                             index: query.Index,
@@ -333,6 +353,10 @@ public static class WebAPIEndpoints
                         .ConfigureAwait(false);
                     return Results.Ok(answer);
                 })
+            .WithName("SearchDocumentSnippets")
+            .WithDisplayName("SearchDocumentSnippets")
+            .WithDescription("Search the knowledge base for relevant snippets of text.")
+            .WithSummary("Search the knowledge base for relevant snippets of text. The search can include filters to use only a subset of the knowledge base.")
             .Produces<SearchResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -376,6 +400,10 @@ public static class WebAPIEndpoints
 
                     return Results.Ok(pipeline);
                 })
+            .WithName("CheckDocumentStatus")
+            .WithDisplayName("CheckDocumentStatus")
+            .WithDescription("Check the status of a file upload in progress.")
+            .WithSummary("Check the status of a file upload in progress. When uploading a document, which can consist of multiple files, each file goes through multiple steps. The status include details about which steps are completed.")
             .Produces<DataPipelineStatus>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
@@ -409,7 +437,7 @@ public static class WebAPIEndpoints
                     string.IsNullOrWhiteSpace(filename));
                 var errMsg = "Missing required parameter";
 
-                log.LogTrace("New download file HTTP request, index {0}, documentId {1}, fileName {3}", index, documentId, filename);
+                log.LogTrace("New download file HTTP request, index {IndexName}, documentId {DocumentId}, fileName {FileName}", index, documentId, filename);
 
                 if (!isValid)
                 {
@@ -433,7 +461,7 @@ public static class WebAPIEndpoints
                         return Results.Problem(title: "File not found", statusCode: 404);
                     }
 
-                    log.LogTrace("Downloading file '{0}', size '{1}', type '{2}'", filename, file.FileSize, file.FileType);
+                    log.LogTrace("Downloading file '{FileName}', size '{FileSize}', type '{FileType}'", filename, file.FileSize, file.FileType);
                     Stream resultingFileStream = await file.GetStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
                     var response = Results.Stream(
                         resultingFileStream,
@@ -459,6 +487,11 @@ public static class WebAPIEndpoints
                     return Results.Problem(title: "File download failed", detail: e.Message, statusCode: 503);
                 }
             })
+            .WithName("DownloadFile")
+            .WithDisplayName("DownloadFile")
+            .WithDescription("Download a file referenced by a previous answer or search result.")
+            .WithSummary("Download a file referenced by a previous answer or search result. The file is returned as the original copy, retrieved from the document storage.")
+            .WithGroupName("Search")
             .Produces<StreamableFileContent>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
