@@ -15,9 +15,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
-        <PackageReference Include="Microsoft.ML.Tokenizers.Data.P50kBase" />
     </ItemGroup>
 
     <PropertyGroup>
