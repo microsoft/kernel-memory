@@ -108,7 +108,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}"
 	ProjectSection(SolutionItems) = preProject
-		tools\ask.sh = tools\ask.sh
 		tools\README.md = tools\README.md
 		tools\run-elasticsearch.sh = tools\run-elasticsearch.sh
 		tools\run-mongodb-atlas.sh = tools\run-mongodb-atlas.sh
@@ -117,10 +116,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{CA49F1A1
 		tools\run-rabbitmq.sh = tools\run-rabbitmq.sh
 		tools\run-redis.sh = tools\run-redis.sh
 		tools\run-s3ninja.sh = tools\run-s3ninja.sh
-		tools\search.sh = tools\search.sh
-		tools\upload-file.sh = tools\upload-file.sh
-		tools\dockerize-amd64.sh = tools\dockerize-amd64.sh
-		tools\dockerize-arm64.sh = tools\dockerize-arm64.sh
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "service\Abstractions\Abstractions.csproj", "{8A9FA587-7EBA-4D43-BE47-38D798B1C74C}"
@@ -338,6 +333,32 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tiktoken", "extensions\Tiktoken\Tiktoken\Tiktoken.csproj", "{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "303-dotnet-aspire", "examples\303-dotnet-aspire\303-dotnet-aspire.csproj", "{DD643765-8D45-4574-92C3-CBEF0C330242}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{07A91D09-CA4D-425F-83AD-F955336AACD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "all-azure", "tools\aspire\all-azure\all-azure.csproj", "{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "volatile-openai", "tools\aspire\volatile-openai\volatile-openai.csproj", "{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Extensions", "tools\aspire\Aspire.Extensions\Aspire.Extensions.csproj", "{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{3C1C483D-2C09-4B0D-9394-82B2AF1D61F1}"
+	ProjectSection(SolutionItems) = preProject
+		tools\dev\build.sh = tools\dev\build.sh
+		tools\dev\changes-since-last-release.sh = tools\dev\changes-since-last-release.sh
+		tools\dev\create-azure-webapp-publish-artifacts.sh = tools\dev\create-azure-webapp-publish-artifacts.sh
+		tools\dev\dockerize-amd64.sh = tools\dev\dockerize-amd64.sh
+		tools\dev\dockerize-arm64.sh = tools\dev\dockerize-arm64.sh
+		tools\dev\get-azure-token.py = tools\dev\get-azure-token.py
+		tools\dev\run-unit-tests.sh = tools\dev\run-unit-tests.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "km-cli", "km-cli", "{239F5FE9-EAEE-4FA7-A3D5-09608FBA6EED}"
+	ProjectSection(SolutionItems) = preProject
+		tools\km-cli\ask.sh = tools\km-cli\ask.sh
+		tools\km-cli\search.sh = tools\km-cli\search.sh
+		tools\km-cli\upload-file.sh = tools\km-cli\upload-file.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -634,6 +655,18 @@ Global
 		{DD643765-8D45-4574-92C3-CBEF0C330242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DD643765-8D45-4574-92C3-CBEF0C330242}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD643765-8D45-4574-92C3-CBEF0C330242}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -736,6 +769,14 @@ Global
 		{AF1E12A9-D8A1-4815-995E-C6F7B2022016} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
 		{830C91B5-6F8D-4DAD-B1BD-3C2F9DEEC8F6} = {155DA079-E267-49AF-973A-D1D44681970F}
 		{DD643765-8D45-4574-92C3-CBEF0C330242} = {0A43C65C-6007-4BB4-B3FE-8D439FC91841}
+		{07A91D09-CA4D-425F-83AD-F955336AACD7} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
+		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
+		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
+		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
+		{3C1C483D-2C09-4B0D-9394-82B2AF1D61F1} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
+		{239F5FE9-EAEE-4FA7-A3D5-09608FBA6EED} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
+		{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
+		{7BA7F1B2-19E2-46EB-B000-513EE2F65769} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}
