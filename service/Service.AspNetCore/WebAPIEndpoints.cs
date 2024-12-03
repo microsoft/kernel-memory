@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
+using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.HTTP;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
@@ -72,7 +73,7 @@ public static class WebAPIEndpoints
                 // Allow internal classes to access custom arguments via IContextProvider
                 contextProvider.InitContextArgs(input.ContextArguments);
 
-                log.LogTrace("Index '{IndexName}'", input.Index);
+                log.LogTrace("Index '{IndexName}'", input.Index.NLF()); //lgtm[cs/log-forging]
 
                 if (!isValid)
                 {
@@ -87,7 +88,7 @@ public static class WebAPIEndpoints
                         .ImportDocumentAsync(input.ToDocumentUploadRequest(), contextProvider.GetContext(), cancellationToken)
                         .ConfigureAwait(false);
 
-                    log.LogTrace("Doc Id '{DocumentId}'", documentId);
+                    log.LogTrace("Doc Id '{DocumentId}'", documentId.NLF()); //lgtm[cs/log-forging]
 
                     var url = Constants.HttpUploadStatusEndpointWithParams
                         .Replace(Constants.HttpIndexPlaceholder, input.Index, StringComparison.Ordinal)
@@ -167,7 +168,7 @@ public static class WebAPIEndpoints
                     ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index);
+                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index.NLF()); //lgtm[cs/log-forging]
                     await service.DeleteIndexAsync(index: index, cancellationToken)
                         .ConfigureAwait(false);
                     // There's no API to check the index deletion progress, so the URL is empty
@@ -205,7 +206,7 @@ public static class WebAPIEndpoints
                     ILogger<KernelMemoryWebAPI> log,
                     CancellationToken cancellationToken) =>
                 {
-                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index);
+                    log.LogTrace("New delete document HTTP request, index '{IndexName}'", index.NLF()); //lgtm[cs/log-forging]
                     await service.DeleteDocumentAsync(documentId: documentId, index: index, cancellationToken)
                         .ConfigureAwait(false);
                     var url = Constants.HttpUploadStatusEndpointWithParams
@@ -247,7 +248,8 @@ public static class WebAPIEndpoints
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
 
-                    log.LogTrace("New ask request, index '{IndexName}', minRelevance {MinRelevance}", query.Index, query.MinRelevance);
+                    log.LogTrace("New ask request, index '{IndexName}', minRelevance {MinRelevance}",
+                        query.Index.NLF(), query.MinRelevance); //lgtm[cs/log-forging]
 
                     IAsyncEnumerable<MemoryAnswer> answerStream = service.AskStreamingAsync(
                         question: query.Question,
@@ -341,7 +343,8 @@ public static class WebAPIEndpoints
                     // Allow internal classes to access custom arguments via IContextProvider
                     contextProvider.InitContextArgs(query.ContextArguments);
 
-                    log.LogTrace("New search HTTP request, index '{IndexName}', minRelevance {MinRelevance}", query.Index, query.MinRelevance);
+                    log.LogTrace("New search HTTP request, index '{IndexName}', minRelevance {MinRelevance}",
+                        query.Index.NLF(), query.MinRelevance); //lgtm[cs/log-forging]
                     SearchResult answer = await service.SearchAsync(
                             query: query.Query,
                             index: query.Index,
@@ -437,7 +440,8 @@ public static class WebAPIEndpoints
                     string.IsNullOrWhiteSpace(filename));
                 var errMsg = "Missing required parameter";
 
-                log.LogTrace("New download file HTTP request, index {IndexName}, documentId {DocumentId}, fileName {FileName}", index, documentId, filename);
+                log.LogTrace("New download file HTTP request, index {IndexName}, documentId {DocumentId}, fileName {FileName}",
+                    index.NLF(), documentId.NLF(), filename.NLF()); //lgtm[cs/log-forging]
 
                 if (!isValid)
                 {
@@ -461,7 +465,8 @@ public static class WebAPIEndpoints
                         return Results.Problem(title: "File not found", statusCode: 404);
                     }
 
-                    log.LogTrace("Downloading file '{FileName}', size '{FileSize}', type '{FileType}'", filename, file.FileSize, file.FileType);
+                    log.LogTrace("Downloading file '{FileName}', size '{FileSize}', type '{FileType}'",
+                        filename.NLF(), file.FileSize, file.FileType.NLF()); //lgtm[cs/log-forging]
                     Stream resultingFileStream = await file.GetStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
                     var response = Results.Stream(
                         resultingFileStream,
