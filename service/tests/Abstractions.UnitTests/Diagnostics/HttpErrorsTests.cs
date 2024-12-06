@@ -38,7 +38,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.Unused)] // 306
     [InlineData(HttpStatusCode.RedirectKeepVerb)] // 307
     [InlineData(HttpStatusCode.PermanentRedirect)] // 308
-    public void ItRecognizesErrors(HttpStatusCode statusCode)
+    public void ItRecognizesErrors1(HttpStatusCode statusCode)
     {
         Assert.False(statusCode.IsTransientError());
         Assert.False(HttpErrors.IsTransientError((int)statusCode));
@@ -68,7 +68,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.Unused)] // 306
     [InlineData(HttpStatusCode.RedirectKeepVerb)] // 307
     [InlineData(HttpStatusCode.PermanentRedirect)] // 308
-    public void ItRecognizesErrors(HttpStatusCode? statusCode)
+    public void ItRecognizesErrors2(HttpStatusCode? statusCode)
     {
         Assert.False(statusCode.IsTransientError());
         Assert.False(statusCode.IsFatalError());
@@ -85,7 +85,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.ServiceUnavailable)] // 503
     [InlineData(HttpStatusCode.GatewayTimeout)] // 504
     [InlineData(HttpStatusCode.InsufficientStorage)] // 507
-    public void ItRecognizesTransientErrors(HttpStatusCode statusCode)
+    public void ItRecognizesTransientErrors1(HttpStatusCode statusCode)
     {
         Assert.True(statusCode.IsTransientError());
         Assert.True(HttpErrors.IsTransientError((int)statusCode));
@@ -105,7 +105,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.ServiceUnavailable)] // 503
     [InlineData(HttpStatusCode.GatewayTimeout)] // 504
     [InlineData(HttpStatusCode.InsufficientStorage)] // 507
-    public void ItRecognizesTransientErrors(HttpStatusCode? statusCode)
+    public void ItRecognizesTransientErrors2(HttpStatusCode? statusCode)
     {
         Assert.True(statusCode.IsTransientError());
         Assert.False(statusCode.IsFatalError());
@@ -138,7 +138,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.LoopDetected)] // 508
     [InlineData(HttpStatusCode.NotExtended)] // 510
     [InlineData(HttpStatusCode.NetworkAuthenticationRequired)] // 511
-    public void ItRecognizesFatalErrors(HttpStatusCode statusCode)
+    public void ItRecognizesFatalErrors1(HttpStatusCode statusCode)
     {
         Assert.False(statusCode.IsTransientError());
         Assert.False(HttpErrors.IsTransientError((int)statusCode));
@@ -174,7 +174,7 @@ public sealed class HttpErrorsTests
     [InlineData(HttpStatusCode.LoopDetected)] // 508
     [InlineData(HttpStatusCode.NotExtended)] // 510
     [InlineData(HttpStatusCode.NetworkAuthenticationRequired)] // 511
-    public void ItRecognizesFatalErrors(HttpStatusCode? statusCode)
+    public void ItRecognizesFatalErrors2(HttpStatusCode? statusCode)
     {
         Assert.False(statusCode.IsTransientError());
         Assert.True(statusCode.IsFatalError());

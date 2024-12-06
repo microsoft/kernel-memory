@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Aspire.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Aspire;
 using Projects;
-
-namespace Microsoft.KernelMemory.Aspire.AppHost;
 
 internal static class Program
 {
@@ -67,7 +69,10 @@ internal static class Program
             .WithEnvironment("KernelMemory__Services__AzureOpenAIEmbedding__Endpoint", s_azureOpenAIEmbeddingConfig.Endpoint)
             .WithEnvironment("KernelMemory__Services__AzureOpenAIEmbedding__Deployment", s_azureOpenAIEmbeddingConfig.Deployment);
 
-        builder.Build().Run();
+        builder
+            .ShowDashboardUrl()
+            .LaunchDashboard()
+            .Build().Run();
     }
 
     private static void RunFromDockerWithOpenAI(string openAIKey, string dockerTag = "latest")

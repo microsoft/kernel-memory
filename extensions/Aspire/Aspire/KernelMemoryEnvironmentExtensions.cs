@@ -1,10 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using Microsoft.KernelMemory.Configuration;
 
 namespace Microsoft.KernelMemory.Aspire;
 
-public static class AspireExtensions
+public static class KernelMemoryEnvironmentExtensions
 {
     public static IResourceBuilder<T> WithKmServiceConfig<T>(
         this IResourceBuilder<T> builder, string serviceName, object config)

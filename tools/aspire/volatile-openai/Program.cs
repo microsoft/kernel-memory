@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Aspire.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.Pipeline.Queue.DevTools;
@@ -46,6 +48,9 @@ internal static class Program
             .WithKmContentSafetyModerationEnvironment(null) // ensure moderation is disabled
             .WithKmOcrEnvironment(null); // ensure OCR is disabled;
 
-        builder.Build().Run();
+        builder
+            .ShowDashboardUrl()
+            .LaunchDashboard()
+            .Build().Run();
     }
 }

@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Aspire</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Aspire</RootNamespace>
+        <NoWarn>$(NoWarn);</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting" />
+        <PackageReference Include="Aspire.Hosting.AppHost" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Aspire</PackageId>
+        <Product>.NET Aspire extensions for Kernel Memory</Product>
+        <Description>Make it easier to develop and work with Kernel Memory</Description>
+        <PackageTags>Aspire, Memory, RAG, Kernel Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+</Project>
