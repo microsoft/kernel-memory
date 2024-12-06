@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Aspire.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.KernelMemory;
 using Projects;
-
-namespace Microsoft.KernelMemory.Aspire.AppHost;
 
 internal static class Program
 {

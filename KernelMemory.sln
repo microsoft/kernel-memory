@@ -340,8 +340,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "all-azure", "tools\aspire\a
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "volatile-openai", "tools\aspire\volatile-openai\volatile-openai.csproj", "{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.Extensions", "tools\aspire\Aspire.Extensions\Aspire.Extensions.csproj", "{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{3C1C483D-2C09-4B0D-9394-82B2AF1D61F1}"
 	ProjectSection(SolutionItems) = preProject
 		tools\dev\build.sh = tools\dev\build.sh
@@ -359,6 +357,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "km-cli", "km-cli", "{239F5F
 		tools\km-cli\search.sh = tools\km-cli\search.sh
 		tools\km-cli\upload-file.sh = tools\km-cli\upload-file.sh
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire", "extensions\Aspire\Aspire\Aspire.csproj", "{41A5A076-B35D-4191-B98C-65AD5782A108}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -661,10 +661,10 @@ Global
 		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41A5A076-B35D-4191-B98C-65AD5782A108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41A5A076-B35D-4191-B98C-65AD5782A108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41A5A076-B35D-4191-B98C-65AD5782A108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41A5A076-B35D-4191-B98C-65AD5782A108}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -770,11 +770,11 @@ Global
 		{07A91D09-CA4D-425F-83AD-F955336AACD7} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
 		{6E5EB6F3-17E2-4C71-B35A-5F8F0B7E407F} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
 		{D81B99FF-E13D-4127-AC01-4BF0C8B02C71} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
-		{4E5BAA7B-7DB6-4F24-8D91-E9C3AC9773E7} = {07A91D09-CA4D-425F-83AD-F955336AACD7}
 		{3C1C483D-2C09-4B0D-9394-82B2AF1D61F1} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
 		{239F5FE9-EAEE-4FA7-A3D5-09608FBA6EED} = {CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976}
 		{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{7BA7F1B2-19E2-46EB-B000-513EE2F65769} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
+		{41A5A076-B35D-4191-B98C-65AD5782A108} = {155DA079-E267-49AF-973A-D1D44681970F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

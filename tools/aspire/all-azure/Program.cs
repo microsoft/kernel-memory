@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Aspire.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 using Projects;
 
