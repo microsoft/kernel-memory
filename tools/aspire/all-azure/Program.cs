@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Aspire.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 using Projects;
 
@@ -50,6 +52,9 @@ internal static class Program
             .WithKmContentSafetyModerationEnvironment("AzureAIContentSafety", s_azureAIContentSafetyConfig)
             .WithKmOcrEnvironment("AzureAIDocIntel", s_azureAIDocIntelConfig);
 
-        builder.Build().Run();
+        builder
+            .ShowDashboardUrl()
+            .LaunchDashboard()
+            .Build().Run();
     }
 }
