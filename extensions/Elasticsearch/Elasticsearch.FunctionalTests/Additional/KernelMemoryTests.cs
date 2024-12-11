@@ -36,7 +36,6 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine($"Index name: {indexName}");
 
         const string Id = "ItSupportsLimitsAndMinRelevance-file7-Silicon-Carbon.txt";
-        const string Found = "spacecraft";
 
         this.Output.WriteLine("Uploading document");
         await this.KernelMemory.ImportDocumentAsync(
