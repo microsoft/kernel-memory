@@ -30,9 +30,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
     [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsLimitsAndMinRelevanceScoreAsync()
     {
-        // This is an adaptation of the same test in Elasticsearch.FunctionalTests
-
-        string indexName = nameof(this.ItSupportsMultipleFiltersAsync);
+        string indexName = nameof(this.ItSupportsLimitsAndMinRelevanceScoreAsync);
         this.Output.WriteLine($"Index name: {indexName}");
 
         const string Id = "ItSupportsLimitsAndMinRelevance-file7-Silicon-Carbon.txt";
