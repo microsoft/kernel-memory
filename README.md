@@ -348,7 +348,7 @@ storage, queues, vector stores, and LLMs to fit specific requirements.
 
 - **AI**: Azure OpenAI, OpenAI, ONNX, Ollama, Anthropic, Azure AI Document Intelligence, Azure AI
   Content Safety
-- **Vector Store**: Azure AI Search, Postgres, SQL Server, Elasticsearch, Qdrant, Redis, MongoDB
+- **Vector Store**: Azure AI Search, Azure Cosmos DB, Postgres, SQL Server, Elasticsearch, Qdrant, Redis, MongoDB
   Atlas, In memory store
 - **File Storage**: Azure Blob storage, AWS S3, MongoDB Atlas, Local disk, In memory storage
 - **Ingestion pipelines**: Azure Queues, RabbitMQ, In memory queues
