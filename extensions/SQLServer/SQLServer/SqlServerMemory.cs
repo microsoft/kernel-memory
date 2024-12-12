@@ -396,10 +396,12 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (this._isReady) { return; }
 
-        await this._initSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
+        var lockAcquired = false;
         try
         {
+            await this._initSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            lockAcquired = true;
+
             if (this._isReady) { return; }
 
             await this.CacheSqlServerMajorVersionNumberAsync(cancellationToken).ConfigureAwait(false);
@@ -408,7 +410,12 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
         }
         finally
         {
-            this._initSemaphore.Release();
+            // Decrease the internal counter only it the lock was acquired,
+            // e.g. not when WaitAsync times out or throws some exception
+            if (lockAcquired)
+            {
+                this._initSemaphore.Release();
+            }
         }
     }
 
