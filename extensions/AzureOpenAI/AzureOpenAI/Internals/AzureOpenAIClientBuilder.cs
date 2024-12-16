@@ -32,6 +32,14 @@ internal static class AzureOpenAIClientBuilder
             UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
+        // Custom audience for sovereign clouds. See:
+        // - https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/README.md
+        // - https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIAudience.cs
+        if (config.Auth == AzureOpenAIConfig.AuthTypes.AzureIdentity && !string.IsNullOrEmpty(config.AzureOpenAIAudience))
+        {
+            options.Audience = new AzureOpenAIAudience(config.AzureOpenAIAudience);
+        }
+
         // See https://github.com/Azure/azure-sdk-for-net/issues/46109
         options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
