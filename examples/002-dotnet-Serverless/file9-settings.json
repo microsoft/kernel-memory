@@ -14,11 +14,29 @@
   },
   "KernelMemory": {
     "Services": {
+      "AzureOpenAIEmbedding": {
+        // "ApiKey" or "AzureIdentity"
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
+        "Auth": "AzureIdentity",
+        // When the service is on sovereign clouds the AZURE_AUTHORITY_HOST env var might not work,
+        // in which case use this to change the client audience.
+        "AzureOpenAIAudience": null,
+        "Endpoint": "https://<...>.openai.azure.com/",
+        "APIKey": "",
+        "Deployment": "",
+        // The max number of tokens supported by model deployed
+        // See https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models
+        "MaxTokenTotal": 8191
+      },
       "AzureOpenAIText": {
         // "ApiKey" or "AzureIdentity"
-        // AzureIdentity: use automatic AAD authentication mechanism. You can test locally
-        //   using the env vars AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET.
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
         "Auth": "AzureIdentity",
+        // When the service is on sovereign clouds the AZURE_AUTHORITY_HOST env var might not work,
+        // in which case use this to change the client audience.
+        "AzureOpenAIAudience": null,
         "Endpoint": "https://<...>.openai.azure.com/",
         "APIKey": "",
         "Deployment": "",
@@ -28,18 +46,6 @@
         // "ChatCompletion" or "TextCompletion"
         "APIType": "ChatCompletion",
         "MaxRetries": 10
-      },
-      "AzureOpenAIEmbedding": {
-        // "ApiKey" or "AzureIdentity"
-        // AzureIdentity: use automatic AAD authentication mechanism. You can test locally
-        //   using the env vars AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET.
-        "Auth": "AzureIdentity",
-        "Endpoint": "https://<...>.openai.azure.com/",
-        "APIKey": "",
-        "Deployment": "",
-        // The max number of tokens supported by model deployed
-        // See https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models
-        "MaxTokenTotal": 8191
       },
       "OpenAI": {
         // Name of the model used to generate text (text completion or chat completion)
@@ -84,8 +90,10 @@
       },
       "AzureAIDocIntel": {
         // "APIKey" or "AzureIdentity".
-        // AzureIdentity: use automatic AAD authentication mechanism. You can test locally
-        //   using the env vars AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET.
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   When the service is on sovereign clouds you can use the AZURE_AUTHORITY_HOST env var to
+        //   set the authority host. See https://learn.microsoft.com/dotnet/api/overview/azure/identity-readme
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
         "Auth": "AzureIdentity",
         // Required when Auth == APIKey
         "APIKey": "",
@@ -93,8 +101,10 @@
       },
       "AzureAISearch": {
         // "ApiKey" or "AzureIdentity". For other options see <AzureAISearchConfig>.
-        // AzureIdentity: use automatic AAD authentication mechanism. You can test locally
-        //   using the env vars AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET.
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   When the service is on sovereign clouds you can use the AZURE_AUTHORITY_HOST env var to
+        //   set the authority host. See https://learn.microsoft.com/dotnet/api/overview/azure/identity-readme
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
         "Auth": "AzureIdentity",
         "Endpoint": "https://<...>",
         "APIKey": ""
