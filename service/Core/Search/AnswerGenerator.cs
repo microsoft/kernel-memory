@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
@@ -69,16 +70,23 @@ internal class AnswerGenerator
             yield break;
         }
 
+        var prompt = this.CreatePrompt(question, result.Facts.ToString(), context);
         var completeAnswer = new StringBuilder();
-        await foreach (var answerToken in this.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(false))
+
+        await foreach (var answerToken in this.GenerateAnswerTokensAsync(prompt, context, cancellationToken).ConfigureAwait(false))
         {
-            completeAnswer.Append(answerToken);
-            result.AskResult.Result = answerToken;
+            if (answerToken.Text is not null)
+            {
+                completeAnswer.Append(answerToken.Text);
+                result.AskResult.Result = answerToken.Text;
+            }
+
             yield return result.AskResult;
         }
 
         // Finalize the answer, checking if it's empty
         result.AskResult.Result = completeAnswer.ToString();
+
         if (string.IsNullOrWhiteSpace(result.AskResult.Result)
             || ValueIsEquivalentTo(result.AskResult.Result, this._config.EmptyAnswer))
         {
@@ -98,21 +106,28 @@ internal class AnswerGenerator
         }
     }
 
-    private IAsyncEnumerable<string> GenerateAnswerTokensAsync(string question, string facts, IContext? context, CancellationToken cancellationToken)
+    private string CreatePrompt(string question, string facts, IContext? context)
     {
-        string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
-        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
-        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
-        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
-
         question = question.Trim();
         question = question.EndsWith('?') ? question : $"{question}?";
 
+        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
+
+        string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
+
         this._log.LogInformation("New prompt: {0}", prompt);
+
+        return prompt;
+    }
+
+    private IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateAnswerTokensAsync(string prompt, IContext? context, CancellationToken cancellationToken)
+    {
+        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
+        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
+        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         var options = new TextGenerationOptions
         {

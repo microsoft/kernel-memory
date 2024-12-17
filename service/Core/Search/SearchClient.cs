@@ -14,7 +14,6 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
-using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
@@ -85,12 +84,10 @@ public sealed class SearchClient : ISearchClient
             this._log.LogWarning("No query or filters provided");
             return result.SearchResult;
         }
-#pragma warning disable CA2254
+
         this._log.LogTrace(string.IsNullOrEmpty(query)
             ? $"Fetching relevant memories by similarity, min relevance {minRelevance}"
             : "Fetching relevant memories by filtering only, no vector search");
-#pragma warning restore CA2254
-
         IAsyncEnumerable<(MemoryRecord, double)> matches = string.IsNullOrEmpty(query)
             ? this._memoryDb.GetListAsync(index, filters, limit, false, cancellationToken).Select(memoryRecord => (memoryRecord, double.MinValue))
             : this._memoryDb.GetSimilarListAsync(index, text: query, filters, minRelevance, limit, false, cancellationToken);
@@ -308,7 +305,7 @@ public sealed class SearchClient : ISearchClient
         string fileDownloadUrl = record.GetWebPageUrl(index);
 
         // Name of the file to show to the LLM, avoiding "content.url"
-        string fileNameForLLM = (fileName == "content.url" ? fileDownloadUrl : fileName);
+        string fileNameForLLM = fileName == "content.url" ? fileDownloadUrl : fileName;
 
         if (result.Mode == SearchMode.SearchMode)
         {
@@ -374,102 +371,11 @@ public sealed class SearchClient : ISearchClient
             Tags = record.Tags,
         });
 
-            // In cases where a buggy storage connector is returning too many records
-            if (factsUsedCount >= this._config.MaxMatchesCount)
-            {
-                break;
-            }
-        }
-
-        if (factsAvailableCount > 0 && factsUsedCount == 0)
-        {
-            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            noAnswerFound.NoResultReason = "Unable to use memories";
-            return noAnswerFound;
-        }
-
-        if (factsUsedCount == 0)
-        {
-            this._log.LogWarning("No memories available (min relevance: {0})", minRelevance);
-            noAnswerFound.NoResultReason = "No memories available";
-            return noAnswerFound;
-        }
-
-        var text = new StringBuilder();
-        var charsGenerated = 0;
-        var watch = new Stopwatch();
-        watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
-        {
-            text.Append(x);
-
-            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
-            {
-                charsGenerated = text.Length;
-                this._log.LogTrace("{0} chars generated", charsGenerated);
-            }
-        }
-
-        watch.Stop();
-
-        answer.Result = text.ToString();
-        this._log.LogSensitive("Answer: {0}", answer.Result);
-        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
-        if (answer.NoResult)
-        {
-            answer.NoResultReason = "No relevant memories found";
-            this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
-        }
-        else
-        {
-            this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
-        }
-
-        if (this._contentModeration != null && this._config.UseContentModeration)
-        {
-            var isSafe = await this._contentModeration.IsSafeAsync(answer.Result, cancellationToken).ConfigureAwait(false);
-            if (!isSafe)
-            {
-                this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
-                this._log.LogSensitive("Unsafe answer: {0}", answer.Result);
-                answer.NoResultReason = "Content moderation failure";
-                answer.Result = this._config.ModeratedAnswer;
-            }
-        }
-
-        return answer;
-    }
-
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
-    {
-        string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
-        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
-        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
-
-        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
-
-        question = question.Trim();
-        question = question.EndsWith('?') ? question : $"{question}?";
-        prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
-        prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
-
-        var options = new TextGenerationOptions
-        {
-            MaxTokens = maxTokens,
-            Temperature = temperature,
-            NucleusSampling = nucleusSampling,
-            PresencePenalty = this._config.PresencePenalty,
-            FrequencyPenalty = this._config.FrequencyPenalty,
-            StopSequences = this._config.StopSequences,
-            TokenSelectionBiases = this._config.TokenSelectionBiases,
-        };
-
-        if (this._log.IsEnabled(LogLevel.Debug))
-        {
-            return result.Stop();
-        }
-
-        return result;
+        // Stop when reaching the max number of results or facts. This acts also as
+        // a protection against storage connectors disregarding 'limit' and returning too many records.
+        return (result.Mode == SearchMode.SearchMode && result.SearchResult.Results.Count >= result.MaxRecordCount)
+            || (result.Mode == SearchMode.AskMode && result.FactsUsedCount >= result.MaxRecordCount)
+            ? result.Stop()
+            : result;
     }
 }

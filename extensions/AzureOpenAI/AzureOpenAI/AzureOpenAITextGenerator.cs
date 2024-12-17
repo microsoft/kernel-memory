@@ -13,6 +13,7 @@ using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 
@@ -147,20 +148,24 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
         }
 
         this._log.LogTrace("Sending chat message generation request");
-        IAsyncEnumerable<StreamingTextContent> result;
+        IAsyncEnumerable<StreamingChatMessageContent> result;
         try
         {
-            result = this._client.GetStreamingTextContentsAsync(prompt, skOptions, cancellationToken: cancellationToken);
+            var chat = new ChatHistory();
+            chat.AddUserMessage(prompt);
+            result = this._client.GetStreamingChatMessageContentsAsync(chat, skOptions, cancellationToken: cancellationToken);
         }
         catch (HttpOperationException e)
         {
             throw new AzureOpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
         }
 
-        await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
+        await foreach (var x in result.WithCancellation(cancellationToken))
         {
             TokenUsage? tokenUsage = null;
 
+            // The last message in the chunk has the usage metadata.
+            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
             if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
             {
                 this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
@@ -179,11 +184,11 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             }
 
             // NOTE: as stated at https://platform.openai.com/docs/api-reference/chat/streaming#chat/streaming-choices,
-            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so we can continue
-            // only if both x.Text and tokenUsage are null.
-            if (x.Text is null && tokenUsage is null) { continue; }
+            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so it is possible that
+            // x.Text is null, but tokenUsage is not (token usage statistics for the entire request are included in the last chunk).
+            if (x.Content is null && tokenUsage is null) { continue; }
 
-            yield return (x.Text, tokenUsage);
+            yield return (x.Content, tokenUsage);
         }
     }
 }

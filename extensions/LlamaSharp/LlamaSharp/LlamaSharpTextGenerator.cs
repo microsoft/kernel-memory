@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using LLama;
 using LLama.Common;
 using LLama.Native;
@@ -107,7 +108,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
 
         IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
-        await foreach (var x in streamingResponse)
+        await foreach (var x in streamingResponse.ConfigureAwait(false))
         {
             yield return (x, null);
         }

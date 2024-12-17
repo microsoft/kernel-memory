@@ -51,7 +51,7 @@ public class MemoryAnswer
     /// The token used by the model to generate the answer.
     /// </summary>
     /// <remarks>Not all the models and text generators return token usage information.</remarks>
-    [JsonPropertyName("tokenUsage")]
+    [JsonPropertyName("tokenUsages")]
     [JsonPropertyOrder(11)]
     public IList<TokenUsage> TokenUsages { get; set; } = [];
 
@@ -79,10 +79,7 @@ public class MemoryAnswer
         }
 
         MemoryAnswer clone = JsonSerializer.Deserialize<MemoryAnswer>(JsonSerializer.Serialize(this))!;
-
-#pragma warning disable CA1820
-        if (clone.Question == string.Empty) { clone.Question = null!; }
-#pragma warning restore CA1820
+        if (string.IsNullOrEmpty(clone.Question)) { clone.Question = null!; }
 
         if (clone.RelevantSources.Count == 0) { clone.RelevantSources = null!; }
 

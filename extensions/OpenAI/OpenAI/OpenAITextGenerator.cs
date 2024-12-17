@@ -167,6 +167,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
         {
             TokenUsage? tokenUsage = null;
 
+            // The last message in the chunk has the usage metadata.
+            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
             if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
             {
                 this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
@@ -185,8 +187,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
             }
 
             // NOTE: as stated at https://platform.openai.com/docs/api-reference/chat/streaming#chat/streaming-choices,
-            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so we can continue
-            // only if both x.Text and tokenUsage are null.
+            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so it is possible that
+            // x.Text is null, but tokenUsage is not (token usage statistics for the entire request are included in the last chunk).
             if (x.Text is null && tokenUsage is null) { continue; }
 
             yield return (x.Text, tokenUsage);
