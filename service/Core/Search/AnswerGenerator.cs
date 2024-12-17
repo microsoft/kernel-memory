@@ -71,6 +71,16 @@ internal class AnswerGenerator
         }
 
         var prompt = this.CreatePrompt(question, result.Facts.ToString(), context);
+
+        var tokenUsage = new TokenUsage
+        {
+            Timestamp = DateTime.UtcNow,
+            ModelType = "TextGeneration",
+            TokeninzerTokensIn = this._textGenerator.CountTokens(prompt)
+        };
+
+        result.AskResult.TokenUsages.Add(tokenUsage);
+
         var completeAnswer = new StringBuilder();
 
         await foreach (var answerToken in this.GenerateAnswerTokensAsync(prompt, context, cancellationToken).ConfigureAwait(false))
@@ -81,11 +91,19 @@ internal class AnswerGenerator
                 result.AskResult.Result = answerToken.Text;
             }
 
+            tokenUsage.Timestamp = answerToken.TokenUsage?.Timestamp ?? tokenUsage.Timestamp;
+            tokenUsage.ServiceType ??= answerToken.TokenUsage?.ServiceType;
+            tokenUsage.ModelName ??= answerToken.TokenUsage?.ModelName;
+            tokenUsage.ServiceTokensIn ??= answerToken.TokenUsage?.ServiceTokensIn;
+            tokenUsage.ServiceTokensOut ??= answerToken.TokenUsage?.ServiceTokensOut;
+            tokenUsage.ServiceReasoningTokens ??= answerToken.TokenUsage?.ServiceReasoningTokens;
+
             yield return result.AskResult;
         }
 
         // Finalize the answer, checking if it's empty
         result.AskResult.Result = completeAnswer.ToString();
+        tokenUsage.TokeninzerTokensOut = this._textGenerator.CountTokens(result.AskResult.Result);
 
         if (string.IsNullOrWhiteSpace(result.AskResult.Result)
             || ValueIsEquivalentTo(result.AskResult.Result, this._config.EmptyAnswer))

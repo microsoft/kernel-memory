@@ -160,6 +160,11 @@ public sealed class SearchClient : ISearchClient
                         result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
                     }
 
+                    if (result.TokenUsages != null && part.TokenUsages != null)
+                    {
+                        result.TokenUsages = result.TokenUsages.Union(part.TokenUsages).ToList();
+                    }
+
                     break;
 
                 case StreamStates.Last:
@@ -172,6 +177,11 @@ public sealed class SearchClient : ISearchClient
                     if (result.RelevantSources != null && part.RelevantSources != null)
                     {
                         result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    if (result.TokenUsages != null && part.TokenUsages != null)
+                    {
+                        result.TokenUsages = result.TokenUsages.Union(part.TokenUsages).ToList();
                     }
 
                     done = true;
