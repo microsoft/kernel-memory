@@ -64,13 +64,14 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             throw new ConfigurationException($"Azure AI Search: {nameof(this._embeddingGenerator)} is not configured");
         }
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureAISearchConfig.AuthTypes.AzureIdentity:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     new DefaultAzureCredential(),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             case AzureAISearchConfig.AuthTypes.APIKey:
@@ -83,14 +84,14 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     new AzureKeyCredential(config.APIKey),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             case AzureAISearchConfig.AuthTypes.ManualTokenCredential:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     config.GetTokenCredential(),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             default:
@@ -408,19 +409,27 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     }
 
     /// <summary>
-    /// Options used by the Azure AI Search client, e.g. User Agent.
-    /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
+    /// Options used by the Azure AI Search client, e.g. User Agent and Auth audience
     /// </summary>
-    private static SearchClientOptions GetClientOptions()
+    private static SearchClientOptions GetClientOptions(AzureAISearchConfig config)
     {
-        return new SearchClientOptions
+        var options = new SearchClientOptions
         {
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
                 ApplicationId = Telemetry.HttpUserAgent,
-            },
+            }
         };
+
+        // Custom audience for sovereign clouds.
+        // See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/src/SearchAudience.cs
+        if (config.Auth == AzureAISearchConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new SearchAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 
     /// <summary>

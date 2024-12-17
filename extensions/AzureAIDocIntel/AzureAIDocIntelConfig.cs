@@ -23,11 +23,30 @@ public class AzureAIDocIntelConfig
         APIKey,
     }
 
+    /// <summary>
+    /// Azure authentication type
+    /// </summary>
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
 
-    public string Endpoint { get; set; } = string.Empty;
+    /// <summary>
+    /// Optional custom auth tokens audience for sovereign clouds, when using Auth.AzureIdentity
+    /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/formrecognizer/Azure.AI.FormRecognizer/src/DocumentAnalysisAudience.cs
+    /// Examples:
+    /// - "https://cognitiveservices.azure.com"
+    /// - "https://cognitiveservices.azure.us"
+    /// - "https://cognitiveservices.azure.cn"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
 
+    /// <summary>
+    /// API key, required if Auth == APIKey
+    /// </summary>
     public string APIKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Azure AI Document Intelligence resource endpoint URL
+    /// </summary>
+    public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Verify that the current state is valid.
