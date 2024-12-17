@@ -44,11 +44,14 @@ public class AzureOpenAIConfig
     public AuthTypes Auth { get; set; }
 
     /// <summary>
-    /// Optional custom audience for sovereign clouds
+    /// Optional custom auth tokens audience for sovereign clouds, when using Auth.AzureIdentity
     /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/README.md
     /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIAudience.cs
+    /// Examples:
+    /// - "https://cognitiveservices.azure.com/.default"
+    /// - "https://cognitiveservices.azure.us/.default"
     /// </summary>
-    public string? AzureOpenAIAudience { get; set; } = null;
+    public string? AzureIdentityAudience { get; set; } = null;
 
     /// <summary>
     /// API key, required if Auth == APIKey

@@ -34,7 +34,17 @@ public class AzureBlobsConfig
         ManualTokenCredential,
     }
 
+    /// <summary>
+    /// Azure authentication type
+    /// </summary>
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
+
+    /// <summary>
+    /// Optional custom auth tokens audience when using Auth.AzureIdentity
+    /// Example: "https://storage.azure.com/"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
+
     public string ConnectionString { get; set; } = "";
     public string Account { get; set; } = "";
     public string AccountKey { get; set; } = "";

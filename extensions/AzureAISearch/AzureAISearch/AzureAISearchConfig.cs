@@ -27,9 +27,30 @@ public class AzureAISearchConfig
         ManualTokenCredential,
     }
 
+    /// <summary>
+    /// Azure authentication type
+    /// </summary>
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
-    public string Endpoint { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional custom auth tokens audience for sovereign clouds, when using Auth.AzureIdentity
+    /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/src/SearchAudience.cs
+    /// Examples:
+    /// - "https://search.azure.com"
+    /// - "https://search.azure.us"
+    /// - "https://search.azure.cn"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
+
+    /// <summary>
+    /// API key, required if Auth == APIKey
+    /// </summary>
     public string APIKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Azure AI Search resource endpoint URL
+    /// </summary>
+    public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Important: when using hybrid search, relevance scores

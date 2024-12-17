@@ -39,12 +39,13 @@ public sealed class AzureBlobsStorage : IDocumentStorage
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureBlobsStorage>();
 
         BlobServiceClient client;
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureBlobsConfig.AuthTypes.ConnectionString:
             {
                 this.ValidateConnectionString(config.ConnectionString);
-                client = new BlobServiceClient(config.ConnectionString);
+                client = new BlobServiceClient(config.ConnectionString, clientOptions);
                 break;
             }
 
@@ -53,7 +54,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
                 this.ValidateAccountName(config.Account);
                 this.ValidateAccountKey(config.AccountKey);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), new StorageSharedKeyCredential(config.Account, config.AccountKey));
+                client = new BlobServiceClient(
+                    new Uri($"https://{config.Account}.blob.{suffix}"),
+                    new StorageSharedKeyCredential(config.Account, config.AccountKey),
+                    clientOptions);
                 break;
             }
 
@@ -61,7 +65,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), new DefaultAzureCredential());
+                client = new BlobServiceClient(
+                    new Uri($"https://{config.Account}.blob.{suffix}"),
+                    new DefaultAzureCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -69,7 +76,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetStorageSharedKeyCredential());
+                client = new BlobServiceClient(
+                    new Uri($"https://{config.Account}.blob.{suffix}"),
+                    config.GetStorageSharedKeyCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -77,7 +87,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetAzureSasCredential());
+                client = new BlobServiceClient(
+                    new Uri($"https://{config.Account}.blob.{suffix}"),
+                    config.GetAzureSasCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -85,7 +98,10 @@ public sealed class AzureBlobsStorage : IDocumentStorage
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                client = new BlobServiceClient(new Uri($"https://{config.Account}.blob.{suffix}"), config.GetTokenCredential());
+                client = new BlobServiceClient(
+                    new Uri($"https://{config.Account}.blob.{suffix}"),
+                    config.GetTokenCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -255,6 +271,28 @@ public sealed class AzureBlobsStorage : IDocumentStorage
     private static string JoinPaths(string index, string documentId)
     {
         return $"{index}/{documentId}";
+    }
+
+    /// <summary>
+    /// Options used by the Azure Blob client, e.g. User Agent and Auth tokens audience, etc.
+    /// </summary>
+    private static BlobClientOptions GetClientOptions(AzureBlobsConfig config)
+    {
+        var options = new BlobClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        if (config.Auth == AzureBlobsConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new BlobAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 
     private async Task InternalWriteAsync(
