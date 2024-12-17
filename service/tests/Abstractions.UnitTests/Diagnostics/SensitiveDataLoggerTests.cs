@@ -10,6 +10,7 @@ public sealed class SensitiveDataLoggerTests : IDisposable
     private const string DotNetEnvVar = "DOTNET_ENVIRONMENT";
 
     [Fact]
+    [Trait("Category", "UnitTest")]
     public void ItIsDisabledByDefault()
     {
         // Assert

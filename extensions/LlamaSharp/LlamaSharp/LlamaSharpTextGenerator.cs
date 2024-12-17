@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using LLama;
-using LLama.Abstractions;
 using LLama.Common;
 using LLama.Native;
 using LLama.Sampling;
@@ -86,7 +85,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
 
         var logitBias = options.TokenSelectionBiases.Count > 0
             ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
-            : new Dictionary<LLamaToken, float>();
+            : [];
 
         var samplingPipeline = new DefaultSamplingPipeline()
         {
@@ -97,11 +96,11 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             LogitBias = logitBias,
         };
 
-        IInferenceParams settings = new InferenceParams
+        var settings = new InferenceParams
         {
             TokensKeep = this.MaxTokenTotal,
             MaxTokens = options.MaxTokens ?? -1,
-            AntiPrompts = options.StopSequences?.ToList() ?? new(),
+            AntiPrompts = options.StopSequences?.ToList() ?? [],
             SamplingPipeline = samplingPipeline
         };
 

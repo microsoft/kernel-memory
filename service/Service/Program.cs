@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -55,7 +57,7 @@ internal static class Program
 
         // *************************** CONFIG WIZARD ***************************
 
-        // Run `dotnet run setup` to run this code and setup the service
+        // Run `dotnet run setup` to run this code and set up the service
         if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
             InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
@@ -75,7 +77,8 @@ internal static class Program
             appBuilder.Services.AddApplicationInsightsTelemetry();
         }
 
-        appBuilder.Configuration.AddKMConfigurationSources();
+        // Add config files, user secretes, and env vars
+        appBuilder.Configuration.AddKernelMemoryConfigurationSources();
 
         // Read KM settings, needed before building the app.
         KernelMemoryConfig config = appBuilder.Configuration.GetSection("KernelMemory").Get<KernelMemoryConfig>()
@@ -88,7 +91,8 @@ internal static class Program
         // Internally build the memory client and make it available for dependency injection
         appBuilder.AddKernelMemory(memoryBuilder =>
             {
-                memoryBuilder.FromAppSettings().WithoutDefaultHandlers();
+                // Prepare the builder with settings from config files
+                memoryBuilder.ConfigureDependencies(appBuilder.Configuration).WithoutDefaultHandlers();
 
                 // When using distributed orchestration, handlers are hosted in the current app and need to be con
                 asyncHandlersCount = AddHandlersAsHostedServices(config, memoryBuilder, appBuilder);
@@ -142,21 +146,31 @@ internal static class Program
             if (enableCORS) { app.UseCors(CORSPolicyName); }
 
             app.UseSwagger(config);
+            var errorFilter = new HttpErrorsEndpointFilter();
             var authFilter = new HttpAuthEndpointFilter(config.ServiceAuthorization);
             app.MapGet("/", () => Results.Ok("Ingestion service is running. " +
                                              "Uptime: " + (DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                                                            - s_start.ToUnixTimeSeconds()) + " secs " +
                                              $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
+                .AddEndpointFilter(errorFilter)
                 .AddEndpointFilter(authFilter)
+                .WithName("ServiceStatus")
+                .WithDisplayName("ServiceStatus")
+                .WithDescription("Show the service status and uptime.")
+                .WithSummary("Show the service status and uptime.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
 
             // Add HTTP endpoints using minimal API (https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
-            app.AddKernelMemoryEndpoints("/", config, authFilter);
+            app.AddKernelMemoryEndpoints("/", config, [errorFilter, authFilter]);
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))
+                .WithName("ServiceHealth")
+                .WithDisplayName("ServiceHealth")
+                .WithDescription("Show if the service is healthy.")
+                .WithSummary("Show if the service is healthy.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -180,8 +194,15 @@ internal static class Program
         Console.WriteLine("* Memory type         : " + memoryType);
         Console.WriteLine("* Pipeline handlers   : " + $"{syncHandlersCount} synchronous / {asyncHandlersCount} asynchronous");
         Console.WriteLine("* Web service         : " + (config.Service.RunWebService ? "Enabled" : "Disabled"));
-        Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
-        Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+
+        if (config.Service.RunWebService)
+        {
+            const double AspnetDefaultMaxUploadSize = 30000000d / 1024 / 1024;
+            Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
+            Console.WriteLine("* Max HTTP req size   : " + (config.Service.MaxUploadSizeMb ?? AspnetDefaultMaxUploadSize).ToString("0.#", CultureInfo.CurrentCulture) + " Mb");
+            Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+        }
+
         Console.WriteLine("* Memory Db           : " + app.Services.GetService<IMemoryDb>()?.GetType().FullName);
         Console.WriteLine("* Document storage    : " + app.Services.GetService<IDocumentStorage>()?.GetType().FullName);
         Console.WriteLine("* Embedding generation: " + app.Services.GetService<ITextEmbeddingGenerator>()?.GetType().FullName);
@@ -191,7 +212,7 @@ internal static class Program
         Console.WriteLine("***************************************************************************************************************************");
 
         app.Logger.LogInformation(
-            "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
+            "Starting Kernel Memory service, .NET Env: {EnvironmentType}, Log Level: {LogLevel}, Web service: {WebServiceEnabled}, Auth: {WebServiceAuthEnabled}, Pipeline handlers: {HandlersEnabled}",
             env,
             app.Logger.GetLogLevelName(),
             config.Service.RunWebService,
@@ -199,7 +220,15 @@ internal static class Program
             config.Service.RunHandlers);
 
         // Start web service and handler services
-        app.Run();
+        try
+        {
+            app.Run();
+        }
+        catch (IOException e)
+        {
+            Console.WriteLine($"I/O error: {e.Message}");
+            Environment.Exit(-1);
+        }
     }
 
     /// <summary>

@@ -55,7 +55,7 @@ public sealed class ServiceCollectionPool : IServiceCollection
         ArgumentNullExceptionEx.ThrowIfNull(primaryCollection, nameof(primaryCollection), "The primary service collection cannot be NULL");
         this._poolSizeLocked = false;
         this._primaryCollection = primaryCollection;
-        this._pool = new List<IServiceCollection> { primaryCollection };
+        this._pool = [primaryCollection];
     }
 
     /// <summary>

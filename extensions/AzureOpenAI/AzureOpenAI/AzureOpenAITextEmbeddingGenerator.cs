@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -94,12 +94,13 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
         this.MaxTokens = config.MaxTokenTotal;
         this.MaxBatchSize = config.MaxEmbeddingBatchSize;
 
+        textTokenizer ??= TokenizerFactory.GetTokenizerForEncoding(config.Tokenizer);
         if (textTokenizer == null)
         {
+            textTokenizer = new CL100KTokenizer();
             this._log.LogWarning(
                 "Tokenizer not specified, will use {0}. The token count might be incorrect, causing unexpected errors",
-                nameof(GPT4oTokenizer));
-            textTokenizer = new GPT4oTokenizer();
+                textTokenizer.GetType().FullName);
         }
 
         this._textTokenizer = textTokenizer;
@@ -121,7 +122,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     public Task<Embedding> GenerateEmbeddingAsync(string text, CancellationToken cancellationToken = default)
     {
         this._log.LogTrace("Generating embedding");
-        return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        try
+        {
+            return this._client.GenerateEmbeddingAsync(text, cancellationToken);
+        }
+        catch (HttpOperationException e)
+        {
+            throw new AzureOpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
     }
 
     /// <inheritdoc/>
@@ -129,7 +137,14 @@ public sealed class AzureOpenAITextEmbeddingGenerator : ITextEmbeddingGenerator,
     {
         var list = textList.ToList();
         this._log.LogTrace("Generating embeddings, batch size '{0}'", list.Count);
-        IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return embeddings.Select(e => new Embedding(e)).ToArray();
+        try
+        {
+            IList<ReadOnlyMemory<float>> embeddings = await this._client.GenerateEmbeddingsAsync(list, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return embeddings.Select(e => new Embedding(e)).ToArray();
+        }
+        catch (HttpOperationException e)
+        {
+            throw new AzureOpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
+        }
     }
 }

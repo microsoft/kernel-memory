@@ -8,10 +8,11 @@ using Azure.Search.Documents.Models;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryStorage;
+using AISearchOptions = Azure.Search.Documents.SearchOptions;
 
 namespace Microsoft.AzureAISearch.TestApplication;
 
-public static class Program
+internal static class Program
 {
     // Azure Search Index name
     private const string Index = "test01";
@@ -124,7 +125,7 @@ public static class Program
 
         var indexSchema = new SearchIndex(name)
         {
-            Fields = new List<SearchField>(),
+            Fields = [],
             VectorSearch = new VectorSearch
             {
                 Profiles =
@@ -246,7 +247,7 @@ public static class Program
 
         fieldValue1 = fieldValue1.Replace("'", "''", StringComparison.Ordinal);
         fieldValue2 = fieldValue2.Replace("'", "''", StringComparison.Ordinal);
-        SearchOptions options = new()
+        AISearchOptions options = new()
         {
             Filter = fieldIsCollection
                 ? $"{fieldName}/any(s: s eq '{fieldValue1}') and {fieldName}/any(s: s eq '{fieldValue2}')"
@@ -285,7 +286,7 @@ public static class Program
 
         Console.WriteLine($"DELETING {recordId}\n");
 
-        Response<IndexDocumentsResult>? response = await client.DeleteDocumentsAsync("id", new List<string> { recordId });
+        Response<IndexDocumentsResult>? response = await client.DeleteDocumentsAsync("id", [recordId]);
 
         Console.WriteLine("Status: " + response.GetRawResponse().Status);
         Console.WriteLine("IsError: " + response.GetRawResponse().IsError);

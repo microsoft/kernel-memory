@@ -93,7 +93,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
         // Here we split the list of DBs in two lists, those supporting batching and those not, prioritizing
         // the single upsert if possible, to have the best retry strategy when possible.
         this._memoryDbsWithSingleUpsert = this._memoryDbs;
-        this._memoryDbsWithBatchUpsert = new List<IMemoryDb>();
+        this._memoryDbsWithBatchUpsert = [];
         if (this._upsertBatchSize > 1)
         {
             this._memoryDbsWithSingleUpsert = this._memoryDbs.Where(x => x is not IMemoryDbUpsertBatch).ToList();
@@ -103,13 +103,13 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Saving memory records, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
 
         await this.DeletePreviousRecordsAsync(pipeline, cancellationToken).ConfigureAwait(false);
-        pipeline.PreviousExecutionsToPurge = new List<DataPipeline>();
+        pipeline.PreviousExecutionsToPurge = [];
 
         var recordsFound = false;
 
@@ -241,7 +241,7 @@ public sealed class SaveRecordsHandler : IPipelineStepHandler
             this._log.LogWarning("Pipeline '{0}/{1}': step {2}: no records found, cannot save, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId, this.StepName);
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     private static IEnumerable<FileDetailsWithRecordId> GetListOfEmbeddingFiles(DataPipeline pipeline)

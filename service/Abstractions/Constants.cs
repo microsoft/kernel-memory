@@ -155,25 +155,25 @@ public static class Constants
 
     // Pipeline steps
     public static readonly string[] DefaultPipeline =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineWithoutSummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineWithSummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsPartition, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords,
         PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     public static readonly string[] PipelineOnlySummary =
-    {
+    [
         PipelineStepsExtract, PipelineStepsSummarize, PipelineStepsGenEmbeddings, PipelineStepsSaveRecords
-    };
+    ];
 
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";

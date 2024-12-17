@@ -36,18 +36,19 @@ public class AzureAIContentSafetyModeration : IContentModeration
         this._globalSafetyThreshold = config.GlobalSafetyThreshold;
         this._ignoredWords = config.IgnoredWords;
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureAIContentSafetyConfig.AuthTypes.AzureIdentity:
-                this._client = new ContentSafetyClient(new Uri(config.Endpoint), new DefaultAzureCredential());
+                this._client = new ContentSafetyClient(new Uri(config.Endpoint), new DefaultAzureCredential(), clientOptions);
                 break;
 
             case AzureAIContentSafetyConfig.AuthTypes.APIKey:
-                this._client = new ContentSafetyClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
+                this._client = new ContentSafetyClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), clientOptions);
                 break;
 
             case AzureAIContentSafetyConfig.AuthTypes.ManualTokenCredential:
-                this._client = new ContentSafetyClient(new Uri(config.Endpoint), config.GetTokenCredential());
+                this._client = new ContentSafetyClient(new Uri(config.Endpoint), config.GetTokenCredential(), clientOptions);
                 break;
 
             default:
@@ -75,12 +76,29 @@ public class AzureAIContentSafetyModeration : IContentModeration
 
         if (!isSafe)
         {
-            IEnumerable<string> report = result.HasValue ? result.Value.CategoriesAnalysis.Select(x => $"{x.Category}: {x.Severity}") : Array.Empty<string>();
+            IEnumerable<string> report = result.HasValue ? result.Value.CategoriesAnalysis.Select(x => $"{x.Category}: {x.Severity}") : [];
             this._log.LogWarning("Unsafe content detected, report: {0}", string.Join("; ", report));
             this._log.LogSensitive("Unsafe content: {0}", text);
         }
 
         return isSafe;
+    }
+
+    /// <summary>
+    /// Options used by the Azure AI client
+    /// </summary>
+    private static ContentSafetyClientOptions GetClientOptions(AzureAIContentSafetyConfig config)
+    {
+        var options = new ContentSafetyClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        return options;
     }
 
     private string RemoveIgnoredWords(string text)

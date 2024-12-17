@@ -79,7 +79,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
 
         await Task.WhenAll(tasks);
 
-        tasks = new List<Task>();
+        tasks = [];
         for (int i = 0; i < concurrency; i++)
         {
             tasks.Add(target.DeleteIndexAsync(indexName));
@@ -103,7 +103,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
         var record = new MemoryRecord
         {
             Id = "one",
-            Vector = new Embedding(new float[] { 0, 1, 2, 3 })
+            Vector = new Embedding([0, 1, 2, 3])
         };
 
         var tasks = new List<Task>();
@@ -114,7 +114,7 @@ public class ConcurrencyTests : BaseFunctionalTestCase
 
         await Task.WhenAll(tasks);
 
-        tasks = new List<Task>();
+        tasks = [];
         for (int i = 0; i < concurrency; i++)
         {
             tasks.Add(target.DeleteAsync(indexName, record));

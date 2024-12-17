@@ -22,6 +22,7 @@ internal static class AzureAISearch
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
                 { "UseHybridSearch", false },
+                { "UseStickySessions", false }
             };
         }
 
@@ -45,5 +46,6 @@ internal static class AzureAISearch
 
         AppSettings.Change(x => x.Services[ServiceName]["Endpoint"] = SetupUI.AskOpenQuestion("Azure AI Search <endpoint>", config["Endpoint"].ToString()));
         AppSettings.Change(x => x.Services[ServiceName]["UseHybridSearch"] = SetupUI.AskBoolean("Use hybrid search (yes/no)?", (bool)config["UseHybridSearch"]));
+        AppSettings.Change(x => x.Services[ServiceName]["UseStickySessions"] = SetupUI.AskBoolean("Use sticky sessions (yes/no)?", (bool)config["UseStickySessions"]));
     }
 }

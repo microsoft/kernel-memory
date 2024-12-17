@@ -49,7 +49,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<TextPartitioningHandler>();
         this._log.LogInformation("Handler '{0}' ready", stepName);
 
-        this._tokenCounter = DefaultGPTTokenizer.StaticCountTokens;
+        this._tokenCounter = (new CL100KTokenizer()).CountTokens;
         if (orchestrator.EmbeddingGenerationEnabled)
         {
             foreach (var gen in orchestrator.GetEmbeddingGenerators())
@@ -67,7 +67,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Partitioning text, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -75,7 +75,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         if (pipeline.Files.Count == 0)
         {
             this._log.LogWarning("Pipeline '{0}/{1}': there are no files to process, moving to next pipeline step.", pipeline.Index, pipeline.DocumentId);
-            return (true, pipeline);
+            return (ReturnType.Success, pipeline);
         }
 
         var context = pipeline.GetContext();
@@ -95,7 +95,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
         {
             // Track new files being generated (cannot edit originalFile.GeneratedFiles while looping it)
-            Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = new();
+            Dictionary<string, DataPipeline.GeneratedFileDetails> newFiles = [];
 
             foreach (KeyValuePair<string, DataPipeline.GeneratedFileDetails> generatedFile in uploadedFile.GeneratedFiles)
             {
@@ -120,7 +120,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                 string partitionsMimeType = MimeTypes.PlainText;
 
                 // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
-                if (partitionContent.ToArray().Length == 0) { continue; }
+                if (partitionContent.IsEmpty) { continue; }
 
                 switch (file.MimeType)
                 {
@@ -141,7 +141,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         partitionsMimeType = MimeTypes.MarkDown;
                         sentences = TextChunker.SplitMarkDownLines(content, maxTokensPerLine: this._options.MaxTokensPerLine, tokenCounter: this._tokenCounter);
                         partitions = TextChunker.SplitMarkdownParagraphs(
-                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter);
+                            sentences, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens, tokenCounter: this._tokenCounter, chunkHeader: chunkHeader);
                         break;
                     }
 
@@ -197,7 +197,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
             }
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
 #pragma warning disable CA2254 // the msg is always used

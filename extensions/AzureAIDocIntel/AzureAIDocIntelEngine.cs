@@ -33,10 +33,11 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
     {
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureAIDocIntelEngine>();
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureAIDocIntelConfig.AuthTypes.AzureIdentity:
-                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new DefaultAzureCredential());
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new DefaultAzureCredential(), clientOptions);
                 break;
 
             case AzureAIDocIntelConfig.AuthTypes.APIKey:
@@ -46,7 +47,7 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
                     throw new ConfigurationException("Azure AI Document Intelligence API key is empty");
                 }
 
-                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey));
+                this._recognizerClient = new DocumentAnalysisClient(new Uri(config.Endpoint), new AzureKeyCredential(config.APIKey), clientOptions);
                 break;
 
             default:
@@ -58,12 +59,41 @@ public sealed class AzureAIDocIntelEngine : IOcrEngine
     ///<inheritdoc/>
     public async Task<string> ExtractTextFromImageAsync(Stream imageContent, CancellationToken cancellationToken = default)
     {
-        // Start the OCR operation
-        var operation = await this._recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent, cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // Start the OCR operation
+            var operation = await this._recognizerClient.AnalyzeDocumentAsync(WaitUntil.Completed, "prebuilt-read", imageContent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        // Wait for the result
-        Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
+            // Wait for the result
+            Response<AnalyzeResult> operationResponse = await operation.WaitForCompletionAsync(cancellationToken).ConfigureAwait(false);
 
-        return operationResponse.Value.Content;
+            return operationResponse.Value.Content;
+        }
+        catch (RequestFailedException e)
+        {
+            throw new AzureAIDocIntelException(e.Message, e, isTransient: HttpErrors.IsTransientError(e.Status));
+        }
+    }
+
+    /// <summary>
+    /// Options used by the Azure AI Document Intelligence client, e.g. User Agent and Auth audience
+    /// </summary>
+    private static DocumentAnalysisClientOptions GetClientOptions(AzureAIDocIntelConfig config)
+    {
+        var options = new DocumentAnalysisClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        if (config.Auth == AzureAIDocIntelConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new DocumentAnalysisAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 }

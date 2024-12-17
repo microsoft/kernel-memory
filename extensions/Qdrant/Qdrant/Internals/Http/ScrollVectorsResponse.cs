@@ -19,7 +19,7 @@ internal sealed class ScrollVectorsResponse<T> : QdrantResponse where T : Defaul
     internal sealed class ScrollResult
     {
         [JsonPropertyName("points")]
-        public IEnumerable<QdrantPoint<T>> Points { get; set; } = new List<QdrantPoint<T>>();
+        public IEnumerable<QdrantPoint<T>> Points { get; set; } = [];
     }
 
     [JsonPropertyName("result")]

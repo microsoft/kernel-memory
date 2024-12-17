@@ -27,7 +27,7 @@ public class TestCosineSimilarity : BaseFunctionalTestCase
     private readonly bool _qdrantEnabled = false;
     private readonly bool _redisEnabled = false;
 
-    private readonly Dictionary<string, IMemoryDb> _memoryDbs = new();
+    private readonly Dictionary<string, IMemoryDb> _memoryDbs = [];
     private readonly FakeEmbeddingGenerator _embeddingGenerator;
 
     public TestCosineSimilarity(IConfiguration cfg, ITestOutputHelper log) : base(cfg, log)

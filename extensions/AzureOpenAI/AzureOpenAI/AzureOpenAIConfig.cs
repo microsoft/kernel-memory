@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Azure.Core;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -43,6 +44,16 @@ public class AzureOpenAIConfig
     public AuthTypes Auth { get; set; }
 
     /// <summary>
+    /// Optional custom auth tokens audience for sovereign clouds, when using Auth.AzureIdentity
+    /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/README.md
+    /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIAudience.cs
+    /// Examples:
+    /// - "https://cognitiveservices.azure.com/.default"
+    /// - "https://cognitiveservices.azure.us/.default"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
+
+    /// <summary>
     /// API key, required if Auth == APIKey
     /// </summary>
     public string APIKey { get; set; } = string.Empty;
@@ -61,6 +72,12 @@ public class AzureOpenAIConfig
     /// The max number of tokens supported by model deployed.
     /// </summary>
     public int MaxTokenTotal { get; set; } = 8191;
+
+    /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty if unsure.
+    /// </summary>
+    public string Tokenizer { get; set; } = "cl100k";
 
     /// <summary>
     /// The number of dimensions output embeddings should have.
@@ -82,6 +99,12 @@ public class AzureOpenAIConfig
     /// How many times to retry in case of throttling.
     /// </summary>
     public int MaxRetries { get; set; } = 10;
+
+    /// <summary>
+    /// Thumbprints of certificates that should be trusted for HTTPS requests when SSL policy errors are detected.
+    /// This should only be used for local development when using a proxy to call the OpenAI endpoints.
+    /// </summary>
+    public HashSet<string> TrustedCertificateThumbprints { get; set; } = [];
 
     /// <summary>
     /// Set credentials manually from code

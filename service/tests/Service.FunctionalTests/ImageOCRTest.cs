@@ -29,7 +29,7 @@ public class ImageOCRTest : BaseFunctionalTestCase
         // Arrange
         const string DocId = nameof(this.ItUsesTextFoundInsideImages);
         await this._memory.ImportDocumentAsync(new Document(DocId)
-            .AddFiles(new[] { Path.Join(this._fixturesPath, "ANWC-image-for-OCR.jpg") }));
+            .AddFiles([Path.Join(this._fixturesPath, "ANWC-image-for-OCR.jpg")]));
 
         // Wait
         while (!await this._memory.IsDocumentReadyAsync(documentId: DocId))

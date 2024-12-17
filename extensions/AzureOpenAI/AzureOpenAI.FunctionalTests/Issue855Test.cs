@@ -22,10 +22,11 @@ public class Issue855Test : BaseFunctionalTestCase
         this._target = new AzureOpenAITextEmbeddingGenerator(this.AzureOpenAIEmbeddingConfiguration);
     }
 
+    // [Fact] // Enable manually on a need basis
     [Fact(Skip = "Enable and run manually")]
     [Trait("Category", "Manual")]
     [Trait("Category", "BugFix")]
-    public async Task ItDoesntWhenThrottling()
+    public async Task ItDoesntFailWhenThrottling()
     {
         for (int i = 0; i < 50; i++)
         {

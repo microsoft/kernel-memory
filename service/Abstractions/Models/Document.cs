@@ -37,7 +37,7 @@ public class Document
     /// <summary>
     /// Tags to apply to the memories extracted from the files uploaded.
     /// </summary>
-    public TagCollection Tags { get; } = new();
+    public TagCollection Tags { get; } = [];
 
     public Document(string? id = null, TagCollection? tags = null, IEnumerable<string>? filePaths = null)
     {

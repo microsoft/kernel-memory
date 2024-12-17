@@ -179,7 +179,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
-        List<string> indexes = new();
+        List<string> indexes = [];
 
         var sql = this._queryProvider.PrepareGetIndexesQuery();
 
@@ -290,7 +290,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
 
             command.Parameters.AddWithValue("@min_relevance_score", minRelevance);
             command.Parameters.AddWithValue("@max_distance", 1 - minRelevance);
-            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data.ToArray()));
+            command.Parameters.AddWithValue("@vector", JsonSerializer.Serialize(embedding.Data));
             command.Parameters.AddWithValue("@index", index);
             command.Parameters.AddWithValue("@limit", limit);
 
@@ -326,7 +326,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (!this._isReady) { await this.InitAsync(cancellationToken).ConfigureAwait(false); }
 
-        await foreach (var item in this.UpsertBatchAsync(index, new[] { record }, cancellationToken).ConfigureAwait(false))
+        await foreach (var item in this.UpsertBatchAsync(index, [record], cancellationToken).ConfigureAwait(false))
         {
             return item;
         }
@@ -363,7 +363,7 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
                 command.Parameters.AddWithValue("@key", record.Id);
                 command.Parameters.AddWithValue("@payload", JsonSerializer.Serialize(record.Payload) ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(record.Tags) ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data.ToArray()));
+                command.Parameters.AddWithValue("@embedding", JsonSerializer.Serialize(record.Vector.Data));
                 await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 command.Dispose();
 
@@ -396,18 +396,26 @@ public sealed class SqlServerMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposab
     {
         if (this._isReady) { return; }
 
-        await this._initSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        if (this._isReady) { return; }
-
+        var lockAcquired = false;
         try
         {
+            await this._initSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            lockAcquired = true;
+
+            if (this._isReady) { return; }
+
             await this.CacheSqlServerMajorVersionNumberAsync(cancellationToken).ConfigureAwait(false);
             await this.CreateTablesIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
             this._isReady = true;
         }
         finally
         {
-            this._initSemaphore.Release();
+            // Decrease the internal counter only it the lock was acquired,
+            // e.g. not when WaitAsync times out or throws some exception
+            if (lockAcquired)
+            {
+                this._initSemaphore.Release();
+            }
         }
     }
 

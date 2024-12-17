@@ -12,13 +12,13 @@ internal sealed class UpsertVectorRequest<T> where T : DefaultQdrantPayload, new
     internal sealed class BatchRequest
     {
         [JsonPropertyName("ids")]
-        public List<Guid> Ids { get; set; } = new();
+        public List<Guid> Ids { get; set; } = [];
 
         [JsonPropertyName("vectors")]
-        public List<Embedding> Vectors { get; set; } = new();
+        public List<Embedding> Vectors { get; set; } = [];
 
         [JsonPropertyName("payloads")]
-        public List<T> Payloads { get; set; } = new();
+        public List<T> Payloads { get; set; } = [];
     }
 
     private readonly string _collectionName;

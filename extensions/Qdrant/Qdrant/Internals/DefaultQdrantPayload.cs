@@ -13,7 +13,7 @@ internal class DefaultQdrantPayload
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName(QdrantConstants.PayloadTagsField)]
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
 
     [JsonPropertyName(QdrantConstants.PayloadPayloadField)]
     public string Payload { get; set; } = string.Empty;

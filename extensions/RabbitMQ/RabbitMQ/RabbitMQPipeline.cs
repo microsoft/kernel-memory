@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -68,7 +69,7 @@ public sealed class RabbitMQPipeline : IQueue
     }
 
     /// <inheritdoc />
-    /// About dead letters, see https://www.rabbitmq.com/docs/dlx
+    /// About poison queue and dead letters, see https://www.rabbitmq.com/docs/dlx
     public Task<IQueue> ConnectToQueueAsync(string queueName, QueueOptions options = default, CancellationToken cancellationToken = default)
     {
         ArgumentNullExceptionEx.ThrowIfNullOrWhiteSpace(queueName, nameof(queueName), "The queue name is empty");
@@ -82,7 +83,7 @@ public sealed class RabbitMQPipeline : IQueue
         ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(poisonExchangeName) > 255), nameof(poisonExchangeName),
             $"The exchange name '{poisonExchangeName}' is too long, max 255 UTF8 bytes allowed, try using a shorter queue name");
         ArgumentExceptionEx.ThrowIf((Encoding.UTF8.GetByteCount(poisonQueueName) > 255), nameof(poisonQueueName),
-            $"The dead letter queue name '{poisonQueueName}' is too long, max 255 UTF8 bytes allowed, try using a shorter queue name");
+            $"The poison queue name '{poisonQueueName}' is too long, max 255 UTF8 bytes allowed, try using a shorter queue name");
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
@@ -173,7 +174,7 @@ public sealed class RabbitMQPipeline : IQueue
     }
 
     /// <inheritdoc />
-    public void OnDequeue(Func<string, Task<bool>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
         this._consumer.Received += async (object sender, BasicDeliverEventArgs args) =>
         {
@@ -192,32 +193,46 @@ public sealed class RabbitMQPipeline : IQueue
                 byte[] body = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
 
-                bool success = await processMessageAction.Invoke(message).ConfigureAwait(false);
-                if (success)
+                var returnType = await processMessageAction.Invoke(message).ConfigureAwait(false);
+                switch (returnType)
                 {
-                    this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties?.MessageId);
-                    this._channel.BasicAck(args.DeliveryTag, multiple: false);
-                }
-                else
-                {
-                    if (attemptNumber < this._maxAttempts)
-                    {
-                        this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
-                            args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
-                        if (this._delayBeforeRetryingMsecs > 0)
-                        {
-                            await Task.Delay(TimeSpan.FromMilliseconds(this._delayBeforeRetryingMsecs)).ConfigureAwait(false);
-                        }
-                    }
-                    else
-                    {
-                        this._log.LogError("Message '{0}' failed to process (attempt {1} of {2}), moving message to dead letter queue",
-                            args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
-                    }
+                    case ReturnType.Success:
+                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", args.BasicProperties?.MessageId);
+                        this._channel.BasicAck(args.DeliveryTag, multiple: false);
+                        break;
 
-                    // Note: if "requeue == false" the message would be moved to the dead letter exchange
-                    this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
+                    case ReturnType.TransientError:
+                        if (attemptNumber < this._maxAttempts)
+                        {
+                            this._log.LogWarning("Message '{0}' failed to process (attempt {1} of {2}), putting message back in the queue",
+                                args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
+                            if (this._delayBeforeRetryingMsecs > 0)
+                            {
+                                await Task.Delay(TimeSpan.FromMilliseconds(this._delayBeforeRetryingMsecs)).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            this._log.LogError("Message '{0}' failed to process (attempt {1} of {2}), moving message to poison queue",
+                                args.BasicProperties?.MessageId, attemptNumber, this._maxAttempts);
+                        }
+
+                        this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
+                        break;
+
+                    case ReturnType.FatalError:
+                        this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
+                        this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException($"Unknown {returnType:G} result");
                 }
+            }
+            catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
+            {
+                this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", args.BasicProperties?.MessageId);
+                this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: false);
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
@@ -243,7 +258,6 @@ public sealed class RabbitMQPipeline : IQueue
                 }
 
                 // TODO: verify and document what happens if this fails. RabbitMQ should automatically unlock messages.
-                // Note: if "requeue == false" the message would be moved to the dead letter exchange
                 this._channel.BasicNack(args.DeliveryTag, multiple: false, requeue: true);
             }
 #pragma warning restore CA1031

@@ -20,7 +20,7 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     {
         // Arrange
         List<MemoryFilter> filters1 = null!;
-        List<MemoryFilter> filters2 = new();
+        List<MemoryFilter> filters2 = [];
 
         // Act
         var result1 = AzureAISearchFiltering.BuildSearchFilter(filters1);
@@ -39,7 +39,7 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItRendersSimpleFilter()
     {
         // Arrange
-        List<MemoryFilter> filters = new() { MemoryFilters.ByTag("color", "blue") };
+        List<MemoryFilter> filters = [MemoryFilters.ByTag("color", "blue")];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -55,11 +55,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItRendersSimpleFilters()
     {
         // Arrange
-        List<MemoryFilter> filters = new()
-        {
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("color", "blue"),
-            MemoryFilters.ByTag("size", "medium"),
-        };
+            MemoryFilters.ByTag("size", "medium")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -75,11 +75,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItRendersUsingSearchIn()
     {
         // Arrange
-        List<MemoryFilter> filters = new()
-        {
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("color", "blue"),
-            MemoryFilters.ByTag("color", "green"),
-        };
+            MemoryFilters.ByTag("color", "green")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -95,16 +95,16 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItUsesSearchInWithAlternativeSeparators()
     {
         // Arrange
-        List<MemoryFilter> filters1 = new()
-        {
+        List<MemoryFilter> filters1 =
+        [
             MemoryFilters.ByTag("color", "blue"),
-            MemoryFilters.ByTag("color", "green"),
-        };
-        List<MemoryFilter> filters2 = new()
-        {
+            MemoryFilters.ByTag("color", "green")
+        ];
+        List<MemoryFilter> filters2 =
+        [
             MemoryFilters.ByTag("color", "bl|ue"),
-            MemoryFilters.ByTag("color", "gr|e|en"),
-        };
+            MemoryFilters.ByTag("color", "gr|e|en")
+        ];
 
         // Act
         var result1 = AzureAISearchFiltering.BuildSearchFilter(filters1);
@@ -123,12 +123,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItHandlesComplexFilters()
     {
         // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (color == blue AND size == medium) OR (color == blue)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("color", "blue").ByTag("size", "medium"),
             MemoryFilters.ByTag("color", "blue")
-        };
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -145,12 +144,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     public void ItHandlesEdgeCase0()
     {
         // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (col|or == blue) OR (si,ze == small)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("col|or", "blue"),
-            MemoryFilters.ByTag("si,ze", "small"),
-        };
+            MemoryFilters.ByTag("si,ze", "small")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -165,15 +163,14 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase1()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (col|or == blue) OR (col|or == white) OR (si,ze == small) OR (si,ze == medium)
+        // Arrange - (col|or == blue) OR (col|or == white) OR (si,ze == small) OR (si,ze == medium)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("col|or", "blue"),
             MemoryFilters.ByTag("col|or", "white"),
             MemoryFilters.ByTag("si,ze", "small"),
-            MemoryFilters.ByTag("si,ze", "medium"),
-        };
+            MemoryFilters.ByTag("si,ze", "medium")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -189,15 +186,14 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase2()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (col|or == blue) OR (col|or == white) OR (si,ze == small) OR (si,ze == medium)
+        // Arrange - (col|or == blue) OR (col|or == white) OR (si,ze == small) OR (si,ze == medium)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("col|or", "blue"),
             MemoryFilters.ByTag("col|or", "white"),
             MemoryFilters.ByTag("si,ze", "sm|all"),
-            MemoryFilters.ByTag("si,ze", "med;ium"),
-        };
+            MemoryFilters.ByTag("si,ze", "med;ium")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -213,12 +209,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase3()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // color == blue AND color == blue
-            MemoryFilters.ByTag("color", "blue").ByTag("color", "blue"),
-        };
+        // Arrange - color == blue AND color == blue
+        List<MemoryFilter> filters =
+        [
+            MemoryFilters.ByTag("color", "blue").ByTag("color", "blue")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -233,13 +228,12 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase4()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (color == blue) OR (color == blue)
+        // Arrange - (color == blue) OR (color == blue)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("color", "blue"),
-            MemoryFilters.ByTag("color", "blue"),
-        };
+            MemoryFilters.ByTag("color", "blue")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -254,12 +248,11 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase5()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // color == blue AND color == green
-            MemoryFilters.ByTag("color", "blue").ByTag("color", "green"),
-        };
+        // Arrange - color == blue AND color == green
+        List<MemoryFilter> filters =
+        [
+            MemoryFilters.ByTag("color", "blue").ByTag("color", "green")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);
@@ -274,13 +267,12 @@ public class AzureAISearchFilteringTest : BaseUnitTestCase
     [Trait("Category", "AzAISearch")]
     public void ItHandlesEdgeCase6()
     {
-        // Arrange
-        List<MemoryFilter> filters = new()
-        {
-            // (color == blue AND color == green) OR (color == green)
+        // Arrange - (color == blue AND color == green) OR (color == green)
+        List<MemoryFilter> filters =
+        [
             MemoryFilters.ByTag("color", "blue").ByTag("color", "green"),
-            MemoryFilters.ByTag("color", "green"),
-        };
+            MemoryFilters.ByTag("color", "green")
+        ];
 
         // Act
         var result = AzureAISearchFiltering.BuildSearchFilter(filters);

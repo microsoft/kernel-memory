@@ -34,7 +34,7 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
     }
 
     /// <inheritdoc />
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(
         DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this._log.LogDebug("Deleting document, pipeline '{0}/{1}'", pipeline.Index, pipeline.DocumentId);
@@ -45,7 +45,7 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
             IAsyncEnumerable<MemoryRecord> records = db.GetListAsync(
                 index: pipeline.Index,
                 limit: -1,
-                filters: new List<MemoryFilter> { MemoryFilters.ByDocument(pipeline.DocumentId) },
+                filters: [MemoryFilters.ByDocument(pipeline.DocumentId)],
                 cancellationToken: cancellationToken);
 
             await foreach (var record in records.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -60,6 +60,6 @@ public sealed class DeleteDocumentHandler : IPipelineStepHandler
             documentId: pipeline.DocumentId,
             cancellationToken).ConfigureAwait(false);
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 }

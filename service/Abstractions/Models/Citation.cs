@@ -65,11 +65,11 @@ public class Citation
     /// </summary>
     [JsonPropertyName("partitions")]
     [JsonPropertyOrder(8)]
-    public List<Partition> Partitions { get; set; } = new();
+    public List<Partition> Partitions { get; set; } = [];
 
     public class Partition
     {
-        private TagCollection _tags = new();
+        private TagCollection _tags = [];
 
         /// <summary>
         /// Content of the document partition, aka chunk/block of text.
@@ -117,7 +117,7 @@ public class Citation
             get { return this._tags; }
             set
             {
-                this._tags = new();
+                this._tags = [];
                 foreach (KeyValuePair<string, List<string?>> tag in value)
                 {
                     // Exclude internal tags

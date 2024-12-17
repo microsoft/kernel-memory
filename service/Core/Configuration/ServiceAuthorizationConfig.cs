@@ -10,11 +10,11 @@ public class ServiceAuthorizationConfig
     public const int AccessKeyMinLength = 32;
 
     public static readonly char[] ValidChars =
-    {
+    [
         ',', '.', ';', ':', '_', '-',
         '!', '@', '#', '$', '^', '*', '~', '=', '|',
         '[', ']', '{', '}', '(', ')'
-    };
+    ];
 
     /// <summary>
     /// Whether clients must provide some credentials to interact with the HTTP API.

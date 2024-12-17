@@ -48,17 +48,17 @@ public class DocumentUploadRequest
     /// <summary>
     /// Tags to apply to the memories extracted from the files uploaded.
     /// </summary>
-    public TagCollection Tags { get; set; } = new();
+    public TagCollection Tags { get; set; } = [];
 
     /// <summary>
     /// Files to process
     /// </summary>
-    public List<UploadedFile> Files { get; set; } = new();
+    public List<UploadedFile> Files { get; set; } = [];
 
     /// <summary>
     /// How to process the files, e.g. how to extract/chunk etc.
     /// </summary>
-    public List<string> Steps { get; set; } = new();
+    public List<string> Steps { get; set; } = [];
 
     /// <summary>
     /// Normal ctor
@@ -76,7 +76,7 @@ public class DocumentUploadRequest
     public DocumentUploadRequest(Document document, string? index = null, IEnumerable<string>? steps = null)
     {
         this.Index = index ?? string.Empty;
-        this.Steps = steps?.ToList() ?? new List<string>();
+        this.Steps = steps?.ToList() ?? [];
 
         this.DocumentId = document.Id;
         this.Tags = document.Tags;

@@ -129,7 +129,7 @@ public class QuestionEvaluation
 
     public MemoryAnswer MemoryAnswer { get; set; } = null!;
 
-    public EvaluationMetrics Metrics { get; set; } = new EvaluationMetrics();
+    public EvaluationMetrics Metrics { get; set; } = new();
 
-    public Dictionary<string, object?> Metadata { get; set; } = new();
+    public Dictionary<string, object?> Metadata { get; set; } = [];
 }

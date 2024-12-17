@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.KernelMemory.InteractiveSetup.Service;
 using Microsoft.KernelMemory.InteractiveSetup.Services;
 using Microsoft.KernelMemory.InteractiveSetup.UI;
@@ -181,8 +180,8 @@ public static class Main
                     {
                         x.Retrieval.EmbeddingGeneratorType = "AzureOpenAIEmbedding";
                         x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
-                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
-                            : new List<string>();
+                            ? [x.Retrieval.EmbeddingGeneratorType]
+                            : [];
                     });
                     ctx.CfgAzureOpenAIEmbedding.Value = true;
                 }),
@@ -193,8 +192,8 @@ public static class Main
                     {
                         x.Retrieval.EmbeddingGeneratorType = "OpenAI";
                         x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
-                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
-                            : new List<string> { };
+                            ? [x.Retrieval.EmbeddingGeneratorType]
+                            : [];
                     });
                     ctx.CfgOpenAI.Value = true;
                 }),
@@ -205,8 +204,8 @@ public static class Main
                     {
                         x.Retrieval.EmbeddingGeneratorType = "Ollama";
                         x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
-                            ? new List<string> { x.Retrieval.EmbeddingGeneratorType }
-                            : new List<string> { };
+                            ? [x.Retrieval.EmbeddingGeneratorType]
+                            : [];
                     });
                     ctx.CfgOllama.Value = true;
                 }),
@@ -216,7 +215,7 @@ public static class Main
                     AppSettings.Change(x =>
                     {
                         x.Retrieval.EmbeddingGeneratorType = "";
-                        x.DataIngestion.EmbeddingGeneratorTypes = new List<string>();
+                        x.DataIngestion.EmbeddingGeneratorTypes = [];
                     });
                 }),
 

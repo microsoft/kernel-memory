@@ -29,8 +29,7 @@ internal class QdrantPoint<T> where T : DefaultQdrantPayload, new()
         MemoryRecord result = new()
         {
             Id = this.Payload.Id,
-            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload.Payload, QdrantConfig.JSONOptions)
-                      ?? new Dictionary<string, object>()
+            Payload = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Payload.Payload, QdrantConfig.JSONOptions) ?? []
         };
 
         if (withEmbedding)

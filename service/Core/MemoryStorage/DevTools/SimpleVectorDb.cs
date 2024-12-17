@@ -113,6 +113,8 @@ public class SimpleVectorDb : IMemoryDb
             records[r.Id] = r;
         }
 
+        this._log.LogDebug("{VectorCount} vectors loaded for similarity check", records.Count);
+
         // Calculate all the distances from the given vector
         // Note: this is a brute force search, very slow, not meant for production use cases
         var similarity = new Dictionary<string, double>();

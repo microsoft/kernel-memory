@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "run": {
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "BLOB_CONN_STRING": "DefaultEndpointsProtocol=https;AccountName=...FOO...;AccountKey=...KEY...;EndpointSuffix=core.windows.net",
+        "BLOB_CONTAINER": "...NAME...",
+        "BLOB_PATH": "/",
+        "DOCUMENT_ID": "...NAME..."
+      },
+      "commandName": "Project",
+      "launchBrowser": false
+    }
+  }
+}

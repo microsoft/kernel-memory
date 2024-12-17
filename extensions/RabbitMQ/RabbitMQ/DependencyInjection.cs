@@ -30,7 +30,7 @@ public static partial class DependencyInjection
     {
         config.Validate();
 
-        IQueue QueueFactory(IServiceProvider serviceProvider)
+        static IQueue QueueFactory(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetService<RabbitMQPipeline>()
                    ?? throw new KernelMemoryException("Unable to instantiate " + typeof(RabbitMQPipeline));

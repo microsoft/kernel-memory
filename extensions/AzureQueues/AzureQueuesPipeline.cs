@@ -14,6 +14,7 @@ using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Timer = System.Timers.Timer;
 
@@ -72,12 +73,13 @@ public sealed class AzureQueuesPipeline : IQueue
 
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureQueuesPipeline>();
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureQueuesConfig.AuthTypes.ConnectionString:
             {
                 this.ValidateConnectionString(config.ConnectionString);
-                this._clientBuilder = queueName => new QueueClient(config.ConnectionString, queueName);
+                this._clientBuilder = queueName => new QueueClient(config.ConnectionString, queueName, clientOptions);
                 break;
             }
 
@@ -86,7 +88,10 @@ public sealed class AzureQueuesPipeline : IQueue
                 this.ValidateAccountName(config.Account);
                 this.ValidateAccountKey(config.AccountKey);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new StorageSharedKeyCredential(config.Account, config.AccountKey));
+                this._clientBuilder = queueName => new QueueClient(
+                    new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    new StorageSharedKeyCredential(config.Account, config.AccountKey),
+                    clientOptions);
                 break;
             }
 
@@ -94,7 +99,10 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new DefaultAzureCredential());
+                this._clientBuilder = queueName => new QueueClient(
+                    new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    new DefaultAzureCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -102,7 +110,9 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetStorageSharedKeyCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetStorageSharedKeyCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -110,7 +120,9 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetAzureSasCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetAzureSasCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -118,11 +130,14 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetTokenCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetTokenCredential(),
+                    clientOptions);
                 break;
             }
 
             default:
+            case AzureQueuesConfig.AuthTypes.Unknown:
                 this._log.LogCritical("Azure Queue authentication type '{0}' undefined or not supported", config.Auth);
                 throw new DocumentStorageException($"Azure Queue authentication type '{config.Auth}' undefined or not supported");
         }
@@ -180,7 +195,7 @@ public sealed class AzureQueuesPipeline : IQueue
     }
 
     /// <inheritdoc />
-    public void OnDequeue(Func<string, Task<bool>> processMessageAction)
+    public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
         this.Received += async (object sender, MessageEventArgs args) =>
         {
@@ -191,20 +206,30 @@ public sealed class AzureQueuesPipeline : IQueue
 
             try
             {
+                ReturnType returnType = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
                 if (message.DequeueCount <= this._config.MaxRetriesBeforePoisonQueue)
                 {
-                    bool success = await processMessageAction.Invoke(message.MessageText).ConfigureAwait(false);
-                    if (success)
+                    switch (returnType)
                     {
-                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
-                        await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
-                        this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
-                            message.MessageId, backoffDelay.TotalMilliseconds);
-                        await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
+                        case ReturnType.Success:
+                            this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.MessageId);
+                            await this.DeleteMessageAsync(message, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        case ReturnType.TransientError:
+                            var backoffDelay = TimeSpan.FromSeconds(1 * message.DequeueCount);
+                            this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue with a delay of {1} msecs",
+                                message.MessageId, backoffDelay.TotalMilliseconds);
+                            await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        case ReturnType.FatalError:
+                            this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
+                            await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException($"Unknown {returnType:G} result");
                     }
                 }
                 else
@@ -212,6 +237,11 @@ public sealed class AzureQueuesPipeline : IQueue
                     this._log.LogError("Message '{0}' reached max attempts, moving to poison queue", message.MessageId);
                     await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
                 }
+            }
+            catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
+            {
+                this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
+                await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
@@ -239,6 +269,28 @@ public sealed class AzureQueuesPipeline : IQueue
         this._cancellation.Cancel();
         this._cancellation.Dispose();
         this._dispatchTimer?.Dispose();
+    }
+
+    /// <summary>
+    /// Options used by the Azure Queue client, e.g. User Agent and Auth tokens audience, etc.
+    /// </summary>
+    private static QueueClientOptions GetClientOptions(AzureQueuesConfig config)
+    {
+        var options = new QueueClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        if (config.Auth == AzureQueuesConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new QueueAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 
     /// <summary>

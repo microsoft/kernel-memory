@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.AI.Tiktoken</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.AI</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP00;CA1308;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
+        <PackageReference Include="Microsoft.ML.Tokenizers.Data.P50kBase" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.AI.Tiktoken</PackageId>
+        <Product>Tiktoken tokenizers for Kernel Memory</Product>
+        <Description>Provide tokenizers to allow counting content tokens for text and embeddings</Description>
+        <PackageTags>Tiktoken, Tokenizer, RAG, Kernel Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

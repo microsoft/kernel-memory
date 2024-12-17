@@ -30,14 +30,20 @@ public static partial class KernelMemoryBuilderExtensions
     /// Kernel Memory Builder extension method to add SQL Server memory connector.
     /// </summary>
     /// <param name="builder">KM builder instance</param>
-    /// <param name="connString">SQL Server connection string</param>
-    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
+    /// <param name="connectionString">SQL Server connection string</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not.</param>
+    /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR data type.</param>
+    /// <remarks>
+    /// Currently, the native Vector search is available on Azure SQL Database only.
+    /// See <a href="https://learn.microsoft.com/sql/relational-databases/vectors/vectors-sql-server">Overview of vectors in the SQL Database Engine</a> for more information about native Vectors support.
+    /// </remarks>
     public static IKernelMemoryBuilder WithSqlServerMemoryDb(
         this IKernelMemoryBuilder builder,
-        string connString,
-        bool useNativeVectorSearch = false)
+        string connectionString,
+        bool useNativeVectorSearch = false,
+        int vectorSize = SqlServerConfig.DefaultVectorSize)
     {
-        builder.Services.AddSqlServerAsMemoryDb(connString, useNativeVectorSearch);
+        builder.Services.AddSqlServerAsMemoryDb(connectionString, useNativeVectorSearch, vectorSize);
         return builder;
     }
 }
@@ -56,6 +62,8 @@ public static partial class DependencyInjection
         this IServiceCollection services,
         SqlServerConfig config)
     {
+        config.Validate();
+
         return services
             .AddSingleton<SqlServerConfig>(config)
             .AddSingleton<IMemoryDb, SqlServerMemory>();
@@ -65,14 +73,22 @@ public static partial class DependencyInjection
     /// Inject SQL Server as the default implementation of IMemoryDb
     /// </summary>
     /// <param name="services">Service collection</param>
-    /// <param name="connString">SQL Server connection string</param>
-    /// <param name="useNativeVectorSearch">Whether to use native vector search or not</param>
+    /// <param name="connectionString">SQL Server connection string</param>
+    /// <param name="useNativeVectorSearch">Whether to use native vector search or not. Currently, the native Vector search is in Early Access Preview (EAP) and is available on Azure SQL Database and Managed Instance only.</param>
+    /// <param name="vectorSize">When <paramref name="useNativeVectorSearch"/> is <see langword="true"/>, it is the vector size used by the VECTOR SQL Server type.</param>
     public static IServiceCollection AddSqlServerAsMemoryDb(
         this IServiceCollection services,
-        string connString,
-        bool useNativeVectorSearch = false)
+        string connectionString,
+        bool useNativeVectorSearch = false,
+        int vectorSize = SqlServerConfig.DefaultVectorSize)
     {
-        var config = new SqlServerConfig { ConnectionString = connString, UseNativeVectorSearch = useNativeVectorSearch };
+        var config = new SqlServerConfig
+        {
+            ConnectionString = connectionString,
+            UseNativeVectorSearch = useNativeVectorSearch,
+            VectorSize = vectorSize
+        };
+
         return services.AddSqlServerAsMemoryDb(config);
     }
 }

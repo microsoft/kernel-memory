@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Ollama;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 
@@ -36,8 +36,8 @@ public static class Program
         };
 
         var memory = new KernelMemoryBuilder()
-            .WithOllamaTextGeneration(config, new GPT4oTokenizer())
-            .WithOllamaTextEmbeddingGeneration(config, new GPT4oTokenizer())
+            .WithOllamaTextGeneration(config, new CL100KTokenizer())
+            .WithOllamaTextEmbeddingGeneration(config, new CL100KTokenizer())
             .Configure(builder => builder.Services.AddLogging(l =>
             {
                 l.SetMinimumLevel(logLevel);
