@@ -35,7 +35,7 @@
     <PackageVersion Include="Polly.Core" Version="8.4.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageVersion Include="ReadLine" Version="2.0.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
     <PackageVersion Include="System.Numerics.Tensors" Version="8.0.0" />
@@ -59,8 +59,8 @@
   <!-- Semantic Kernel -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.32.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.26.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.26.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.32.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.32.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.32.0" />
   </ItemGroup>
   <!-- Documentation -->
