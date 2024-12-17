@@ -85,9 +85,12 @@ public sealed class SearchClient : ISearchClient
             return result.SearchResult;
         }
 
+#pragma warning disable CA2254
         this._log.LogTrace(string.IsNullOrEmpty(query)
             ? $"Fetching relevant memories by similarity, min relevance {minRelevance}"
             : "Fetching relevant memories by filtering only, no vector search");
+#pragma warning restore CA2254
+
         IAsyncEnumerable<(MemoryRecord, double)> matches = string.IsNullOrEmpty(query)
             ? this._memoryDb.GetListAsync(index, filters, limit, false, cancellationToken).Select(memoryRecord => (memoryRecord, double.MinValue))
             : this._memoryDb.GetSimilarListAsync(index, text: query, filters, minRelevance, limit, false, cancellationToken);
@@ -384,7 +387,7 @@ public sealed class SearchClient : ISearchClient
         // Stop when reaching the max number of results or facts. This acts also as
         // a protection against storage connectors disregarding 'limit' and returning too many records.
         return (result.Mode == SearchMode.SearchMode && result.SearchResult.Results.Count >= result.MaxRecordCount)
-            || (result.Mode == SearchMode.AskMode && result.FactsUsedCount >= result.MaxRecordCount)
+               || (result.Mode == SearchMode.AskMode && result.FactsUsedCount >= result.MaxRecordCount)
             ? result.Stop()
             : result;
     }

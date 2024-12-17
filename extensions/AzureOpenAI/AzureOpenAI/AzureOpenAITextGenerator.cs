@@ -166,7 +166,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
             {
                 this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
-                                  usage.InputTokenCount, usage.OutputTokenCount, usage.OutputTokenDetails?.ReasoningTokenCount ?? 0);
+                    usage.InputTokenCount, usage.OutputTokenCount, usage.OutputTokenDetails?.ReasoningTokenCount ?? 0);
 
                 tokenUsage = new TokenUsage
                 {
