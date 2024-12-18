@@ -25,6 +25,12 @@ public static class Constants
         public const string ArgsField = "args";
     }
 
+    public static class ModelType
+    {
+        public const string EmbeddingGeneration = "EmbeddingGeneration";
+        public const string TextGeneration = "TextGeneration";
+    }
+
     public static class CustomContext
     {
         public static class Partitioning

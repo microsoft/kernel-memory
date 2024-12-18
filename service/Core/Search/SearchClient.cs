@@ -84,6 +84,7 @@ public sealed class SearchClient : ISearchClient
             this._log.LogWarning("No query or filters provided");
             return result.SearchResult;
         }
+
 #pragma warning disable CA2254
         this._log.LogTrace(string.IsNullOrEmpty(query)
             ? $"Fetching relevant memories by similarity, min relevance {minRelevance}"
@@ -157,6 +158,11 @@ public sealed class SearchClient : ISearchClient
                     text.Append(part.Result);
                     result.Result = text.ToString();
 
+                    if (result.TokenUsage != null && part.TokenUsage != null)
+                    {
+                        result.TokenUsage = result.TokenUsage.Union(part.TokenUsage).ToList();
+                    }
+
                     if (result.RelevantSources != null && part.RelevantSources != null)
                     {
                         result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
@@ -170,6 +176,11 @@ public sealed class SearchClient : ISearchClient
 
                     text.Append(part.Result);
                     result.Result = text.ToString();
+
+                    if (result.TokenUsage != null && part.TokenUsage != null)
+                    {
+                        result.TokenUsage = result.TokenUsage.Union(part.TokenUsage).ToList();
+                    }
 
                     if (result.RelevantSources != null && part.RelevantSources != null)
                     {
@@ -307,7 +318,7 @@ public sealed class SearchClient : ISearchClient
         string fileDownloadUrl = record.GetWebPageUrl(index);
 
         // Name of the file to show to the LLM, avoiding "content.url"
-        string fileNameForLLM = (fileName == "content.url" ? fileDownloadUrl : fileName);
+        string fileNameForLLM = fileName == "content.url" ? fileDownloadUrl : fileName;
 
         if (result.Mode == SearchMode.SearchMode)
         {
