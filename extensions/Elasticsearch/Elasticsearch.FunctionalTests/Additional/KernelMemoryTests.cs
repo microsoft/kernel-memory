@@ -27,7 +27,6 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
     [Fact]
     [Trait("Category", "Elasticsearch")]
-    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsLimitsAndMinRelevanceScoreAsync()
     {
         string indexName = nameof(this.ItSupportsLimitsAndMinRelevanceScoreAsync);
