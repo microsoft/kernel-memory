@@ -110,7 +110,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
         await foreach (var x in streamingResponse.ConfigureAwait(false))
         {
-            yield return new(x, null);
+            yield return new(x);
         }
     }
 

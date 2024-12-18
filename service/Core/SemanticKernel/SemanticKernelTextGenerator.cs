@@ -22,16 +22,10 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
     public int MaxTokenTotal { get; }
 
     /// <inheritdoc />
-    public int CountTokens(string text)
-    {
-        return this._tokenizer.CountTokens(text);
-    }
+    public int CountTokens(string text) => this._tokenizer.CountTokens(text);
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetTokens(string text)
-    {
-        return this._tokenizer.GetTokens(text);
-    }
+    public IReadOnlyList<string> GetTokens(string text) => this._tokenizer.GetTokens(text);
 
     public SemanticKernelTextGenerator(
         ITextGenerationService textGenerationService,
