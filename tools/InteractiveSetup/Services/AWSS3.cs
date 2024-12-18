@@ -24,6 +24,7 @@ internal static class AWSS3
                 { "BucketName", "" },
                 { "Endpoint", "https://s3.amazonaws.com" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         // Required to avoid exceptions. "Endpoint" is optional and not defined in appsettings.json

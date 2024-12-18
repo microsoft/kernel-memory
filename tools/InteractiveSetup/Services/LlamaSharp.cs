@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Microsoft.KernelMemory.InteractiveSetup.UI;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.KernelMemory.InteractiveSetup.Services;
 
@@ -9,24 +10,76 @@ internal static class LlamaSharp
 {
     public static void Setup(Context ctx, bool force = false)
     {
-        if (!ctx.CfgLlamaSharp.Value && !force) { return; }
+        if (!ctx.CfgLlamaSharpText.Value && !ctx.CfgLlamaSharpEmbedding.Value && !force) { return; }
 
-        ctx.CfgLlamaSharp.Value = false;
         const string ServiceName = "LlamaSharp";
 
-        if (!AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
+        Dictionary<string, object> textModel = [];
+        Dictionary<string, object> embeddingModel = [];
+
+        if (AppSettings.GetCurrentConfig().Services.TryGetValue(ServiceName, out var config))
         {
-            config = new Dictionary<string, object>
+            if (config.TryGetValue("TextModel", out object? tm) && tm is JObject jtm)
+            {
+                textModel = jtm.ToObject<Dictionary<string, object>>() ?? [];
+            }
+
+            if (config.TryGetValue("EmbeddingModel", out object? em) && em is JObject jem)
+            {
+                embeddingModel = jem.ToObject<Dictionary<string, object>>() ?? [];
+            }
+        }
+        else
+        {
+            textModel = new Dictionary<string, object>
             {
                 { "ModelPath", "" },
                 { "MaxTokenTotal", 4096 },
             };
+
+            embeddingModel = new Dictionary<string, object>
+            {
+                { "ModelPath", "" },
+                { "MaxTokenTotal", 4096 },
+            };
+
+            config = new Dictionary<string, object>
+            {
+                { "TextModel", textModel },
+                { "EmbeddingModel", embeddingModel }
+            };
+            AppSettings.AddService(ServiceName, config);
         }
 
-        AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+        if (ctx.CfgLlamaSharpText.Value)
         {
-            { "ModelPath", SetupUI.AskOpenQuestion("Path to model .gguf file", config.TryGet("ModelPath")) },
-            { "MaxTokenTotal", SetupUI.AskOpenQuestion("Max tokens supported by the model", config.TryGet("MaxTokenTotal")) },
-        });
+            AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+            {
+                {
+                    "TextModel", new Dictionary<string, object>
+                    {
+                        { "ModelPath", SetupUI.AskOpenQuestion("Path to text model .gguf file", textModel.TryGet("ModelPath")) },
+                        { "MaxTokenTotal", SetupUI.AskOpenQuestion("Max tokens supported by the text model", textModel.TryGet("MaxTokenTotal")) },
+                    }
+                }
+            });
+        }
+
+        if (ctx.CfgLlamaSharpEmbedding.Value)
+        {
+            AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
+            {
+                {
+                    "EmbeddingModel", new Dictionary<string, object>
+                    {
+                        { "ModelPath", SetupUI.AskOpenQuestion("Path to embedding model .gguf file", embeddingModel.TryGet("ModelPath")) },
+                        { "MaxTokenTotal", SetupUI.AskOpenQuestion("Max tokens supported by the embedding model", embeddingModel.TryGet("MaxTokenTotal")) },
+                    }
+                }
+            });
+        }
+
+        ctx.CfgLlamaSharpText.Value = false;
+        ctx.CfgLlamaSharpEmbedding.Value = false;
     }
 }

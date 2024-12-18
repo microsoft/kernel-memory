@@ -26,17 +26,20 @@ public interface IKernelMemoryBuilder
     /// <summary>
     /// Build the memory instance, using defaults and the provided dependencies
     /// and overrides. Depending on the dependencies provided, the resulting
-    /// memory might use either an synchronous or asynchronous pipeline.
+    /// memory might use either a synchronous or asynchronous pipeline.
     /// </summary>
-    public IKernelMemory Build();
+    /// <param name="options">Options for the build process</param>
+    /// <returns>A memory instance</returns>
+    public IKernelMemory Build(KernelMemoryBuilderBuildOptions? options = null);
 
     /// <summary>
     /// Build a specific type of memory instance, e.g. explicitly choosing
     /// between synchronous or asynchronous (queue based) pipeline.
     /// </summary>
     /// <typeparam name="T">Type of memory derived from IKernelMemory</typeparam>
+    /// <param name="options">Options for the build process</param>
     /// <returns>A memory instance</returns>
-    public T Build<T>() where T : class, IKernelMemory;
+    public T Build<T>(KernelMemoryBuilderBuildOptions? options = null) where T : class, IKernelMemory;
 
     /// <summary>
     /// Add a singleton to the builder service collection pool.

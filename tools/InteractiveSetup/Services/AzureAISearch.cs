@@ -24,6 +24,7 @@ internal static class AzureAISearch
                 { "UseHybridSearch", false },
                 { "UseStickySessions", false }
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

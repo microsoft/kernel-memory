@@ -23,6 +23,7 @@ internal static class AzureBlobs
                 { "Auth", "ConnectionString" },
                 { "ConnectionString", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

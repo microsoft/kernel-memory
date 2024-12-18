@@ -25,6 +25,7 @@ internal static class RabbitMQ
                 { "VirtualHost", "/" },
                 { "SslEnabled", false },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>

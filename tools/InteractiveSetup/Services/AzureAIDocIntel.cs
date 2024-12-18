@@ -22,6 +22,7 @@ internal static class AzureAIDocIntel
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

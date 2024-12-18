@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,6 +36,11 @@ internal static class AppSettings
 
         json = JsonConvert.SerializeObject(data, s_jsonOptions);
         File.WriteAllText(DevelopmentSettingsFile, json);
+    }
+
+    public static void AddService(string serviceName, Dictionary<string, object> config)
+    {
+        Change(x => { x.Services.Add(serviceName, config); });
     }
 
     public static void GlobalChange(Action<JObject> configChanges)
