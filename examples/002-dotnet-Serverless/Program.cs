@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 
 /* Use MemoryServerlessClient to run the default import pipeline
@@ -21,6 +22,8 @@ public static class Program
 
     public static async Task Main()
     {
+        SensitiveDataLogger.Enabled = true;
+
         var memoryConfiguration = new KernelMemoryConfig();
         var searchClientConfig = new SearchClientConfig();
 
@@ -61,6 +64,7 @@ public static class Program
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }))
             .AddSingleton(memoryConfiguration)
+            .WithSearchClientConfig(searchClientConfig)
             // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
             // .WithOpenAI(openAIConfig)                                       // Use OpenAI for text generation and embedding
             // .WithLlamaTextGeneration(llamaConfig)                           // Generate answers and summaries using LLama

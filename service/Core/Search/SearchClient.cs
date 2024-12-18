@@ -212,6 +212,7 @@ public sealed class SearchClient : ISearchClient
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
+        bool includeDuplicateFacts = context.GetCustomRagIncludeDuplicateFactsOrDefault(this._config.IncludeDuplicateFacts);
 
         var maxTokens = this._config.MaxAskPromptSize > 0
             ? this._config.MaxAskPromptSize
@@ -253,7 +254,7 @@ public sealed class SearchClient : ISearchClient
         await foreach ((MemoryRecord memoryRecord, double recordRelevance) in matches.ConfigureAwait(false))
         {
             result.State = SearchState.Continue;
-            result = this.ProcessMemoryRecord(result, index, memoryRecord, recordRelevance, factTemplate);
+            result = this.ProcessMemoryRecord(result, index, memoryRecord, recordRelevance, includeDuplicateFacts, factTemplate);
 
             if (result.State == SearchState.SkipRecord) { continue; }
 
@@ -287,10 +288,11 @@ public sealed class SearchClient : ISearchClient
     /// <param name="record">Memory record, e.g. text chunk + metadata</param>
     /// <param name="recordRelevance">Memory record relevance</param>
     /// <param name="index">Memory index name</param>
+    /// <param name="includeDupes">Whether to include or skip duplicate chunks of text</param>
     /// <param name="factTemplate">How to render the record when preparing an LLM prompt</param>
     /// <returns>Updated search result state</returns>
     private SearchClientResult ProcessMemoryRecord(
-        SearchClientResult result, string index, MemoryRecord record, double recordRelevance, string? factTemplate = null)
+        SearchClientResult result, string index, MemoryRecord record, double recordRelevance, bool includeDupes = true, string? factTemplate = null)
     {
         var partitionText = record.GetPartitionText(this._log).Trim();
         if (string.IsNullOrEmpty(partitionText))
@@ -320,6 +322,11 @@ public sealed class SearchClient : ISearchClient
         // Name of the file to show to the LLM, avoiding "content.url"
         string fileNameForLLM = fileName == "content.url" ? fileDownloadUrl : fileName;
 
+        // Dupes management note: don't skip the record, only skip the chunk in the prompt
+        // so Citations includes also duplicates, which might have different tags
+        bool isDupe = !result.FactsUniqueness.Add($"{partitionText}");
+        bool skipFactInPrompt = (isDupe && !includeDupes);
+
         if (result.Mode == SearchMode.SearchMode)
         {
             // Relevance is `float.MinValue` when search uses only filters
@@ -329,29 +336,39 @@ public sealed class SearchClient : ISearchClient
         {
             result.FactsAvailableCount++;
 
-            string fact = PromptUtils.RenderFactTemplate(
-                template: factTemplate!,
-                factContent: partitionText,
-                source: fileNameForLLM,
-                relevance: recordRelevance.ToString("P1", CultureInfo.CurrentCulture),
-                recordId: record.Id,
-                tags: record.Tags,
-                metadata: record.Payload);
-
-            // Use the partition/chunk only if there's room for it
-            int factSizeInTokens = this._textGenerator.CountTokens(fact);
-            if (factSizeInTokens >= result.TokensAvailable)
+            if (!skipFactInPrompt)
             {
-                // Stop after reaching the max number of tokens
-                return result.Stop();
+                string fact = PromptUtils.RenderFactTemplate(
+                    template: factTemplate!,
+                    factContent: partitionText,
+                    source: fileNameForLLM,
+                    relevance: recordRelevance.ToString("P1", CultureInfo.CurrentCulture),
+                    recordId: record.Id,
+                    tags: record.Tags,
+                    metadata: record.Payload);
+
+                // Use the partition/chunk only if there's room for it
+                int factSizeInTokens = this._textGenerator.CountTokens(fact);
+                if (factSizeInTokens >= result.TokensAvailable)
+                {
+                    // Stop after reaching the max number of tokens
+                    return result.Stop();
+                }
+
+                result.Facts.Append(fact);
+                result.FactsUsedCount++;
+                result.TokensAvailable -= factSizeInTokens;
+
+                // Relevance is cosine similarity when not using hybrid search
+                this._log.LogTrace("Adding content #{FactsUsedCount} with relevance {Relevance} (dupe: {IsDupe})",
+                    result.FactsUsedCount, recordRelevance, isDupe);
             }
-
-            result.Facts.Append(fact);
-            result.FactsUsedCount++;
-            result.TokensAvailable -= factSizeInTokens;
-
-            // Relevance is cosine similarity when not using hybrid search
-            this._log.LogTrace("Adding content #{0} with relevance {1}", result.FactsUsedCount, recordRelevance);
+            else
+            {
+                // The counter must be increased to avoid long/infinite loops
+                // in case the storage contains several duplications
+                result.FactsUsedCount++;
+            }
         }
 
         var citation = result.Mode switch

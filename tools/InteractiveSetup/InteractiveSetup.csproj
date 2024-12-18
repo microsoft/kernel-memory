@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <OutputType>Exe</OutputType>
         <AssemblyName>Microsoft.KernelMemory.InteractiveSetup</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory.InteractiveSetup</RootNamespace>
         <NoWarn>$(NoWarn);CA1031;CA1303;CA1724;</NoWarn>

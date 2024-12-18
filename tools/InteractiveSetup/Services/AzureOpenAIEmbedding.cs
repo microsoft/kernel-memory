@@ -25,6 +25,7 @@ internal static class AzureOpenAIEmbedding
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

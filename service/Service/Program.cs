@@ -60,7 +60,7 @@ internal static class Program
         // Run `dotnet run setup` to run this code and set up the service
         if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
-            InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
+            InteractiveSetup.Program.Main(args.Skip(1).ToArray());
         }
 
         // *************************** APP BUILD *******************************

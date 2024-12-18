@@ -54,6 +54,21 @@ public class SearchClientConfig
     public string FactTemplate { get; set; } = "==== [File:{{$source}};Relevance:{{$relevance}}]:\n{{$content}}";
 
     /// <summary>
+    /// The memory DB might include duplicate chunks of text, e.g. when importing the same files
+    /// with different document IDs or chat messages (high probability), or when the same text
+    /// appears in different files (not very frequent, considering partitioning process).
+    /// If two chunks are equal (not case-sensitive), regardless of tags and file names, it's usually
+    /// better to skip the duplication, including the chunk only once in the RAG prompt, reducing the
+    /// tokens used. The chunk will still be listed under sources.
+    /// You might want to set this to True if your prompt includes other chunk details, such as tags
+    /// and filenames, that could affect the LLM output.
+    /// Note: when the storage contains duplicate records, other relevant records will be left out,
+    /// possibly affecting RAG quality, because deduplication occurs after retrieving N records from storage,
+    /// leaving RAG with [N - count(duplicates)] records to work with.
+    /// </summary>
+    public bool IncludeDuplicateFacts { get; set; } = false;
+
+    /// <summary>
     /// Number between 0.0 and 2.0. It controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// </summary>

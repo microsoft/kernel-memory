@@ -20,6 +20,7 @@ internal static class Postgres
             {
                 { "ConnectionString", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
