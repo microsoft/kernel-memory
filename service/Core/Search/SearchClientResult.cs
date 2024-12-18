@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.KernelMemory.Search;
@@ -39,6 +41,7 @@ internal class SearchClientResult
     public int FactsAvailableCount { get; set; }
     public int FactsUsedCount { get; set; }
     public int TokensAvailable { get; set; }
+    public HashSet<string> FactsUniqueness { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Create new instance in Ask mode
