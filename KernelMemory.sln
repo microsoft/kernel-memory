@@ -82,6 +82,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{6EF76FD8-4
 		nuget.config = nuget.config
 		README.md = README.md
 		SECURITY.md = SECURITY.md
+		swagger.json = swagger.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B8976338-7CDC-47AE-8502-C2FBAFBEBD68}"

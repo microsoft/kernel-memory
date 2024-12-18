@@ -73,12 +73,13 @@ public sealed class AzureQueuesPipeline : IQueue
 
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<AzureQueuesPipeline>();
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureQueuesConfig.AuthTypes.ConnectionString:
             {
                 this.ValidateConnectionString(config.ConnectionString);
-                this._clientBuilder = queueName => new QueueClient(config.ConnectionString, queueName);
+                this._clientBuilder = queueName => new QueueClient(config.ConnectionString, queueName, clientOptions);
                 break;
             }
 
@@ -87,7 +88,10 @@ public sealed class AzureQueuesPipeline : IQueue
                 this.ValidateAccountName(config.Account);
                 this.ValidateAccountKey(config.AccountKey);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new StorageSharedKeyCredential(config.Account, config.AccountKey));
+                this._clientBuilder = queueName => new QueueClient(
+                    new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    new StorageSharedKeyCredential(config.Account, config.AccountKey),
+                    clientOptions);
                 break;
             }
 
@@ -95,7 +99,10 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), new DefaultAzureCredential());
+                this._clientBuilder = queueName => new QueueClient(
+                    new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    new DefaultAzureCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -103,7 +110,9 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetStorageSharedKeyCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetStorageSharedKeyCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -111,7 +120,9 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetAzureSasCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetAzureSasCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -119,7 +130,9 @@ public sealed class AzureQueuesPipeline : IQueue
             {
                 this.ValidateAccountName(config.Account);
                 var suffix = this.ValidateEndpointSuffix(config.EndpointSuffix);
-                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"), config.GetTokenCredential());
+                this._clientBuilder = queueName => new QueueClient(new($"https://{config.Account}.queue.{suffix}/{queueName}"),
+                    config.GetTokenCredential(),
+                    clientOptions);
                 break;
             }
 
@@ -256,6 +269,28 @@ public sealed class AzureQueuesPipeline : IQueue
         this._cancellation.Cancel();
         this._cancellation.Dispose();
         this._dispatchTimer?.Dispose();
+    }
+
+    /// <summary>
+    /// Options used by the Azure Queue client, e.g. User Agent and Auth tokens audience, etc.
+    /// </summary>
+    private static QueueClientOptions GetClientOptions(AzureQueuesConfig config)
+    {
+        var options = new QueueClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
+
+        if (config.Auth == AzureQueuesConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new QueueAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 
     /// <summary>

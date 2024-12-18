@@ -26,15 +26,55 @@ internal static class AzureOpenAIClientBuilder
             throw new ConfigurationException($"Azure OpenAI: config.{nameof(config.Endpoint)} is empty");
         }
 
+        var clientOptions = GetClientOptions(config, httpClient, loggerFactory);
+        switch (config.Auth)
+        {
+            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
+                return new AzureOpenAIClient(endpoint: new Uri(config.Endpoint), credential: new DefaultAzureCredential(), clientOptions);
+
+            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
+                return new AzureOpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), clientOptions);
+
+            case AzureOpenAIConfig.AuthTypes.APIKey:
+                if (string.IsNullOrEmpty(config.APIKey))
+                {
+                    throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
+                }
+
+                return new AzureOpenAIClient(new Uri(config.Endpoint), new ApiKeyCredential(config.APIKey), clientOptions);
+
+            default:
+                throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
+        }
+    }
+
+    /// <summary>
+    /// Options used by the Azure OpenAI client, e.g. Retry strategy, User Agent, SSL certs, Auth tokens audience, etc.
+    /// </summary>
+    private static AzureOpenAIClientOptions GetClientOptions(
+        AzureOpenAIConfig config,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
+    {
         AzureOpenAIClientOptions options = new()
         {
             RetryPolicy = new ClientSequentialRetryPolicy(maxRetries: Math.Max(0, config.MaxRetries), loggerFactory),
             UserAgentApplicationId = Telemetry.HttpUserAgent,
         };
 
+        // Custom audience for sovereign clouds. See:
+        // - https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/README.md
+        // - https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/openai/Azure.AI.OpenAI/src/Custom/AzureOpenAIAudience.cs
+        if (config.Auth == AzureOpenAIConfig.AuthTypes.AzureIdentity && !string.IsNullOrEmpty(config.AzureIdentityAudience))
+        {
+            options.Audience = new AzureOpenAIAudience(config.AzureIdentityAudience);
+        }
+
+        // Azure SDK bug fix
         // See https://github.com/Azure/azure-sdk-for-net/issues/46109
         options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
+        // Remote SSL certs verification
         if (httpClient is null && config.TrustedCertificateThumbprints.Count > 0)
         {
 #pragma warning disable CA2000 // False Positive: https://github.com/dotnet/roslyn-analyzers/issues/4636
@@ -47,25 +87,7 @@ internal static class AzureOpenAIClientBuilder
             options.Transport = new HttpClientPipelineTransport(httpClient);
         }
 
-        switch (config.Auth)
-        {
-            case AzureOpenAIConfig.AuthTypes.AzureIdentity:
-                return new AzureOpenAIClient(endpoint: new Uri(config.Endpoint), credential: new DefaultAzureCredential(), options: options);
-
-            case AzureOpenAIConfig.AuthTypes.ManualTokenCredential:
-                return new AzureOpenAIClient(new Uri(config.Endpoint), config.GetTokenCredential(), options);
-
-            case AzureOpenAIConfig.AuthTypes.APIKey:
-                if (string.IsNullOrEmpty(config.APIKey))
-                {
-                    throw new ConfigurationException($"Azure OpenAI: {config.APIKey} is empty");
-                }
-
-                return new AzureOpenAIClient(new Uri(config.Endpoint), new ApiKeyCredential(config.APIKey), options);
-
-            default:
-                throw new ConfigurationException($"Azure OpenAI: authentication type '{config.Auth:G}' is not supported");
-        }
+        return options;
     }
 
     private static HttpClient BuildHttpClientWithCustomCertificateValidation(AzureOpenAIConfig config)
