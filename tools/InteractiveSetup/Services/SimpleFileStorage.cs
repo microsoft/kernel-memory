@@ -21,8 +21,10 @@ internal static class SimpleFileStorage
         {
             config = new Dictionary<string, object>
             {
-                { "Directory", "" }
+                { "Directory", "" },
+                { "StorageType", "Disk" }
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>
