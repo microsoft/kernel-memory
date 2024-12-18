@@ -69,7 +69,7 @@ public class CustomModelTextGeneration : ITextGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -79,6 +79,6 @@ public class CustomModelTextGeneration : ITextGenerator
         // Remove this
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
-        yield return ("some text", null);
+        yield return new("some text");
     }
 }

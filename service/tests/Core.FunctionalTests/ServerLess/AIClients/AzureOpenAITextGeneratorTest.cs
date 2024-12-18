@@ -3,6 +3,7 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
+using Microsoft.KernelMemory.Models;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
@@ -26,14 +27,14 @@ public class AzureOpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new AzureOpenAITextGenerator(this._config, loggerFactory: null);
 
         // Act
-        var tokens = client.GenerateTextAsync(
+        IAsyncEnumerable<TextContent> textContents = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (var (word, _) in tokens)
+        await foreach (var textContent in textContents)
         {
-            Console.Write(word);
+            Console.Write(textContent.Text);
             if (count++ > 10) { break; }
         }
 

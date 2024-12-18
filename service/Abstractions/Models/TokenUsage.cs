@@ -10,7 +10,7 @@ namespace Microsoft.KernelMemory.Models;
 /// </summary>
 public class TokenUsage
 {
-    public DateTime Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 
     public string? ServiceType { get; set; }
 

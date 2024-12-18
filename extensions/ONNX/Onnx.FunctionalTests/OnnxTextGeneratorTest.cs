@@ -43,11 +43,11 @@ public sealed class OnnxTextGeneratorTest : BaseFunctionalTestCase
 
         // Act
         this._timer.Restart();
-        var tokens = this._target.GenerateTextAsync(prompt, options);
+        var textContents = this._target.GenerateTextAsync(prompt, options);
         var result = new StringBuilder();
-        await foreach (var (token, _) in tokens)
+        await foreach (var textContent in textContents)
         {
-            result.Append(token);
+            result.Append(textContent.Text);
         }
 
         this._timer.Stop();

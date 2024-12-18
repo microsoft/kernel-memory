@@ -98,7 +98,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -121,7 +121,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
             switch (response)
             {
                 case ContentBlockDelta blockDelta:
-                    yield return (blockDelta.Delta.Text, null);
+                    yield return new(blockDelta.Delta.Text);
                     break;
 
                 default:

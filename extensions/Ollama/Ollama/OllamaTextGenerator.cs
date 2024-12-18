@@ -92,7 +92,7 @@ public class OllamaTextGenerator : ITextGenerator
         return this._textTokenizer.GetTokens(text);
     }
 
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -147,7 +147,7 @@ public class OllamaTextGenerator : ITextGenerator
         IAsyncEnumerable<string?> stream = chat.SendAsync(prompt, cancellationToken);
         await foreach (string? token in stream.ConfigureAwait(false))
         {
-            if (token != null) { yield return (token, null); }
+            if (token != null) { yield return new(token); }
         }
     }
 }

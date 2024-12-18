@@ -70,41 +70,16 @@ internal class AnswerGenerator
             yield break;
         }
 
-        var prompt = this.CreatePrompt(question, result.Facts.ToString(), context);
-
-        var tokenUsage = new TokenUsage
-        {
-            Timestamp = DateTime.UtcNow,
-            ModelType = "TextGeneration",
-            TokeninzerTokensIn = this._textGenerator.CountTokens(prompt)
-        };
-
-        result.AskResult.TokenUsages.Add(tokenUsage);
-
         var completeAnswer = new StringBuilder();
-
-        await foreach (var answerToken in this.GenerateAnswerTokensAsync(prompt, context, cancellationToken).ConfigureAwait(false))
+        await foreach (var answerToken in this.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(false))
         {
-            if (answerToken.Text is not null)
-            {
-                completeAnswer.Append(answerToken.Text);
-                result.AskResult.Result = answerToken.Text;
-            }
-
-            tokenUsage.Timestamp = answerToken.TokenUsage?.Timestamp ?? tokenUsage.Timestamp;
-            tokenUsage.ServiceType ??= answerToken.TokenUsage?.ServiceType;
-            tokenUsage.ModelName ??= answerToken.TokenUsage?.ModelName;
-            tokenUsage.ServiceTokensIn ??= answerToken.TokenUsage?.ServiceTokensIn;
-            tokenUsage.ServiceTokensOut ??= answerToken.TokenUsage?.ServiceTokensOut;
-            tokenUsage.ServiceReasoningTokens ??= answerToken.TokenUsage?.ServiceReasoningTokens;
-
+            completeAnswer.Append(answerToken.Text);
+            result.AskResult.Result = answerToken.Text;
             yield return result.AskResult;
         }
 
         // Finalize the answer, checking if it's empty
         result.AskResult.Result = completeAnswer.ToString();
-        tokenUsage.TokeninzerTokensOut = this._textGenerator.CountTokens(result.AskResult.Result);
-
         if (string.IsNullOrWhiteSpace(result.AskResult.Result)
             || ValueIsEquivalentTo(result.AskResult.Result, this._config.EmptyAnswer))
         {
@@ -124,28 +99,21 @@ internal class AnswerGenerator
         }
     }
 
-    private string CreatePrompt(string question, string facts, IContext? context)
+    private IAsyncEnumerable<TextContent> GenerateAnswerTokensAsync(string question, string facts, IContext? context, CancellationToken cancellationToken)
     {
-        question = question.Trim();
-        question = question.EndsWith('?') ? question : $"{question}?";
-
-        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
-
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
-        prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
-        prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
-
-        this._log.LogInformation("New prompt: {0}", prompt);
-
-        return prompt;
-    }
-
-    private IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateAnswerTokensAsync(string prompt, IContext? context, CancellationToken cancellationToken)
-    {
+        string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
         double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
         double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
+
+        question = question.Trim();
+        question = question.EndsWith('?') ? question : $"{question}?";
+
+        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
+        prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
+        prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
+        this._log.LogInformation("New prompt: {0}", prompt);
 
         var options = new TextGenerationOptions
         {

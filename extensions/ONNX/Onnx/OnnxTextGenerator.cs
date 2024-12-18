@@ -86,7 +86,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -163,7 +163,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
                 if (outputTokens.Count > 0 && this._tokenizer != null)
                 {
                     var newToken = outputTokens[^1];
-                    yield return (this._tokenizer.Decode([newToken]), null);
+                    yield return new(this._tokenizer.Decode([newToken]));
                 }
             }
         }

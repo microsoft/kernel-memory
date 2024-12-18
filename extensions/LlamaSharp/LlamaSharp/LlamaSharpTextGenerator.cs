@@ -77,7 +77,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -110,7 +110,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
         await foreach (var x in streamingResponse.ConfigureAwait(false))
         {
-            yield return (x, null);
+            yield return new(x, null);
         }
     }
 

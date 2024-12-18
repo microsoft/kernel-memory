@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -23,10 +22,16 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
     public int MaxTokenTotal { get; }
 
     /// <inheritdoc />
-    public int CountTokens(string text) => this._tokenizer.CountTokens(text);
+    public int CountTokens(string text)
+    {
+        return this._tokenizer.CountTokens(text);
+    }
 
     /// <inheritdoc />
-    public IReadOnlyList<string> GetTokens(string text) => this._tokenizer.GetTokens(text);
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        return this._tokenizer.GetTokens(text);
+    }
 
     public SemanticKernelTextGenerator(
         ITextGenerationService textGenerationService,
@@ -53,7 +58,7 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(
+    public async IAsyncEnumerable<Models.TextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -67,7 +72,7 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
         {
             if (content != null)
             {
-                yield return (content.ToString(), null);
+                yield return new(content.ToString());
             }
         }
     }

@@ -38,7 +38,7 @@ public class NoTextGenerator : ITextGenerator
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(string? Text, TokenUsage? TokenUsage)> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TextContent> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
     {
         throw this.Error();
     }
