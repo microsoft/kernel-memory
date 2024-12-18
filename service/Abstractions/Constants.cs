@@ -70,6 +70,9 @@ public static class Constants
             // Used to override how facts are injected into RAG prompt
             public const string FactTemplate = "custom_rag_fact_template_str";
 
+            // Used to override if duplicate facts are included in RAG prompts
+            public const string IncludeDuplicateFacts = "custom_rag_include_duplicate_facts_bool";
+
             // Used to override the max tokens to generate when using the RAG prompt
             public const string MaxTokens = "custom_rag_max_tokens_int";
 
