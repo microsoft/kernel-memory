@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AppBuilders;
@@ -116,16 +117,16 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public IKernelMemory Build()
+    public IKernelMemory Build(KernelMemoryBuilderBuildOptions? options = null)
     {
         var type = this.GetBuildType();
         switch (type)
         {
             case ClientTypes.SyncServerless:
-                return this.BuildServerlessClient();
+                return this.BuildServerlessClient(options);
 
             case ClientTypes.AsyncService:
-                return this.BuildAsyncClient();
+                return this.BuildAsyncClient(options);
 
             case ClientTypes.Undefined:
                 throw new KernelMemoryException("Missing dependencies or insufficient configuration provided. " +
@@ -138,11 +139,11 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
     }
 
     ///<inheritdoc />
-    public T Build<T>() where T : class, IKernelMemory
+    public T Build<T>(KernelMemoryBuilderBuildOptions? options = null) where T : class, IKernelMemory
     {
         if (typeof(T) == typeof(MemoryServerless))
         {
-            if (this.BuildServerlessClient() is not T result)
+            if (this.BuildServerlessClient(options) is not T result)
             {
                 throw new InvalidOperationException($"Unable to instantiate '{typeof(MemoryServerless)}'. The instance is NULL.");
             }
@@ -152,7 +153,7 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
 
         if (typeof(T) == typeof(MemoryService))
         {
-            if (this.BuildAsyncClient() is not T result)
+            if (this.BuildAsyncClient(options) is not T result)
             {
                 throw new InvalidOperationException($"Unable to instantiate '{typeof(MemoryService)}'. The instance is NULL.");
             }
@@ -226,7 +227,7 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
         }
     }
 
-    private MemoryServerless BuildServerlessClient()
+    private MemoryServerless BuildServerlessClient(KernelMemoryBuilderBuildOptions? options)
     {
         try
         {
@@ -240,6 +241,7 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
 
             // Recreate the service provider, in order to have the latest dependencies just configured
             serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+            this.CheckStoragePersistence(options, serviceProvider);
             var memoryClientInstance = ActivatorUtilities.CreateInstance<MemoryServerless>(serviceProvider);
 
             // Load handlers in the memory client
@@ -257,7 +259,7 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
         }
     }
 
-    private MemoryService BuildAsyncClient()
+    private MemoryService BuildAsyncClient(KernelMemoryBuilderBuildOptions? options)
     {
         // Add handlers to DI service collection
         if (this._useDefaultHandlers)
@@ -282,7 +284,42 @@ public sealed class KernelMemoryBuilder : IKernelMemoryBuilder
 
         // Recreate the service provider, in order to have the latest dependencies just configured
         serviceProvider = this._memoryServiceCollection.BuildServiceProvider();
+        this.CheckStoragePersistence(options, serviceProvider);
         return ActivatorUtilities.CreateInstance<MemoryService>(serviceProvider);
+    }
+
+    private void CheckStoragePersistence(KernelMemoryBuilderBuildOptions? options, ServiceProvider serviceProvider)
+    {
+        if (options is { AllowMixingVolatileAndPersistentData: true }) { return; }
+
+        ServiceDescriptor docStoreType = this._memoryServiceCollection.Last<ServiceDescriptor>(x => x.ServiceType == typeof(IDocumentStorage));
+        ServiceDescriptor memStoreType = this._memoryServiceCollection.Last<ServiceDescriptor>(x => x.ServiceType == typeof(IMemoryDb));
+        SimpleFileStorageConfig? simpleFileStorageConfig = serviceProvider.GetService<SimpleFileStorageConfig>();
+        SimpleVectorDbConfig? simpleVectorDbConfig = serviceProvider.GetService<SimpleVectorDbConfig>();
+        SimpleTextDbConfig? simpleTextDbConfig = serviceProvider.GetService<SimpleTextDbConfig>();
+
+        bool persistentDocStore = docStoreType.ImplementationType != typeof(SimpleFileStorage) || simpleFileStorageConfig?.StorageType == FileSystemTypes.Disk;
+        bool persistentMemStore = memStoreType.ImplementationType != typeof(SimpleVectorDb) && memStoreType.ImplementationType != typeof(SimpleTextDb)
+                                  || (memStoreType.ImplementationType == typeof(SimpleVectorDb) && simpleVectorDbConfig?.StorageType == FileSystemTypes.Disk)
+                                  || (memStoreType.ImplementationType == typeof(SimpleTextDb) && simpleTextDbConfig?.StorageType == FileSystemTypes.Disk);
+
+        if (persistentMemStore && !persistentDocStore)
+        {
+            throw new ConfigurationException(
+                "Using a persistent vector store with a volatile document store will lead to duplicate memory records over multiple executions. " +
+                "Set up Kernel Memory to use a persistent document store like Azure Blobs, AWS S3, SimpleFileStorage on disk, etc. " +
+                $"Otherwise, use {nameof(KernelMemoryBuilderBuildOptions)}.{nameof(KernelMemoryBuilderBuildOptions.AllowMixingVolatileAndPersistentData)} " +
+                "to suppress this exception. ");
+        }
+
+        if (persistentDocStore && !persistentMemStore)
+        {
+            throw new ConfigurationException(
+                "Using a volatile vector store with a persistent document store will lead to missing memory records over multiple executions. " +
+                "Set up Kernel Memory to use a persistent vector store like Azure AI Search, Postgres, Qdrant, SimpleVectorDb on disk, etc. " +
+                $"Otherwise, use {nameof(KernelMemoryBuilderBuildOptions)}.{nameof(KernelMemoryBuilderBuildOptions.AllowMixingVolatileAndPersistentData)} " +
+                "to suppress this exception. ");
+        }
     }
 
     private KernelMemoryBuilder CompleteServerlessClient(ServiceProvider serviceProvider)
