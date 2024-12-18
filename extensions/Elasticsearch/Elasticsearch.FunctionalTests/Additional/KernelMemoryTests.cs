@@ -37,7 +37,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine("Uploading document");
         await this.KernelMemory.ImportDocumentAsync(
             new Document(Id)
-                .AddFile(TestsHelper.SKWikipediaSciliconFileName),
+                .AddFile(TestsHelper.SKWikipediaSiliconFileName),
             index: indexName,
             steps: Constants.PipelineWithoutSummary);
 
