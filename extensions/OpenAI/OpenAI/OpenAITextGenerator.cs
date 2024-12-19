@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
@@ -125,7 +124,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<Models.TextContent> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

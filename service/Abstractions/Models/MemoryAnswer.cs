@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory;
 
@@ -53,7 +52,7 @@ public class MemoryAnswer
     /// <remarks>Not all the models and text generators return token usage information.</remarks>
     [JsonPropertyName("tokenUsage")]
     [JsonPropertyOrder(11)]
-    public IList<TokenUsage> TokenUsage { get; set; } = [];
+    public List<TokenUsage> TokenUsage { get; set; } = [];
 
     /// <summary>
     /// List of the relevant sources used to produce the answer.

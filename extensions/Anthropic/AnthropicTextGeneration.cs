@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.Anthropic.Client;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.AI.Anthropic;
 
@@ -98,7 +97,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -121,7 +120,7 @@ public sealed class AnthropicTextGeneration : ITextGenerator, IDisposable
             switch (response)
             {
                 case ContentBlockDelta blockDelta:
-                    yield return new(blockDelta.Delta.Text);
+                    yield return blockDelta.Delta.Text;
                     break;
 
                 default:

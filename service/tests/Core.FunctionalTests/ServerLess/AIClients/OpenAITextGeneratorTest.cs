@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
-using Microsoft.KernelMemory.Models;
 using Microsoft.KM.TestHelpers;
 using Xunit.Abstractions;
 
@@ -27,7 +26,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<TextContent> textContents = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> textContents = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
@@ -50,7 +49,7 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<TextContent> textContents = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> textContents = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert

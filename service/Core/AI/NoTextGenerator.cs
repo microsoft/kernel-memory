@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.AI;
 
@@ -38,7 +37,7 @@ public class NoTextGenerator : ITextGenerator
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TextContent> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(string prompt, TextGenerationOptions options, CancellationToken cancellationToken = default)
     {
         throw this.Error();
     }

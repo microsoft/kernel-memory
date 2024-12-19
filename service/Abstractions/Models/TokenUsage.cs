@@ -3,7 +3,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.KernelMemory.Models;
+namespace Microsoft.KernelMemory;
 
 /// <summary>
 /// Represents the usage of tokens in a request and response cycle.
@@ -22,13 +22,13 @@ public class TokenUsage
     /// The number of tokens in the request message input, spanning all message content items, measured by the tokenizer.
     /// </summary>
     [JsonPropertyName("tokenizer_tokens_in")]
-    public int TokeninzerTokensIn { get; set; }
+    public int TokenizerTokensIn { get; set; }
 
     /// <summary>
     /// The combined number of output tokens in the generated completion, measured by the tokenizer.
     /// </summary>
     [JsonPropertyName("tokenizer_tokens_out")]
-    public int TokeninzerTokensOut { get; set; }
+    public int TokenizerTokensOut { get; set; }
 
     /// <summary>
     /// The number of tokens in the request message input, spanning all message content items, measured by the service.

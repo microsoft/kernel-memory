@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Prompts;
 
 namespace Microsoft.KernelMemory.Search;
@@ -76,7 +75,7 @@ internal class AnswerGenerator
         {
             Timestamp = DateTimeOffset.UtcNow,
             ModelType = Constants.ModelType.TextGeneration,
-            TokeninzerTokensIn = this._textGenerator.CountTokens(prompt)
+            TokenizerTokensIn = this._textGenerator.CountTokens(prompt)
         };
 
         result.AskResult.TokenUsage.Add(tokenUsage);
@@ -100,7 +99,7 @@ internal class AnswerGenerator
 
         // Finalize the answer, checking if it's empty
         result.AskResult.Result = completeAnswer.ToString();
-        tokenUsage.TokeninzerTokensOut = this._textGenerator.CountTokens(result.AskResult.Result);
+        tokenUsage.TokenizerTokensOut = this._textGenerator.CountTokens(result.AskResult.Result);
 
         if (string.IsNullOrWhiteSpace(result.AskResult.Result)
             || ValueIsEquivalentTo(result.AskResult.Result, this._config.EmptyAnswer))
@@ -138,7 +137,7 @@ internal class AnswerGenerator
         return prompt;
     }
 
-    private IAsyncEnumerable<TextContent> GenerateAnswerTokensAsync(string prompt, IContext? context, CancellationToken cancellationToken)
+    private IAsyncEnumerable<GeneratedTextContent> GenerateAnswerTokensAsync(string prompt, IContext? context, CancellationToken cancellationToken)
     {
         int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
         double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);

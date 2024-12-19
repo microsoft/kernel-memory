@@ -3,7 +3,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.Models;
 
 public static class Program
 {
@@ -69,7 +68,7 @@ public class CustomModelTextGeneration : ITextGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -79,6 +78,6 @@ public class CustomModelTextGeneration : ITextGenerator
         // Remove this
         await Task.Delay(0, cancellationToken).ConfigureAwait(false);
 
-        yield return new("some text");
+        yield return "some text";
     }
 }

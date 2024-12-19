@@ -4,16 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using LLama;
 using LLama.Common;
 using LLama.Native;
 using LLama.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory.AI.LlamaSharp;
 
@@ -77,10 +74,10 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TextContent> GenerateTextAsync(
+    public IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var executor = new InteractiveExecutor(this._context);
 
@@ -88,7 +85,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
             : [];
 
-        var samplingPipeline = new DefaultSamplingPipeline()
+        var samplingPipeline = new DefaultSamplingPipeline
         {
             Temperature = (float)options.Temperature,
             TopP = (float)options.NucleusSampling,
@@ -106,12 +103,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         };
 
         this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
-
-        IAsyncEnumerable<string> streamingResponse = executor.InferAsync(prompt, settings, cancellationToken);
-        await foreach (var x in streamingResponse.ConfigureAwait(false))
-        {
-            yield return new(x);
-        }
+        return executor.InferAsync(prompt, settings, cancellationToken).Select(x => new GeneratedTextContent(x));
     }
 
     /// <inheritdoc/>

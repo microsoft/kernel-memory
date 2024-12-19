@@ -11,7 +11,6 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.AzureOpenAI.Internals;
 using Microsoft.KernelMemory.Diagnostics;
-using Microsoft.KernelMemory.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
@@ -120,7 +119,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<Models.TextContent> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -157,15 +156,15 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             throw new AzureOpenAIException(e.Message, e, isTransient: e.StatusCode.IsTransientError());
         }
 
-        await foreach (var x in result.WithCancellation(cancellationToken))
+        await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
         {
             TokenUsage? tokenUsage = null;
 
-            // The last message in the chunk has the usage metadata.
+            // The last message includes tokens usage metadata.
             // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
-            if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
+            if (x.Metadata?["Usage"] is ChatTokenUsage usage)
             {
-                this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
+                this._log.LogTrace("Usage report: input tokens: {InputTokenCount}, output tokens: {OutputTokenCount}, output reasoning tokens: {ReasoningTokenCount}",
                     usage.InputTokenCount, usage.OutputTokenCount, usage.OutputTokenDetails?.ReasoningTokenCount ?? 0);
 
                 tokenUsage = new TokenUsage
@@ -181,7 +180,7 @@ public sealed class AzureOpenAITextGenerator : ITextGenerator
             }
 
             // NOTE: as stated at https://platform.openai.com/docs/api-reference/chat/streaming#chat/streaming-choices,
-            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so it is possible that
+            // the Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so it is possible that
             // x.Text is null, but tokenUsage is not (token usage statistics for the entire request are included in the last chunk).
             if (x.Text is null && tokenUsage is null) { continue; }
 
