@@ -6,6 +6,7 @@ using Microsoft.KernelMemory.HTTP;
 
 namespace Microsoft.KM.Abstractions.UnitTests.Http;
 
+[Trait("Category", "UnitTest")]
 public class SSETest
 {
     [Theory]
