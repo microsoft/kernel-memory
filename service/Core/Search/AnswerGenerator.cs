@@ -84,7 +84,7 @@ internal class AnswerGenerator
 
         await foreach (var answerToken in this.GenerateAnswerTokensAsync(prompt, context, cancellationToken).ConfigureAwait(false))
         {
-            completeAnswer.Append(answerToken.Text);
+            completeAnswer.Append(answerToken);
             result.AskResult.Result = answerToken.Text;
 
             tokenUsage.Timestamp = answerToken.TokenUsage?.Timestamp ?? tokenUsage.Timestamp;

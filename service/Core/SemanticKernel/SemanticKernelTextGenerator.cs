@@ -66,7 +66,7 @@ public sealed class SemanticKernelTextGenerator : ITextGenerator
         {
             if (content != null)
             {
-                yield return new(content.ToString());
+                yield return content.ToString();
             }
         }
     }

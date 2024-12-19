@@ -88,12 +88,11 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 
         // Act
         this._timer.Restart();
-        var textContents = this._target.GenerateTextAsync(prompt, options);
+        var tokens = this._target.GenerateTextAsync(prompt, options);
         var result = new StringBuilder();
-        await foreach (var textContent in textContents)
+        await foreach (var token in tokens)
         {
-            // Console.WriteLine(token);
-            result.Append(textContent.Text);
+            result.Append(token);
         }
 
         this._timer.Stop();

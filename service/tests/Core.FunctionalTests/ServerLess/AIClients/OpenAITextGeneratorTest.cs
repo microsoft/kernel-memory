@@ -26,14 +26,14 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<GeneratedTextContent> textContents = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> text = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (var textContent in textContents)
+        await foreach (var word in text)
         {
-            Console.Write(textContent.Text);
+            Console.Write(word);
             if (count++ > 10) { break; }
         }
 
@@ -49,14 +49,14 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<GeneratedTextContent> textContents = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> text = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (var textContent in textContents)
+        await foreach (var word in text)
         {
-            Console.Write(textContent.Text);
+            Console.Write(word);
             if (count++ > 10) { break; }
         }
 
