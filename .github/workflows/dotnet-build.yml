@@ -28,8 +28,8 @@ jobs:
       max-parallel: 2
       matrix:
         include:
-          - { dotnet: "8.0.x", os: "ubuntu-latest", configuration: Debug }
-          - { dotnet: "8.0.x", os: "ubuntu-latest", configuration: Release }
+          - { dotnet: "9.0.x", os: "ubuntu-latest", configuration: Debug }
+          - { dotnet: "9.0.x", os: "ubuntu-latest", configuration: Release }
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out source
