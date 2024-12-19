@@ -19,7 +19,7 @@ public interface ITextGenerator : ITextTokenizer
     /// <param name="options">Options for the LLM request</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Text generated, returned as a stream of strings/tokens</returns>
-    public IAsyncEnumerable<string> GenerateTextAsync(
+    public IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         CancellationToken cancellationToken = default);

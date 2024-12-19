@@ -68,7 +68,7 @@ public class CustomModelTextGeneration : ITextGenerator
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
