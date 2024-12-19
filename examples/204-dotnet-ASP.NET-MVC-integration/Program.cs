@@ -27,7 +27,7 @@ wepApp.UseAuthorization();
 wepApp.MapControllers();
 
 // Optional: add Kernel Memory web endpoints
-wepApp.AddGetIndexesEndpoint("/km/"); // GET /km/indexes
+wepApp.AddListIndexesEndpoint("/km/"); // GET /km/indexes
 
 // Start ASP.NET app
 wepApp.Run();
