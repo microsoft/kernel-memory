@@ -2,6 +2,7 @@
 
 namespace Microsoft.KernelMemory;
 
+#pragma warning disable CA2225
 public class GeneratedTextContent
 {
     public string Text { get; set; }
