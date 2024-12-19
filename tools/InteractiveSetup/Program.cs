@@ -7,9 +7,9 @@ using Microsoft.KernelMemory.InteractiveSetup.UI;
 
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
-public static class Main
+public static class Program
 {
-    public static void InteractiveSetup(string[] args)
+    public static void Main(string[] args)
     {
         var ctx = new Context();
 
@@ -207,7 +207,19 @@ public static class Main
                             ? [x.Retrieval.EmbeddingGeneratorType]
                             : [];
                     });
-                    ctx.CfgOllama.Value = true;
+                    ctx.CfgOllamaEmbedding.Value = true;
+                }),
+
+                new("LlamaSharp library", config.Retrieval.EmbeddingGeneratorType == "LlamaSharp", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "LlamaSharp";
+                        x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
+                            ? [x.Retrieval.EmbeddingGeneratorType]
+                            : [];
+                    });
+                    ctx.CfgLlamaSharpEmbedding.Value = true;
                 }),
 
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
@@ -248,13 +260,13 @@ public static class Main
                 new("Ollama service", config.TextGeneratorType == "Ollama", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "Ollama"; });
-                    ctx.CfgOllama.Value = true;
+                    ctx.CfgOllamaText.Value = true;
                 }),
 
                 new("LlamaSharp library", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
-                    ctx.CfgLlamaSharp.Value = true;
+                    ctx.CfgLlamaSharpText.Value = true;
                 }),
 
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.TextGeneratorType), () =>

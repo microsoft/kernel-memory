@@ -18,8 +18,9 @@ internal static class MongoDbAtlasDocumentStorage
         {
             config = new Dictionary<string, object>
             {
-                { "ConnectionString", "" },
+                { "ConnectionString", "" }
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>

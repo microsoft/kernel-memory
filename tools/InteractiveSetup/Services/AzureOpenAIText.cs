@@ -25,6 +25,7 @@ internal static class AzureOpenAIText
                 { "Auth", "ApiKey" },
                 { "APIKey", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

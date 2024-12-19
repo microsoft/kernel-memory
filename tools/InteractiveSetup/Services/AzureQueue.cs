@@ -18,10 +18,11 @@ internal static class AzureQueue
         {
             config = new Dictionary<string, object>
             {
-                { "Account", "" },
                 { "Auth", "ConnectionString" },
                 { "ConnectionString", "" },
+                { "Account", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         SetupUI.AskQuestionWithOptions(new QuestionWithOptions

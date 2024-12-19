@@ -11,9 +11,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.2.2" />
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
         <PackageReference Include="Discord.Net" Version="3.16.0" />
-        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.90.241021.1" />
+        <PackageReference Include="Microsoft.KernelMemory.Service.AspNetCore" Version="0.95.241216.2" />
     </ItemGroup>
 
 </Project>
