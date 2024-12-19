@@ -49,7 +49,7 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
         this._firstInvokeDb = serviceProvider.GetService<DiscordDbContext>() ?? throw new ConfigurationException("Discord DB Content is not defined");
     }
 
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this.OnFirstInvoke();
 
@@ -75,13 +75,13 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
                     if (data == null)
                     {
                         this._log.LogError("Failed to deserialize Discord data file, result is NULL");
-                        return (true, pipeline);
+                        return (ReturnType.FatalError, pipeline);
                     }
                 }
                 catch (Exception e)
                 {
                     this._log.LogError(e, "Failed to deserialize Discord data file");
-                    return (true, pipeline);
+                    return (ReturnType.FatalError, pipeline);
                 }
 
                 await db.Messages.AddAsync(data, cancellationToken).ConfigureAwait(false);
@@ -90,7 +90,7 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     public void Dispose()
