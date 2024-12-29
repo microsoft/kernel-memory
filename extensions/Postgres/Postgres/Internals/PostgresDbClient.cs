@@ -425,7 +425,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string columsnHibrid = this._columnsListHybrid;
+        string columnsHibrid = this._columnsListHybrid;
         string columnsListHybridCoalesce = this._columnsListHybridCoalesce;
 
         // Filtering logic, including filter by similarity
@@ -460,7 +460,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         // the similarity (1 - distance) later. Furthermore, colDistance can't be used in the WHERE clause.
                         cmd.CommandText = @$"
                         WITH semantic_search AS (
-                            SELECT {columsnHibrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
+                            SELECT {columnsHibrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
                             FROM {tableName}
                             ORDER BY {this._colEmbedding} <=> @embedding
                             LIMIT @limit
