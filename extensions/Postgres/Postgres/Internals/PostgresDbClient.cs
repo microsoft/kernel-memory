@@ -466,7 +466,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                             LIMIT @limit
                         ),
                         keyword_search AS (
-                            SELECT {columsnHibrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
+                            SELECT {columnsHibrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
                             FROM {tableName}, plainto_tsquery('english', @query) query
                             WHERE to_tsvector('english', {this._colContent}) @@ query
                             ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
