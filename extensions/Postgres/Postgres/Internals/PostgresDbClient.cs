@@ -183,7 +183,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                                 {this._colContent}   TEXT DEFAULT '' NOT NULL,
                                 {this._colPayload}   JSONB DEFAULT '{{}}'::JSONB NOT NULL
                             );
-                            CREATE INDEX IF NOT EXISTS idx_tags ON {tableName} USING GIN({this._colTags});
+                            CREATE INDEX IF NOT EXISTS {tableName}_idx_tags ON {tableName} USING GIN({this._colTags});
+                            CREATE INDEX IF NOT EXISTS {tableName}_idx_content ON {tableName} USING GIN(to_tsvector('english',{this._colContent}));
                             COMMIT;
                         ";
 #pragma warning restore CA2100
@@ -462,13 +463,14 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         WITH semantic_search AS (
                             SELECT {columnsHibrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
                             FROM {tableName}
+                            WHERE {filterSql}
                             ORDER BY {this._colEmbedding} <=> @embedding
                             LIMIT @limit
                         ),
                         keyword_search AS (
                             SELECT {columnsHibrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
                             FROM {tableName}, plainto_tsquery('english', @query) query
-                            WHERE to_tsvector('english', {this._colContent}) @@ query
+                            WHERE to_tsvector('english', {this._colContent}) @@ query and {filterSql}
                             ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
                             LIMIT @limit
                         )
