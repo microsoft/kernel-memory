@@ -436,6 +436,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
             filterSql = "TRUE";
         }
 
+		string filterSqlHybridText = filterSql;
+		
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 
@@ -470,14 +472,14 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         keyword_search AS (
                             SELECT {columnsHibrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
                             FROM {tableName}, plainto_tsquery('english', @query) query
-                            WHERE to_tsvector('english', {this._colContent}) @@ query and {filterSql}
+                            WHERE  {filterSqlHybridText} AND to_tsvector('english', {this._colContent}) @@ query
                             ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
                             LIMIT @limit
                         )
                         SELECT
                             {columnsListHybridCoalesce}
-                            COALESCE(1.0 / (50 + semantic_search.rank), 0.0) +
-                            COALESCE(1.0 / (50 + keyword_search.rank), 0.0) AS {colDistance}
+                            COALESCE(1.0 / (60 + semantic_search.rank), 0.0) +
+                            COALESCE(1.0 / (60 + keyword_search.rank), 0.0) AS {colDistance}
                         FROM semantic_search
                         FULL OUTER JOIN keyword_search ON semantic_search.{this._colId} = keyword_search.{this._colId}
                         ORDER BY {colDistance} DESC
