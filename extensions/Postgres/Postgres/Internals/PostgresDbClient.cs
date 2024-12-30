@@ -435,9 +435,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         {
             filterSql = "TRUE";
         }
-
-		string filterSqlHybridText = filterSql;
-		
+        string filterSqlHybridText = filterSql;
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 
