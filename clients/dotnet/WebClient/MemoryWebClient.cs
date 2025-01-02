@@ -368,7 +368,14 @@ public sealed class MemoryWebClient : IKernelMemory
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var url = Constants.HttpAskEndpoint.CleanUrlPath();
-        HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+        using HttpRequestMessage requestMessage = new(HttpMethod.Post, url)
+        {
+            Content = content
+        };
+        HttpCompletionOption completionOption = useStreaming
+            ? HttpCompletionOption.ResponseHeadersRead
+            : HttpCompletionOption.ResponseContentRead;
+        HttpResponseMessage response = await this._client.SendAsync(requestMessage, completionOption, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         if (useStreaming)
