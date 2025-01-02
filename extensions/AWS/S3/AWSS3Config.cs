@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
 
@@ -13,6 +13,7 @@ public class AWSS3Config
     {
         Unknown = -1,
         AccessKey,
+        CredentialChain,
     }
 
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
@@ -45,14 +46,17 @@ public class AWSS3Config
             throw new ConfigurationException($"Authentication type '{this.Auth}' undefined or not supported");
         }
 
-        if (string.IsNullOrWhiteSpace(this.AccessKey))
+        if (this.Auth == AuthTypes.AccessKey)
         {
-            throw new ConfigurationException("S3 Access Key is undefined");
-        }
+            if (string.IsNullOrWhiteSpace(this.AccessKey))
+            {
+                throw new ConfigurationException("S3 Access Key is undefined");
+            }
 
-        if (string.IsNullOrWhiteSpace(this.SecretAccessKey))
-        {
-            throw new ConfigurationException("S3 Secret Key Access undefined");
+            if (string.IsNullOrWhiteSpace(this.SecretAccessKey))
+            {
+                throw new ConfigurationException("S3 Secret Key Access undefined");
+            }
         }
 
         if (string.IsNullOrWhiteSpace(this.BucketName))
