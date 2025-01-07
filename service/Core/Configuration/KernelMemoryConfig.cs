@@ -12,6 +12,9 @@ namespace Microsoft.KernelMemory;
 
 public class KernelMemoryConfig
 {
+    public const string OrchestrationTypeInProcess = "InProcess";
+    public const string OrchestrationTypeDistributed = "Distributed";
+
     /// <summary>
     /// Settings for the upload of documents and memory creation/update.
     /// </summary>
