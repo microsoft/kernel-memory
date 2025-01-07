@@ -41,7 +41,7 @@ public sealed class AzureQueuesPipeline : IQueue
     // Queue client builder, requiring the queue name in input
     private readonly Func<string, QueueClient> _clientBuilder;
 
-    // Queue confirguration
+    // Queue configuration
     private readonly AzureQueuesConfig _config;
 
     // Queue client, once connected
@@ -243,7 +243,6 @@ public sealed class AzureQueuesPipeline : IQueue
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                 await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
             }
-#pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
             {
                 // Exceptions caught by this block:
@@ -259,7 +258,6 @@ public sealed class AzureQueuesPipeline : IQueue
                 // Note: if this fails, the exception is caught by this.DispatchMessages()
                 await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
             }
-#pragma warning restore CA1031
         };
     }
 
@@ -344,12 +342,10 @@ public sealed class AzureQueuesPipeline : IQueue
                             this._log.LogTrace("Message content: {0}", message.MessageText);
                             await this.Received(this, new MessageEventArgs { Message = message }).ConfigureAwait(false);
                         }
-#pragma warning disable CA1031 // Must catch all to log and keep the process alive
                         catch (Exception e)
                         {
                             this._log.LogError(e, "Message '{0}' processing failed with exception", message.MessageId);
                         }
-#pragma warning restore CA1031
                     },
                     state: null,
                     cancellationToken: this._cancellation.Token,
