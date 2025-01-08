@@ -41,7 +41,7 @@ public sealed class AzureQueuesPipeline : IQueue
     // Queue client builder, requiring the queue name in input
     private readonly Func<string, QueueClient> _clientBuilder;
 
-    // Queue confirguration
+    // Queue configuration
     private readonly AzureQueuesConfig _config;
 
     // Queue client, once connected
