@@ -30,7 +30,7 @@ internal static class KMService
                         {
                             x.Service.RunWebService = true;
                             x.Service.RunHandlers = true;
-                            x.DataIngestion.OrchestrationType = "Distributed";
+                            x.DataIngestion.OrchestrationType = KernelMemoryConfig.OrchestrationTypeDistributed;
                         });
                     }),
 
@@ -44,7 +44,7 @@ internal static class KMService
                         {
                             x.Service.RunWebService = true;
                             x.Service.RunHandlers = false;
-                            x.DataIngestion.OrchestrationType = "InProcess";
+                            x.DataIngestion.OrchestrationType = KernelMemoryConfig.OrchestrationTypeInProcess;
                             x.DataIngestion.DistributedOrchestration.QueueType = "";
                         });
                     }),
@@ -59,7 +59,7 @@ internal static class KMService
                         {
                             x.Service.RunWebService = false;
                             x.Service.RunHandlers = true;
-                            x.DataIngestion.OrchestrationType = "Distributed";
+                            x.DataIngestion.OrchestrationType = KernelMemoryConfig.OrchestrationTypeDistributed;
                         });
                     }),
 
