@@ -348,6 +348,7 @@ public sealed class AzureQueuesPipeline : IQueue
                         {
                             this._log.LogError(e, "Message '{0}' processing failed with exception", message.MessageId);
                         }
+#pragma warning restore CA1031
                     },
                     state: null,
                     cancellationToken: this._cancellation.Token,
