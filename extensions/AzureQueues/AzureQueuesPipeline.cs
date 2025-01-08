@@ -344,6 +344,7 @@ public sealed class AzureQueuesPipeline : IQueue
                             this._log.LogTrace("Message content: {0}", message.MessageText);
                             await this.Received(this, new MessageEventArgs { Message = message }).ConfigureAwait(false);
                         }
+#pragma warning disable CA1031 // Must catch all to log and keep the process alive
                         catch (Exception e)
                         {
                             this._log.LogError(e, "Message '{0}' processing failed with exception", message.MessageId);
