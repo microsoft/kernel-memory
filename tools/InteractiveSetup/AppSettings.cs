@@ -56,13 +56,52 @@ internal static class AppSettings
     }
 
     /// <summary>
+    /// Read the configuration, if available
+    /// </summary>
+    public static KernelMemoryConfig? ReadConfig()
+    {
+        JObject? devConf = null;
+        JObject? defaultConf = null;
+
+        if (File.Exists(DevelopmentSettingsFile))
+        {
+            devConf = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(DevelopmentSettingsFile));
+        }
+
+        if (File.Exists(DefaultSettingsFile))
+        {
+            defaultConf = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(DefaultSettingsFile));
+        }
+
+        if (devConf == null)
+        {
+            if (defaultConf == null) { return null; }
+
+            return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(defaultConf["KernelMemory"]));
+        }
+
+        if (defaultConf == null)
+        {
+            return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(devConf["KernelMemory"]));
+        }
+
+        defaultConf.Merge(devConf, new JsonMergeSettings
+        {
+            MergeArrayHandling = MergeArrayHandling.Replace,
+            PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
+        });
+
+        return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(defaultConf["KernelMemory"]));
+    }
+
+    /// <summary>
     /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.development.json
     /// Note: the code reads from the current folder, which is usually service/Service. Using ConfigurationBuilder would read from
     ///       bin/Debug/net7.0/, causing problems because GetGlobalConfig doesn't.
     /// </summary>
     public static KernelMemoryConfig GetCurrentConfig()
     {
-        JObject data = GetGlobalConfig(true);
+        JObject data = GetGlobalConfig(includeDefaults: true);
         if (data["KernelMemory"] == null)
         {
             Console.WriteLine("KernelMemory property missing, using an empty configuration.");
@@ -74,7 +113,7 @@ internal static class AppSettings
                 .SerializeObject(data["KernelMemory"]));
         if (config == null)
         {
-            throw new SetupException("Unable to parse file");
+            throw new SetupException("Unable to parse configuration file");
         }
 
         return config;

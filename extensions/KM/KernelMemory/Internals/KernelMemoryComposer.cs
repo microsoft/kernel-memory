@@ -110,7 +110,7 @@ internal sealed class KernelMemoryComposer
 
     private void ConfigureQueueDependency()
     {
-        if (string.Equals(this._memoryConfiguration.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(this._memoryConfiguration.DataIngestion.OrchestrationType, KernelMemoryConfig.OrchestrationTypeDistributed, StringComparison.OrdinalIgnoreCase))
         {
             switch (this._memoryConfiguration.DataIngestion.DistributedOrchestration.QueueType)
             {
