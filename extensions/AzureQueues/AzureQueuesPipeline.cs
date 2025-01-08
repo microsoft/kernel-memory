@@ -259,6 +259,7 @@ public sealed class AzureQueuesPipeline : IQueue
                 // Note: if this fails, the exception is caught by this.DispatchMessages()
                 await this.UnlockMessageAsync(message, backoffDelay, cancellationToken: default).ConfigureAwait(false);
             }
+#pragma warning restore CA1031
         };
     }
 
