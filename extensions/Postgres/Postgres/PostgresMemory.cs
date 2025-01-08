@@ -27,6 +27,7 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
     private readonly PostgresDbClient _db;
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly ILogger<PostgresMemory> _log;
+
     private readonly bool _useHybridSearch;
 
     /// <summary>
