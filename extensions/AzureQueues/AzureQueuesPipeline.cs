@@ -243,6 +243,7 @@ public sealed class AzureQueuesPipeline : IQueue
                 this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.MessageId);
                 await this.MoveMessageToPoisonQueueAsync(message, cancellationToken: default).ConfigureAwait(false);
             }
+#pragma warning disable CA1031 // Must catch all to handle queue properly
             catch (Exception e)
             {
                 // Exceptions caught by this block:
