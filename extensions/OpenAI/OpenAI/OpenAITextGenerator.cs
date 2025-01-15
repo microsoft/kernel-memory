@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -12,6 +13,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.KernelMemory.AI.OpenAI;
 
@@ -28,6 +30,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
     private readonly OpenAIChatCompletionService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextGenerator> _log;
+
+    private readonly string _textModel;
 
     /// <inheritdoc/>
     public int MaxTokenTotal { get; }
@@ -87,6 +91,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
     {
         this._client = skClient;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
+        this._textModel = config.TextModel;
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
         if (textTokenizer == null && !string.IsNullOrEmpty(config.TextModelTokenizer))
@@ -119,7 +124,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -159,17 +164,33 @@ public sealed class OpenAITextGenerator : ITextGenerator
 
         await foreach (StreamingTextContent x in result.WithCancellation(cancellationToken))
         {
-            // TODO: try catch
-            // if (x.Metadata?["Usage"] is not null)
-            // {
-            //     var usage = x.Metadata["Usage"] as ChatTokenUsage;
-            //     this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
-            //         usage?.InputTokenCount, usage?.OutputTokenCount, usage?.OutputTokenDetails.ReasoningTokenCount);
-            // }
+            TokenUsage? tokenUsage = null;
 
-            if (x.Text == null) { continue; }
+            // The last message in the chunk has the usage metadata.
+            // https://platform.openai.com/docs/api-reference/chat/create#chat-create-stream_options
+            if (x.Metadata?["Usage"] is ChatTokenUsage { } usage)
+            {
+                this._log.LogTrace("Usage report: input tokens {0}, output tokens {1}, output reasoning tokens {2}",
+                    usage.InputTokenCount, usage.OutputTokenCount, usage.OutputTokenDetails?.ReasoningTokenCount ?? 0);
 
-            yield return x.Text;
+                tokenUsage = new TokenUsage
+                {
+                    Timestamp = (DateTimeOffset?)x.Metadata["CreatedAt"] ?? DateTimeOffset.UtcNow,
+                    ServiceType = "OpenAI",
+                    ModelType = Constants.ModelType.TextGeneration,
+                    ModelName = this._textModel,
+                    ServiceTokensIn = usage!.InputTokenCount,
+                    ServiceTokensOut = usage.OutputTokenCount,
+                    ServiceReasoningTokens = usage.OutputTokenDetails?.ReasoningTokenCount
+                };
+            }
+
+            // NOTE: as stated at https://platform.openai.com/docs/api-reference/chat/streaming#chat/streaming-choices,
+            // The Choice can also be empty for the last chunk if we set stream_options: { "include_usage": true} to get token counts, so it is possible that
+            // x.Text is null, but tokenUsage is not (token usage statistics for the entire request are included in the last chunk).
+            if (x.Text is null && tokenUsage is null) { continue; }
+
+            yield return new(x.Text ?? string.Empty, tokenUsage);
         }
     }
 }

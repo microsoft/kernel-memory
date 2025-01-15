@@ -47,6 +47,15 @@ public class MemoryAnswer
     public string Result { get; set; } = string.Empty;
 
     /// <summary>
+    /// The token used by the model to generate the answer.
+    /// </summary>
+    /// <remarks>Not all the models and text generators return token usage information.</remarks>
+    [JsonPropertyName("tokenUsage")]
+    [JsonPropertyOrder(11)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<TokenUsage>? TokenUsage { get; set; }
+
+    /// <summary>
     /// List of the relevant sources used to produce the answer.
     /// Key = Document ID
     /// Value = List of partitions used from the document.

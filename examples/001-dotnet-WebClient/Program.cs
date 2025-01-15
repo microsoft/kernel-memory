@@ -253,17 +253,36 @@ internal static class Program
     {
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
-        Console.WriteLine($"Expected result: formula explanation using the information loaded");
+        Console.WriteLine("Expected result: formula explanation using the information loaded");
 
         Console.Write("\nAnswer: ");
+        var tokenUsage = new List<TokenUsage>();
         var answerStream = s_memory.AskStreamingAsync(question, options: new SearchOptions { Stream = true });
 
         await foreach (var answer in answerStream)
         {
             // Print token received by LLM
             Console.Write(answer.Result);
+
+            // Collect token usage
+            if (answer.TokenUsage?.Count > 0)
+            {
+                tokenUsage = tokenUsage.Union(answer.TokenUsage).ToList();
+            }
+
             // Slow down the stream for demo purpose
             await Task.Delay(25);
+        }
+
+        Console.WriteLine("\n\nToken usage report:");
+        foreach (var report in tokenUsage)
+        {
+            Console.WriteLine($"{report.ServiceType}: {report.ModelName} [{report.ModelType}]");
+            Console.WriteLine($"- Input : {report.TokenizerTokensIn} tokens (measured by KM tokenizer)");
+            Console.WriteLine($"- Input : {report.ServiceTokensIn} tokens (measured by remote service)");
+            Console.WriteLine($"- Output: {report.ServiceTokensOut} tokens (measured by remote service)");
+            Console.WriteLine($"- Output: {report.TokenizerTokensOut} tokens (measured by KM tokenizer)");
+            Console.WriteLine();
         }
 
         Console.WriteLine("\n\n====================================\n");
@@ -271,13 +290,21 @@ internal static class Program
         /* OUTPUT
 
         Question: What's E = m*c^2?
+        Expected result: formula explanation using the information loaded
 
-        Answer: E = m*c^2 is the formula representing the principle of mass-energy equivalence, which was introduced by Albert Einstein. In this equation,
-        E stands for energy, m represents mass, and c is the speed of light in a vacuum, which is approximately 299,792,458 meters per second (m/s).
-        The equation states that the energy (E) of a system in its rest frame is equal to its mass (m) multiplied by the square of the speed of light (c^2).
-        This implies that mass and energy are interchangeable; a small amount of mass can be converted into a large amount of energy and vice versa,
-        due to the speed of light being a very large number when squared. This concept is a fundamental principle in physics and has important implications
-        in various fields, including nuclear physics and cosmology.
+        Answer: E = m*c^2 is a formula derived by the physicist Albert Einstein, which describes the principle of
+        mass–energy equivalence. In this equation, E represents energy, m represents mass, and c represents the
+        speed of light in a vacuum (approximately 3 x 10^8 meters per second). The formula indicates that mass and
+        energy are interchangeable; they are different forms of the same thing and can be converted into each other.
+        This principle is fundamental in physics and has significant implications in various fields, including nuclear
+        physics and cosmology.
+
+        Token usage report:
+        Azure OpenAI: gpt-4o [TextGeneration]
+        - Input : 15657 tokens (measured by KM tokenizer)
+        - Input : 15664 tokens (measured by remote service)
+        - Output: 110 tokens (measured by remote service)
+        - Output: 110 tokens (measured by KM tokenizer)
 
         */
     }
