@@ -65,6 +65,8 @@ builder.Build().Run();
 [![Run with .NET Aspire](docs/aspire-button.png)](examples/303-dotnet-aspire/Program.cs)
 
 
+
+
 Data Ingestion using Kernel Memory OpenAPI Web Service
 ======================================================
 
@@ -178,6 +180,8 @@ which documents ground the response.
 > > Azure OpenAI: gpt-4o (TextGeneration)
 > > - Input : 24356 tokens
 > > - Output: 103 tokens
+
+![km-stream-token-usage](https://github.com/user-attachments/assets/71abf161-106c-47cc-af06-66f810314687)
 
 > ### Data lineage, citations, referencing sources:
 >
