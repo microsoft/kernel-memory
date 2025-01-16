@@ -74,7 +74,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> GenerateTextAsync(
+    public IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         CancellationToken cancellationToken = default)
@@ -85,7 +85,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
             ? options.TokenSelectionBiases.ToDictionary(pair => (LLamaToken)pair.Key, pair => pair.Value)
             : [];
 
-        var samplingPipeline = new DefaultSamplingPipeline()
+        var samplingPipeline = new DefaultSamplingPipeline
         {
             Temperature = (float)options.Temperature,
             TopP = (float)options.NucleusSampling,
@@ -103,7 +103,7 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         };
 
         this._log.LogTrace("Generating text, temperature {0}, max tokens {1}", samplingPipeline.Temperature, settings.MaxTokens);
-        return executor.InferAsync(prompt, settings, cancellationToken);
+        return executor.InferAsync(prompt, settings, cancellationToken).Select(x => new GeneratedTextContent(x));
     }
 
     /// <inheritdoc/>

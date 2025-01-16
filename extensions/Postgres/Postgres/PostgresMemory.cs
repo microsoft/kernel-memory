@@ -279,14 +279,17 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
             var andSql = new StringBuilder();
             andSql.AppendLine("(");
 
-            if (filter is PostgresMemoryFilter extendedFilter)
+            if (filter is PostgresMemoryFilter)
             {
                 // use PostgresMemoryFilter filtering logic
                 throw new NotImplementedException("PostgresMemoryFilter is not supported yet");
             }
 
             List<string> requiredTags = filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}").ToList();
+
+            // TODO: what is this collection for?
             List<string> safeSqlPlaceholders = [];
+
             if (requiredTags.Count > 0)
             {
                 var safeSqlPlaceholder = $"@placeholder{tagCounter++}";

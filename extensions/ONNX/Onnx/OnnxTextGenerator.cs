@@ -85,7 +85,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -111,4 +111,19 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
         Assert.Contains("some dependencies are not defined", e.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Embedding generator", e.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    [Trait("Category", "UnitTest")]
+    public void ItCanMixPersistentAndVolatileStorageIfNeeded()
+    {
+        KernelMemoryBuilderBuildOptions kmbOptions = new()
+        {
+            AllowMixingVolatileAndPersistentData = true
+        };
+
+        new KernelMemoryBuilder()
+            .WithOpenAIDefaults("key")
+            .WithPostgresMemoryDb("Host=localhost;Port=5432;Username=public;Password=;Database=public")
+            .Build<MemoryServerless>(kmbOptions);
+    }
 }

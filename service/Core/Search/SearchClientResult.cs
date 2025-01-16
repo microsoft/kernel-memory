@@ -33,7 +33,6 @@ internal class SearchClientResult
     public MemoryAnswer NoQuestionResult { get; private init; } = new();
     public MemoryAnswer UnsafeAnswerResult { get; private init; } = new();
     public MemoryAnswer InsufficientTokensResult { get; private init; } = new();
-    public MemoryAnswer ErrorResult { get; private init; } = new();
 
     // Use by Ask mode
     public SearchResult SearchResult { get; private init; } = new();
@@ -92,13 +91,6 @@ internal class SearchClientResult
                 NoResult = true,
                 NoResultReason = "Content moderation",
                 Result = moderatedAnswer
-            },
-            ErrorResult = new MemoryAnswer
-            {
-                StreamState = StreamStates.Error,
-                Question = question,
-                NoResult = true,
-                NoResultReason = "An error occurred"
             }
         };
     }
@@ -112,7 +104,14 @@ internal class SearchClientResult
         this.AskResult.RelevantSources?.Add(citation);
         this.InsufficientTokensResult.RelevantSources?.Add(citation);
         this.UnsafeAnswerResult.RelevantSources?.Add(citation);
-        this.ErrorResult.RelevantSources?.Add(citation);
+    }
+
+    public void AddTokenUsageToStaticResults(TokenUsage tokenUsage)
+    {
+        // Add report only to non-streamed results
+        this.InsufficientTokensResult.TokenUsage = [tokenUsage];
+        this.UnsafeAnswerResult.TokenUsage = [tokenUsage];
+        this.NoFactsResult.TokenUsage = [tokenUsage];
     }
 
     /// <summary>

@@ -135,6 +135,8 @@ public sealed class SearchClient : ISearchClient
         {
             if (done) { break; }
 
+            result.TokenUsage = part.TokenUsage;
+
             switch (part.StreamState)
             {
                 case StreamStates.Error:
@@ -253,7 +255,7 @@ public sealed class SearchClient : ISearchClient
         this._log.LogTrace("{Count} records processed", result.RecordCount);
 
         var first = true;
-        await foreach (var answer in this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryAnswer answer in this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false))
         {
             yield return answer;
 

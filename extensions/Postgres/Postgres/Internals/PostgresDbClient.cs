@@ -536,6 +536,12 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                     foreach (var x in result)
                     {
                         yield return x;
+
+                        // If requested cancel potentially long-running loop
+                        if (cancellationToken is { IsCancellationRequested: true })
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -640,6 +646,12 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                     foreach (var x in result)
                     {
                         yield return x;
+
+                        // If requested cancel potentially long-running loop
+                        if (cancellationToken is { IsCancellationRequested: true })
+                        {
+                            break;
+                        }
                     }
                 }
             }

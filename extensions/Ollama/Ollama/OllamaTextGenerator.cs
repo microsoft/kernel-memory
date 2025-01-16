@@ -91,7 +91,7 @@ public class OllamaTextGenerator : ITextGenerator
         return this._textTokenizer.GetTokens(text);
     }
 
-    public async IAsyncEnumerable<string> GenerateTextAsync(
+    public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
