@@ -3,7 +3,7 @@
 set -e
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
-cd "$HERE/.."
+cd "$HERE/../.."
 
 USR=kernelmemory
 IMG=${USR}/service
@@ -66,4 +66,4 @@ for IMAGE_TAG in "${TAG1}" "${TAG2}"; do
   fi
 done
 
-echo "Docker image push complete."
+echo "Docker images push complete."

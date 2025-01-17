@@ -2,11 +2,19 @@
 
 name: Dockerize arm64
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      docker_tag:
+        description: "Enter KM version (for docker tag)"
+        required: true
+        default: "0.000.000000.0"
 
 jobs:
   build-and-push-image:
     runs-on: macos-latest
+    env:
+      DOCKER_TARGET_PLATFORM: linux/arm64
     steps:
 
       # https://github.com/actions/runner/issues/1456
@@ -22,6 +30,8 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,7 +51,8 @@ jobs:
             ${{ vars.DOCKERHUB_USERNAME }}/service
           # Docker tags to generate
           tags: |
-            type=raw,value=latest-arm64
+            type=raw,priority=999,value=latest-arm64
+            type=raw,priority=800,value=${{ github.event.inputs.docker_tag }}-arm64
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -51,7 +62,7 @@ jobs:
           platforms: linux/arm64
           # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
           build-args: |
-            BUILD_IMAGE_TAG=8.0-jammy-arm64v8
-            RUN_IMAGE_TAG=8.0-alpine-arm64v8
+            BUILD_IMAGE_TAG=9.0-noble-arm64v8
+            RUN_IMAGE_TAG=9.0-alpine-arm64v8
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
