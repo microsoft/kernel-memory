@@ -29,8 +29,8 @@ jobs:
       - name: Build ARM Docker image
         run: |
           docker build --push --platform linux/arm64 \
-            --build-arg BUILD_IMAGE_TAG=9.0-noble-arm64 \
-            --build-arg RUN_IMAGE_TAG=9.0-alpine-arm64 \
+            --build-arg BUILD_IMAGE_TAG=9.0-noble-arm64v8 \
+            --build-arg RUN_IMAGE_TAG=9.0-alpine-arm64v8 \
             --tag "${{ vars.DOCKERHUB_USERNAME }}/service:${{ github.event.inputs.docker_tag }}-arm64" .
 
   amd64:
