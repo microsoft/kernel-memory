@@ -20,11 +20,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -38,13 +33,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # list of Docker images to use as base name for tags
           images: |
             ${{ vars.DOCKERHUB_USERNAME }}/service
-          # Docker tags to generate
           tags: |
-            type=raw,priority=999,value=latest
-            type=raw,priority=800,value=${{ github.event.inputs.docker_tag }}
+            type=raw,priority=800,value=${{ github.event.inputs.docker_tag }}-amd64
 
       - name: Build and push
         uses: docker/build-push-action@v6

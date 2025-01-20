@@ -12,26 +12,13 @@ on:
 
 jobs:
   build-and-push-image:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04-arm
     env:
       DOCKER_TARGET_PLATFORM: linux/arm64
     steps:
 
-      # https://github.com/actions/runner/issues/1456
-      - name: Setup docker (missing on MacOS)
-        if: runner.os == 'macos'
-        run: |
-          export HOMEBREW_NO_AUTO_UPDATE=1
-          brew install docker colima
-          colima start
-
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -46,12 +33,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # list of Docker images to use as base name for tags
           images: |
             ${{ vars.DOCKERHUB_USERNAME }}/service
-          # Docker tags to generate
           tags: |
-            type=raw,priority=999,value=latest-arm64
             type=raw,priority=800,value=${{ github.event.inputs.docker_tag }}-arm64
 
       - name: Build and push
