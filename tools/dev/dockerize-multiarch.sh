@@ -9,7 +9,20 @@ USR=kernelmemory
 IMG=${USR}/service
 
 # Prompt user for VERSION
-read -p "Enter VERSION (e.g. '0.99.260214.1'): " VERSION
+if [ -z "$1" ]; then
+  # Get the latest git tag and remove any prefix
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+  SUGGESTED_VERSION=${LATEST_TAG#*-}
+  read -p "Enter VERSION (default: '${SUGGESTED_VERSION}'): " VERSION
+  VERSION=${VERSION:-$SUGGESTED_VERSION}
+else
+  VERSION=$1
+  read -p "VERSION is set to '${VERSION}'. Press Enter to keep or provide a new value: " NEW_VERSION
+  VERSION=${NEW_VERSION:-$VERSION}
+fi
+
+# Trim VERSION value
+VERSION=$(echo "$VERSION" | xargs)
 
 # Remove local images if they exist
 for TAG in "latest" "${VERSION}-amd64" "${VERSION}-arm64"; do
@@ -32,21 +45,29 @@ for TAG in "latest" "${VERSION}-amd64" "${VERSION}-arm64"; do
 done
 
 # Pull images
+echo "# Pulling images..."
 docker pull --platform linux/amd64 "kernelmemory/service:${VERSION}-amd64"
 docker pull --platform linux/arm64 "kernelmemory/service:${VERSION}-arm64"
 
+# Delete manifest
+echo "# Deleting manifest..."
+docker manifest rm kernelmemory/service:latest || true
+
 # Create manifest
+echo "# Creating new manifest..."
 docker manifest create kernelmemory/service:latest \
     "kernelmemory/service:${VERSION}-amd64" \
     "kernelmemory/service:${VERSION}-arm64"
   
 # Add images to manifest
+echo "# Adding images to new manifest..."
 docker manifest annotate kernelmemory/service:latest \
     "kernelmemory/service:${VERSION}-amd64" --os linux --arch amd64
 docker manifest annotate kernelmemory/service:latest \
     "kernelmemory/service:${VERSION}-arm64" --os linux --arch arm64
 
 # Publish manifest
+echo "# Publishing manifest..."
 docker manifest push kernelmemory/service:latest
 
 

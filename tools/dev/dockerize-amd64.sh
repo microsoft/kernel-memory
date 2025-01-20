@@ -7,13 +7,27 @@ cd "$HERE/../.."
 
 USR=kernelmemory
 IMG=${USR}/service
+ARCH=amd64
 
 # Prompt user for VERSION
-read -p "Enter VERSION (e.g. '0.99.260214.1'): " VERSION
+if [ -z "$1" ]; then
+  # Get the latest git tag and remove any prefix
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+  SUGGESTED_VERSION=${LATEST_TAG#*-}
+  read -p "Enter VERSION (default: '${SUGGESTED_VERSION}'): " VERSION
+  VERSION=${VERSION:-$SUGGESTED_VERSION}
+else
+  VERSION=$1
+  read -p "VERSION is set to '${VERSION}'. Press Enter to keep or provide a new value: " NEW_VERSION
+  VERSION=${NEW_VERSION:-$VERSION}
+fi
+
+# Trim VERSION value
+VERSION=$(echo "$VERSION" | xargs)
 
 # Ensure VERSION ends with arch name
-if [[ "${VERSION:(-6)}" != "-amd64" ]]; then
-  VERSION="${VERSION}-amd64"
+if [[ "${VERSION:(-6)}" != "-${ARCH}" ]]; then
+  VERSION="${VERSION}-${ARCH}"
 fi
 
 # Remove images if they exist
@@ -37,11 +51,10 @@ for TAG in "${VERSION}" "latest"; do
 done
 
 # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
-docker buildx build --no-cache --load \
-    --platform=linux/amd64 \
+docker build --platform linux/amd64 \
     --build-arg BUILD_IMAGE_TAG=9.0-noble-amd64 \
     --build-arg RUN_IMAGE_TAG=9.0-alpine-amd64 \
-    -t "${IMG}:${VERSION}" \
+    --push -t "${IMG}:${VERSION}" \
     .
 
 # Push images to Docker registry
