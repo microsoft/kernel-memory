@@ -45,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/arm64
+          # platforms: linux/arm64
           # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
           build-args: |
             BUILD_IMAGE_TAG=9.0-noble-arm64v8
@@ -89,7 +89,7 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64
+          # platforms: linux/amd64
           # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
           build-args: |
             BUILD_IMAGE_TAG=9.0-noble-amd64
