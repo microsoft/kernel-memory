@@ -31,4 +31,4 @@ jobs:
           docker build --push --platform linux/amd64 \
             --build-arg BUILD_IMAGE_TAG=9.0-noble-amd64 \
             --build-arg RUN_IMAGE_TAG=9.0-alpine-amd64 \
-            --tag ${{ vars.DOCKERHUB_USERNAME }}/service:${{ github.event.inputs.docker_tag }}-amd64 .
+            --tag "${{ vars.DOCKERHUB_USERNAME }}/service:${{ github.event.inputs.docker_tag }}-amd64" .
