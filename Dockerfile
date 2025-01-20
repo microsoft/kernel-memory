@@ -1,9 +1,12 @@
-# Usage: docker buildx build --platform linux/amd64 .
-# Usage: docker buildx build --platform linux/arm64 .
+# Usage: docker build --platform linux/amd64 --build-arg BUILD_IMAGE_TAG=9.0-noble-amd64 \
+#                     --build-arg RUN_IMAGE_TAG=9.0-alpine-amd64 .
+#
+# Usage: docker build --platform linux/arm64 --build-arg BUILD_IMAGE_TAG=9.0-noble-arm64v8 \
+#                     --build-arg RUN_IMAGE_TAG=9.0-alpine-arm64v8 .
 
 # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
-ARG BUILD_IMAGE_TAG="8.0-jammy"
-ARG RUN_IMAGE_TAG="8.0-alpine"
+ARG BUILD_IMAGE_TAG="9.0-noble"
+ARG RUN_IMAGE_TAG="9.0-alpine"
 
 #########################################################################
 # .NET build
