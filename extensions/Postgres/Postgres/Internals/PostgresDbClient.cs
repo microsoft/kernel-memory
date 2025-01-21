@@ -146,6 +146,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         var origInputTableName = tableName;
+        var indexTags = this.WithTableNamePrefix(tableName) + "_idx_tags";
+        var indexContent = this.WithTableNamePrefix(tableName) + "_idx_content";
         tableName = this.WithSchemaAndTableNamePrefix(tableName);
         this._log.LogTrace("Creating table: {0}", tableName);
 
@@ -183,8 +185,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                                 {this._colContent}   TEXT DEFAULT '' NOT NULL,
                                 {this._colPayload}   JSONB DEFAULT '{{}}'::JSONB NOT NULL
                             );
-                            CREATE INDEX IF NOT EXISTS {tableName}_idx_tags ON {tableName} USING GIN({this._colTags});
-                            CREATE INDEX IF NOT EXISTS {tableName}_idx_content ON {tableName} USING GIN(to_tsvector('english',{this._colContent}));
+                            CREATE INDEX IF NOT EXISTS ""{indexTags}"" ON {tableName} USING GIN({this._colTags});
+                            CREATE INDEX IF NOT EXISTS ""{indexContent}"" ON {tableName} USING GIN(to_tsvector('english',{this._colContent}));
                             COMMIT;
                         ";
 #pragma warning restore CA2100
@@ -430,13 +432,15 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         string columnsListHybridCoalesce = this._columnsListHybridCoalesce;
 
         // Filtering logic, including filter by similarity
+        //
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
         if (string.IsNullOrWhiteSpace(filterSql))
         {
             filterSql = "TRUE";
         }
 
-        string filterSqlHybridText = filterSql;
+		string filterSqlHybridText = filterSql;
+		
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 
