@@ -3,8 +3,7 @@ Kernel Memory
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&color=d82679&logo=discord&logoColor=white)](https://aka.ms/KMdiscord)
-[![Docker Image Version](https://img.shields.io/docker/v/kernelmemory/service/latest?arch=amd64&label=Docker&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
-[![Docker Image Version](https://img.shields.io/docker/v/kernelmemory/service/latest-arm64?arch=arm64&label=Docker+ARM&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
+[![Docker Image](https://img.shields.io/docker/pulls/kernelmemory/service?label=Docker&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
 [![NuGet Version](https://img.shields.io/nuget/v/Microsoft.KernelMemory?label=nuget&color=%23512BD4&logo=.net&logoColor=white)](https://www.nuget.org/packages/Microsoft.KernelMemory)
 [![GitHub Release](https://img.shields.io/github/v/release/microsoft/kernel-memory?color=%23dddddd&label=tag&logo=github&logoColor=white)](https://github.com/microsoft/kernel-memory/releases)
 
@@ -63,6 +62,8 @@ builder.Build().Run();
 ```
 
 [![Run with .NET Aspire](docs/aspire-button.png)](examples/303-dotnet-aspire/Program.cs)
+
+
 
 
 Data Ingestion using Kernel Memory OpenAPI Web Service
@@ -179,6 +180,8 @@ which documents ground the response.
 > > - Input : 24356 tokens
 > > - Output: 103 tokens
 
+![km-stream-token-usage](https://github.com/user-attachments/assets/71abf161-106c-47cc-af06-66f810314687)
+
 > ### Data lineage, citations, referencing sources:
 >
 > ```csharp
@@ -272,12 +275,6 @@ to **start the Kernel Memory Service** using OpenAI:
 docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service
 ```
 
-on Linux ARM/MacOS use a different tag:
-
-```shell
-docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
-```
-
 If you prefer using custom settings and services such as Azure OpenAI, Azure
 Document Intelligence, etc., you should create an `appsettings.Development.json`
 file overriding the default values set in `appsettings.json`, or using the
@@ -293,13 +290,9 @@ on Windows:
 
     docker run --volume .\appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
-on Linux (AMD64):
+on Linux / macOS:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
-
-on ARM64 / macOS:
-
-    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
 🔗 See also: 
 * [How to configure KM service](https://github.com/microsoft/kernel-memory/blob/main/service/Service/README.md#%EF%B8%8F-configuration)

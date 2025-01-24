@@ -15,13 +15,17 @@ public static partial class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="setupAction">An optional action to configure the <see cref="IKernelMemory">Kernel Memory builder</see>.</param>
+    /// <param name="buildOptions">Optional options passed to Build() call</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public static IServiceCollection AddKernelMemory(this IServiceCollection services, Action<IKernelMemoryBuilder>? setupAction = null)
+    public static IServiceCollection AddKernelMemory(
+        this IServiceCollection services,
+        Action<IKernelMemoryBuilder>? setupAction = null,
+        KernelMemoryBuilderBuildOptions? buildOptions = null)
     {
         var kernelMemoryBuilder = new KernelMemoryBuilder(services);
         setupAction?.Invoke(kernelMemoryBuilder);
 
-        var kernelMemory = kernelMemoryBuilder.Build();
+        var kernelMemory = kernelMemoryBuilder.Build(buildOptions);
         services.AddSingleton<IKernelMemory>(kernelMemory);
 
         return services;
@@ -32,14 +36,18 @@ public static partial class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="setupAction">An optional action to configure the <see cref="IKernelMemory">Kernel Memory builder</see>.</param>
+    /// <param name="buildOptions">Optional options passed to Build() call</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public static IServiceCollection AddKernelMemory<T>(this IServiceCollection services, Action<IKernelMemoryBuilder>? setupAction = null)
+    public static IServiceCollection AddKernelMemory<T>(
+        this IServiceCollection services,
+        Action<IKernelMemoryBuilder>? setupAction = null,
+        KernelMemoryBuilderBuildOptions? buildOptions = null)
         where T : class, IKernelMemory
     {
         var kernelMemoryBuilder = new KernelMemoryBuilder(services);
         setupAction?.Invoke(kernelMemoryBuilder);
 
-        var kernelMemory = kernelMemoryBuilder.Build<T>();
+        var kernelMemory = kernelMemoryBuilder.Build<T>(buildOptions);
 
         services.AddSingleton(kernelMemory);
         services.AddSingleton<IKernelMemory>(provider => provider.GetRequiredService<T>());

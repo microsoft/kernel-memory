@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.DocumentStorage;
+using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
@@ -116,14 +117,48 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
     [Trait("Category", "UnitTest")]
     public void ItCanMixPersistentAndVolatileStorageIfNeeded()
     {
+        // Arrange
         KernelMemoryBuilderBuildOptions kmbOptions = new()
         {
             AllowMixingVolatileAndPersistentData = true
         };
 
+        // Act - Assert no exception occurs
         new KernelMemoryBuilder()
             .WithOpenAIDefaults("key")
+            .WithSimpleFileStorage(SimpleFileStorageConfig.Volatile)
             .WithPostgresMemoryDb("Host=localhost;Port=5432;Username=public;Password=;Database=public")
             .Build<MemoryServerless>(kmbOptions);
+    }
+
+    [Fact]
+    [Trait("Category", "UnitTest")]
+    public void ItCanMixPersistentAndVolatileStorageIfNeeded2()
+    {
+        // Arrange
+        KernelMemoryBuilderBuildOptions kmbOptions = new()
+        {
+            AllowMixingVolatileAndPersistentData = true
+        };
+
+        var serviceCollection1 = new ServiceCollection();
+        var serviceCollection2 = new ServiceCollection();
+
+        // Act - Assert no exception occurs
+        serviceCollection1.AddKernelMemory(builder =>
+        {
+            builder
+                .WithOpenAIDefaults("key")
+                .WithSimpleFileStorage(SimpleFileStorageConfig.Volatile)
+                .WithPostgresMemoryDb("Host=localhost;Port=5432;Username=public;Password=;Database=public");
+        }, kmbOptions);
+
+        serviceCollection2.AddKernelMemory<MemoryServerless>(builder =>
+        {
+            builder
+                .WithOpenAIDefaults("key")
+                .WithSimpleFileStorage(SimpleFileStorageConfig.Volatile)
+                .WithPostgresMemoryDb("Host=localhost;Port=5432;Username=public;Password=;Database=public");
+        }, kmbOptions);
     }
 }
