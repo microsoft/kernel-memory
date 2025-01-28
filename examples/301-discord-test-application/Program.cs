@@ -2,11 +2,15 @@
 
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
+using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.Sources.DiscordBot;
 
 namespace Microsoft.Discord.TestApplication;
 
 /* Example: Listen for new messages in Discord, and save them in a table in Postgres.
+ *
+ * Why this example: You can build on this example to populate a memory database with
+ *                   user messages, and then use the memory database to autogenerate answers.
  *
  * Use ASP.NET hosted services to host a Discord Bot. The discord bot logic is based
  * on DiscordConnector class.
@@ -18,8 +22,15 @@ namespace Microsoft.Discord.TestApplication;
  * The call to KM.ImportDocument API asks to process the JSON file uploaded using
  * DiscordMessageHandler, included in this project. No other handlers are used.
  *
- * DiscordMessageHandler, loads the uploaded file, deserializes its content, and
- * save each Discord message into a table in Postgres, using Entity Framework.
+ * DiscordMessageHandler, loads the JSON file uploaded, deserializes its content, and
+ * saves each Discord message into a table in Postgres, using Entity Framework.
+ *
+ * Discord Server
+ *   => Discord Bot
+ *      => OnMessage Event
+ *         => KM.ImportDocumentAsync(data, steps: ["store_discord_message"])
+ *            => DiscordMessageHandler
+ *               => Postgres table
  */
 
 internal static class Program
@@ -51,8 +62,8 @@ internal static class Program
         appBuilder.AddNpgsqlDbContext<DiscordDbContext>("postgresDb");
 
         // Run Kernel Memory and DiscordMessageHandler
-        // var kmApp = BuildAsynchronousKernelMemoryApp(appBuilder, discordConfig);
-        var kmApp = BuildSynchronousKernelMemoryApp(appBuilder, discordCfg);
+        // var kmApp = BuildAsynchronousKernelMemoryApp(appBuilder, discordCfg); // run using queues and threads
+        var kmApp = BuildSynchronousKernelMemoryApp(appBuilder, discordCfg); // run everything in one thread
 
         Console.WriteLine("Starting KM application...\n");
         kmApp.Run();
@@ -65,8 +76,9 @@ internal static class Program
         {
             // Note: there's no queue system, so the memory instance will be synchronous (ie MemoryServerless)
 
-            // Store files on disk
+            // Store files and vectors on disk
             kmb.WithSimpleFileStorage(SimpleFileStorageConfig.Persistent);
+            kmb.WithSimpleVectorDb(SimpleVectorDbConfig.Persistent);
 
             // Disable AI, not needed for this example
             kmb.WithoutEmbeddingGenerator();
@@ -76,29 +88,33 @@ internal static class Program
         WebApplication app = appBuilder.Build();
 
         // In synchronous apps, handlers are added to the serverless memory orchestrator
-        (app.Services.GetService<IKernelMemory>() as MemoryServerless)!
-            .Orchestrator
-            .AddHandler<DiscordMessageHandler>(discordConfig.Steps[0]);
+        var orchestrator = (app.Services.GetService<IKernelMemory>() as MemoryServerless)!.Orchestrator;
+        orchestrator.AddHandler<DiscordMessageHandler>(discordConfig.Steps[0]);
 
         return app;
     }
 
     private static WebApplication BuildAsynchronousKernelMemoryApp(WebApplicationBuilder appBuilder, DiscordConnectorConfig discordConfig)
     {
-        appBuilder.Services.AddHandlerAsHostedService<DiscordMessageHandler>(discordConfig.Steps[0]);
         appBuilder.AddKernelMemory(kmb =>
         {
             // Note: because of this the memory instance will be asynchronous (ie MemoryService)
             kmb.WithSimpleQueuesPipeline();
 
-            // Store files on disk
+            // Store files and vectors on disk
             kmb.WithSimpleFileStorage(SimpleFileStorageConfig.Persistent);
+            kmb.WithSimpleVectorDb(SimpleVectorDbConfig.Persistent);
 
             // Disable AI, not needed for this example
             kmb.WithoutEmbeddingGenerator();
             kmb.WithoutTextGenerator();
         });
 
-        return appBuilder.Build();
+        // In asynchronous apps, handlers are added as hosted services to run on dedicated threads
+        appBuilder.Services.AddHandlerAsHostedService<DiscordMessageHandler>(discordConfig.Steps[0]);
+
+        WebApplication app = appBuilder.Build();
+
+        return app;
     }
 }
