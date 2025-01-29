@@ -67,7 +67,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                                             COALESCE(semantic_search.{this._colTags}, keyword_search.{this._colTags}) AS {this._colTags},
                                             COALESCE(semantic_search.{this._colContent}, keyword_search.{this._colContent}) AS {this._colContent},
                                             COALESCE(semantic_search.{this._colPayload}, keyword_search.{this._colPayload}) AS {this._colPayload},
-                                            COALESCE(semantic_search.{this._colEmbedding}, keyword_search.{this._colEmbedding}) AS {this._colEmbedding},
+                                            COALESCE(semantic_search.{this._colEmbedding}, keyword_search.{this._colEmbedding}) AS {this._colEmbedding}
                                          ";
 
         this._createTableSql = string.Empty;
@@ -481,7 +481,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                             LIMIT @limit
                         )
                         SELECT
-                            {this._columnsListHybridCoalesce}
+                            {this._columnsListHybridCoalesce},
                             COALESCE(1.0 / ({this._rrf_K} + semantic_search.rank), 0.0) +
                             COALESCE(1.0 / ({this._rrf_K} + keyword_search.rank), 0.0) AS {colDistance}
                         FROM semantic_search
