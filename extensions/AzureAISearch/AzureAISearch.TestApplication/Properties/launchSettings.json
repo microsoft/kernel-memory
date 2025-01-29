@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "AzureAISearch.TestApplication": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49687;http://localhost:49688"
+    }
+  }
+}

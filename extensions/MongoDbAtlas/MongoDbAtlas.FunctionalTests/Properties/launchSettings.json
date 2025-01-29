@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "MongoDbAtlas.FunctionalTests": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49849;http://localhost:49850"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "203-dotnet-using-core-nuget": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49673;http://localhost:49674"
+    }
+  }
+}

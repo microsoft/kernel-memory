@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Service.FunctionalTests": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49635;http://localhost:49638"
+    }
+  }
+}

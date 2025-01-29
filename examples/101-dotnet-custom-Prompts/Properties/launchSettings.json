@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "101-dotnet-custom-Prompts": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49649;http://localhost:49650"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "210-KM-without-builder": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:49873;http://localhost:49874"
+    }
+  }
+}
