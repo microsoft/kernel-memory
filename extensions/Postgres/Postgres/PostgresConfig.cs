@@ -113,10 +113,22 @@ public class PostgresConfig
     /// </summary>
     public bool UseHybridSearch { get; set; } = false;
 
+
     /// <summary>
-    /// Create a new instance of the configuration
+    /// Defines the dictionary language the make the textual part of the hybrid Search in postgresql
+    /// see: 
     /// </summary>
-    public PostgresConfig()
+    public string TextSearchLanguage { get; set; } = "english";
+
+	/// <summary>
+	/// Reciprocal Ranked Fusion "k-nearest neighbor" to score results of Hybrid Search
+	/// </summary>
+	public int RRF_K { get; set; } = 50;
+
+	/// <summary>
+	/// Create a new instance of the configuration
+	/// </summary>
+	public PostgresConfig()
     {
         this.Columns = new Dictionary<string, string>
         {

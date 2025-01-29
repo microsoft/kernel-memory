@@ -42,6 +42,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         this._dbNamePresent = config.ConnectionString.Contains("Database=", StringComparison.OrdinalIgnoreCase);
         this._schema = config.Schema;
         this._tableNamePrefix = config.TableNamePrefix;
+        this._textSearchLanguage = config.TextSearchLanguage;
+        this._rrf_K = config.RRF_K;
 
         this._colId = config.Columns[PostgresConfig.ColumnId];
         this._colEmbedding = config.Columns[PostgresConfig.ColumnEmbedding];
@@ -168,7 +170,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                     {
                         cmd.CommandText = this._createTableSql
                             .Replace(PostgresConfig.SqlPlaceholdersTableName, tableName, StringComparison.Ordinal)
-                            .Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
+							.Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
                             .Replace(PostgresConfig.SqlPlaceholdersLockId, $"{lockId}", StringComparison.Ordinal);
 
                         this._log.LogTrace("Creating table with custom SQL: {0}", cmd.CommandText);
@@ -186,11 +188,11 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                                 {this._colPayload}   JSONB DEFAULT '{{}}'::JSONB NOT NULL
                             );
                             CREATE INDEX IF NOT EXISTS ""{indexTags}"" ON {tableName} USING GIN({this._colTags});
-                            CREATE INDEX IF NOT EXISTS ""{indexContent}"" ON {tableName} USING GIN(to_tsvector('english',{this._colContent}));
+                            CREATE INDEX IF NOT EXISTS ""{indexContent}"" ON {tableName} USING GIN(to_tsvector('{this._textSearchLanguage}',{this._colContent}));
                             COMMIT;
                         ";
 #pragma warning restore CA2100
-
+                        
                         this._log.LogTrace("Creating table with default SQL: {0}", cmd.CommandText);
                     }
 
@@ -428,7 +430,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string columnsHibrid = this._columnsListHybrid;
+        string columnsHybrid = this._columnsListHybrid;
         string columnsListHybridCoalesce = this._columnsListHybridCoalesce;
 
         // Filtering logic, including filter by similarity
@@ -466,14 +468,14 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         // the similarity (1 - distance) later. Furthermore, colDistance can't be used in the WHERE clause.
                         cmd.CommandText = @$"
                         WITH semantic_search AS (
-                            SELECT {columnsHibrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
+                            SELECT {columnsHybrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
                             FROM {tableName}
                             WHERE {filterSql}
                             ORDER BY {this._colEmbedding} <=> @embedding
                             LIMIT @limit
                         ),
                         keyword_search AS (
-                            SELECT {columnsHibrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
+                            SELECT {columnsHybrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
                             FROM {tableName}, plainto_tsquery('english', @query) query
                             WHERE  {filterSqlHybridText} AND to_tsvector('english', {this._colContent}) @@ query
                             ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
@@ -481,8 +483,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         )
                         SELECT
                             {columnsListHybridCoalesce}
-                            COALESCE(1.0 / (60 + semantic_search.rank), 0.0) +
-                            COALESCE(1.0 / (60 + keyword_search.rank), 0.0) AS {colDistance}
+                            COALESCE(1.0 / ({this._rrf_K} + semantic_search.rank), 0.0) +
+                            COALESCE(1.0 / ({this._rrf_K} + keyword_search.rank), 0.0) AS {colDistance}
                         FROM semantic_search
                         FULL OUTER JOIN keyword_search ON semantic_search.{this._colId} = keyword_search.{this._colId}
                         ORDER BY {colDistance} DESC
@@ -750,6 +752,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
     private readonly string _columnsListHybrid;
     private readonly string _columnsListHybridCoalesce;
     private readonly bool _dbNamePresent;
+    private readonly string _textSearchLanguage;
+    private readonly int _rrf_K;
 
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
