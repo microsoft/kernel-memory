@@ -430,8 +430,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
-        string columnsHybrid = this._columnsListHybrid;
-        string columnsListHybridCoalesce = this._columnsListHybridCoalesce;
+
 
         // Filtering logic, including filter by similarity
         //
@@ -468,21 +467,21 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                         // the similarity (1 - distance) later. Furthermore, colDistance can't be used in the WHERE clause.
                         cmd.CommandText = @$"
                         WITH semantic_search AS (
-                            SELECT {columnsHybrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
+                            SELECT {this._columnsListHybrid}, RANK () OVER (ORDER BY {this._colEmbedding} <=> @embedding) AS rank
                             FROM {tableName}
                             WHERE {filterSql}
                             ORDER BY {this._colEmbedding} <=> @embedding
                             LIMIT @limit
                         ),
                         keyword_search AS (
-                            SELECT {columnsHybrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
+                            SELECT {this._columnsListHybrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
                             FROM {tableName}, plainto_tsquery('english', @query) query
                             WHERE  {filterSqlHybridText} AND to_tsvector('english', {this._colContent}) @@ query
                             ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
                             LIMIT @limit
                         )
                         SELECT
-                            {columnsListHybridCoalesce}
+                            {this._columnsListHybridCoalesce}
                             COALESCE(1.0 / ({this._rrf_K} + semantic_search.rank), 0.0) +
                             COALESCE(1.0 / ({this._rrf_K} + keyword_search.rank), 0.0) AS {colDistance}
                         FROM semantic_search
