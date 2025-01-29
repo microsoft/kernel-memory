@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="MongoDB.Driver.GridFS" />
+        <PackageReference Include="MongoDB.Driver" />
     </ItemGroup>
 
     <ItemGroup>
