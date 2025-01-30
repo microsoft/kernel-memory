@@ -121,7 +121,7 @@ public class PostgresConfig
     public string TextSearchLanguage { get; set; } = "english";
 
 	/// <summary>
-	/// Reciprocal Ranked Fusion "k-nearest neighbor" to score results of Hybrid Search
+	/// Reciprocal Ranked Fusion to score results of Hybrid Search
 	/// </summary>
 	public int RRF_K { get; set; } = 50;
 
