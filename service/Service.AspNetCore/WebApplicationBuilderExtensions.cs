@@ -20,11 +20,13 @@ public static partial class WebApplicationBuilderExtensions
     /// <param name="configureMemoryBuilder">Optional configuration steps for the memory builder</param>
     /// <param name="configureMemory">Optional configuration steps for the memory instance</param>
     /// <param name="configureServices">Optional configuration for the internal dependencies</param>
+    /// <param name="buildOptions">Optional options passed to Build() call</param>
     public static WebApplicationBuilder AddKernelMemory(
         this WebApplicationBuilder appBuilder,
         Action<IKernelMemoryBuilder>? configureMemoryBuilder = null,
         Action<IKernelMemory>? configureMemory = null,
-        Action<IServiceCollection>? configureServices = null)
+        Action<IServiceCollection>? configureServices = null,
+        KernelMemoryBuilderBuildOptions? buildOptions = null)
     {
         // Prepare memory builder, sharing the service collection used by the hosting service
         var memoryBuilder = new KernelMemoryBuilder(appBuilder.Services);
@@ -35,7 +37,7 @@ public static partial class WebApplicationBuilderExtensions
         // Optional configuration provided by the user
         configureMemoryBuilder?.Invoke(memoryBuilder);
 
-        var memory = memoryBuilder.Build();
+        var memory = memoryBuilder.Build(buildOptions);
 
         // Optional memory configuration provided by the user
         configureMemory?.Invoke(memory);
