@@ -43,7 +43,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         this._schema = config.Schema;
         this._tableNamePrefix = config.TableNamePrefix;
         this._textSearchLanguage = config.TextSearchLanguage;
-        this._rrf_K = config.RRF_K;
+        this._rrf_K = config.RRFK;
 
         this._colId = config.Columns[PostgresConfig.ColumnId];
         this._colEmbedding = config.Columns[PostgresConfig.ColumnEmbedding];
@@ -170,7 +170,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                     {
                         cmd.CommandText = this._createTableSql
                             .Replace(PostgresConfig.SqlPlaceholdersTableName, tableName, StringComparison.Ordinal)
-							.Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
+                            .Replace(PostgresConfig.SqlPlaceholdersVectorSize, $"{vectorSize}", StringComparison.Ordinal)
                             .Replace(PostgresConfig.SqlPlaceholdersLockId, $"{lockId}", StringComparison.Ordinal);
 
                         this._log.LogTrace("Creating table with custom SQL: {0}", cmd.CommandText);
@@ -192,7 +192,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                             COMMIT;
                         ";
 #pragma warning restore CA2100
-                        
+
                         this._log.LogTrace("Creating table with default SQL: {0}", cmd.CommandText);
                     }
 
@@ -440,8 +440,8 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
             filterSql = "TRUE";
         }
 
-		string filterSqlHybridText = filterSql;
-		
+        string filterSqlHybridText = filterSql;
+
         var maxDistance = 1 - minSimilarity;
         filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
 

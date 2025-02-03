@@ -120,15 +120,15 @@ public class PostgresConfig
     /// </summary>
     public string TextSearchLanguage { get; set; } = "english";
 
-	/// <summary>
-	/// Reciprocal Ranked Fusion to score results of Hybrid Search
-	/// </summary>
-	public int RRF_K { get; set; } = 50;
+    /// <summary>
+    /// Reciprocal Ranked Fusion to score results of Hybrid Search
+    /// </summary>
+    public int RRFK { get; set; } = 50;
 
-	/// <summary>
-	/// Create a new instance of the configuration
-	/// </summary>
-	public PostgresConfig()
+    /// <summary>
+    /// Create a new instance of the configuration
+    /// </summary>
+    public PostgresConfig()
     {
         this.Columns = new Dictionary<string, string>
         {

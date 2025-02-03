@@ -114,7 +114,7 @@ Hybrid Search configuration parameters:
 
 - **UseHybridSearch**:  This parameter enables (true) or disables (false) hybrid search.
 - **TextSearchLanguage**: This parameter sets the language used during text search.
-- **RRF_K**: This parameter allows to configured [RRF](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) for the hybrid search. A smaller value of `RRF_k` gives more weight to higher ranked items, whereas a larger value of `RRF_k` gives more weight to lower ranked items. For hybrid search, this impacts the final score when combining the two scores from the search. It defaults to 50. The range of value should be 1-100.
+- **RRFK**: This parameter allows to configured [RRF](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) for the hybrid search. A smaller value of `RRF_k` gives more weight to higher ranked items, whereas a larger value of `RRF_k` gives more weight to lower ranked items. For hybrid search, this impacts the final score when combining the two scores from the search. It defaults to 50. The range of value should be 1-100.
 
 You can find more information on [pgvector github project](https://github.com/pgvector/pgvector) and [in this article](https://jkatz05.com/post/postgres/hybrid-search-postgres-pgvector/) you can read 
 
