@@ -60,19 +60,16 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         Assert.True((partitions.Count > 5));
         Assert.True((minRelevance < 0.82));
 
-        //limit 5:
+        //test limit 5:
         results = await this.KernelMemory.SearchAsync("What is Silicon?", index: indexName, null, null, minRelevance: 0, limit: 5);
         partitions = results.Results[0].Partitions;
-        maxRelevance = partitions.Max(p => p.Relevance);
-        minRelevance = partitions.Min(p => p.Relevance);
         Assert.True((partitions.Count == 5));
 
-        //relevance 0.82:
+        //test min relevance 0.82:
         results = await this.KernelMemory.SearchAsync("What is Silicon?", index: indexName, null, null, minRelevance: 0.82, limit: 10);
         partitions = results.Results[0].Partitions;
-        maxRelevance = partitions.Max(p => p.Relevance);
         minRelevance = partitions.Min(p => p.Relevance);
-        Assert.True((minRelevance > 0.82));
+        Assert.True((minRelevance >= 0.82));
 
         await this.KernelMemory.DeleteDocumentAsync(Id, index: indexName);
 
