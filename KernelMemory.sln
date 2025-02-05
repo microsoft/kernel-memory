@@ -98,10 +98,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\dotnet-unit-tests.yml = .github\workflows\dotnet-unit-tests.yml
 		.github\workflows\github-pages-jekyll.yml = .github\workflows\github-pages-jekyll.yml
 		.github\workflows\spell-check-with-typos.yml = .github\workflows\spell-check-with-typos.yml
-		.github\workflows\docker-amd64.yml = .github\workflows\docker-amd64.yml
-		.github\workflows\docker-armd64.yml = .github\workflows\docker-armd64.yml
 		.github\workflows\fortify.yml = .github\workflows\fortify.yml
 		.github\workflows\securitycodescan.yml = .github\workflows\securitycodescan.yml
+		.github\workflows\docker-multiarch.yml = .github\workflows\docker-multiarch.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{87DEAE8D-138C-4FDD-B4C9-11C3A7817E8F}"
@@ -252,11 +251,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{B488168B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{C2D3A947-B6F9-4306-BD42-21D8D1F42750}"
 	ProjectSection(SolutionItems) = preProject
-		infra\modules\ai-search.bicep = infra\modules\ai-search.bicep
-		infra\modules\cognitive-services.bicep = infra\modules\cognitive-services.bicep
-		infra\modules\container-app.bicep = infra\modules\container-app.bicep
-		infra\modules\container-apps-environment.bicep = infra\modules\container-apps-environment.bicep
-		infra\modules\managed-identity.bicep = infra\modules\managed-identity.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection
 EndProject
@@ -353,6 +347,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{3C1C483D-2C0
 		tools\dev\dockerize-arm64.sh = tools\dev\dockerize-arm64.sh
 		tools\dev\get-azure-token.py = tools\dev\get-azure-token.py
 		tools\dev\run-unit-tests.sh = tools\dev\run-unit-tests.sh
+		tools\dev\dockerize-multiarch.sh = tools\dev\dockerize-multiarch.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "km-cli", "km-cli", "{239F5FE9-EAEE-4FA7-A3D5-09608FBA6EED}"
@@ -363,6 +358,51 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "km-cli", "km-cli", "{239F5F
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire", "extensions\Aspire\Aspire\Aspire.csproj", "{41A5A076-B35D-4191-B98C-65AD5782A108}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cognitive", "cognitive", "{AC6CAAFA-8A0D-4C8E-B297-9C7645FE5231}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\cognitive\ai-search.bicep = infra\modules\cognitive\ai-search.bicep
+		infra\modules\cognitive\docIntel.bicep = infra\modules\cognitive\docIntel.bicep
+		infra\modules\cognitive\openAI.bicep = infra\modules\cognitive\openAI.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "host", "host", "{DBE12D46-C721-4813-A641-C8E16C884882}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\host\container-app-env.bicep = infra\modules\host\container-app-env.bicep
+		infra\modules\host\container-app.bicep = infra\modules\host\container-app.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "identity", "identity", "{55AF29CF-E8D6-4D92-8C79-BDE2EFB26A71}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\identity\managed-identity.bicep = infra\modules\identity\managed-identity.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "monitoring", "monitoring", "{5F188C8C-C553-460C-A746-2ED4F5257C1C}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\monitoring\insights.bicep = infra\modules\monitoring\insights.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "network", "network", "{B8858AB4-5CB9-4CD8-A6A0-12847F792FF2}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\network\app-gateway.bicep = infra\modules\network\app-gateway.bicep
+		infra\modules\network\dns.bicep = infra\modules\network\dns.bicep
+		infra\modules\network\private-endpoint.bicep = infra\modules\network\private-endpoint.bicep
+		infra\modules\network\virtual-network.bicep = infra\modules\network\virtual-network.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "visio", "visio", "{237B22CA-B757-43DF-9A0B-18DE7F4DA123}"
+	ProjectSection(SolutionItems) = preProject
+		infra\visio\architecture.png = infra\visio\architecture.png
+		infra\visio\architecture.vsdx = infra\visio\architecture.vsdx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{B7CC5E82-AD91-488F-8C05-1ECD767D4A10}"
+	ProjectSection(SolutionItems) = preProject
+		infra\images\ACA-ApplicationUrl.png = infra\images\ACA-ApplicationUrl.png
+		infra\images\ACA-EnvVar.png = infra\images\ACA-EnvVar.png
+		infra\images\deployment.png = infra\images\deployment.png
+		infra\images\Pip.png = infra\images\Pip.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -779,6 +819,13 @@ Global
 		{CA49F1A1-C3FA-4E99-ACB3-D7FF33D47976} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{7BA7F1B2-19E2-46EB-B000-513EE2F65769} = {6EF76FD8-4C35-4370-8539-5DDF45357A50}
 		{41A5A076-B35D-4191-B98C-65AD5782A108} = {155DA079-E267-49AF-973A-D1D44681970F}
+		{AC6CAAFA-8A0D-4C8E-B297-9C7645FE5231} = {C2D3A947-B6F9-4306-BD42-21D8D1F42750}
+		{DBE12D46-C721-4813-A641-C8E16C884882} = {C2D3A947-B6F9-4306-BD42-21D8D1F42750}
+		{55AF29CF-E8D6-4D92-8C79-BDE2EFB26A71} = {C2D3A947-B6F9-4306-BD42-21D8D1F42750}
+		{5F188C8C-C553-460C-A746-2ED4F5257C1C} = {C2D3A947-B6F9-4306-BD42-21D8D1F42750}
+		{B8858AB4-5CB9-4CD8-A6A0-12847F792FF2} = {C2D3A947-B6F9-4306-BD42-21D8D1F42750}
+		{237B22CA-B757-43DF-9A0B-18DE7F4DA123} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
+		{B7CC5E82-AD91-488F-8C05-1ECD767D4A10} = {B488168B-AD86-4CC5-9D89-324B6EB743D9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC136C62-115C-41D1-B414-F9473EFF6EA8}

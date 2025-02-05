@@ -658,6 +658,25 @@ dotnet_naming_rule.private_fields_underscored.symbols = private_fields
 dotnet_naming_rule.private_fields_underscored.style = underscored
 dotnet_naming_rule.private_fields_underscored.severity = error
 
+#####################################
+# Resharper                         #
+#####################################
+
+# disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+resharper_Condition_Is_Always_True_Or_False_According_To_Nullable_API_Contract_highlighting = none
+
+# disable RedundantTypeArgumentsOfMethod
+resharper_Redundant_Type_Arguments_Of_Method_highlighting = none
+
+# disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+resharper_Null_Coalescing_Condition_Is_Always_Not_Null_According_To_API_Contract_highlighting = none
+
+# disable PartialTypeWithSinglePart
+resharper_Partial_Type_With_Single_Part_highlighting = none
+
+# disable RedundantDefaultMemberInitializer
+resharper_Redundant_Default_Member_Initializer_highlighting = none
+
 #####################################################################################################
 # Naming Conventions by folder                                                                      #
 # See also https://www.jetbrains.com/help/resharper/Coding_Assistance__Naming_Style.html#configure  #

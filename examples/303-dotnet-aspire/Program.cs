@@ -31,8 +31,6 @@ internal static class Program
         // RunFromDockerWithOpenAI(s_openAIConfig.APIKey);
 
         // RunFromDockerImage("latest");
-
-        // RunFromDockerImage("latest-arm64");
     }
 
     private static void RunFromCode()

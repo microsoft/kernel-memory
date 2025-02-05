@@ -40,7 +40,7 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
 
         // Assert
         Console.WriteLine("Phi3 token count: " + tokenCount);
-        Console.WriteLine("GPT4 token count: " + (new CL100KTokenizer()).CountTokens(text));
+        Console.WriteLine("GPT4 token count: " + new CL100KTokenizer().CountTokens(text));
         Console.WriteLine($"Time: {this._timer.ElapsedMilliseconds / 1000} secs");
 
         // Expected result with Phi-3-mini-4k-instruct-q4.gguf, without BoS (https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf)
@@ -90,9 +90,8 @@ public sealed class LlamaSharpTextGeneratorTest : BaseFunctionalTestCase
         this._timer.Restart();
         var tokens = this._target.GenerateTextAsync(prompt, options);
         var result = new StringBuilder();
-        await foreach (string token in tokens)
+        await foreach (var token in tokens)
         {
-            // Console.WriteLine(token);
             result.Append(token);
         }
 

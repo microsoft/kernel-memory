@@ -55,6 +55,18 @@ internal class AnswerGenerator
         string question, SearchClientResult result,
         IContext? context, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        var prompt = this.PreparePrompt(question, result.Facts.ToString(), context);
+        var promptSize = this._textGenerator.CountTokens(prompt);
+        this._log.LogInformation("RAG prompt ({0} tokens): {1}", promptSize, prompt);
+
+        var tokenUsage = new TokenUsage
+        {
+            Timestamp = DateTimeOffset.UtcNow,
+            ModelType = Constants.ModelType.TextGeneration,
+            TokenizerTokensIn = promptSize,
+        };
+        result.AddTokenUsageToStaticResults(tokenUsage);
+
         if (result.FactsAvailableCount > 0 && result.FactsUsedCount == 0)
         {
             this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
@@ -69,42 +81,48 @@ internal class AnswerGenerator
             yield break;
         }
 
-        var completeAnswer = new StringBuilder();
-        await foreach (var answerToken in this.GenerateAnswerTokensAsync(question, result.Facts.ToString(), context, cancellationToken).ConfigureAwait(false))
+        var completeAnswerTokens = new StringBuilder();
+        await foreach (GeneratedTextContent answerToken in this.GenerateAnswerTokensAsync(prompt, context, cancellationToken).ConfigureAwait(false))
         {
-            completeAnswer.Append(answerToken);
-            result.AskResult.Result = answerToken;
+            completeAnswerTokens.Append(answerToken.Text);
+            tokenUsage.Merge(answerToken.TokenUsage);
+            result.AskResult.Result = answerToken.Text;
+
             yield return result.AskResult;
         }
 
-        // Finalize the answer, checking if it's empty
-        result.AskResult.Result = completeAnswer.ToString();
-        if (string.IsNullOrWhiteSpace(result.AskResult.Result)
-            || ValueIsEquivalentTo(result.AskResult.Result, this._config.EmptyAnswer))
+        // Check if the complete answer is empty
+        string completeAnswer = completeAnswerTokens.ToString();
+        if (string.IsNullOrWhiteSpace(completeAnswer) || ValueIsEquivalentTo(completeAnswer, this._config.EmptyAnswer))
         {
             this._log.LogInformation("No relevant memories found, returning empty answer.");
             yield return result.NoFactsResult;
             yield break;
         }
 
-        this._log.LogSensitive("Answer: {0}", result.AskResult.Result);
+        this._log.LogSensitive("Answer: {0}", completeAnswer);
 
+        // Check if the complete answer is safe
         if (this._config.UseContentModeration
             && this._contentModeration != null
-            && !await this._contentModeration.IsSafeAsync(result.AskResult.Result, cancellationToken).ConfigureAwait(false))
+            && !await this._contentModeration.IsSafeAsync(completeAnswer, cancellationToken).ConfigureAwait(false))
         {
             this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
             yield return result.UnsafeAnswerResult;
+            yield break;
         }
+
+        // Add token usage report at the end
+        result.AskResult.Result = string.Empty;
+        tokenUsage.TokenizerTokensOut = this._textGenerator.CountTokens(completeAnswer);
+        result.AskResult.TokenUsage = [tokenUsage];
+        yield return result.AskResult;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswerTokensAsync(string question, string facts, IContext? context, CancellationToken cancellationToken)
+    private string PreparePrompt(string question, string facts, IContext? context)
     {
         string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
-        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
-        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
-        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         question = question.Trim();
         question = question.EndsWith('?') ? question : $"{question}?";
@@ -112,7 +130,15 @@ internal class AnswerGenerator
         prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
         prompt = prompt.Replace("{{$notFound}}", emptyAnswer, StringComparison.OrdinalIgnoreCase);
-        this._log.LogInformation("New prompt: {0}", prompt);
+
+        return prompt;
+    }
+
+    private IAsyncEnumerable<GeneratedTextContent> GenerateAnswerTokensAsync(string prompt, IContext? context, CancellationToken cancellationToken)
+    {
+        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
+        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
+        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
 
         var options = new TextGenerationOptions
         {
