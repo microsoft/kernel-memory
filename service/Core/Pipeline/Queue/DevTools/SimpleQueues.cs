@@ -270,11 +270,13 @@ public sealed class SimpleQueues : IQueue
     {
         Task.Run(async () =>
         {
+            var lockAcquired = false;
             try
             {
                 if (this._queue.Count >= this._config.FetchBatchSize) { return; }
 
                 await s_lock.WaitAsync(this._cancellation.Token).ConfigureAwait(false);
+                lockAcquired = true;
 
                 // Loop through all messages on storage
                 var messagesOnStorage = (await this._fileSystem.GetAllFileNamesAsync(this._queueName, "", this._cancellation.Token).ConfigureAwait(false)).ToList();
@@ -340,7 +342,12 @@ public sealed class SimpleQueues : IQueue
             }
             finally
             {
-                s_lock.Release();
+                // Decrease the internal counter only it the lock was acquired,
+                // e.g. not when WaitAsync times out or throws some exception
+                if (lockAcquired)
+                {
+                    s_lock.Release();
+                }
             }
         }, this._cancellation.Token);
     }
@@ -354,11 +361,13 @@ public sealed class SimpleQueues : IQueue
     {
         Task.Run(async () =>
         {
+            var lockAcquired = false;
             try
             {
                 if (this._queue.IsEmpty) { return; }
 
                 await s_lock.WaitAsync(this._cancellation.Token).ConfigureAwait(false);
+                lockAcquired = true;
 
                 this._log.LogTrace("Dispatching {MessageCount} messages", this._queue.Count);
 
@@ -373,7 +382,12 @@ public sealed class SimpleQueues : IQueue
             }
             finally
             {
-                s_lock.Release();
+                // Decrease the internal counter only it the lock was acquired,
+                // e.g. not when WaitAsync times out or throws some exception
+                if (lockAcquired)
+                {
+                    s_lock.Release();
+                }
             }
         }, this._cancellation.Token);
     }

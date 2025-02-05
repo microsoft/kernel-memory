@@ -20,7 +20,13 @@ public class AzureBlobsConfig
     public enum AuthTypes
     {
         Unknown = -1,
+
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   When the service is on sovereign clouds you can use the AZURE_AUTHORITY_HOST env var to
+        //   set the authority host. See https://learn.microsoft.com/dotnet/api/overview/azure/identity-readme
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
         AzureIdentity,
+
         ConnectionString,
         AccountKey,
         ManualStorageSharedKeyCredential,
@@ -28,7 +34,17 @@ public class AzureBlobsConfig
         ManualTokenCredential,
     }
 
+    /// <summary>
+    /// Azure authentication type
+    /// </summary>
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
+
+    /// <summary>
+    /// Optional custom auth tokens audience when using Auth.AzureIdentity
+    /// Example: "https://storage.azure.com/"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
+
     public string ConnectionString { get; set; } = "";
     public string Account { get; set; } = "";
     public string AccountKey { get; set; } = "";

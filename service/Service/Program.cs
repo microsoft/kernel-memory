@@ -58,9 +58,15 @@ internal static class Program
         // *************************** CONFIG WIZARD ***************************
 
         // Run `dotnet run setup` to run this code and set up the service
-        if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+        if (new[] { "setup", "--setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
-            InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
+            InteractiveSetup.Program.Main(args.Skip(1).ToArray());
+        }
+
+        // Run `dotnet run check` to run this code and analyze the service configuration
+        if (new[] { "check", "--check" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+        {
+            InteractiveSetup.Program.Main(["--check"]);
         }
 
         // *************************** APP BUILD *******************************
@@ -239,7 +245,10 @@ internal static class Program
         IKernelMemoryBuilder memoryBuilder,
         WebApplicationBuilder appBuilder)
     {
-        if (config.DataIngestion.OrchestrationType != "Distributed") { return 0; }
+        if (!string.Equals(config.DataIngestion.OrchestrationType, KernelMemoryConfig.OrchestrationTypeDistributed, StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
 
         if (!config.Service.RunHandlers) { return 0; }
 

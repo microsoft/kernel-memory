@@ -27,7 +27,6 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
 
     [Fact]
     [Trait("Category", "Elasticsearch")]
-    [SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "<Pending>")]
     public async Task ItSupportsLimitsAndMinRelevanceScoreAsync()
     {
         string indexName = nameof(this.ItSupportsLimitsAndMinRelevanceScoreAsync);
@@ -38,7 +37,7 @@ public class KernelMemoryTests : MemoryDbFunctionalTest
         this.Output.WriteLine("Uploading document");
         await this.KernelMemory.ImportDocumentAsync(
             new Document(Id)
-                .AddFile(TestsHelper.SKWikipediaSciliconFileName),
+                .AddFile(TestsHelper.SKWikipediaSiliconFileName),
             index: indexName,
             steps: Constants.PipelineWithoutSummary);
 

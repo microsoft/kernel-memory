@@ -7,16 +7,24 @@ using Microsoft.KernelMemory.InteractiveSetup.UI;
 
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
-public static class Main
+public static class Program
 {
-    public static void InteractiveSetup(string[] args)
+    public static void Main(string[] args)
     {
         var ctx = new Context();
 
         // If args is not empty, then the user is asking to configure a specific list of services
         if (args.Length > 0)
         {
-            ConfigureItem(ctx, args);
+            if (args[0] == "--check")
+            {
+                Doctor.Check.Run();
+            }
+            else
+            {
+                ConfigureItem(ctx, args);
+            }
+
             SetupUI.Exit();
         }
 
@@ -28,7 +36,7 @@ public static class Main
             // Orchestration
             QueuesTypeSetup(ctx);
             AzureQueue.Setup(ctx);
-            Services.RabbitMQ.Setup(ctx);
+            RabbitMQ.Setup(ctx);
             SimpleQueues.Setup(ctx);
 
             // Document Storage
@@ -45,13 +53,13 @@ public static class Main
             // Embedding generation
             EmbeddingGeneratorSetup(ctx);
             AzureOpenAIEmbedding.Setup(ctx);
-            Services.OpenAI.Setup(ctx);
+            OpenAI.Setup(ctx);
 
             // Memory DB
             MemoryDbTypeSetup(ctx);
             AzureAISearch.Setup(ctx);
             MongoDbAtlasMemoryDb.Setup(ctx);
-            Services.Postgres.Setup(ctx);
+            Postgres.Setup(ctx);
             Qdrant.Setup(ctx);
             Redis.Setup(ctx);
             SimpleVectorDb.Setup(ctx);
@@ -59,7 +67,7 @@ public static class Main
             // Text generation
             TextGeneratorTypeSetup(ctx);
             AzureOpenAIText.Setup(ctx);
-            Services.OpenAI.Setup(ctx);
+            OpenAI.Setup(ctx);
             LlamaSharp.Setup(ctx);
             Ollama.Setup(ctx);
 
@@ -120,11 +128,11 @@ public static class Main
                     break;
 
                 case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
-                    Services.OpenAI.Setup(ctx, true);
+                    OpenAI.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Postgres", StringComparison.OrdinalIgnoreCase):
-                    Services.Postgres.Setup(ctx, true);
+                    Postgres.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Qdrant", StringComparison.OrdinalIgnoreCase):
@@ -132,7 +140,7 @@ public static class Main
                     break;
 
                 case string x when x.Equals("RabbitMQ", StringComparison.OrdinalIgnoreCase):
-                    Services.RabbitMQ.Setup(ctx, true);
+                    RabbitMQ.Setup(ctx, true);
                     break;
 
                 case string x when x.Equals("Redis", StringComparison.OrdinalIgnoreCase):
@@ -207,7 +215,19 @@ public static class Main
                             ? [x.Retrieval.EmbeddingGeneratorType]
                             : [];
                     });
-                    ctx.CfgOllama.Value = true;
+                    ctx.CfgOllamaEmbedding.Value = true;
+                }),
+
+                new("LlamaSharp library", config.Retrieval.EmbeddingGeneratorType == "LlamaSharp", () =>
+                {
+                    AppSettings.Change(x =>
+                    {
+                        x.Retrieval.EmbeddingGeneratorType = "LlamaSharp";
+                        x.DataIngestion.EmbeddingGeneratorTypes = ctx.CfgEmbeddingGenerationEnabled.Value
+                            ? [x.Retrieval.EmbeddingGeneratorType]
+                            : [];
+                    });
+                    ctx.CfgLlamaSharpEmbedding.Value = true;
                 }),
 
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.Retrieval.EmbeddingGeneratorType), () =>
@@ -248,13 +268,13 @@ public static class Main
                 new("Ollama service", config.TextGeneratorType == "Ollama", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "Ollama"; });
-                    ctx.CfgOllama.Value = true;
+                    ctx.CfgOllamaText.Value = true;
                 }),
 
                 new("LlamaSharp library", config.TextGeneratorType == "LlamaSharp", () =>
                 {
                     AppSettings.Change(x => { x.TextGeneratorType = "LlamaSharp"; });
-                    ctx.CfgLlamaSharp.Value = true;
+                    ctx.CfgLlamaSharpText.Value = true;
                 }),
 
                 new("None/Custom (manually set with code)", string.IsNullOrEmpty(config.TextGeneratorType), () =>

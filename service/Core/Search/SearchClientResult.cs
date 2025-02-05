@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.KernelMemory.Search;
@@ -37,8 +39,9 @@ internal class SearchClientResult
     public SearchResult SearchResult { get; private init; } = new();
     public StringBuilder Facts { get; } = new();
     public int FactsAvailableCount { get; set; }
-    public int FactsUsedCount { get; set; }
+    public int FactsUsedCount { get; set; } // Note: the number includes also duplicate chunks not used in the prompt
     public int TokensAvailable { get; set; }
+    public HashSet<string> FactsUniqueness { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Create new instance in Ask mode
