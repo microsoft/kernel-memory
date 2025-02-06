@@ -81,7 +81,7 @@ public sealed class MsWordDecoder : IContentDecoder
                     {
                         string pageContent = sb.ToString().Trim();
                         sb.Clear();
-                        result.Sections.Add(new FileSection(pageNumber, pageContent, true));
+                        result.Sections.Add(new Chunk(pageNumber, pageContent, Chunk.Meta(sentencesAreComplete: true)));
                         pageNumber++;
                     }
 
@@ -90,7 +90,7 @@ public sealed class MsWordDecoder : IContentDecoder
             }
 
             var lastPageContent = sb.ToString().Trim();
-            result.Sections.Add(new FileSection(pageNumber, lastPageContent, true));
+            result.Sections.Add(new Chunk(pageNumber, lastPageContent, Chunk.Meta(sentencesAreComplete: true)));
 
             return Task.FromResult(result);
         }

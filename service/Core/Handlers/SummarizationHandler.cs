@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.Context;
-using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
@@ -23,6 +23,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
     private readonly string _summarizationPrompt;
+    private readonly PlainTextChunker _plainTextChunker;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -44,6 +45,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._plainTextChunker = new PlainTextChunker();
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
@@ -212,8 +214,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
             }
             else
             {
-                List<string> lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: maxTokensPerLine);
-                paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens);
+                paragraphs = this._plainTextChunker.Split(content, new PlainTextChunkerOptions() { MaxTokensPerChunk = maxTokensPerParagraph, Overlap = overlappingTokens });
             }
 
             this._log.LogTrace("Paragraphs to summarize: {0}", paragraphs.Count);

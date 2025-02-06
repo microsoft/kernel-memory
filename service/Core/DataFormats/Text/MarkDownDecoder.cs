@@ -40,7 +40,7 @@ public sealed class MarkDownDecoder : IContentDecoder
         this._log.LogDebug("Extracting text from markdown file");
 
         var result = new FileContent(MimeTypes.MarkDown);
-        result.Sections.Add(new(1, data.ToString().Trim(), true));
+        result.Sections.Add(new(1, data.ToString().Trim(), Chunk.Meta(sentencesAreComplete: true)));
 
         return Task.FromResult(result)!;
     }
@@ -54,7 +54,7 @@ public sealed class MarkDownDecoder : IContentDecoder
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-        result.Sections.Add(new(1, content.Trim(), true));
+        result.Sections.Add(new(1, content.Trim(), Chunk.Meta(sentencesAreComplete: true)));
         return result;
     }
 }

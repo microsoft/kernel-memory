@@ -43,7 +43,7 @@ public sealed class TextDecoder : IContentDecoder
         this._log.LogDebug("Extracting text from file");
 
         var result = new FileContent(MimeTypes.PlainText);
-        result.Sections.Add(new(1, data.ToString().Trim(), true));
+        result.Sections.Add(new(1, data.ToString().Trim(), Chunk.Meta(sentencesAreComplete: true)));
 
         return Task.FromResult(result)!;
     }
@@ -57,7 +57,7 @@ public sealed class TextDecoder : IContentDecoder
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-        result.Sections.Add(new(1, content.Trim(), true));
+        result.Sections.Add(new(1, content.Trim(), Chunk.Meta(sentencesAreComplete: true)));
         return result;
     }
 }

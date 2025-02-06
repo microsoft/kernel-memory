@@ -40,7 +40,7 @@ public sealed class ImageDecoder : IContentDecoder
 
         var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(filename, cancellationToken).ConfigureAwait(false);
-        result.Sections.Add(new(1, content.Trim(), true));
+        result.Sections.Add(new(1, content.Trim(), Chunk.Meta(sentencesAreComplete: true)));
 
         return result;
     }
@@ -52,7 +52,7 @@ public sealed class ImageDecoder : IContentDecoder
 
         var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
-        result.Sections.Add(new(1, content.Trim(), true));
+        result.Sections.Add(new(1, content.Trim(), Chunk.Meta(sentencesAreComplete: true)));
 
         return result;
     }
@@ -64,7 +64,7 @@ public sealed class ImageDecoder : IContentDecoder
 
         var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
-        result.Sections.Add(new(1, content.Trim(), true));
+        result.Sections.Add(new(1, content.Trim(), Chunk.Meta(sentencesAreComplete: true)));
 
         return result;
     }
