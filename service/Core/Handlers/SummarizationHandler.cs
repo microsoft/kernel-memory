@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.Context;
-using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
@@ -23,6 +23,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationHandler> _log;
     private readonly string _summarizationPrompt;
+    private readonly PlainTextChunker _plainTextChunker;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -44,6 +45,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._plainTextChunker = new PlainTextChunker();
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
@@ -163,25 +165,9 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         // By default, use 25% of the previous paragraph when summarizing a paragraph
         int maxTokensPerParagraph = textGenerator.MaxTokenTotal / 4;
 
-        // When splitting text in sentences take 100..500 tokens
-        // If possible allow 50% of the paragraph size, aka 12.5% of the model capacity.
-        int maxTokensPerLine = Math.Min(Math.Max(100, maxTokensPerParagraph / 2), 500);
-
         // By default, use 6.2% of the model capacity for overlapping tokens
-        int overlappingTokens = maxTokensPerLine / 2;
-
         // Allow to override the number of overlapping tokens using context arguments
-        var customOverlappingTokens = context.GetCustomSummaryOverlappingTokensOrDefault(-1);
-        if (customOverlappingTokens >= 0)
-        {
-            if (customOverlappingTokens > maxTokensPerLine / 2)
-            {
-                throw new ArgumentOutOfRangeException(
-                    $"Custom number of overlapping tokens is too large, the max value allowed is {maxTokensPerLine / 2}");
-            }
-
-            overlappingTokens = customOverlappingTokens;
-        }
+        var overlappingTokens = context.GetCustomSummaryOverlappingTokensOrDefault(textGenerator.MaxTokenTotal / 16);
 
         this._log.LogTrace("Overlap setting: {0} tokens", overlappingTokens);
 
@@ -190,7 +176,7 @@ public sealed class SummarizationHandler : IPipelineStepHandler
 
         var summarizationPrompt = context.GetCustomSummaryPromptOrDefault(this._summarizationPrompt);
 
-        // If paragraphs overlap, we need to dedupe the content, e.g. run at least one summarization call on the entire content
+        // If chunks overlap, we need to dedupe the content, e.g. run at least one summarization call on the entire content
         var overlapToRemove = overlappingTokens > 0;
 
         // Since the summary is meant to be shorter than the content, reserve 50% of the model
@@ -202,25 +188,24 @@ public sealed class SummarizationHandler : IPipelineStepHandler
         int previousLength = contentLength;
         while (!done)
         {
-            var paragraphs = new List<string>();
+            var chunks = new List<string>();
 
             // If the content fits into half the model capacity, use a single paragraph
             if (contentLength <= maxInputTokens)
             {
                 overlapToRemove = false;
-                paragraphs.Add(content);
+                chunks.Add(content);
             }
             else
             {
-                List<string> lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: maxTokensPerLine);
-                paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens);
+                chunks = this._plainTextChunker.Split(content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerParagraph, Overlap = overlappingTokens });
             }
 
-            this._log.LogTrace("Paragraphs to summarize: {0}", paragraphs.Count);
+            this._log.LogTrace("Paragraphs to summarize: {0}", chunks.Count);
             var newContent = new StringBuilder();
-            for (int index = 0; index < paragraphs.Count; index++)
+            for (int index = 0; index < chunks.Count; index++)
             {
-                string paragraph = paragraphs[index];
+                string paragraph = chunks[index];
                 this._log.LogTrace("Summarizing paragraph {0}", index);
 
                 var filledPrompt = summarizationPrompt.Replace("{{$input}}", paragraph, StringComparison.OrdinalIgnoreCase);

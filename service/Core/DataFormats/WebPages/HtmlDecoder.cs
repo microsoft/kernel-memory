@@ -51,7 +51,7 @@ public sealed class HtmlDecoder : IContentDecoder
         var doc = new HtmlDocument();
         doc.Load(data);
 
-        result.Sections.Add(new FileSection(1, doc.DocumentNode.InnerText.Trim(), true));
+        result.Sections.Add(new Chunk(doc.DocumentNode.InnerText.Trim(), 1, Chunk.Meta(sentencesAreComplete: true)));
 
         return Task.FromResult(result);
     }

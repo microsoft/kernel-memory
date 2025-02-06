@@ -16,7 +16,7 @@ Console.WriteLine("===============================");
 var msWordDecoder = new MsWordDecoder();
 content = await msWordDecoder.DecodeAsync("mswordfile.docx");
 
-foreach (FileSection section in content.Sections)
+foreach (Chunk section in content.Sections)
 {
     Console.WriteLine($"Page: {section.Number}/{content.Sections.Count}");
     Console.WriteLine(section.Content);
@@ -36,7 +36,7 @@ Console.WriteLine("===============================");
 var msPowerPointDecoder = new MsPowerPointDecoder();
 content = await msPowerPointDecoder.DecodeAsync("mspowerpointfile.pptx");
 
-foreach (FileSection section in content.Sections)
+foreach (Chunk section in content.Sections)
 {
     Console.WriteLine($"Slide: {section.Number}/{content.Sections.Count}");
     Console.WriteLine(section.Content);
@@ -56,7 +56,7 @@ Console.WriteLine("===============================");
 var msExcelDecoder = new MsExcelDecoder();
 content = await msExcelDecoder.DecodeAsync("msexcelfile.xlsx");
 
-foreach (FileSection section in content.Sections)
+foreach (Chunk section in content.Sections)
 {
     Console.WriteLine($"Worksheet: {section.Number}/{content.Sections.Count}");
     Console.WriteLine(section.Content);
@@ -76,7 +76,7 @@ Console.WriteLine("=========================");
 var pdfDecoder = new PdfDecoder();
 content = await pdfDecoder.DecodeAsync("file1.pdf");
 
-foreach (FileSection section in content.Sections)
+foreach (Chunk section in content.Sections)
 {
     Console.WriteLine($"Page: {section.Number}/{content.Sections.Count}");
     Console.WriteLine(section.Content);
@@ -95,7 +95,7 @@ Console.WriteLine("=========================");
 
 content = await pdfDecoder.DecodeAsync("file2.pdf");
 
-foreach (FileSection section in content.Sections)
+foreach (Chunk section in content.Sections)
 {
     Console.WriteLine($"Page: {section.Number}/{content.Sections.Count}");
     Console.WriteLine(section.Content);
