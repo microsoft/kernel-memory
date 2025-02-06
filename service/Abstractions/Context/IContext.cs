@@ -200,9 +200,9 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
-    public static int GetCustomPartitioningMaxTokensPerParagraphOrDefault(this IContext? context, int defaultValue)
+    public static int GetCustomPartitioningMaxTokensPerChunkOrDefault(this IContext? context, int defaultValue)
     {
-        if (context.TryGetArg<int>(Constants.CustomContext.Partitioning.MaxTokensPerParagraph, out var customValue))
+        if (context.TryGetArg<int>(Constants.CustomContext.Partitioning.MaxTokensPerChunk, out var customValue))
         {
             return customValue;
         }

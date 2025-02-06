@@ -143,8 +143,8 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
         ITextGenerator textGenerator = this._orchestrator.GetTextGenerator();
 
         int summaryMaxTokens = textGenerator.MaxTokenTotal / 2; // 50% of model capacity
-        int maxTokensPerParagraph = summaryMaxTokens / 2; // 25% of model capacity
-        int overlappingTokens = Math.Min(Math.Max(200, maxTokensPerParagraph / 2), 500) / 2; // 100...250
+        int maxTokensPerChunk = summaryMaxTokens / 2; // 25% of model capacity
+        int overlappingTokens = Math.Min(Math.Max(200, maxTokensPerChunk / 2), 500) / 2; // 100...250
 
         int contentLength = textGenerator.CountTokens(content);
         if (contentLength < MinLength)
@@ -172,7 +172,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
             }
             else
             {
-                paragraphs = this._plainTextChunker.Split(content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerParagraph, Overlap = overlappingTokens });
+                paragraphs = this._plainTextChunker.Split(content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens });
             }
 
             this._log.LogTrace("Paragraphs to summarize: {0}", paragraphs.Count);

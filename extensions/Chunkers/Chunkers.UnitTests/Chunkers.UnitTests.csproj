@@ -35,6 +35,10 @@
         <Content Include="doc1.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="doc2.md" />
+        <Content Include="doc2.md">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

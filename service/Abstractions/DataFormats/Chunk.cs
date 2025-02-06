@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -24,7 +25,7 @@ public class Chunk
     /// </summary>
     [JsonPropertyOrder(1)]
     [JsonPropertyName("content")]
-    public string Content { get; }
+    public string Content { get; set; }
 
     /// <summary>
     /// Optional metadata attached to the section.
@@ -36,6 +37,9 @@ public class Chunk
     [JsonPropertyOrder(10)]
     [JsonPropertyName("metadata")]
     public Dictionary<string, string> Metadata { get; set; }
+
+    [JsonIgnore]
+    public bool IsSeparator { get; set; }
 
     /// <summary>
     /// Whether the first/last sentence may continue from the previous/into
@@ -74,10 +78,34 @@ public class Chunk
     /// </summary>
     /// <param name="number">Position within the parent content container</param>
     /// <param name="text">Text content</param>
-    public Chunk(int number, string? text)
+    public Chunk(string? text, int number)
     {
-        this.Number = number;
         this.Content = text ?? string.Empty;
+        this.Number = number;
+        this.Metadata = new();
+    }
+
+    /// <summary>
+    /// Create new instance
+    /// </summary>
+    /// <param name="number">Position within the parent content container</param>
+    /// <param name="text">Text content</param>
+    public Chunk(char text, int number)
+    {
+        this.Content = text.ToString();
+        this.Number = number;
+        this.Metadata = new();
+    }
+
+    /// <summary>
+    /// Create new instance
+    /// </summary>
+    /// <param name="number">Position within the parent content container</param>
+    /// <param name="text">Text content</param>
+    public Chunk(StringBuilder text, int number)
+    {
+        this.Content = text.ToString();
+        this.Number = number;
         this.Metadata = new();
     }
 
@@ -87,10 +115,10 @@ public class Chunk
     /// <param name="number">Position within the parent content container</param>
     /// <param name="text">Text content</param>
     /// <param name="metadata">Chunk metadata</param>
-    public Chunk(int number, string? text, Dictionary<string, string> metadata)
+    public Chunk(string? text, int number, Dictionary<string, string> metadata)
     {
-        this.Number = number;
         this.Content = text ?? string.Empty;
+        this.Number = number;
         this.Metadata = metadata;
     }
 

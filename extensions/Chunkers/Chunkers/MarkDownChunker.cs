@@ -11,14 +11,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers.internals;
+using Microsoft.KernelMemory.DataFormats;
 
 namespace Microsoft.KernelMemory.Chunkers;
 
 /// <summary>
-/// Plain text chunker for splitting text into blocks of a maximum number of tokens.
-/// Designed for Plain Text and RAG scenarios, where some special chars are irrelevant
+/// Markdown text chunker for splitting Markdown content into blocks of a maximum number of tokens.
+/// Designed for Markdown and RAG scenarios, where some special chars are irrelevant
 /// and can be removed, ie. the split can be lossy.
-/// This chunker should not be used for MarkDown, where symbols have a special meaning,
+/// This chunker should not be used for plain text, where symbols have a different meaning,
 /// or different priorities for splitting.
 /// Although not designed to chunk source code or math formulas, it tries to do its best.
 /// Acronyms with dots (e.g. N.A.S.A.) are not considered and are potentially split like sentences.
@@ -238,7 +239,7 @@ public class MarkDownChunker
         // Important: 'SplitToFragments' splits content in words and delimiters, using logic specific to plain text.
         //            These are different from LLM tokens, which are based on the tokenizer used to train the model.
         // Recursive logic exit clause: when separator type is NotASeparator, count each char as a fragment
-        List<Fragment> fragments = separatorType switch
+        List<Chunk> fragments = separatorType switch
         {
             SeparatorTypes.ExplicitSeparator => this.SplitToFragments(text, s_explicitSeparators),
             SeparatorTypes.PotentialSeparator => this.SplitToFragments(text, s_potentialSeparators),
@@ -253,7 +254,7 @@ public class MarkDownChunker
     }
 
     internal List<string> GenerateChunks(
-        List<Fragment> fragments,
+        List<Chunk> fragments,
         int maxChunk1Size,
         int maxChunkNSize,
         SeparatorTypes separatorType,
@@ -396,18 +397,18 @@ public class MarkDownChunker
     /// <summary>
     /// Split text into fragments using a list of separators.
     /// </summary>
-    internal List<Fragment> SplitToFragments(string text, SeparatorTrie? separators)
+    internal List<Chunk> SplitToFragments(string text, SeparatorTrie? separators)
     {
         // Split all chars
         if (separators == null)
         {
-            return text.Select(x => new Fragment(x, true)).ToList();
+            return text.Select(x => new Chunk(x, -1) { IsSeparator = true }).ToList();
         }
 
         // If the text is empty or there are no separators
         if (string.IsNullOrEmpty(text) || separators.Length == 0) { return []; }
 
-        var fragments = new List<Fragment>();
+        var fragments = new List<Chunk>();
         var fragmentBuilder = new StringBuilder();
         int index = 0;
         while (index < text.Length)
@@ -418,11 +419,11 @@ public class MarkDownChunker
             {
                 if (fragmentBuilder.Length > 0)
                 {
-                    fragments.Add(new Fragment(fragmentBuilder, false));
+                    fragments.Add(new Chunk(fragmentBuilder, -1) { IsSeparator = false });
                     fragmentBuilder.Clear();
                 }
 
-                fragments.Add(new Fragment(foundSeparator, true));
+                fragments.Add(new Chunk(foundSeparator, -1) { IsSeparator = true });
                 index += foundSeparator.Length;
             }
             else
@@ -434,7 +435,7 @@ public class MarkDownChunker
 
         if (fragmentBuilder.Length > 0)
         {
-            fragments.Add(new Fragment(fragmentBuilder, false));
+            fragments.Add(new Chunk(fragmentBuilder, -1) { IsSeparator = false });
         }
 
 #if DEBUGFRAGMENTS
