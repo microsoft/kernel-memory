@@ -114,7 +114,7 @@ public sealed class MsPowerPointDecoder : IContentDecoder
 
                 string slideContent = sb.ToString().Trim();
                 sb.Clear();
-                result.Sections.Add(new Chunk(slideNumber, slideContent, Chunk.Meta(sentencesAreComplete: true)));
+                result.Sections.Add(new Chunk(slideContent, slideNumber, Chunk.Meta(sentencesAreComplete: true)));
             }
         }
 

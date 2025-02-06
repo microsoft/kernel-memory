@@ -91,7 +91,7 @@ public class CustomPdfDecoder : IContentDecoder
         foreach (Page? page in pdfDocument.GetPages().Where(x => x != null))
         {
             string pageContent = (ContentOrderTextExtractor.GetText(page, options) ?? string.Empty).ReplaceLineEndings(" ");
-            result.Sections.Add(new Chunk(page.Number, pageContent, Chunk.Meta(sentencesAreComplete: false)));
+            result.Sections.Add(new Chunk(pageContent, page.Number, Chunk.Meta(sentencesAreComplete: false)));
         }
 
         return Task.FromResult(result);

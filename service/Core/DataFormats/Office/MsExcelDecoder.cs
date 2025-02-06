@@ -152,7 +152,7 @@ public sealed class MsExcelDecoder : IContentDecoder
 
             string worksheetContent = sb.ToString().Trim();
             sb.Clear();
-            result.Sections.Add(new Chunk(worksheetNumber, worksheetContent, Chunk.Meta(sentencesAreComplete: true)));
+            result.Sections.Add(new Chunk(worksheetContent, worksheetNumber, Chunk.Meta(sentencesAreComplete: true)));
         }
 
         return Task.FromResult(result);

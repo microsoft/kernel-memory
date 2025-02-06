@@ -4,6 +4,7 @@ using Microsoft.Chunkers.UnitTests.Helpers;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.Chunkers.internals;
+using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KM.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -51,7 +52,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
         string text = "Hello, world!";
 
         // Act
-        List<Fragment> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
+        List<Chunk> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
         DebugFragments(fragments);
 
         // Assert
@@ -72,7 +73,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
         string text = "Hello. . . world!!!!!!!!!!!!!";
 
         // Act
-        List<Fragment> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
+        List<Chunk> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
         DebugFragments(fragments);
 
         // Assert
@@ -97,7 +98,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
         string text = "Hello";
 
         // Act
-        List<Fragment> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
+        List<Chunk> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
         DebugFragments(fragments);
 
         // Assert
@@ -114,7 +115,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
         string text = "Hello!World";
 
         // Act
-        List<Fragment> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
+        List<Chunk> fragments = new PlainTextChunker().SplitToFragments(text, s_separators);
         DebugFragments(fragments);
 
         // Assert
@@ -908,7 +909,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
         Console.WriteLine("----------------------------------");
     }
 
-    private static void DebugFragments(List<Fragment> fragments)
+    private static void DebugFragments(List<Chunk> fragments)
     {
         if (fragments.Count == 0)
         {
@@ -917,8 +918,7 @@ public class PlainTextChunkerTest(ITestOutputHelper output) : BaseUnitTestCase(o
 
         for (int index = 0; index < fragments.Count; index++)
         {
-            Fragment token = fragments[index];
-            Console.WriteLine($"- {index}: Value: \"{token.Content}\"");
+            Console.WriteLine($"- {index}: Value: \"{fragments[index].Content}\"");
         }
     }
 

@@ -17,7 +17,8 @@ extend-exclude = [
     "appsettings.Development.json",
     "appsettings.*.json.*",
     "AzureAISearchFilteringTest.cs",
-    "KernelMemory.sln.DotSettings"
+    "KernelMemory.sln.DotSettings",
+    "doc1.txt",
 ]
 
 [default.extend-words]

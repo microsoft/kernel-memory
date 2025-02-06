@@ -9,22 +9,22 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Chunkers.UnitTests;
 
-public class PlainTextChunkerPerfTest(ITestOutputHelper output) : BaseUnitTestCase(output)
+public class MarkDownChunkerManualTest(ITestOutputHelper output) : BaseUnitTestCase(output)
 {
     [Fact]
     [Trait("Category", "UnitTest")]
     [Trait("Category", "Chunking")]
-    [Trait("Category", "Performance")]
-    public void CanSplitVeryLargeDocumentsWithoutStackOverflowing()
+    [Trait("Category", "Manual")]
+    public void ItSplitsMarkdownInASensibleWay()
     {
         // Arrange
-        string text = File.ReadAllText("doc1.txt");
+        string text = File.ReadAllText("doc2.md");
         text = $"{text}{text}";
 
         // Act
         var w = new Stopwatch();
         w.Start();
-        var chunks = new PlainTextChunker(new CL100KTokenizer()).Split(text, new PlainTextChunkerOptions { MaxTokensPerChunk = 600, Overlap = 60 });
+        var chunks = new MarkDownChunker(new CL100KTokenizer()).Split(text, new MarkDownChunkerOptions { MaxTokensPerChunk = 600, Overlap = 60 });
         w.Stop();
 
         Console.WriteLine($"Text length: {text.Length:N0} chars");
@@ -33,7 +33,7 @@ public class PlainTextChunkerPerfTest(ITestOutputHelper output) : BaseUnitTestCa
 
         // Assert
         Assert.NotEmpty(chunks);
-        // DebugChunks(chunks, new CL100KTokenizer());
+        DebugChunks(chunks, new CL100KTokenizer());
     }
 
     private static void DebugChunks(IEnumerable<string> chunks, ITextTokenizer tokenizer)
