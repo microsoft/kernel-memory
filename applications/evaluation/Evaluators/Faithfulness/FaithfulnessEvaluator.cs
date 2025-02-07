@@ -59,7 +59,7 @@ internal sealed class FaithfulnessEvaluator : EvaluationEngine
         {
             var evaluation = await this.FaithfulnessEvaluation.InvokeAsync(this._kernel, new KernelArguments
             {
-                { "context", string.Join(Environment.NewLine, answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
+                { "context", string.Join('\n', answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
                 { "answer", answer.Result },
                 { "statements", JsonSerializer.Serialize(extraction) }
             }).ConfigureAwait(false);

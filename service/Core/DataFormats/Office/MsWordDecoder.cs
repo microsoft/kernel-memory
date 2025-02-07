@@ -12,6 +12,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
@@ -85,7 +86,7 @@ public sealed class MsWordDecoder : IContentDecoder
                         pageNumber++;
                     }
 
-                    sb.AppendLine(p.InnerText);
+                    sb.AppendLineNix(p.InnerText);
                 }
             }
 

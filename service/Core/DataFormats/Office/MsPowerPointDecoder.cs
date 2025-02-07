@@ -13,6 +13,7 @@ using DocumentFormat.OpenXml.Presentation;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
@@ -99,16 +100,16 @@ public sealed class MsPowerPointDecoder : IContentDecoder
                     // Prepend slide number before the slide text
                     if (this._config.WithSlideNumber)
                     {
-                        sb.AppendLine(this._config.SlideNumberTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
+                        sb.AppendLineNix(this._config.SlideNumberTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
 
                     sb.Append(currentSlideContent);
-                    sb.AppendLine();
+                    sb.AppendLineNix();
 
                     // Append the end of slide marker
                     if (this._config.WithEndOfSlideMarker)
                     {
-                        sb.AppendLine(this._config.EndOfSlideMarkerTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
+                        sb.AppendLineNix(this._config.EndOfSlideMarkerTemplate.Replace("{number}", $"{slideNumber}", StringComparison.OrdinalIgnoreCase));
                     }
                 }
 
