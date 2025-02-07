@@ -11,6 +11,7 @@ using ClosedXML.Excel;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
@@ -61,7 +62,7 @@ public sealed class MsExcelDecoder : IContentDecoder
             worksheetNumber++;
             if (this._config.WithWorksheetNumber)
             {
-                sb.AppendLine(this._config.WorksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
+                sb.AppendLineNix(this._config.WorksheetNumberTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
             var rowsUsed = worksheet.RangeUsed()?.RowsUsed();
@@ -142,15 +143,15 @@ public sealed class MsExcelDecoder : IContentDecoder
                     }
                 }
 
-                sb.AppendLine(this._config.RowSuffix);
+                sb.AppendLineNix(this._config.RowSuffix);
             }
 
             if (this._config.WithEndOfWorksheetMarker)
             {
-                sb.AppendLine(this._config.EndOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
+                sb.AppendLineNix(this._config.EndOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
-            string worksheetContent = sb.ToString().Trim();
+            string worksheetContent = sb.ToString().NormalizeNewlines(true);
             sb.Clear();
             result.Sections.Add(new Chunk(worksheetContent, worksheetNumber, Chunk.Meta(sentencesAreComplete: true)));
         }

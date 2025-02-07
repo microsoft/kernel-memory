@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
@@ -56,8 +57,9 @@ public sealed class PdfDecoder : IContentDecoder
 
         foreach (Page? page in pdfDocument.GetPages().Where(x => x != null))
         {
-            // Note: no trimming, use original spacing
-            string pageContent = ContentOrderTextExtractor.GetText(page) ?? string.Empty;
+            // Note: no trimming, use original spacing when working with pages
+            string pageContent = ContentOrderTextExtractor.GetText(page).NormalizeNewlines(false) ?? string.Empty;
+
             result.Sections.Add(new Chunk(pageContent, page.Number, Chunk.Meta(sentencesAreComplete: false)));
         }
 

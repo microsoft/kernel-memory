@@ -12,6 +12,7 @@ using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.WebPages;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.Handlers;
 
@@ -224,8 +225,8 @@ public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
             // Add a clean page separation
             if (section.SentencesAreComplete)
             {
-                textBuilder.AppendLine();
-                textBuilder.AppendLine();
+                textBuilder.AppendLineNix();
+                textBuilder.AppendLineNix();
             }
         }
 

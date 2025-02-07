@@ -12,6 +12,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.Handlers;
 
@@ -188,7 +189,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
                     newContent.Append(token);
                 }
 
-                newContent.AppendLine();
+                newContent.AppendLineNix();
             }
 
             content = newContent.ToString();

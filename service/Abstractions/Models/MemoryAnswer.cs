@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory;
 
@@ -92,7 +93,7 @@ public class MemoryAnswer
     public override string ToString()
     {
         var result = new StringBuilder();
-        result.AppendLine(this.Result);
+        result.AppendLineNix(this.Result);
 
         if (!this.NoResult && this.RelevantSources is { Count: > 0 })
         {
@@ -103,8 +104,8 @@ public class MemoryAnswer
                 sources[x.Index + x.Link] = $"  - {x.SourceName} [{date}]";
             }
 
-            result.AppendLine("- Sources:");
-            result.AppendLine(string.Join("\n", sources.Values));
+            result.AppendLineNix("- Sources:");
+            result.AppendLineNix(string.Join("\n", sources.Values));
         }
 
         return result.ToString();
