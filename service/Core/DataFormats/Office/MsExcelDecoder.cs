@@ -151,7 +151,7 @@ public sealed class MsExcelDecoder : IContentDecoder
                 sb.AppendLineNix(this._config.EndOfWorksheetMarkerTemplate.Replace("{number}", $"{worksheetNumber}", StringComparison.OrdinalIgnoreCase));
             }
 
-            string worksheetContent = sb.ToString().Trim();
+            string worksheetContent = sb.ToString().NormalizeNewlines(true);
             sb.Clear();
             result.Sections.Add(new Chunk(worksheetContent, worksheetNumber, Chunk.Meta(sentencesAreComplete: true)));
         }

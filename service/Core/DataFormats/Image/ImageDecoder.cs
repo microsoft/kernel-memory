@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Image;
 
@@ -64,7 +65,7 @@ public sealed class ImageDecoder : IContentDecoder
 
         var result = new FileContent(MimeTypes.PlainText);
         var content = await this.ImageToTextAsync(data, cancellationToken).ConfigureAwait(false);
-        result.Sections.Add(new(content.Trim(), 1, Chunk.Meta(sentencesAreComplete: true)));
+        result.Sections.Add(new(content, 1, Chunk.Meta(sentencesAreComplete: true)));
 
         return result;
     }
@@ -87,10 +88,14 @@ public sealed class ImageDecoder : IContentDecoder
         }
     }
 
-    private Task<string> ImageToTextAsync(Stream data, CancellationToken cancellationToken = default)
+    private async Task<string> ImageToTextAsync(Stream data, CancellationToken cancellationToken = default)
     {
-        return this._ocrEngine is null
-            ? throw new NotSupportedException($"Image extraction not configured")
-            : this._ocrEngine.ExtractTextFromImageAsync(data, cancellationToken);
+        if (this._ocrEngine is null)
+        {
+            throw new NotSupportedException($"Image extraction not configured");
+        }
+
+        string text = await this._ocrEngine.ExtractTextFromImageAsync(data, cancellationToken).ConfigureAwait(false);
+        return text.NormalizeNewlines(true);
     }
 }

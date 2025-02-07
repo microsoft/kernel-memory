@@ -113,7 +113,7 @@ public sealed class MsPowerPointDecoder : IContentDecoder
                     }
                 }
 
-                string slideContent = sb.ToString().Trim();
+                string slideContent = sb.ToString().NormalizeNewlines(true);
                 sb.Clear();
                 result.Sections.Add(new Chunk(slideContent, slideNumber, Chunk.Meta(sentencesAreComplete: true)));
             }

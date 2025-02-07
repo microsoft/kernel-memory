@@ -9,6 +9,7 @@ using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.WebPages;
 
@@ -51,7 +52,7 @@ public sealed class HtmlDecoder : IContentDecoder
         var doc = new HtmlDocument();
         doc.Load(data);
 
-        result.Sections.Add(new Chunk(doc.DocumentNode.InnerText.Trim(), 1, Chunk.Meta(sentencesAreComplete: true)));
+        result.Sections.Add(new Chunk(doc.DocumentNode.InnerText.NormalizeNewlines(true), 1, Chunk.Meta(sentencesAreComplete: true)));
 
         return Task.FromResult(result);
     }

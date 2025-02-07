@@ -80,7 +80,8 @@ public sealed class MsWordDecoder : IContentDecoder
                     var lastRenderedPageBreak = p.GetFirstChild<Run>()?.GetFirstChild<LastRenderedPageBreak>();
                     if (lastRenderedPageBreak != null)
                     {
-                        string pageContent = sb.ToString().Trim();
+                        // Note: no trimming, use original spacing when working with pages
+                        string pageContent = sb.ToString().NormalizeNewlines(false);
                         sb.Clear();
                         result.Sections.Add(new Chunk(pageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
                         pageNumber++;
@@ -90,7 +91,8 @@ public sealed class MsWordDecoder : IContentDecoder
                 }
             }
 
-            var lastPageContent = sb.ToString().Trim();
+            // Note: no trimming, use original spacing when working with pages
+            string lastPageContent = sb.ToString().NormalizeNewlines(false);
             result.Sections.Add(new Chunk(lastPageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
 
             return Task.FromResult(result);
