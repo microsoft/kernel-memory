@@ -12,6 +12,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Pipeline;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.DataFormats.Office;
 
@@ -79,17 +80,19 @@ public sealed class MsWordDecoder : IContentDecoder
                     var lastRenderedPageBreak = p.GetFirstChild<Run>()?.GetFirstChild<LastRenderedPageBreak>();
                     if (lastRenderedPageBreak != null)
                     {
-                        string pageContent = sb.ToString().Trim();
+                        // Note: no trimming, use original spacing when working with pages
+                        string pageContent = sb.ToString().NormalizeNewlines(false);
                         sb.Clear();
                         result.Sections.Add(new Chunk(pageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
                         pageNumber++;
                     }
 
-                    sb.AppendLine(p.InnerText);
+                    sb.AppendLineNix(p.InnerText);
                 }
             }
 
-            var lastPageContent = sb.ToString().Trim();
+            // Note: no trimming, use original spacing when working with pages
+            string lastPageContent = sb.ToString().NormalizeNewlines(false);
             result.Sections.Add(new Chunk(lastPageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
 
             return Task.FromResult(result);

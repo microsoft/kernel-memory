@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers.internals;
 using Microsoft.KernelMemory.DataFormats;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.Chunkers;
 
@@ -152,10 +153,7 @@ public class MarkDownChunker
         ArgumentNullException.ThrowIfNull(options);
 
         // Clean up text. Note: LLMs don't use \r char
-        text = text
-            .Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase)
-            .Replace("\r", "\n", StringComparison.OrdinalIgnoreCase)
-            .Trim();
+        text = text.NormalizeNewlines(true);
 
         // Calculate chunk size leaving room for the optional chunk header
         int maxChunk1Size = options.MaxTokensPerChunk - this.TokenCount(options.ChunkHeader);
