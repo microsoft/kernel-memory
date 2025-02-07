@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.412.1" />
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.414" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
@@ -32,7 +32,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="OllamaSharp" Version="4.0.22" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
-    <PackageVersion Include="Polly.Core" Version="8.5.1" />
+    <PackageVersion Include="Polly.Core" Version="8.5.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageVersion Include="ReadLine" Version="2.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
@@ -58,10 +58,10 @@
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.33.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.33.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.33.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.33.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.36.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.36.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.36.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.36.0" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -85,21 +85,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.10">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.10">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="6.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageVersion>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
