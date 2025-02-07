@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
         <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>CS0162;CA2007;CA1303;IDE0058;IDE0008;CA1050;CA1515;</NoWarn>
     </PropertyGroup>
