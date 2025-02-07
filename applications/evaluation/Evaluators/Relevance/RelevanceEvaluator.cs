@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics.Tensors;
@@ -68,7 +67,7 @@ internal sealed class RelevanceEvaluator : EvaluationEngine
             {
                 var extraction = await this.ExtractQuestion.InvokeAsync(this._kernel, new KernelArguments
                 {
-                    { "context", string.Join(Environment.NewLine, answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
+                    { "context", string.Join('\n', answer.RelevantSources.SelectMany(c => c.Partitions.Select(p => p.Text))) },
                     { "answer", answer.Result }
                 }).ConfigureAwait(false);
 

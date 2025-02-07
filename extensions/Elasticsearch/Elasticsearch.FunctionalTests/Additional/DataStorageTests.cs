@@ -3,7 +3,7 @@
 using System.Globalization;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.DataFormats.Text;
+using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 using Xunit;
@@ -110,16 +110,9 @@ public class DataStorageTests : MemoryDbFunctionalTest
             string fullText = await File.ReadAllTextAsync(fileName)
                 .ConfigureAwait(false);
 
-            // Splits the text into lines of up to 1000 tokens each
 #pragma warning disable KMEXP00 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            var lines = TextChunker.SplitPlainTextLines(fullText,
-                maxTokensPerLine: 1000,
-                tokenCounter: null);
-
-            // Splits the line into paragraphs
-            var paragraphs = TextChunker.SplitPlainTextParagraphs(lines,
-                maxTokensPerParagraph: 1000,
-                overlapTokens: 100);
+            PlainTextChunker chunker = new();
+            var paragraphs = chunker.Split(fullText, new PlainTextChunkerOptions { MaxTokensPerChunk = 1000, Overlap = 100 });
 #pragma warning restore KMEXP00 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             output.WriteLine($"File '{fileName}' contains {paragraphs.Count} paragraphs.");

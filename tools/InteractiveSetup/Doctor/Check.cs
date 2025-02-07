@@ -30,7 +30,7 @@ public static class Check
         stats.AddSeparator();
 
         // Partitioning
-        stats.Add("Text partitioning", $"Line:{config.DataIngestion.TextPartitioning.MaxTokensPerLine}; Paragraph:{config.DataIngestion.TextPartitioning.MaxTokensPerParagraph}; Overlapping:{config.DataIngestion.TextPartitioning.OverlappingTokens}");
+        stats.Add("Text partitioning", $"Chunk:{config.DataIngestion.TextPartitioning.MaxTokensPerParagraph}; Overlapping:{config.DataIngestion.TextPartitioning.OverlappingTokens}");
 
         // Image OCR
         stats.Add("Image OCR", string.IsNullOrWhiteSpace(config.DataIngestion.ImageOcrType) ? "Disabled" : config.DataIngestion.ImageOcrType);

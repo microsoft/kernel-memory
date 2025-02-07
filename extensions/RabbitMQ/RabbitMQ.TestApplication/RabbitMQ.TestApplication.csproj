@@ -3,9 +3,9 @@
     <PropertyGroup>
         <AssemblyName>Microsoft.RabbitMQ.TestApplication</AssemblyName>
         <RootNamespace>Microsoft.RabbitMQ.TestApplication</RootNamespace>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
+        <OutputType>Exe</OutputType>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
