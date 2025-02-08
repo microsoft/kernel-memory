@@ -108,6 +108,24 @@ public class PostgresConfig
     public List<string> CreateTableSql { get; set; } = [];
 
     /// <summary>
+    /// Important: when using hybrid search, relevance scores
+    /// are very different from when using just vector search.
+    /// </summary>
+    public bool UseHybridSearch { get; set; } = false;
+
+
+    /// <summary>
+    /// Defines the dictionary language the make the textual part of the hybrid Search in postgresql
+    /// see: 
+    /// </summary>
+    public string TextSearchLanguage { get; set; } = "english";
+
+    /// <summary>
+    /// Reciprocal Ranked Fusion to score results of Hybrid Search
+    /// </summary>
+    public int RRFK { get; set; } = 50;
+
+    /// <summary>
     /// Create a new instance of the configuration
     /// </summary>
     public PostgresConfig()
