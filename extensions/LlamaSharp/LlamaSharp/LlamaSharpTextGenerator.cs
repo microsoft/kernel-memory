@@ -89,8 +89,8 @@ public sealed class LlamaSharpTextGenerator : ITextGenerator, IDisposable
         {
             Temperature = (float)options.Temperature,
             TopP = (float)options.NucleusSampling,
-            AlphaPresence = (float)options.PresencePenalty,
-            AlphaFrequency = (float)options.FrequencyPenalty,
+            PresencePenalty = (float)options.PresencePenalty,
+            FrequencyPenalty = (float)options.FrequencyPenalty,
             LogitBias = logitBias,
         };
 
