@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.414" />
+    <PackageVersion Include="AWSSDK.S3" Version="3.7.414.1" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.FormRecognizer" Version="4.1.0" />
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
@@ -27,10 +27,10 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.5.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda" Version="0.5.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.5.2" />
-    <PackageVersion Include="MongoDB.Driver.GridFS" Version="2.30.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.1.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="OllamaSharp" Version="4.0.22" />
+    <PackageVersion Include="OllamaSharp" Version="5.0.6" />
     <PackageVersion Include="PdfPig" Version="0.1.9" />
     <PackageVersion Include="Polly.Core" Version="8.5.2" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
@@ -51,17 +51,17 @@
   <!-- Missing Strong Name (CS8002) -->
   <ItemGroup>
     <PackageVersion Include="ClosedXML" Version="0.104.2" />
-    <PackageVersion Include="LLamaSharp" Version="0.19.0" />
-    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.19.0" />
+    <PackageVersion Include="LLamaSharp" Version="0.21.0" />
+    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.21.0" />
     <PackageVersion Include="Pgvector" Version="0.3.0" />
-    <PackageVersion Include="NRedisStack" Version="0.13.1" />
+    <PackageVersion Include="NRedisStack" Version="0.13.2" />
   </ItemGroup>
   <!-- Semantic Kernel -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.36.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.36.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.36.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.36.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.36.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.36.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.36.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.36.1" />
   </ItemGroup>
   <!-- Documentation -->
   <ItemGroup>
@@ -85,18 +85,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.11">
+    <PackageVersion Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.12.11">
+    <PackageVersion Include="Roslynator.Formatting.Analyzers" Version="4.13.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.extensibility.core" Version="2.7.1" />
