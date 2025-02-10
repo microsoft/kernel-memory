@@ -36,7 +36,7 @@ public static class Constants
         public static class Partitioning
         {
             // Used to override MaxTokensPerParagraph config
-            public const string MaxTokensPerParagraph = "custom_partitioning_max_tokens_per_paragraph_int";
+            public const string MaxTokensPerChunk = "custom_partitioning_max_tokens_per_paragraph_int";
 
             // Used to override OverlappingTokens config
             public const string OverlappingTokens = "custom_partitioning_overlapping_tokens_int";

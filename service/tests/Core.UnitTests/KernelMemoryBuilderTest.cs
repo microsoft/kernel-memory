@@ -118,10 +118,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
     public void ItCanMixPersistentAndVolatileStorageIfNeeded()
     {
         // Arrange
-        KernelMemoryBuilderBuildOptions kmbOptions = new()
-        {
-            AllowMixingVolatileAndPersistentData = true
-        };
+        var kmbOptions = KernelMemoryBuilderBuildOptions.WithVolatileAndPersistentData;
 
         // Act - Assert no exception occurs
         new KernelMemoryBuilder()
@@ -136,11 +133,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
     public void ItCanMixPersistentAndVolatileStorageIfNeeded2()
     {
         // Arrange
-        KernelMemoryBuilderBuildOptions kmbOptions = new()
-        {
-            AllowMixingVolatileAndPersistentData = true
-        };
-
+        var kmbOptions = KernelMemoryBuilderBuildOptions.WithVolatileAndPersistentData;
         var serviceCollection1 = new ServiceCollection();
         var serviceCollection2 = new ServiceCollection();
 

@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.HTTP;
 
@@ -39,7 +40,7 @@ public static class SSE
             }
             else
             {
-                buffer.AppendLine(line);
+                buffer.AppendLineNix(line);
             }
         }
 
