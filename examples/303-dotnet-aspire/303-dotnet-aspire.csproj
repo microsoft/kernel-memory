@@ -3,8 +3,9 @@
     <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <OutputType>Exe</OutputType>
         <IsAspireHost>true</IsAspireHost>
         <AssemblyName>Microsoft.KernelMemory.Aspire.Example303.AppHost</AssemblyName>
     </PropertyGroup>

@@ -7,11 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
-using Microsoft.KernelMemory.DataFormats.Text;
+using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Prompts;
+using Microsoft.KernelMemory.Text;
 
 namespace Microsoft.KernelMemory.Handlers;
 
@@ -22,6 +23,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ILogger<SummarizationParallelHandler> _log;
     private readonly string _summarizationPrompt;
+    private readonly PlainTextChunker _plainTextChunker;
 
     /// <inheritdoc />
     public string StepName { get; }
@@ -43,6 +45,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
     {
         this.StepName = stepName;
         this._orchestrator = orchestrator;
+        this._plainTextChunker = new PlainTextChunker();
 
         promptProvider ??= new EmbeddedPromptProvider();
         this._summarizationPrompt = promptProvider.ReadPrompt(Constants.PromptNamesSummarize);
@@ -141,9 +144,8 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
         ITextGenerator textGenerator = this._orchestrator.GetTextGenerator();
 
         int summaryMaxTokens = textGenerator.MaxTokenTotal / 2; // 50% of model capacity
-        int maxTokensPerParagraph = summaryMaxTokens / 2; // 25% of model capacity
-        int maxTokensPerLine = Math.Min(Math.Max(200, maxTokensPerParagraph / 2), 500); // 200...500
-        int overlappingTokens = maxTokensPerLine / 2;
+        int maxTokensPerChunk = summaryMaxTokens / 2; // 25% of model capacity
+        int overlappingTokens = Math.Min(Math.Max(200, maxTokensPerChunk / 2), 500) / 2; // 100...250
 
         int contentLength = textGenerator.CountTokens(content);
         if (contentLength < MinLength)
@@ -171,8 +173,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
             }
             else
             {
-                List<string> lines = TextChunker.SplitPlainTextLines(content, maxTokensPerLine: maxTokensPerLine);
-                paragraphs = TextChunker.SplitPlainTextParagraphs(lines, maxTokensPerParagraph: maxTokensPerParagraph, overlapTokens: overlappingTokens);
+                paragraphs = this._plainTextChunker.Split(content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens });
             }
 
             this._log.LogTrace("Paragraphs to summarize: {0}", paragraphs.Count);
@@ -188,7 +189,7 @@ public sealed class SummarizationParallelHandler : IPipelineStepHandler
                     newContent.Append(token);
                 }
 
-                newContent.AppendLine();
+                newContent.AppendLineNix();
             }
 
             content = newContent.ToString();

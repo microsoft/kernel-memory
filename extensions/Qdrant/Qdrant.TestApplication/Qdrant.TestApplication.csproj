@@ -3,9 +3,9 @@
     <PropertyGroup>
         <AssemblyName>Microsoft.Qdrant.TestApplication</AssemblyName>
         <RootNamespace>Microsoft.Qdrant.TestApplication</RootNamespace>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <RollForward>LatestMajor</RollForward>
+        <OutputType>Exe</OutputType>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
