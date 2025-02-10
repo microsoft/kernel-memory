@@ -4,7 +4,6 @@ using LLama;
 using LLama.Common;
 using Microsoft.KernelMemory.AI.LlamaSharp;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.LlamaSharp.FunctionalTests;
 

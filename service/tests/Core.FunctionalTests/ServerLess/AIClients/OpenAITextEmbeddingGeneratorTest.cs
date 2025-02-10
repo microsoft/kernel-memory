@@ -2,7 +2,6 @@
 
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.ServerLess.AIClients;
 

@@ -4,7 +4,6 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.Evaluation;
 using Microsoft.KernelMemory.Evaluation.TestSet;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Evaluation.FunctionalTests;
 
@@ -62,10 +61,12 @@ public class TestsetGenerationTests
             .ImportDocumentAsync(
                 "file1-NASA-news.pdf",
                 documentId: "file1-NASA-news",
-                steps: Constants.PipelineWithoutSummary);
+                steps: Constants.PipelineWithoutSummary)
+            .ConfigureAwait(false);
 
         var testSets = await this._testSetGenerator.GenerateTestSetsAsync("default4tests", retryCount: 5, count: 1)
-            .ToArrayAsync();
+            .ToArrayAsync()
+            .ConfigureAwait(false);
 
         Assert.NotEmpty(testSets);
         Assert.Equal(1, testSets.Length);
@@ -79,15 +80,18 @@ public class TestsetGenerationTests
             .ImportDocumentAsync(
                 "file1-NASA-news.pdf",
                 documentId: "file1-NASA-news",
-                steps: Constants.PipelineWithoutSummary);
+                steps: Constants.PipelineWithoutSummary)
+            .ConfigureAwait(false);
 
         var evaluation = await this._testSetEvaluator.EvaluateTestSetAsync("default4tests", [
-            new TestSetItem
-            {
-                Question = "What is the role of the Department of Defense in the recovery operations for the Artemis II mission?",
-                GroundTruth = "The Department of Defense personnel are involved in practicing recovery operations for the Artemis II mission. They use a crew module test article to help verify the recovery team's readiness to recover the Artemis II crew and the Orion spacecraft.",
-            }
-        ]).ToArrayAsync();
+                new TestSetItem
+                {
+                    Question = "What is the role of the Department of Defense in the recovery operations for the Artemis II mission?",
+                    GroundTruth = "The Department of Defense personnel are involved in practicing recovery operations for the Artemis II mission. They use a crew module test article to help verify the recovery team's readiness to recover the Artemis II crew and the Orion spacecraft.",
+                }
+            ])
+            .ToArrayAsync()
+            .ConfigureAwait(false);
 
         Assert.NotEmpty(evaluation);
     }

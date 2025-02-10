@@ -10,7 +10,6 @@ using Microsoft.KernelMemory.Pipeline;
 using Microsoft.KernelMemory.Pipeline.Queue;
 using Microsoft.KM.TestHelpers;
 using Moq;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.UnitTests;
 

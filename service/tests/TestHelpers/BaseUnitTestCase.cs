@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.KM.TestHelpers;
 

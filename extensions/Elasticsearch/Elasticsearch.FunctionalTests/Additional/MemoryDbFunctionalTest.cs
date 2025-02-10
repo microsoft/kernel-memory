@@ -8,7 +8,6 @@ using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KM.TestHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
@@ -18,6 +17,7 @@ namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 /// deleted before and after the tests. This ensures that Elasticsearch is left in a clean state
 /// or that subsequent tests don't fail because of left-over indices.
 /// </summary>
+#pragma warning disable CA1033
 public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLifetime
 {
     protected MemoryDbFunctionalTest(IConfiguration cfg, ITestOutputHelper output)
@@ -41,7 +41,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
     public IMemoryDb MemoryDb { get; }
     public ITextEmbeddingGenerator TextEmbeddingGenerator { get; }
 
-    public async Task InitializeAsync()
+    async ValueTask IAsyncLifetime.InitializeAsync()
     {
         // Within a single test class, the tests are executed sequentially by default so
         // there is no chance for a method to finish and delete indices of other methods before the next
@@ -56,7 +56,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
         }
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         var indicesFound = await this.Client.DeleteIndicesOfTestAsync(this.GetType(), base.ElasticsearchConfig).ConfigureAwait(false);
 
@@ -65,5 +65,7 @@ public abstract class MemoryDbFunctionalTest : BaseFunctionalTestCase, IAsyncLif
             this.Output.WriteLine($"Deleted test indices: {string.Join(", ", indicesFound)}");
             this.Output.WriteLine("");
         }
+
+        GC.SuppressFinalize(this);
     }
 }

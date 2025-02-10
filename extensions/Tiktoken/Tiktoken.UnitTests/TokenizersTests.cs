@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory.AI;
 using Microsoft.KM.TestHelpers;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Tiktoken.UnitTests;
 

@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Onnx;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.Onnx.FunctionalTests;
 

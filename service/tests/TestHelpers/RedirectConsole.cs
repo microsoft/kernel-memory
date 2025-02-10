@@ -2,7 +2,7 @@
 
 using System.Globalization;
 using System.Text;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.KM.TestHelpers;
 
@@ -310,7 +310,7 @@ internal sealed class RedirectConsole : TextWriter
     {
         try
         {
-            this._output.WriteLine(s);
+            this._output.WriteLine(s ?? string.Empty);
         }
         catch (InvalidOperationException e) when (e.Message.Contains("no currently active test", StringComparison.OrdinalIgnoreCase))
         {

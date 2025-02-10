@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory;
 using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Service.FunctionalTests;
 

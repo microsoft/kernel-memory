@@ -11,7 +11,6 @@ using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.KM.TestHelpers;
 using StackExchange.Redis;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 

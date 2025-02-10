@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 

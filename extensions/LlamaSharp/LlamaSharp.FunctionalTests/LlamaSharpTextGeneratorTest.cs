@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.LlamaSharp;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.LlamaSharp.FunctionalTests;
 

@@ -4,7 +4,6 @@ using Azure.Identity;
 using Microsoft.KernelMemory;
 using Microsoft.KM.TestHelpers;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Service.FunctionalTests;
 
