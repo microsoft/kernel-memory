@@ -40,7 +40,7 @@ public static class Program
     public static async Task Main()
     {
         // Partition input text in chunks of 100 tokens
-        const int PartitionSize = 100;
+        const int Chunksize = 100;
 
         // Search settings
         const string Query = "astrobiology";
@@ -59,8 +59,7 @@ public static class Program
         // Customize memory records size (in tokens)
         var textPartitioningOptions = new TextPartitioningOptions
         {
-            MaxTokensPerParagraph = PartitionSize,
-            MaxTokensPerLine = PartitionSize,
+            MaxTokensPerParagraph = Chunksize,
             OverlappingTokens = 0,
         };
 

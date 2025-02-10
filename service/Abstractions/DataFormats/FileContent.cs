@@ -9,7 +9,7 @@ public class FileContent
 {
     [JsonPropertyOrder(0)]
     [JsonPropertyName("sections")]
-    public List<FileSection> Sections { get; set; } = [];
+    public List<Chunk> Sections { get; set; } = [];
 
     [JsonPropertyOrder(1)]
     [JsonPropertyName("mimeType")]
