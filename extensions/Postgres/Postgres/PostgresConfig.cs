@@ -114,7 +114,7 @@ public class PostgresConfig
     public bool UseHybridSearch { get; set; } = false;
 
     /// <summary>
-    /// Defines the dictionary language the make the textual part of the hybrid Search in postgresql
+    /// Defines the dictionary language used for the textual part of hybrid search.
     /// see:
     /// </summary>
     public string TextSearchLanguage { get; set; } = "english";
