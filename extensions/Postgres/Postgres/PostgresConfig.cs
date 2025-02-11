@@ -115,7 +115,8 @@ public class PostgresConfig
 
     /// <summary>
     /// Defines the dictionary language used for the textual part of hybrid search.
-    /// see:
+    /// see: https://www.postgresql.org/docs/current/textsearch-dictionaries.html
+    /// This query can help you to get the list of dictionaries: SELECT * FROM pg_catalog.pg_ts_dict;
     /// </summary>
     public string TextSearchLanguage { get; set; } = "english";
 
