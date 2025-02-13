@@ -47,7 +47,6 @@ public sealed class RabbitMQPipeline : IQueue, IAsyncDisposable
         this._config = config;
         this._config.Validate(this._log);
 
-        // see https://www.rabbitmq.com/dotnet-api-guide.html#consuming-async
         this._factory = new ConnectionFactory
         {
             ClientProvidedName = "KernelMemory",
