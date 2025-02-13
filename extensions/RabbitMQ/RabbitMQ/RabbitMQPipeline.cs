@@ -181,7 +181,7 @@ public sealed class RabbitMQPipeline : IQueue, IAsyncDisposable
 
     public void Dispose()
     {
-        // Note: Start from v7.0, Synchronous Close methods are not available anymore in the library, so we just call Dipose.
+        // Note: Start from v7.0, Synchronous Close methods are not available anymore in the library, so we just call Dispose.
         ((IDisposable)this._channel!).Dispose();
         ((IDisposable)this._connection!).Dispose();
     }
