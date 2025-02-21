@@ -38,17 +38,12 @@ RUN \
     #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
     adduser -D -h /app -s /bin/sh $USER && \
     # Allow user to access the build
-    chown -R $USER.$USER /app
+    chown -R $USER:$USER /app
 
 # Use of Microsoft.Data.SqlClient requires ICU to be installed
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
-ENV \
-    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8
-RUN apk add --no-cache \
-    icu-data-full \
-    icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+RUN apk add --no-cache icu-libs
 
 COPY --from=build --chown=km:km --chmod=0550 /app/publish .
 
