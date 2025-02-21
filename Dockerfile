@@ -36,7 +36,7 @@ WORKDIR /app
 RUN \
     # Create user
     #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
-    adduser -D -h /app -s /bin/sh $USER && \
+    adduser --disabled-password --home /app --shell /bin/sh $USER && \
     # Allow user to access the build
     chown -R $USER:$USER /app && \
     # Install icu-libs for Microsoft.Data.SqlClient
