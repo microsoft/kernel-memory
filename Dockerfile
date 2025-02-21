@@ -38,12 +38,9 @@ RUN \
     #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
     adduser -D -h /app -s /bin/sh $USER && \
     # Allow user to access the build
-    chown -R $USER:$USER /app
-
-# Use of Microsoft.Data.SqlClient requires ICU to be installed
-# https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-RUN apk add --no-cache icu-libs
+    chown -R $USER:$USER /app && \
+    # Install icu-libs for Microsoft.Data.SqlClient
+    apk add --no-cache icu-libs
 
 COPY --from=build --chown=km:km --chmod=0550 /app/publish .
 
@@ -55,6 +52,9 @@ LABEL org.opencontainers.image.authors="Devis Lucato, https://github.com/dluc"
 
 # Define current user
 USER $USER
+
+# Disable globalization invariant mode for Microsoft.Data.SqlClient
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 # Used by .NET and KM to load appsettings.Production.json
 ENV ASPNETCORE_ENVIRONMENT=Production
