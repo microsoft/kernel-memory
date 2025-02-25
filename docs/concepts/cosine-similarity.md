@@ -9,9 +9,8 @@ layout: default
 
 Cosine similarity is a measure of the degree of similarity between two vectors in
 a multidimensional space. It is commonly used in artificial intelligence and natural
-language processing to compare [embeddings](embedding),
-which are numerical representations of
-words or other objects.
+language processing to compare [embeddings](embedding), which are numerical
+representations of words or other objects.
 
 The cosine similarity between two vectors is calculated by taking the
 [dot product](dot-product) of the two vectors and dividing it by the product
@@ -47,6 +46,12 @@ Cosine similarity is particularly useful when working with high-dimensional data
 such as word embeddings because it takes into account both the magnitude and direction
 of each vector. This makes it more robust than other measures like
 [Euclidean distance](euclidean-distance), which only considers the direction.
+
+Cosine similarity is particularly useful when working with high-dimensional data
+such as word embeddings because it normalizes vectors, focusing on their orientation
+to capture the relevant information, removing their magnitude to avoid the noise from
+scaling, frequency, and length. This makes it considerably different from other
+measures like [Euclidean distance](euclidean-distance) affected by vectors magnitude.
 
 One common use case for cosine similarity is to find similar words based on their
 embeddings. For example, given an embedding for "cat", we can use cosine similarity
