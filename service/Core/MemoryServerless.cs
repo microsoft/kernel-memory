@@ -208,8 +208,7 @@ public sealed class MemoryServerless : IKernelMemory
         index = IndexName.CleanName(index, this._defaultIndexName);
         try
         {
-            DataPipeline? pipeline = await this._orchestrator.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
-            return pipeline?.ToDataPipelineStatus();
+            return await this._orchestrator.GetPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false); ;
         }
         catch (PipelineNotFoundException)
         {

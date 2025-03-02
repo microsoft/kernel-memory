@@ -61,22 +61,22 @@ public interface IPipelineOrchestrator
     Task RunPipelineAsync(DataPipeline pipeline, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch the pipeline status from storage
+    /// Get pipeline from storage
     /// </summary>
     /// <param name="index">Index where memory is stored</param>
     /// <param name="documentId">Id of the document and pipeline execution instance</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    /// <returns>Pipeline status if available</returns>
-    Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default);
+    /// <returns>Pipeline if available</returns>
+    Task<DataPipeline?> GetPipelineAsync(string index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetch the pipeline status from storage
+    /// Get pipeline status from storage
     /// </summary>
     /// <param name="index">Index where memory is stored</param>
     /// <param name="documentId">Id of the document and pipeline execution instance</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     /// <returns>Pipeline status if available</returns>
-    Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default);
+    Task<DataPipelineStatus?> GetPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Check if a document ID exists in a user memory and is ready for usage.
