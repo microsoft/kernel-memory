@@ -48,8 +48,8 @@ public class PlainTextChunker
 
     // Prioritized list of characters to split sentence from sentence.
     private static readonly SeparatorTrie s_explicitSeparators = new([
-    // Symbol + space
-    ". ", ".\t", ".\n", "\n\n", // note: covers also the case of multiple '.' like "....\n"
+        // Symbol + space
+        ". ", ".\t", ".\n", "\n\n", // note: covers also the case of multiple '.' like "....\n"
         "? ", "?\t", "?\n", // note: covers also the case of multiple '?' and '!?' like "?????\n" and "?!?\n"
         "! ", "!\t", "!\n", // note: covers also the case of multiple '!' and '?!' like "!!!\n" and "!?!\n"
         "⁉ ", "⁉\t", "⁉\n",
