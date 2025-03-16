@@ -43,7 +43,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         this._schema = config.Schema;
         this._tableNamePrefix = config.TableNamePrefix;
         this._textSearchLanguage = config.TextSearchLanguage;
-        this._rrf_K = config.RRFK;
+        this._rrfK = config.RRFK;
 
         this._colId = config.Columns[PostgresConfig.ColumnId];
         this._colEmbedding = config.Columns[PostgresConfig.ColumnEmbedding];
@@ -431,7 +431,6 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         // Column names
         string columns = withEmbeddings ? this._columnsListWithEmbeddings : this._columnsListNoEmbeddings;
 
-
         // Filtering logic, including filter by similarity
         //
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
@@ -474,16 +473,16 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
                             LIMIT @limit
                         ),
                         keyword_search AS (
-                            SELECT {this._columnsListHybrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC)
-                            FROM {tableName}, plainto_tsquery('english', @query) query
-                            WHERE  {filterSqlHybridText} AND to_tsvector('english', {this._colContent}) @@ query
-                            ORDER BY ts_rank_cd(to_tsvector('english', {this._colContent}), query) DESC
+                            SELECT {this._columnsListHybrid}, RANK () OVER (ORDER BY ts_rank_cd(to_tsvector('{this._textSearchLanguage}', {this._colContent}), query) DESC)
+                            FROM {tableName}, plainto_tsquery('{this._textSearchLanguage}', @query) query
+                            WHERE  {filterSqlHybridText} AND to_tsvector('{this._textSearchLanguage}', {this._colContent}) @@ query
+                            ORDER BY ts_rank_cd(to_tsvector('{this._textSearchLanguage}', {this._colContent}), query) DESC
                             LIMIT @limit
                         )
                         SELECT
                             {this._columnsListHybridCoalesce},
-                            COALESCE(1.0 / ({this._rrf_K} + semantic_search.rank), 0.0) +
-                            COALESCE(1.0 / ({this._rrf_K} + keyword_search.rank), 0.0) AS {colDistance}
+                            COALESCE(1.0 / ({this._rrfK} + semantic_search.rank), 0.0) +
+                            COALESCE(1.0 / ({this._rrfK} + keyword_search.rank), 0.0) AS {colDistance}
                         FROM semantic_search
                         FULL OUTER JOIN keyword_search ON semantic_search.{this._colId} = keyword_search.{this._colId}
                         ORDER BY {colDistance} DESC
@@ -752,7 +751,7 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
     private readonly string _columnsListHybridCoalesce;
     private readonly bool _dbNamePresent;
     private readonly string _textSearchLanguage;
-    private readonly int _rrf_K;
+    private readonly int _rrfK;
 
     /// <summary>
     /// Try to connect to PG, handling exceptions in case the DB doesn't exist
