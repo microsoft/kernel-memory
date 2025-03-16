@@ -125,6 +125,16 @@ For more details, check out the
 [this article](https://jkatz05.com/post/postgres/hybrid-search-postgres-pgvector)
 on hybrid search in Postgres.
 
+The connector creates text search index automatically on table creation.
+
+In the case you activate the text search once PostgreSQL tables are created with an older
+version of the connector or you want to change the TextSearchLanguage you will need 
+to create manually the text search index using the column names and table name that
+you had configured.
+
+**SQL to add Text Search Index:** 
+'CREATE INDEX IF NOT EXISTS {indexName} ON {tableName} USING GIN(to_tsvector('TextSearchLanguage',{this._colContent}));
+
 ## Column names and table schema
 
 The connector uses a default schema with predefined columns and indexes.
