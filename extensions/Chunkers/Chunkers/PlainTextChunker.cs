@@ -60,7 +60,9 @@ public class PlainTextChunker
         "!!!!", "????", "!!!", "???", "?!?", "!?!", "!?", "?!", "!!", "??", "....", "...", "..",
         // 1 char separators without space
         ".", "?", "!", "⁉", "⁈", "⁇", "…",
-    ]);
+        // Chinese punctuation
+        "。", "？", "！", "；", "："
+]);
 
     // Prioritized list of characters to split inside a sentence.
     private static readonly SeparatorTrie s_potentialSeparators = new([
@@ -69,12 +71,16 @@ public class PlainTextChunker
         ") ", ")\t", ")\n",
         "] ", "]\t", "]\n",
         ")", "]",
+        // Chinese punctuation
+        "，", "、", "（", "）", "【", "】", "《", "》"
     ]);
 
     // Prioritized list of characters to split inside a sentence when other splits are not found.
     private static readonly SeparatorTrie s_weakSeparators1 = new([
         ": ", ":", // note: \n \t make no difference with this char
         ", ", ",", // note: \n \t make no difference with this char
+        // Chinese punctuation
+        "：", "，"
     ]);
 
     // Prioritized list of characters to split inside a sentence when other splits are not found.
@@ -84,6 +90,8 @@ public class PlainTextChunker
         "' ", "'", // note: \n \t make no difference with this char
         "\" ", "\"", // note: \n \t make no difference with this char
         " ", // note: \n \t make no difference with this char
+        // Chinese punctuation
+        "“", "”", "‘", "’"
     ]);
 
     // Prioritized list of characters to split inside a sentence when other splits are not found.
@@ -93,6 +101,8 @@ public class PlainTextChunker
         "|", // note: \n \t make no difference with this char
         "@", // note: \n \t make no difference with this char
         "=", // note: \n \t make no difference with this char
+        // Chinese punctuation
+        "·", "—", "～"
     ]);
 
     public PlainTextChunker(ITextTokenizer? tokenizer = null)
