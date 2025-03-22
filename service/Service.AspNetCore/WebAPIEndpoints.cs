@@ -108,10 +108,11 @@ public static class WebAPIEndpoints
             })
             .WithName("UploadDocument")
             .WithDisplayName("UploadDocument")
-            .WithDescription("Upload a new document to the knowledge base and extract memories from it.")
             .WithOpenApi(
                 operation =>
                 {
+                    operation.Summary = "Upload a new document to the knowledge base";
+                    operation.Description = "Upload a document consisting of one or more files to extract memories from. The extraction process happens asynchronously. If a document with the same ID already exists, it will be overwritten and the memories previously extracted will be updated.";
                     operation.RequestBody = new OpenApiRequestBody
                     {
                         Content =
@@ -161,8 +162,6 @@ public static class WebAPIEndpoints
                         },
                         Description = "Document to upload and extract memories from"
                     };
-                    operation.Summary = "Upload a new document to the knowledge base";
-                    operation.Description = "Upload a document consisting of one or more files to extract memories from. The extraction process happens asynchronously.";
                     return operation;
                 }
             )

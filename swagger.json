@@ -95,7 +95,7 @@
           "Microsoft.KernelMemory.ServiceAssembly"
         ],
         "summary": "Upload a new document to the knowledge base",
-        "description": "Upload a document consisting of one or more files to extract memories from. The extraction process happens asynchronously.",
+        "description": "Upload a document consisting of one or more files to extract memories from. The extraction process happens asynchronously. If a document with the same ID already exists, it will be overwritten and the memories previously extracted will be updated.",
         "operationId": "UploadDocument",
         "requestBody": {
           "description": "Document to upload and extract memories from",
@@ -140,6 +140,12 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {}
+            }
+          },
           "202": {
             "description": "Accepted",
             "content": {
