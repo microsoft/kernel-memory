@@ -44,7 +44,7 @@ public static partial class ConfigurationBuilderExtensions
 
             builder.AddJsonFile(main, optional: false);
 
-            // Add appsettings.development.json, used for local overrides and credentials
+            // Add appsettings.Development.json, used for local overrides and credentials
             if (env.Equals("development", StringComparison.OrdinalIgnoreCase))
             {
                 var f1 = Path.Join(settingsDirectory, "appsettings.development.json");

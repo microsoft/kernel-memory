@@ -25,7 +25,7 @@ docker run -it -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --rm el
 ```
 
 The command should print on screen configuration details, such as fingerprint and default password. Copy
-the values in `appsettings.development.json`. For example:
+the values in `appsettings.Development.json`. For example:
 
 ```json
   // ...

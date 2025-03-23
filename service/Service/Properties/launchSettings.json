@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://+:9001",
+        "COMPlus_ReadyToRun": "1",
+        "DOTNET_ReadyToRun": "1"
+      }
+    }
+  }
+}

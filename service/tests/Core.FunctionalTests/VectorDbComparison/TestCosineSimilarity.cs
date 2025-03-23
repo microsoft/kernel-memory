@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
@@ -11,7 +12,6 @@ using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KernelMemory.Postgres;
 using Microsoft.KM.TestHelpers;
 using StackExchange.Redis;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.VectorDbComparison;
 

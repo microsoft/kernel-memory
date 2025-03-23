@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.ServerLess.AIClients;
 

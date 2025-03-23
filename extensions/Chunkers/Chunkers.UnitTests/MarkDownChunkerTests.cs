@@ -5,8 +5,6 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KM.TestHelpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Chunkers.UnitTests;
 

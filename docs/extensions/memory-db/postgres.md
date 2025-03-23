@@ -31,7 +31,7 @@ To use Postgres with Kernel Memory:
 
 1. Have a PostgreSQL instance ready, e.g. checkout [Azure Database for PostgreSQL](https://learn.microsoft.com/azure/postgresql)
 2. Verify your Postgres instance supports vectors, e.g. run `SELECT * FROM pg_extension`
-3. Add Postgres connection string to appsettings.json (or appsettings.development.json), for example:
+3. Add Postgres connection string to appsettings.json (or appsettings.Development.json), for example:
 
     ```json
     {

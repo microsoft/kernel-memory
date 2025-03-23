@@ -8,7 +8,6 @@ using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KM.TestHelpers;
 using Moq;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.UnitTests.MemoryStorage.DevTools;
 

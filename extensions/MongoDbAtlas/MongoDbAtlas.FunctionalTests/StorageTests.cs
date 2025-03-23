@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KM.TestHelpers;

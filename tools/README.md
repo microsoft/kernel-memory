@@ -4,7 +4,7 @@ This folder contains a list of various tools used during development.
 
 - `aspire` folder: some .NET Aspire configurations
 - `dev` folder: build, test, release scripts
-- `InteractiveSetup` folder: project used to generate/update `appsettings.development.json` files
+- `InteractiveSetup` folder: project used to generate/update `appsettings.Development.json` files
 
 # Kernel Memory from CLI
 
