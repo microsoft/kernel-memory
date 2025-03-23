@@ -9,14 +9,6 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-        <DefineConstants>OS_WINDOWS</DefineConstants>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
-    </ItemGroup>
-
     <ItemGroup>
         <Using Include="Xunit" />
         <Using Include="Xunit.Abstractions" />
@@ -34,5 +26,13 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>OS_WINDOWS</DefineConstants>
+    </PropertyGroup>
+
 </Project>
