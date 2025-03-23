@@ -1,0 +1,23 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kernelmemory
+      POSTGRES_DB: km
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./vector_extension.sql:/docker-entrypoint-initdb.d/0-vector_extension.sql
+  kernel-memory:
+    image: kernelmemory/service
+    ports:
+      - "9001:9001"
+    volumes:
+      - ../../service/Service/appsettings.Development.json:/app/appsettings.Production.json
+
+volumes:
+  postgres_data:
