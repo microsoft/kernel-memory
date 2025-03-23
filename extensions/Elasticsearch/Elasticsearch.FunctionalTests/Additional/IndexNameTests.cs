@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KM.TestHelpers;
-using Xunit;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 

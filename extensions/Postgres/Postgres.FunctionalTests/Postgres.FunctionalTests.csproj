@@ -13,6 +13,7 @@
     <ItemGroup>
         <Using Include="Xunit" />
         <Using Include="Xunit.Abstractions" />
+        <Using Include="Microsoft.KernelMemory.Postgres" />
     </ItemGroup>
 
     <ItemGroup>

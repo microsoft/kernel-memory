@@ -3,7 +3,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.KM.TestHelpers;
-using Xunit;
 
 namespace Microsoft.AzureOpenAI.FunctionalTests;
 

@@ -7,7 +7,6 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
 using Microsoft.KernelMemory.MemoryStorage;
-using Xunit;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
