@@ -39,7 +39,7 @@ run it multiple times to modify the settings.
 >       Directory where to store queue messages: _tmp_queues
 >
 > _Where should the service store files_? **SimpleFileStorage**
-> ------ this will use volatile storage in memory, suitable only for tests. You can manually edit appsettings.development.json to persist files on disk.
+> ------ this will use volatile storage in memory, suitable only for tests. You can manually edit appsettings.Development.json to persist files on disk.
 >
 >       Directory where to store files: _tmp_files
 >
@@ -55,7 +55,7 @@ run it multiple times to modify the settings.
 >
 > _When searching for answers, which memory DB service contains the records?_ **SimpleVectorDb**
 > ------ this will use volatile storage in memory, suitable only for tests. You can manually edit
-appsettings.development.json to persist files on disk, or choose one of the available options suggested.
+> appsettings.Development.json to persist files on disk, or choose one of the available options suggested.
 >
 >       Directory where to store vectors: _tmp_vectors
 >

@@ -9,7 +9,6 @@ using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
 using Microsoft.KernelMemory.MongoDbAtlas;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.TestHelpers;
 
