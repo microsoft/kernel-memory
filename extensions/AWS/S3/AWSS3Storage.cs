@@ -37,6 +37,7 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
                     awsSecretAccessKey: config.SecretAccessKey,
                     clientConfig: new AmazonS3Config
                     {
+                        ForcePathStyle = config.ForcePathStyle,
                         ServiceURL = config.Endpoint,
                         LogResponse = true
                     }
@@ -47,6 +48,7 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
             {
                 this._client = new AmazonS3Client(new AmazonS3Config
                 {
+                    ForcePathStyle = config.ForcePathStyle,
                     ServiceURL = config.Endpoint,
                     LogResponse = true
                 });
