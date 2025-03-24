@@ -31,7 +31,10 @@ To use Postgres with Kernel Memory:
       "KernelMemory": {
         "Services": {
           "Postgres": {
-            "ConnectionString": "Host=localhost;Port=5432;Username=myuser;Password=mypassword;Database=mydatabase"
+            "ConnectionString": "Host=localhost;Port=5432;Username=myuser;Password=mypassword;Database=mydatabase",
+            "UseHybridSearch": true,
+            "TextSearchLanguage": "english",
+            "RRF_K" : 60,          
           }
         }
       }
@@ -42,16 +45,16 @@ To use Postgres with Kernel Memory:
     // using Microsoft.KernelMemory;
     // using Microsoft.KernelMemory.Postgres;
     // using Microsoft.Extensions.Configuration;
-
+    
     var postgresConfig = new PostgresConfig();
-
+    
     new ConfigurationBuilder()
         .AddJsonFile("appsettings.json")
         .AddJsonFile("appsettings.development.json", optional: true)
         .AddJsonFile("appsettings.Development.json", optional: true)
         .Build()
         .BindSection("KernelMemory:Services:Postgres", postgresConfig);
-
+    
     var memory = new KernelMemoryBuilder()
         .WithPostgresMemoryDb(postgresConfig)
         .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)
@@ -102,6 +105,35 @@ types supported by Kernel Memory.
 
 Overall we recommend not mixing external tables in the same DB used for
 Kernel Memory.
+
+## Hybrid Search
+
+The Postgres memory connector support Hybrid Search.
+
+Hybrid Search configuration parameters:
+
+- **UseHybridSearch**:  This parameter enables (true) or disables (false) hybrid search.
+- **TextSearchLanguage**: This parameter sets the language used during text search.
+- **RRFK**: This parameter allows to configured [RRF](https://en.wikipedia.org/wiki/Mean_reciprocal_rank) for the hybrid search.
+  A smaller value of `RRF_k` gives more weight to higher ranked items, whereas a
+  larger value of `RRF_k` gives more weight to lower ranked items. For hybrid search,
+  this impacts the final score when combining the two scores from the search.
+  It defaults to 50. The range of value should be 1-100.
+
+For more details, check out the
+[pgvector GitHub project](https://github.com/pgvector/pgvector) and
+[this article](https://jkatz05.com/post/postgres/hybrid-search-postgres-pgvector)
+on hybrid search in Postgres.
+
+The connector creates text search index automatically on table creation.
+
+In the case you activate the text search once PostgreSQL tables are created with an older
+version of the connector or you want to change the TextSearchLanguage you will need 
+to create manually the text search index using the column names and table name that
+you had configured.
+
+**SQL to add Text Search Index:** 
+'CREATE INDEX IF NOT EXISTS {indexName} ON {tableName} USING GIN(to_tsvector('TextSearchLanguage',{this._colContent}));
 
 ## Column names and table schema
 
