@@ -33,7 +33,7 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     /// Tokenizer used with the Onnx Generator and Model classes to produce tokens.
     /// This has the potential to contain a null value, depending on the contents of the Model Directory.
     /// </summary>
-    private readonly Tokenizer? _tokenizer = default;
+    private readonly Tokenizer _tokenizer;
 
     /// <summary>
     /// Tokenizer used for GetTokens() and CountTokens()
@@ -85,14 +85,54 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
     }
 
     /// <inheritdoc/>
+    public int CountTokens(string text)
+    {
+        // TODO: Implement with _tokenizer and remove _textTokenizer
+        return this._textTokenizer.CountTokens(text);
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> GetTokens(string text)
+    {
+        // TODO: Implement with _tokenizer and remove _textTokenizer
+        return this._textTokenizer.GetTokens(text);
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<GeneratedTextContent> GenerateTextAsync(
         string prompt,
         TextGenerationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var tokens = this._tokenizer?.Encode(prompt);
-        using var generatorParams = new GeneratorParams(this._model);
+        // TODO: the prompt format should be configurable
+        using var sequences = this._tokenizer.Encode($"<|user|>{prompt}<|end|><|assistant|>");
 
+        using var generatorParams = new GeneratorParams(this._model);
+        this.SetGeneratorParams(generatorParams, options);
+
+        using var tokenizerStream = this._tokenizer.CreateStream();
+        using var generator = new Generator(this._model, generatorParams);
+        generator.AppendTokenSequences(sequences);
+
+        while (!generator.IsDone())
+        {
+            generator.GenerateNextToken();
+            var x = tokenizerStream.Decode(generator.GetSequence(0)[^1]);
+            yield return new GeneratedTextContent(x);
+        }
+
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this._model.Dispose();
+        this._tokenizer.Dispose();
+    }
+
+    private void SetGeneratorParams(GeneratorParams generatorParams, TextGenerationOptions? options)
+    {
         generatorParams.SetSearchOption("max_length", this.MaxTokenTotal);
         generatorParams.SetSearchOption("min_length", this._config.MinLength);
         generatorParams.SetSearchOption("num_return_sequences", this._config.ResultsPerPrompt);
@@ -145,49 +185,5 @@ public sealed class OnnxTextGenerator : ITextGenerator, IDisposable
 
                 break;
         }
-
-        generatorParams.SetInputSequences(tokens);
-
-        using (var generator = new Generator(this._model, generatorParams))
-        {
-            List<int> outputTokens = [];
-
-            while (!generator.IsDone() && cancellationToken.IsCancellationRequested == false)
-            {
-                generator.ComputeLogits();
-                generator.GenerateNextToken();
-
-                outputTokens.AddRange(generator.GetSequence(0));
-
-                if (outputTokens.Count > 0 && this._tokenizer != null)
-                {
-                    var newToken = outputTokens[^1];
-                    yield return this._tokenizer.Decode([newToken]);
-                }
-            }
-        }
-
-        await Task.CompletedTask.ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public int CountTokens(string text)
-    {
-        // TODO: Implement with _tokenizer and remove _textTokenizer
-        return this._textTokenizer.CountTokens(text);
-    }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<string> GetTokens(string text)
-    {
-        // TODO: Implement with _tokenizer and remove _textTokenizer
-        return this._textTokenizer.GetTokens(text);
-    }
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        this._model?.Dispose();
-        this._tokenizer?.Dispose();
     }
 }

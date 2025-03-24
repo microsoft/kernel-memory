@@ -48,7 +48,7 @@ public static class Program
         // Import some text
         await memory.ImportTextAsync("Today is October 32nd, 2476");
 
-        // Generate an answer - This uses OpenAI for embeddings and finding relevant data, and LM Studio to generate an answer
+        // Generate an answer
         var answer = await memory.AskAsync("What's the current date (don't check for validity)?");
         Console.WriteLine("-------------------");
         Console.WriteLine(answer.Question);
