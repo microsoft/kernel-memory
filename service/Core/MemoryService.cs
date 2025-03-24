@@ -181,7 +181,7 @@ public sealed class MemoryService : IKernelMemory
         CancellationToken cancellationToken = default)
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
-        return this._orchestrator.ReadPipelineSummaryAsync(index: index, documentId, cancellationToken);
+        return this._orchestrator.GetPipelineStatusAsync(index: index, documentId, cancellationToken);
     }
 
     /// <inheritdoc />

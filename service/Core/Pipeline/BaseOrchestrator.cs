@@ -155,7 +155,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipeline?> ReadPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipeline?> GetPipelineAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
 
@@ -193,13 +193,13 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public async Task<DataPipelineStatus?> ReadPipelineSummaryAsync(string index, string documentId, CancellationToken cancellationToken = default)
+    public async Task<DataPipelineStatus?> GetPipelineStatusAsync(string index, string documentId, CancellationToken cancellationToken = default)
     {
         index = IndexName.CleanName(index, this._defaultIndexName);
 
         try
         {
-            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
+            DataPipeline? pipeline = await this.GetPipelineAsync(index: index, documentId: documentId, cancellationToken).ConfigureAwait(false);
             return pipeline?.ToDataPipelineStatus();
         }
         catch (PipelineNotFoundException)
@@ -216,7 +216,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         try
         {
             this.Log.LogDebug("Checking if document {Id} on index {Index} is ready", documentId, index);
-            DataPipeline? pipeline = await this.ReadPipelineStatusAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
+            DataPipeline? pipeline = await this.GetPipelineAsync(index: index, documentId, cancellationToken).ConfigureAwait(false);
 
             if (pipeline == null)
             {
@@ -396,7 +396,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
         DataPipeline? previousPipeline;
         try
         {
-            previousPipeline = await this.ReadPipelineStatusAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
+            previousPipeline = await this.GetPipelineAsync(currentPipeline.Index, currentPipeline.DocumentId, cancellationToken).ConfigureAwait(false);
         }
         catch (PipelineNotFoundException)
         {
