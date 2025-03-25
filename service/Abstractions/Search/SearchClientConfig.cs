@@ -116,8 +116,6 @@ public class SearchClientConfig
     /// </summary>
     public string ModeratedAnswer { get; set; } = "Sorry, the generated content contains unsafe or inappropriate information.";
 
-    public string ModelName { get; set; } = string.Empty;
-
     /// <summary>
     /// Verify that the current state is valid.
     /// </summary>
@@ -161,11 +159,6 @@ public class SearchClientConfig
         if (this.FrequencyPenalty is < -2 or > 2)
         {
             throw new ConfigurationException($"SearchClient: {nameof(this.FrequencyPenalty)} must be between -2 and 2");
-        }
-
-        if (string.IsNullOrWhiteSpace(this.ModelName))
-        {
-            throw new ConfigurationException($"SearchClient: {nameof(this.ModelName)} cannot be empty");
         }
     }
 }
