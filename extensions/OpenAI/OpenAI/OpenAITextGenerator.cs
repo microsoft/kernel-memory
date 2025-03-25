@@ -31,7 +31,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
     private readonly OpenAIChatCompletionService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextGenerator> _log;
-    private readonly IContextProvider? _contextProvider;
+    private readonly IContextProvider _contextProvider;
 
     private readonly string _modelName;
 
@@ -92,6 +92,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
         this._client = skClient;
         this._contextProvider = contextProvider;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
+        this._contextProvider = contextProvider ?? new RequestContextProvider();
         this._modelName = config.TextModel;
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
