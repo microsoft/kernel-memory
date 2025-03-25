@@ -72,7 +72,7 @@ public class PlainTextChunker
         "] ", "]\t", "]\n",
         ")", "]",
         // Chinese punctuation
-        "，", "、", "（", "）", "【", "】", "《", "》"
+        "，", "、", "（", "）", "【", "】", "《", "》", "「", "」", "『", "』"
     ]);
 
     // Prioritized list of characters to split inside a sentence when other splits are not found.
