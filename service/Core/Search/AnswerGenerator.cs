@@ -139,6 +139,7 @@ internal class AnswerGenerator
         int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
         double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
         double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
+        var modelName = context.GetCustomTextGenerationModelNameOrDefault(this._config.ModelName);
 
         var options = new TextGenerationOptions
         {
@@ -149,6 +150,7 @@ internal class AnswerGenerator
             FrequencyPenalty = this._config.FrequencyPenalty,
             StopSequences = this._config.StopSequences,
             TokenSelectionBiases = this._config.TokenSelectionBiases,
+            ModelName = modelName,
         };
 
         if (this._log.IsEnabled(LogLevel.Debug))

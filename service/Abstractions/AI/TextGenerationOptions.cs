@@ -58,4 +58,6 @@ public class TextGenerationOptions
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     public Dictionary<int, float> TokenSelectionBiases { get; set; } = [];
+
+    public string ModelName { get; set; } = string.Empty;
 }

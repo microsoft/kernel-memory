@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI.OpenAI.Internals;
+using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -30,8 +31,9 @@ public sealed class OpenAITextGenerator : ITextGenerator
     private readonly OpenAIChatCompletionService _client;
     private readonly ITextTokenizer _textTokenizer;
     private readonly ILogger<OpenAITextGenerator> _log;
+    private readonly IContextProvider? _contextProvider;
 
-    private readonly string _textModel;
+    private readonly string _modelName;
 
     /// <inheritdoc/>
     public int MaxTokenTotal { get; }
@@ -40,18 +42,17 @@ public sealed class OpenAITextGenerator : ITextGenerator
     /// Create a new instance.
     /// </summary>
     /// <param name="config">Client and model configuration</param>
+    /// <param name="contextProvider">Request context provider with runtime configuration overrides</param>
     /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
     /// <param name="loggerFactory">App logger factory</param>
     /// <param name="httpClient">Optional HTTP client with custom settings</param>
     public OpenAITextGenerator(
-        OpenAIConfig config,
-        ITextTokenizer? textTokenizer = null,
+        OpenAIConfig config, IContextProvider? contextProvider = null, ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null,
         HttpClient? httpClient = null)
         : this(
             config,
-            OpenAIClientBuilder.Build(config, httpClient, loggerFactory),
-            textTokenizer,
+            OpenAIClientBuilder.Build(config, httpClient, loggerFactory), contextProvider, textTokenizer,
             loggerFactory)
     {
     }
@@ -61,17 +62,16 @@ public sealed class OpenAITextGenerator : ITextGenerator
     /// </summary>
     /// <param name="config">Model configuration</param>
     /// <param name="openAIClient">Custom OpenAI client, already configured</param>
+    /// <param name="contextProvider">Request context provider with runtime configuration overrides</param>
     /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
     /// <param name="loggerFactory">App logger factory</param>
     public OpenAITextGenerator(
         OpenAIConfig config,
-        OpenAIClient openAIClient,
-        ITextTokenizer? textTokenizer = null,
+        OpenAIClient openAIClient, IContextProvider? contextProvider = null, ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
         : this(
             config,
-            SkClientBuilder.BuildChatClient(config.TextModel, openAIClient, loggerFactory),
-            textTokenizer,
+            SkClientBuilder.BuildChatClient(config.TextModel, openAIClient, loggerFactory), contextProvider, textTokenizer,
             loggerFactory)
     {
     }
@@ -81,17 +81,18 @@ public sealed class OpenAITextGenerator : ITextGenerator
     /// </summary>
     /// <param name="config">Model configuration</param>
     /// <param name="skClient">Custom Semantic Kernel client, already configured</param>
+    /// <param name="contextProvider">Request context provider with runtime configuration overrides</param>
     /// <param name="textTokenizer">Text tokenizer, possibly matching the model used</param>
     /// <param name="loggerFactory">App logger factory</param>
     public OpenAITextGenerator(
         OpenAIConfig config,
-        OpenAIChatCompletionService skClient,
-        ITextTokenizer? textTokenizer = null,
+        OpenAIChatCompletionService skClient, IContextProvider? contextProvider = null, ITextTokenizer? textTokenizer = null,
         ILoggerFactory? loggerFactory = null)
     {
         this._client = skClient;
+        this._contextProvider = contextProvider;
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
-        this._textModel = config.TextModel;
+        this._modelName = config.TextModel;
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
         if (textTokenizer == null && !string.IsNullOrEmpty(config.TextModelTokenizer))
@@ -129,13 +130,15 @@ public sealed class OpenAITextGenerator : ITextGenerator
         TextGenerationOptions options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        var modelName = this._contextProvider.GetContext().GetCustomTextGenerationModelNameOrDefault(this._modelName);
         var skOptions = new OpenAIPromptExecutionSettings
         {
             MaxTokens = options.MaxTokens,
             Temperature = options.Temperature,
             FrequencyPenalty = options.FrequencyPenalty,
             PresencePenalty = options.PresencePenalty,
-            TopP = options.NucleusSampling
+            TopP = options.NucleusSampling,
+            ModelId = modelName
         };
 
         if (options.StopSequences is { Count: > 0 })
@@ -178,7 +181,7 @@ public sealed class OpenAITextGenerator : ITextGenerator
                     Timestamp = (DateTimeOffset?)x.Metadata["CreatedAt"] ?? DateTimeOffset.UtcNow,
                     ServiceType = "OpenAI",
                     ModelType = Constants.ModelType.TextGeneration,
-                    ModelName = this._textModel,
+                    ModelName = modelName,
                     ServiceTokensIn = usage!.InputTokenCount,
                     ServiceTokensOut = usage.OutputTokenCount,
                     ServiceReasoningTokens = usage.OutputTokenDetails?.ReasoningTokenCount
