@@ -90,9 +90,8 @@ public sealed class OpenAITextGenerator : ITextGenerator
         ILoggerFactory? loggerFactory = null)
     {
         this._client = skClient;
-        this._contextProvider = contextProvider;
-        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
         this._contextProvider = contextProvider ?? new RequestContextProvider();
+        this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<OpenAITextGenerator>();
         this._modelName = config.TextModel;
         this.MaxTokenTotal = config.TextModelMaxTokenTotal;
 
