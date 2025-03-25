@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.Context;
 using OpenAI;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -260,6 +261,7 @@ public static partial class DependencyInjection
         return services
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
+                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 textTokenizer: textTokenizer,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
                 httpClient));
@@ -276,6 +278,7 @@ public static partial class DependencyInjection
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
                 openAIClient: openAIClient,
+                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 textTokenizer: textTokenizer,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }

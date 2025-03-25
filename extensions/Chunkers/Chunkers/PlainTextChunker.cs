@@ -62,7 +62,7 @@ public class PlainTextChunker
         ".", "?", "!", "⁉", "⁈", "⁇", "…",
         // Chinese punctuation
         "。", "？", "！", "；", "："
-]);
+    ]);
 
     // Prioritized list of characters to split inside a sentence.
     private static readonly SeparatorTrie s_potentialSeparators = new([
