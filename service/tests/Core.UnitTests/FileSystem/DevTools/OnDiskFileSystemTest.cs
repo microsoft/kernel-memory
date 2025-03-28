@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.UnitTests.FileSystem.DevTools;
 

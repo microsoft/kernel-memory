@@ -3,7 +3,6 @@
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.AzureAISearch.UnitTests;
 

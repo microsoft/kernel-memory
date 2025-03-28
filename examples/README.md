@@ -21,6 +21,7 @@ Some examples about how to use Kernel Memory.
 8. Local models and external connectors
     * [Using custom LLMs](104-dotnet-custom-LLM)
     * [Using local LLMs with Ollama](212-dotnet-ollama)
+    * [Using local LLMs with ONNX models](213-onnx)
     * [Using local LLMs with llama.cpp via LlamaSharp](105-dotnet-serverless-llamasharp)
     * [Using local models with LM Studio](208-dotnet-lmstudio)
     * [Using Semantic Kernel LLM connectors](107-dotnet-SemanticKernel-TextCompletion)

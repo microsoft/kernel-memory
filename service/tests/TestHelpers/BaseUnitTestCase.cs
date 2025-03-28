@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Xunit.Abstractions;
-
 namespace Microsoft.KM.TestHelpers;
 
 public abstract class BaseUnitTestCase : IDisposable

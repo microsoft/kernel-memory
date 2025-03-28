@@ -15,7 +15,7 @@ The example runs a couple of memory ingestions and ask questions verifying the e
 
 # Prepare the example
 
-Before running the code, create a `appsettings.development.json` file (or edit `appsettings.json`),
+Before running the code, create a `appsettings.Development.json` file (or edit `appsettings.json`),
 overriding the values. The most important are endpoints and authentication details.
 
 Note: the information stored in `appsettings.Development.json` are used only when

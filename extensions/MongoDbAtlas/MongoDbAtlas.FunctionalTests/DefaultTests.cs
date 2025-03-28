@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MongoDbAtlas;
 using Microsoft.KM.Core.FunctionalTests.DefaultTestCases;

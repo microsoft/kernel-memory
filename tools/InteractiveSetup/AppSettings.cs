@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
 /// <summary>
-/// Handle settings stored in appsettings.development.json
+/// Handle settings stored in appsettings.Development.json
 /// </summary>
 internal static class AppSettings
 {
@@ -95,7 +95,7 @@ internal static class AppSettings
     }
 
     /// <summary>
-    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.development.json
+    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.Development.json
     /// Note: the code reads from the current folder, which is usually service/Service. Using ConfigurationBuilder would read from
     ///       bin/Debug/net7.0/, causing problems because GetGlobalConfig doesn't.
     /// </summary>

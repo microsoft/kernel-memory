@@ -4,8 +4,6 @@ using System.Diagnostics;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KM.TestHelpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Chunkers.UnitTests;
 

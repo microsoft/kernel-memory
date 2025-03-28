@@ -39,6 +39,12 @@ public class AWSS3Config
     /// </summary>
     public string BucketName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// When true, uses path-style addressing for S3 requests (e.g., https://s3.example.com/bucket-name/object).
+    /// This is required for S3-compatible services like MinIO that do not support virtual-hosted–style URLs.
+    /// </summary>
+    public bool ForcePathStyle { get; set; } = false;
+
     public void Validate()
     {
         if (this.Auth == AuthTypes.Unknown)

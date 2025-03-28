@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\extensions\KM\KernelMemory\KernelMemory.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     </ItemGroup>
 
     <PropertyGroup>

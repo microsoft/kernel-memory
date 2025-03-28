@@ -4,7 +4,6 @@ using System.Reflection;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.MemoryDb.Elasticsearch.Internals;
-using Xunit;
 
 namespace Microsoft.Elasticsearch.FunctionalTests.Additional;
 
