@@ -55,7 +55,7 @@ public class Chunk
     {
         get
         {
-            return this.Metadata.TryGetValue(MetaPageNumber, out var value) && JsonSerializer.Deserialize<bool>(value);
+            return this.Metadata.TryGetValue(MetaSentencesAreComplete, out var value) && JsonSerializer.Deserialize<bool>(value);
         }
     }
 

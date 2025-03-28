@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.KernelMemory.Context;
+using Microsoft.KernelMemory.DataFormats;
 
 namespace Microsoft.KernelMemory.Pipeline;
 
@@ -182,6 +183,13 @@ public sealed class DataPipeline
         [JsonPropertyOrder(16)]
         [JsonPropertyName("content_sha256")]
         public string ContentSHA256 { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Cached content object for structured data that will reduce deserializing operations
+        /// </summary>
+        [JsonPropertyOrder(17)]
+        [JsonPropertyName("file_content_object")]
+        public FileContent? FileContentObject { get; set; } = null;
     }
 
     public class FileDetails : FileDetailsBase

@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -9,6 +11,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Chunkers;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.Context;
+using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Extensions;
 using Microsoft.KernelMemory.Pipeline;
@@ -107,37 +110,50 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                     continue;
                 }
 
-                // Partition only the original text
-                if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedText)
+                // Partition only the structured content
+                if (file.ArtifactType != DataPipeline.ArtifactTypes.ExtractedContent)
                 {
-                    this._log.LogTrace("Skipping file {0} (not original text)", file.Name);
+                    this._log.LogTrace("Skipping file {0} (not structured content)", file.Name);
                     continue;
                 }
 
-                // Use a different partitioning strategy depending on the file type
-                List<string> chunks;
-                BinaryData fileContent = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
-                string chunksMimeType = MimeTypes.PlainText;
-
-                // Skip empty partitions. Also: partitionContent.ToString() throws an exception if there are no bytes.
-                if (fileContent.IsEmpty) { continue; }
+                List<StructuredChunk> chunks = [];
+                this._log.LogDebug("Partitioning text file {0}", file.Name);
+                
+                var structuredChunks = file.FileContentObject?.Sections;
+                if (structuredChunks is null)
+                {
+                    BinaryData binary = await this._orchestrator.ReadFileAsync(pipeline, file.Name, cancellationToken).ConfigureAwait(false);
+                    if (binary.IsEmpty)
+                    {
+                        structuredChunks = [];
+                    }
+                    else
+                    {
+                        var fileContent = JsonSerializer.Deserialize<FileContent>(binary.ToString());
+                        structuredChunks = fileContent?.Sections ?? [];
+                    }
+                }
 
                 switch (file.MimeType)
                 {
                     case MimeTypes.PlainText:
                     {
-                        this._log.LogDebug("Partitioning text file {0}", file.Name);
-                        string content = fileContent.ToString();
-                        chunks = this._plainTextChunker.Split(content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens, ChunkHeader = chunkHeader });
+                        foreach (var structuredChunk in structuredChunks)
+                        {
+                            var chunksInAPage = this._plainTextChunker.Split(structuredChunk.Content, new PlainTextChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens, ChunkHeader = chunkHeader });
+                            chunks.AddRange(chunksInAPage.Select(c => new StructuredChunk { Content = c, PageNumber = structuredChunk.PageNumber }));
+                        }
                         break;
                     }
 
                     case MimeTypes.MarkDown:
                     {
-                        this._log.LogDebug("Partitioning MarkDown file {0}", file.Name);
-                        string content = fileContent.ToString();
-                        chunksMimeType = MimeTypes.MarkDown;
-                        chunks = this._markDownChunker.Split(content, new MarkDownChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens, ChunkHeader = chunkHeader });
+                        foreach (var structuredChunk in structuredChunks)
+                        {
+                            var chunksInAPage = this._markDownChunker.Split(structuredChunk.Content, new MarkDownChunkerOptions { MaxTokensPerChunk = maxTokensPerChunk, Overlap = overlappingTokens, ChunkHeader = chunkHeader });
+                            chunks.AddRange(chunksInAPage.Select(c => new StructuredChunk { Content = c, PageNumber = structuredChunk.PageNumber }));
+                        }
                         break;
                     }
 
@@ -156,8 +172,8 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                 for (int partitionNumber = 0; partitionNumber < chunks.Count; partitionNumber++)
                 {
                     // TODO: turn partitions in objects with more details, e.g. page number
-                    string text = chunks[partitionNumber];
-                    int sectionNumber = 0; // TODO: use this to store the page number (if any)
+                    string text = chunks[partitionNumber].Content;
+                    int sectionNumber = chunks[partitionNumber].PageNumber;
                     BinaryData textData = new(text);
 
                     var destFile = uploadedFile.GetPartitionFileName(partitionNumber);
@@ -169,7 +185,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
                         ParentId = uploadedFile.Id,
                         Name = destFile,
                         Size = text.Length,
-                        MimeType = chunksMimeType,
+                        MimeType = file.MimeType,
                         ArtifactType = DataPipeline.ArtifactTypes.TextPartition,
                         PartitionNumber = partitionNumber,
                         SectionNumber = sectionNumber,
@@ -203,4 +219,10 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
         return new ConfigurationException(errMsg);
     }
 #pragma warning restore CA2254
+
+    internal class StructuredChunk
+    {
+        public string Content { get; set; }
+        public int PageNumber { get; set; }
+    }
 }
