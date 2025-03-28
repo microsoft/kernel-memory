@@ -83,7 +83,7 @@ public sealed class MsWordDecoder : IContentDecoder
                         // Note: no trimming, use original spacing when working with pages
                         string pageContent = sb.ToString().NormalizeNewlines(false);
                         sb.Clear();
-                        result.Sections.Add(new Chunk(pageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
+                        result.Sections.Add(new Chunk(pageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true, pageNumber)));
                         pageNumber++;
                     }
 
@@ -93,7 +93,7 @@ public sealed class MsWordDecoder : IContentDecoder
 
             // Note: no trimming, use original spacing when working with pages
             string lastPageContent = sb.ToString().NormalizeNewlines(false);
-            result.Sections.Add(new Chunk(lastPageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true)));
+            result.Sections.Add(new Chunk(lastPageContent, pageNumber, Chunk.Meta(sentencesAreComplete: true, pageNumber)));
 
             return Task.FromResult(result);
         }

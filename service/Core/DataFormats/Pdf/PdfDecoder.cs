@@ -60,7 +60,7 @@ public sealed class PdfDecoder : IContentDecoder
             // Note: no trimming, use original spacing when working with pages
             string pageContent = ContentOrderTextExtractor.GetText(page).NormalizeNewlines(false) ?? string.Empty;
 
-            result.Sections.Add(new Chunk(pageContent, page.Number, Chunk.Meta(sentencesAreComplete: false)));
+            result.Sections.Add(new Chunk(pageContent, page.Number, Chunk.Meta(false, page.Number)));
         }
 
         return Task.FromResult(result);
