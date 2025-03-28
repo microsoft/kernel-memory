@@ -119,7 +119,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
 
                 List<StructuredChunk> chunks = [];
                 this._log.LogDebug("Partitioning text file {0}", file.Name);
-                
+
                 var structuredChunks = file.FileContentObject?.Sections;
                 if (structuredChunks is null)
                 {
@@ -222,7 +222,7 @@ public sealed class TextPartitioningHandler : IPipelineStepHandler
 
     internal class StructuredChunk
     {
-        public string Content { get; set; }
+        public required string Content { get; set; }
         public int PageNumber { get; set; }
     }
 }
