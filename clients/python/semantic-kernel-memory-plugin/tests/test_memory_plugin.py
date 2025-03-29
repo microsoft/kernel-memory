@@ -1,20 +1,41 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import asyncio
 from dotenv import load_dotenv
 import os
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.function_choice_behavior import (
+    FunctionChoiceBehavior,
+)
 from semantic_kernel.contents.chat_history import ChatHistory
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
-    AzureChatPromptExecutionSettings, )
+    AzureChatPromptExecutionSettings,
+)
 
 from semantic_kernel_memory_plugin.memory_plugin import MemoryPlugin
-from kernel_memory_client import Client, AuthenticatedClient
-from dotenv import load_dotenv, find_dotenv
+from kernel_memory_client import AuthenticatedClient
+from dotenv import find_dotenv
 
 
 async def main():
@@ -27,7 +48,8 @@ async def main():
     memory_client = AuthenticatedClient(
         base_url=os.environ.get("MEMORY_SERVICE_URL"),
         token=os.environ.get("MEMORY_SERVICE_API_KEY"),
-        verify_ssl=False)
+        verify_ssl=False,
+    )
 
     # Initialize the kernel
     kernel = Kernel()
