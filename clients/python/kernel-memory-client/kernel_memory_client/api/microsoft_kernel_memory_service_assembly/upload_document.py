@@ -1,5 +1,24 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from http import HTTPStatus
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 import httpx
 
@@ -31,8 +50,8 @@ def _get_kwargs(
 
 
 def _parse_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Optional[Union[Any, ProblemDetails, UploadAccepted]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Any | ProblemDetails | UploadAccepted | None:
     if response.status_code == 200:
         response_200 = cast(Any, None)
         return response_200
@@ -63,8 +82,8 @@ def _parse_response(
 
 
 def _build_response(
-    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
-) -> Response[Union[Any, ProblemDetails, UploadAccepted]]:
+    *, client: AuthenticatedClient | Client, response: httpx.Response
+) -> Response[Any | ProblemDetails | UploadAccepted]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -75,9 +94,9 @@ def _build_response(
 
 def sync_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: UploadDocumentBody,
-) -> Response[Union[Any, ProblemDetails, UploadAccepted]]:
+) -> Response[Any | ProblemDetails | UploadAccepted]:
     """Upload a new document to the knowledge base
 
      Upload a document consisting of one or more files to extract memories from. The extraction process
@@ -108,9 +127,9 @@ def sync_detailed(
 
 def sync(
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: UploadDocumentBody,
-) -> Optional[Union[Any, ProblemDetails, UploadAccepted]]:
+) -> Any | ProblemDetails | UploadAccepted | None:
     """Upload a new document to the knowledge base
 
      Upload a document consisting of one or more files to extract memories from. The extraction process
@@ -136,9 +155,9 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: UploadDocumentBody,
-) -> Response[Union[Any, ProblemDetails, UploadAccepted]]:
+) -> Response[Any | ProblemDetails | UploadAccepted]:
     """Upload a new document to the knowledge base
 
      Upload a document consisting of one or more files to extract memories from. The extraction process
@@ -167,9 +186,9 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: Union[AuthenticatedClient, Client],
+    client: AuthenticatedClient | Client,
     body: UploadDocumentBody,
-) -> Optional[Union[Any, ProblemDetails, UploadAccepted]]:
+) -> Any | ProblemDetails | UploadAccepted | None:
     """Upload a new document to the knowledge base
 
      Upload a document consisting of one or more files to extract memories from. The extraction process

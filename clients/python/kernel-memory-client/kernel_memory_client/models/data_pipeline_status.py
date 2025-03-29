@@ -1,3 +1,22 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import datetime
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
@@ -30,16 +49,16 @@ class DataPipelineStatus:
         completed_steps (Union[None, Unset, list[str]]):
     """
 
-    completed: Union[Unset, bool] = UNSET
-    empty: Union[Unset, bool] = UNSET
-    index: Union[None, Unset, str] = UNSET
-    document_id: Union[None, Unset, str] = UNSET
+    completed: Unset | bool = UNSET
+    empty: Unset | bool = UNSET
+    index: None | Unset | str = UNSET
+    document_id: None | Unset | str = UNSET
     tags: Union["DataPipelineStatusTagsType0", None, Unset] = UNSET
-    creation: Union[Unset, datetime.datetime] = UNSET
-    last_update: Union[Unset, datetime.datetime] = UNSET
-    steps: Union[None, Unset, list[str]] = UNSET
-    remaining_steps: Union[None, Unset, list[str]] = UNSET
-    completed_steps: Union[None, Unset, list[str]] = UNSET
+    creation: Unset | datetime.datetime = UNSET
+    last_update: Unset | datetime.datetime = UNSET
+    steps: None | Unset | list[str] = UNSET
+    remaining_steps: None | Unset | list[str] = UNSET
+    completed_steps: None | Unset | list[str] = UNSET
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.data_pipeline_status_tags_type_0 import DataPipelineStatusTagsType0
@@ -48,19 +67,19 @@ class DataPipelineStatus:
 
         empty = self.empty
 
-        index: Union[None, Unset, str]
+        index: None | Unset | str
         if isinstance(self.index, Unset):
             index = UNSET
         else:
             index = self.index
 
-        document_id: Union[None, Unset, str]
+        document_id: None | Unset | str
         if isinstance(self.document_id, Unset):
             document_id = UNSET
         else:
             document_id = self.document_id
 
-        tags: Union[None, Unset, dict[str, Any]]
+        tags: None | Unset | dict[str, Any]
         if isinstance(self.tags, Unset):
             tags = UNSET
         elif isinstance(self.tags, DataPipelineStatusTagsType0):
@@ -68,15 +87,15 @@ class DataPipelineStatus:
         else:
             tags = self.tags
 
-        creation: Union[Unset, str] = UNSET
+        creation: Unset | str = UNSET
         if not isinstance(self.creation, Unset):
             creation = self.creation.isoformat()
 
-        last_update: Union[Unset, str] = UNSET
+        last_update: Unset | str = UNSET
         if not isinstance(self.last_update, Unset):
             last_update = self.last_update.isoformat()
 
-        steps: Union[None, Unset, list[str]]
+        steps: None | Unset | list[str]
         if isinstance(self.steps, Unset):
             steps = UNSET
         elif isinstance(self.steps, list):
@@ -85,7 +104,7 @@ class DataPipelineStatus:
         else:
             steps = self.steps
 
-        remaining_steps: Union[None, Unset, list[str]]
+        remaining_steps: None | Unset | list[str]
         if isinstance(self.remaining_steps, Unset):
             remaining_steps = UNSET
         elif isinstance(self.remaining_steps, list):
@@ -94,7 +113,7 @@ class DataPipelineStatus:
         else:
             remaining_steps = self.remaining_steps
 
-        completed_steps: Union[None, Unset, list[str]]
+        completed_steps: None | Unset | list[str]
         if isinstance(self.completed_steps, Unset):
             completed_steps = UNSET
         elif isinstance(self.completed_steps, list):
@@ -137,7 +156,7 @@ class DataPipelineStatus:
 
         empty = d.pop("empty", UNSET)
 
-        def _parse_index(data: object) -> Union[None, Unset, str]:
+        def _parse_index(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -146,7 +165,7 @@ class DataPipelineStatus:
 
         index = _parse_index(d.pop("index", UNSET))
 
-        def _parse_document_id(data: object) -> Union[None, Unset, str]:
+        def _parse_document_id(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -173,20 +192,20 @@ class DataPipelineStatus:
         tags = _parse_tags(d.pop("tags", UNSET))
 
         _creation = d.pop("creation", UNSET)
-        creation: Union[Unset, datetime.datetime]
+        creation: Unset | datetime.datetime
         if isinstance(_creation, Unset):
             creation = UNSET
         else:
             creation = isoparse(_creation)
 
         _last_update = d.pop("last_update", UNSET)
-        last_update: Union[Unset, datetime.datetime]
+        last_update: Unset | datetime.datetime
         if isinstance(_last_update, Unset):
             last_update = UNSET
         else:
             last_update = isoparse(_last_update)
 
-        def _parse_steps(data: object) -> Union[None, Unset, list[str]]:
+        def _parse_steps(data: object) -> None | Unset | list[str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -203,7 +222,7 @@ class DataPipelineStatus:
 
         steps = _parse_steps(d.pop("steps", UNSET))
 
-        def _parse_remaining_steps(data: object) -> Union[None, Unset, list[str]]:
+        def _parse_remaining_steps(data: object) -> None | Unset | list[str]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -220,7 +239,7 @@ class DataPipelineStatus:
 
         remaining_steps = _parse_remaining_steps(d.pop("remaining_steps", UNSET))
 
-        def _parse_completed_steps(data: object) -> Union[None, Unset, list[str]]:
+        def _parse_completed_steps(data: object) -> None | Unset | list[str]:
             if data is None:
                 return data
             if isinstance(data, Unset):

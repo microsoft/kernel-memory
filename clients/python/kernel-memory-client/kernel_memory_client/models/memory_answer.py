@@ -1,3 +1,22 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
@@ -27,20 +46,20 @@ class MemoryAnswer:
         relevant_sources (Union[None, Unset, list['Citation']]):
     """
 
-    stream_state: Union[Unset, StreamStates] = UNSET
-    question: Union[None, Unset, str] = UNSET
-    no_result: Union[Unset, bool] = UNSET
-    no_result_reason: Union[None, Unset, str] = UNSET
-    text: Union[None, Unset, str] = UNSET
-    token_usage: Union[None, Unset, list["TokenUsage"]] = UNSET
-    relevant_sources: Union[None, Unset, list["Citation"]] = UNSET
+    stream_state: Unset | StreamStates = UNSET
+    question: None | Unset | str = UNSET
+    no_result: Unset | bool = UNSET
+    no_result_reason: None | Unset | str = UNSET
+    text: None | Unset | str = UNSET
+    token_usage: None | Unset | list["TokenUsage"] = UNSET
+    relevant_sources: None | Unset | list["Citation"] = UNSET
 
     def to_dict(self) -> dict[str, Any]:
-        stream_state: Union[Unset, str] = UNSET
+        stream_state: Unset | str = UNSET
         if not isinstance(self.stream_state, Unset):
             stream_state = self.stream_state.value
 
-        question: Union[None, Unset, str]
+        question: None | Unset | str
         if isinstance(self.question, Unset):
             question = UNSET
         else:
@@ -48,19 +67,19 @@ class MemoryAnswer:
 
         no_result = self.no_result
 
-        no_result_reason: Union[None, Unset, str]
+        no_result_reason: None | Unset | str
         if isinstance(self.no_result_reason, Unset):
             no_result_reason = UNSET
         else:
             no_result_reason = self.no_result_reason
 
-        text: Union[None, Unset, str]
+        text: None | Unset | str
         if isinstance(self.text, Unset):
             text = UNSET
         else:
             text = self.text
 
-        token_usage: Union[None, Unset, list[dict[str, Any]]]
+        token_usage: None | Unset | list[dict[str, Any]]
         if isinstance(self.token_usage, Unset):
             token_usage = UNSET
         elif isinstance(self.token_usage, list):
@@ -72,7 +91,7 @@ class MemoryAnswer:
         else:
             token_usage = self.token_usage
 
-        relevant_sources: Union[None, Unset, list[dict[str, Any]]]
+        relevant_sources: None | Unset | list[dict[str, Any]]
         if isinstance(self.relevant_sources, Unset):
             relevant_sources = UNSET
         elif isinstance(self.relevant_sources, list):
@@ -110,13 +129,13 @@ class MemoryAnswer:
 
         d = dict(src_dict)
         _stream_state = d.pop("streamState", UNSET)
-        stream_state: Union[Unset, StreamStates]
+        stream_state: Unset | StreamStates
         if isinstance(_stream_state, Unset):
             stream_state = UNSET
         else:
             stream_state = StreamStates(_stream_state)
 
-        def _parse_question(data: object) -> Union[None, Unset, str]:
+        def _parse_question(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -127,7 +146,7 @@ class MemoryAnswer:
 
         no_result = d.pop("noResult", UNSET)
 
-        def _parse_no_result_reason(data: object) -> Union[None, Unset, str]:
+        def _parse_no_result_reason(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -136,7 +155,7 @@ class MemoryAnswer:
 
         no_result_reason = _parse_no_result_reason(d.pop("noResultReason", UNSET))
 
-        def _parse_text(data: object) -> Union[None, Unset, str]:
+        def _parse_text(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -145,7 +164,7 @@ class MemoryAnswer:
 
         text = _parse_text(d.pop("text", UNSET))
 
-        def _parse_token_usage(data: object) -> Union[None, Unset, list["TokenUsage"]]:
+        def _parse_token_usage(data: object) -> None | Unset | list["TokenUsage"]:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -167,7 +186,7 @@ class MemoryAnswer:
 
         token_usage = _parse_token_usage(d.pop("tokenUsage", UNSET))
 
-        def _parse_relevant_sources(data: object) -> Union[None, Unset, list["Citation"]]:
+        def _parse_relevant_sources(data: object) -> None | Unset | list["Citation"]:
             if data is None:
                 return data
             if isinstance(data, Unset):

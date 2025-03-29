@@ -1,3 +1,22 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 
@@ -26,59 +45,59 @@ class Citation:
         partitions (Union[None, Unset, list['Partition']]):
     """
 
-    link: Union[None, Unset, str] = UNSET
-    index: Union[None, Unset, str] = UNSET
-    document_id: Union[None, Unset, str] = UNSET
-    file_id: Union[None, Unset, str] = UNSET
-    source_content_type: Union[None, Unset, str] = UNSET
-    source_name: Union[None, Unset, str] = UNSET
-    source_url: Union[None, Unset, str] = UNSET
-    partitions: Union[None, Unset, list["Partition"]] = UNSET
+    link: None | Unset | str = UNSET
+    index: None | Unset | str = UNSET
+    document_id: None | Unset | str = UNSET
+    file_id: None | Unset | str = UNSET
+    source_content_type: None | Unset | str = UNSET
+    source_name: None | Unset | str = UNSET
+    source_url: None | Unset | str = UNSET
+    partitions: None | Unset | list["Partition"] = UNSET
 
     def to_dict(self) -> dict[str, Any]:
-        link: Union[None, Unset, str]
+        link: None | Unset | str
         if isinstance(self.link, Unset):
             link = UNSET
         else:
             link = self.link
 
-        index: Union[None, Unset, str]
+        index: None | Unset | str
         if isinstance(self.index, Unset):
             index = UNSET
         else:
             index = self.index
 
-        document_id: Union[None, Unset, str]
+        document_id: None | Unset | str
         if isinstance(self.document_id, Unset):
             document_id = UNSET
         else:
             document_id = self.document_id
 
-        file_id: Union[None, Unset, str]
+        file_id: None | Unset | str
         if isinstance(self.file_id, Unset):
             file_id = UNSET
         else:
             file_id = self.file_id
 
-        source_content_type: Union[None, Unset, str]
+        source_content_type: None | Unset | str
         if isinstance(self.source_content_type, Unset):
             source_content_type = UNSET
         else:
             source_content_type = self.source_content_type
 
-        source_name: Union[None, Unset, str]
+        source_name: None | Unset | str
         if isinstance(self.source_name, Unset):
             source_name = UNSET
         else:
             source_name = self.source_name
 
-        source_url: Union[None, Unset, str]
+        source_url: None | Unset | str
         if isinstance(self.source_url, Unset):
             source_url = UNSET
         else:
             source_url = self.source_url
 
-        partitions: Union[None, Unset, list[dict[str, Any]]]
+        partitions: None | Unset | list[dict[str, Any]]
         if isinstance(self.partitions, Unset):
             partitions = UNSET
         elif isinstance(self.partitions, list):
@@ -117,7 +136,7 @@ class Citation:
 
         d = dict(src_dict)
 
-        def _parse_link(data: object) -> Union[None, Unset, str]:
+        def _parse_link(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -126,7 +145,7 @@ class Citation:
 
         link = _parse_link(d.pop("link", UNSET))
 
-        def _parse_index(data: object) -> Union[None, Unset, str]:
+        def _parse_index(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -135,7 +154,7 @@ class Citation:
 
         index = _parse_index(d.pop("index", UNSET))
 
-        def _parse_document_id(data: object) -> Union[None, Unset, str]:
+        def _parse_document_id(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -144,7 +163,7 @@ class Citation:
 
         document_id = _parse_document_id(d.pop("documentId", UNSET))
 
-        def _parse_file_id(data: object) -> Union[None, Unset, str]:
+        def _parse_file_id(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -153,7 +172,7 @@ class Citation:
 
         file_id = _parse_file_id(d.pop("fileId", UNSET))
 
-        def _parse_source_content_type(data: object) -> Union[None, Unset, str]:
+        def _parse_source_content_type(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -162,7 +181,7 @@ class Citation:
 
         source_content_type = _parse_source_content_type(d.pop("sourceContentType", UNSET))
 
-        def _parse_source_name(data: object) -> Union[None, Unset, str]:
+        def _parse_source_name(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -171,7 +190,7 @@ class Citation:
 
         source_name = _parse_source_name(d.pop("sourceName", UNSET))
 
-        def _parse_source_url(data: object) -> Union[None, Unset, str]:
+        def _parse_source_url(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -180,7 +199,7 @@ class Citation:
 
         source_url = _parse_source_url(d.pop("sourceUrl", UNSET))
 
-        def _parse_partitions(data: object) -> Union[None, Unset, list["Partition"]]:
+        def _parse_partitions(data: object) -> None | Unset | list["Partition"]:
             if data is None:
                 return data
             if isinstance(data, Unset):

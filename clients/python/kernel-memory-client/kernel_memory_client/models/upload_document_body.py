@@ -1,3 +1,22 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import json
 from collections.abc import Mapping
 from io import BytesIO
@@ -25,28 +44,27 @@ class UploadDocumentBody:
         files (Union[Unset, list[File]]): Files to process and extract memories from.
     """
 
-    index: Union[Unset, str] = UNSET
-    document_id: Union[Unset, str] = UNSET
+    index: Unset | str = UNSET
+    document_id: Unset | str = UNSET
     tags: Union[Unset, "UploadDocumentBodyTags"] = UNSET
-    steps: Union[Unset, list[str]] = UNSET
-    files: Union[Unset, list[File]] = UNSET
-    additional_properties: dict[str, Any] = _attrs_field(init=False,
-                                                         factory=dict)
+    steps: Unset | list[str] = UNSET
+    files: Unset | list[File] = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         index = self.index
 
         document_id = self.document_id
 
-        tags: Union[Unset, dict[str, Any]] = UNSET
+        tags: Unset | dict[str, Any] = UNSET
         if not isinstance(self.tags, Unset):
             tags = self.tags.to_dict()
 
-        steps: Union[Unset, list[str]] = UNSET
+        steps: Unset | list[str] = UNSET
         if not isinstance(self.steps, Unset):
             steps = self.steps
 
-        files: Union[Unset, list[FileJsonType]] = UNSET
+        files: Unset | list[FileJsonType] = UNSET
         if not isinstance(self.files, Unset):
             files = []
             for files_item_data in self.files:
@@ -71,26 +89,24 @@ class UploadDocumentBody:
         return field_dict
 
     def to_multipart(self) -> dict[str, Any]:
-        index = self.index if isinstance(
-            self.index, Unset) else (None, str(self.index).encode(),
-                                     "text/plain")
+        index = self.index if isinstance(self.index, Unset) else (None, str(self.index).encode(), "text/plain")
 
-        document_id = (self.document_id
-                       if isinstance(self.document_id, Unset) else
-                       (None, str(self.document_id).encode(), "text/plain"))
+        document_id = (
+            self.document_id
+            if isinstance(self.document_id, Unset)
+            else (None, str(self.document_id).encode(), "text/plain")
+        )
 
-        tags: Union[Unset, tuple[None, bytes, str]] = UNSET
+        tags: Unset | tuple[None, bytes, str] = UNSET
         if not isinstance(self.tags, Unset):
-            tags = (None, json.dumps(self.tags.to_dict()).encode(),
-                    "application/json")
+            tags = (None, json.dumps(self.tags.to_dict()).encode(), "application/json")
 
-        steps: Union[Unset, tuple[None, bytes, str]] = UNSET
+        steps: Unset | tuple[None, bytes, str] = UNSET
         if not isinstance(self.steps, Unset):
             _temp_steps = self.steps
-            steps = (None, json.dumps(_temp_steps).encode(),
-                     "application/json")
+            steps = (None, json.dumps(_temp_steps).encode(), "application/json")
 
-        files: Union[Unset, tuple[None, bytes, str]] = UNSET
+        files: Unset | tuple[None, bytes, str] = UNSET
         if not isinstance(self.files, Unset):
             files = files
 
@@ -122,7 +138,7 @@ class UploadDocumentBody:
         document_id = d.pop("documentId", UNSET)
 
         _tags = d.pop("tags", UNSET)
-        tags: Union[Unset, UploadDocumentBodyTags]
+        tags: Unset | UploadDocumentBodyTags
         if isinstance(_tags, Unset):
             tags = UNSET
         else:

@@ -1,3 +1,22 @@
+# Copyright (c) 2025 Microsoft
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from collections.abc import Mapping
 from typing import Any, TypeVar, Union, cast
 
@@ -20,39 +39,39 @@ class ProblemDetails:
         instance (Union[None, Unset, str]):
     """
 
-    type_: Union[None, Unset, str] = UNSET
-    title: Union[None, Unset, str] = UNSET
-    status: Union[None, Unset, int] = UNSET
-    detail: Union[None, Unset, str] = UNSET
-    instance: Union[None, Unset, str] = UNSET
+    type_: None | Unset | str = UNSET
+    title: None | Unset | str = UNSET
+    status: None | Unset | int = UNSET
+    detail: None | Unset | str = UNSET
+    instance: None | Unset | str = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        type_: Union[None, Unset, str]
+        type_: None | Unset | str
         if isinstance(self.type_, Unset):
             type_ = UNSET
         else:
             type_ = self.type_
 
-        title: Union[None, Unset, str]
+        title: None | Unset | str
         if isinstance(self.title, Unset):
             title = UNSET
         else:
             title = self.title
 
-        status: Union[None, Unset, int]
+        status: None | Unset | int
         if isinstance(self.status, Unset):
             status = UNSET
         else:
             status = self.status
 
-        detail: Union[None, Unset, str]
+        detail: None | Unset | str
         if isinstance(self.detail, Unset):
             detail = UNSET
         else:
             detail = self.detail
 
-        instance: Union[None, Unset, str]
+        instance: None | Unset | str
         if isinstance(self.instance, Unset):
             instance = UNSET
         else:
@@ -78,7 +97,7 @@ class ProblemDetails:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
 
-        def _parse_type_(data: object) -> Union[None, Unset, str]:
+        def _parse_type_(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -87,7 +106,7 @@ class ProblemDetails:
 
         type_ = _parse_type_(d.pop("type", UNSET))
 
-        def _parse_title(data: object) -> Union[None, Unset, str]:
+        def _parse_title(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -96,7 +115,7 @@ class ProblemDetails:
 
         title = _parse_title(d.pop("title", UNSET))
 
-        def _parse_status(data: object) -> Union[None, Unset, int]:
+        def _parse_status(data: object) -> None | Unset | int:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -105,7 +124,7 @@ class ProblemDetails:
 
         status = _parse_status(d.pop("status", UNSET))
 
-        def _parse_detail(data: object) -> Union[None, Unset, str]:
+        def _parse_detail(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
@@ -114,7 +133,7 @@ class ProblemDetails:
 
         detail = _parse_detail(d.pop("detail", UNSET))
 
-        def _parse_instance(data: object) -> Union[None, Unset, str]:
+        def _parse_instance(data: object) -> None | Unset | str:
             if data is None:
                 return data
             if isinstance(data, Unset):
