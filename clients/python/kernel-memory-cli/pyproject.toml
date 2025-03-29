@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "kernel-memory-cli"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+kernel-memory-client = {path = "../kernel-memory-client"}
+typer = "^0.15.2"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+kernel-memory = "kernel_memory_cli.main:main"

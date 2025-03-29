@@ -1,0 +1,8 @@
+project_name_override: kernel-memory-client
+package_name_override: kernel_memory_client
+
+# Use post_hooks to modify the prefix in AuthenticatedClient
+post_hooks:
+  - "sed -i 's/prefix: str = \"Bearer\"/prefix: str = \"\"/' kernel_memory_client/client.py"
+  - "ruff check . --fix"
+  - "ruff format ."
