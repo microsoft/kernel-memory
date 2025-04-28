@@ -30,7 +30,7 @@ public sealed class MsExcelDecoder : IContentDecoder
     /// <inheritdoc />
     public bool SupportsMimeType(string mimeType)
     {
-        return mimeType != null && mimeType.StartsWith(MimeTypes.MsExcelX, StringComparison.OrdinalIgnoreCase);
+        return mimeType != null && (mimeType.StartsWith(MimeTypes.MsExcelX, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <inheritdoc />
@@ -153,7 +153,7 @@ public sealed class MsExcelDecoder : IContentDecoder
 
             string worksheetContent = sb.ToString().NormalizeNewlines(true);
             sb.Clear();
-            result.Sections.Add(new Chunk(worksheetContent, worksheetNumber, Chunk.Meta(sentencesAreComplete: true)));
+            result.Sections.Add(new Chunk(worksheetContent, worksheetNumber, Chunk.Meta(sentencesAreComplete: true, worksheetNumber)));
         }
 
         return Task.FromResult(result);

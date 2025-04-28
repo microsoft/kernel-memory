@@ -128,6 +128,7 @@ public sealed class TextExtractionHandler : IPipelineStepHandler, IDisposable
                     MimeType = content.MimeType,
                     ArtifactType = DataPipeline.ArtifactTypes.ExtractedContent,
                     Tags = pipeline.Tags,
+                    FileContentObject = content,
                 };
                 destFile2Details.MarkProcessedBy(this);
                 uploadedFile.GeneratedFiles.Add(destFile2, destFile2Details);

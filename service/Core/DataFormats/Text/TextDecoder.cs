@@ -26,7 +26,8 @@ public sealed class TextDecoder : IContentDecoder
     {
         return mimeType != null && (
             mimeType.StartsWith(MimeTypes.PlainText, StringComparison.OrdinalIgnoreCase) ||
-            mimeType.StartsWith(MimeTypes.Json, StringComparison.OrdinalIgnoreCase)
+            mimeType.StartsWith(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) ||
+            mimeType.StartsWith(MimeTypes.CSVData, StringComparison.OrdinalIgnoreCase)
         );
     }
 
@@ -43,7 +44,7 @@ public sealed class TextDecoder : IContentDecoder
         this._log.LogDebug("Extracting text from file");
 
         var result = new FileContent(MimeTypes.PlainText);
-        result.Sections.Add(new(data.ToString().Trim(), 1, Chunk.Meta(sentencesAreComplete: true)));
+        result.Sections.Add(new(data.ToString().Trim(), 1, Chunk.Meta(sentencesAreComplete: true, 1)));
 
         return Task.FromResult(result)!;
     }
@@ -57,7 +58,7 @@ public sealed class TextDecoder : IContentDecoder
         using var reader = new StreamReader(data);
         var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-        result.Sections.Add(new(content.Trim(), 1, Chunk.Meta(sentencesAreComplete: true)));
+        result.Sections.Add(new(content.Trim(), 1, Chunk.Meta(sentencesAreComplete: true, 1)));
         return result;
     }
 }
