@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -37,10 +37,21 @@ public sealed class AWSS3Storage : IDocumentStorage, IDisposable
                     awsSecretAccessKey: config.SecretAccessKey,
                     clientConfig: new AmazonS3Config
                     {
+                        ForcePathStyle = config.ForcePathStyle,
                         ServiceURL = config.Endpoint,
                         LogResponse = true
                     }
                 );
+                break;
+            }
+            case AWSS3Config.AuthTypes.CredentialChain:
+            {
+                this._client = new AmazonS3Client(new AmazonS3Config
+                {
+                    ForcePathStyle = config.ForcePathStyle,
+                    ServiceURL = config.Endpoint,
+                    LogResponse = true
+                });
                 break;
             }
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryStorage;
+using Microsoft.KernelMemory.Text;
 using Pgvector;
 
 namespace Microsoft.KernelMemory.Postgres;
@@ -272,16 +273,19 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
         foreach (MemoryFilter filter in filters.Where(f => !f.IsEmpty()))
         {
             var andSql = new StringBuilder();
-            andSql.AppendLine("(");
+            andSql.AppendLineNix("(");
 
-            if (filter is PostgresMemoryFilter extendedFilter)
+            if (filter is PostgresMemoryFilter)
             {
                 // use PostgresMemoryFilter filtering logic
                 throw new NotImplementedException("PostgresMemoryFilter is not supported yet");
             }
 
             List<string> requiredTags = filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}").ToList();
+
+            // TODO: what is this collection for?
             List<string> safeSqlPlaceholders = [];
+
             if (requiredTags.Count > 0)
             {
                 var safeSqlPlaceholder = $"@placeholder{tagCounter++}";
@@ -295,10 +299,10 @@ public sealed class PostgresMemory : IMemoryDb, IDisposable, IAsyncDisposable
                 //  $"{PostgresSchema.PlaceholdersTags} @> " + safeSqlPlaceholder
                 //  $"{PostgresSchema.PlaceholdersTags} @> " + safeSqlPlaceholder + "::text[]"
                 //  $"{PostgresSchema.PlaceholdersTags} @> ARRAY[" + safeSqlPlaceholder + "]::text[]"
-                andSql.AppendLine($"{PostgresSchema.PlaceholdersTags} @> " + safeSqlPlaceholder);
+                andSql.AppendLineNix($"{PostgresSchema.PlaceholdersTags} @> " + safeSqlPlaceholder);
             }
 
-            andSql.AppendLine(")");
+            andSql.AppendLineNix(")");
             orConditions.Add(andSql.ToString());
         }
 

@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
-        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\clients\dotnet\SemanticKernelPlugin\SemanticKernelPlugin.csproj" />
         <ProjectReference Include="..\..\..\clients\dotnet\WebClient\WebClient.csproj" />
-        <ProjectReference Include="..\..\Anthropic\Anthropic.csproj" />
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\service\Core\Core.csproj" />
         <ProjectReference Include="..\..\AWS\S3\S3.csproj" />
+        <ProjectReference Include="..\..\Anthropic\Anthropic.csproj" />
         <ProjectReference Include="..\..\AzureAIContentSafety\AzureAIContentSafety\AzureAIContentSafety.csproj" />
         <ProjectReference Include="..\..\AzureAIDocIntel\AzureAIDocIntel.csproj" />
         <ProjectReference Include="..\..\AzureAISearch\AzureAISearch\AzureAISearch.csproj" />
@@ -24,8 +24,9 @@
         <ProjectReference Include="..\..\Elasticsearch\Elasticsearch\Elasticsearch.csproj" />
         <ProjectReference Include="..\..\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
         <ProjectReference Include="..\..\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
-        <ProjectReference Include="..\..\Ollama\Ollama\Ollama.csproj" />
         <ProjectReference Include="..\..\ONNX\Onnx\Onnx.csproj" />
+        <ProjectReference Include="..\..\Ollama\Ollama\Ollama.csproj" />
+        <ProjectReference Include="..\..\OpenAI\OpenAI\OpenAI.csproj" />
         <ProjectReference Include="..\..\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\Qdrant\Qdrant\Qdrant.csproj" />
         <ProjectReference Include="..\..\RabbitMQ\RabbitMQ\RabbitMQ.csproj" />

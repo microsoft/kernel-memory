@@ -3,6 +3,9 @@
 /* IMPORTANT: the Startup class must be at the root of the namespace and
  * the namespace must match exactly (required by Xunit.DependencyInjection) */
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+
 namespace Microsoft.Redis.FunctionalTests;
 
 public class Startup

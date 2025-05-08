@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <AssemblyName>Microsoft.KernelMemory.Chunkers</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Chunkers</RootNamespace>
+        <NoWarn>$(NoWarn);KMEXP04;CA1724;CA1308;CA1303;CA1805;CA1034;CA2201;CA2208;CA1002;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Abstractions\Abstractions.csproj" />
+        <ProjectReference Include="..\..\Tiktoken\Tiktoken\Tiktoken.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.Chunkers.UnitTests" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+        <PackageId>Microsoft.KernelMemory.Chunkers</PackageId>
+        <Product>Text chunkers for Kernel Memory pipelines</Product>
+        <Description>Collection of text chunkers.</Description>
+        <PackageTags>Memory, RAG, Kernel Memory, Text, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search</PackageTags>
+        <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="." Visible="false" />
+    </ItemGroup>
+
+</Project>

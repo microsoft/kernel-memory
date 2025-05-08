@@ -92,7 +92,7 @@ public static partial class KernelMemoryBuilderExtensions
     {
         config.Validate();
         builder.WithOpenAITextEmbeddingGeneration(config, textEmbeddingTokenizer, onlyForRetrieval, httpClient);
-        builder.WithOpenAITextGeneration(config, textGenerationTokenizer);
+        builder.WithOpenAITextGeneration(config, textGenerationTokenizer, httpClient);
         return builder;
     }
 
@@ -137,7 +137,7 @@ public static partial class KernelMemoryBuilderExtensions
         HttpClient? httpClient = null)
     {
         config.Validate();
-        builder.Services.AddOpenAITextEmbeddingGeneration(config, httpClient: httpClient);
+        builder.Services.AddOpenAITextEmbeddingGeneration(config, textTokenizer, httpClient: httpClient);
         if (!onlyForRetrieval)
         {
             builder.AddIngestionEmbeddingGenerator(
@@ -164,7 +164,7 @@ public static partial class KernelMemoryBuilderExtensions
         bool onlyForRetrieval = false)
     {
         config.Validate();
-        builder.Services.AddOpenAITextEmbeddingGeneration(config, openAIClient);
+        builder.Services.AddOpenAITextEmbeddingGeneration(config, openAIClient, textTokenizer);
         if (!onlyForRetrieval)
         {
             builder.AddIngestionEmbeddingGenerator(

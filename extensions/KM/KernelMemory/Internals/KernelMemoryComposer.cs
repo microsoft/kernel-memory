@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Anthropic;
 using Microsoft.KernelMemory.AI.Ollama;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.DocumentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryDb.SQLServer;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -111,7 +110,7 @@ internal sealed class KernelMemoryComposer
 
     private void ConfigureQueueDependency()
     {
-        if (string.Equals(this._memoryConfiguration.DataIngestion.OrchestrationType, "Distributed", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(this._memoryConfiguration.DataIngestion.OrchestrationType, KernelMemoryConfig.OrchestrationTypeDistributed, StringComparison.OrdinalIgnoreCase))
         {
             switch (this._memoryConfiguration.DataIngestion.DistributedOrchestration.QueueType)
             {
@@ -201,8 +200,7 @@ internal sealed class KernelMemoryComposer
                 {
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddAzureOpenAIEmbeddingGeneration(
-                            config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                            textTokenizer: new GPT4oTokenizer()));
+                            config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding")));
                     this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -211,8 +209,7 @@ internal sealed class KernelMemoryComposer
                 {
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddOpenAITextEmbeddingGeneration(
-                            config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                            textTokenizer: new GPT4oTokenizer()));
+                            config: this.GetServiceConfig<OpenAIConfig>("OpenAI")));
                     this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -221,8 +218,7 @@ internal sealed class KernelMemoryComposer
                 {
                     var instance = this.GetServiceInstance<ITextEmbeddingGenerator>(
                         s => s.AddOllamaTextEmbeddingGeneration(
-                            config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                            textTokenizer: new GPT4oTokenizer()));
+                            config: this.GetServiceConfig<OllamaConfig>("Ollama")));
                     this._builder.AddIngestionEmbeddingGenerator(instance);
                     break;
                 }
@@ -371,20 +367,17 @@ internal sealed class KernelMemoryComposer
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIEmbedding", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddAzureOpenAIEmbeddingGeneration(
-                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIEmbedding"));
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddOpenAITextEmbeddingGeneration(
-                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"));
                 break;
 
             case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddOllamaTextEmbeddingGeneration(
-                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):
@@ -453,26 +446,22 @@ internal sealed class KernelMemoryComposer
             case string x when x.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase):
             case string y when y.Equals("AzureOpenAIText", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddAzureOpenAITextGeneration(
-                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<AzureOpenAIConfig>("AzureOpenAIText"));
                 break;
 
             case string x when x.Equals("OpenAI", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddOpenAITextGeneration(
-                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<OpenAIConfig>("OpenAI"));
                 break;
 
             case string x when x.Equals("Anthropic", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddAnthropicTextGeneration(
-                    config: this.GetServiceConfig<AnthropicConfig>("Anthropic"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<AnthropicConfig>("Anthropic"));
                 break;
 
             case string x when x.Equals("Ollama", StringComparison.OrdinalIgnoreCase):
                 this._builder.Services.AddOllamaTextGeneration(
-                    config: this.GetServiceConfig<OllamaConfig>("Ollama"),
-                    textTokenizer: new GPT4oTokenizer());
+                    config: this.GetServiceConfig<OllamaConfig>("Ollama"));
                 break;
 
             case string x when x.Equals("LlamaSharp", StringComparison.OrdinalIgnoreCase):

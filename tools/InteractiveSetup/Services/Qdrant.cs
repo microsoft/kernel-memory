@@ -21,6 +21,7 @@ internal static class Qdrant
                 { "Endpoint", "http://127.0.0.1:6333" },
                 { "APIKey", "" },
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>

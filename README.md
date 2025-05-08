@@ -2,7 +2,10 @@ Kernel Memory
 =============
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/KMdiscord)
+[![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&color=d82679&logo=discord&logoColor=white)](https://aka.ms/KMdiscord)
+[![Docker Image](https://img.shields.io/docker/pulls/kernelmemory/service?label=Docker&color=%230db7ed&logo=docker&logoColor=white)](https://hub.docker.com/r/kernelmemory/service)
+[![NuGet Version](https://img.shields.io/nuget/v/Microsoft.KernelMemory?label=nuget&color=%23512BD4&logo=.net&logoColor=white)](https://www.nuget.org/packages/Microsoft.KernelMemory)
+[![GitHub Release](https://img.shields.io/github/v/release/microsoft/kernel-memory?color=%23dddddd&label=tag&logo=github&logoColor=white)](https://github.com/microsoft/kernel-memory/releases)
 
 This repository presents best practices and a reference implementation for Memory in specific AI
 and LLMs application scenarios. Please note that **the code provided serves as a demonstration**
@@ -39,9 +42,26 @@ For detailed instructions on deploying to Azure, you can check the [infrastructu
 If you are already familiar with these resources, you can quickly deploy by clicking the following
 button.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/KernelMemoryDeploy2Azure)
+[![Deploy to Azure](docs/azure-button.png)](https://aka.ms/KernelMemoryDeploy2Azure)
 
-🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image)
+🔗 See also: [Kernel Memory via Docker](#kernel-memory-docker-image) and [Serverless Kernel Memory with Azure services example](examples/007-dotnet-serverless-azure).
+
+## Running Kernel Memory with Aspire
+
+Kernel Memory can be easily run and imported in other projects also via .NET Aspire. For example:
+```csharp
+var builder = DistributedApplication.CreateBuilder();
+
+builder.AddContainer("kernel-memory", "kernelmemory/service")
+    .WithEnvironment("KernelMemory__TextGeneratorType", "OpenAI")
+    .WithEnvironment("KernelMemory__DataIngestion__EmbeddingGeneratorTypes__0", "OpenAI")
+    .WithEnvironment("KernelMemory__Retrieval__EmbeddingGeneratorType", "OpenAI")
+    .WithEnvironment("KernelMemory__Services__OpenAI__APIKey", "...your OpenAI key...");
+
+builder.Build().Run();
+```
+
+[![Run with .NET Aspire](docs/aspire-button.png)](examples/303-dotnet-aspire/Program.cs)
 
 
 
@@ -136,13 +156,31 @@ which documents ground the response.
 ## C#
 
 > ### Asking questions:
->
+> Questions can be asked targeting the entire memory set, or a subset using filters,
+> e.g. to implement security filters.
 > ```csharp
 > var answer1 = await memory.AskAsync("How many people attended the meeting?");
 >
 > var answer2 = await memory.AskAsync("what's the project timeline?",
 >                                     filter: MemoryFilters.ByTag("user", "devis@contoso.com"));
 > ```
+
+> ### Token usage:
+> When generating answers with LLMs, the result includes a token usage report.
+> ```csharp
+> foreach (var report in tokenUsage)
+> {
+>     Console.WriteLine($"{report.ServiceType}: {report.ModelName} ({report.ModelType})");
+>     Console.WriteLine($"- Input : {report.ServiceTokensIn}");
+>     Console.WriteLine($"- Output: {report.ServiceTokensOut}");
+> }
+> ```
+> #### Output:
+> > Azure OpenAI: gpt-4o (TextGeneration)
+> > - Input : 24356 tokens
+> > - Output: 103 tokens
+
+![km-stream-token-usage](https://github.com/user-attachments/assets/71abf161-106c-47cc-af06-66f810314687)
 
 > ### Data lineage, citations, referencing sources:
 >
@@ -216,7 +254,7 @@ which documents ground the response.
 > ```
 
 The OpenAPI schema ("swagger") is available at http://127.0.0.1:9001/swagger/index.html when
-running the service locally with OpenAPI enabled. 
+running the service locally with OpenAPI enabled.
 [Here's a copy](https://editor.swagger.io/?url=https://raw.githubusercontent.com/microsoft/kernel-memory/refs/heads/main/swagger.json).
 
 
@@ -237,12 +275,6 @@ to **start the Kernel Memory Service** using OpenAI:
 docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service
 ```
 
-on Linux ARM/MacOS
-
-```shell
-docker run -e OPENAI_API_KEY="..." -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
-```
-
 If you prefer using custom settings and services such as Azure OpenAI, Azure
 Document Intelligence, etc., you should create an `appsettings.Development.json`
 file overriding the default values set in `appsettings.json`, or using the
@@ -258,13 +290,9 @@ on Windows:
 
     docker run --volume .\appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
 
-on Linux (AMD64):
+on Linux / macOS:
 
     docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service
-
-on ARM64 / macOS:
-
-    docker run --volume ./appsettings.Development.json:/app/appsettings.Production.json -it --rm -p 9001:9001 kernelmemory/service:latest-arm64
 
 🔗 See also: 
 * [How to configure KM service](https://github.com/microsoft/kernel-memory/blob/main/service/Service/README.md#%EF%B8%8F-configuration)
@@ -416,8 +444,10 @@ Examples and Tools
 1. [Collection of Jupyter notebooks with various scenarios](examples/000-notebooks)
 2. [Using Kernel Memory web service to upload documents and answer questions](examples/001-dotnet-WebClient)
 3. [Importing files and asking question without running the service (serverless mode)](examples/002-dotnet-Serverless)
-4. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
-5. Customizations
+4. [Kernel Memory RAG with Azure services](examples/007-dotnet-serverless-azure)
+5. [Kernel Memory with .NET Aspire](examples/303-dotnet-aspire)
+6. [Using KM Plugin for Semantic Kernel](examples/003-dotnet-SemanticKernel-plugin)
+7. Customizations
    * [Processing files with custom logic (custom handlers) in serverless mode](examples/004-dotnet-serverless-custom-pipeline)
    * [Processing files with custom logic (custom handlers) in asynchronous mode](examples/005-dotnet-AsyncMemoryCustomPipeline)
    * [Customizing RAG and summarization prompts](examples/101-dotnet-custom-Prompts)
@@ -427,32 +457,32 @@ Examples and Tools
    * [Using a custom web scraper to fetch web pages](examples/109-dotnet-custom-webscraper)
    * [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
    * [Using Context Parameters to customize RAG prompt during a request](examples/209-dotnet-using-context-overrides)
-6. Local models and external connectors
+8. Local models and external connectors
    * [Using custom LLMs](examples/104-dotnet-custom-LLM)
    * [Using local LLMs with Ollama](examples/212-dotnet-ollama) 
    * [Using local LLMs with llama.cpp via LlamaSharp](examples/105-dotnet-serverless-llamasharp)
    * [Using local models with LM Studio](examples/208-dotnet-lmstudio)
    * [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
    * [Generating answers with Anthropic LLMs](examples/110-dotnet-anthropic)
-7. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice) 
-8. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
-9. [Hybrid Search with Azure AI Search](examples/111-dotnet-azure-ai-hybrid-search)
-10. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
-11. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-12. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-13. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
-14. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
-15. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
-16. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
-17. [Fetching data from Discord](examples/301-discord-test-application) 
-18. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
+9. [Upload files and ask questions from command line using curl](examples/006-curl-calling-webservice)
+10. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
+11. [Hybrid Search with Azure AI Search](examples/111-dotnet-azure-ai-hybrid-search)
+12. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+13. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+14. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+15. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+16. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+17. [Creating a Memory instance without KernelMemoryBuilder](examples/210-KM-without-builder)
+18. [Intent Detection](examples/211-dotnet-WebClient-Intent-Detection)
+19. [Fetching data from Discord](examples/301-discord-test-application)
+20. [Test project using KM package from nuget.org](examples/203-dotnet-using-KM-nuget)
 
 ## Tools
 
 1. [.NET appsettings.json generator](tools/InteractiveSetup)
-2. [Curl script to upload files](tools/upload-file.sh)
-3. [Curl script to ask questions](tools/ask.sh)
-4. [Curl script to search documents](tools/search.sh)
+2. [Curl script to upload files](tools/km-cli/upload-file.sh)
+3. [Curl script to ask questions](tools/km-cli/ask.sh)
+4. [Curl script to search documents](tools/km-cli/search.sh)
 5. [Script to start Qdrant for development tasks](tools/run-qdrant.sh)
 6. [Script to start Elasticsearch for development tasks](tools/run-elasticsearch.sh)
 7. [Script to start MS SQL Server for development tasks](tools/run-mssql.sh)
@@ -511,37 +541,44 @@ Contributors
 ============
 
 <!--
-githubcontrib --repo kernel-memory --owner microsoft --showlogin true --sortBy login --cols 6 --imagesize 110
+gh api repos/:owner/:repo/contributors --paginate --jq '
+  [ .[] | {
+    login: .login,
+    id: .id,
+    url: .html_url,
+    avatar: "https://avatars.githubusercontent.com/u/\(.id)?v=4&s=110"
+  } ] as $list
+  | (
+      "| " + ($list[0:6] | map("<img alt=\"\(.login)\" src=\"\(.avatar)\" width=\"110\">") | join(" | ")) + " |\n" +
+      "|:---:|:---:|:---:|:---:|:---:|:---:|\n" +
+      "| " + ($list[0:6] | map("[\(.login)](\(.url))") | join(" | ")) + " |\n" +
+      (
+        reduce range(6; ($list | length); 6) as $i (
+          "";
+          . + "| " + ($list[$i:$i+6] | map("<img alt=\"\(.login)\" src=\"\(.avatar)\" width=\"110\">") | join(" | ")) + " |\n" +
+              "| " + ($list[$i:$i+6] | map("[\(.login)](\(.url))") | join(" | ")) + " |\n"
+        )
+      )
+    )
+'
 -->
 
-[<img alt="aaronpowell" src="https://avatars.githubusercontent.com/u/434140?v=4&s=110" width="110">](https://github.com/aaronpowell) |[<img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110">](https://github.com/afederici75) |[<img alt="akordowski" src="https://avatars.githubusercontent.com/u/9746197?v=4&s=110" width="110">](https://github.com/akordowski) |[<img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110">](https://github.com/alexibraimov) |[<img alt="alexmg" src="https://avatars.githubusercontent.com/u/131293?v=4&s=110" width="110">](https://github.com/alexmg) |[<img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110">](https://github.com/alkampfergit) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[aaronpowell](https://github.com/aaronpowell) |[afederici75](https://github.com/afederici75) |[akordowski](https://github.com/akordowski) |[alexibraimov](https://github.com/alexibraimov) |[alexmg](https://github.com/alexmg) |[alkampfergit](https://github.com/alkampfergit) |
-
-[<img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110">](https://github.com/amomra) |[<img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110">](https://github.com/anthonypuppo) |[<img alt="chaelli" src="https://avatars.githubusercontent.com/u/878151?v=4&s=110" width="110">](https://github.com/chaelli) |[<img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110">](https://github.com/cherchyk) |[<img alt="coryisakson" src="https://avatars.githubusercontent.com/u/303811?v=4&s=110" width="110">](https://github.com/coryisakson) |[<img alt="crickman" src="https://avatars.githubusercontent.com/u/66376200?v=4&s=110" width="110">](https://github.com/crickman) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[amomra](https://github.com/amomra) |[anthonypuppo](https://github.com/anthonypuppo) |[chaelli](https://github.com/chaelli) |[cherchyk](https://github.com/cherchyk) |[coryisakson](https://github.com/coryisakson) |[crickman](https://github.com/crickman) |
-
-[<img alt="dependabot[bot]" src="https://avatars.githubusercontent.com/in/29110?v=4&s=110" width="110">](https://github.com/apps/dependabot) |[<img alt="dluc" src="https://avatars.githubusercontent.com/u/371009?v=4&s=110" width="110">](https://github.com/dluc) |[<img alt="DM-98" src="https://avatars.githubusercontent.com/u/10290906?v=4&s=110" width="110">](https://github.com/DM-98) |[<img alt="EelcoKoster" src="https://avatars.githubusercontent.com/u/3356003?v=4&s=110" width="110">](https://github.com/EelcoKoster) |[<img alt="Foorcee" src="https://avatars.githubusercontent.com/u/5587062?v=4&s=110" width="110">](https://github.com/Foorcee) |[<img alt="GraemeJones104" src="https://avatars.githubusercontent.com/u/79144786?v=4&s=110" width="110">](https://github.com/GraemeJones104) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[dependabot[bot]](https://github.com/apps/dependabot) |[dluc](https://github.com/dluc) |[DM-98](https://github.com/DM-98) |[EelcoKoster](https://github.com/EelcoKoster) |[Foorcee](https://github.com/Foorcee) |[GraemeJones104](https://github.com/GraemeJones104) |
-
-[<img alt="jurepurgar" src="https://avatars.githubusercontent.com/u/6506920?v=4&s=110" width="110">](https://github.com/jurepurgar) |[<img alt="JustinRidings" src="https://avatars.githubusercontent.com/u/49916830?v=4&s=110" width="110">](https://github.com/JustinRidings) |[<img alt="kbeaugrand" src="https://avatars.githubusercontent.com/u/9513635?v=4&s=110" width="110">](https://github.com/kbeaugrand) |[<img alt="koteus" src="https://avatars.githubusercontent.com/u/428201?v=4&s=110" width="110">](https://github.com/koteus) |[<img alt="KSemenenko" src="https://avatars.githubusercontent.com/u/4385716?v=4&s=110" width="110">](https://github.com/KSemenenko) |[<img alt="lecramr" src="https://avatars.githubusercontent.com/u/20584823?v=4&s=110" width="110">](https://github.com/lecramr) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[jurepurgar](https://github.com/jurepurgar) |[JustinRidings](https://github.com/JustinRidings) |[kbeaugrand](https://github.com/kbeaugrand) |[koteus](https://github.com/koteus) |[KSemenenko](https://github.com/KSemenenko) |[lecramr](https://github.com/lecramr) |
-
-[<img alt="luismanez" src="https://avatars.githubusercontent.com/u/9392197?v=4&s=110" width="110">](https://github.com/luismanez) |[<img alt="marcominerva" src="https://avatars.githubusercontent.com/u/3522534?v=4&s=110" width="110">](https://github.com/marcominerva) |[<img alt="neel015" src="https://avatars.githubusercontent.com/u/34688460?v=4&s=110" width="110">](https://github.com/neel015) |[<img alt="pascalberger" src="https://avatars.githubusercontent.com/u/2190718?v=4&s=110" width="110">](https://github.com/pascalberger) |[<img alt="pawarsum12" src="https://avatars.githubusercontent.com/u/136417839?v=4&s=110" width="110">](https://github.com/pawarsum12) |[<img alt="pradeepr-roboticist" src="https://avatars.githubusercontent.com/u/6598307?v=4&s=110" width="110">](https://github.com/pradeepr-roboticist) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[luismanez](https://github.com/luismanez) |[marcominerva](https://github.com/marcominerva) |[neel015](https://github.com/neel015) |[pascalberger](https://github.com/pascalberger) |[pawarsum12](https://github.com/pawarsum12) |[pradeepr-roboticist](https://github.com/pradeepr-roboticist) |
-
-[<img alt="qihangnet" src="https://avatars.githubusercontent.com/u/1784873?v=4&s=110" width="110">](https://github.com/qihangnet) |[<img alt="roldengarm" src="https://avatars.githubusercontent.com/u/37638588?v=4&s=110" width="110">](https://github.com/roldengarm) |[<img alt="setuc" src="https://avatars.githubusercontent.com/u/9305355?v=4&s=110" width="110">](https://github.com/setuc) |[<img alt="slapointe" src="https://avatars.githubusercontent.com/u/1054412?v=4&s=110" width="110">](https://github.com/slapointe) |[<img alt="slorello89" src="https://avatars.githubusercontent.com/u/42971704?v=4&s=110" width="110">](https://github.com/slorello89) |[<img alt="snakex64" src="https://avatars.githubusercontent.com/u/39806655?v=4&s=110" width="110">](https://github.com/snakex64) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[qihangnet](https://github.com/qihangnet) |[roldengarm](https://github.com/roldengarm) |[setuc](https://github.com/setuc) |[slapointe](https://github.com/slapointe) |[slorello89](https://github.com/slorello89) |[snakex64](https://github.com/snakex64) |
-
-[<img alt="spenavajr" src="https://avatars.githubusercontent.com/u/96045491?v=4&s=110" width="110">](https://github.com/spenavajr) |[<img alt="TaoChenOSU" src="https://avatars.githubusercontent.com/u/12570346?v=4&s=110" width="110">](https://github.com/TaoChenOSU) |[<img alt="teresaqhoang" src="https://avatars.githubusercontent.com/u/125500434?v=4&s=110" width="110">](https://github.com/teresaqhoang) |[<img alt="tomasz-skarzynski" src="https://avatars.githubusercontent.com/u/119002478?v=4&s=110" width="110">](https://github.com/tomasz-skarzynski) |[<img alt="v-msamovendyuk" src="https://avatars.githubusercontent.com/u/61688766?v=4&s=110" width="110">](https://github.com/v-msamovendyuk) |[<img alt="Valkozaur" src="https://avatars.githubusercontent.com/u/58659526?v=4&s=110" width="110">](https://github.com/Valkozaur) |
-:---: |:---: |:---: |:---: |:---: |:---: |
-[spenavajr](https://github.com/spenavajr) |[TaoChenOSU](https://github.com/TaoChenOSU) |[teresaqhoang](https://github.com/teresaqhoang) |[tomasz-skarzynski](https://github.com/tomasz-skarzynski) |[v-msamovendyuk](https://github.com/v-msamovendyuk) |[Valkozaur](https://github.com/Valkozaur) |
-
-[<img alt="vicperdana" src="https://avatars.githubusercontent.com/u/7114832?v=4&s=110" width="110">](https://github.com/vicperdana) |[<img alt="walexee" src="https://avatars.githubusercontent.com/u/12895846?v=4&s=110" width="110">](https://github.com/walexee) |[<img alt="westdavidr" src="https://avatars.githubusercontent.com/u/669668?v=4&s=110" width="110">](https://github.com/westdavidr) |[<img alt="xbotter" src="https://avatars.githubusercontent.com/u/3634877?v=4&s=110" width="110">](https://github.com/xbotter) |
-:---: |:---: |:---: |:---: |
-[vicperdana](https://github.com/vicperdana) |[walexee](https://github.com/walexee) |[westdavidr](https://github.com/westdavidr) |[xbotter](https://github.com/xbotter) |
+| <img alt="dluc" src="https://avatars.githubusercontent.com/u/371009?v=4&s=110" width="110"> | <img alt="marcominerva" src="https://avatars.githubusercontent.com/u/3522534?v=4&s=110" width="110"> | <img alt="anthonypuppo" src="https://avatars.githubusercontent.com/u/6828951?v=4&s=110" width="110"> | <img alt="crickman" src="https://avatars.githubusercontent.com/u/66376200?v=4&s=110" width="110"> | <img alt="TaoChenOSU" src="https://avatars.githubusercontent.com/u/12570346?v=4&s=110" width="110"> | <img alt="cherchyk" src="https://avatars.githubusercontent.com/u/1703275?v=4&s=110" width="110"> |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| [dluc](https://github.com/dluc) | [marcominerva](https://github.com/marcominerva) | [anthonypuppo](https://github.com/anthonypuppo) | [crickman](https://github.com/crickman) | [TaoChenOSU](https://github.com/TaoChenOSU) | [cherchyk](https://github.com/cherchyk) |
+| <img alt="kbeaugrand" src="https://avatars.githubusercontent.com/u/9513635?v=4&s=110" width="110"> | <img alt="alexmg" src="https://avatars.githubusercontent.com/u/131293?v=4&s=110" width="110"> | <img alt="alkampfergit" src="https://avatars.githubusercontent.com/u/358545?v=4&s=110" width="110"> | <img alt="dependabot[bot]" src="https://avatars.githubusercontent.com/u/49699333?v=4&s=110" width="110"> | <img alt="slorello89" src="https://avatars.githubusercontent.com/u/42971704?v=4&s=110" width="110"> | <img alt="xbotter" src="https://avatars.githubusercontent.com/u/3634877?v=4&s=110" width="110"> |
+| [kbeaugrand](https://github.com/kbeaugrand) | [alexmg](https://github.com/alexmg) | [alkampfergit](https://github.com/alkampfergit) | [dependabot[bot]](https://github.com/apps/dependabot) | [slorello89](https://github.com/slorello89) | [xbotter](https://github.com/xbotter) |
+| <img alt="westdavidr" src="https://avatars.githubusercontent.com/u/669668?v=4&s=110" width="110"> | <img alt="luismanez" src="https://avatars.githubusercontent.com/u/9392197?v=4&s=110" width="110"> | <img alt="afederici75" src="https://avatars.githubusercontent.com/u/13766049?v=4&s=110" width="110"> | <img alt="koteus" src="https://avatars.githubusercontent.com/u/428201?v=4&s=110" width="110"> | <img alt="amomra" src="https://avatars.githubusercontent.com/u/11981363?v=4&s=110" width="110"> | <img alt="lecramr" src="https://avatars.githubusercontent.com/u/20584823?v=4&s=110" width="110"> |
+| [westdavidr](https://github.com/westdavidr) | [luismanez](https://github.com/luismanez) | [afederici75](https://github.com/afederici75) | [koteus](https://github.com/koteus) | [amomra](https://github.com/amomra) | [lecramr](https://github.com/lecramr) |
+| <img alt="chaelli" src="https://avatars.githubusercontent.com/u/878151?v=4&s=110" width="110"> | <img alt="pawarsum12" src="https://avatars.githubusercontent.com/u/136417839?v=4&s=110" width="110"> | <img alt="aaronpowell" src="https://avatars.githubusercontent.com/u/434140?v=4&s=110" width="110"> | <img alt="alexibraimov" src="https://avatars.githubusercontent.com/u/59023460?v=4&s=110" width="110"> | <img alt="akordowski" src="https://avatars.githubusercontent.com/u/9746197?v=4&s=110" width="110"> | <img alt="coryisakson" src="https://avatars.githubusercontent.com/u/303811?v=4&s=110" width="110"> |
+| [chaelli](https://github.com/chaelli) | [pawarsum12](https://github.com/pawarsum12) | [aaronpowell](https://github.com/aaronpowell) | [alexibraimov](https://github.com/alexibraimov) | [akordowski](https://github.com/akordowski) | [coryisakson](https://github.com/coryisakson) |
+| <img alt="DM-98" src="https://avatars.githubusercontent.com/u/10290906?v=4&s=110" width="110"> | <img alt="EelcoKoster" src="https://avatars.githubusercontent.com/u/3356003?v=4&s=110" width="110"> | <img alt="GraemeJones104" src="https://avatars.githubusercontent.com/u/79144786?v=4&s=110" width="110"> | <img alt="imranshams" src="https://avatars.githubusercontent.com/u/15226209?v=4&s=110" width="110"> | <img alt="jurepurgar" src="https://avatars.githubusercontent.com/u/6506920?v=4&s=110" width="110"> | <img alt="JustinRidings" src="https://avatars.githubusercontent.com/u/49916830?v=4&s=110" width="110"> |
+| [DM-98](https://github.com/DM-98) | [EelcoKoster](https://github.com/EelcoKoster) | [GraemeJones104](https://github.com/GraemeJones104) | [imranshams](https://github.com/imranshams) | [jurepurgar](https://github.com/jurepurgar) | [JustinRidings](https://github.com/JustinRidings) |
+| <img alt="Foorcee" src="https://avatars.githubusercontent.com/u/5587062?v=4&s=110" width="110"> | <img alt="v-msamovendyuk" src="https://avatars.githubusercontent.com/u/61688766?v=4&s=110" width="110"> | <img alt="qihangnet" src="https://avatars.githubusercontent.com/u/1784873?v=4&s=110" width="110"> | <img alt="neel015" src="https://avatars.githubusercontent.com/u/34688460?v=4&s=110" width="110"> | <img alt="pascalberger" src="https://avatars.githubusercontent.com/u/2190718?v=4&s=110" width="110"> | <img alt="pradeepr-roboticist" src="https://avatars.githubusercontent.com/u/6598307?v=4&s=110" width="110"> |
+| [Foorcee](https://github.com/Foorcee) | [v-msamovendyuk](https://github.com/v-msamovendyuk) | [qihangnet](https://github.com/qihangnet) | [neel015](https://github.com/neel015) | [pascalberger](https://github.com/pascalberger) | [pradeepr-roboticist](https://github.com/pradeepr-roboticist) |
+| <img alt="setuc" src="https://avatars.githubusercontent.com/u/9305355?v=4&s=110" width="110"> | <img alt="slapointe" src="https://avatars.githubusercontent.com/u/1054412?v=4&s=110" width="110"> | <img alt="spenavajr" src="https://avatars.githubusercontent.com/u/96045491?v=4&s=110" width="110"> | <img alt="tarekgh" src="https://avatars.githubusercontent.com/u/10833894?v=4&s=110" width="110"> | <img alt="teresaqhoang" src="https://avatars.githubusercontent.com/u/125500434?v=4&s=110" width="110"> | <img alt="tomasz-skarzynski" src="https://avatars.githubusercontent.com/u/119002478?v=4&s=110" width="110"> |
+| [setuc](https://github.com/setuc) | [slapointe](https://github.com/slapointe) | [spenavajr](https://github.com/spenavajr) | [tarekgh](https://github.com/tarekgh) | [teresaqhoang](https://github.com/teresaqhoang) | [tomasz-skarzynski](https://github.com/tomasz-skarzynski) |
+| <img alt="Valkozaur" src="https://avatars.githubusercontent.com/u/58659526?v=4&s=110" width="110"> | <img alt="vicperdana" src="https://avatars.githubusercontent.com/u/7114832?v=4&s=110" width="110"> | <img alt="walexee" src="https://avatars.githubusercontent.com/u/12895846?v=4&s=110" width="110"> | <img alt="aportillo83" src="https://avatars.githubusercontent.com/u/72951744?v=4&s=110" width="110"> | <img alt="carlodek" src="https://avatars.githubusercontent.com/u/56030624?v=4&s=110" width="110"> | <img alt="KSemenenko" src="https://avatars.githubusercontent.com/u/4385716?v=4&s=110" width="110"> |
+| [Valkozaur](https://github.com/Valkozaur) | [vicperdana](https://github.com/vicperdana) | [walexee](https://github.com/walexee) | [aportillo83](https://github.com/aportillo83) | [carlodek](https://github.com/carlodek) | [KSemenenko](https://github.com/KSemenenko) |
+| <img alt="roldengarm" src="https://avatars.githubusercontent.com/u/37638588?v=4&s=110" width="110"> | <img alt="snakex64" src="https://avatars.githubusercontent.com/u/39806655?v=4&s=110" width="110"> |
+| [roldengarm](https://github.com/roldengarm) | [snakex64](https://github.com/snakex64) |

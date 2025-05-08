@@ -21,6 +21,7 @@ internal static class Redis
             {
                 ["ConnectionString"] = ""
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         var connectionString = SetupUI.AskPassword("Redis connection string (e.g. 'localhost:6379,password=..')", config["ConnectionString"].ToString(), optional: true);

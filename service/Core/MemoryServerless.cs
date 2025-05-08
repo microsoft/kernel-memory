@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -262,30 +263,47 @@ public sealed class MemoryServerless : IKernelMemory
     }
 
     /// <inheritdoc />
-    public Task<MemoryAnswer> AskAsync(
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        SearchOptions? options = null,
         IContext? context = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this._contextProvider.InitContext(context);
         if (filter != null)
         {
-            if (filters == null) { filters = []; }
-
+            filters ??= [];
             filters.Add(filter);
         }
 
         index = IndexName.CleanName(index, this._defaultIndexName);
-        return this._searchClient.AskAsync(
+
+        if (options is { Stream: true })
+        {
+            await foreach (var answer in this._searchClient.AskStreamingAsync(
+                               index: index,
+                               question: question,
+                               filters: filters,
+                               minRelevance: minRelevance,
+                               context: context,
+                               cancellationToken).ConfigureAwait(false))
+            {
+                yield return answer;
+            }
+
+            yield break;
+        }
+
+        yield return await this._searchClient.AskAsync(
             index: index,
             question: question,
             filters: filters,
             minRelevance: minRelevance,
             context: context,
-            cancellationToken: cancellationToken);
+            cancellationToken).ConfigureAwait(false);
     }
 }

@@ -1,9 +1,12 @@
-# Usage: docker buildx build --platform linux/amd64 .
-# Usage: docker buildx build --platform linux/arm64 .
+# Usage: docker build --platform linux/amd64 --build-arg BUILD_IMAGE_TAG=9.0-noble-amd64 \
+#                     --build-arg RUN_IMAGE_TAG=9.0-alpine-amd64 .
+#
+# Usage: docker build --platform linux/arm64 --build-arg BUILD_IMAGE_TAG=9.0-noble-arm64v8 \
+#                     --build-arg RUN_IMAGE_TAG=9.0-alpine-arm64v8 .
 
 # See https://github.com/dotnet/dotnet-docker/blob/main/README.sdk.md#full-tag-listing
-ARG BUILD_IMAGE_TAG="8.0-jammy"
-ARG RUN_IMAGE_TAG="8.0-alpine"
+ARG BUILD_IMAGE_TAG="9.0-noble"
+ARG RUN_IMAGE_TAG="9.0-alpine"
 
 #########################################################################
 # .NET build
@@ -33,9 +36,11 @@ WORKDIR /app
 RUN \
     # Create user
     #Debian: useradd --create-home --user-group $USER --shell /bin/bash && \
-    adduser -D -h /app -s /bin/sh $USER && \
+    adduser --disabled-password --home /app --shell /bin/sh $USER && \
     # Allow user to access the build
-    chown -R $USER.$USER /app
+    chown -R $USER:$USER /app && \
+    # Install icu-libs for Microsoft.Data.SqlClient
+    apk add --no-cache icu-libs
 
 COPY --from=build --chown=km:km --chmod=0550 /app/publish .
 
@@ -47,6 +52,9 @@ LABEL org.opencontainers.image.authors="Devis Lucato, https://github.com/dluc"
 
 # Define current user
 USER $USER
+
+# Disable globalization invariant mode for Microsoft.Data.SqlClient
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 # Used by .NET and KM to load appsettings.Production.json
 ENV ASPNETCORE_ENVIRONMENT=Production

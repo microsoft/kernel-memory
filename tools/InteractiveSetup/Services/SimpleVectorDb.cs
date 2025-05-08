@@ -22,7 +22,9 @@ internal static class SimpleVectorDb
             config = new Dictionary<string, object>
             {
                 { "Directory", "" },
+                { "StorageType", "Disk" }
             };
+            AppSettings.AddService(ServiceName, config);
         }
 
         AppSettings.Change(x => x.Services[ServiceName] = new Dictionary<string, object>

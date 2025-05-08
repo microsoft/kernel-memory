@@ -26,10 +26,7 @@ public class SearchResult
     [JsonPropertyOrder(2)]
     public bool NoResult
     {
-        get
-        {
-            return this.Results.Count == 0;
-        }
+        get => this.Results == null || this.Results.Count == 0;
         private set { }
     }
 
@@ -40,6 +37,7 @@ public class SearchResult
     /// </summary>
     [JsonPropertyName("results")]
     [JsonPropertyOrder(3)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<Citation> Results { get; set; } = [];
 
     /// <summary>

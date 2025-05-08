@@ -53,7 +53,13 @@ public class OpenAIConfig
     public int TextModelMaxTokenTotal { get; set; } = 8192;
 
     /// <summary>
-    /// Model used to embedding generation/
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty for autodetect.
+    /// </summary>
+    public string TextModelTokenizer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Model used to embedding generation.
     /// </summary>
     public string EmbeddingModel { get; set; } = string.Empty;
 
@@ -62,6 +68,12 @@ public class OpenAIConfig
     /// Default to OpenAI ADA2 settings.
     /// </summary>
     public int EmbeddingModelMaxTokenTotal { get; set; } = 8191;
+
+    /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty for autodetect.
+    /// </summary>
+    public string EmbeddingModelTokenizer { get; set; } = string.Empty;
 
     /// <summary>
     /// The number of dimensions output embeddings should have.

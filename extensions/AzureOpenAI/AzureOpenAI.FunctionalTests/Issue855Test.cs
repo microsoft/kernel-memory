@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.AI.AzureOpenAI;
 using Microsoft.KM.TestHelpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AzureOpenAI.FunctionalTests;
 
@@ -22,10 +21,11 @@ public class Issue855Test : BaseFunctionalTestCase
         this._target = new AzureOpenAITextEmbeddingGenerator(this.AzureOpenAIEmbeddingConfiguration);
     }
 
+    // [Fact] // Enable manually on a need basis
     [Fact(Skip = "Enable and run manually")]
     [Trait("Category", "Manual")]
     [Trait("Category", "BugFix")]
-    public async Task ItDoesntWhenThrottling()
+    public async Task ItDoesntFailWhenThrottling()
     {
         for (int i = 0; i < 50; i++)
         {

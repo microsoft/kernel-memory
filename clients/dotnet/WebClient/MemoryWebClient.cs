@@ -7,11 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.Context;
+using Microsoft.KernelMemory.HTTP;
 using Microsoft.KernelMemory.Internals;
 
 namespace Microsoft.KernelMemory;
@@ -337,38 +339,58 @@ public sealed class MemoryWebClient : IKernelMemory
     }
 
     /// <inheritdoc />
-    public async Task<MemoryAnswer> AskAsync(
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
         string question,
         string? index = null,
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        SearchOptions? options = null,
         IContext? context = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (filter != null)
         {
-            if (filters == null) { filters = []; }
-
+            filters ??= [];
             filters.Add(filter);
         }
 
+        var useStreaming = options?.Stream ?? false;
         MemoryQuery request = new()
         {
             Index = index,
             Question = question,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : [],
             MinRelevance = minRelevance,
+            Stream = useStreaming,
             ContextArguments = (context?.Arguments ?? new Dictionary<string, object?>()).ToDictionary(),
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var url = Constants.HttpAskEndpoint.CleanUrlPath();
-        HttpResponseMessage response = await this._client.PostAsync(url, content, cancellationToken).ConfigureAwait(false);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+        requestMessage.Content = content;
+        HttpCompletionOption completionOption = useStreaming
+            ? HttpCompletionOption.ResponseHeadersRead
+            : HttpCompletionOption.ResponseContentRead;
+
+        HttpResponseMessage response = await this._client.SendAsync(requestMessage, completionOption, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
+        if (useStreaming)
+        {
+            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            IAsyncEnumerable<MemoryAnswer> answers = SSE.ParseStreamAsync<MemoryAnswer>(stream, cancellationToken);
+            await foreach (MemoryAnswer answer in answers.ConfigureAwait(false))
+            {
+                yield return answer;
+            }
+        }
+        else
+        {
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            yield return JsonSerializer.Deserialize<MemoryAnswer>(json, s_caseInsensitiveJsonOptions) ?? new MemoryAnswer();
+        }
     }
 
     #region private

@@ -1,0 +1,84 @@
+# Build Docker images and push them to docker hub
+
+name: Multi-arch Dockerization
+
+on:
+  workflow_dispatch:
+    inputs:
+      docker_tag:
+        description: "Enter KM version (for docker tag)"
+        required: true
+        default: "0.000.000000.0"
+
+jobs:
+  arm64:
+    runs-on: ubuntu-24.04-arm
+    env:
+      DOCKER_TARGET_PLATFORM: linux/arm64
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build ARM Docker image
+        run: |
+          docker build --push --platform linux/arm64 \
+            --build-arg BUILD_IMAGE_TAG=9.0-noble-arm64v8 \
+            --build-arg RUN_IMAGE_TAG=9.0-alpine-arm64v8 \
+            --tag "${{ vars.DOCKERHUB_USERNAME }}/service:${{ github.event.inputs.docker_tag }}-arm64" .
+
+  amd64:
+    runs-on: ubuntu-latest
+    needs: arm64
+    env:
+      DOCKER_TARGET_PLATFORM: linux/amd64
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build AMD Docker image
+        run: |
+          docker build --push --platform linux/amd64 \
+            --build-arg BUILD_IMAGE_TAG=9.0-noble-amd64 \
+            --build-arg RUN_IMAGE_TAG=9.0-alpine-amd64 \
+            --tag "${{ vars.DOCKERHUB_USERNAME }}/service:${{ github.event.inputs.docker_tag }}-amd64" .
+
+  latest:
+    runs-on: ubuntu-latest
+    needs:
+      - arm64
+      - amd64
+    steps:
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create multi-arch manifest for "latest" tag
+        run: |
+          docker pull --platform linux/amd64 "kernelmemory/service:${{ github.event.inputs.docker_tag }}-amd64"
+          docker pull --platform linux/arm64 "kernelmemory/service:${{ github.event.inputs.docker_tag }}-arm64"
+
+          docker manifest create kernelmemory/service:latest \
+            "kernelmemory/service:${{ github.event.inputs.docker_tag }}-amd64" \
+            "kernelmemory/service:${{ github.event.inputs.docker_tag }}-arm64"
+
+          docker manifest annotate kernelmemory/service:latest "kernelmemory/service:${{ github.event.inputs.docker_tag }}-amd64" --os linux --arch amd64
+          docker manifest annotate kernelmemory/service:latest "kernelmemory/service:${{ github.event.inputs.docker_tag }}-arm64" --os linux --arch arm64
+
+          docker manifest push kernelmemory/service:latest

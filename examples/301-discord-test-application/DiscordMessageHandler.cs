@@ -12,7 +12,7 @@ namespace Microsoft.Discord.TestApplication;
 /// KM pipeline handler fetching discord data files from document storage
 /// and storing messages in Postgres.
 /// </summary>
-public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, IAsyncDisposable
+public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable
 {
     // Name of the file where to store Discord data
     private readonly string _filename;
@@ -23,8 +23,11 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
     // .NET service provider, used to get thread safe instances of EF DbContext
     private readonly IServiceProvider _serviceProvider;
 
-    // EF DbContext used to create the database
-    private DiscordDbContext? _firstInvokeDb;
+    // DB creation
+    private readonly object _dbCreation = new();
+    private bool _dbCreated = false;
+    private bool _useScope = false;
+    private readonly IServiceScope _dbScope;
 
     // .NET logger
     private readonly ILogger<DiscordMessageHandler> _log;
@@ -44,12 +47,19 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
         this._orchestrator = orchestrator;
         this._serviceProvider = serviceProvider;
         this._filename = config.FileName;
+        this._dbScope = this._serviceProvider.CreateScope();
 
-        // This DbContext instance is used only to create the database
-        this._firstInvokeDb = serviceProvider.GetService<DiscordDbContext>() ?? throw new ConfigurationException("Discord DB Content is not defined");
+        try
+        {
+            this.OnFirstInvoke();
+        }
+        catch (Exception)
+        {
+            // ignore, will retry later
+        }
     }
 
-    public async Task<(bool success, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
+    public async Task<(ReturnType returnType, DataPipeline updatedPipeline)> InvokeAsync(DataPipeline pipeline, CancellationToken cancellationToken = default)
     {
         this.OnFirstInvoke();
 
@@ -57,8 +67,7 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
         // exception: System.InvalidOperationException: a second operation was started on this context instance before a previous
         // operation completed. This is usually caused by different threads concurrently using the same instance of DbContext.
         // For more information on how to avoid threading issues with DbContext, see https://go.microsoft.com/fwlink/?linkid=2097913.
-        DiscordDbContext? db = this._serviceProvider.GetService<DiscordDbContext>();
-        ArgumentNullExceptionEx.ThrowIfNull(db, nameof(db), "Discord DB context is NULL");
+        var db = this.GetDb();
         await using (db.ConfigureAwait(false))
         {
             foreach (DataPipeline.FileDetails uploadedFile in pipeline.Files)
@@ -75,13 +84,13 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
                     if (data == null)
                     {
                         this._log.LogError("Failed to deserialize Discord data file, result is NULL");
-                        return (true, pipeline);
+                        return (ReturnType.FatalError, pipeline);
                     }
                 }
                 catch (Exception e)
                 {
                     this._log.LogError(e, "Failed to deserialize Discord data file");
-                    return (true, pipeline);
+                    return (ReturnType.FatalError, pipeline);
                 }
 
                 await db.Messages.AddAsync(data, cancellationToken).ConfigureAwait(false);
@@ -90,32 +99,72 @@ public sealed class DiscordMessageHandler : IPipelineStepHandler, IDisposable, I
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        return (true, pipeline);
+        return (ReturnType.Success, pipeline);
     }
 
     public void Dispose()
     {
-        this._firstInvokeDb?.Dispose();
-        this._firstInvokeDb = null;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (this._firstInvokeDb != null) { await this._firstInvokeDb.DisposeAsync(); }
-
-        this._firstInvokeDb = null;
+        this._dbScope.Dispose();
     }
 
     private void OnFirstInvoke()
     {
-        if (this._firstInvokeDb == null) { return; }
+        if (this._dbCreated) { return; }
 
-        lock (this._firstInvokeDb)
+        lock (this._dbCreation)
         {
-            // Create DB / Tables if needed
-            this._firstInvokeDb.Database.EnsureCreated();
-            this._firstInvokeDb.Dispose();
-            this._firstInvokeDb = null;
+            if (this._dbCreated) { return; }
+
+            var db = this.GetDb();
+            db.Database.EnsureCreated();
+            db.Dispose();
+            db = null;
+
+            this._dbCreated = true;
+
+            this._log.LogInformation("DB created");
         }
+    }
+
+    /// <summary>
+    /// Depending on the hosting type, the DB Context is retrieved in different ways.
+    /// Single host app:
+    ///     db = _serviceProvider.GetService[DiscordDbContext](); // this throws an exception in multi-host mode
+    /// Multi host app:
+    ///     db = serviceProvider.CreateScope().ServiceProvider.GetRequiredService[DiscordDbContext]();
+    /// </summary>
+    private DiscordDbContext GetDb()
+    {
+        DiscordDbContext? db;
+
+        if (this._useScope)
+        {
+            db = this._dbScope.ServiceProvider.GetRequiredService<DiscordDbContext>();
+        }
+        else
+        {
+            try
+            {
+                // Try the single app host first
+                this._log.LogTrace("Retrieving Discord DB context using service provider");
+                db = this._serviceProvider.GetService<DiscordDbContext>();
+            }
+            catch (InvalidOperationException)
+            {
+                // If the single app host fails, try the multi app host
+                this._log.LogInformation("Retrieving Discord DB context using scope");
+                db = this._dbScope.ServiceProvider.GetRequiredService<DiscordDbContext>();
+
+                // If the multi app host succeeds, set a flag to remember to use the scope
+                if (db != null)
+                {
+                    this._useScope = true;
+                }
+            }
+        }
+
+        ArgumentNullExceptionEx.ThrowIfNull(db, nameof(db), "Discord DB context is NULL");
+
+        return db;
     }
 }

@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Core.FunctionalTests.ServerLess.AIClients;
 
@@ -26,12 +26,12 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<string> text = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> text = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (string word in text)
+        await foreach (var word in text)
         {
             Console.Write(word);
             if (count++ > 10) { break; }
@@ -49,12 +49,12 @@ public sealed class OpenAITextGeneratorTest : BaseFunctionalTestCase
         var client = new OpenAITextGenerator(this._config);
 
         // Act
-        IAsyncEnumerable<string> text = client.GenerateTextAsync(
+        IAsyncEnumerable<GeneratedTextContent> text = client.GenerateTextAsync(
             "write 100 words about the Earth", new TextGenerationOptions());
 
         // Assert
         var count = 0;
-        await foreach (string word in text)
+        await foreach (var word in text)
         {
             Console.Write(word);
             if (count++ > 10) { break; }

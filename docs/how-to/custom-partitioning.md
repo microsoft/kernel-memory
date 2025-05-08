@@ -19,19 +19,18 @@ which uses settings defined in
 
 The handler performs the following steps:
 
-1. **Split text into lines**: If a line is too long, it stops and starts a new line.
-2. **Form paragraphs**: Concatenate consecutive lines together up to a maximum paragraph size.
-3. **Overlap**: When starting a new paragraph, retain a certain number of lines from the previous paragraph.
+1. **Split text into chunks**
+2. **Form paragraphs**: Concatenate consecutive chunks together up to a maximum chunk size.
+3. **Overlap**: When starting a new chunk, retain a certain number of chunk from the previous chunk.
 
 ## Default Settings
 
 The default values used by `TextPartitioningHandler` are:
 
-| Setting          | Value           | Min | Max                    |
-|------------------|-----------------|-----|------------------------|
-| Paragraph length | 1000 tokens max |  1  | depends on the LLM     |
-| Line length      | 300 tokens max  |  1  | [paragraph length]     |
-| Overlap          | 100 tokens      |  0  | [paragraph length - 1] |
+| Setting      | Value           | Min | Max                |
+|--------------|-----------------|-----|--------------------|
+| Chunk length | 1000 tokens max |  1  | depends on the LLM |
+| Overlap      | 100 tokens      |  0  | [chunk length - 1] |
 
 Lengths are expressed in tokens, which depend on the large language model (LLM) in use and its
 tokenization logic. KernelMemoryBuilder allows specifying a custom tokenizer for each LLM during setup.
@@ -59,7 +58,6 @@ For example, with small models supporting up to 256 tokens, something like this 
       ...
       "TextPartitioning": {
         "MaxTokensPerParagraph": 256,
-        "MaxTokensPerLine": 256,
         "OverlappingTokens": 50
       },
   ...
@@ -74,7 +72,6 @@ var memory = new KernelMemoryBuilder()
         new TextPartitioningOptions
         {
             MaxTokensPerParagraph = 256,
-            MaxTokensPerLine = 256,
             OverlappingTokens = 50
         })
     .Build<MemoryServerless>();

@@ -5,10 +5,12 @@
         <RollForward>LatestMajor</RollForward>
         <AssemblyName>Microsoft.KernelMemory.Core</AssemblyName>
         <RootNamespace>Microsoft.KernelMemory</RootNamespace>
-        <NoWarn>$(NoWarn);CS1700;KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;NU5104;CS8002;</NoWarn>
+        <NoWarn>$(NoWarn);CS1700;KMEXP00;KMEXP01;KMEXP02;KMEXP03;KMEXP04;SKEXP0001;SKEXP0011;CA2208;CA1308;CA1724;CS8002;</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\extensions\Chunkers\Chunkers\Chunkers.csproj" />
+        <ProjectReference Include="..\..\extensions\Tiktoken\Tiktoken\Tiktoken.csproj" />
         <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
     </ItemGroup>
 
@@ -18,7 +20,6 @@
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Microsoft.ML.Tokenizers" /> <!-- prerelease dependency (NU5104) -->
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
@@ -38,7 +39,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Core</PackageId>
         <Product>Kernel Memory core library</Product>
-        <Description>The package contains the the core logic and abstractions of Kernel Memory, not including extensions.</Description>
+        <Description>The package contains the core logic and abstractions of Kernel Memory, not including extensions.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
         <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>

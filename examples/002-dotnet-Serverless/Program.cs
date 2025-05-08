@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Safety.AzureAIContentSafety;
 
 /* Use MemoryServerlessClient to run the default import pipeline
  * in the same process, without distributed queues.
@@ -12,7 +14,7 @@ using Microsoft.KernelMemory;
 #pragma warning disable CS8602 // by design
 public static class Program
 {
-    private static MemoryServerless? s_memory;
+    private static MemoryServerless s_memory = null!;
     private static readonly List<string> s_toDelete = [];
 
     // Remember to configure Azure Document Intelligence to test OCR and support for images
@@ -20,16 +22,21 @@ public static class Program
 
     public static async Task Main()
     {
+        SensitiveDataLogger.Enabled = true;
+
         var memoryConfiguration = new KernelMemoryConfig();
-        var openAIConfig = new OpenAIConfig();
-        var azureOpenAITextConfig = new AzureOpenAIConfig();
-        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
-        var llamaConfig = new LlamaSharpConfig();
         var searchClientConfig = new SearchClientConfig();
-        var azDocIntelConfig = new AzureAIDocIntelConfig();
+
+        var azureAIContentSafetyConfig = new AzureAIContentSafetyConfig();
+        var azureAIDocIntelConfig = new AzureAIDocIntelConfig();
         var azureAISearchConfig = new AzureAISearchConfig();
-        var postgresConfig = new PostgresConfig();
         var azureBlobConfig = new AzureBlobsConfig();
+        var azureOpenAIEmbeddingConfig = new AzureOpenAIConfig();
+        var azureOpenAITextConfig = new AzureOpenAIConfig();
+
+        var openAIConfig = new OpenAIConfig();
+        var llamaConfig = new LlamaSharpConfig();
+        var postgresConfig = new PostgresConfig();
         var awsS3Config = new AWSS3Config();
 
         new ConfigurationBuilder()
@@ -38,45 +45,48 @@ public static class Program
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build()
             .BindSection("KernelMemory", memoryConfiguration)
-            .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
-            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
-            .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
-            .BindSection("KernelMemory:Services:AzureAIDocIntel", azDocIntelConfig)
+            .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig)
+            .BindSection("KernelMemory:Services:AzureAIContentSafety", azureAIContentSafetyConfig)
+            .BindSection("KernelMemory:Services:AzureAIDocIntel", azureAIDocIntelConfig)
             .BindSection("KernelMemory:Services:AzureAISearch", azureAISearchConfig)
             .BindSection("KernelMemory:Services:AzureBlobs", azureBlobConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIEmbedding", azureOpenAIEmbeddingConfig)
+            .BindSection("KernelMemory:Services:AzureOpenAIText", azureOpenAITextConfig)
+            .BindSection("KernelMemory:Services:OpenAI", openAIConfig)
+            .BindSection("KernelMemory:Services:LlamaSharp", llamaConfig)
             .BindSection("KernelMemory:Services:AWSS3", awsS3Config)
-            .BindSection("KernelMemory:Services:Postgres", postgresConfig)
-            .BindSection("KernelMemory:Retrieval:SearchClient", searchClientConfig);
+            .BindSection("KernelMemory:Services:Postgres", postgresConfig);
 
         var builder = new KernelMemoryBuilder()
             .Configure(builder => builder.Services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Warning);
+                l.SetMinimumLevel(LogLevel.Error);
                 l.AddSimpleConsole(c => c.SingleLine = true);
             }))
             .AddSingleton(memoryConfiguration)
+            .WithSearchClientConfig(searchClientConfig)
             // .WithOpenAIDefaults(Environment.GetEnvironmentVariable("OPENAI_API_KEY")) // Use OpenAI for text generation and embedding
-            // .WithOpenAI(openAIConfig)                                    // Use OpenAI for text generation and embedding
-            // .WithLlamaTextGeneration(llamaConfig)                        // Generate answers and summaries using LLama
-            // .WithAzureAISearchMemoryDb(azureAISearchConfig)              // Store memories in Azure AI Search
-            // .WithPostgresMemoryDb(postgresConfig)                        // Store memories in Postgres
-            // .WithQdrantMemoryDb("http://127.0.0.1:6333")                 // Store memories in Qdrant
-            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)         // Store memories on disk
-            // .WithAzureBlobsDocumentStorage(azureBlobConfig)              // Store files in Azure Blobs
-            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)   // Store files on disk
-            // .WithAWSS3DocumentStorage(awsS3Config)                       // Store files on AWS S3
+            // .WithOpenAI(openAIConfig)                                       // Use OpenAI for text generation and embedding
+            // .WithLlamaTextGeneration(llamaConfig)                           // Generate answers and summaries using LLama
+            // .WithAzureAIContentSafetyModeration(azureAIContentSafetyConfig) // Content moderation
+            // .WithAzureAISearchMemoryDb(azureAISearchConfig)                 // Store memories in Azure AI Search
+            // .WithPostgresMemoryDb(postgresConfig)                           // Store memories in Postgres
+            // .WithQdrantMemoryDb("http://127.0.0.1:6333")                    // Store memories in Qdrant
+            // .WithSimpleVectorDb(SimpleVectorDbConfig.Persistent)            // Store memories on disk
+            // .WithAzureBlobsDocumentStorage(azureBlobConfig)                 // Store files in Azure Blobs
+            // .WithSimpleFileStorage(SimpleFileStorageConfig.Persistent)      // Store files on disk
+            // .WithAWSS3DocumentStorage(awsS3Config)                          // Store files on AWS S3
             .WithAzureOpenAITextGeneration(azureOpenAITextConfig)
             .WithAzureOpenAITextEmbeddingGeneration(azureOpenAIEmbeddingConfig);
 
         if (s_imageSupportDemoEnabled)
         {
-            if (azDocIntelConfig.Auth == AzureAIDocIntelConfig.AuthTypes.APIKey && string.IsNullOrWhiteSpace(azDocIntelConfig.APIKey))
+            if (azureAIDocIntelConfig.Auth == AzureAIDocIntelConfig.AuthTypes.APIKey && string.IsNullOrWhiteSpace(azureAIDocIntelConfig.APIKey))
             {
                 Console.WriteLine("Azure AI Document Intelligence API key not found. OCR demo disabled.");
                 s_imageSupportDemoEnabled = false;
             }
-            else { builder.WithAzureAIDocIntel(azDocIntelConfig); }
+            else { builder.WithAzureAIDocIntel(azureAIDocIntelConfig); }
         }
 
         s_memory = builder.Build<MemoryServerless>();
@@ -101,8 +111,8 @@ public static class Program
         // === RETRIEVAL =========
         // =======================
 
-        await AskSimpleQuestion();
-        await AskSimpleQuestionAndShowSources();
+        await AskSimpleQuestionStreamingTheAnswer();
+        await AskSimpleQuestionStreamingAndShowSources();
         await AskQuestionAboutImageContent();
         await AskQuestionUsingFilter();
         await AskQuestionsFilteringByUser();
@@ -297,43 +307,92 @@ public static class Program
     // =======================
 
     // Question without filters
-    private static async Task AskSimpleQuestion()
+    private static async Task AskSimpleQuestionStreamingTheAnswer()
     {
         var question = "What's E = m*c^2?";
         Console.WriteLine($"Question: {question}");
-        Console.WriteLine($"Expected result: formula explanation using the information loaded");
+        Console.WriteLine("Expected result: formula explanation using the information loaded");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.6);
-        Console.WriteLine($"\nAnswer: {answer.Result}");
+        Console.Write("\nAnswer: ");
+        var tokenUsage = new List<TokenUsage>();
+        var answerStream = s_memory.AskStreamingAsync(question, options: new SearchOptions { Stream = true });
 
-        Console.WriteLine("\n====================================\n");
+        await foreach (var answer in answerStream)
+        {
+            // Print token received by LLM
+            Console.Write(answer.Result);
+
+            // Collect token usage
+            if (answer.TokenUsage?.Count > 0)
+            {
+                tokenUsage = tokenUsage.Union(answer.TokenUsage).ToList();
+            }
+
+            // Slow down the stream for demo purpose
+            await Task.Delay(25);
+        }
+
+        Console.WriteLine("\n\nToken usage report:");
+        foreach (var report in tokenUsage)
+        {
+            Console.WriteLine($"{report.ServiceType}: {report.ModelName} [{report.ModelType}]");
+            Console.WriteLine($"- Input : {report.TokenizerTokensIn} tokens (measured by KM tokenizer)");
+            Console.WriteLine($"- Input : {report.ServiceTokensIn} tokens (measured by remote service)");
+            Console.WriteLine($"- Output: {report.ServiceTokensOut} tokens (measured by remote service)");
+            Console.WriteLine($"- Output: {report.TokenizerTokensOut} tokens (measured by KM tokenizer)");
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("\n\n====================================\n");
 
         /* OUTPUT
 
         Question: What's E = m*c^2?
+        Expected result: formula explanation using the information loaded
 
-        Answer: E = m*c^2 is the formula representing the principle of mass-energy equivalence, which was introduced by Albert Einstein. In this equation,
-        E stands for energy, m represents mass, and c is the speed of light in a vacuum, which is approximately 299,792,458 meters per second (m/s).
-        The equation states that the energy (E) of a system in its rest frame is equal to its mass (m) multiplied by the square of the speed of light (c^2).
-        This implies that mass and energy are interchangeable; a small amount of mass can be converted into a large amount of energy and vice versa,
-        due to the speed of light being a very large number when squared. This concept is a fundamental principle in physics and has important implications
-        in various fields, including nuclear physics and cosmology.
+        Answer: E = m*c^2 is a formula derived by physicist Albert Einstein, which expresses the principle of
+        mass–energy equivalence. In this equation, E represents energy, m represents mass, and c represents the
+        speed of light in a vacuum (approximately 3 x 10^8 meters per second). The formula indicates that mass and
+        energy are interchangeable; a small amount of mass can be converted into a large amount of energy, and vice
+        versa, differing only by a multiplicative constant (c^2).
+
+        Token usage report:
+        Azure OpenAI: gpt-4o [TextGeneration]
+        - Input : 24349 tokens (measured by KM tokenizer)
+        - Input : 24356 tokens (measured by remote service)
+        - Output: 103 tokens (measured by remote service)
+        - Output: 103 tokens (measured by KM tokenizer)
 
         */
     }
 
     // Another question without filters and show sources
-    private static async Task AskSimpleQuestionAndShowSources()
+    private static async Task AskSimpleQuestionStreamingAndShowSources()
     {
         var question = "What's Kernel Memory?";
         Console.WriteLine($"Question: {question}");
         Console.WriteLine($"Expected result: it should explain what KM project is (not generic kernel memory)");
 
-        var answer = await s_memory.AskAsync(question, minRelevance: 0.5);
-        Console.WriteLine($"\nAnswer: {answer.Result}\n\n  Sources:\n");
+        Console.Write("\nAnswer: ");
+        var answerStream = s_memory.AskStreamingAsync(question, minRelevance: 0.5,
+            options: new SearchOptions { Stream = true });
+
+        List<Citation> sources = [];
+        await foreach (var answer in answerStream)
+        {
+            // Print token received by LLM
+            Console.Write(answer.Result);
+
+            // Collect sources
+            sources.AddRange(answer.RelevantSources);
+
+            // Slow down the stream for demo purpose
+            await Task.Delay(5);
+        }
 
         // Show sources / citations
-        foreach (var x in answer.RelevantSources)
+        Console.WriteLine("\n\nSources:\n");
+        foreach (var x in sources)
         {
             Console.WriteLine(x.SourceUrl != null
                 ? $"  - {x.SourceUrl} [{x.Partitions.First().LastUpdate:D}]"

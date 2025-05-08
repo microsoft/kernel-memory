@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory;
 using Microsoft.KM.TestHelpers;
 using Microsoft.SemanticKernel;
-using Xunit.Abstractions;
 
 namespace Microsoft.KM.Service.FunctionalTests;
 

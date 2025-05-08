@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +23,9 @@ public sealed class SearchClient : ISearchClient
 {
     private readonly IMemoryDb _memoryDb;
     private readonly ITextGenerator _textGenerator;
-    private readonly IContentModeration? _contentModeration;
     private readonly SearchClientConfig _config;
     private readonly ILogger<SearchClient> _log;
+    private readonly AnswerGenerator _answerGenerator;
     private readonly string _answerPrompt;
 
     public SearchClient(
@@ -38,7 +38,6 @@ public sealed class SearchClient : ISearchClient
     {
         this._memoryDb = memoryDb;
         this._textGenerator = textGenerator;
-        this._contentModeration = contentModeration;
         this._config = config ?? new SearchClientConfig();
         this._config.Validate();
 
@@ -56,6 +55,8 @@ public sealed class SearchClient : ISearchClient
         {
             throw new KernelMemoryException("Text generator not configured");
         }
+
+        this._answerGenerator = new AnswerGenerator(textGenerator, config, promptProvider, contentModeration, loggerFactory);
     }
 
     /// <inheritdoc />
@@ -76,115 +77,41 @@ public sealed class SearchClient : ISearchClient
     {
         if (limit <= 0) { limit = this._config.MaxMatchesCount; }
 
-        var result = new SearchResult
-        {
-            Query = query,
-            Results = []
-        };
+        var result = SearchClientResult.SearchResultInstance(query, limit);
 
         if (string.IsNullOrWhiteSpace(query) && (filters == null || filters.Count == 0))
         {
             this._log.LogWarning("No query or filters provided");
-            return result;
+            return result.SearchResult;
         }
+#pragma warning disable CA2254
+        this._log.LogTrace(string.IsNullOrEmpty(query)
+            ? $"Fetching relevant memories by similarity, min relevance {minRelevance}"
+            : "Fetching relevant memories by filtering only, no vector search");
+#pragma warning restore CA2254
 
-        var list = new List<(MemoryRecord memory, double relevance)>();
-        if (!string.IsNullOrEmpty(query))
+        IAsyncEnumerable<(MemoryRecord, double)> matches = string.IsNullOrEmpty(query)
+            ? this._memoryDb.GetListAsync(index, filters, limit, false, cancellationToken).Select(memoryRecord => (memoryRecord, double.MinValue))
+            : this._memoryDb.GetSimilarListAsync(index, text: query, filters, minRelevance, limit, false, cancellationToken);
+
+        await foreach ((MemoryRecord memoryRecord, double recordRelevance) in matches.ConfigureAwait(false).WithCancellation(cancellationToken))
         {
-            this._log.LogTrace("Fetching relevant memories by similarity, min relevance {0}", minRelevance);
-            IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
-                index: index,
-                text: query,
-                filters: filters,
-                minRelevance: minRelevance,
-                limit: limit,
-                withEmbeddings: false,
-                cancellationToken: cancellationToken);
+            result.State = SearchState.Continue;
+            result = this.ProcessMemoryRecord(result, index, memoryRecord, recordRelevance);
 
-            // Memories are sorted by relevance, starting from the most relevant
-            await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
-            {
-                list.Add((memory, relevance));
-            }
-        }
-        else
-        {
-            this._log.LogTrace("Fetching relevant memories by filtering");
-            IAsyncEnumerable<MemoryRecord> matches = this._memoryDb.GetListAsync(
-                index: index,
-                filters: filters,
-                limit: limit,
-                withEmbeddings: false,
-                cancellationToken: cancellationToken);
+            if (result.State == SearchState.SkipRecord) { continue; }
 
-            await foreach (MemoryRecord memory in matches.ConfigureAwait(false))
-            {
-                list.Add((memory, float.MinValue));
-            }
+            if (result.State == SearchState.Stop) { break; }
         }
 
-        // Memories are sorted by relevance, starting from the most relevant
-        foreach ((MemoryRecord memory, double relevance) in list)
-        {
-            // Note: a document can be composed by multiple files
-            string documentId = memory.GetDocumentId(this._log);
+        this._log.LogTrace("{Count} records processed", result.RecordCount);
 
-            // Identify the file in case there are multiple files
-            string fileId = memory.GetFileId(this._log);
-
-            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
-            string linkToFile = $"{index}/{documentId}/{fileId}";
-
-            var partitionText = memory.GetPartitionText(this._log).Trim();
-            if (string.IsNullOrEmpty(partitionText))
-            {
-                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
-                continue;
-            }
-
-            // Relevance is `float.MinValue` when search uses only filters and no embeddings (see code above)
-            if (relevance > float.MinValue) { this._log.LogTrace("Adding result with relevance {0}", relevance); }
-
-            // If the file is already in the list of citations, only add the partition
-            var citation = result.Results.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                result.Results.Add(citation);
-            }
-
-            // Add the partition to the list of citations
-            citation.Index = index;
-            citation.DocumentId = documentId;
-            citation.FileId = fileId;
-            citation.Link = linkToFile;
-            citation.SourceContentType = memory.GetFileContentType(this._log);
-            citation.SourceName = memory.GetFileName(this._log);
-            citation.SourceUrl = memory.GetWebPageUrl(index);
-
-            citation.Partitions.Add(new Citation.Partition
-            {
-                Text = partitionText,
-                Relevance = (float)relevance,
-                PartitionNumber = memory.GetPartitionNumber(this._log),
-                SectionNumber = memory.GetSectionNumber(),
-                LastUpdate = memory.GetLastUpdate(),
-                Tags = memory.Tags,
-            });
-
-            // In cases where a buggy storage connector is returning too many records
-            if (result.Results.Count >= this._config.MaxMatchesCount)
-            {
-                break;
-            }
-        }
-
-        if (result.Results.Count == 0)
+        if (result.SearchResult.Results.Count == 0)
         {
             this._log.LogDebug("No memories found");
         }
 
-        return result;
+        return result.SearchResult;
     }
 
     /// <inheritdoc />
@@ -196,39 +123,110 @@ public sealed class SearchClient : ISearchClient
         IContext? context = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new MemoryAnswer();
+
+        var stream = this.AskStreamingAsync(
+                index: index, question: question, filters, minRelevance, context, cancellationToken)
+            .ConfigureAwait(false);
+
+        var done = false;
+        StringBuilder text = new(result.Result);
+        await foreach (var part in stream.ConfigureAwait(false))
+        {
+            if (done) { break; }
+
+            result.TokenUsage = part.TokenUsage;
+
+            switch (part.StreamState)
+            {
+                case StreamStates.Error:
+                    text.Clear();
+                    result = part;
+
+                    done = true;
+                    break;
+
+                case StreamStates.Reset:
+                    text.Clear();
+                    text.Append(part.Result);
+                    result = part;
+                    break;
+
+                case StreamStates.Append:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    break;
+
+                case StreamStates.Last:
+                    result.NoResult = part.NoResult;
+                    result.NoResultReason = part.NoResultReason;
+
+                    text.Append(part.Result);
+                    result.Result = text.ToString();
+
+                    if (result.RelevantSources != null && part.RelevantSources != null)
+                    {
+                        result.RelevantSources = result.RelevantSources.Union(part.RelevantSources).ToList();
+                    }
+
+                    done = true;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(part.StreamState));
+            }
+        }
+
+        result.Question = question;
+        result.StreamState = null;
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<MemoryAnswer> AskStreamingAsync(
+        string index,
+        string question,
+        ICollection<MemoryFilter>? filters = null,
+        double minRelevance = 0,
+        IContext? context = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
         string emptyAnswer = context.GetCustomEmptyAnswerTextOrDefault(this._config.EmptyAnswer);
         string answerPrompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
         int limit = context.GetCustomRagMaxMatchesCountOrDefault(this._config.MaxMatchesCount);
+        bool includeDuplicateFacts = context.GetCustomRagIncludeDuplicateFactsOrDefault(this._config.IncludeDuplicateFacts);
 
-        if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
+        var maxTokens = this._config.MaxAskPromptSize > 0
+            ? this._config.MaxAskPromptSize
+            : this._textGenerator.MaxTokenTotal;
 
-        var noAnswerFound = new MemoryAnswer
-        {
-            Question = question,
-            NoResult = true,
-            Result = emptyAnswer,
-        };
+        // Prepare results (empty, error, etc.)
+        SearchClientResult result = SearchClientResult.AskResultInstance(
+            question: question,
+            emptyAnswer: emptyAnswer,
+            moderatedAnswer: this._config.ModeratedAnswer,
+            maxGroundingFacts: limit,
+            tokensAvailable: maxTokens
+                             - this._textGenerator.CountTokens(answerPrompt)
+                             - this._textGenerator.CountTokens(question)
+                             - this._config.AnswerTokens
+        );
 
         if (string.IsNullOrEmpty(question))
         {
             this._log.LogWarning("No question provided");
-            noAnswerFound.NoResultReason = "No question provided";
-            return noAnswerFound;
+            yield return result.NoQuestionResult;
+            yield break;
         }
-
-        var facts = new StringBuilder();
-        var maxTokens = this._config.MaxAskPromptSize > 0
-            ? this._config.MaxAskPromptSize
-            : this._textGenerator.MaxTokenTotal;
-        var tokensAvailable = maxTokens
-                              - this._textGenerator.CountTokens(answerPrompt)
-                              - this._textGenerator.CountTokens(question)
-                              - this._config.AnswerTokens;
-
-        var factsUsedCount = 0;
-        var factsAvailableCount = 0;
-        var answer = noAnswerFound;
 
         this._log.LogTrace("Fetching relevant memories");
         IAsyncEnumerable<(MemoryRecord, double)> matches = this._memoryDb.GetSimilarListAsync(
@@ -240,188 +238,168 @@ public sealed class SearchClient : ISearchClient
             withEmbeddings: false,
             cancellationToken: cancellationToken);
 
+        string factTemplate = context.GetCustomRagFactTemplateOrDefault(this._config.FactTemplate);
+        if (!factTemplate.EndsWith('\n')) { factTemplate += "\n"; }
+
         // Memories are sorted by relevance, starting from the most relevant
-        await foreach ((MemoryRecord memory, double relevance) in matches.ConfigureAwait(false))
+        await foreach ((MemoryRecord memoryRecord, double recordRelevance) in matches.ConfigureAwait(false))
         {
-            // Note: a document can be composed by multiple files
-            string documentId = memory.GetDocumentId(this._log);
+            result.State = SearchState.Continue;
+            result = this.ProcessMemoryRecord(result, index, memoryRecord, recordRelevance, includeDuplicateFacts, factTemplate);
 
-            // Identify the file in case there are multiple files
-            string fileId = memory.GetFileId(this._log);
+            if (result.State == SearchState.SkipRecord) { continue; }
 
-            // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
-            string linkToFile = $"{index}/{documentId}/{fileId}";
+            if (result.State == SearchState.Stop) { break; }
+        }
 
-            string fileName = memory.GetFileName(this._log);
+        this._log.LogTrace("{Count} records processed", result.RecordCount);
 
-            string webPageUrl = memory.GetWebPageUrl(index);
+        var first = true;
+        await foreach (MemoryAnswer answer in this._answerGenerator.GenerateAnswerAsync(question, result, context, cancellationToken).ConfigureAwait(false))
+        {
+            yield return answer;
 
-            var partitionText = memory.GetPartitionText(this._log).Trim();
-            if (string.IsNullOrEmpty(partitionText))
+            if (first)
             {
-                this._log.LogError("The document partition is empty, doc: {0}", memory.Id);
-                continue;
-            }
+                // Remove redundant data, sent only once in the first record, to reduce payload
+                first = false;
 
-            factsAvailableCount++;
-
-            var fact = PromptUtils.RenderFactTemplate(
-                template: factTemplate,
-                factContent: partitionText,
-                source: (fileName == "content.url" ? webPageUrl : fileName),
-                relevance: relevance.ToString("P1", CultureInfo.CurrentCulture),
-                recordId: memory.Id,
-                tags: memory.Tags,
-                metadata: memory.Payload);
-
-            // Use the partition/chunk only if there's room for it
-            var size = this._textGenerator.CountTokens(fact);
-            if (size >= tokensAvailable)
-            {
-                // Stop after reaching the max number of tokens
-                break;
-            }
-
-            factsUsedCount++;
-            this._log.LogTrace("Adding text {0} with relevance {1}", factsUsedCount, relevance);
-
-            facts.Append(fact);
-            tokensAvailable -= size;
-
-            // If the file is already in the list of citations, only add the partition
-            var citation = answer.RelevantSources.FirstOrDefault(x => x.Link == linkToFile);
-            if (citation == null)
-            {
-                citation = new Citation();
-                answer.RelevantSources.Add(citation);
-            }
-
-            // Add the partition to the list of citations
-            citation.Index = index;
-            citation.DocumentId = documentId;
-            citation.FileId = fileId;
-            citation.Link = linkToFile;
-            citation.SourceContentType = memory.GetFileContentType(this._log);
-            citation.SourceName = fileName;
-            citation.SourceUrl = memory.GetWebPageUrl(index);
-
-            citation.Partitions.Add(new Citation.Partition
-            {
-                Text = partitionText,
-                Relevance = (float)relevance,
-                PartitionNumber = memory.GetPartitionNumber(this._log),
-                SectionNumber = memory.GetSectionNumber(),
-                LastUpdate = memory.GetLastUpdate(),
-                Tags = memory.Tags,
-            });
-
-            // In cases where a buggy storage connector is returning too many records
-            if (factsUsedCount >= this._config.MaxMatchesCount)
-            {
-                break;
+                // Note: we keep the sources in the other collections (e.g. AskResult.ErrorResult.RelevantSources),
+                //       so in case of a stream reset the sources are sent again.
+                result.AskResult.RelevantSources.Clear();
+                result.AskResult.Question = null!;
             }
         }
-
-        if (factsAvailableCount > 0 && factsUsedCount == 0)
-        {
-            this._log.LogError("Unable to inject memories in the prompt, not enough tokens available");
-            noAnswerFound.NoResultReason = "Unable to use memories";
-            return noAnswerFound;
-        }
-
-        if (factsUsedCount == 0)
-        {
-            this._log.LogWarning("No memories available (min relevance: {0})", minRelevance);
-            noAnswerFound.NoResultReason = "No memories available";
-            return noAnswerFound;
-        }
-
-        var text = new StringBuilder();
-        var charsGenerated = 0;
-        var watch = new Stopwatch();
-        watch.Restart();
-        await foreach (var x in this.GenerateAnswer(question, facts.ToString(), context, cancellationToken).ConfigureAwait(false))
-        {
-            text.Append(x);
-
-            if (this._log.IsEnabled(LogLevel.Trace) && text.Length - charsGenerated >= 30)
-            {
-                charsGenerated = text.Length;
-                this._log.LogTrace("{0} chars generated", charsGenerated);
-            }
-        }
-
-        watch.Stop();
-
-        answer.Result = text.ToString();
-        this._log.LogSensitive("Answer: {0}", answer.Result);
-        answer.NoResult = ValueIsEquivalentTo(answer.Result, this._config.EmptyAnswer);
-        if (answer.NoResult)
-        {
-            answer.NoResultReason = "No relevant memories found";
-            this._log.LogTrace("Answer generated in {0} msecs. No relevant memories found", watch.ElapsedMilliseconds);
-        }
-        else
-        {
-            this._log.LogTrace("Answer generated in {0} msecs", watch.ElapsedMilliseconds);
-        }
-
-        if (this._contentModeration != null && this._config.UseContentModeration)
-        {
-            var isSafe = await this._contentModeration.IsSafeAsync(answer.Result, cancellationToken).ConfigureAwait(false);
-            if (!isSafe)
-            {
-                this._log.LogWarning("Unsafe answer detected. Returning error message instead.");
-                this._log.LogSensitive("Unsafe answer: {0}", answer.Result);
-                answer.NoResultReason = "Content moderation failure";
-                answer.Result = this._config.ModeratedAnswer;
-            }
-        }
-
-        return answer;
     }
 
-    private IAsyncEnumerable<string> GenerateAnswer(string question, string facts, IContext? context, CancellationToken token)
+    /// <summary>
+    /// Process memory records for ASK and SEARCH calls
+    /// </summary>
+    /// <param name="result">Current state of the result</param>
+    /// <param name="record">Memory record, e.g. text chunk + metadata</param>
+    /// <param name="recordRelevance">Memory record relevance</param>
+    /// <param name="index">Memory index name</param>
+    /// <param name="includeDupes">Whether to include or skip duplicate chunks of text</param>
+    /// <param name="factTemplate">How to render the record when preparing an LLM prompt</param>
+    /// <returns>Updated search result state</returns>
+    private SearchClientResult ProcessMemoryRecord(
+        SearchClientResult result, string index, MemoryRecord record, double recordRelevance, bool includeDupes = true, string? factTemplate = null)
     {
-        string prompt = context.GetCustomRagPromptOrDefault(this._answerPrompt);
-        int maxTokens = context.GetCustomRagMaxTokensOrDefault(this._config.AnswerTokens);
-        double temperature = context.GetCustomRagTemperatureOrDefault(this._config.Temperature);
-        double nucleusSampling = context.GetCustomRagNucleusSamplingOrDefault(this._config.TopP);
-
-        prompt = prompt.Replace("{{$facts}}", facts.Trim(), StringComparison.OrdinalIgnoreCase);
-
-        question = question.Trim();
-        question = question.EndsWith('?') ? question : $"{question}?";
-        prompt = prompt.Replace("{{$input}}", question, StringComparison.OrdinalIgnoreCase);
-        prompt = prompt.Replace("{{$notFound}}", this._config.EmptyAnswer, StringComparison.OrdinalIgnoreCase);
-
-        var options = new TextGenerationOptions
+        var partitionText = record.GetPartitionText(this._log).Trim();
+        if (string.IsNullOrEmpty(partitionText))
         {
-            MaxTokens = maxTokens,
-            Temperature = temperature,
-            NucleusSampling = nucleusSampling,
-            PresencePenalty = this._config.PresencePenalty,
-            FrequencyPenalty = this._config.FrequencyPenalty,
-            StopSequences = this._config.StopSequences,
-            TokenSelectionBiases = this._config.TokenSelectionBiases,
+            this._log.LogError("The document partition is empty, doc: {0}", record.Id);
+            return result.SkipRecord();
+        }
+
+        // Keep track of how many records have been processed
+        result.RecordCount++;
+
+        // Note: a document can be composed by multiple files
+        string documentId = record.GetDocumentId(this._log);
+
+        // Identify the file in case there are multiple files
+        string fileId = record.GetFileId(this._log);
+
+        // Note: this is not a URL and perhaps could be dropped. For now it acts as a unique identifier. See also SourceUrl.
+        string linkToFile = $"{index}/{documentId}/{fileId}";
+
+        // Note: this is "content.url" when importing web pages
+        string fileName = record.GetFileName(this._log);
+
+        // Link to the web page (if a web page) or link to KM web endpoint to download the file
+        string fileDownloadUrl = record.GetWebPageUrl(index);
+
+        // Name of the file to show to the LLM, avoiding "content.url"
+        string fileNameForLLM = (fileName == "content.url" ? fileDownloadUrl : fileName);
+
+        // Dupes management note: don't skip the record, only skip the chunk in the prompt
+        // so Citations includes also duplicates, which might have different tags
+        bool isDupe = !result.FactsUniqueness.Add($"{partitionText}");
+        bool skipFactInPrompt = (isDupe && !includeDupes);
+
+        if (result.Mode == SearchMode.SearchMode)
+        {
+            // Relevance is `float.MinValue` when search uses only filters
+            if (recordRelevance > float.MinValue) { this._log.LogTrace("Adding result with relevance {0}", recordRelevance); }
+        }
+        else if (result.Mode == SearchMode.AskMode)
+        {
+            result.FactsAvailableCount++;
+
+            if (!skipFactInPrompt)
+            {
+                string fact = PromptUtils.RenderFactTemplate(
+                    template: factTemplate!,
+                    factContent: partitionText,
+                    source: fileNameForLLM,
+                    relevance: recordRelevance.ToString("P1", CultureInfo.CurrentCulture),
+                    recordId: record.Id,
+                    tags: record.Tags,
+                    metadata: record.Payload);
+
+                // Use the partition/chunk only if there's room for it
+                int factSizeInTokens = this._textGenerator.CountTokens(fact);
+                if (factSizeInTokens >= result.TokensAvailable)
+                {
+                    // Stop after reaching the max number of tokens
+                    return result.Stop();
+                }
+
+                result.Facts.Append(fact);
+                result.FactsUsedCount++;
+                result.TokensAvailable -= factSizeInTokens;
+
+                // Relevance is cosine similarity when not using hybrid search
+                this._log.LogTrace("Adding content #{FactsUsedCount} with relevance {Relevance} (dupe: {IsDupe})",
+                    result.FactsUsedCount, recordRelevance, isDupe);
+            }
+            else
+            {
+                // The counter must be increased to avoid long/infinite loops
+                // in case the storage contains several duplications
+                result.FactsUsedCount++;
+            }
+        }
+
+        var citation = result.Mode switch
+        {
+            SearchMode.SearchMode => result.SearchResult.Results.FirstOrDefault(x => x.Link == linkToFile),
+            SearchMode.AskMode => result.AskResult.RelevantSources.FirstOrDefault(x => x.Link == linkToFile),
+            _ => throw new ArgumentOutOfRangeException(nameof(result.Mode))
         };
 
-        if (this._log.IsEnabled(LogLevel.Debug))
+        if (citation == null)
         {
-            this._log.LogDebug("Running RAG prompt, size: {0} tokens, requesting max {1} tokens",
-                this._textGenerator.CountTokens(prompt),
-                this._config.AnswerTokens);
-
-            this._log.LogSensitive("Prompt: {0}", prompt);
+            citation = new Citation();
+            result.AddSource(citation);
         }
 
-        return this._textGenerator.GenerateTextAsync(prompt, options, token);
-    }
+        citation.Index = index;
+        citation.DocumentId = documentId;
+        citation.FileId = fileId;
+        citation.Link = linkToFile;
+        citation.SourceContentType = record.GetFileContentType(this._log);
+        citation.SourceName = fileName;
+        citation.SourceUrl = fileDownloadUrl;
+        citation.Partitions.Add(new Citation.Partition
+        {
+            Text = partitionText,
+            Relevance = (float)recordRelevance,
+            PartitionNumber = record.GetPartitionNumber(this._log),
+            SectionNumber = record.GetSectionNumber(),
+            LastUpdate = record.GetLastUpdate(),
+            Tags = record.Tags,
+        });
 
-    private static bool ValueIsEquivalentTo(string value, string target)
-    {
-        value = value.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
-        target = target.Trim().Trim('.', '"', '\'', '`', '~', '!', '?', '@', '#', '$', '%', '^', '+', '*', '_', '-', '=', '|', '\\', '/', '(', ')', '[', ']', '{', '}', '<', '>');
-        return string.Equals(value, target, StringComparison.OrdinalIgnoreCase);
+        // Stop when reaching the max number of results or facts. This acts also as
+        // a protection against storage connectors disregarding 'limit' and returning too many records.
+        if ((result.Mode == SearchMode.SearchMode && result.SearchResult.Results.Count >= result.MaxRecordCount)
+            || (result.Mode == SearchMode.AskMode && result.FactsUsedCount >= result.MaxRecordCount))
+        {
+            return result.Stop();
+        }
+
+        return result;
     }
 }

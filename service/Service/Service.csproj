@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
         <OutputType>Exe</OutputType>
         <!-- Avoid using the ".Service" file extension, which would cause the app to hang on macOS, and use ".ServiceAssembly" instead -->
         <AssemblyName>Microsoft.KernelMemory.ServiceAssembly</AssemblyName>

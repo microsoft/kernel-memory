@@ -152,8 +152,23 @@ public abstract class GenerateEmbeddingsHandlerBase
 
     protected static string GetEmbeddingGeneratorName(object generator)
     {
-        // TODO: use the model name
-        return "TODO";
+        /* @todo Embedding cache
+         *
+         * The orchestrator is caching embeddings, and the cache key would be composed by:
+         *
+         * 1. the generator class name (see GetEmbeddingProviderName)
+         * 2. the model used
+         *
+         * Embedding generators do not expose the model in use though, so we're using a
+         * temporary placeholder.
+         *
+         * Work to do: remove embedding cache from the pipeline and leave it to embedding
+         * generators to cache (dev branch: embeddingcache), so that all clients and handlers
+         * will benefit. This approach removes also the need for generators to expose
+         * internal details.
+         */
+
+        return "__";
     }
 
     protected class PartitionInfo(

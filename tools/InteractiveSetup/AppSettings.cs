@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -8,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.KernelMemory.InteractiveSetup;
 
 /// <summary>
-/// Handle settings stored in appsettings.development.json
+/// Handle settings stored in appsettings.Development.json
 /// </summary>
 internal static class AppSettings
 {
@@ -37,6 +38,11 @@ internal static class AppSettings
         File.WriteAllText(DevelopmentSettingsFile, json);
     }
 
+    public static void AddService(string serviceName, Dictionary<string, object> config)
+    {
+        Change(x => { x.Services.Add(serviceName, config); });
+    }
+
     public static void GlobalChange(Action<JObject> configChanges)
     {
         CreateFileIfNotExists();
@@ -50,13 +56,52 @@ internal static class AppSettings
     }
 
     /// <summary>
-    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.development.json
+    /// Read the configuration, if available
+    /// </summary>
+    public static KernelMemoryConfig? ReadConfig()
+    {
+        JObject? devConf = null;
+        JObject? defaultConf = null;
+
+        if (File.Exists(DevelopmentSettingsFile))
+        {
+            devConf = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(DevelopmentSettingsFile));
+        }
+
+        if (File.Exists(DefaultSettingsFile))
+        {
+            defaultConf = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(DefaultSettingsFile));
+        }
+
+        if (devConf == null)
+        {
+            if (defaultConf == null) { return null; }
+
+            return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(defaultConf["KernelMemory"]));
+        }
+
+        if (defaultConf == null)
+        {
+            return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(devConf["KernelMemory"]));
+        }
+
+        defaultConf.Merge(devConf, new JsonMergeSettings
+        {
+            MergeArrayHandling = MergeArrayHandling.Replace,
+            PropertyNameComparison = StringComparison.OrdinalIgnoreCase,
+        });
+
+        return JsonConvert.DeserializeObject<KernelMemoryConfig>(JsonConvert.SerializeObject(defaultConf["KernelMemory"]));
+    }
+
+    /// <summary>
+    /// Load current configuration from current folder, merging appsettings.json (if present) with appsettings.Development.json
     /// Note: the code reads from the current folder, which is usually service/Service. Using ConfigurationBuilder would read from
     ///       bin/Debug/net7.0/, causing problems because GetGlobalConfig doesn't.
     /// </summary>
     public static KernelMemoryConfig GetCurrentConfig()
     {
-        JObject data = GetGlobalConfig(true);
+        JObject data = GetGlobalConfig(includeDefaults: true);
         if (data["KernelMemory"] == null)
         {
             Console.WriteLine("KernelMemory property missing, using an empty configuration.");
@@ -68,7 +113,7 @@ internal static class AppSettings
                 .SerializeObject(data["KernelMemory"]));
         if (config == null)
         {
-            throw new SetupException("Unable to parse file");
+            throw new SetupException("Unable to parse configuration file");
         }
 
         return config;

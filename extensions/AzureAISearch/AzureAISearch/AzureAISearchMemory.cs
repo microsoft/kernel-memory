@@ -19,6 +19,7 @@ using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
+using AISearchOptions = Azure.Search.Documents.SearchOptions;
 
 namespace Microsoft.KernelMemory.MemoryDb.AzureAISearch;
 
@@ -63,13 +64,14 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             throw new ConfigurationException($"Azure AI Search: {nameof(this._embeddingGenerator)} is not configured");
         }
 
+        var clientOptions = GetClientOptions(config);
         switch (config.Auth)
         {
             case AzureAISearchConfig.AuthTypes.AzureIdentity:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     new DefaultAzureCredential(),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             case AzureAISearchConfig.AuthTypes.APIKey:
@@ -82,14 +84,14 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     new AzureKeyCredential(config.APIKey),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             case AzureAISearchConfig.AuthTypes.ManualTokenCredential:
                 this._adminClient = new SearchIndexClient(
                     new Uri(config.Endpoint),
                     config.GetTokenCredential(),
-                    GetClientOptions());
+                    clientOptions);
                 break;
 
             default:
@@ -184,7 +186,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
             Exhaustive = false
         };
 
-        SearchOptions options = new()
+        AISearchOptions options = new()
         {
             VectorSearch = new()
             {
@@ -246,7 +248,7 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     {
         var client = this.GetSearchClient(index);
 
-        SearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
+        AISearchOptions options = this.PrepareSearchOptions(null, withEmbeddings, filters, limit);
 
         Response<SearchResults<AzureAISearchMemoryRecord>>? searchResult = null;
         try
@@ -372,7 +374,9 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     private SearchClient GetSearchClient(string index)
     {
         var normalIndexName = this.NormalizeIndexName(index);
-        this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", index, normalIndexName);
+
+        if (index != normalIndexName) { this._log.LogTrace("Preparing search client, index name '{0}' normalized to '{1}'", index, normalIndexName); }
+        else { this._log.LogTrace("Preparing search client, index name '{0}'", normalIndexName); }
 
         // Search an available client from the local cache
         if (!this._clientsByIndex.TryGetValue(normalIndexName, out SearchClient? client))
@@ -405,19 +409,27 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
     }
 
     /// <summary>
-    /// Options used by the Azure AI Search client, e.g. User Agent.
-    /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
+    /// Options used by the Azure AI Search client, e.g. User Agent and Auth audience
     /// </summary>
-    private static SearchClientOptions GetClientOptions()
+    private static SearchClientOptions GetClientOptions(AzureAISearchConfig config)
     {
-        return new SearchClientOptions
+        var options = new SearchClientOptions
         {
             Diagnostics =
             {
                 IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
                 ApplicationId = Telemetry.HttpUserAgent,
-            },
+            }
         };
+
+        // Custom audience for sovereign clouds.
+        // See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/search/Azure.Search.Documents/src/SearchAudience.cs
+        if (config.Auth == AzureAISearchConfig.AuthTypes.AzureIdentity && !string.IsNullOrWhiteSpace(config.AzureIdentityAudience))
+        {
+            options.Audience = new SearchAudience(config.AzureIdentityAudience);
+        }
+
+        return options;
     }
 
     /// <summary>
@@ -594,13 +606,13 @@ public class AzureAISearchMemory : IMemoryDb, IMemoryDbUpsertBatch
         return indexSchema;
     }
 
-    private SearchOptions PrepareSearchOptions(
-        SearchOptions? options,
+    private AISearchOptions PrepareSearchOptions(
+        AISearchOptions? options,
         bool withEmbeddings,
         ICollection<MemoryFilter>? filters = null,
         int limit = 1)
     {
-        options ??= new SearchOptions();
+        options ??= new AISearchOptions();
 
         // Define which fields to fetch
         options.Select.Add(AzureAISearchMemoryRecord.IdField);

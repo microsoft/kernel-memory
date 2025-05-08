@@ -51,6 +51,12 @@ public class OnnxConfig
     public int MaxTokens { get; set; } = 2048;
 
     /// <summary>
+    /// Name of the tokenizer used to count tokens.
+    /// Supported values: "p50k", "cl100k", "o200k". Leave it empty if unsure.
+    /// </summary>
+    public string Tokenizer { get; set; } = "o200k";
+
+    /// <summary>
     /// The minimum length of the response that the model will generate. See https://onnxruntime.ai/docs/genai/reference/config.html
     /// </summary>
     public uint MinLength { get; set; } = 0;

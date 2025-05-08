@@ -110,6 +110,16 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
+    public static bool GetCustomRagIncludeDuplicateFactsOrDefault(this IContext? context, bool defaultValue)
+    {
+        if (context.TryGetArg<bool>(Constants.CustomContext.Rag.IncludeDuplicateFacts, out var customValue))
+        {
+            return customValue;
+        }
+
+        return defaultValue;
+    }
+
     public static string GetCustomRagPromptOrDefault(this IContext? context, string defaultValue)
     {
         if (context.TryGetArg<string>(Constants.CustomContext.Rag.Prompt, out var customValue))
@@ -190,9 +200,9 @@ public static class CustomContextExtensions
         return defaultValue;
     }
 
-    public static int GetCustomPartitioningMaxTokensPerParagraphOrDefault(this IContext? context, int defaultValue)
+    public static int GetCustomPartitioningMaxTokensPerChunkOrDefault(this IContext? context, int defaultValue)
     {
-        if (context.TryGetArg<int>(Constants.CustomContext.Partitioning.MaxTokensPerParagraph, out var customValue))
+        if (context.TryGetArg<int>(Constants.CustomContext.Partitioning.MaxTokensPerChunk, out var customValue))
         {
             return customValue;
         }

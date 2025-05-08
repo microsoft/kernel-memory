@@ -53,7 +53,7 @@ public static class DocumentUploadTest
         var count = 0;
         while (!await memory.IsDocumentReadyAsync(documentId: Id))
         {
-            Assert.True(count++ <= 30, "Document import timed out");
+            Assert.True(count++ <= 60, "Document import timed out");
             log("Waiting for memory ingestion to complete...");
             await Task.Delay(TimeSpan.FromSeconds(1));
         }

@@ -13,15 +13,40 @@ public class AzureAIDocIntelConfig
     public enum AuthTypes
     {
         Unknown = -1,
+
+        // AzureIdentity: use automatic Entra (AAD) authentication mechanism.
+        //   When the service is on sovereign clouds you can use the AZURE_AUTHORITY_HOST env var to
+        //   set the authority host. See https://learn.microsoft.com/dotnet/api/overview/azure/identity-readme
+        //   You can test locally using the AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET env vars.
         AzureIdentity,
+
         APIKey,
     }
 
+    /// <summary>
+    /// Azure authentication type
+    /// </summary>
     public AuthTypes Auth { get; set; } = AuthTypes.Unknown;
 
-    public string Endpoint { get; set; } = string.Empty;
+    /// <summary>
+    /// Optional custom auth tokens audience for sovereign clouds, when using Auth.AzureIdentity
+    /// See https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/formrecognizer/Azure.AI.FormRecognizer/src/DocumentAnalysisAudience.cs
+    /// Examples:
+    /// - "https://cognitiveservices.azure.com"
+    /// - "https://cognitiveservices.azure.us"
+    /// - "https://cognitiveservices.azure.cn"
+    /// </summary>
+    public string? AzureIdentityAudience { get; set; } = null;
 
+    /// <summary>
+    /// API key, required if Auth == APIKey
+    /// </summary>
     public string APIKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Azure AI Document Intelligence resource endpoint URL
+    /// </summary>
+    public string Endpoint { get; set; } = string.Empty;
 
     /// <summary>
     /// Verify that the current state is valid.

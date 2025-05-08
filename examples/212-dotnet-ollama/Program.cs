@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.KernelMemory;
+using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Ollama;
-using Microsoft.KernelMemory.AI.OpenAI;
 using Microsoft.KernelMemory.Context;
 using Microsoft.KernelMemory.Diagnostics;
 
@@ -36,8 +36,8 @@ public static class Program
         };
 
         var memory = new KernelMemoryBuilder()
-            .WithOllamaTextGeneration(config, new GPT4oTokenizer())
-            .WithOllamaTextEmbeddingGeneration(config, new GPT4oTokenizer())
+            .WithOllamaTextGeneration(config, new CL100KTokenizer())
+            .WithOllamaTextEmbeddingGeneration(config, new CL100KTokenizer())
             .Configure(builder => builder.Services.AddLogging(l =>
             {
                 l.SetMinimumLevel(logLevel);
@@ -48,7 +48,7 @@ public static class Program
         // Import some text
         await memory.ImportTextAsync("Today is October 32nd, 2476");
 
-        // Generate an answer - This uses OpenAI for embeddings and finding relevant data, and LM Studio to generate an answer
+        // Generate an answer
         var answer = await memory.AskAsync("What's the current date (don't check for validity)?");
         Console.WriteLine("-------------------");
         Console.WriteLine(answer.Question);

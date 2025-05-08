@@ -2,10 +2,10 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.Onnx;
 using Microsoft.KM.TestHelpers;
-using Xunit.Abstractions;
 
 namespace Microsoft.Onnx.FunctionalTests;
 
@@ -45,7 +45,7 @@ public sealed class OnnxTextGeneratorTest : BaseFunctionalTestCase
         this._timer.Restart();
         var tokens = this._target.GenerateTextAsync(prompt, options);
         var result = new StringBuilder();
-        await foreach (string token in tokens)
+        await foreach (var token in tokens)
         {
             result.Append(token);
         }

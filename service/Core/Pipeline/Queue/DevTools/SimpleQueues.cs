@@ -89,17 +89,17 @@ public sealed class SimpleQueues : IQueue
         switch (config.StorageType)
         {
             case FileSystemTypes.Disk:
-                this._log.LogTrace("Using {0} storage", nameof(DiskFileSystem));
+                this._log.LogTrace("Using {StorageType} storage", nameof(DiskFileSystem));
                 this._fileSystem = new DiskFileSystem(config.Directory, null, loggerFactory);
                 break;
 
             case FileSystemTypes.Volatile:
-                this._log.LogTrace("Using {0} storage", nameof(VolatileFileSystem));
+                this._log.LogTrace("Using {StorageType} storage", nameof(VolatileFileSystem));
                 this._fileSystem = VolatileFileSystem.GetInstance(config.Directory, null, loggerFactory);
                 break;
 
             default:
-                this._log.LogCritical("Unknown storage type {0}", config.StorageType);
+                this._log.LogCritical("Unknown storage type {StorageType}", config.StorageType);
                 throw new ArgumentException($"Unknown storage type {config.StorageType}");
         }
 
@@ -124,7 +124,7 @@ public sealed class SimpleQueues : IQueue
 
         if (!string.IsNullOrEmpty(this._queueName))
         {
-            this._log.LogCritical("The client is already connected to queue {0}", this._queueName);
+            this._log.LogCritical("The client is already connected to queue {QueueName}", this._queueName);
             throw new InvalidOperationException($"The queue is already connected to `{this._queueName}`");
         }
 
@@ -132,7 +132,7 @@ public sealed class SimpleQueues : IQueue
         this._poisonQueueName = $"{queueName}{this._config.PoisonQueueSuffix}";
         await this.CreateDirectoriesAsync(cancellationToken).ConfigureAwait(false);
 
-        this._log.LogTrace("Client connected to queue {0} and poison queue {1}", this._queueName, this._poisonQueueName);
+        this._log.LogTrace("Client connected to queue {QueueName} and poison queue {PoisonQueueName}", this._queueName, this._poisonQueueName);
 
         if (options.DequeueEnabled)
         {
@@ -144,11 +144,11 @@ public sealed class SimpleQueues : IQueue
             this._dispatchTimer.Elapsed += this.DispatchMessage;
             this._dispatchTimer.Start();
 
-            this._log.LogTrace("Queue {0}: polling and dispatching timers created", this._queueName);
+            this._log.LogTrace("Queue {QueueName}: polling and dispatching timers created", this._queueName);
         }
         else
         {
-            this._log.LogTrace("Queue {0}: dequeue not enabled", this._queueName);
+            this._log.LogTrace("Queue {QueueName}: dequeue not enabled", this._queueName);
         }
 
         return this;
@@ -172,14 +172,14 @@ public sealed class SimpleQueues : IQueue
             },
             cancellationToken).ConfigureAwait(false);
 
-        this._log.LogInformation("Queue {0}: message {1} sent", this._queueName, messageId);
+        this._log.LogInformation("Queue {QueueName}: message {MessageId} sent", this._queueName, messageId);
     }
 
     /// <inheritdoc />
     /// <see cref="DistributedPipelineOrchestrator.AddHandlerAsync"/> about the logic handling dequeued messages.
     public void OnDequeue(Func<string, Task<ReturnType>> processMessageAction)
     {
-        this._log.LogInformation("Queue {0}: subscribing...", this._queueName);
+        this._log.LogInformation("Queue {QueueName}: subscribing...", this._queueName);
         this.Received += async (sender, args) =>
         {
             Message message = new();
@@ -190,14 +190,14 @@ public sealed class SimpleQueues : IQueue
                 ArgumentNullExceptionEx.ThrowIfNull(args.Message, nameof(args.Message), "The message received is NULL");
                 message = args.Message;
 
-                this._log.LogInformation("Queue {0}: message {0} received", this._queueName, message.Id);
+                this._log.LogInformation("Queue {QueueName}: message {MessageId} received", this._queueName, message.Id);
 
                 // Process message with the logic provided by the orchestrator
                 var returnType = await processMessageAction.Invoke(message.Content).ConfigureAwait(false);
                 switch (returnType)
                 {
                     case ReturnType.Success:
-                        this._log.LogTrace("Message '{0}' successfully processed, deleting message", message.Id);
+                        this._log.LogTrace("Message '{MessageId}' successfully processed, deleting message", message.Id);
                         await this.DeleteMessageAsync(message.Id, this._cancellation.Token).ConfigureAwait(false);
                         break;
 
@@ -205,19 +205,19 @@ public sealed class SimpleQueues : IQueue
                         message.LastError = "Message handler returned false";
                         if (message.DequeueCount == this._maxAttempts)
                         {
-                            this._log.LogError("Message '{0}' processing failed to process, max attempts reached, moving to poison queue. Message content: {1}", message.Id, message.Content);
+                            this._log.LogError("Message '{MessageId}' processing failed to process, max attempts reached, moving to poison queue. Message content: {MessageContent}", message.Id, message.Content);
                             poison = true;
                         }
                         else
                         {
-                            this._log.LogWarning("Message '{0}' failed to process, putting message back in the queue. Message content: {1}", message.Id, message.Content);
+                            this._log.LogWarning("Message '{MessageId}' failed to process, putting message back in the queue. Message content: {MessageContent}", message.Id, message.Content);
                             retry = true;
                         }
 
                         break;
 
                     case ReturnType.FatalError:
-                        this._log.LogError("Message '{0}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
+                        this._log.LogError("Message '{MessageId}' failed to process due to a non-recoverable error, moving to poison queue", message.Id);
                         poison = true;
                         break;
 
@@ -228,7 +228,7 @@ public sealed class SimpleQueues : IQueue
             catch (KernelMemoryException e) when (e.IsTransient.HasValue && !e.IsTransient.Value)
             {
                 message.LastError = $"{e.GetType().FullName} [{e.InnerException?.GetType().FullName}]: {e.Message}";
-                this._log.LogError(e, "Message '{0}' failed to process due to a non-recoverable error, moving to poison queue.", message.Id);
+                this._log.LogError(e, "Message '{MessageId}' failed to process due to a non-recoverable error, moving to poison queue.", message.Id);
                 poison = true;
             }
             // Note: must catch all also because using a void event handler
@@ -237,12 +237,12 @@ public sealed class SimpleQueues : IQueue
                 message.LastError = $"{e.GetType().FullName}: {e.Message}";
                 if (message.DequeueCount == this._maxAttempts)
                 {
-                    this._log.LogError(e, "Message '{0}' processing failed with exception, max attempts reached, moving to poison queue. Message content: {1}.", message.Id, message.Content);
+                    this._log.LogError(e, "Message '{MessageId}' processing failed with exception, max attempts reached, moving to poison queue. Message content: {MessageContent}.", message.Id, message.Content);
                     poison = true;
                 }
                 else
                 {
-                    this._log.LogWarning(e, "Message '{0}' processing failed with exception, putting message back in the queue. Message content: {1}.", message.Id, message.Content);
+                    this._log.LogWarning(e, "Message '{MessageId}' processing failed with exception, putting message back in the queue. Message content: {MessageContent}.", message.Id, message.Content);
                     retry = true;
                 }
             }
@@ -270,17 +270,19 @@ public sealed class SimpleQueues : IQueue
     {
         Task.Run(async () =>
         {
+            var lockAcquired = false;
             try
             {
                 if (this._queue.Count >= this._config.FetchBatchSize) { return; }
 
                 await s_lock.WaitAsync(this._cancellation.Token).ConfigureAwait(false);
+                lockAcquired = true;
 
                 // Loop through all messages on storage
                 var messagesOnStorage = (await this._fileSystem.GetAllFileNamesAsync(this._queueName, "", this._cancellation.Token).ConfigureAwait(false)).ToList();
                 if (messagesOnStorage.Count == 0) { return; }
 
-                this._log.LogTrace("Queue {0}: {1} messages on storage, {2} ready to dispatch, max batch size {3}",
+                this._log.LogTrace("Queue {QueueName}: {MsgCountOnStorage} messages on storage, {MsgCountReady} ready to dispatch, max batch size {FetchBatchSize}",
                     this._queueName, messagesOnStorage.Count, this._queue.Count, this._config.FetchBatchSize);
 
                 foreach (var fileName in messagesOnStorage)
@@ -288,7 +290,7 @@ public sealed class SimpleQueues : IQueue
                     // Limit the number of messages loaded in memory
                     if (this._queue.Count >= this._config.FetchBatchSize)
                     {
-                        this._log.LogTrace("Queue {0}: max batch size {1} reached", this._queueName, this._config.FetchBatchSize);
+                        this._log.LogTrace("Queue {QueueName}: max batch size {FetchBatchSize} reached", this._queueName, this._config.FetchBatchSize);
                         return;
                     }
 
@@ -309,22 +311,22 @@ public sealed class SimpleQueues : IQueue
 
                         // Add to list of messages to be processed
                         this._queue.Enqueue(message);
-                        this._log.LogTrace("Queue {0}: found message {1}", this._queueName, messageId);
+                        this._log.LogTrace("Queue {QueueName}: found message {MessageId}", this._queueName, messageId);
                     }
 
                     if (this._log.IsEnabled(LogLevel.Trace))
                     {
                         if (!message.IsTimeToRun())
                         {
-                            this._log.LogTrace("Queue {0}: skipping message {1} scheduled in the future", this._queueName, messageId);
+                            this._log.LogTrace("Queue {QueueName}: skipping message {MessageId} scheduled in the future", this._queueName, messageId);
                         }
                         else if (message.IsLocked())
                         {
-                            this._log.LogTrace("Queue {0}: skipping message {1} because it is locked", this._queueName, messageId);
+                            this._log.LogTrace("Queue {QueueName}: skipping message {MessageId} because it is locked", this._queueName, messageId);
                         }
                         else if (this._queue.Any(x => x.Id == messageId))
                         {
-                            this._log.LogTrace("Queue {0}: skipping message {1} because it is already loaded", this._queueName, messageId);
+                            this._log.LogTrace("Queue {QueueName}: skipping message {MessageId} because it is already loaded", this._queueName, messageId);
                         }
                     }
                 }
@@ -336,11 +338,16 @@ public sealed class SimpleQueues : IQueue
             }
             catch (Exception e)
             {
-                this._log.LogError(e, "Queue {0}: Unexpected error while polling.", this._queueName);
+                this._log.LogError(e, "Queue {QueueName}: Unexpected error while polling.", this._queueName);
             }
             finally
             {
-                s_lock.Release();
+                // Decrease the internal counter only it the lock was acquired,
+                // e.g. not when WaitAsync times out or throws some exception
+                if (lockAcquired)
+                {
+                    s_lock.Release();
+                }
             }
         }, this._cancellation.Token);
     }
@@ -354,13 +361,15 @@ public sealed class SimpleQueues : IQueue
     {
         Task.Run(async () =>
         {
+            var lockAcquired = false;
             try
             {
                 if (this._queue.IsEmpty) { return; }
 
                 await s_lock.WaitAsync(this._cancellation.Token).ConfigureAwait(false);
+                lockAcquired = true;
 
-                this._log.LogTrace("Dispatching {0} messages", this._queue.Count);
+                this._log.LogTrace("Dispatching {MessageCount} messages", this._queue.Count);
 
                 while (this._queue.TryDequeue(out Message? message))
                 {
@@ -369,11 +378,16 @@ public sealed class SimpleQueues : IQueue
             }
             catch (Exception ex)
             {
-                this._log.LogError(ex, "Queue {0}: Unexpected error while dispatching", this._queueName);
+                this._log.LogError(ex, "Queue {QueueName}: Unexpected error while dispatching", this._queueName);
             }
             finally
             {
-                s_lock.Release();
+                // Decrease the internal counter only it the lock was acquired,
+                // e.g. not when WaitAsync times out or throws some exception
+                if (lockAcquired)
+                {
+                    s_lock.Release();
+                }
             }
         }, this._cancellation.Token);
     }
@@ -384,7 +398,7 @@ public sealed class SimpleQueues : IQueue
 
     private async Task<Message> ReadMessageAsync(string id, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Queue {0}: reading message {1}", this._queueName, id);
+        this._log.LogTrace("Queue {QueueName}: reading message {MessageId}", this._queueName, id);
         var serializedMsg = await this._fileSystem.ReadFileAsTextAsync(
             volume: this._queueName, relPath: "", fileName: $"{id}{FileExt}", cancellationToken: cancellationToken).ConfigureAwait(false);
         return Deserialize(serializedMsg);
@@ -392,7 +406,7 @@ public sealed class SimpleQueues : IQueue
 
     private async Task StoreMessageAsync(string queueName, Message message, CancellationToken cancellationToken = default)
     {
-        this._log.LogTrace("Queue {0}: storing message {1}", this._queueName, message.Id);
+        this._log.LogTrace("Queue {QueueName}: storing message {MessageId}", this._queueName, message.Id);
         await this._fileSystem.WriteFileAsync(queueName, "", $"{message.Id}{FileExt}", Serialize(message), cancellationToken).ConfigureAwait(false);
     }
 
@@ -400,9 +414,9 @@ public sealed class SimpleQueues : IQueue
     {
         try
         {
-            this._log.LogTrace("Queue {0}: deleting message {1}", this._queueName, id);
+            this._log.LogTrace("Queue {QueueName}: deleting message {MessageId}", this._queueName, id);
             var fileName = $"{id}{FileExt}";
-            this._log.LogTrace("Deleting file from storage {0}", fileName);
+            this._log.LogTrace("Deleting file from storage {FileName}", fileName);
             await this._fileSystem.DeleteFileAsync(this._queueName, "", fileName, cancellationToken).ConfigureAwait(false);
         }
         catch (DirectoryNotFoundException)

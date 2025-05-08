@@ -25,6 +25,11 @@ public class ServiceConfig
     public bool OpenApiEnabled { get; set; } = false;
 
     /// <summary>
+    /// Whether to send a [DONE] message at the end of SSE streams.
+    /// </summary>
+    public bool SendSSEDoneMessage { get; set; } = true;
+
+    /// <summary>
     /// List of handlers to enable
     /// </summary>
     public Dictionary<string, HandlerConfig> Handlers { get; set; } = [];

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <OutputType>Exe</OutputType>
+        <IsAspireHost>true</IsAspireHost>
+        <AssemblyName>Microsoft.KernelMemory.Aspire.AllAzure.AppHost</AssemblyName>
+        <RootNamespace>Microsoft.KernelMemory.Aspire.AppHost</RootNamespace>
+        <NoWarn>$(NoWarn);IDE0058;IDE0160;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting" />
+        <PackageReference Include="Aspire.Hosting.AppHost" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\service\Service\Service.csproj" />
+        <ProjectReference Include="..\..\..\extensions\Aspire\Aspire\Aspire.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\..\extensions\KM\KernelMemory\KernelMemory.csproj" IsAspireProjectResource="false" />
+    </ItemGroup>
+
+</Project>

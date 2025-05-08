@@ -25,12 +25,18 @@ public static class Constants
         public const string ArgsField = "args";
     }
 
+    public static class ModelType
+    {
+        public const string EmbeddingGeneration = "EmbeddingGeneration";
+        public const string TextGeneration = "TextGeneration";
+    }
+
     public static class CustomContext
     {
         public static class Partitioning
         {
             // Used to override MaxTokensPerParagraph config
-            public const string MaxTokensPerParagraph = "custom_partitioning_max_tokens_per_paragraph_int";
+            public const string MaxTokensPerChunk = "custom_partitioning_max_tokens_per_paragraph_int";
 
             // Used to override OverlappingTokens config
             public const string OverlappingTokens = "custom_partitioning_overlapping_tokens_int";
@@ -69,6 +75,9 @@ public static class Constants
 
             // Used to override how facts are injected into RAG prompt
             public const string FactTemplate = "custom_rag_fact_template_str";
+
+            // Used to override if duplicate facts are included in RAG prompts
+            public const string IncludeDuplicateFacts = "custom_rag_include_duplicate_facts_bool";
 
             // Used to override the max tokens to generate when using the RAG prompt
             public const string MaxTokens = "custom_rag_max_tokens_int";

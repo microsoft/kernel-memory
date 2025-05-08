@@ -58,9 +58,15 @@ internal static class Program
         // *************************** CONFIG WIZARD ***************************
 
         // Run `dotnet run setup` to run this code and set up the service
-        if (new[] { "setup", "-setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+        if (new[] { "setup", "--setup", "config" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
         {
-            InteractiveSetup.Main.InteractiveSetup(args.Skip(1).ToArray());
+            InteractiveSetup.Program.Main(args.Skip(1).ToArray());
+        }
+
+        // Run `dotnet run check` to run this code and analyze the service configuration
+        if (new[] { "check", "--check" }.Contains(args.FirstOrDefault(), StringComparer.OrdinalIgnoreCase))
+        {
+            InteractiveSetup.Program.Main(["--check"]);
         }
 
         // *************************** APP BUILD *******************************
@@ -154,6 +160,10 @@ internal static class Program
                                              $"- Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}"))
                 .AddEndpointFilter(errorFilter)
                 .AddEndpointFilter(authFilter)
+                .WithName("ServiceStatus")
+                .WithDisplayName("ServiceStatus")
+                .WithDescription("Show the service status and uptime.")
+                .WithSummary("Show the service status and uptime.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -163,6 +173,10 @@ internal static class Program
 
             // Health probe
             app.MapGet("/health", () => Results.Ok("Service is running."))
+                .WithName("ServiceHealth")
+                .WithDisplayName("ServiceHealth")
+                .WithDescription("Show if the service is healthy.")
+                .WithSummary("Show if the service is healthy.")
                 .Produces<string>(StatusCodes.Status200OK)
                 .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
                 .Produces<ProblemDetails>(StatusCodes.Status403Forbidden);
@@ -192,7 +206,7 @@ internal static class Program
             const double AspnetDefaultMaxUploadSize = 30000000d / 1024 / 1024;
             Console.WriteLine("* Web service auth    : " + (config.ServiceAuthorization.Enabled ? "Enabled" : "Disabled"));
             Console.WriteLine("* Max HTTP req size   : " + (config.Service.MaxUploadSizeMb ?? AspnetDefaultMaxUploadSize).ToString("0.#", CultureInfo.CurrentCulture) + " Mb");
-            Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled" : "Disabled"));
+            Console.WriteLine("* OpenAPI swagger     : " + (config.Service.OpenApiEnabled ? "Enabled (/swagger/index.html)" : "Disabled"));
         }
 
         Console.WriteLine("* Memory Db           : " + app.Services.GetService<IMemoryDb>()?.GetType().FullName);
@@ -204,7 +218,7 @@ internal static class Program
         Console.WriteLine("***************************************************************************************************************************");
 
         app.Logger.LogInformation(
-            "Starting Kernel Memory service, .NET Env: {0}, Log Level: {1}, Web service: {2}, Auth: {3}, Pipeline handlers: {4}",
+            "Starting Kernel Memory service, .NET Env: {EnvironmentType}, Log Level: {LogLevel}, Web service: {WebServiceEnabled}, Auth: {WebServiceAuthEnabled}, Pipeline handlers: {HandlersEnabled}",
             env,
             app.Logger.GetLogLevelName(),
             config.Service.RunWebService,
@@ -231,7 +245,10 @@ internal static class Program
         IKernelMemoryBuilder memoryBuilder,
         WebApplicationBuilder appBuilder)
     {
-        if (config.DataIngestion.OrchestrationType != "Distributed") { return 0; }
+        if (!string.Equals(config.DataIngestion.OrchestrationType, KernelMemoryConfig.OrchestrationTypeDistributed, StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
 
         if (!config.Service.RunHandlers) { return 0; }
 

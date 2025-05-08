@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RollForward>LatestMajor</RollForward>
+        <OutputType>Exe</OutputType>
+        <IsAspireHost>true</IsAspireHost>
+        <AssemblyName>Microsoft.KernelMemory.Aspire.Example303.AppHost</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting" />
+        <PackageReference Include="Aspire.Hosting.AppHost" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\extensions\Aspire\Aspire\Aspire.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\extensions\AzureOpenAI\AzureOpenAI\AzureOpenAI.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\extensions\OpenAI\OpenAI\OpenAI.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\service\Core\Core.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\service\Service\Service.csproj" />
+    </ItemGroup>
+
+</Project>
