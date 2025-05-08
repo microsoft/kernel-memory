@@ -148,7 +148,7 @@ internal class AnswerGenerator
             PresencePenalty = this._config.PresencePenalty,
             FrequencyPenalty = this._config.FrequencyPenalty,
             StopSequences = this._config.StopSequences,
-            TokenSelectionBiases = this._config.TokenSelectionBiases
+            TokenSelectionBiases = this._config.TokenSelectionBiases,
         };
 
         if (this._log.IsEnabled(LogLevel.Debug))
