@@ -418,11 +418,11 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
 
         var maxDistance = 1 - minSimilarity;
-        var distanceFilter = $"{this._colEmbedding} <=> @embedding < @maxDistance";
 
-        filterSql = string.IsNullOrWhiteSpace(filterSql) ?
-            distanceFilter :
-            $"({filterSql}) AND {distanceFilter}";
+        var distanceFilter = $"{this._colEmbedding} <=> @embedding < @maxDistance";
+        filterSql = string.IsNullOrWhiteSpace(filterSql)
+            ? distanceFilter
+            : $"({filterSql}) AND {distanceFilter}";
 
         if (sqlUserValues == null) { sqlUserValues = []; }
 
