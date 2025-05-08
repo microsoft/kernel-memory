@@ -56,7 +56,7 @@ readParameters() {
             ;;
             -t)
                 shift
-                TAGS="$TAGS $1"
+                TAGS+=("$1")
             ;;
             *)
                 help
@@ -102,7 +102,17 @@ readParameters "$@"
 validateParameters
 
 # Prepare curl command
-CMD="curl -v -F 'file1=@\"${FILENAME}\"' -F 'index=\"${INDEXNAME}\"' -F 'documentId=\"${DOCUMENT_ID}\"' -F 'tags=\"${TAGS}\"'"
+CMD="curl -v"
+CMD="$CMD -F file1=@\"${FILENAME}\""
+
+# Optianal params
+[ -n "$INDEXNAME" ] && CMD="$CMD -F index=\"${INDEXNAME}\""
+[ -n "$DOCUMENT_ID" ] && CMD="$CMD -F documentId=\"${DOCUMENT_ID}\""
+
+# Add tags
+for TAG in "${TAGS[@]}"; do
+    CMD="$CMD -F tags=\"$TAG\""
+done
 
 # Add URL
 CMD="$CMD $SERVICE_URL/upload"
