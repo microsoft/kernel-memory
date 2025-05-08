@@ -244,10 +244,10 @@ public static class CustomContextExtensions
     /// Extensions supported:
     /// - Ollama
     /// - Anthropic
+    /// - OpenAI
     /// Extensions not supported:
     /// - Azure OpenAI
     /// - ONNX
-    /// - OpenAI
     /// </summary>
     public static string GetCustomTextGenerationModelNameOrDefault(this IContext? context, string defaultValue)
     {

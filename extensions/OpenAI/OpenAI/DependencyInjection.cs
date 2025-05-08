@@ -227,12 +227,11 @@ public static partial class DependencyInjection
     {
         config.Validate();
         return services
-            .AddSingleton<ITextEmbeddingGenerator>(
-                serviceProvider => new OpenAITextEmbeddingGenerator(
-                    config: config,
-                    textTokenizer: textTokenizer,
-                    loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                    httpClient));
+            .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new OpenAITextEmbeddingGenerator(
+                config: config,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                httpClient));
     }
 
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
@@ -243,12 +242,11 @@ public static partial class DependencyInjection
     {
         config.Validate();
         return services
-            .AddSingleton<ITextEmbeddingGenerator>(
-                serviceProvider => new OpenAITextEmbeddingGenerator(
-                    config: config,
-                    openAIClient: openAIClient,
-                    textTokenizer: textTokenizer,
-                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+            .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new OpenAITextEmbeddingGenerator(
+                config: config,
+                openAIClient: openAIClient,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     public static IServiceCollection AddOpenAITextGeneration(
@@ -261,8 +259,8 @@ public static partial class DependencyInjection
         return services
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
-                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 textTokenizer: textTokenizer,
+                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
                 httpClient));
     }
