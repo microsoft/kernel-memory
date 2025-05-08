@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "Microsoft.KernelMemory.ServiceAssembly",
     "version": "1.0"
@@ -113,18 +113,28 @@
                     "description": "Unique ID used for import pipeline and document ID."
                   },
                   "tags": {
-                    "type": "object",
-                    "additionalProperties": {
+                    "type": "array",
+                    "items": {
                       "type": "string"
                     },
-                    "description": "Tags to apply to the memories extracted from the files."
+                    "description": "Tags to apply to the memories extracted from the files.",
+                    "example": [
+                      "group:abc123",
+                      "user:xyz"
+                    ]
                   },
                   "steps": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "How to process the files, e.g. how to extract/chunk etc."
+                    "description": "How to process the files, e.g. how to extract/chunk etc.",
+                    "example": [
+                      "extract",
+                      "partition",
+                      "gen_embeddings",
+                      "save_records"
+                    ]
                   },
                   "files": {
                     "type": "array",
@@ -134,6 +144,14 @@
                     },
                     "description": "Files to process and extract memories from."
                   }
+                }
+              },
+              "encoding": {
+                "tags": {
+                  "explode": true
+                },
+                "steps": {
+                  "explode": true
                 }
               }
             }

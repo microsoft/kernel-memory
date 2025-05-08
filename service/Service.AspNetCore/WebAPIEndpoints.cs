@@ -20,6 +20,7 @@ using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.DocumentStorage;
 using Microsoft.KernelMemory.HTTP;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
@@ -108,8 +109,7 @@ public static class WebAPIEndpoints
             })
             .WithName("UploadDocument")
             .WithDisplayName("UploadDocument")
-            .WithOpenApi(
-                operation =>
+            .WithOpenApi(operation =>
                 {
                     operation.Summary = "Upload a new document to the knowledge base";
                     operation.Description = "Upload a document consisting of one or more files to extract memories from. The extraction process happens asynchronously. If a document with the same ID already exists, it will be overwritten and the memories previously extracted will be updated.";
@@ -136,15 +136,27 @@ public static class WebAPIEndpoints
                                         },
                                         ["tags"] = new OpenApiSchema
                                         {
-                                            Type = "object",
-                                            AdditionalProperties = new OpenApiSchema { Type = "string" },
-                                            Description = "Tags to apply to the memories extracted from the files."
+                                            Type = "array",
+                                            Items = new OpenApiSchema { Type = "string" },
+                                            Description = "Tags to apply to the memories extracted from the files.",
+                                            Example = new OpenApiArray
+                                            {
+                                                new OpenApiString("group:abc123"),
+                                                new OpenApiString("user:xyz")
+                                            }
                                         },
                                         ["steps"] = new OpenApiSchema
                                         {
                                             Type = "array",
                                             Items = new OpenApiSchema { Type = "string" },
-                                            Description = "How to process the files, e.g. how to extract/chunk etc."
+                                            Description = "How to process the files, e.g. how to extract/chunk etc.",
+                                            Example = new OpenApiArray
+                                            {
+                                                new OpenApiString("extract"),
+                                                new OpenApiString("partition"),
+                                                new OpenApiString("gen_embeddings"),
+                                                new OpenApiString("save_records"),
+                                            }
                                         },
                                         ["files"] = new OpenApiSchema
                                         {
@@ -157,6 +169,11 @@ public static class WebAPIEndpoints
                                             Description = "Files to process and extract memories from."
                                         }
                                     }
+                                },
+                                Encoding =
+                                {
+                                    { "tags", new OpenApiEncoding { Explode = true } },
+                                    { "steps", new OpenApiEncoding { Explode = true } },
                                 }
                             }
                         },
