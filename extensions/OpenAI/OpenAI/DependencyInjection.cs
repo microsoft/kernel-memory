@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.AI.OpenAI;
+using Microsoft.KernelMemory.Context;
 using OpenAI;
 
 #pragma warning disable IDE0130 // reduce number of "using" statements
@@ -226,12 +227,11 @@ public static partial class DependencyInjection
     {
         config.Validate();
         return services
-            .AddSingleton<ITextEmbeddingGenerator>(
-                serviceProvider => new OpenAITextEmbeddingGenerator(
-                    config: config,
-                    textTokenizer: textTokenizer,
-                    loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
-                    httpClient));
+            .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new OpenAITextEmbeddingGenerator(
+                config: config,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                httpClient));
     }
 
     public static IServiceCollection AddOpenAITextEmbeddingGeneration(
@@ -242,12 +242,11 @@ public static partial class DependencyInjection
     {
         config.Validate();
         return services
-            .AddSingleton<ITextEmbeddingGenerator>(
-                serviceProvider => new OpenAITextEmbeddingGenerator(
-                    config: config,
-                    openAIClient: openAIClient,
-                    textTokenizer: textTokenizer,
-                    loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+            .AddSingleton<ITextEmbeddingGenerator>(serviceProvider => new OpenAITextEmbeddingGenerator(
+                config: config,
+                openAIClient: openAIClient,
+                textTokenizer: textTokenizer,
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
 
     public static IServiceCollection AddOpenAITextGeneration(
@@ -261,6 +260,7 @@ public static partial class DependencyInjection
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
                 textTokenizer: textTokenizer,
+                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
                 httpClient));
     }
@@ -276,6 +276,7 @@ public static partial class DependencyInjection
             .AddSingleton<ITextGenerator, OpenAITextGenerator>(serviceProvider => new OpenAITextGenerator(
                 config: config,
                 openAIClient: openAIClient,
+                contextProvider: serviceProvider.GetService<IContextProvider>(),
                 textTokenizer: textTokenizer,
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
     }
