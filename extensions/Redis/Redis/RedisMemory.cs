@@ -281,28 +281,34 @@ public sealed class RedisMemory : IMemoryDb
                 var numOfDocumentsFromEnd = -1 * (limit + 1);
 
                 var probingQueryTask = this._search.SearchAsync(normalizedIndexName, query);
-                var configurationCheckTask = this._search.ConfigGetAsync("MAXSEARCHRESULTS"); // need to query Max Search Results since Redis doesn't support unbounded queries.
 
                 // pull back in one round trip, hence the separated awaits.
                 var firstTripDocs = await probingQueryTask.ConfigureAwait(false);
-                var configurationResult = await configurationCheckTask.ConfigureAwait(false);
 
                 var docsNeeded = (int)firstTripDocs.TotalResults - numOfDocumentsFromEnd;
 
                 documents.AddRange(firstTripDocs.Documents.Take(docsNeeded));
                 if (docsNeeded > 10)
                 {
-                    if (configurationResult.TryGetValue("MAXSEARCHRESULTS", out string? value) && int.TryParse(value, out var maxSearchResults))
+                    int maxSearchResults = 10000; // Default value
+                    try
                     {
-                        limit = Math.Min(docsNeeded - 10, maxSearchResults);
-                        query.Limit(10, limit);
-                        var secondTripResults = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
-                        documents.AddRange(secondTripResults.Documents);
+                        var configurationResult = await this._search.ConfigGetAsync("MAXSEARCHRESULTS").ConfigureAwait(false);
+                        if (configurationResult.TryGetValue("MAXSEARCHRESULTS", out string? value) && int.TryParse(value, out var parsedValue))
+                        {
+                            maxSearchResults = parsedValue;
+                        }
                     }
-                    else // shouldn't be reachable.
+                    catch (RedisServerException ex) when (ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new RedisException("Redis does not contain a valid value for MAXSEARCHRESULTS, possible configuration issue in Redis.");
+                        // Fallback to default value if FT.CONFIG is not supported
+                        this._logger.LogWarning("FT.CONFIG command is not supported. Using default MAXSEARCHRESULTS value.");
                     }
+
+                    limit = Math.Min(docsNeeded - 10, maxSearchResults);
+                    query.Limit(10, limit);
+                    var secondTripResults = await this._search.SearchAsync(normalizedIndexName, query).ConfigureAwait(false);
+                    documents.AddRange(secondTripResults.Documents);
                 }
             }
             else
