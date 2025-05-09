@@ -99,7 +99,7 @@ public sealed class DistributedPipelineOrchestrator : BaseOrchestrator
             DataPipeline? pipeline;
             try
             {
-                pipeline = await this.ReadPipelineStatusAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
+                pipeline = await this.GetPipelineAsync(pipelinePointer.Index, pipelinePointer.DocumentId, cancellationToken).ConfigureAwait(false);
             }
             catch (PipelineNotFoundException)
             {
