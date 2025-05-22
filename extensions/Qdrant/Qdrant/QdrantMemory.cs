@@ -25,7 +25,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 /// * allow using more Qdrant specific filtering logic
 /// </summary>
 [Experimental("KMEXP03")]
-public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
+public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch, IDisposable
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
     private readonly QdrantClient _qdrantClient;
@@ -278,6 +278,11 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
         {
             this._log.LogInformation(e, "Index not found, nothing to delete");
         }
+    }
+
+    public void Dispose()
+    {
+        this._qdrantClient.Dispose();
     }
 
     #region private ================================================================================
