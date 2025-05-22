@@ -34,6 +34,7 @@
     <PackageVersion Include="OllamaSharp" Version="5.1.14" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
     <PackageVersion Include="Polly.Core" Version="8.5.2" />
+    <PackageVersion Include="Qdrant.Client" Version="1.14.0" />
     <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
     <PackageVersion Include="ReadLine" Version="2.0.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="8.1.1" />

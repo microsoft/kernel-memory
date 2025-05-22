@@ -8,11 +8,14 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.AI;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.MemoryDb.Qdrant.Client;
 using Microsoft.KernelMemory.MemoryStorage;
+using Qdrant.Client;
+using Qdrant.Client.Grpc;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 
@@ -25,7 +28,7 @@ namespace Microsoft.KernelMemory.MemoryDb.Qdrant;
 public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
 {
     private readonly ITextEmbeddingGenerator _embeddingGenerator;
-    private readonly QdrantClient<DefaultQdrantPayload> _qdrantClient;
+    private readonly QdrantClient _qdrantClient;
     private readonly ILogger<QdrantMemory> _log;
 
     /// <summary>
@@ -47,43 +50,51 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
         }
 
         this._log = (loggerFactory ?? DefaultLogger.Factory).CreateLogger<QdrantMemory>();
-        this._qdrantClient = new QdrantClient<DefaultQdrantPayload>(endpoint: config.Endpoint, apiKey: config.APIKey, loggerFactory: loggerFactory);
+        this._qdrantClient = new QdrantClient(new Uri(config.Endpoint), apiKey: config.APIKey, loggerFactory: loggerFactory);
     }
 
     /// <inheritdoc />
-    public Task CreateIndexAsync(
+    public async Task CreateIndexAsync(
         string index, int vectorSize,
         CancellationToken cancellationToken = default)
     {
         index = NormalizeIndexName(index);
-        return this._qdrantClient.CreateCollectionAsync(index, vectorSize, cancellationToken);
+        try
+        {
+            await this._qdrantClient.CreateCollectionAsync(index, new VectorParams
+            {
+                Distance = Distance.Cosine,
+                Size = (ulong)vectorSize
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (RpcException e) when (e.Status.StatusCode == StatusCode.AlreadyExists)
+        {
+            this._log.LogInformation("Index already exists");
+        }
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<string>> GetIndexesAsync(CancellationToken cancellationToken = default)
     {
         return await this._qdrantClient
-            .GetCollectionsAsync(cancellationToken)
-            .ToListAsync(cancellationToken: cancellationToken)
+            .ListCollectionsAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task DeleteIndexAsync(
+    public async Task DeleteIndexAsync(
         string index,
         CancellationToken cancellationToken = default)
     {
         try
         {
             index = NormalizeIndexName(index);
-            return this._qdrantClient.DeleteCollectionAsync(index, cancellationToken);
+            await this._qdrantClient.DeleteCollectionAsync(index, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFoundException)
+        catch (QdrantException)
         {
             this._log.LogInformation("Index not found, nothing to delete");
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -105,33 +116,33 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
         // Call ToList to avoid multiple enumerations (CA1851: Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations).
         var localRecords = records.ToList();
 
-        var qdrantPoints = new List<QdrantPoint<DefaultQdrantPayload>>();
+        var qdrantPoints = new List<PointStruct>();
         foreach (var record in localRecords)
         {
-            QdrantPoint<DefaultQdrantPayload> qdrantPoint;
+            PointStruct qdrantPoint;
 
             if (string.IsNullOrEmpty(record.Id))
             {
                 record.Id = Guid.NewGuid().ToString("N");
-                qdrantPoint = QdrantPoint<DefaultQdrantPayload>.FromMemoryRecord(record);
+                qdrantPoint = QdrantPointStruct.FromMemoryRecord(record);
                 qdrantPoint.Id = Guid.NewGuid();
 
                 this._log.LogTrace("Generate new Qdrant point ID {0} and record ID {1}", qdrantPoint.Id, record.Id);
             }
             else
             {
-                qdrantPoint = QdrantPoint<DefaultQdrantPayload>.FromMemoryRecord(record);
-                QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
-                    .GetVectorByPayloadIdAsync(index, record.Id, cancellationToken: cancellationToken)
+                qdrantPoint = QdrantPointStruct.FromMemoryRecord(record);
+                IReadOnlyList<RetrievedPoint> retrievedPoints = await this._qdrantClient
+                    .RetrieveAsync(index, new Guid(record.Id), cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
-                if (existingPoint == null)
+                if (retrievedPoints.Count == 0)
                 {
                     qdrantPoint.Id = Guid.NewGuid();
                     this._log.LogTrace("No record with ID {0} found, generated a new point ID {1}", record.Id, qdrantPoint.Id);
                 }
                 else
                 {
-                    qdrantPoint.Id = existingPoint.Id;
+                    qdrantPoint.Id = retrievedPoints[0].Id;
                     this._log.LogTrace("Point ID {0} found, updating...", qdrantPoint.Id);
                 }
             }
@@ -139,7 +150,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
             qdrantPoints.Add(qdrantPoint);
         }
 
-        await this._qdrantClient.UpsertVectorsAsync(index, qdrantPoints, cancellationToken).ConfigureAwait(false);
+        await this._qdrantClient.UpsertAsync(index, qdrantPoints, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         foreach (var record in localRecords)
         {
@@ -171,19 +182,19 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         Embedding textEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, cancellationToken).ConfigureAwait(false);
 
-        List<(QdrantPoint<DefaultQdrantPayload>, double)> results;
+        IReadOnlyList<ScoredPoint> results;
         try
         {
-            results = await this._qdrantClient.GetSimilarListAsync(
+            results = await this._qdrantClient.SearchAsync(
                 collectionName: index,
-                target: textEmbedding,
-                scoreThreshold: minRelevance,
-                requiredTags: requiredTags,
-                limit: limit,
-                withVectors: withEmbeddings,
+                vector: textEmbedding.Data,
+                scoreThreshold: Convert.ToSingle(minRelevance),
+                filter: QdrantFilter.BuildFilter(requiredTags),
+                limit: Convert.ToUInt64(limit),
+                vectorsSelector: withEmbeddings,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFoundException e)
+        catch (RpcException e) when (e.Status.StatusCode == StatusCode.NotFound)
         {
             this._log.LogWarning(e, "Index not found");
             // Nothing to return
@@ -192,7 +203,7 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         foreach (var point in results)
         {
-            yield return (point.Item1.ToMemoryRecord(), point.Item2);
+            yield return (QdrantPointStruct.ToMemoryRecord(point, withEmbeddings), point.Score);
         }
     }
 
@@ -216,27 +227,27 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
             requiredTags.AddRange(filters.Select(filter => filter.GetFilters().Select(x => $"{x.Key}{Constants.ReservedEqualsChar}{x.Value}")));
         }
 
-        List<QdrantPoint<DefaultQdrantPayload>> results;
+        ScrollResponse results;
         try
         {
-            results = await this._qdrantClient.GetListAsync(
+            results = await this._qdrantClient.ScrollAsync(
                 collectionName: index,
-                requiredTags: requiredTags,
+                filter: QdrantFilter.BuildFilter(requiredTags),
                 offset: 0,
-                limit: limit,
-                withVectors: withEmbeddings,
+                limit: Convert.ToUInt32(limit),
+                vectorsSelector: withEmbeddings,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFoundException e)
+        catch (RpcException e) when (e.Status.StatusCode == StatusCode.NotFound)
         {
             this._log.LogWarning(e, "Index not found");
             // Nothing to return
             yield break;
         }
 
-        foreach (var point in results)
+        foreach (var point in results.Result)
         {
-            yield return point.ToMemoryRecord();
+            yield return QdrantPointStruct.ToMemoryRecord(point, withEmbeddings);
         }
     }
 
@@ -250,19 +261,20 @@ public sealed class QdrantMemory : IMemoryDb, IMemoryDbUpsertBatch
 
         try
         {
-            QdrantPoint<DefaultQdrantPayload>? existingPoint = await this._qdrantClient
-                .GetVectorByPayloadIdAsync(index, record.Id, cancellationToken: cancellationToken)
+            IReadOnlyList<RetrievedPoint> existingPoints = await this._qdrantClient
+                .RetrieveAsync(index, new Guid(record.Id), cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-            if (existingPoint == null)
+            if (existingPoints.Count == 0)
             {
                 this._log.LogTrace("No record with ID {0} found, nothing to delete", record.Id);
                 return;
             }
 
+            RetrievedPoint existingPoint = existingPoints[0];
             this._log.LogTrace("Point ID {0} found, deleting...", existingPoint.Id);
-            await this._qdrantClient.DeleteVectorsAsync(index, [existingPoint.Id], cancellationToken).ConfigureAwait(false);
+            await this._qdrantClient.DeleteAsync(index, new Guid(existingPoint.Id.Uuid), cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (IndexNotFoundException e)
+        catch (RpcException e) when (e.Status.StatusCode == StatusCode.NotFound)
         {
             this._log.LogInformation(e, "Index not found, nothing to delete");
         }
