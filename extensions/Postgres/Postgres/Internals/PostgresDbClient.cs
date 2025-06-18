@@ -416,13 +416,13 @@ internal sealed class PostgresDbClient : IDisposable, IAsyncDisposable
 
         // Filtering logic, including filter by similarity
         filterSql = filterSql?.Trim().Replace(PostgresSchema.PlaceholdersTags, this._colTags, StringComparison.Ordinal);
-        if (string.IsNullOrWhiteSpace(filterSql))
-        {
-            filterSql = "TRUE";
-        }
 
         var maxDistance = 1 - minSimilarity;
-        filterSql += $" AND {this._colEmbedding} <=> @embedding < @maxDistance";
+
+        var distanceFilter = $"{this._colEmbedding} <=> @embedding < @maxDistance";
+        filterSql = string.IsNullOrWhiteSpace(filterSql)
+            ? distanceFilter
+            : $"({filterSql}) AND {distanceFilter}";
 
         if (sqlUserValues == null) { sqlUserValues = []; }
 

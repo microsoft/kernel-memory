@@ -39,7 +39,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>Microsoft.KernelMemory.Core</PackageId>
         <Product>Kernel Memory core library</Product>
-        <Description>The package contains the the core logic and abstractions of Kernel Memory, not including extensions.</Description>
+        <Description>The package contains the core logic and abstractions of Kernel Memory, not including extensions.</Description>
         <PackageTags>Copilot, Plugin, Memory, RAG, Kernel Memory, Semantic Memory, Episodic Memory, Declarative Memory, AI, Artificial Intelligence, Embeddings, Vector DB, Vector Search, Memory DB, ETL</PackageTags>
         <DocumentationFile>bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).xml</DocumentationFile>
     </PropertyGroup>
