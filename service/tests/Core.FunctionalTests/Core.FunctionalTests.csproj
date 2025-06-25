@@ -48,6 +48,10 @@
         <Content Include="file3-data.xlsx">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <None Remove="file4-sample-legacy-word.doc" />
+        <Content Include="file4-sample-legacy-word.doc">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

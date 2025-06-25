@@ -302,6 +302,27 @@ public static class Program
         s_toDelete.Add("json01");
     }
 
+    // Extract memory from Legacy Word .doc file
+    private static async Task StoreLegacyWordDoc()
+    {
+        if (!await s_memory.IsDocumentReadyAsync(documentId: "doc01"))
+        {
+            Console.WriteLine("Uploading Legacy Word Doc file");
+            var docId = await s_memory.ImportDocumentAsync(
+                new Document("doc01")
+                .AddFiles(["file10-sample-legacy-word.doc"]));
+
+            s_toDelete.Add(docId);
+            Console.WriteLine($"- Document Id: {docId}");
+        }
+        else
+        {
+            Console.WriteLine("doc01 already uploaded.");
+        }
+
+        s_toDelete.Add("doc01");
+    }
+
     // =======================
     // === RETRIEVAL =========
     // =======================
@@ -611,6 +632,27 @@ public static class Program
         Azure Active Directory (AAD) authentication mechanism. To test this locally, you can set the environment variables AZURE_TENANT_ID, AZURE_CLIENT_ID, and
         AZURE_CLIENT_SECRET. If you choose to use an "APIKey", you would need to provide the actual API key in the configuration.
 
+        */
+    }
+
+    private static async Task AskQuestionsAboutLegacyWordDocFile()
+    {
+        var question = "Can we use Hybrid search in Azure AI Search for implementing the RAG pattern?";
+        Console.WriteLine($"Question: {question}");
+        Console.WriteLine($"Yes, you can use hybrid search in Azure AI Search for implementing the Retrieval Augmented Generation (RAG) pattern");
+
+        var answer = await s_memory.AskAsync(question, filter: MemoryFilters.ByDocument("doc01"));
+        Console.WriteLine($"\nAnswer: {answer.Result}");
+
+        Console.WriteLine("\n====================================\n");
+
+        /* OUTPUT
+
+        Question: Can we use Hybrid search in Azure AI Search for implementing the RAG pattern?
+
+        Answer: Yes, you can use hybrid search in Azure AI Search for implementing the Retrieval Augmented Generation (RAG) pattern. 
+            Azure AI Search supports both keyword (term-based) and vector queries, allowing you to create a search index that contains vector fields, non-vector content, or both. 
+            This capability enables hybrid search, where the system can leverage traditional keyword search alongside vector similarity search to retrieve relevant information.
         */
     }
 

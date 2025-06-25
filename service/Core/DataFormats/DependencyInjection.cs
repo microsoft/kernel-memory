@@ -89,6 +89,7 @@ public static partial class DependencyInjection
         services.AddSingleton<IContentDecoder, MsExcelDecoder>();
         services.AddSingleton<IContentDecoder, MsPowerPointDecoder>();
         services.AddSingleton<IContentDecoder, MsWordDecoder>();
+        services.AddSingleton<IContentDecoder, MsWordLegacyDecoder>();
 
         return services;
     }

@@ -20,6 +20,9 @@
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Http" />
+        <PackageReference Include="NPOI" />
+        <PackageReference Include="ScratchPad.NPOI.HWPF" />
+        <PackageReference Include="System.Text.Encoding.CodePages" />
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Polly.Core" />
         <PackageReference Include="System.Linq.Async" />
