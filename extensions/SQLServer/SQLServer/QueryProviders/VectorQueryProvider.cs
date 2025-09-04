@@ -139,6 +139,7 @@ internal sealed class VectorQueryProvider : ISqlServerQueryProvider
                        {this.GetFullTableName(this._config.MemoryTableName)}
                    WHERE
                        VECTOR_DISTANCE('cosine', CAST(@vector AS VECTOR({this._config.VectorSize})), Embedding) <= @max_distance
+                       AND {this.GetFullTableName(this._config.MemoryTableName)}.[collection] = @index
                        {generatedFilters}
                    ORDER BY [distance] ASC
                    """;
