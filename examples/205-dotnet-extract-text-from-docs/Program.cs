@@ -3,6 +3,7 @@
 using Microsoft.KernelMemory.DataFormats;
 using Microsoft.KernelMemory.DataFormats.Office;
 using Microsoft.KernelMemory.DataFormats.Pdf;
+using Microsoft.KernelMemory.DataFormats.Text;
 using Microsoft.KernelMemory.Pipeline;
 
 FileContent content = new(MimeTypes.PlainText);
@@ -94,6 +95,27 @@ Console.WriteLine("=== Text in file2.pdf ===");
 Console.WriteLine("=========================");
 
 content = await pdfDecoder.DecodeAsync("file2.pdf");
+
+foreach (Chunk section in content.Sections)
+{
+    Console.WriteLine($"Page: {section.Number}/{content.Sections.Count}");
+    Console.WriteLine(section.Content);
+    Console.WriteLine("-----");
+}
+
+Console.WriteLine("============================");
+Console.WriteLine("Press a Enter to continue...");
+Console.ReadLine();
+
+
+// ===================================================================================================================
+// Markdown
+Console.WriteLine("===========================");
+Console.WriteLine("=== Text in markdown.md ===");
+Console.WriteLine("===========================");
+
+var mdDecoder = new MarkDownDecoder();
+content = await mdDecoder.DecodeAsync("markdown.md");
 
 foreach (Chunk section in content.Sections)
 {

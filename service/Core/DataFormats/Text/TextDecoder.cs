@@ -31,10 +31,10 @@ public sealed class TextDecoder : IContentDecoder
     }
 
     /// <inheritdoc />
-    public Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
+    public async Task<FileContent> DecodeAsync(string filename, CancellationToken cancellationToken = default)
     {
         using var stream = File.OpenRead(filename);
-        return this.DecodeAsync(stream, cancellationToken);
+        return await this.DecodeAsync(stream, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
