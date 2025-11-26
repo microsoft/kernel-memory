@@ -12,6 +12,15 @@ The previous codebase remains in the repo for reference only.
 
 Both versions exist purely as research projects used to explore new ideas and gather feedback from the community.
 
+# What’s next
+
+An important aspect of KM² is how we are building the next memory prototype. In parallel, our team is developing [Amplifier](https://github.com/microsoft/amplifier/tree/next), a platform for metacognitive AI engineering. We use Amplifier to build Amplifier itself — and in the same way, we are using Amplifier to build the next generation of Kernel Memory.
+
+KM² will focus on the following areas, which will be documented in more detail when ready:
+- quality of content generated
+- privacy
+- collaboration
+
 ## Disclaimer
 
 > [!IMPORTANT] > **This is experimental software. _Expect things to break_.**
