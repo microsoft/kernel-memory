@@ -23,3 +23,4 @@ Ignore the "archived" directory.
 - Use plural for Enum names, e.g. "EmbeddingsTypes"
 - Always use explicit visibility
 - Don't use primary constructors
+- Use DateTimeOffset, don't use DateTime
