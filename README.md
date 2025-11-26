@@ -6,7 +6,7 @@ Kernel Memory (^2)
 > [!CAUTION]
 > This is an active research project. It is evolving rapidly and may change without notice. Use at your own risk. See [Disclaimer](#disclaimer).
 
-KM^2 is a full rewrite of the initial research prototype, informed by lessons learned from the first iteration and by adjacent work in this space.
+KM² is a full rewrite of the initial research prototype, informed by lessons learned from the first iteration and by adjacent work in this space.
 
 The previous codebase remains in the repo for reference only.
 
@@ -23,7 +23,8 @@ KM² will focus on the following areas, which will be documented in more detail 
 
 ## Disclaimer
 
-> [!IMPORTANT] > **This is experimental software. _Expect things to break_.**
+> [!IMPORTANT]
+> **This is experimental software. _Expect things to break_.**
 
 - Contributions are not accepted at this stage
 - No stability or compatibility guarantees
