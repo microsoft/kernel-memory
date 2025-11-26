@@ -378,23 +378,25 @@ dotnet_naming_rule.async_methods_end_in_async.severity = error
 # Resharper                         #
 #####################################
 
-# disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+# ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 resharper_Condition_Is_Always_True_Or_False_According_To_Nullable_API_Contract_highlighting = none
-
-# disable RedundantTypeArgumentsOfMethod
+# RedundantTypeArgumentsOfMethod
 resharper_Redundant_Type_Arguments_Of_Method_highlighting = none
-
-# disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+# NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 resharper_Null_Coalescing_Condition_Is_Always_Not_Null_According_To_API_Contract_highlighting = none
-
-# disable PartialTypeWithSinglePart
+# PartialTypeWithSinglePart
 resharper_Partial_Type_With_Single_Part_highlighting = none
-
-# disable RedundantDefaultMemberInitializer
+# RedundantDefaultMemberInitializer
 resharper_Redundant_Default_Member_Initializer_highlighting = none
-
-# disable ArrangeTypeModifiers
+# ArrangeTypeModifiers
 resharper_Arrange_Type_Modifiers_highlighting = none
-
-# disable ArrangeTypeMemberModifiers
+# ArrangeTypeMemberModifiers
 resharper_Arrange_Type_Member_Modifiers_highlighting = none
+# InconsistentNaming
+resharper_Inconsistent_Naming_highlighting = none
+
+
+# CA1056: URI properties should not be strings
+# Suppressed for config classes where string URLs are more practical for JSON serialization
+dotnet_diagnostic.CA1056.severity = none
+

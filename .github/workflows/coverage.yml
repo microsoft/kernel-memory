@@ -1,0 +1,36 @@
+name: Test Coverage
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    name: Check Test Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Run coverage check
+      run: |
+        chmod +x ./coverage.sh
+        ./coverage.sh 80
+      env:
+        MIN_COVERAGE: 80
+    
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: TestResults/*/coverage.cobertura.xml
+        if-no-files-found: warn
