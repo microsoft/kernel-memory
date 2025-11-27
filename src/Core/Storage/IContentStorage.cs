@@ -43,4 +43,13 @@ public interface IContentStorage
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Total count of content records.</returns>
     Task<long> CountAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lists content records with pagination support.
+    /// </summary>
+    /// <param name="skip">Number of records to skip.</param>
+    /// <param name="take">Number of records to take.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of content DTOs.</returns>
+    Task<List<ContentDto>> ListAsync(int skip, int take, CancellationToken cancellationToken = default);
 }

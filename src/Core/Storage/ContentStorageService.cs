@@ -153,6 +153,38 @@ public class ContentStorageService : IContentStorage
         return await this._context.Content.LongCountAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Lists content records with pagination support.
+    /// </summary>
+    /// <param name="skip">Number of records to skip.</param>
+    /// <param name="take">Number of records to take.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of content DTOs.</returns>
+    public async Task<List<ContentDto>> ListAsync(int skip, int take, CancellationToken cancellationToken = default)
+    {
+        var records = await this._context.Content
+            .AsNoTracking()
+            .OrderByDescending(c => c.RecordCreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return records.Select(record => new ContentDto
+        {
+            Id = record.Id,
+            Content = record.Content,
+            MimeType = record.MimeType,
+            ByteSize = record.ByteSize,
+            ContentCreatedAt = record.ContentCreatedAt,
+            RecordCreatedAt = record.RecordCreatedAt,
+            RecordUpdatedAt = record.RecordUpdatedAt,
+            Title = record.Title,
+            Description = record.Description,
+            Tags = record.Tags,
+            Metadata = record.Metadata
+        }).ToList();
+    }
+
     // ========== Phase 1: Queue Operations (REQUIRED) ==========
 
     /// <summary>

@@ -5,8 +5,42 @@
         <RootNamespace>KernelMemory.Main</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
         <OutputType>Exe</OutputType>
-        <PublishAot>true</PublishAot>
+        
+        <!-- Global Tool Configuration -->
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>km</ToolCommandName>
+        <PackageId>KernelMemory</PackageId>
+        <PackageOutputPath>./nupkg</PackageOutputPath>
+        
+        <!-- Package Metadata -->
+        <Version>2.0.0-alpha.1</Version>
+        <Authors>Kernel Memory Contributors</Authors>
+        <Company>Microsoft</Company>
+        <Description>Kernel Memory - Personal knowledge management tool</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/microsoft/kernel-memory</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/microsoft/kernel-memory</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>ai;memory;knowledge;cli</PackageTags>
+        
+        <PublishAot>false</PublishAot>
         <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Core/Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+        <PackageReference Include="Spectre.Console" />
+        <PackageReference Include="Spectre.Console.Cli" />
+        <PackageReference Include="YamlDotNet" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="KernelMemory.Main.Tests" />
+        <InternalsVisibleTo Include="KernelMemory.Core.Tests" />
+    </ItemGroup>
 
 </Project>

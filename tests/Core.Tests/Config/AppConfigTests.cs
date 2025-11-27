@@ -5,7 +5,7 @@ using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Config.SearchIndex;
 using KernelMemory.Core.Config.Validation;
 
-namespace Core.Tests.Config;
+namespace KernelMemory.Core.Tests.Config;
 
 /// <summary>
 /// Tests for AppConfig validation and default configuration

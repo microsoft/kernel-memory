@@ -4,11 +4,10 @@
         <TargetFramework>net10.0</TargetFramework>
         <!-- Test projects don't need XML documentation -->
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <!-- Allow underscores in test method names (common convention) -->
-        <!-- Allow test assertions without explicit StringComparison -->
-        <!-- CA1812: internal test classes are instantiated by xUnit via reflection -->
         <!-- xUnit1030: test methods don't need ConfigureAwait (xUnit handles sync context) -->
-        <NoWarn>$(NoWarn);CA1707;CA1307;CA1812;xUnit1030</NoWarn>
+        <NoWarn>$(NoWarn);xUnit1030</NoWarn>
+        <AssemblyName>KernelMemory.Core.Tests</AssemblyName>
+        <RootNamespace>KernelMemory.Core.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,7 +1,7 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 
-namespace Core.Tests.Config;
+namespace KernelMemory.Core.Tests.Config;
 
 /// <summary>
 /// Tests for Storage configuration validation and parsing

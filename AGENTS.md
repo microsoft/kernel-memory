@@ -5,7 +5,7 @@
 
 - `format.sh` is passing without errors or warnings
 - `build.sh` is passing without errors or warnings
-- `coverage.sh` is passing without errors or warnings, coverage > 80%
+- `coverage.sh` is passing without errors or warnings, coverage > 80% (use coverage reports to find which code is not covered)
 
 # C# Code Style
 
