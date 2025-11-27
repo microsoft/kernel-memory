@@ -22,9 +22,9 @@ internal sealed class Program
 
         return mode switch
         {
-            "mcp" => router.HandleUnimplementedMode("MCP", "This feature will allow ChatGPT to connect to Kernel Memory nodes"),
+            "mcp" => router.HandleUnimplementedMode("MCP", "This feature will allow MCP clients to connect to Kernel Memory nodes"),
             "web" => router.HandleUnimplementedMode("Web service", "This feature will publish memory nodes as a web API"),
-            "rpc" => router.HandleUnimplementedMode("RPC", "This feature will enable Electron app communication"),
+            "rpc" => router.HandleUnimplementedMode("RPC", "This feature will enable external apps communication"),
             _ => await RunCliModeAsync(args).ConfigureAwait(false)
         };
     }
