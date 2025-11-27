@@ -12,3 +12,5 @@ rm -rf src/Core/obj
 
 rm -rf src/Main/bin
 rm -rf src/Main/obj
+
+rm -rf tests/Core.Tests/TestResults

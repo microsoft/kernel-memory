@@ -4,7 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
+    <PackageVersion Include="cuid.net" Version="6.0.1" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.12.1" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />

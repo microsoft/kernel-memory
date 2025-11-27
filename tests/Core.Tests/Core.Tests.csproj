@@ -6,12 +6,16 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <!-- Allow underscores in test method names (common convention) -->
         <!-- Allow test assertions without explicit StringComparison -->
-        <NoWarn>$(NoWarn);CA1707;CA1307</NoWarn>
+        <!-- CA1812: internal test classes are instantiated by xUnit via reflection -->
+        <!-- xUnit1030: test methods don't need ConfigureAwait (xUnit handles sync context) -->
+        <NoWarn>$(NoWarn);CA1707;CA1307;CA1812;xUnit1030</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Moq" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio">
           <PrivateAssets>all</PrivateAssets>

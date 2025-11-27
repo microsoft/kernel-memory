@@ -8,6 +8,7 @@ Ignore the "archived" directory.
 - `build.sh` is passing without errors or warnings
 - Test coverage is greater than 80% and `coverage.sh` is not failing
 - Problems are not hidden, problems are addressed.
+- Report breaking changes and ask how to handle them, do not assume migrations are required.
 
 # C# Code Style
 

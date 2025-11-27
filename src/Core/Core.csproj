@@ -6,4 +6,9 @@
         <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="cuid.net" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    </ItemGroup>
+
 </Project>

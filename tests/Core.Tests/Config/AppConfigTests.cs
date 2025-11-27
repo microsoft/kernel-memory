@@ -10,7 +10,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for AppConfig validation and default configuration
 /// </summary>
-public class AppConfigTests
+public sealed class AppConfigTests
 {
     [Fact]
     public void CreateDefault_ShouldCreateValidConfiguration()
