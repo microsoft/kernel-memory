@@ -55,7 +55,7 @@ public sealed class ContentServiceTests
     {
         // Arrange
         var mockStorage = new Mock<IContentStorage>();
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         const string expectedId = "id-456";
         mockStorage.Setup(s => s.UpsertAsync(It.IsAny<UpsertRequest>(), cts.Token))
             .ReturnsAsync(expectedId);

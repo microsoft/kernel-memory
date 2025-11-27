@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using System.IO;
 using System.Text.Json;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
@@ -15,6 +14,7 @@ namespace KernelMemory.Main.Tests.Integration;
 /// </summary>
 public sealed class CliIntegrationTests : IDisposable
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
     private readonly string _tempDir;
     private readonly string _configPath;
     private readonly string _dbPath;
@@ -41,7 +41,7 @@ public sealed class CliIntegrationTests : IDisposable
             }
         };
 
-        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(config, s_jsonOptions);
         File.WriteAllText(this._configPath, json);
     }
 
@@ -84,7 +84,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task UpsertCommand_WithCustomId_UsesProvidedId()
     {
         // Arrange
-        var customId = "my-custom-id-123";
+        const string customId = "my-custom-id-123";
         var settings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -145,7 +145,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task GetCommand_ExistingId_ReturnsContent()
     {
         // Arrange - First upsert content
-        var customId = "get-test-id";
+        const string customId = "get-test-id";
         var upsertSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -198,7 +198,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task GetCommand_WithFullFlag_ReturnsAllDetails()
     {
         // Arrange - First upsert content
-        var customId = "full-details-id";
+        const string customId = "full-details-id";
         var upsertSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -315,7 +315,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task DeleteCommand_ExistingId_DeletesSuccessfully()
     {
         // Arrange - First upsert content
-        var customId = "delete-test-id";
+        const string customId = "delete-test-id";
         var upsertSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -359,7 +359,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task DeleteCommand_WithQuietVerbosity_SucceedsWithMinimalOutput()
     {
         // Arrange - First upsert content
-        var customId = "quiet-delete-id";
+        const string customId = "quiet-delete-id";
         var upsertSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -393,7 +393,7 @@ public sealed class CliIntegrationTests : IDisposable
     {
         // This test verifies the complete workflow works together
         var context = CreateTestContext("test");
-        var testId = "e2e-workflow-id";
+        const string testId = "e2e-workflow-id";
 
         // 1. Upsert
         var upsertSettings = new UpsertCommandSettings

@@ -50,7 +50,7 @@ public sealed class BaseCommandTests
         // Arrange
         var command = new TestCommand();
         var mockFormatter = new Mock<IOutputFormatter>();
-        var exception = new Exception("System failure");
+        var exception = new InvalidOperationException("System failure");
 
         // Act
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
@@ -77,12 +77,12 @@ public sealed class BaseCommandTests
     }
 
     [Fact]
-    public void HandleError_WithNullReferenceException_ReturnsSystemError()
+    public void HandleError_WithInvalidOperationException_ReturnsSystemError()
     {
         // Arrange
         var command = new TestCommand();
         var mockFormatter = new Mock<IOutputFormatter>();
-        var exception = new NullReferenceException("Null reference");
+        var exception = new InvalidOperationException("Invalid operation");
 
         // Act
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);

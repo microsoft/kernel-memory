@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Storage;
 using KernelMemory.Core.Storage.Models;
 using Microsoft.Data.Sqlite;
@@ -192,7 +193,7 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task UpsertAsync_CalculatesByteSizeAsync()
     {
         // Arrange
-        var testContent = "Test content with some length";
+        const string testContent = "Test content with some length";
         var request = new UpsertRequest
         {
             Content = testContent,
@@ -327,7 +328,7 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task DeleteAsync_QueuesOperationSuccessfullyAsync()
     {
         // Arrange
-        var contentId = "test_delete_queue";
+        const string contentId = "test_delete_queue";
 
         // Act
         await this._service.DeleteAsync(contentId).ConfigureAwait(false);
@@ -346,7 +347,7 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task ConcurrentUpserts_LastOneWinsAsync()
     {
         // Arrange
-        var contentId = "concurrent_test";
+        const string contentId = "concurrent_test";
 
         // Act - Simulate concurrent upserts
         var task1 = this._service.UpsertAsync(new UpsertRequest
@@ -383,7 +384,7 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task OperationCancellation_SupersededUpsertsAsync()
     {
         // Arrange
-        var contentId = "cancellation_test";
+        const string contentId = "cancellation_test";
 
         // Act - Create multiple upsert operations
         await this._service.UpsertAsync(new UpsertRequest
@@ -420,7 +421,7 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task Delete_CancelsAllPreviousOperationsAsync()
     {
         // Arrange
-        var contentId = "delete_cancellation_test";
+        const string contentId = "delete_cancellation_test";
 
         // Create multiple upsert operations
         await this._service.UpsertAsync(new UpsertRequest

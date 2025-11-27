@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.ContentIndex;

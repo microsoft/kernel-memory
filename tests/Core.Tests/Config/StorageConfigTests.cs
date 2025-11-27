@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 
@@ -13,7 +14,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -67,7 +68,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -106,7 +107,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -148,7 +149,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -191,7 +192,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -230,7 +231,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",

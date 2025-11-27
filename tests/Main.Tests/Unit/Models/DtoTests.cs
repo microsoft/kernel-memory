@@ -30,8 +30,8 @@ public sealed class DtoTests
         // Arrange & Act
         var dto = new CacheConfigDto
         {
-            Type = null,
-            Path = null
+            Type = null!,
+            Path = null!
         };
 
         // Assert
@@ -175,7 +175,7 @@ public sealed class DtoTests
         // Arrange & Act
         var dto = new SearchIndexDto
         {
-            Type = null
+            Type = null!
         };
 
         // Assert
@@ -201,7 +201,7 @@ public sealed class DtoTests
         // Arrange & Act
         var dto = new StorageConfigDto
         {
-            Type = null
+            Type = null!
         };
 
         // Assert

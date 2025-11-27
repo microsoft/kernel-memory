@@ -11,6 +11,8 @@ public sealed class ModeRouter
     /// <summary>
     /// Detects the execution mode from command line arguments.
     /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>Detected mode: "cli", "mcp", "web", or "rpc".</returns>
     public string DetectMode(string[] args)
     {
         if (args.Length == 0)
@@ -31,6 +33,9 @@ public sealed class ModeRouter
     /// <summary>
     /// Handles unimplemented mode by writing error to stderr.
     /// </summary>
+    /// <param name="mode">Mode name to display in error message.</param>
+    /// <param name="description">Description of the unimplemented feature.</param>
+    /// <returns>System error exit code.</returns>
     public int HandleUnimplementedMode(string mode, string description)
     {
         Console.Error.WriteLine($"Error: {mode} mode not yet implemented");

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Storage;
 using KernelMemory.Core.Storage.Models;
 using Microsoft.EntityFrameworkCore;
@@ -207,7 +208,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task MultipleOperations_ProcessInOrderAsync()
     {
         // Arrange
-        var contentId = "ordered_test";
+        const string contentId = "ordered_test";
         var operations = new List<string>();
 
         // Act - Create multiple operations quickly
@@ -236,7 +237,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     {
         // This test verifies that operations are queued even if processing might fail
         // Arrange
-        var contentId = "failure_test";
+        const string contentId = "failure_test";
 
         // Act - Queue operation
         await this._service.UpsertAsync(new UpsertRequest
@@ -370,7 +371,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task ConcurrentWrites_ToSameContent_AreSerializedCorrectlyAsync()
     {
         // Arrange
-        var contentId = "concurrent_integration_test";
+        const string contentId = "concurrent_integration_test";
 
         // Act - Fire multiple concurrent upserts
         var tasks = Enumerable.Range(1, 10).Select(i =>

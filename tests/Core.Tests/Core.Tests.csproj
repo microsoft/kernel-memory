@@ -5,7 +5,7 @@
         <RootNamespace>KernelMemory.Core.Tests</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
         <!-- Test projects don't need XML documentation -->
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- xUnit1030: test methods don't need ConfigureAwait (xUnit handles sync context) -->
         <NoWarn>$(NoWarn);xUnit1030</NoWarn>
     </PropertyGroup>

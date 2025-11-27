@@ -32,6 +32,8 @@ internal sealed class Program
     /// <summary>
     /// Runs in CLI mode using Spectre.Console.Cli.
     /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>Exit code from CLI execution.</returns>
     private static async Task<int> RunCliModeAsync(string[] args)
     {
         var builder = new CliApplicationBuilder();

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using KernelMemory.Core.Config;
-using KernelMemory.Main.CLI;
 using KernelMemory.Main.CLI.Commands;
 using Spectre.Console.Cli;
 using Xunit;
@@ -21,9 +20,9 @@ public sealed class CommandExecutionTests : IDisposable
     {
         this._tempDir = Path.Combine(Path.GetTempPath(), $"km-test-{Guid.NewGuid():N}");
         Directory.CreateDirectory(this._tempDir);
-        
+
         this._configPath = Path.Combine(this._tempDir, "config.json");
-        
+
         // Create test config
         var config = AppConfig.CreateDefault();
         config.Nodes["test"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "test"));
@@ -40,9 +39,13 @@ public sealed class CommandExecutionTests : IDisposable
                 Directory.Delete(this._tempDir, true);
             }
         }
-        catch
+        catch (IOException)
         {
-            // Ignore cleanup errors
+            // Ignore cleanup errors - files may be locked
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Ignore cleanup errors - permission issues
         }
     }
 
@@ -52,7 +55,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new UpsertCommandSettings { Content = "Test content" };
         var command = new UpsertCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -63,7 +66,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new GetCommandSettings { Id = "nonexistent-id-12345" };
         var command = new GetCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(1, result); // User error
     }
@@ -75,7 +78,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new DeleteCommandSettings { Id = "nonexistent-id-12345" };
         var command = new DeleteCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "delete", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result); // Success (idempotent)
     }
@@ -86,7 +89,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new ListCommandSettings();
         var command = new ListCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "list", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -97,7 +100,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new NodesCommandSettings();
         var command = new NodesCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "nodes", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -108,7 +111,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new ConfigCommandSettings();
         var command = new ConfigCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -119,7 +122,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new ConfigCommandSettings { ShowNodes = true };
         var command = new ConfigCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -130,7 +133,7 @@ public sealed class CommandExecutionTests : IDisposable
         var settings = new ConfigCommandSettings { ShowCache = true };
         var command = new ConfigCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
-        
+
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
@@ -149,7 +152,7 @@ public sealed class CommandExecutionTests : IDisposable
         var getSettings = new GetCommandSettings { Id = "some-id", ShowFull = true };
         var getCommand = new GetCommand();
         var getContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
-        
+
         var result = await getCommand.ExecuteAsync(getContext, getSettings).ConfigureAwait(false);
         Assert.True(result >= 0); // Either success or user error
     }
