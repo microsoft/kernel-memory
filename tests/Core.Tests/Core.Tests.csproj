@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <AssemblyName>KernelMemory.Core.Tests</AssemblyName>
+        <RootNamespace>KernelMemory.Core.Tests</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
         <!-- Test projects don't need XML documentation -->
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <!-- xUnit1030: test methods don't need ConfigureAwait (xUnit handles sync context) -->
         <NoWarn>$(NoWarn);xUnit1030</NoWarn>
-        <AssemblyName>KernelMemory.Core.Tests</AssemblyName>
-        <RootNamespace>KernelMemory.Core.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
