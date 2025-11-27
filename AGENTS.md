@@ -1,14 +1,11 @@
-see @docs/AGENTS.md
-
-Ignore the "archived" directory.
+- Follow @docs/AGENTS.md instructions without exceptions
+- Ignore the "archived" directory
 
 # Definition of done
 
 - `format.sh` is passing without errors or warnings
 - `build.sh` is passing without errors or warnings
-- Test coverage is greater than 80% and `coverage.sh` is not failing
-- Problems are not hidden, problems are addressed.
-- Report breaking changes and ask how to handle them, do not assume migrations are required.
+- `coverage.sh` is passing without errors or warnings, coverage > 80%
 
 # C# Code Style
 
