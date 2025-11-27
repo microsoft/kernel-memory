@@ -51,7 +51,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new UpsertCommandSettings { Content = "Test content" };
         var command = new UpsertCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -62,7 +62,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new GetCommandSettings { Id = "nonexistent-id-12345" };
         var command = new GetCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(1, result); // User error
@@ -74,7 +74,7 @@ public sealed class CommandExecutionTests : IDisposable
         // Delete is idempotent - should succeed even if ID doesn't exist
         var settings = new DeleteCommandSettings { Id = "nonexistent-id-12345" };
         var command = new DeleteCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "delete", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result); // Success (idempotent)
@@ -85,7 +85,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new ListCommandSettings();
         var command = new ListCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "list", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -96,7 +96,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new NodesCommandSettings();
         var command = new NodesCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "nodes", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -107,7 +107,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new ConfigCommandSettings();
         var command = new ConfigCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -118,7 +118,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new ConfigCommandSettings { ShowNodes = true };
         var command = new ConfigCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -129,7 +129,7 @@ public sealed class CommandExecutionTests : IDisposable
     {
         var settings = new ConfigCommandSettings { ShowCache = true };
         var command = new ConfigCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
         
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -141,15 +141,25 @@ public sealed class CommandExecutionTests : IDisposable
         // First upsert
         var upsertSettings = new UpsertCommandSettings { Content = "Test content for full flag" };
         var upsertCommand = new UpsertCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        var upsertContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
+        await upsertCommand.ExecuteAsync(upsertContext, upsertSettings).ConfigureAwait(false);
 
         // Then get with full flag - will fail because we don't know the ID
         // But this still exercises the code path
         var getSettings = new GetCommandSettings { Id = "some-id", ShowFull = true };
         var getCommand = new GetCommand();
+        var getContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
         
-        var result = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var result = await getCommand.ExecuteAsync(getContext, getSettings).ConfigureAwait(false);
         Assert.True(result >= 0); // Either success or user error
+    }
+
+    /// <summary>
+    /// Helper class to provide empty remaining arguments for CommandContext.
+    /// </summary>
+    private sealed class EmptyRemainingArguments : IRemainingArguments
+    {
+        public IReadOnlyList<string> Raw => Array.Empty<string>();
+        public ILookup<string, string?> Parsed => Enumerable.Empty<string>().ToLookup(x => x, x => (string?)null);
     }
 }
