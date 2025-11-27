@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.IO;
 using KernelMemory.Core.Config;
-using KernelMemory.Core.Config.ContentIndex;
-using KernelMemory.Core.Config.Enums;
+using KernelMemory.Main.CLI;
 using KernelMemory.Main.CLI.Commands;
 using Spectre.Console.Cli;
 using Xunit;
@@ -96,7 +94,7 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task NodesCommand_WithValidConfig_ReturnsSuccess()
     {
-        var settings = new GlobalOptions();
+        var settings = new NodesCommandSettings();
         var command = new NodesCommand();
         var context = new CommandContext(new[] { "--config", this._configPath }, null, null, null);
         
