@@ -14,6 +14,7 @@ Ignore the "archived" directory.
 
 - Use .NET 10 and C# 14
 - Always use `this.` prefix
+- Async methods have mandatory `Async` name suffix (optional only for tests, not required for `Main` method)
 - Keep magic values and constants in a centralized `Constants.cs` file
 - One class per file, matching the class name with the file name
 - Sort class methods by visibility: public first, private at the end
