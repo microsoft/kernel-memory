@@ -6,7 +6,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for Storage configuration validation and parsing
 /// </summary>
-internal sealed class StorageConfigTests
+public sealed class StorageConfigTests
 {
     [Fact]
     public void LoadFromFile_WithDiskStorage_ShouldExpandTildePath()

@@ -6,7 +6,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for Search Index configuration validation
 /// </summary>
-internal sealed class SearchIndexConfigTests
+public sealed class SearchIndexConfigTests
 {
     [Fact]
     public void LoadFromFile_WithGraphSearchIndex_ShouldExpandTildePath()
