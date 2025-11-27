@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
 using Spectre.Console.Cli;
 

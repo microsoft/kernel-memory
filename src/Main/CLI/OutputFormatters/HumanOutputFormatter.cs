@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Storage.Models;
 using Spectre.Console;
 

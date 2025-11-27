@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using Visus.Cuid;
 
 namespace KernelMemory.Core.Storage;

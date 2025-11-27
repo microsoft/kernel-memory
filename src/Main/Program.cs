@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 ﻿using KernelMemory.Main.CLI.Commands;
 using Spectre.Console.Cli;
 

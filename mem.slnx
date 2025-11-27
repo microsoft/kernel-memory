@@ -1,9 +1,7 @@
 <Solution>
-  <Folder Name="/src/" />
   <Folder Name="/tests/">
-    <Project Path="tests/Main.Tests/Main.Tests.csproj" />
-    <Project Path="tests\Core.Tests\Core.Tests.csproj" Type="C#" />
+    <Project Path="tests\Core.Tests\Core.Tests.csproj" />
   </Folder>
-  <Project Path="src\Core\Core.csproj" Type="C#" />
-  <Project Path="src\Main\Main.csproj" Type="C#" />
+  <Project Path="src\Core\Core.csproj" />
+  <Project Path="src\Main\Main.csproj" />
 </Solution>

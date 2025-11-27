@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Globalization;
 using KernelMemory.Core.Storage.Entities;
 using Microsoft.EntityFrameworkCore;

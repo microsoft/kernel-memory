@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;

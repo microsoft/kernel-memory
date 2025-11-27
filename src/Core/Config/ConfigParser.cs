@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.ContentIndex;

@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.Embeddings;
 using KernelMemory.Core.Config.Enums;

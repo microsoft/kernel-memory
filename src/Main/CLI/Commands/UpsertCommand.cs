@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using KernelMemory.Core.Storage.Models;

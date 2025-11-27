@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

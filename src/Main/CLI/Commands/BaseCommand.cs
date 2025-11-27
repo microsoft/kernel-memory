@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 using System.Diagnostics.CodeAnalysis;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
