@@ -7,7 +7,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for ConfigParser - loading and parsing configuration files
 /// </summary>
-public class ConfigParserTests
+internal sealed class ConfigParserTests
 {
     [Fact]
     public void LoadFromFile_WhenFileMissing_ShouldReturnDefaultConfig()

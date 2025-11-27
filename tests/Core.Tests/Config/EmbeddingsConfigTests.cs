@@ -6,7 +6,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for Embeddings configuration validation
 /// </summary>
-public class EmbeddingsConfigTests
+internal sealed class EmbeddingsConfigTests
 {
     [Fact]
     public void LoadFromFile_WithOllamaEmbeddings_ShouldValidate()

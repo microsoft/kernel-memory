@@ -6,7 +6,7 @@ namespace Core.Tests.Config;
 /// <summary>
 /// Tests for Content Index configuration validation
 /// </summary>
-public class ContentIndexConfigTests
+internal sealed class ContentIndexConfigTests
 {
     [Fact]
     public void LoadFromFile_WithPostgresContentIndex_ShouldValidate()
