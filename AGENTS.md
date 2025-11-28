@@ -1,11 +1,16 @@
 - Follow @docs/AGENTS.md instructions without exceptions
 - Ignore the "archived" directory
+- For any task with multiple steps, create a todo list FIRST, then execute.
+- Avoid destructive operations like "get reset", "git clean", etc.
 
 # Definition of done
 
-- `format.sh` is passing without errors or warnings
-- `build.sh` is passing without errors or warnings
-- `coverage.sh` is passing without errors or warnings, coverage > 80% (use coverage reports to find which code is not covered)
+- [ ] instructions in `docs/AGENTS.md` have been followed without exceptions
+- [ ] magic values and constants are centralized in `Constants.cs`
+- [ ] `build.sh` runs successfully without warnings or errors
+- [ ] `format.sh` runs successfully without warnings or errors
+- [ ] `coverage.sh` runs successfully without warnings or errors
+- [ ] there are zero skipped tests
 
 # C# Code Style
 

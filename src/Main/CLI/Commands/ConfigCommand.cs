@@ -51,7 +51,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
             if (settings.ShowNodes)
             {
                 // Show all nodes summary
-                output = this.GetConfig().Nodes.Select(kvp => new NodeSummaryDto
+                output = this.Config.Nodes.Select(kvp => new NodeSummaryDto
                 {
                     Id = kvp.Key,
                     Access = kvp.Value.Access.ToString(),
@@ -64,26 +64,28 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
             else if (settings.ShowCache)
             {
                 // Show cache configuration
+                var config = this.Config;
                 output = new CacheInfoDto
                 {
-                    EmbeddingsCache = this.GetConfig().EmbeddingsCache != null ? new CacheConfigDto
+                    EmbeddingsCache = config.EmbeddingsCache != null ? new CacheConfigDto
                     {
-                        Type = this.GetConfig().EmbeddingsCache.Type.ToString(),
-                        Path = this.GetConfig().EmbeddingsCache.Path
+                        Type = config.EmbeddingsCache.Type.ToString(),
+                        Path = config.EmbeddingsCache.Path
                     } : null,
-                    LlmCache = this.GetConfig().LLMCache != null ? new CacheConfigDto
+                    LlmCache = config.LLMCache != null ? new CacheConfigDto
                     {
-                        Type = this.GetConfig().LLMCache.Type.ToString(),
-                        Path = this.GetConfig().LLMCache.Path
+                        Type = config.LLMCache.Type.ToString(),
+                        Path = config.LLMCache.Path
                     } : null
                 };
             }
             else
             {
                 // Default: show entire configuration with all nodes
+                var config = this.Config;
                 output = new
                 {
-                    Nodes = this.GetConfig().Nodes.Select(kvp => new NodeDetailsDto
+                    Nodes = config.Nodes.Select(kvp => new NodeDetailsDto
                     {
                         NodeId = kvp.Key,
                         Access = kvp.Value.Access.ToString(),
@@ -109,15 +111,15 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
                     }).ToList(),
                     Cache = new CacheInfoDto
                     {
-                        EmbeddingsCache = this.GetConfig().EmbeddingsCache != null ? new CacheConfigDto
+                        EmbeddingsCache = config.EmbeddingsCache != null ? new CacheConfigDto
                         {
-                            Type = this.GetConfig().EmbeddingsCache.Type.ToString(),
-                            Path = this.GetConfig().EmbeddingsCache.Path
+                            Type = config.EmbeddingsCache.Type.ToString(),
+                            Path = config.EmbeddingsCache.Path
                         } : null,
-                        LlmCache = this.GetConfig().LLMCache != null ? new CacheConfigDto
+                        LlmCache = config.LLMCache != null ? new CacheConfigDto
                         {
-                            Type = this.GetConfig().LLMCache.Type.ToString(),
-                            Path = this.GetConfig().LLMCache.Path
+                            Type = config.LLMCache.Type.ToString(),
+                            Path = config.LLMCache.Path
                         } : null
                     }
                 };
