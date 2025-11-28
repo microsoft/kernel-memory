@@ -41,15 +41,17 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = this.Initialize(settings);
+            // ConfigCommand doesn't need node selection - it queries the entire configuration
+            // So we skip Initialize() and just use the injected config directly
+            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
 
             // Determine what to show
             object output;
 
             if (settings.ShowNodes)
             {
-                // Show all nodes
-                output = config.Nodes.Select(kvp => new NodeSummaryDto
+                // Show all nodes summary
+                output = this.GetConfig().Nodes.Select(kvp => new NodeSummaryDto
                 {
                     Id = kvp.Key,
                     Access = kvp.Value.Access.ToString(),
@@ -64,44 +66,60 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
                 // Show cache configuration
                 output = new CacheInfoDto
                 {
-                    EmbeddingsCache = config.EmbeddingsCache != null ? new CacheConfigDto
+                    EmbeddingsCache = this.GetConfig().EmbeddingsCache != null ? new CacheConfigDto
                     {
-                        Type = config.EmbeddingsCache.Type.ToString(),
-                        Path = config.EmbeddingsCache.Path
+                        Type = this.GetConfig().EmbeddingsCache.Type.ToString(),
+                        Path = this.GetConfig().EmbeddingsCache.Path
                     } : null,
-                    LlmCache = config.LLMCache != null ? new CacheConfigDto
+                    LlmCache = this.GetConfig().LLMCache != null ? new CacheConfigDto
                     {
-                        Type = config.LLMCache.Type.ToString(),
-                        Path = config.LLMCache.Path
+                        Type = this.GetConfig().LLMCache.Type.ToString(),
+                        Path = this.GetConfig().LLMCache.Path
                     } : null
                 };
             }
             else
             {
-                // Default: show current node details
-                output = new NodeDetailsDto
+                // Default: show entire configuration with all nodes
+                output = new
                 {
-                    NodeId = node.Id,
-                    Access = node.Access.ToString(),
-                    ContentIndex = new ContentIndexConfigDto
+                    Nodes = this.GetConfig().Nodes.Select(kvp => new NodeDetailsDto
                     {
-                        Type = node.ContentIndex.Type.ToString(),
-                        Path = node.ContentIndex is KernelMemory.Core.Config.ContentIndex.SqliteContentIndexConfig sqlite
-                            ? sqlite.Path
-                            : null
-                    },
-                    FileStorage = node.FileStorage != null ? new StorageConfigDto
+                        NodeId = kvp.Key,
+                        Access = kvp.Value.Access.ToString(),
+                        ContentIndex = new ContentIndexConfigDto
+                        {
+                            Type = kvp.Value.ContentIndex.Type.ToString(),
+                            Path = kvp.Value.ContentIndex is KernelMemory.Core.Config.ContentIndex.SqliteContentIndexConfig sqlite
+                                ? sqlite.Path
+                                : null
+                        },
+                        FileStorage = kvp.Value.FileStorage != null ? new StorageConfigDto
+                        {
+                            Type = kvp.Value.FileStorage.Type.ToString()
+                        } : null,
+                        RepoStorage = kvp.Value.RepoStorage != null ? new StorageConfigDto
+                        {
+                            Type = kvp.Value.RepoStorage.Type.ToString()
+                        } : null,
+                        SearchIndexes = kvp.Value.SearchIndexes.Select(si => new SearchIndexDto
+                        {
+                            Type = si.Type.ToString()
+                        }).ToList()
+                    }).ToList(),
+                    Cache = new CacheInfoDto
                     {
-                        Type = node.FileStorage.Type.ToString()
-                    } : null,
-                    RepoStorage = node.RepoStorage != null ? new StorageConfigDto
-                    {
-                        Type = node.RepoStorage.Type.ToString()
-                    } : null,
-                    SearchIndexes = node.SearchIndexes.Select(si => new SearchIndexDto
-                    {
-                        Type = si.Type.ToString()
-                    }).ToList()
+                        EmbeddingsCache = this.GetConfig().EmbeddingsCache != null ? new CacheConfigDto
+                        {
+                            Type = this.GetConfig().EmbeddingsCache.Type.ToString(),
+                            Path = this.GetConfig().EmbeddingsCache.Path
+                        } : null,
+                        LlmCache = this.GetConfig().LLMCache != null ? new CacheConfigDto
+                        {
+                            Type = this.GetConfig().LLMCache.Type.ToString(),
+                            Path = this.GetConfig().LLMCache.Path
+                        } : null
+                    }
                 };
             }
 

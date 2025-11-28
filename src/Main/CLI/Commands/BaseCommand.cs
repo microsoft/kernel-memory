@@ -32,6 +32,15 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
     }
 
     /// <summary>
+    /// Gets the injected application configuration.
+    /// </summary>
+    /// <returns>The application configuration.</returns>
+    protected AppConfig GetConfig()
+    {
+        return this._config;
+    }
+
+    /// <summary>
     /// Initializes command dependencies: node and formatter.
     /// Config is already injected via constructor (no file I/O).
     /// </summary>
