@@ -11,4 +11,9 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="KernelMemory.Main.Tests" />
+        <InternalsVisibleTo Include="KernelMemory.Core.Tests" />
+    </ItemGroup>
+
 </Project>

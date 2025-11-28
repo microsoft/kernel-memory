@@ -12,6 +12,9 @@ MIN_COVERAGE=${1:-80}
 echo "Running tests with coverage collection..."
 echo ""
 
+# Clean previous results
+rm -rf ./TestResults
+
 # Run tests with coverage using coverlet.collector
 # --collect:"XPlat Code Coverage" enables the collector
 # --results-directory specifies output location
@@ -23,39 +26,87 @@ echo ""
 echo "Coverage collection complete!"
 echo ""
 
-# Find the most recent coverage file (coverlet.collector creates it in a GUID subfolder)
-COVERAGE_REPORT=$(find ./TestResults -name "coverage.cobertura.xml" | head -1)
+# Find all coverage files
+COVERAGE_FILES=$(find ./TestResults -name "coverage.cobertura.xml" | sort)
+FILE_COUNT=$(echo "$COVERAGE_FILES" | wc -l | tr -d ' ')
 
-echo "Coverage report location: $COVERAGE_REPORT"
+echo "Found $FILE_COUNT coverage report(s)"
 echo ""
 
-if [ -f "$COVERAGE_REPORT" ]; then
-  # Parse line coverage from cobertura XML
-  LINE_RATE=$(grep -o 'line-rate="[0-9.]*"' "$COVERAGE_REPORT" | head -1 | grep -o '[0-9.]*')
-  
-  if [ -n "$LINE_RATE" ]; then
-    # Convert to percentage
-    COVERAGE_PCT=$(awk "BEGIN {printf \"%.2f\", $LINE_RATE * 100}")
+# Parse and display coverage for each project
+declare -a COVERAGE_RATES
+declare -a COVERAGE_SOURCES
+declare -a PROJECT_NAMES
+
+while IFS= read -r COVERAGE_FILE; do
+  if [ -f "$COVERAGE_FILE" ]; then
+    # Extract source path and line rate
+    SOURCE=$(grep -o '<source>.*</source>' "$COVERAGE_FILE" | head -1 | sed 's/<source>//;s/<\/source>//')
+    LINE_RATE=$(grep -o 'line-rate="[0-9.]*"' "$COVERAGE_FILE" | head -1 | grep -o '[0-9.]*')
     
-    echo "====================================="
-    echo "  Test Coverage: ${COVERAGE_PCT}%"
-    echo "  Threshold:     ${MIN_COVERAGE}%"
-    echo "====================================="
-    echo ""
-    
-    # Check if coverage meets threshold
-    MEETS_THRESHOLD=$(awk "BEGIN {print ($COVERAGE_PCT >= $MIN_COVERAGE) ? 1 : 0}")
-    
-    if [ "$MEETS_THRESHOLD" -eq 0 ]; then
-      echo "❌ Coverage ${COVERAGE_PCT}% is below minimum threshold of ${MIN_COVERAGE}%"
-      exit 1
-    else
-      echo "✅ Coverage meets minimum threshold"
-      rm -rf TestResults
+    if [ -n "$LINE_RATE" ]; then
+      COVERAGE_PCT=$(awk "BEGIN {printf \"%.2f\", $LINE_RATE * 100}")
+      
+      # Determine project name from source path
+      if [[ "$SOURCE" == *"/Core/"* ]] || [[ "$SOURCE" == *"/Core" ]]; then
+        PROJECT_NAME="Core"
+        # Only track Core and Main for threshold checking (exclude Combined)
+        COVERAGE_RATES+=("$COVERAGE_PCT")
+        COVERAGE_SOURCES+=("$SOURCE")
+        PROJECT_NAMES+=("$PROJECT_NAME")
+      elif [[ "$SOURCE" == *"/Main/"* ]] || [[ "$SOURCE" == *"/Main" ]]; then
+        PROJECT_NAME="Main"
+        # Only track Core and Main for threshold checking (exclude Combined)
+        COVERAGE_RATES+=("$COVERAGE_PCT")
+        COVERAGE_SOURCES+=("$SOURCE")
+        PROJECT_NAMES+=("$PROJECT_NAME")
+      else
+        PROJECT_NAME="Combined (includes untestable entry points)"
+        # Skip adding to COVERAGE_RATES - we don't check threshold for Combined
+      fi
+      
+      echo "  $PROJECT_NAME: ${COVERAGE_PCT}%"
     fi
+  fi
+done <<< "$COVERAGE_FILES"
+
+echo ""
+
+# Calculate minimum coverage across Core and Main assemblies only
+# (Combined report is excluded as it includes untestable entry points like Program.Main)
+MIN_PROJECT_COVERAGE=""
+MIN_PROJECT_NAME=""
+for i in "${!COVERAGE_RATES[@]}"; do
+  rate="${COVERAGE_RATES[$i]}"
+  if [ -z "$MIN_PROJECT_COVERAGE" ] || (( $(awk "BEGIN {print ($rate < $MIN_PROJECT_COVERAGE) ? 1 : 0}") )); then
+    MIN_PROJECT_COVERAGE="$rate"
+    MIN_PROJECT_NAME="${PROJECT_NAMES[$i]}"
+  fi
+done
+
+if [ -n "$MIN_PROJECT_COVERAGE" ]; then
+  echo "====================================="
+  echo "  Minimum Coverage: ${MIN_PROJECT_COVERAGE}%"
+  echo "  Threshold:        ${MIN_COVERAGE}%"
+  echo "====================================="
+  echo ""
+  
+  # Check if coverage meets threshold
+  MEETS_THRESHOLD=$(awk "BEGIN {print ($MIN_PROJECT_COVERAGE >= $MIN_COVERAGE) ? 1 : 0}")
+  
+  if [ "$MEETS_THRESHOLD" -eq 0 ]; then
+    echo "❌ Coverage ${MIN_PROJECT_COVERAGE}% is below minimum threshold of ${MIN_COVERAGE}%"
+    echo ""
+    echo "Coverage by project:"
+    for i in "${!COVERAGE_RATES[@]}"; do
+      echo "  - ${COVERAGE_SOURCES[$i]}: ${COVERAGE_RATES[$i]}%"
+    done
+    exit 1
   else
-    echo "⚠️  Could not parse coverage percentage from report"
+    echo "✅ All projects meet minimum threshold"
+    rm -rf TestResults
   fi
 else
-  echo "⚠️  Coverage report not found at: $COVERAGE_REPORT"
+  echo "⚠️  Could not parse coverage from reports"
+  exit 1
 fi

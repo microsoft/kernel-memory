@@ -1,10 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Storage;
 using KernelMemory.Core.Storage.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace Core.Tests.Storage;
+namespace KernelMemory.Core.Tests.Storage;
 
 /// <summary>
 /// Integration tests for ContentStorageService using real SQLite database files.
@@ -20,30 +21,30 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public ContentStorageIntegrationTests()
     {
         // Use temporary SQLite file for integration tests
-        _tempDbPath = Path.Combine(Path.GetTempPath(), $"test_km_{Guid.NewGuid()}.db");
+        this._tempDbPath = Path.Combine(Path.GetTempPath(), $"test_km_{Guid.NewGuid()}.db");
 
         var options = new DbContextOptionsBuilder<ContentStorageDbContext>()
-            .UseSqlite($"Data Source={_tempDbPath}")
+            .UseSqlite($"Data Source={this._tempDbPath}")
             .Options;
 
-        _context = new ContentStorageDbContext(options);
-        _context.Database.EnsureCreated();
+        this._context = new ContentStorageDbContext(options);
+        this._context.Database.EnsureCreated();
 
-        _mockLogger = new Mock<ILogger<ContentStorageService>>();
+        this._mockLogger = new Mock<ILogger<ContentStorageService>>();
 
         // Use real CuidGenerator for integration tests
         var cuidGenerator = new CuidGenerator();
-        _service = new ContentStorageService(_context, cuidGenerator, _mockLogger.Object);
+        this._service = new ContentStorageService(this._context, cuidGenerator, this._mockLogger.Object);
     }
 
     public void Dispose()
     {
-        _context.Dispose();
+        this._context.Dispose();
 
         // Clean up temporary database file
-        if (File.Exists(_tempDbPath))
+        if (File.Exists(this._tempDbPath))
         {
-            File.Delete(_tempDbPath);
+            File.Delete(this._tempDbPath);
         }
 
         GC.SuppressFinalize(this);
@@ -53,7 +54,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task DatabaseSchema_IsCreatedCorrectlyAsync()
     {
         // Assert - Verify tables exist
-        var tables = await _context.Database.SqlQueryRaw<string>(
+        var tables = await this._context.Database.SqlQueryRaw<string>(
             "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
             .ToListAsync().ConfigureAwait(false);
 
@@ -65,7 +66,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task ContentTable_HasCorrectIndexesAsync()
     {
         // Assert - Verify indexes on Content table
-        var indexes = await _context.Database.SqlQueryRaw<string>(
+        var indexes = await this._context.Database.SqlQueryRaw<string>(
             "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='km_content'")
             .ToListAsync().ConfigureAwait(false);
 
@@ -76,7 +77,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task OperationsTable_HasCorrectIndexesAsync()
     {
         // Assert - Verify indexes on Operations table
-        var indexes = await _context.Database.SqlQueryRaw<string>(
+        var indexes = await this._context.Database.SqlQueryRaw<string>(
             "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='km_operations'")
             .ToListAsync().ConfigureAwait(false);
 
@@ -104,11 +105,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act 1: Upsert
-        var contentId = await _service.UpsertAsync(request).ConfigureAwait(false);
+        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 1: Content exists
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal("Integration test content", content.Content);
         Assert.Equal("text/plain", content.MimeType);
@@ -125,22 +126,22 @@ public sealed class ContentStorageIntegrationTests : IDisposable
             MimeType = "text/html",
             Title = "Updated Title"
         };
-        await _service.UpsertAsync(updateRequest).ConfigureAwait(false);
+        await this._service.UpsertAsync(updateRequest).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 2: Content is updated
-        var updatedContent = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var updatedContent = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(updatedContent);
         Assert.Equal("Updated content", updatedContent.Content);
         Assert.Equal("text/html", updatedContent.MimeType);
         Assert.Equal("Updated Title", updatedContent.Title);
 
         // Act 3: Delete
-        await _service.DeleteAsync(contentId).ConfigureAwait(false);
+        await this._service.DeleteAsync(contentId).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 3: Content is deleted
-        var deletedContent = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var deletedContent = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.Null(deletedContent);
     }
 
@@ -151,7 +152,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         var ids = new List<string>();
         for (int i = 0; i < 10; i++)
         {
-            var id = await _service.UpsertAsync(new UpsertRequest
+            var id = await this._service.UpsertAsync(new UpsertRequest
             {
                 Content = $"Content {i}",
                 MimeType = "text/plain"
@@ -180,21 +181,21 @@ public sealed class ContentStorageIntegrationTests : IDisposable
             Title = "Persistence Test"
         };
 
-        await _service.UpsertAsync(request).ConfigureAwait(false);
+        await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Act - Dispose and recreate context (simulates app restart)
-        await _context.DisposeAsync().ConfigureAwait(false);
+        await this._context.DisposeAsync().ConfigureAwait(false);
 
         var options = new DbContextOptionsBuilder<ContentStorageDbContext>()
-            .UseSqlite($"Data Source={_tempDbPath}")
+            .UseSqlite($"Data Source={this._tempDbPath}")
             .Options;
 
         using var newContext = new ContentStorageDbContext(options);
         var newService = new ContentStorageService(
             newContext,
             new CuidGenerator(),
-            _mockLogger.Object);
+            this._mockLogger.Object);
 
         // Assert - Content should still exist
         var content = await newService.GetByIdAsync("persistent_test").ConfigureAwait(false);
@@ -207,13 +208,13 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task MultipleOperations_ProcessInOrderAsync()
     {
         // Arrange
-        var contentId = "ordered_test";
+        const string contentId = "ordered_test";
         var operations = new List<string>();
 
         // Act - Create multiple operations quickly
         for (int i = 1; i <= 5; i++)
         {
-            await _service.UpsertAsync(new UpsertRequest
+            await this._service.UpsertAsync(new UpsertRequest
             {
                 Id = contentId,
                 Content = $"Version {i}",
@@ -226,7 +227,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         await Task.Delay(500).ConfigureAwait(false);
 
         // Assert - Final content should be the last version
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal("Version 5", content.Content);
     }
@@ -236,10 +237,10 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     {
         // This test verifies that operations are queued even if processing might fail
         // Arrange
-        var contentId = "failure_test";
+        const string contentId = "failure_test";
 
         // Act - Queue operation
-        await _service.UpsertAsync(new UpsertRequest
+        await this._service.UpsertAsync(new UpsertRequest
         {
             Id = contentId,
             Content = "Test content",
@@ -247,7 +248,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         }).ConfigureAwait(false);
 
         // Assert - Operation should be queued (Phase 1 always succeeds)
-        var operation = await _context.Operations
+        var operation = await this._context.Operations
             .FirstOrDefaultAsync(o => o.ContentId == contentId).ConfigureAwait(false);
 
         Assert.NotNull(operation);
@@ -267,11 +268,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await _service.UpsertAsync(request).ConfigureAwait(false);
+        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(specificDate, content.ContentCreatedAt);
     }
@@ -295,11 +296,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await _service.UpsertAsync(request).ConfigureAwait(false);
+        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(3, content.Tags.Length);
         Assert.Equal("tag with spaces", content.Tags[0]);
@@ -312,12 +313,12 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task CountAsync_ReflectsDatabaseStateAsync()
     {
         // Arrange - Initial count
-        var initialCount = await _service.CountAsync().ConfigureAwait(false);
+        var initialCount = await this._service.CountAsync().ConfigureAwait(false);
 
         // Act - Add 3 items
         for (int i = 0; i < 3; i++)
         {
-            await _service.UpsertAsync(new UpsertRequest
+            await this._service.UpsertAsync(new UpsertRequest
             {
                 Content = $"Content {i}",
                 MimeType = "text/plain"
@@ -326,16 +327,16 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         await Task.Delay(300).ConfigureAwait(false); // Wait for processing
 
         // Assert - Count increased by 3
-        var afterAddCount = await _service.CountAsync().ConfigureAwait(false);
+        var afterAddCount = await this._service.CountAsync().ConfigureAwait(false);
         Assert.Equal(initialCount + 3, afterAddCount);
 
         // Act - Delete 1 item
-        var content = await _context.Content.FirstAsync().ConfigureAwait(false);
-        await _service.DeleteAsync(content.Id).ConfigureAwait(false);
+        var content = await this._context.Content.FirstAsync().ConfigureAwait(false);
+        await this._service.DeleteAsync(content.Id).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert - Count decreased by 1
-        var afterDeleteCount = await _service.CountAsync().ConfigureAwait(false);
+        var afterDeleteCount = await this._service.CountAsync().ConfigureAwait(false);
         Assert.Equal(afterAddCount - 1, afterDeleteCount);
     }
 
@@ -354,11 +355,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await _service.UpsertAsync(request).ConfigureAwait(false);
+        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(string.Empty, content.Title);
         Assert.Equal(string.Empty, content.Description);
@@ -370,11 +371,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
     public async Task ConcurrentWrites_ToSameContent_AreSerializedCorrectlyAsync()
     {
         // Arrange
-        var contentId = "concurrent_integration_test";
+        const string contentId = "concurrent_integration_test";
 
         // Act - Fire multiple concurrent upserts
         var tasks = Enumerable.Range(1, 10).Select(i =>
-            _service.UpsertAsync(new UpsertRequest
+            this._service.UpsertAsync(new UpsertRequest
             {
                 Id = contentId,
                 Content = $"Concurrent Version {i}",
@@ -385,12 +386,12 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         await Task.Delay(1000).ConfigureAwait(false); // Wait for all operations to process
 
         // Assert - Should have exactly one content record (last one wins)
-        var content = await _service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.StartsWith("Concurrent Version", content.Content);
 
         // Verify only one content record exists with this ID
-        var count = await _context.Content.CountAsync(c => c.Id == contentId).ConfigureAwait(false);
+        var count = await this._context.Content.CountAsync(c => c.Id == contentId).ConfigureAwait(false);
         Assert.Equal(1, count);
     }
 }

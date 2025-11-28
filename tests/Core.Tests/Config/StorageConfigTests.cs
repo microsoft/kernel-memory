@@ -1,7 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 
-namespace Core.Tests.Config;
+namespace KernelMemory.Core.Tests.Config;
 
 /// <summary>
 /// Tests for Storage configuration validation and parsing
@@ -13,7 +14,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -67,7 +68,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -106,7 +107,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -148,7 +149,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -191,7 +192,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -230,7 +231,7 @@ public sealed class StorageConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",

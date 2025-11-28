@@ -32,6 +32,7 @@ file_header_template = Copyright (c) Microsoft. All rights reserved.
 # .NET Coding Conventions     #
 ###############################
 [*.{cs,vb}]
+file_header_template = Copyright (c) Microsoft. All rights reserved.
 # Organize usings
 dotnet_sort_system_directives_first = true
 # this. preferences
@@ -394,6 +395,8 @@ resharper_Arrange_Type_Modifiers_highlighting = none
 resharper_Arrange_Type_Member_Modifiers_highlighting = none
 # InconsistentNaming
 resharper_Inconsistent_Naming_highlighting = none
+# GrammarMistakeInComment
+resharper_Grammar_Mistake_In_Comment_highlighting = none
 
 
 # CA1056: URI properties should not be strings

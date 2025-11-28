@@ -1,7 +1,8 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/tests/">
-    <Project Path="tests\Core.Tests\Core.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests/Main.Tests/Main.Tests.csproj" />
+    <Project Path="tests\Core.Tests\Core.Tests.csproj" />
   </Folder>
-  <Project Path="src\Core\Core.csproj" Type="Classic C#" />
-  <Project Path="src\Main\Main.csproj" Type="Classic C#" />
+  <Project Path="src\Core\Core.csproj" />
+  <Project Path="src\Main\Main.csproj" />
 </Solution>

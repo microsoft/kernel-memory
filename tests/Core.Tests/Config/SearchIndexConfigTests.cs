@@ -1,7 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 
-namespace Core.Tests.Config;
+namespace KernelMemory.Core.Tests.Config;
 
 /// <summary>
 /// Tests for Search Index configuration validation
@@ -13,7 +14,7 @@ public sealed class SearchIndexConfigTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -62,7 +63,7 @@ public sealed class SearchIndexConfigTests
     {
         // Test: FTS with both Path and ConnectionString
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -103,7 +104,7 @@ public sealed class SearchIndexConfigTests
     {
         // Test: Vector with both Path and ConnectionString
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -145,7 +146,7 @@ public sealed class SearchIndexConfigTests
     {
         // Test: Vector with invalid Dimensions
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",

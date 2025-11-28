@@ -1,8 +1,8 @@
-using System.Text.Json;
+// Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 
-namespace Core.Tests.Config;
+namespace KernelMemory.Core.Tests.Config;
 
 /// <summary>
 /// Tests for ConfigParser - loading and parsing configuration files
@@ -30,7 +30,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""mynode"": {
                     ""id"": ""mynode"",
@@ -70,7 +70,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var invalidJson = "{ invalid json here }";
+        const string invalidJson = "{ invalid json here }";
 
         try
         {
@@ -94,7 +94,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {}
         }";
 
@@ -121,7 +121,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -161,7 +161,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var jsonWithComments = @"{
+        const string jsonWithComments = @"{
             // This is a comment
             ""nodes"": {
                 ""test"": {
@@ -203,7 +203,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""Nodes"": {
                 ""test"": {
                     ""Id"": ""test"",
@@ -241,7 +241,7 @@ public sealed class ConfigParserTests
     public void ParseFromString_WithValidJson_ShouldReturnParsedConfig()
     {
         // Arrange
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -267,7 +267,7 @@ public sealed class ConfigParserTests
     public void ParseFromString_WithInvalidJson_ShouldThrowConfigException()
     {
         // Arrange
-        var invalidJson = "{ invalid json }";
+        const string invalidJson = "{ invalid json }";
 
         // Act & Assert
         var exception = Assert.Throws<ConfigException>(() => ConfigParser.ParseFromString(invalidJson));
@@ -279,7 +279,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
@@ -328,7 +328,7 @@ public sealed class ConfigParserTests
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"config-{Guid.NewGuid()}.json");
-        var json = @"{
+        const string json = @"{
             ""nodes"": {
                 ""test"": {
                     ""id"": ""test"",
