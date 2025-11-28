@@ -180,8 +180,20 @@ public sealed class CliIntegrationTests : IDisposable
     [Fact]
     public async Task GetCommand_NonExistentId_ReturnsUserError()
     {
-        // Arrange
+        // Arrange - First create the database with some content
         var config = ConfigParser.LoadFromFile(this._configPath);
+
+        // Create DB by upserting content first
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json",
+            Content = "Some content to create the DB"
+        };
+        var upsertCommand = new UpsertCommand(config);
+        await upsertCommand.ExecuteAsync(CreateTestContext("upsert"), upsertSettings).ConfigureAwait(false);
+
+        // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
         {
             ConfigPath = this._configPath,
@@ -195,7 +207,7 @@ public sealed class CliIntegrationTests : IDisposable
         // Act
         var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
-        // Assert
+        // Assert - ID not found in existing DB is user error
         Assert.Equal(Constants.ExitCodeUserError, exitCode);
     }
 

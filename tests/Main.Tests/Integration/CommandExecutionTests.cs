@@ -78,6 +78,17 @@ public sealed class CommandExecutionTests : IDisposable
         // Load config and inject into command
         var config = ConfigParser.LoadFromFile(this._configPath);
 
+        // First create the database by upserting some content
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Content = "Test content to create DB"
+        };
+        var upsertCommand = new UpsertCommand(config);
+        var upsertContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
+        await upsertCommand.ExecuteAsync(upsertContext, upsertSettings).ConfigureAwait(false);
+
+        // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
         {
             ConfigPath = this._configPath,
@@ -87,7 +98,7 @@ public sealed class CommandExecutionTests : IDisposable
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
-        Assert.Equal(1, result); // User error
+        Assert.Equal(1, result); // User error - ID not found in existing DB
     }
 
     [Fact]

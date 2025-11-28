@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Main.CLI.Exceptions;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -78,10 +79,45 @@ public class ListCommand : BaseCommand<ListCommandSettings>
 
             return Constants.ExitCodeSuccess;
         }
+        catch (DatabaseNotFoundException)
+        {
+            // First-run scenario: no database exists yet (expected state)
+            this.ShowFirstRunMessage(settings);
+            return Constants.ExitCodeSuccess; // Not a user error
+        }
         catch (Exception ex)
         {
             var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
+    }
+
+    /// <summary>
+    /// Shows a friendly first-run message when no database exists yet.
+    /// </summary>
+    /// <param name="settings">Command settings for output format.</param>
+    private void ShowFirstRunMessage(ListCommandSettings settings)
+    {
+        var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+
+        // For JSON/YAML, return empty list (valid, parseable output)
+        if (!settings.Format.Equals("human", StringComparison.OrdinalIgnoreCase))
+        {
+            formatter.FormatList(Array.Empty<Core.Storage.Models.ContentDto>(), 0, 0, settings.Take);
+            return;
+        }
+
+        // Human format: friendly welcome message
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold green]Welcome to Kernel Memory! 🚀[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]No content found yet. This is your first run.[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold]To get started:[/]");
+        AnsiConsole.MarkupLine("  [cyan]km upsert \"Your content here\"[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold]Example:[/]");
+        AnsiConsole.MarkupLine("  [cyan]km upsert \"Hello, world!\" --id greeting[/]");
+        AnsiConsole.WriteLine();
     }
 }

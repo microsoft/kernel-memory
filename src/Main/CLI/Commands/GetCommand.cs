@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Main.CLI.Exceptions;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -74,10 +75,45 @@ public class GetCommand : BaseCommand<GetCommandSettings>
 
             return Constants.ExitCodeSuccess;
         }
+        catch (DatabaseNotFoundException)
+        {
+            // First-run scenario: no database exists yet (expected state)
+            this.ShowFirstRunMessage(settings);
+            return Constants.ExitCodeSuccess; // Not a user error
+        }
         catch (Exception ex)
         {
             var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
+    }
+
+    /// <summary>
+    /// Shows a friendly first-run message when no database exists yet.
+    /// </summary>
+    /// <param name="settings">Command settings for output format.</param>
+    private void ShowFirstRunMessage(GetCommandSettings settings)
+    {
+        var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+
+        // For JSON/YAML, return null (valid, parseable output)
+        if (!settings.Format.Equals("human", StringComparison.OrdinalIgnoreCase))
+        {
+            formatter.Format(null!);
+            return;
+        }
+
+        // Human format: friendly message with context
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine($"[yellow]Content with ID '{settings.Id}' not found.[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]No content database exists yet. This is your first run.[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold]Create content first:[/]");
+        AnsiConsole.MarkupLine($"  [cyan]km upsert \"Your content here\" --id {settings.Id}[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[bold]Or list available content:[/]");
+        AnsiConsole.MarkupLine("  [cyan]km list[/]");
+        AnsiConsole.WriteLine();
     }
 }

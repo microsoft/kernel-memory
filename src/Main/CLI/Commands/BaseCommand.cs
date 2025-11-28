@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
 using KernelMemory.Core.Storage;
+using KernelMemory.Main.CLI.Exceptions;
 using KernelMemory.Main.CLI.OutputFormatters;
 using KernelMemory.Main.Services;
 using Microsoft.EntityFrameworkCore;
@@ -84,9 +85,7 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
         {
             if (!File.Exists(dbPath))
             {
-                throw new InvalidOperationException(
-                    $"Database does not exist at '{dbPath}'. " +
-                    "Create content first using 'km upsert' command.");
+                throw new DatabaseNotFoundException(dbPath);
             }
         }
         else
