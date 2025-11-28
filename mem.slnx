@@ -1,5 +1,4 @@
 <Solution>
-  <Folder Name="/src/" />
   <Folder Name="/tests/">
     <Project Path="tests/Main.Tests/Main.Tests.csproj" />
     <Project Path="tests\Core.Tests\Core.Tests.csproj" />

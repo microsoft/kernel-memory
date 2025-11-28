@@ -519,4 +519,56 @@ public sealed class ContentStorageServiceTests : IDisposable
         Assert.Equal(largeContent.Length, content.Content.Length);
         Assert.True(content.ByteSize >= 1024 * 1024); // Should be at least 1MB (UTF-8 encoding)
     }
+
+    [Fact]
+    public async Task ListAsync_ReturnsEmptyListWhenNoContent()
+    {
+        // Act
+        var result = await this._service.ListAsync(0, 10).ConfigureAwait(false);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task ListAsync_ReturnsContentOrderedByCreationTimeDescending()
+    {
+        // Arrange - Create multiple content items
+        var id1 = await this._service.UpsertAsync(new UpsertRequest { Content = "First", MimeType = "text/plain" }).ConfigureAwait(false);
+        await Task.Delay(100).ConfigureAwait(false);
+        var id2 = await this._service.UpsertAsync(new UpsertRequest { Content = "Second", MimeType = "text/plain" }).ConfigureAwait(false);
+        await Task.Delay(100).ConfigureAwait(false);
+        var id3 = await this._service.UpsertAsync(new UpsertRequest { Content = "Third", MimeType = "text/plain" }).ConfigureAwait(false);
+        await Task.Delay(1000).ConfigureAwait(false); // Wait for processing
+
+        // Act
+        var result = await this._service.ListAsync(0, 10).ConfigureAwait(false);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Count);
+        Assert.Equal(id3, result[0].Id); // Most recent first
+        Assert.Equal(id2, result[1].Id);
+        Assert.Equal(id1, result[2].Id);
+    }
+
+    [Fact]
+    public async Task ListAsync_SupportsSkipAndTake()
+    {
+        // Arrange - Create 5 content items
+        for (int i = 0; i < 5; i++)
+        {
+            await this._service.UpsertAsync(new UpsertRequest { Content = $"Content {i}", MimeType = "text/plain" }).ConfigureAwait(false);
+            await Task.Delay(50).ConfigureAwait(false);
+        }
+        await Task.Delay(1000).ConfigureAwait(false); // Wait for processing
+
+        // Act - Skip first 2, take next 2
+        var result = await this._service.ListAsync(2, 2).ConfigureAwait(false);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+    }
 }

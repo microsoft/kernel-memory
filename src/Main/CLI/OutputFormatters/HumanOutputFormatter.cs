@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+using System.Text.Json;
 using KernelMemory.Core.Storage.Models;
 using Spectre.Console;
 
@@ -10,6 +11,12 @@ namespace KernelMemory.Main.CLI.OutputFormatters;
 public class HumanOutputFormatter : IOutputFormatter
 {
     private readonly bool _useColors;
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     public string Verbosity { get; }
 
@@ -41,9 +48,17 @@ public class HumanOutputFormatter : IOutputFormatter
                 AnsiConsole.WriteLine(str);
                 break;
             default:
-                AnsiConsole.WriteLine(data.ToString() ?? string.Empty);
+                // For unknown types (like DTO objects), format as indented JSON
+                // to avoid leaking internal type names
+                this.FormatAsJson(data);
                 break;
         }
+    }
+
+    private void FormatAsJson(object data)
+    {
+        var json = JsonSerializer.Serialize(data, s_jsonOptions);
+        AnsiConsole.WriteLine(json);
     }
 
     public void FormatError(string errorMessage)

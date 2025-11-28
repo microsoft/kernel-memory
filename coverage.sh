@@ -36,6 +36,7 @@ echo ""
 # Parse and display coverage for each project
 declare -a COVERAGE_RATES
 declare -a COVERAGE_SOURCES
+declare -a PROJECT_NAMES
 
 while IFS= read -r COVERAGE_FILE; do
   if [ -f "$COVERAGE_FILE" ]; then
@@ -45,16 +46,23 @@ while IFS= read -r COVERAGE_FILE; do
     
     if [ -n "$LINE_RATE" ]; then
       COVERAGE_PCT=$(awk "BEGIN {printf \"%.2f\", $LINE_RATE * 100}")
-      COVERAGE_RATES+=("$COVERAGE_PCT")
-      COVERAGE_SOURCES+=("$SOURCE")
       
       # Determine project name from source path
       if [[ "$SOURCE" == *"/Core/"* ]] || [[ "$SOURCE" == *"/Core" ]]; then
         PROJECT_NAME="Core"
+        # Only track Core and Main for threshold checking (exclude Combined)
+        COVERAGE_RATES+=("$COVERAGE_PCT")
+        COVERAGE_SOURCES+=("$SOURCE")
+        PROJECT_NAMES+=("$PROJECT_NAME")
       elif [[ "$SOURCE" == *"/Main/"* ]] || [[ "$SOURCE" == *"/Main" ]]; then
-        PROJECT_NAME="Main (combined)"
+        PROJECT_NAME="Main"
+        # Only track Core and Main for threshold checking (exclude Combined)
+        COVERAGE_RATES+=("$COVERAGE_PCT")
+        COVERAGE_SOURCES+=("$SOURCE")
+        PROJECT_NAMES+=("$PROJECT_NAME")
       else
-        PROJECT_NAME="Combined"
+        PROJECT_NAME="Combined (includes untestable entry points)"
+        # Skip adding to COVERAGE_RATES - we don't check threshold for Combined
       fi
       
       echo "  $PROJECT_NAME: ${COVERAGE_PCT}%"
@@ -64,12 +72,15 @@ done <<< "$COVERAGE_FILES"
 
 echo ""
 
-# Calculate overall coverage (weighted average or use the worst case)
-# For now, we'll use the minimum coverage across all projects
+# Calculate minimum coverage across Core and Main assemblies only
+# (Combined report is excluded as it includes untestable entry points like Program.Main)
 MIN_PROJECT_COVERAGE=""
-for rate in "${COVERAGE_RATES[@]}"; do
+MIN_PROJECT_NAME=""
+for i in "${!COVERAGE_RATES[@]}"; do
+  rate="${COVERAGE_RATES[$i]}"
   if [ -z "$MIN_PROJECT_COVERAGE" ] || (( $(awk "BEGIN {print ($rate < $MIN_PROJECT_COVERAGE) ? 1 : 0}") )); then
     MIN_PROJECT_COVERAGE="$rate"
+    MIN_PROJECT_NAME="${PROJECT_NAMES[$i]}"
   fi
 done
 
