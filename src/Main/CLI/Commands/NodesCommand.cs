@@ -16,6 +16,14 @@ public class NodesCommandSettings : GlobalOptions
 /// </summary>
 public class NodesCommand : BaseCommand<NodesCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NodesCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public NodesCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -24,7 +32,7 @@ public class NodesCommand : BaseCommand<NodesCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
+            var (config, node, formatter) = this.Initialize(settings);
 
             // Get all node IDs
             var nodeIds = config.Nodes.Keys.ToList();

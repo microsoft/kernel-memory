@@ -37,7 +37,7 @@ internal sealed class Program
     private static async Task<int> RunCliModeAsync(string[] args)
     {
         var builder = new CliApplicationBuilder();
-        var app = builder.Build();
+        var app = builder.Build(args); // Pass args to extract config path
         return await app.RunAsync(args).ConfigureAwait(false);
     }
 }

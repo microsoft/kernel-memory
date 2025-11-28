@@ -62,6 +62,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task UpsertCommand_WithMinimalOptions_CreatesContent()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -70,11 +71,11 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Test content"
         };
 
-        var command = new UpsertCommand();
+        var command = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -84,6 +85,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task UpsertCommand_WithCustomId_UsesProvidedId()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         const string customId = "my-custom-id-123";
         var settings = new UpsertCommandSettings
         {
@@ -94,11 +96,11 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var command = new UpsertCommand();
+        var command = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -111,8 +113,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand();
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var getCommand = new GetCommand(config);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
     }
 
@@ -120,6 +122,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task UpsertCommand_WithAllMetadata_StoresAllFields()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -131,11 +134,11 @@ public sealed class CliIntegrationTests : IDisposable
             MimeType = "text/markdown"
         };
 
-        var command = new UpsertCommand();
+        var command = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -145,6 +148,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task GetCommand_ExistingId_ReturnsContent()
     {
         // Arrange - First upsert content
+        var config = ConfigParser.LoadFromFile(this._configPath);
         const string customId = "get-test-id";
         var upsertSettings = new UpsertCommandSettings
         {
@@ -154,9 +158,9 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand();
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
-        await upsertCommand.ExecuteAsync(context, upsertSettings);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Get the content
         var getSettings = new GetCommandSettings
@@ -166,8 +170,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand();
-        var exitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var getCommand = new GetCommand(config);
+        var exitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -177,6 +181,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task GetCommand_NonExistentId_ReturnsUserError()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new GetCommandSettings
         {
             ConfigPath = this._configPath,
@@ -184,11 +189,11 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "non-existent-id-12345"
         };
 
-        var command = new GetCommand();
+        var command = new GetCommand(config);
         var context = CreateTestContext("get");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeUserError, exitCode);
@@ -198,6 +203,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task GetCommand_WithFullFlag_ReturnsAllDetails()
     {
         // Arrange - First upsert content
+        var config = ConfigParser.LoadFromFile(this._configPath);
         const string customId = "full-details-id";
         var upsertSettings = new UpsertCommandSettings
         {
@@ -208,9 +214,9 @@ public sealed class CliIntegrationTests : IDisposable
             Title = "Full Title"
         };
 
-        var upsertCommand = new UpsertCommand();
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
-        await upsertCommand.ExecuteAsync(context, upsertSettings);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Get with full flag
         var getSettings = new GetCommandSettings
@@ -221,8 +227,8 @@ public sealed class CliIntegrationTests : IDisposable
             ShowFull = true
         };
 
-        var getCommand = new GetCommand();
-        var exitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var getCommand = new GetCommand(config);
+        var exitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -231,27 +237,100 @@ public sealed class CliIntegrationTests : IDisposable
     [Fact]
     public async Task ListCommand_EmptyDatabase_ReturnsEmptyList()
     {
-        // Arrange
+        // Arrange - First create the database by doing an upsert, then delete
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json",
+            Content = "Temporary content to create database",
+            Id = "temp-id"
+        };
+        var upsertCommand = new UpsertCommand(config);
+        var context = CreateTestContext("upsert");
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+
+        // Delete the content to have empty database
+        var deleteSettings = new DeleteCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json",
+            Id = "temp-id"
+        };
+        var deleteCommand = new DeleteCommand(config);
+        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+
+        // Now test list on empty database
         var settings = new ListCommandSettings
         {
             ConfigPath = this._configPath,
             Format = "json"
         };
 
-        var command = new ListCommand();
-        var context = CreateTestContext("list");
+        var command = new ListCommand(config);
+        var listContext = CreateTestContext("list");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(listContext, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
     }
 
     [Fact]
+    public async Task Bug3_ListCommand_EmptyDatabase_HumanFormat_ShouldHandleGracefully()
+    {
+        // BUG: km list should manage the "empty list" scenario smoothly
+        // rather than print an empty table
+        // This test reproduces the bug by using human format with empty database
+
+        // Arrange - First create the database by doing an upsert, then delete
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json",
+            Content = "Temporary content to create database",
+            Id = "temp-id-human"
+        };
+        var upsertCommand = new UpsertCommand(config);
+        var context = CreateTestContext("upsert");
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+
+        // Delete the content to have empty database
+        var deleteSettings = new DeleteCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json",
+            Id = "temp-id-human"
+        };
+        var deleteCommand = new DeleteCommand(config);
+        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+
+        // Now test list on empty database with human format
+        var settings = new ListCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "human"  // Test human format, not just JSON
+        };
+
+        var command = new ListCommand(config);
+        var listContext = CreateTestContext("list");
+
+        // Act
+        var exitCode = await command.ExecuteAsync(listContext, settings).ConfigureAwait(false);
+
+        // Assert
+        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        // TODO: Capture stdout and verify it doesn't show an empty table
+        // Expected: A message like "No content found" instead of empty table
+    }
+
+    [Fact]
     public async Task ListCommand_WithContent_ReturnsList()
     {
         // Arrange - First upsert some content
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var upsertSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
@@ -259,9 +338,9 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "List test content"
         };
 
-        var upsertCommand = new UpsertCommand();
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
-        await upsertCommand.ExecuteAsync(context, upsertSettings);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - List content
         var listSettings = new ListCommandSettings
@@ -270,8 +349,8 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
 
-        var listCommand = new ListCommand();
-        var exitCode = await listCommand.ExecuteAsync(context, listSettings);
+        var listCommand = new ListCommand(config);
+        var exitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -281,7 +360,8 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task ListCommand_WithPagination_RespectsSkipAndTake()
     {
         // Arrange - Insert multiple items
-        var upsertCommand = new UpsertCommand();
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
 
         for (int i = 0; i < 5; i++)
@@ -292,7 +372,7 @@ public sealed class CliIntegrationTests : IDisposable
                 Format = "json",
                 Content = $"Content {i}"
             };
-            await upsertCommand.ExecuteAsync(context, upsertSettings);
+            await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
         }
 
         // Act - List with pagination
@@ -304,8 +384,8 @@ public sealed class CliIntegrationTests : IDisposable
             Take = 2
         };
 
-        var listCommand = new ListCommand();
-        var exitCode = await listCommand.ExecuteAsync(context, listSettings);
+        var listCommand = new ListCommand(config);
+        var exitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -315,6 +395,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task DeleteCommand_ExistingId_DeletesSuccessfully()
     {
         // Arrange - First upsert content
+        var config = ConfigParser.LoadFromFile(this._configPath);
         const string customId = "delete-test-id";
         var upsertSettings = new UpsertCommandSettings
         {
@@ -324,9 +405,9 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand();
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
-        await upsertCommand.ExecuteAsync(context, upsertSettings);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Delete the content
         var deleteSettings = new DeleteCommandSettings
@@ -336,8 +417,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var deleteCommand = new DeleteCommand();
-        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings);
+        var deleteCommand = new DeleteCommand(config);
+        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -350,8 +431,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand();
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var getCommand = new GetCommand(config);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeUserError, getExitCode);
     }
 
@@ -359,6 +440,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task DeleteCommand_WithQuietVerbosity_SucceedsWithMinimalOutput()
     {
         // Arrange - First upsert content
+        var config = ConfigParser.LoadFromFile(this._configPath);
         const string customId = "quiet-delete-id";
         var upsertSettings = new UpsertCommandSettings
         {
@@ -368,9 +450,9 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand();
+        var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("upsert");
-        await upsertCommand.ExecuteAsync(context, upsertSettings);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Delete with quiet verbosity
         var deleteSettings = new DeleteCommandSettings
@@ -381,8 +463,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var deleteCommand = new DeleteCommand();
-        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings);
+        var deleteCommand = new DeleteCommand(config);
+        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -392,6 +474,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task EndToEndWorkflow_UpsertGetListDelete_AllSucceed()
     {
         // This test verifies the complete workflow works together
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var context = CreateTestContext("test");
         const string testId = "e2e-workflow-id";
 
@@ -404,8 +487,8 @@ public sealed class CliIntegrationTests : IDisposable
             Id = testId,
             Tags = "e2e,test"
         };
-        var upsertCommand = new UpsertCommand();
-        var upsertExitCode = await upsertCommand.ExecuteAsync(context, upsertSettings);
+        var upsertCommand = new UpsertCommand(config);
+        var upsertExitCode = await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, upsertExitCode);
 
         // 2. Get
@@ -415,8 +498,8 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = testId
         };
-        var getCommand = new GetCommand();
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var getCommand = new GetCommand(config);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
 
         // 3. List
@@ -425,8 +508,8 @@ public sealed class CliIntegrationTests : IDisposable
             ConfigPath = this._configPath,
             Format = "json"
         };
-        var listCommand = new ListCommand();
-        var listExitCode = await listCommand.ExecuteAsync(context, listSettings);
+        var listCommand = new ListCommand(config);
+        var listExitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, listExitCode);
 
         // 4. Delete
@@ -436,12 +519,12 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = testId
         };
-        var deleteCommand = new DeleteCommand();
-        var deleteExitCode = await deleteCommand.ExecuteAsync(context, deleteSettings);
+        var deleteCommand = new DeleteCommand(config);
+        var deleteExitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, deleteExitCode);
 
         // 5. Verify deleted
-        var verifyExitCode = await getCommand.ExecuteAsync(context, getSettings);
+        var verifyExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeUserError, verifyExitCode);
     }
 
@@ -449,17 +532,18 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task NodesCommand_WithJsonFormat_ListsAllNodes()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new NodesCommandSettings
         {
             ConfigPath = this._configPath,
             Format = "json"
         };
 
-        var command = new NodesCommand();
+        var command = new NodesCommand(config);
         var context = CreateTestContext("nodes");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -469,17 +553,18 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task NodesCommand_WithYamlFormat_ListsAllNodes()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new NodesCommandSettings
         {
             ConfigPath = this._configPath,
             Format = "yaml"
         };
 
-        var command = new NodesCommand();
+        var command = new NodesCommand(config);
         var context = CreateTestContext("nodes");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -489,17 +574,18 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task ConfigCommand_Default_ShowsCurrentNode()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new ConfigCommandSettings
         {
             ConfigPath = this._configPath,
             Format = "json"
         };
 
-        var command = new ConfigCommand();
+        var command = new ConfigCommand(config);
         var context = CreateTestContext("config");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -509,6 +595,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task ConfigCommand_WithShowNodes_ShowsAllNodes()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new ConfigCommandSettings
         {
             ConfigPath = this._configPath,
@@ -516,11 +603,11 @@ public sealed class CliIntegrationTests : IDisposable
             ShowNodes = true
         };
 
-        var command = new ConfigCommand();
+        var command = new ConfigCommand(config);
         var context = CreateTestContext("config");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -530,6 +617,7 @@ public sealed class CliIntegrationTests : IDisposable
     public async Task ConfigCommand_WithShowCache_ShowsCacheConfig()
     {
         // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
         var settings = new ConfigCommandSettings
         {
             ConfigPath = this._configPath,
@@ -537,14 +625,71 @@ public sealed class CliIntegrationTests : IDisposable
             ShowCache = true
         };
 
-        var command = new ConfigCommand();
+        var command = new ConfigCommand(config);
         var context = CreateTestContext("config");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings);
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+    }
+
+    [Fact]
+    public void Bug4_IntegrationTests_ShouldNeverTouchUserData()
+    {
+        // BUG: tests should never touch real user data
+        // User reported: "I'm seeing test data in my personal node"
+        // This test verifies that all test paths are in temp directories
+
+        // Assert - Verify test uses temp directory, not ~/.km
+        var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var userKmDir = Path.Combine(homeDir, ".km");
+
+        Assert.StartsWith(Path.GetTempPath(), this._tempDir);
+        Assert.DoesNotContain(".km", this._tempDir);
+        Assert.DoesNotContain(userKmDir, this._tempDir);
+        Assert.DoesNotContain(userKmDir, this._dbPath);
+        Assert.DoesNotContain(userKmDir, this._configPath);
+
+        // Verify the test database path is in temp, not user home
+        Assert.False(this._dbPath.Contains(userKmDir),
+            $"Test database path should not be in user .km directory. Path: {this._dbPath}");
+    }
+
+    [Fact]
+    public async Task Bug2_ConfigCommand_HumanFormat_ShouldNotLeakTypeNames()
+    {
+        // BUG: "km config and other commands should not leak internal types
+        // such as System.Collections.Generic.List`1[...]"
+        // When using human format, HumanOutputFormatter.Format() calls ToString()
+        // on DTO objects, which returns the type name instead of formatted data
+        //
+        // This test verifies that the command executes successfully in human format.
+        // The bug was that it would output type names like "NodeDetailsDto" instead
+        // of actual formatted data. The fix formats unknown types as JSON instead.
+
+        // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "human"
+        };
+
+        var command = new ConfigCommand(config);
+        var context = CreateTestContext("config");
+
+        // Act
+        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+
+        // Assert
+        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+
+        // Note: AnsiConsole output cannot be easily captured in tests.
+        // The fix ensures that HumanOutputFormatter.Format() handles DTO objects
+        // by formatting them as JSON instead of calling ToString() which leaks type names.
+        // Manual verification: Run "km config" and verify output is JSON, not type name.
     }
 
     /// <summary>

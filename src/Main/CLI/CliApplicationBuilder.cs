@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Commands;
+using KernelMemory.Main.CLI.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.CLI;
@@ -31,19 +34,61 @@ public sealed class CliApplicationBuilder
 
     /// <summary>
     /// Creates and configures a CommandApp with all CLI commands.
+    /// Loads configuration early and injects it via DI.
     /// </summary>
-    public CommandApp Build()
+    /// <param name="args">Command line arguments (used to extract --config flag).</param>
+    /// <returns>A configured CommandApp ready to execute commands.</returns>
+    public CommandApp Build(string[]? args = null)
     {
-        var app = new CommandApp();
+        // 1. Determine config path from args early (before command execution)
+        var configPath = this.DetermineConfigPath(args ?? Array.Empty<string>());
+
+        // 2. Load config ONCE (happens before any command runs)
+        var config = ConfigParser.LoadFromFile(configPath);
+
+        // 3. Create DI container and register AppConfig as singleton
+        var services = new ServiceCollection();
+        services.AddSingleton(config);
+
+        // 4. Create type registrar for Spectre.Console.Cli DI integration
+        var registrar = new TypeRegistrar(services);
+
+        // 5. Build CommandApp with DI support
+        var app = new CommandApp(registrar);
         this.Configure(app);
         return app;
     }
 
     /// <summary>
+    /// Determines the configuration file path from command line arguments.
+    /// Scans args for --config or -c flag. Falls back to default ~/.km/config.json.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>Path to configuration file.</returns>
+    private string DetermineConfigPath(string[] args)
+    {
+        // Simple string scanning for --config or -c flag
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == "--config" || args[i] == "-c")
+            {
+                return args[i + 1];
+            }
+        }
+
+        // Default: ~/.km/config.json
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            Constants.DefaultConfigDirName,
+            Constants.DefaultConfigFileName);
+    }
+
+    /// <summary>
     /// Configures the CommandApp with all commands and examples.
+    /// Made public to allow tests to reuse command configuration.
     /// </summary>
     /// <param name="app">The CommandApp to configure.</param>
-    internal void Configure(CommandApp app)
+    public void Configure(CommandApp app)
     {
         app.Configure(config =>
         {

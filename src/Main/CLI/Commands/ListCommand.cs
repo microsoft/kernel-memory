@@ -48,6 +48,14 @@ public class ListCommandSettings : GlobalOptions
 /// </summary>
 public class ListCommand : BaseCommand<ListCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ListCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public ListCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -56,8 +64,8 @@ public class ListCommand : BaseCommand<ListCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
-            var service = this.CreateContentService(node);
+            var (config, node, formatter) = this.Initialize(settings);
+            var service = this.CreateContentService(node, readonlyMode: true);
 
             // Get total count
             var totalCount = await service.CountAsync(CancellationToken.None).ConfigureAwait(false);

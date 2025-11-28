@@ -59,6 +59,14 @@ public class UpsertCommandSettings : GlobalOptions
 /// </summary>
 public class UpsertCommand : BaseCommand<UpsertCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UpsertCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public UpsertCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -67,7 +75,7 @@ public class UpsertCommand : BaseCommand<UpsertCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
+            var (config, node, formatter) = this.Initialize(settings);
             var service = this.CreateContentService(node);
 
             // Parse tags if provided

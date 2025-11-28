@@ -37,6 +37,14 @@ public class DeleteCommandSettings : GlobalOptions
 /// </summary>
 public class DeleteCommand : BaseCommand<DeleteCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeleteCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public DeleteCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -45,7 +53,7 @@ public class DeleteCommand : BaseCommand<DeleteCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
+            var (config, node, formatter) = this.Initialize(settings);
             var service = this.CreateContentService(node);
 
             // Delete is idempotent - no error if not found

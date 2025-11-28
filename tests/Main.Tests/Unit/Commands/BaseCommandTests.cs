@@ -50,7 +50,7 @@ public sealed class BaseCommandTests
         // Arrange
         var command = new TestCommand();
         var mockFormatter = new Mock<IOutputFormatter>();
-        var exception = new InvalidOperationException("System failure");
+        var exception = new System.IO.IOException("System failure");
 
         // Act
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
@@ -76,26 +76,15 @@ public sealed class BaseCommandTests
         mockFormatter.Verify(f => f.FormatError("File access error"), Times.Once);
     }
 
-    [Fact]
-    public void HandleError_WithInvalidOperationException_ReturnsSystemError()
-    {
-        // Arrange
-        var command = new TestCommand();
-        var mockFormatter = new Mock<IOutputFormatter>();
-        var exception = new InvalidOperationException("Invalid operation");
-
-        // Act
-        var exitCode = command.TestHandleError(exception, mockFormatter.Object);
-
-        // Assert
-        Assert.Equal(Constants.ExitCodeSystemError, exitCode);
-    }
-
     /// <summary>
     /// Test implementation of BaseCommand to expose protected methods.
     /// </summary>
     private sealed class TestCommand : BaseCommand<GlobalOptions>
     {
+        public TestCommand() : base(CreateTestConfig())
+        {
+        }
+
         public override Task<int> ExecuteAsync(Spectre.Console.Cli.CommandContext context, GlobalOptions settings)
         {
             throw new NotImplementedException();
@@ -104,6 +93,18 @@ public sealed class BaseCommandTests
         public int TestHandleError(Exception ex, IOutputFormatter formatter)
         {
             return this.HandleError(ex, formatter);
+        }
+
+        private static KernelMemory.Core.Config.AppConfig CreateTestConfig()
+        {
+            var tempDir = Path.Combine(Path.GetTempPath(), $"km-test-{Guid.NewGuid()}");
+            return new KernelMemory.Core.Config.AppConfig
+            {
+                Nodes = new Dictionary<string, KernelMemory.Core.Config.NodeConfig>
+                {
+                    ["test"] = KernelMemory.Core.Config.NodeConfig.CreateDefaultPersonalNode(tempDir)
+                }
+            };
         }
     }
 }

@@ -41,6 +41,14 @@ public class GetCommandSettings : GlobalOptions
 /// </summary>
 public class GetCommand : BaseCommand<GetCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public GetCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -49,8 +57,8 @@ public class GetCommand : BaseCommand<GetCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
-            var service = this.CreateContentService(node);
+            var (config, node, formatter) = this.Initialize(settings);
+            var service = this.CreateContentService(node, readonlyMode: true);
 
             var result = await service.GetAsync(settings.Id, CancellationToken.None).ConfigureAwait(false);
 

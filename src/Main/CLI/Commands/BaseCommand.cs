@@ -13,28 +13,34 @@ namespace KernelMemory.Main.CLI.Commands;
 
 /// <summary>
 /// Base class for all CLI commands providing shared initialization logic.
+/// Config is injected via constructor (loaded once in CliApplicationBuilder).
 /// </summary>
 /// <typeparam name="TSettings">The command settings type, must inherit from GlobalOptions.</typeparam>
 public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
     where TSettings : GlobalOptions
 {
+    private readonly AppConfig _config;
+
     /// <summary>
-    /// Initializes command dependencies: config, node, and formatter.
+    /// Initializes a new instance of the <see cref="BaseCommand{TSettings}"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    protected BaseCommand(AppConfig config)
+    {
+        this._config = config ?? throw new ArgumentNullException(nameof(config));
+    }
+
+    /// <summary>
+    /// Initializes command dependencies: node and formatter.
+    /// Config is already injected via constructor (no file I/O).
     /// </summary>
     /// <param name="settings">The command settings.</param>
     /// <returns>Tuple of (config, node, formatter).</returns>
-    protected async Task<(AppConfig config, NodeConfig node, IOutputFormatter formatter)>
-        InitializeAsync(TSettings settings)
+    protected (AppConfig config, NodeConfig node, IOutputFormatter formatter)
+        Initialize(TSettings settings)
     {
-        // Determine config path
-        var configPath = settings.ConfigPath ??
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                Constants.DefaultConfigDirName,
-                Constants.DefaultConfigFileName);
-
-        // Load config
-        var config = ConfigParser.LoadFromFile(configPath);
+        // Config already loaded and injected via constructor
+        var config = this._config;
 
         // Select node
         if (config.Nodes.Count == 0)
@@ -58,10 +64,12 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
     /// Creates a ContentService instance for the specified node.
     /// </summary>
     /// <param name="node">The node configuration.</param>
+    /// <param name="readonlyMode">If true, will not create directories or database. Will fail if database doesn't exist.</param>
     /// <returns>A ContentService instance.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when database doesn't exist in readonly mode.</exception>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "DbContext ownership is transferred to ContentStorageService which handles disposal")]
-    protected ContentService CreateContentService(NodeConfig node)
+    protected ContentService CreateContentService(NodeConfig node, bool readonlyMode = false)
     {
         // Get SQLite database path from node config
         if (node.ContentIndex is not SqliteContentIndexConfig sqliteConfig)
@@ -71,23 +79,40 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
 
         var dbPath = sqliteConfig.Path;
 
-        // Ensure directory exists
-        var dbDir = Path.GetDirectoryName(dbPath);
-        if (!string.IsNullOrEmpty(dbDir) && !Directory.Exists(dbDir))
+        // In readonly mode, verify database exists without creating it
+        if (readonlyMode)
         {
-            Directory.CreateDirectory(dbDir);
+            if (!File.Exists(dbPath))
+            {
+                throw new InvalidOperationException(
+                    $"Database does not exist at '{dbPath}'. " +
+                    "Create content first using 'km upsert' command.");
+            }
+        }
+        else
+        {
+            // Write mode: Ensure directory exists
+            var dbDir = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(dbDir) && !Directory.Exists(dbDir))
+            {
+                Directory.CreateDirectory(dbDir);
+            }
         }
 
         // Create connection string
-        var connectionString = $"Data Source={dbPath}";
+        var connectionString = "Data Source=" + dbPath;
 
         // Create DbContext
         var optionsBuilder = new DbContextOptionsBuilder<ContentStorageDbContext>();
         optionsBuilder.UseSqlite(connectionString);
         var context = new ContentStorageDbContext(optionsBuilder.Options);
 
-        // Ensure database is created
-        context.Database.EnsureCreated();
+        // In write mode, ensure database is created
+        // In readonly mode, the database must already exist (checked above)
+        if (!readonlyMode)
+        {
+            context.Database.EnsureCreated();
+        }
 
         // Create dependencies
         var cuidGenerator = new CuidGenerator();

@@ -25,6 +25,14 @@ public class ConfigCommandSettings : GlobalOptions
 /// </summary>
 public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigCommand"/> class.
+    /// </summary>
+    /// <param name="config">Application configuration (injected by DI).</param>
+    public ConfigCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    {
+    }
+
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
@@ -33,7 +41,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     {
         try
         {
-            var (config, node, formatter) = await this.InitializeAsync(settings).ConfigureAwait(false);
+            var (config, node, formatter) = this.Initialize(settings);
 
             // Determine what to show
             object output;
@@ -45,7 +53,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
                 {
                     Id = kvp.Key,
                     Access = kvp.Value.Access.ToString(),
-                    ContentIndex = kvp.Value.ContentIndex.GetType().Name,
+                    ContentIndex = kvp.Value.ContentIndex.Type.ToString(),
                     HasFileStorage = kvp.Value.FileStorage != null,
                     HasRepoStorage = kvp.Value.RepoStorage != null,
                     SearchIndexCount = kvp.Value.SearchIndexes.Count
@@ -58,12 +66,12 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
                 {
                     EmbeddingsCache = config.EmbeddingsCache != null ? new CacheConfigDto
                     {
-                        Type = config.EmbeddingsCache.GetType().Name,
+                        Type = config.EmbeddingsCache.Type.ToString(),
                         Path = config.EmbeddingsCache.Path
                     } : null,
                     LlmCache = config.LLMCache != null ? new CacheConfigDto
                     {
-                        Type = config.LLMCache.GetType().Name,
+                        Type = config.LLMCache.Type.ToString(),
                         Path = config.LLMCache.Path
                     } : null
                 };
@@ -77,18 +85,18 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
                     Access = node.Access.ToString(),
                     ContentIndex = new ContentIndexConfigDto
                     {
-                        Type = node.ContentIndex.GetType().Name,
+                        Type = node.ContentIndex.Type.ToString(),
                         Path = node.ContentIndex is KernelMemory.Core.Config.ContentIndex.SqliteContentIndexConfig sqlite
                             ? sqlite.Path
                             : null
                     },
                     FileStorage = node.FileStorage != null ? new StorageConfigDto
                     {
-                        Type = node.FileStorage.GetType().Name
+                        Type = node.FileStorage.Type.ToString()
                     } : null,
                     RepoStorage = node.RepoStorage != null ? new StorageConfigDto
                     {
-                        Type = node.RepoStorage.GetType().Name
+                        Type = node.RepoStorage.Type.ToString()
                     } : null,
                     SearchIndexes = node.SearchIndexes.Select(si => new SearchIndexDto
                     {

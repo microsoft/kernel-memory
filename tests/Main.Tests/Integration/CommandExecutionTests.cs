@@ -23,9 +23,14 @@ public sealed class CommandExecutionTests : IDisposable
 
         this._configPath = Path.Combine(this._tempDir, "config.json");
 
-        // Create test config
-        var config = AppConfig.CreateDefault();
-        config.Nodes["test"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "test"));
+        // Create test config - DO NOT use CreateDefault() as it creates "personal" node pointing to ~/.km
+        var config = new AppConfig
+        {
+            Nodes = new Dictionary<string, NodeConfig>
+            {
+                ["test"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "test"))
+            }
+        };
         var json = System.Text.Json.JsonSerializer.Serialize(config);
         File.WriteAllText(this._configPath, json);
     }
@@ -52,8 +57,15 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task UpsertCommand_WithValidContent_ReturnsSuccess()
     {
-        var settings = new UpsertCommandSettings { Content = "Test content" };
-        var command = new UpsertCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Content = "Test content"
+        };
+        var command = new UpsertCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -63,8 +75,15 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task GetCommand_WithNonExistentId_ReturnsError()
     {
-        var settings = new GetCommandSettings { Id = "nonexistent-id-12345" };
-        var command = new GetCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new GetCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Id = "nonexistent-id-12345"
+        };
+        var command = new GetCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -75,8 +94,15 @@ public sealed class CommandExecutionTests : IDisposable
     public async Task DeleteCommand_WithNonExistentId_ReturnsSuccess()
     {
         // Delete is idempotent - should succeed even if ID doesn't exist
-        var settings = new DeleteCommandSettings { Id = "nonexistent-id-12345" };
-        var command = new DeleteCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new DeleteCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Id = "nonexistent-id-12345"
+        };
+        var command = new DeleteCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "delete", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -86,9 +112,34 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task ListCommand_WithEmptyDatabase_ReturnsSuccess()
     {
-        var settings = new ListCommandSettings();
-        var command = new ListCommand();
-        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "list", null);
+        // Load config and inject into commands
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        // First create the database by upserting, then deleting to have empty database
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Content = "Temp content to create database"
+        };
+        var upsertCommand = new UpsertCommand(config);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
+        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+
+        // Delete to make it empty
+        var deleteSettings = new DeleteCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Id = "temp-id"
+        };
+        var deleteCommand = new DeleteCommand(config);
+        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+
+        // Now test list on empty database
+        var settings = new ListCommandSettings
+        {
+            ConfigPath = this._configPath
+        };
+        var command = new ListCommand(config);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -97,8 +148,14 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task NodesCommand_WithValidConfig_ReturnsSuccess()
     {
-        var settings = new NodesCommandSettings();
-        var command = new NodesCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new NodesCommandSettings
+        {
+            ConfigPath = this._configPath
+        };
+        var command = new NodesCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "nodes", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -108,8 +165,14 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task ConfigCommand_WithoutFlags_ReturnsSuccess()
     {
-        var settings = new ConfigCommandSettings();
-        var command = new ConfigCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath
+        };
+        var command = new ConfigCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -119,8 +182,15 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task ConfigCommand_WithShowNodes_ReturnsSuccess()
     {
-        var settings = new ConfigCommandSettings { ShowNodes = true };
-        var command = new ConfigCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            ShowNodes = true
+        };
+        var command = new ConfigCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -130,8 +200,15 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task ConfigCommand_WithShowCache_ReturnsSuccess()
     {
-        var settings = new ConfigCommandSettings { ShowCache = true };
-        var command = new ConfigCommand();
+        // Load config and inject into command
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            ShowCache = true
+        };
+        var command = new ConfigCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -141,16 +218,28 @@ public sealed class CommandExecutionTests : IDisposable
     [Fact]
     public async Task GetCommand_WithFullFlag_ReturnsSuccess()
     {
+        // Load config and inject into commands
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
         // First upsert
-        var upsertSettings = new UpsertCommandSettings { Content = "Test content for full flag" };
-        var upsertCommand = new UpsertCommand();
+        var upsertSettings = new UpsertCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Content = "Test content for full flag"
+        };
+        var upsertCommand = new UpsertCommand(config);
         var upsertContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
         await upsertCommand.ExecuteAsync(upsertContext, upsertSettings).ConfigureAwait(false);
 
         // Then get with full flag - will fail because we don't know the ID
         // But this still exercises the code path
-        var getSettings = new GetCommandSettings { Id = "some-id", ShowFull = true };
-        var getCommand = new GetCommand();
+        var getSettings = new GetCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Id = "some-id",
+            ShowFull = true
+        };
+        var getCommand = new GetCommand(config);
         var getContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
         var result = await getCommand.ExecuteAsync(getContext, getSettings).ConfigureAwait(false);
