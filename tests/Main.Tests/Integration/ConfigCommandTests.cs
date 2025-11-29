@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using KernelMemory.Core.Config;
+using KernelMemory.Core.Config.Cache;
 using KernelMemory.Main.CLI.Commands;
 using Spectre.Console.Cli;
 using Xunit;
@@ -32,7 +33,9 @@ public sealed class ConfigCommandTests : IDisposable
                 ["personal"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "personal")),
                 ["work"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "work")),
                 ["shared"] = NodeConfig.CreateDefaultPersonalNode(Path.Combine(this._tempDir, "nodes", "shared"))
-            }
+            },
+            EmbeddingsCache = CacheConfig.CreateDefaultSqliteCache(Path.Combine(this._tempDir, "embeddings-cache.db")),
+            LLMCache = null
         };
 
         var json = System.Text.Json.JsonSerializer.Serialize(config);
@@ -102,6 +105,65 @@ public sealed class ConfigCommandTests : IDisposable
             // Verify it's showing the entire config structure
             // Current bug: it only shows the first node's details
             // Expected: it should show all nodes
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public void ConfigCommand_OutputStructure_ShouldMatchAppConfigFormat()
+    {
+        // This test verifies the BUG: km config output should match AppConfig structure
+        // so users can copy/paste the output back into their config file
+
+        // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json"
+        };
+
+        var command = new ConfigCommand(config);
+        var context = new CommandContext(
+            new[] { "--config", this._configPath },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Capture stdout
+        using var outputCapture = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(outputCapture);
+
+        try
+        {
+            // Act
+            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+
+            var output = outputCapture.ToString();
+            var outputJson = System.Text.Json.JsonDocument.Parse(output);
+
+            // BUG: Current output has "nodes" as an array
+            // EXPECTED: "nodes" should be an object/dictionary (like in config file)
+            var nodesElement = outputJson.RootElement.GetProperty("nodes");
+            Assert.Equal(System.Text.Json.JsonValueKind.Object, nodesElement.ValueKind);
+            // ^ This will FAIL with current code (it's an Array)
+
+            // BUG: Current output has "embeddingsCache" nested under "cache"
+            // EXPECTED: "embeddingsCache" should be at root level (like in config file)
+            Assert.True(outputJson.RootElement.TryGetProperty("embeddingsCache", out _));
+            // ^ This will FAIL with current code (no "embeddingsCache" at root)
+
+            // Should NOT have a "cache" wrapper
+            Assert.False(outputJson.RootElement.TryGetProperty("cache", out _));
+            // ^ This will FAIL with current code (it has "cache" wrapper)
         }
         finally
         {

@@ -81,48 +81,9 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
             }
             else
             {
-                // Default: show entire configuration with all nodes
-                var config = this.Config;
-                output = new
-                {
-                    Nodes = config.Nodes.Select(kvp => new NodeDetailsDto
-                    {
-                        NodeId = kvp.Key,
-                        Access = kvp.Value.Access.ToString(),
-                        ContentIndex = new ContentIndexConfigDto
-                        {
-                            Type = kvp.Value.ContentIndex.Type.ToString(),
-                            Path = kvp.Value.ContentIndex is KernelMemory.Core.Config.ContentIndex.SqliteContentIndexConfig sqlite
-                                ? sqlite.Path
-                                : null
-                        },
-                        FileStorage = kvp.Value.FileStorage != null ? new StorageConfigDto
-                        {
-                            Type = kvp.Value.FileStorage.Type.ToString()
-                        } : null,
-                        RepoStorage = kvp.Value.RepoStorage != null ? new StorageConfigDto
-                        {
-                            Type = kvp.Value.RepoStorage.Type.ToString()
-                        } : null,
-                        SearchIndexes = kvp.Value.SearchIndexes.Select(si => new SearchIndexDto
-                        {
-                            Type = si.Type.ToString()
-                        }).ToList()
-                    }).ToList(),
-                    Cache = new CacheInfoDto
-                    {
-                        EmbeddingsCache = config.EmbeddingsCache != null ? new CacheConfigDto
-                        {
-                            Type = config.EmbeddingsCache.Type.ToString(),
-                            Path = config.EmbeddingsCache.Path
-                        } : null,
-                        LlmCache = config.LLMCache != null ? new CacheConfigDto
-                        {
-                            Type = config.LLMCache.Type.ToString(),
-                            Path = config.LLMCache.Path
-                        } : null
-                    }
-                };
+                // Default: show the actual AppConfig structure (not DTOs)
+                // This allows users to copy/paste the output into their config file
+                output = this.Config;
             }
 
             formatter.Format(output);
