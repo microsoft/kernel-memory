@@ -30,6 +30,11 @@ public class ContentService
     public string NodeId => this._nodeId;
 
     /// <summary>
+    /// Gets the underlying content storage implementation.
+    /// </summary>
+    public IContentStorage Storage => this._storage;
+
+    /// <summary>
     /// Upserts content and returns the write result.
     /// </summary>
     /// <param name="request">The upsert request.</param>
