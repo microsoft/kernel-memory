@@ -20,15 +20,15 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""disk"",
+                        ""type"": ""disk"",
                         ""path"": ""~/test-files""
                     },
                     ""repoStorage"": {
-                        ""$type"": ""disk"",
+                        ""type"": ""disk"",
                         ""path"": ""~/test-repos""
                     }
                 }
@@ -74,11 +74,11 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""disk"",
+                        ""type"": ""disk"",
                         ""path"": """"
                     }
                 }
@@ -113,11 +113,11 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""azureBlobs"",
+                        ""type"": ""azureBlobs"",
                         ""connectionString"": ""DefaultEndpointsProtocol=https;AccountName=test;AccountKey=key;EndpointSuffix=core.windows.net""
                     }
                 }
@@ -155,11 +155,11 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""azureBlobs"",
+                        ""type"": ""azureBlobs"",
                         ""account"": ""testaccount"",
                         ""apiKey"": ""test-api-key""
                     }
@@ -198,11 +198,11 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""azureBlobs"",
+                        ""type"": ""azureBlobs"",
                         ""account"": ""testaccount""
                     }
                 }
@@ -237,11 +237,11 @@ public sealed class StorageConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""fileStorage"": {
-                        ""$type"": ""azureBlobs"",
+                        ""type"": ""azureBlobs"",
                         ""connectionString"": ""DefaultEndpointsProtocol=https;AccountName=test;AccountKey=key"",
                         ""apiKey"": ""test-api-key""
                     }

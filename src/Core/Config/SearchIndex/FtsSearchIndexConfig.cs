@@ -33,6 +33,12 @@ public sealed class FtsSearchIndexConfig : SearchIndexConfig
     /// <inheritdoc />
     public override void Validate(string path)
     {
+        // Validate ID is provided
+        if (string.IsNullOrWhiteSpace(this.Id))
+        {
+            throw new ConfigException($"{path}.Id", "Search index ID is required");
+        }
+
         this.Embeddings?.Validate($"{path}.Embeddings");
 
         var isSqlite = this.Type == SearchIndexTypes.SqliteFTS;

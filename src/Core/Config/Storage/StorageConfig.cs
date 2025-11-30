@@ -8,7 +8,7 @@ namespace KernelMemory.Core.Config.Storage;
 /// <summary>
 /// Base class for storage configurations (files, repositories)
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(DiskStorageConfig), typeDiscriminator: "disk")]
 [JsonDerivedType(typeof(AzureBlobStorageConfig), typeDiscriminator: "azureBlobs")]
 public abstract class StorageConfig : IValidatable

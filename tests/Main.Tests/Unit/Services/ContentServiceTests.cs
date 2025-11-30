@@ -32,8 +32,9 @@ public sealed class ContentServiceTests
         // Arrange
         var mockStorage = new Mock<IContentStorage>();
         const string expectedId = "generated-id-123";
+        var expectedResult = WriteResult.Success(expectedId);
         mockStorage.Setup(s => s.UpsertAsync(It.IsAny<UpsertRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedId);
+            .ReturnsAsync(expectedResult);
 
         var service = new ContentService(mockStorage.Object, "test-node");
         var request = new UpsertRequest
@@ -46,7 +47,8 @@ public sealed class ContentServiceTests
         var result = await service.UpsertAsync(request, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(expectedId, result);
+        Assert.Equal(expectedId, result.Id);
+        Assert.True(result.Completed);
         mockStorage.Verify(s => s.UpsertAsync(request, CancellationToken.None), Times.Once);
     }
 
@@ -57,8 +59,9 @@ public sealed class ContentServiceTests
         var mockStorage = new Mock<IContentStorage>();
         using var cts = new CancellationTokenSource();
         const string expectedId = "id-456";
+        var expectedResult = WriteResult.Success(expectedId);
         mockStorage.Setup(s => s.UpsertAsync(It.IsAny<UpsertRequest>(), cts.Token))
-            .ReturnsAsync(expectedId);
+            .ReturnsAsync(expectedResult);
 
         var service = new ContentService(mockStorage.Object, "test-node");
         var request = new UpsertRequest { Content = "Content" };
@@ -67,7 +70,8 @@ public sealed class ContentServiceTests
         var result = await service.UpsertAsync(request, cts.Token).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(expectedId, result);
+        Assert.Equal(expectedId, result.Id);
+        Assert.True(result.Completed);
         mockStorage.Verify(s => s.UpsertAsync(request, cts.Token), Times.Once);
     }
 
@@ -116,15 +120,18 @@ public sealed class ContentServiceTests
         // Arrange
         const string contentId = "delete-id";
         var mockStorage = new Mock<IContentStorage>();
+        var expectedResult = WriteResult.Success(contentId);
         mockStorage.Setup(s => s.DeleteAsync(contentId, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(expectedResult);
 
         var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
-        await service.DeleteAsync(contentId, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.DeleteAsync(contentId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
+        Assert.Equal(contentId, result.Id);
+        Assert.True(result.Completed);
         mockStorage.Verify(s => s.DeleteAsync(contentId, CancellationToken.None), Times.Once);
     }
 

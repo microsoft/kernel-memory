@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using KernelMemory.Main.CLI.Infrastructure;
 using KernelMemory.Main.CLI.Models;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.CLI.Commands;
@@ -18,6 +21,10 @@ public class ConfigCommandSettings : GlobalOptions
     [CommandOption("--show-cache")]
     [Description("Show cache configuration")]
     public bool ShowCache { get; init; }
+
+    [CommandOption("--create")]
+    [Description("Create configuration file on disk")]
+    public bool Create { get; init; }
 }
 
 /// <summary>
@@ -25,12 +32,25 @@ public class ConfigCommandSettings : GlobalOptions
 /// </summary>
 public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private readonly ConfigPathService _configPathService;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public ConfigCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    /// <param name="configPathService">Service providing the config file path (injected by DI).</param>
+    public ConfigCommand(
+        KernelMemory.Core.Config.AppConfig config,
+        ConfigPathService configPathService) : base(config)
     {
+        this._configPathService = configPathService ?? throw new ArgumentNullException(nameof(configPathService));
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
@@ -44,6 +64,22 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
             // ConfigCommand doesn't need node selection - it queries the entire configuration
             // So we skip Initialize() and just use the injected config directly
             var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var configPath = this._configPathService.Path;
+            var configFileExists = File.Exists(configPath);
+
+            // Handle --create flag
+            if (settings.Create)
+            {
+                return this.HandleCreateConfig(configPath, configFileExists, formatter);
+            }
+
+            // Show warning if using default config without file
+            if (!configFileExists && !settings.NoColor)
+            {
+                AnsiConsole.MarkupLine("[yellow]Warning: Using default configuration. Config file does not exist: {0}[/]", Markup.Escape(configPath));
+                AnsiConsole.MarkupLine("[yellow]Run 'km config --create' to save the current configuration to disk.[/]");
+                AnsiConsole.WriteLine();
+            }
 
             // Determine what to show
             object output;
@@ -94,6 +130,50 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
         {
             var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
+        }
+    }
+
+    /// <summary>
+    /// Handles the --create flag to write the configuration to disk.
+    /// </summary>
+    /// <param name="configPath">Path to write the config file.</param>
+    /// <param name="configFileExists">Whether the config file already exists.</param>
+    /// <param name="formatter">Output formatter for messages.</param>
+    /// <returns>Exit code.</returns>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
+        Justification = "Config creation must catch all exceptions to return appropriate exit codes")]
+    private int HandleCreateConfig(string configPath, bool configFileExists, CLI.OutputFormatters.IOutputFormatter formatter)
+    {
+        try
+        {
+            // Warn if file already exists
+            if (configFileExists)
+            {
+                formatter.FormatError($"Configuration file already exists: {configPath}");
+                return Constants.ExitCodeUserError;
+            }
+
+            // Ensure directory exists
+            var configDir = Path.GetDirectoryName(configPath);
+            if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
+            {
+                Directory.CreateDirectory(configDir);
+            }
+
+            // Serialize config with nice formatting
+            var json = JsonSerializer.Serialize(this.Config, s_jsonOptions);
+
+            // Write to file
+            File.WriteAllText(configPath, json);
+
+            formatter.Format(new { Message = $"Configuration file created: {configPath}" });
+
+            return Constants.ExitCodeSuccess;
+        }
+        catch (Exception ex)
+        {
+            formatter.FormatError($"Failed to create configuration file: {ex.Message}");
+            return Constants.ExitCodeSystemError;
         }
     }
 }

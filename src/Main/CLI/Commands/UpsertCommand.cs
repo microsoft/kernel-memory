@@ -96,16 +96,22 @@ public class UpsertCommand : BaseCommand<UpsertCommandSettings>
             };
 
             // Perform upsert
-            var contentId = await service.UpsertAsync(request, CancellationToken.None).ConfigureAwait(false);
+            var result = await service.UpsertAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // Output result based on verbosity
             if (settings.Verbosity.Equals("quiet", StringComparison.OrdinalIgnoreCase))
             {
-                formatter.Format(contentId);
+                formatter.Format(result.Id);
             }
             else
             {
-                formatter.Format(new { id = contentId, status = "success" });
+                formatter.Format(new
+                {
+                    id = result.Id,
+                    completed = result.Completed,
+                    queued = result.Queued,
+                    error = string.IsNullOrEmpty(result.Error) ? null : result.Error
+                });
             }
 
             return Constants.ExitCodeSuccess;

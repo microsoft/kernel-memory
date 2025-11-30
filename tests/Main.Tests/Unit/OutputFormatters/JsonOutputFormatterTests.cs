@@ -9,6 +9,7 @@ namespace KernelMemory.Main.Tests.Unit.OutputFormatters;
 /// Unit tests for JsonOutputFormatter.
 /// Tests focus on behavior, not console output.
 /// </summary>
+[Collection("ConsoleOutputTests")]
 public sealed class JsonOutputFormatterTests
 {
     [Fact]

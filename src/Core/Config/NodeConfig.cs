@@ -71,9 +71,23 @@ public sealed class NodeConfig : IValidatable
         this.FileStorage?.Validate($"{path}.FileStorage");
         this.RepoStorage?.Validate($"{path}.RepoStorage");
 
+        // Validate search indexes
         for (int i = 0; i < this.SearchIndexes.Count; i++)
         {
             this.SearchIndexes[i].Validate($"{path}.SearchIndexes[{i}]");
+        }
+
+        // Ensure all search index IDs are unique within this node
+        var duplicateIds = this.SearchIndexes
+            .GroupBy(idx => idx.Id)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateIds.Count > 0)
+        {
+            throw new ConfigException($"{path}.SearchIndexes",
+                $"Duplicate search index IDs found: {string.Join(", ", duplicateIds)}. Each search index must have a unique ID within a node.");
         }
     }
 
@@ -97,16 +111,10 @@ public sealed class NodeConfig : IValidatable
             {
                 new FtsSearchIndexConfig
                 {
+                    Id = "sqlite-fts",
                     Type = SearchIndexTypes.SqliteFTS,
                     Path = Path.Combine(nodeDir, "fts.db"),
                     EnableStemming = true
-                },
-                new VectorSearchIndexConfig
-                {
-                    Type = SearchIndexTypes.SqliteVector,
-                    Path = Path.Combine(nodeDir, "vectors.db"),
-                    Dimensions = 768,
-                    Metric = VectorMetrics.Cosine
                 }
             }
         };

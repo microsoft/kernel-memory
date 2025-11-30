@@ -9,12 +9,20 @@ namespace KernelMemory.Core.Config.SearchIndex;
 /// <summary>
 /// Base class for search index configurations
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(FtsSearchIndexConfig), typeDiscriminator: "fts")]
-[JsonDerivedType(typeof(VectorSearchIndexConfig), typeDiscriminator: "vector")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(FtsSearchIndexConfig), typeDiscriminator: "sqliteFTS")]
+[JsonDerivedType(typeof(VectorSearchIndexConfig), typeDiscriminator: "sqliteVector")]
 [JsonDerivedType(typeof(GraphSearchIndexConfig), typeDiscriminator: "graph")]
 public abstract class SearchIndexConfig : IValidatable
 {
+    /// <summary>
+    /// Unique identifier for this search index instance.
+    /// Must be unique within a node's SearchIndexes array.
+    /// Used to identify index instances in operations pipeline (stable across config changes).
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
     /// <summary>
     /// Type of search index
     /// </summary>

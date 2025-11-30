@@ -8,7 +8,7 @@ namespace KernelMemory.Core.Config.Embeddings;
 /// <summary>
 /// Base class for embeddings provider configurations
 /// </summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(OllamaEmbeddingsConfig), typeDiscriminator: "ollama")]
 [JsonDerivedType(typeof(OpenAIEmbeddingsConfig), typeDiscriminator: "openai")]
 [JsonDerivedType(typeof(AzureOpenAIEmbeddingsConfig), typeDiscriminator: "azureOpenAI")]

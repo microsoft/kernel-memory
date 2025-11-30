@@ -57,16 +57,22 @@ public class DeleteCommand : BaseCommand<DeleteCommandSettings>
             var service = this.CreateContentService(node);
 
             // Delete is idempotent - no error if not found
-            await service.DeleteAsync(settings.Id, CancellationToken.None).ConfigureAwait(false);
+            var result = await service.DeleteAsync(settings.Id, CancellationToken.None).ConfigureAwait(false);
 
             // Output result based on verbosity
             if (settings.Verbosity.Equals("quiet", StringComparison.OrdinalIgnoreCase))
             {
-                formatter.Format(settings.Id);
+                formatter.Format(result.Id);
             }
             else if (!settings.Verbosity.Equals("silent", StringComparison.OrdinalIgnoreCase))
             {
-                formatter.Format(new { id = settings.Id, status = "deleted" });
+                formatter.Format(new
+                {
+                    id = result.Id,
+                    completed = result.Completed,
+                    queued = result.Queued,
+                    error = string.IsNullOrEmpty(result.Error) ? null : result.Error
+                });
             }
 
             return Constants.ExitCodeSuccess;

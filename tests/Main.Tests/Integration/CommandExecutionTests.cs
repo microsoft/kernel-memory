@@ -183,7 +183,8 @@ public sealed class CommandExecutionTests : IDisposable
         {
             ConfigPath = this._configPath
         };
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -201,7 +202,8 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             ShowNodes = true
         };
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -219,7 +221,8 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             ShowCache = true
         };
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);

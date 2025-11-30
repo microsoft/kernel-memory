@@ -34,24 +34,16 @@ public sealed class AppConfigTests
         Assert.IsType<SqliteContentIndexConfig>(personalNode.ContentIndex);
         Assert.Null(personalNode.FileStorage);
         Assert.Null(personalNode.RepoStorage);
-        Assert.Equal(2, personalNode.SearchIndexes.Count);
+        Assert.Single(personalNode.SearchIndexes);
 
-        // Verify search indexes
+        // Verify search indexes (only FTS for now - vectors not yet implemented)
         Assert.IsType<FtsSearchIndexConfig>(personalNode.SearchIndexes[0]);
-        Assert.IsType<VectorSearchIndexConfig>(personalNode.SearchIndexes[1]);
 
         var ftsIndex = (FtsSearchIndexConfig)personalNode.SearchIndexes[0];
         Assert.Equal(SearchIndexTypes.SqliteFTS, ftsIndex.Type);
         Assert.True(ftsIndex.EnableStemming);
         Assert.NotNull(ftsIndex.Path);
         Assert.Contains("fts.db", ftsIndex.Path);
-
-        var vectorIndex = (VectorSearchIndexConfig)personalNode.SearchIndexes[1];
-        Assert.Equal(SearchIndexTypes.SqliteVector, vectorIndex.Type);
-        Assert.Equal(768, vectorIndex.Dimensions);
-        Assert.Equal(VectorMetrics.Cosine, vectorIndex.Metric);
-        Assert.NotNull(vectorIndex.Path);
-        Assert.Contains("vectors.db", vectorIndex.Path);
 
         // Verify embeddings cache
         Assert.Equal(CacheTypes.Sqlite, config.EmbeddingsCache.Type);

@@ -20,17 +20,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 384,
                             ""embeddings"": {
-                                ""$type"": ""ollama"",
+                                ""type"": ""ollama"",
                                 ""model"": ""all-minilm"",
                                 ""baseUrl"": ""http://localhost:11434""
                             }
@@ -75,17 +75,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""openai"",
+                                ""type"": ""openai"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""apiKey"": ""test-key"",
                                 ""baseUrl"": ""https://api.openai.com/v1""
@@ -131,17 +131,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 384,
                             ""embeddings"": {
-                                ""$type"": ""ollama"",
+                                ""type"": ""ollama"",
                                 ""model"": """",
                                 ""baseUrl"": ""http://localhost:11434""
                             }
@@ -179,17 +179,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 384,
                             ""embeddings"": {
-                                ""$type"": ""ollama"",
+                                ""type"": ""ollama"",
                                 ""model"": ""all-minilm"",
                                 ""baseUrl"": """"
                             }
@@ -227,17 +227,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""openai"",
+                                ""type"": ""openai"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""apiKey"": """"
                             }
@@ -275,17 +275,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""azureOpenAI"",
+                                ""type"": ""azureOpenAI"",
                                 ""model"": """",
                                 ""endpoint"": ""https://test.openai.azure.com"",
                                 ""deployment"": ""test-deployment"",
@@ -325,17 +325,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""azureOpenAI"",
+                                ""type"": ""azureOpenAI"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""endpoint"": """",
                                 ""deployment"": ""test-deployment"",
@@ -375,17 +375,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""azureOpenAI"",
+                                ""type"": ""azureOpenAI"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""endpoint"": ""https://test.openai.azure.com"",
                                 ""deployment"": """",
@@ -425,17 +425,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""azureOpenAI"",
+                                ""type"": ""azureOpenAI"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""endpoint"": ""https://test.openai.azure.com"",
                                 ""deployment"": ""test-deployment""
@@ -474,17 +474,17 @@ public sealed class EmbeddingsConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 1536,
                             ""embeddings"": {
-                                ""$type"": ""azureOpenAI"",
+                                ""type"": ""azureOpenAI"",
                                 ""model"": ""text-embedding-ada-002"",
                                 ""endpoint"": ""https://test.openai.azure.com"",
                                 ""deployment"": ""text-embedding-ada-002"",

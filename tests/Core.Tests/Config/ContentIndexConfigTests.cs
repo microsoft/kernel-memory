@@ -20,7 +20,7 @@ public sealed class ContentIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""postgres"",
+                        ""type"": ""postgres"",
                         ""connectionString"": ""Host=localhost;Database=testdb;Username=test;Password=test""
                     }
                 }
@@ -60,7 +60,7 @@ public sealed class ContentIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""postgres"",
+                        ""type"": ""postgres"",
                         ""connectionString"": """"
                     }
                 }

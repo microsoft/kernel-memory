@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.ContentIndex;
 using KernelMemory.Core.Config.SearchIndex;
@@ -19,13 +20,15 @@ public static class ConfigParser
     /// - Case insensitive property names
     /// - Comments allowed
     /// - Trailing commas allowed
+    /// - Supports polymorphic deserialization
     /// </summary>
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
     /// <summary>

@@ -13,6 +13,13 @@ namespace KernelMemory.Main.Tests.Integration;
 /// These tests verify that config command shows the entire configuration,
 /// not just a single node.
 /// </summary>
+/// <remarks>
+/// These tests capture Console.Out, which is a global shared resource.
+/// Running them in parallel with other tests that write to Console.Out
+/// (like HumanOutputFormatterTests) causes output contamination.
+/// The [Collection] attribute ensures these tests run serially.
+/// </remarks>
+[Collection("ConsoleOutputTests")]
 public sealed class ConfigCommandTests : IDisposable
 {
     private readonly string _tempDir;
@@ -75,7 +82,8 @@ public sealed class ConfigCommandTests : IDisposable
             Format = "json"  // Use JSON format for easier assertion
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -127,7 +135,8 @@ public sealed class ConfigCommandTests : IDisposable
             Format = "json"
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -184,7 +193,8 @@ public sealed class ConfigCommandTests : IDisposable
             ShowNodes = true
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),

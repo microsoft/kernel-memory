@@ -31,6 +31,7 @@ public sealed class CliApplicationBuilder
     private static readonly string[] s_configExample1 = new[] { "config" };
     private static readonly string[] s_configExample2 = new[] { "config", "--show-nodes" };
     private static readonly string[] s_configExample3 = new[] { "config", "--show-cache" };
+    private static readonly string[] s_configExample4 = new[] { "config", "--create" };
 
     /// <summary>
     /// Creates and configures a CommandApp with all CLI commands.
@@ -49,6 +50,9 @@ public sealed class CliApplicationBuilder
         // 3. Create DI container and register AppConfig as singleton
         var services = new ServiceCollection();
         services.AddSingleton(config);
+
+        // Also register the config path so commands can access it
+        services.AddSingleton(new ConfigPathService(configPath));
 
         // 4. Create type registrar for Spectre.Console.Cli DI integration
         var registrar = new TypeRegistrar(services);
@@ -132,7 +136,8 @@ public sealed class CliApplicationBuilder
                 .WithDescription("Query configuration")
                 .WithExample(s_configExample1)
                 .WithExample(s_configExample2)
-                .WithExample(s_configExample3);
+                .WithExample(s_configExample3)
+                .WithExample(s_configExample4);
 
             config.ValidateExamples();
         });

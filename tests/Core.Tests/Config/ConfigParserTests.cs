@@ -36,7 +36,7 @@ public sealed class ConfigParserTests
                     ""id"": ""mynode"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     }
                 }
@@ -127,7 +127,7 @@ public sealed class ConfigParserTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""~/.km/test.db""
                     }
                 }
@@ -170,7 +170,7 @@ public sealed class ConfigParserTests
                        comment */
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     }
                 }
@@ -209,7 +209,7 @@ public sealed class ConfigParserTests
                     ""Id"": ""test"",
                     ""Access"": ""Full"",
                     ""ContentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""Path"": ""test.db""
                     }
                 }
@@ -247,7 +247,7 @@ public sealed class ConfigParserTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     }
                 }
@@ -285,7 +285,7 @@ public sealed class ConfigParserTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     }
                 }
@@ -334,7 +334,7 @@ public sealed class ConfigParserTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     }
                 }

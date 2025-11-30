@@ -20,12 +20,13 @@ public sealed class SearchIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""graph"",
+                            ""type"": ""graph"",
+                            ""id"": ""graph-test"",
                             ""path"": ""~/graph-index.db""
                         }
                     ]
@@ -69,13 +70,13 @@ public sealed class SearchIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""fts"",
-                            ""type"": ""SqliteFTS"",
+                            ""type"": ""sqliteFTS"",
+                            ""id"": ""fts-test"",
                             ""path"": ""fts.db"",
                             ""connectionString"": ""Host=localhost""
                         }
@@ -88,7 +89,7 @@ public sealed class SearchIndexConfigTests
         {
             File.WriteAllText(tempFile, json);
             var exception = Assert.Throws<ConfigException>(() => ConfigParser.LoadFromFile(tempFile));
-            Assert.Contains("specify either Path", exception.Message);
+            Assert.Contains("FTS index: specify either Path (SQLite) or ConnectionString (Postgres), not both", exception.Message);
         }
         finally
         {
@@ -110,13 +111,13 @@ public sealed class SearchIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-test"",
                             ""path"": ""vector.db"",
                             ""connectionString"": ""Host=localhost"",
                             ""dimensions"": 384
@@ -130,7 +131,7 @@ public sealed class SearchIndexConfigTests
         {
             File.WriteAllText(tempFile, json);
             var exception = Assert.Throws<ConfigException>(() => ConfigParser.LoadFromFile(tempFile));
-            Assert.Contains("specify either Path", exception.Message);
+            Assert.Contains("Vector index: specify either Path (SQLite) or ConnectionString (Postgres), not both", exception.Message);
         }
         finally
         {
@@ -152,13 +153,13 @@ public sealed class SearchIndexConfigTests
                     ""id"": ""test"",
                     ""access"": ""Full"",
                     ""contentIndex"": {
-                        ""$type"": ""sqlite"",
+                        ""type"": ""sqlite"",
                         ""path"": ""test.db""
                     },
                     ""searchIndexes"": [
                         {
-                            ""$type"": ""vector"",
-                            ""type"": ""SqliteVector"",
+                            ""type"": ""sqliteVector"",
+                            ""id"": ""vector-invalid"",
                             ""path"": ""vector.db"",
                             ""dimensions"": 0
                         }
@@ -171,7 +172,7 @@ public sealed class SearchIndexConfigTests
         {
             File.WriteAllText(tempFile, json);
             var exception = Assert.Throws<ConfigException>(() => ConfigParser.LoadFromFile(tempFile));
-            Assert.Contains("must be positive", exception.Message);
+            Assert.Contains("Vector dimensions must be positive (got 0)", exception.Message);
         }
         finally
         {
