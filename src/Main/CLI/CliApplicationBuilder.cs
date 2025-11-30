@@ -15,9 +15,9 @@ namespace KernelMemory.Main.CLI;
 public sealed class CliApplicationBuilder
 {
     // Static readonly arrays for command examples (CA1861 compliance)
-    private static readonly string[] s_upsertExample1 = new[] { "upsert", "\"Hello, world!\"" };
-    private static readonly string[] s_upsertExample2 = new[] { "upsert", "\"Some content\"", "--id", "my-id-123" };
-    private static readonly string[] s_upsertExample3 = new[] { "upsert", "\"Tagged content\"", "--tags", "important,todo" };
+    private static readonly string[] s_upsertExample1 = new[] { "put", "\"Hello, world!\"" };
+    private static readonly string[] s_upsertExample2 = new[] { "put", "\"Some content\"", "--id", "my-id-123" };
+    private static readonly string[] s_upsertExample3 = new[] { "put", "\"Tagged content\"", "--tags", "important,todo" };
     private static readonly string[] s_getExample1 = new[] { "get", "abc123" };
     private static readonly string[] s_getExample2 = new[] { "get", "abc123", "--full" };
     private static readonly string[] s_getExample3 = new[] { "get", "abc123", "-f", "json" };
@@ -98,8 +98,8 @@ public sealed class CliApplicationBuilder
         {
             config.SetApplicationName("km");
 
-            // Upsert command
-            config.AddCommand<UpsertCommand>("upsert")
+            // Put command (HTTP-style naming for upsert operation)
+            config.AddCommand<UpsertCommand>("put")
                 .WithDescription("Upload or update content")
                 .WithExample(s_upsertExample1)
                 .WithExample(s_upsertExample2)

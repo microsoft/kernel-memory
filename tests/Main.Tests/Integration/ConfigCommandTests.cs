@@ -302,7 +302,7 @@ public sealed class ConfigCommandTests : IDisposable
 
             // Assert
             Assert.Equal(Constants.ExitCodeUserError, exitCode);
-            
+
             // Error message goes to Console.Error
             var errorOutput = errorCapture.ToString();
             Assert.Contains("already exists", errorOutput);

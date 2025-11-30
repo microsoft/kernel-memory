@@ -22,7 +22,8 @@ public sealed class ConfigParserTests
         Assert.NotNull(config);
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
-        Assert.NotNull(config.EmbeddingsCache);
+        // Cache configs intentionally null in default config
+        Assert.Null(config.EmbeddingsCache);
     }
 
     [Fact]
@@ -307,7 +308,7 @@ public sealed class ConfigParserTests
             // Act
             var config = ConfigParser.LoadFromFile(tempFile);
 
-            // Assert
+            // Assert - verify tilde expansion works for cache configs when present
             var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             Assert.NotNull(config.EmbeddingsCache);
             Assert.NotNull(config.LLMCache);

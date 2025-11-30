@@ -80,11 +80,8 @@ public sealed class AppConfig : IValidatable
             Nodes = new Dictionary<string, NodeConfig>
             {
                 ["personal"] = NodeConfig.CreateDefaultPersonalNode(personalNodeDir)
-            },
-            EmbeddingsCache = CacheConfig.CreateDefaultSqliteCache(
-                Path.Combine(baseDir, "embeddings-cache.db")
-            ),
-            LLMCache = null
+            }
+            // EmbeddingsCache and LLMCache intentionally omitted - add when features are implemented
         };
     }
 }

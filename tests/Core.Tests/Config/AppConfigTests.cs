@@ -23,7 +23,8 @@ public sealed class AppConfigTests
         Assert.NotNull(config);
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
-        Assert.NotNull(config.EmbeddingsCache);
+        // Cache configs intentionally null - only created when features are implemented
+        Assert.Null(config.EmbeddingsCache);
         Assert.Null(config.LLMCache);
 
         // Verify personal node structure
@@ -44,13 +45,6 @@ public sealed class AppConfigTests
         Assert.True(ftsIndex.EnableStemming);
         Assert.NotNull(ftsIndex.Path);
         Assert.Contains("fts.db", ftsIndex.Path);
-
-        // Verify embeddings cache
-        Assert.Equal(CacheTypes.Sqlite, config.EmbeddingsCache.Type);
-        Assert.True(config.EmbeddingsCache.AllowRead);
-        Assert.True(config.EmbeddingsCache.AllowWrite);
-        Assert.NotNull(config.EmbeddingsCache.Path);
-        Assert.Contains("embeddings-cache.db", config.EmbeddingsCache.Path);
     }
 
     [Fact]

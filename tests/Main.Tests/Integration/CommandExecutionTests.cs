@@ -66,7 +66,7 @@ public sealed class CommandExecutionTests : IDisposable
             Content = "Test content"
         };
         var command = new UpsertCommand(config);
-        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -78,15 +78,15 @@ public sealed class CommandExecutionTests : IDisposable
         // Load config and inject into command
         var config = ConfigParser.LoadFromFile(this._configPath);
 
-        // First create the database by upserting some content
-        var upsertSettings = new UpsertCommandSettings
+        // First create the database by puting some content
+        var putSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
             Content = "Test content to create DB"
         };
-        var upsertCommand = new UpsertCommand(config);
-        var upsertContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
-        await upsertCommand.ExecuteAsync(upsertContext, upsertSettings).ConfigureAwait(false);
+        var putCommand = new UpsertCommand(config);
+        var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
+        await putCommand.ExecuteAsync(putContext, putSettings).ConfigureAwait(false);
 
         // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
@@ -126,15 +126,15 @@ public sealed class CommandExecutionTests : IDisposable
         // Load config and inject into commands
         var config = ConfigParser.LoadFromFile(this._configPath);
 
-        // First create the database by upserting, then deleting to have empty database
-        var upsertSettings = new UpsertCommandSettings
+        // First create the database by puting, then deleting to have empty database
+        var putSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
             Content = "Temp content to create database"
         };
-        var upsertCommand = new UpsertCommand(config);
-        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        var putCommand = new UpsertCommand(config);
+        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
+        await putCommand.ExecuteAsync(context, putSettings).ConfigureAwait(false);
 
         // Delete to make it empty
         var deleteSettings = new DeleteCommandSettings
@@ -235,15 +235,15 @@ public sealed class CommandExecutionTests : IDisposable
         // Load config and inject into commands
         var config = ConfigParser.LoadFromFile(this._configPath);
 
-        // First upsert
-        var upsertSettings = new UpsertCommandSettings
+        // First put
+        var putSettings = new UpsertCommandSettings
         {
             ConfigPath = this._configPath,
             Content = "Test content for full flag"
         };
-        var upsertCommand = new UpsertCommand(config);
-        var upsertContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "upsert", null);
-        await upsertCommand.ExecuteAsync(upsertContext, upsertSettings).ConfigureAwait(false);
+        var putCommand = new UpsertCommand(config);
+        var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
+        await putCommand.ExecuteAsync(putContext, putSettings).ConfigureAwait(false);
 
         // Then get with full flag - will fail because we don't know the ID
         // But this still exercises the code path

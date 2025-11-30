@@ -3,7 +3,6 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
 using KernelMemory.Core.Config.SearchIndex;
-using Xunit;
 
 namespace KernelMemory.Core.Tests.Config;
 
@@ -90,11 +89,12 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
 
         // Assert - should not throw on validation
         config.Validate();
-        
+
         // Verify structure
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
-        Assert.NotNull(config.EmbeddingsCache);
+        // Cache configs intentionally null - only created when features are implemented
+        Assert.Null(config.EmbeddingsCache);
         Assert.Null(config.LLMCache);
     }
 
@@ -106,7 +106,7 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
 
         // Act
         var config1 = ConfigParser.LoadFromFile(configPath);
-        
+
         // Read it back and parse again
         var config2 = ConfigParser.LoadFromFile(configPath);
 
@@ -155,18 +155,18 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
     {
         // Arrange
         var configPath = Path.Combine(this._tempDir, "config.json");
-        
+
         // First load - creates config
         var config1 = ConfigParser.LoadFromFile(configPath);
         Assert.True(File.Exists(configPath), "Config should exist after first load");
-        
+
         // Delete the config file (simulating accidental deletion)
         File.Delete(configPath);
         Assert.False(File.Exists(configPath), "Config should be deleted");
-        
+
         // Act - Second load should recreate the file
         var config2 = ConfigParser.LoadFromFile(configPath);
-        
+
         // Assert
         Assert.True(File.Exists(configPath), "Config should be recreated on second load");
         Assert.NotNull(config2);
@@ -178,13 +178,13 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
     {
         // Arrange
         var configPath = Path.Combine(this._tempDir, "config.json");
-        
+
         // Simulate many operations
         for (int i = 0; i < 10; i++)
         {
             var config = ConfigParser.LoadFromFile(configPath);
             Assert.True(File.Exists(configPath), $"Config should exist after load {i}");
-            
+
             // Simulate accidental deletion in the middle
             if (i == 5)
             {
@@ -192,7 +192,7 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
                 Assert.False(File.Exists(configPath), "Config should be deleted");
             }
         }
-        
+
         // Assert - config should still exist after all operations
         Assert.True(File.Exists(configPath), "Config should exist after all operations");
     }

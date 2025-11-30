@@ -93,7 +93,7 @@ public sealed class UserDataProtectionTests : IDisposable
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
-            "upsert",
+            "put",
             null);
 
         // Act - This WILL write to ~/.km if bug exists
@@ -151,7 +151,7 @@ public sealed class UserDataProtectionTests : IDisposable
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
-            "upsert",
+            "put",
             null);
 
         // Act

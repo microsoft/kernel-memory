@@ -50,7 +50,7 @@ public sealed class ModeRouterTests
     }
 
     [Theory]
-    [InlineData("upsert", "cli")]
+    [InlineData("put", "cli")]
     [InlineData("get", "cli")]
     [InlineData("list", "cli")]
     [InlineData("unknown", "cli")]

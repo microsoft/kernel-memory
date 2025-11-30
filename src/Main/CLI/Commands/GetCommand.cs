@@ -110,7 +110,7 @@ public class GetCommand : BaseCommand<GetCommandSettings>
         AnsiConsole.MarkupLine("[dim]No content database exists yet. This is your first run.[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]Create content first:[/]");
-        AnsiConsole.MarkupLine($"  [cyan]km upsert \"Your content here\" --id {settings.Id}[/]");
+        AnsiConsole.MarkupLine($"  [cyan]km put \"Your content here\" --id {settings.Id}[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]Or list available content:[/]");
         AnsiConsole.MarkupLine("  [cyan]km list[/]");
