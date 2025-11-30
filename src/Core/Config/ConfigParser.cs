@@ -32,7 +32,7 @@ public static class ConfigParser
     };
 
     /// <summary>
-    /// Loads configuration from a file, or returns default config if file doesn't exist
+    /// Loads configuration from a file, or creates default config if file doesn't exist
     /// Performs tilde expansion on paths (~/ → home directory)
     /// </summary>
     /// <param name="filePath">Path to configuration file</param>
@@ -40,10 +40,32 @@ public static class ConfigParser
     /// <exception cref="ConfigException">Thrown when file exists but parsing or validation fails</exception>
     public static AppConfig LoadFromFile(string filePath)
     {
-        // If file doesn't exist, return default configuration
+        // If file doesn't exist, create default configuration relative to config file location
         if (!File.Exists(filePath))
         {
-            return AppConfig.CreateDefault();
+            var configDir = Path.GetDirectoryName(filePath);
+            var baseDir = string.IsNullOrEmpty(configDir) ? "." : configDir;
+            
+            // Create default config relative to config file location
+            var config = AppConfig.CreateDefault(baseDir);
+            
+            // Create the directory if needed
+            if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
+            {
+                Directory.CreateDirectory(configDir);
+            }
+            
+            // Write the config file
+            var jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(config, jsonOptions);
+            File.WriteAllText(filePath, json);
+            
+            return config;
         }
 
         try
