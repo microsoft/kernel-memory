@@ -9,6 +9,17 @@ namespace KernelMemory.Core.Search;
 public interface IFtsIndex : ISearchIndex
 {
     /// <summary>
+    /// Indexes content with separate FTS-indexed fields.
+    /// BREAKING CHANGE: New signature to support title, description, content separately.
+    /// </summary>
+    /// <param name="contentId">Unique content identifier.</param>
+    /// <param name="title">Optional title (FTS-indexed).</param>
+    /// <param name="description">Optional description (FTS-indexed).</param>
+    /// <param name="content">Main content body (FTS-indexed, required).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task IndexAsync(string contentId, string? title, string? description, string content, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Searches the full-text index for matching content.
     /// </summary>
     /// <param name="query">The search query (FTS5 syntax supported).</param>
