@@ -28,9 +28,13 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
                 Directory.Delete(this._tempDir, recursive: true);
             }
         }
-        catch
+        catch (IOException)
         {
-            // Best effort cleanup
+            // Best effort cleanup - ignore IO errors during test cleanup
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Best effort cleanup - ignore permission errors during test cleanup
         }
     }
 

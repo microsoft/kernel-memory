@@ -40,7 +40,7 @@ public static class SearchIndexFactory
     /// <param name="config">Search index configuration.</param>
     /// <param name="loggerFactory">Logger factory.</param>
     /// <returns>ISearchIndex instance, or null if type not supported.</returns>
-    private static ISearchIndex? CreateIndex(SearchIndexConfig config, ILoggerFactory loggerFactory)
+    private static SqliteFtsIndex? CreateIndex(SearchIndexConfig config, ILoggerFactory loggerFactory)
     {
         return config switch
         {

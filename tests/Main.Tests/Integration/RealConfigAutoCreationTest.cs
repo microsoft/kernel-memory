@@ -29,9 +29,13 @@ public sealed class RealConfigAutoCreationTest : IDisposable
                 Directory.Delete(this._tempDir, recursive: true);
             }
         }
-        catch
+        catch (IOException)
         {
-            // Best effort
+            // Best effort - ignore IO errors during test cleanup
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Best effort - ignore permission errors during test cleanup
         }
     }
 
