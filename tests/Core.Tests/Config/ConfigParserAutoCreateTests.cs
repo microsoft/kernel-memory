@@ -150,4 +150,50 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
         Assert.True(File.Exists(configPath), "Config file should be created");
         Assert.NotNull(config);
     }
+    [Fact]
+    public void LoadFromFile_WhenConfigDeletedBetweenLoads_RecreatesFile()
+    {
+        // Arrange
+        var configPath = Path.Combine(this._tempDir, "config.json");
+        
+        // First load - creates config
+        var config1 = ConfigParser.LoadFromFile(configPath);
+        Assert.True(File.Exists(configPath), "Config should exist after first load");
+        
+        // Delete the config file (simulating accidental deletion)
+        File.Delete(configPath);
+        Assert.False(File.Exists(configPath), "Config should be deleted");
+        
+        // Act - Second load should recreate the file
+        var config2 = ConfigParser.LoadFromFile(configPath);
+        
+        // Assert
+        Assert.True(File.Exists(configPath), "Config should be recreated on second load");
+        Assert.NotNull(config2);
+        Assert.Equal(config1.Nodes.Count, config2.Nodes.Count);
+    }
+
+    [Fact]
+    public void LoadFromFile_WhenConfigDeletedAfterManyWrites_RecreatesFile()
+    {
+        // Arrange
+        var configPath = Path.Combine(this._tempDir, "config.json");
+        
+        // Simulate many operations
+        for (int i = 0; i < 10; i++)
+        {
+            var config = ConfigParser.LoadFromFile(configPath);
+            Assert.True(File.Exists(configPath), $"Config should exist after load {i}");
+            
+            // Simulate accidental deletion in the middle
+            if (i == 5)
+            {
+                File.Delete(configPath);
+                Assert.False(File.Exists(configPath), "Config should be deleted");
+            }
+        }
+        
+        // Assert - config should still exist after all operations
+        Assert.True(File.Exists(configPath), "Config should exist after all operations");
+    }
 }

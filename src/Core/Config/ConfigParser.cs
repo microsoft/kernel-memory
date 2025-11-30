@@ -32,7 +32,8 @@ public static class ConfigParser
     };
 
     /// <summary>
-    /// Loads configuration from a file, or creates default config if file doesn't exist
+    /// Loads configuration from a file, or creates default config if file doesn't exist.
+    /// The config file is always ensured to exist on disk after loading.
     /// Performs tilde expansion on paths (~/ → home directory)
     /// </summary>
     /// <param name="filePath">Path to configuration file</param>
@@ -40,6 +41,8 @@ public static class ConfigParser
     /// <exception cref="ConfigException">Thrown when file exists but parsing or validation fails</exception>
     public static AppConfig LoadFromFile(string filePath)
     {
+        AppConfig config;
+        
         // If file doesn't exist, create default configuration relative to config file location
         if (!File.Exists(filePath))
         {
@@ -47,23 +50,10 @@ public static class ConfigParser
             var baseDir = string.IsNullOrEmpty(configDir) ? "." : configDir;
             
             // Create default config relative to config file location
-            var config = AppConfig.CreateDefault(baseDir);
-            
-            // Create the directory if needed
-            if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
-            {
-                Directory.CreateDirectory(configDir);
-            }
+            config = AppConfig.CreateDefault(baseDir);
             
             // Write the config file
-            var jsonOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-            };
-            var json = System.Text.Json.JsonSerializer.Serialize(config, jsonOptions);
-            File.WriteAllText(filePath, json);
+            WriteConfigFile(filePath, config);
             
             return config;
         }
@@ -74,10 +64,13 @@ public static class ConfigParser
             var json = File.ReadAllText(filePath);
 
             // Parse and validate
-            var config = ParseFromString(json);
+            config = ParseFromString(json);
 
             // Expand tilde paths
             ExpandTildePaths(config);
+
+            // Always ensure the config file exists (recreate if deleted between load and save)
+            WriteConfigFileIfMissing(filePath, config);
 
             return config;
         }
@@ -275,5 +268,45 @@ public static class ConfigParser
         }
 
         return path;
+    }
+    /// <summary>
+    /// Writes the config file to disk if it doesn't exist.
+    /// Used to ensure config file is always present after any operation.
+    /// </summary>
+    /// <param name="filePath">Path to configuration file</param>
+    /// <param name="config">Configuration to write</param>
+    private static void WriteConfigFileIfMissing(string filePath, AppConfig config)
+    {
+        if (File.Exists(filePath))
+        {
+            return;
+        }
+        
+        WriteConfigFile(filePath, config);
+    }
+
+    /// <summary>
+    /// Writes the config file to disk, creating directories if needed.
+    /// </summary>
+    /// <param name="filePath">Path to configuration file</param>
+    /// <param name="config">Configuration to write</param>
+    private static void WriteConfigFile(string filePath, AppConfig config)
+    {
+        // Create the directory if needed
+        var configDir = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
+        {
+            Directory.CreateDirectory(configDir);
+        }
+        
+        // Write the config file
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(config, jsonOptions);
+        File.WriteAllText(filePath, json);
     }
 }
