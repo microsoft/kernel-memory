@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text;
 using System.Text.Json;
+using KernelMemory.Core.Search;
 using KernelMemory.Core.Storage.Entities;
 using KernelMemory.Core.Storage.Models;
 using Microsoft.EntityFrameworkCore;
@@ -11,30 +12,56 @@ namespace KernelMemory.Core.Storage;
 /// <summary>
 /// Implementation of IContentStorage using SQLite with queue-based execution.
 /// Follows two-phase write pattern with distributed locking.
+/// Integrates with multiple search indexes (FTS, vector, graph, etc.).
 /// </summary>
 public class ContentStorageService : IContentStorage
 {
     private readonly ContentStorageDbContext _context;
     private readonly ICuidGenerator _cuidGenerator;
     private readonly ILogger<ContentStorageService> _logger;
+    private readonly IReadOnlyDictionary<string, ISearchIndex> _searchIndexById;
 
+    /// <summary>
+    /// Initializes ContentStorageService without search indexes.
+    /// </summary>
+    /// <param name="context">Database context for content storage.</param>
+    /// <param name="cuidGenerator">Generator for unique content IDs.</param>
+    /// <param name="logger">Logger instance.</param>
     public ContentStorageService(
         ContentStorageDbContext context,
         ICuidGenerator cuidGenerator,
         ILogger<ContentStorageService> logger)
+        : this(context, cuidGenerator, logger, new Dictionary<string, ISearchIndex>())
+    {
+    }
+
+    /// <summary>
+    /// Initializes ContentStorageService with search indexes.
+    /// </summary>
+    /// <param name="context">Database context for content storage.</param>
+    /// <param name="cuidGenerator">Generator for unique content IDs.</param>
+    /// <param name="logger">Logger instance.</param>
+    /// <param name="searchIndexById">Dictionary of index ID to ISearchIndex instance.</param>
+    public ContentStorageService(
+        ContentStorageDbContext context,
+        ICuidGenerator cuidGenerator,
+        ILogger<ContentStorageService> logger,
+        IReadOnlyDictionary<string, ISearchIndex> searchIndexById)
     {
         this._context = context;
         this._cuidGenerator = cuidGenerator;
         this._logger = logger;
+        this._searchIndexById = searchIndexById;
     }
 
     /// <summary>
     /// Upserts content following the two-phase write pattern.
+    /// Never throws after queue succeeds - returns WriteResult with completion status.
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Best-effort error handling for phase 2 and processing - operation is queued successfully in phase 1")]
-    public async Task<string> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default)
+    public async Task<WriteResult> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default)
     {
         // Generate ID if not provided
         var contentId = string.IsNullOrWhiteSpace(request.Id)
@@ -43,7 +70,7 @@ public class ContentStorageService : IContentStorage
 
         this._logger.LogInformation("Starting upsert operation for content ID: {ContentId}", contentId);
 
-        // Phase 1: Queue the operation (MUST succeed)
+        // Phase 1: Queue the operation (MUST succeed - throws if fails)
         var operationId = await this.QueueUpsertOperationAsync(contentId, request, cancellationToken).ConfigureAwait(false);
         this._logger.LogDebug("Phase 1 complete: Operation {OperationId} queued for content {ContentId}", operationId, contentId);
 
@@ -64,27 +91,28 @@ public class ContentStorageService : IContentStorage
         {
             await this.TryProcessNextOperationAsync(contentId, cancellationToken).ConfigureAwait(false);
             this._logger.LogDebug("Processing complete for content {ContentId}", contentId);
+            return WriteResult.Success(contentId);
         }
         catch (Exception ex)
         {
             // Log but don't fail - operation is queued and will be processed eventually
             this._logger.LogWarning(ex, "Failed to process operation synchronously for content {ContentId} - will be processed by background worker", contentId);
+            return WriteResult.QueuedOnly(contentId, ex.Message);
         }
-
-        return contentId;
     }
 
     /// <summary>
     /// Deletes content following the two-phase write pattern.
+    /// Never throws after queue succeeds - returns WriteResult with completion status.
     /// </summary>
     /// <param name="id"></param>
     /// <param name="cancellationToken"></param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Best-effort error handling for phase 2 and processing - operation is queued successfully in phase 1")]
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<WriteResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         this._logger.LogInformation("Starting delete operation for content ID: {ContentId}", id);
 
-        // Phase 1: Queue the operation (MUST succeed)
+        // Phase 1: Queue the operation (MUST succeed - throws if fails)
         var operationId = await this.QueueDeleteOperationAsync(id, cancellationToken).ConfigureAwait(false);
         this._logger.LogDebug("Phase 1 complete: Operation {OperationId} queued for content {ContentId}", operationId, id);
 
@@ -105,11 +133,13 @@ public class ContentStorageService : IContentStorage
         {
             await this.TryProcessNextOperationAsync(id, cancellationToken).ConfigureAwait(false);
             this._logger.LogDebug("Processing complete for content {ContentId}", id);
+            return WriteResult.Success(id);
         }
         catch (Exception ex)
         {
             // Log but don't fail - operation is queued and will be processed eventually
             this._logger.LogWarning(ex, "Failed to process operation synchronously for content {ContentId} - will be processed by background worker", id);
+            return WriteResult.QueuedOnly(id, ex.Message);
         }
     }
 
@@ -196,6 +226,15 @@ public class ContentStorageService : IContentStorage
     /// <param name="cancellationToken"></param>
     private async Task<string> QueueUpsertOperationAsync(string contentId, UpsertRequest request, CancellationToken cancellationToken)
     {
+        // Build steps list - always upsert, then add index update for each search index
+        var steps = new List<string> { "upsert" };
+
+        // Add step for each configured search index using its ID
+        foreach (var indexId in this._searchIndexById.Keys)
+        {
+            steps.Add($"index:{indexId}");
+        }
+
         var operation = new OperationRecord
         {
             Id = this._cuidGenerator.Generate(),
@@ -203,9 +242,9 @@ public class ContentStorageService : IContentStorage
             Cancelled = false,
             ContentId = contentId,
             Timestamp = DateTimeOffset.UtcNow,
-            PlannedSteps = ["upsert"],
+            PlannedSteps = steps.ToArray(),
             CompletedSteps = [],
-            RemainingSteps = ["upsert"],
+            RemainingSteps = steps.ToArray(),
             PayloadJson = JsonSerializer.Serialize(request),
             LastFailureReason = string.Empty,
             LastAttemptTimestamp = null
@@ -214,7 +253,7 @@ public class ContentStorageService : IContentStorage
         this._context.Operations.Add(operation);
         await this._context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Queued upsert operation {OperationId} for content {ContentId}", operation.Id, contentId);
+        this._logger.LogDebug("Queued upsert operation {OperationId} for content {ContentId} with steps: {Steps}", operation.Id, contentId, string.Join(", ", steps));
         return operation.Id;
     }
 
@@ -225,6 +264,15 @@ public class ContentStorageService : IContentStorage
     /// <param name="cancellationToken"></param>
     private async Task<string> QueueDeleteOperationAsync(string contentId, CancellationToken cancellationToken)
     {
+        // Build steps list - always delete, then remove from each search index
+        var steps = new List<string> { "delete" };
+
+        // Add delete step for each configured search index using its ID
+        foreach (var indexId in this._searchIndexById.Keys)
+        {
+            steps.Add($"index:{indexId}:delete");
+        }
+
         var operation = new OperationRecord
         {
             Id = this._cuidGenerator.Generate(),
@@ -232,9 +280,9 @@ public class ContentStorageService : IContentStorage
             Cancelled = false,
             ContentId = contentId,
             Timestamp = DateTimeOffset.UtcNow,
-            PlannedSteps = ["delete"],
+            PlannedSteps = steps.ToArray(),
             CompletedSteps = [],
-            RemainingSteps = ["delete"],
+            RemainingSteps = steps.ToArray(),
             PayloadJson = JsonSerializer.Serialize(new { Id = contentId }),
             LastFailureReason = string.Empty,
             LastAttemptTimestamp = null
@@ -243,7 +291,7 @@ public class ContentStorageService : IContentStorage
         this._context.Operations.Add(operation);
         await this._context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        this._logger.LogDebug("Queued delete operation {OperationId} for content {ContentId}", operation.Id, contentId);
+        this._logger.LogDebug("Queued delete operation {OperationId} for content {ContentId} with steps: {Steps}", operation.Id, contentId, string.Join(", ", steps));
         return operation.Id;
     }
 
@@ -468,16 +516,39 @@ public class ContentStorageService : IContentStorage
         {
             this._logger.LogDebug("Executing step '{Step}' for operation {OperationId}", step, operation.Id);
 
-            switch (step)
+            // Parse step name and execute
+            if (step == "upsert")
             {
-                case "upsert":
-                    await this.ExecuteUpsertStepAsync(operation, cancellationToken).ConfigureAwait(false);
-                    break;
-                case "delete":
-                    await this.ExecuteDeleteStepAsync(operation, cancellationToken).ConfigureAwait(false);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown step type: {step}");
+                await this.ExecuteUpsertStepAsync(operation, cancellationToken).ConfigureAwait(false);
+            }
+            else if (step == "delete")
+            {
+                await this.ExecuteDeleteStepAsync(operation, cancellationToken).ConfigureAwait(false);
+            }
+            else if (step.StartsWith("index:", StringComparison.Ordinal))
+            {
+                // Parse: "index:fts-stemmed" or "index:fts-exact:delete"
+                var parts = step.Split(':');
+                if (parts.Length < 2)
+                {
+                    throw new InvalidOperationException($"Invalid index step format: {step}");
+                }
+
+                var indexId = parts[1];
+                var isDelete = parts.Length > 2 && parts[2] == "delete";
+
+                if (isDelete)
+                {
+                    await this.ExecuteIndexDeleteStepAsync(operation, indexId, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await this.ExecuteIndexStepAsync(operation, indexId, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown step type: {step}");
             }
 
             // Move step from Remaining to Completed
@@ -555,6 +626,60 @@ public class ContentStorageService : IContentStorage
         {
             this._logger.LogDebug("Content {ContentId} not found - delete is idempotent, no error", operation.ContentId);
         }
+    }
+
+    /// <summary>
+    /// Execute index step: update content in specific search index.
+    /// Throws if index ID not found in current configuration (operation remains locked for recovery).
+    /// </summary>
+    /// <param name="operation">The operation record.</param>
+    /// <param name="indexId">The search index identifier (from config).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    private async Task ExecuteIndexStepAsync(OperationRecord operation, string indexId, CancellationToken cancellationToken)
+    {
+        // Fail hard if index ID not found in current config
+        if (!this._searchIndexById.TryGetValue(indexId, out var searchIndex))
+        {
+            this._logger.LogError("Search index '{IndexId}' not found in current configuration for operation {OperationId}. Operation will remain locked until index is restored or manually recovered.", indexId, operation.Id);
+            throw new InvalidOperationException($"Search index '{indexId}' not found in current configuration. Cannot process operation {operation.Id}.");
+        }
+
+        // Get the content from the database
+        var content = await this._context.Content
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == operation.ContentId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (content == null)
+        {
+            this._logger.LogWarning("Content {ContentId} not found for indexing in index {IndexId} - skipping", operation.ContentId, indexId);
+            return;
+        }
+
+        // Update the search index
+        await searchIndex.IndexAsync(operation.ContentId, content.Content, cancellationToken).ConfigureAwait(false);
+        this._logger.LogDebug("Indexed content {ContentId} in search index {IndexId}", operation.ContentId, indexId);
+    }
+
+    /// <summary>
+    /// Execute index delete step: remove content from specific search index.
+    /// Throws if index ID not found in current configuration (operation remains locked for recovery).
+    /// </summary>
+    /// <param name="operation">The operation record.</param>
+    /// <param name="indexId">The search index identifier (from config).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    private async Task ExecuteIndexDeleteStepAsync(OperationRecord operation, string indexId, CancellationToken cancellationToken)
+    {
+        // Fail hard if index ID not found in current config
+        if (!this._searchIndexById.TryGetValue(indexId, out var searchIndex))
+        {
+            this._logger.LogError("Search index '{IndexId}' not found in current configuration for operation {OperationId}. Operation will remain locked until index is restored or manually recovered.", indexId, operation.Id);
+            throw new InvalidOperationException($"Search index '{indexId}' not found in current configuration. Cannot process operation {operation.Id}.");
+        }
+
+        // Remove from search index (idempotent)
+        await searchIndex.RemoveAsync(operation.ContentId, cancellationToken).ConfigureAwait(false);
+        this._logger.LogDebug("Removed content {ContentId} from search index {IndexId}", operation.ContentId, indexId);
     }
 
     /// <summary>

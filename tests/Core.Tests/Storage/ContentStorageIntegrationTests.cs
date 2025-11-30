@@ -105,11 +105,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act 1: Upsert
-        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 1: Content exists
-        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal("Integration test content", content.Content);
         Assert.Equal("text/plain", content.MimeType);
@@ -121,7 +121,7 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         // Act 2: Update
         var updateRequest = new UpsertRequest
         {
-            Id = contentId,
+            Id = result.Id,
             Content = "Updated content",
             MimeType = "text/html",
             Title = "Updated Title"
@@ -130,18 +130,18 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 2: Content is updated
-        var updatedContent = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var updatedContent = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(updatedContent);
         Assert.Equal("Updated content", updatedContent.Content);
         Assert.Equal("text/html", updatedContent.MimeType);
         Assert.Equal("Updated Title", updatedContent.Title);
 
         // Act 3: Delete
-        await this._service.DeleteAsync(contentId).ConfigureAwait(false);
+        await this._service.DeleteAsync(result.Id).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert 3: Content is deleted
-        var deletedContent = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var deletedContent = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.Null(deletedContent);
     }
 
@@ -152,12 +152,12 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         var ids = new List<string>();
         for (int i = 0; i < 10; i++)
         {
-            var id = await this._service.UpsertAsync(new UpsertRequest
+            var result = await this._service.UpsertAsync(new UpsertRequest
             {
                 Content = $"Content {i}",
                 MimeType = "text/plain"
             }).ConfigureAwait(false);
-            ids.Add(id);
+            ids.Add(result.Id);
         }
 
         // Assert - All IDs should be unique and non-empty
@@ -268,11 +268,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(specificDate, content.ContentCreatedAt);
     }
@@ -296,11 +296,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(3, content.Tags.Length);
         Assert.Equal("tag with spaces", content.Tags[0]);
@@ -355,11 +355,11 @@ public sealed class ContentStorageIntegrationTests : IDisposable
         };
 
         // Act
-        var contentId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(200).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(contentId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(string.Empty, content.Title);
         Assert.Equal(string.Empty, content.Description);

@@ -57,24 +57,31 @@ public sealed class AppConfig : IValidatable
 
     /// <summary>
     /// Creates a default configuration with a single "personal" node
-    /// using local SQLite storage
+    /// using local SQLite storage in the user's home directory
     /// </summary>
     public static AppConfig CreateDefault()
     {
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var kmDir = Path.Combine(homeDir, ".km");
-        var personalNodeDir = Path.Combine(kmDir, "nodes", "personal");
+        return CreateDefault(kmDir);
+    }
+
+    /// <summary>
+    /// Creates a default configuration with a single "personal" node
+    /// using local SQLite storage in the specified base directory
+    /// </summary>
+    /// <param name="baseDir">Base directory for data storage</param>
+    public static AppConfig CreateDefault(string baseDir)
+    {
+        var personalNodeDir = Path.Combine(baseDir, "nodes", "personal");
 
         return new AppConfig
         {
             Nodes = new Dictionary<string, NodeConfig>
             {
                 ["personal"] = NodeConfig.CreateDefaultPersonalNode(personalNodeDir)
-            },
-            EmbeddingsCache = CacheConfig.CreateDefaultSqliteCache(
-                Path.Combine(kmDir, "embeddings-cache.db")
-            ),
-            LLMCache = null
+            }
+            // EmbeddingsCache and LLMCache intentionally omitted - add when features are implemented
         };
     }
 }

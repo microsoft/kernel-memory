@@ -8,6 +8,7 @@ namespace KernelMemory.Main.Tests.Unit.OutputFormatters;
 /// <summary>
 /// Unit tests for YamlOutputFormatter.
 /// </summary>
+[Collection("ConsoleOutputTests")]
 public sealed class YamlOutputFormatterTests
 {
     [Fact]

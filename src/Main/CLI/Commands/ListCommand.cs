@@ -114,10 +114,10 @@ public class ListCommand : BaseCommand<ListCommandSettings>
         AnsiConsole.MarkupLine("[dim]No content found yet. This is your first run.[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]To get started:[/]");
-        AnsiConsole.MarkupLine("  [cyan]km upsert \"Your content here\"[/]");
+        AnsiConsole.MarkupLine("  [cyan]km put \"Your content here\"[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]Example:[/]");
-        AnsiConsole.MarkupLine("  [cyan]km upsert \"Hello, world!\" --id greeting[/]");
+        AnsiConsole.MarkupLine("  [cyan]km put \"Hello, world!\" --id greeting[/]");
         AnsiConsole.WriteLine();
     }
 }

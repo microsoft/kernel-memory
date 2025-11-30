@@ -12,23 +12,25 @@ public interface IContentStorage
 {
     /// <summary>
     /// Upserts content. Creates new record if ID is empty, replaces existing if ID is provided.
-    /// Operation is queued and processed asynchronously.
+    /// Operation is queued and processed synchronously (best-effort).
+    /// Never throws after queue succeeds - returns WriteResult with completion status.
     /// </summary>
     /// <param name="request">The upsert request containing content and metadata.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The ID of the content record (newly generated or existing).</returns>
-    /// <exception cref="ContentStorageException">Thrown if queueing the operation fails.</exception>
-    Task<string> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default);
+    /// <returns>WriteResult with ID and completion status.</returns>
+    /// <exception cref="ContentStorageException">Thrown only if queueing the operation fails.</exception>
+    Task<WriteResult> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes content by ID. Idempotent - no error if record doesn't exist.
-    /// Operation is queued and processed asynchronously.
+    /// Operation is queued and processed synchronously (best-effort).
+    /// Never throws after queue succeeds - returns WriteResult with completion status.
     /// </summary>
     /// <param name="id">The content ID to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Task representing the async operation.</returns>
-    /// <exception cref="ContentStorageException">Thrown if queueing the operation fails.</exception>
-    Task DeleteAsync(string id, CancellationToken cancellationToken = default);
+    /// <returns>WriteResult with ID and completion status.</returns>
+    /// <exception cref="ContentStorageException">Thrown only if queueing the operation fails.</exception>
+    Task<WriteResult> DeleteAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves content by ID.

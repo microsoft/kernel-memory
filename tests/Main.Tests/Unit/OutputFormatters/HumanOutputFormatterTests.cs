@@ -9,6 +9,7 @@ namespace KernelMemory.Main.Tests.Unit.OutputFormatters;
 /// Unit tests for HumanOutputFormatter.
 /// Tests exercise the formatting logic with various data types.
 /// </summary>
+[Collection("ConsoleOutputTests")]
 public sealed class HumanOutputFormatterTests
 {
     [Fact]

@@ -10,7 +10,7 @@ namespace KernelMemory.Main.Tests.Integration;
 
 /// <summary>
 /// Integration tests for CLI commands with real SQLite database.
-/// These tests cover end-to-end workflows: upsert → get → list → delete.
+/// These tests cover end-to-end workflows: put → get → list → delete.
 /// </summary>
 public sealed class CliIntegrationTests : IDisposable
 {
@@ -72,7 +72,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var command = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
 
         // Act
         var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -97,7 +97,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var command = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
 
         // Act
         var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -135,7 +135,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var command = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
 
         // Act
         var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -159,7 +159,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Get the content
@@ -191,7 +191,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Some content to create the DB"
         };
         var upsertCommand = new UpsertCommand(config);
-        await upsertCommand.ExecuteAsync(CreateTestContext("upsert"), upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(CreateTestContext("put"), upsertSettings).ConfigureAwait(false);
 
         // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
@@ -227,7 +227,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Get with full flag
@@ -259,7 +259,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "temp-id"
         };
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Delete the content to have empty database
@@ -306,7 +306,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "temp-id-human"
         };
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Delete the content to have empty database
@@ -351,7 +351,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - List content
@@ -374,7 +374,7 @@ public sealed class CliIntegrationTests : IDisposable
         // Arrange - Insert multiple items
         var config = ConfigParser.LoadFromFile(this._configPath);
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
 
         for (int i = 0; i < 5; i++)
         {
@@ -418,7 +418,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Delete the content
@@ -463,7 +463,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var upsertCommand = new UpsertCommand(config);
-        var context = CreateTestContext("upsert");
+        var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
 
         // Act - Delete with quiet verbosity
@@ -593,7 +593,8 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -615,7 +616,8 @@ public sealed class CliIntegrationTests : IDisposable
             ShowNodes = true
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -637,7 +639,8 @@ public sealed class CliIntegrationTests : IDisposable
             ShowCache = true
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -689,7 +692,8 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "human"
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = CreateTestContext("config");
 
         // Act

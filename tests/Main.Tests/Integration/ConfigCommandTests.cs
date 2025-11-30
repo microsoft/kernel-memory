@@ -13,6 +13,13 @@ namespace KernelMemory.Main.Tests.Integration;
 /// These tests verify that config command shows the entire configuration,
 /// not just a single node.
 /// </summary>
+/// <remarks>
+/// These tests capture Console.Out, which is a global shared resource.
+/// Running them in parallel with other tests that write to Console.Out
+/// (like HumanOutputFormatterTests) causes output contamination.
+/// The [Collection] attribute ensures these tests run serially.
+/// </remarks>
+[Collection("ConsoleOutputTests")]
 public sealed class ConfigCommandTests : IDisposable
 {
     private readonly string _tempDir;
@@ -75,7 +82,8 @@ public sealed class ConfigCommandTests : IDisposable
             Format = "json"  // Use JSON format for easier assertion
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -127,7 +135,8 @@ public sealed class ConfigCommandTests : IDisposable
             Format = "json"
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -184,7 +193,8 @@ public sealed class ConfigCommandTests : IDisposable
             ShowNodes = true
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -210,6 +220,245 @@ public sealed class ConfigCommandTests : IDisposable
             Assert.Contains("personal", output);
             Assert.Contains("work", output);
             Assert.Contains("shared", output);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public void ConfigCommand_WithCreate_CreatesConfigFile()
+    {
+        // Arrange: Use a non-existent config path
+        var newConfigPath = Path.Combine(this._tempDir, "new-config.json");
+        Assert.False(File.Exists(newConfigPath));
+
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(newConfigPath);
+        var command = new ConfigCommand(config, configPathService);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = newConfigPath,
+            Create = true,
+            Format = "json"
+        };
+
+        var context = new CommandContext(
+            new[] { "--config", newConfigPath, "--create" },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Act
+        var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+        // Assert
+        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        Assert.True(File.Exists(newConfigPath), "Config file should be created");
+
+        // Verify the file content is valid JSON
+        var createdJson = File.ReadAllText(newConfigPath);
+        var createdConfig = System.Text.Json.JsonDocument.Parse(createdJson);
+        Assert.NotNull(createdConfig);
+    }
+
+    [Fact]
+    public void ConfigCommand_WithCreate_WhenFileExists_ReturnsError()
+    {
+        // Arrange: Config file already exists (from constructor)
+        Assert.True(File.Exists(this._configPath));
+
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Create = true,
+            Format = "json"
+        };
+
+        var context = new CommandContext(
+            new[] { "--config", this._configPath, "--create" },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Suppress console output
+        using var outputCapture = new StringWriter();
+        using var errorCapture = new StringWriter();
+        var originalOutput = Console.Out;
+        var originalError = Console.Error;
+        Console.SetOut(outputCapture);
+        Console.SetError(errorCapture);
+
+        try
+        {
+            // Act
+            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.Equal(Constants.ExitCodeUserError, exitCode);
+
+            // Error message goes to Console.Error
+            var errorOutput = errorCapture.ToString();
+            Assert.Contains("already exists", errorOutput);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Console.SetError(originalError);
+        }
+    }
+
+    [Fact]
+    public void ConfigCommand_WithoutConfigFile_StillSucceeds()
+    {
+        // Arrange: Use a non-existent config path (default config will be used)
+        var missingConfigPath = Path.Combine(this._tempDir, "missing-config.json");
+        Assert.False(File.Exists(missingConfigPath));
+
+        var config = AppConfig.CreateDefault();
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(missingConfigPath);
+        var command = new ConfigCommand(config, configPathService);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = missingConfigPath,
+            Format = "json",
+            NoColor = false  // Enable colors
+        };
+
+        var context = new CommandContext(
+            new[] { "--config", missingConfigPath },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Suppress console output (warning goes to AnsiConsole which is hard to capture in tests)
+        using var outputCapture = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(outputCapture);
+
+        try
+        {
+            // Act
+            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+            // Assert
+            // The key behavior: command succeeds even without config file
+            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+
+            // Should still output valid JSON config
+            var output = outputCapture.ToString();
+            var json = System.Text.Json.JsonDocument.Parse(output);
+            Assert.NotNull(json);
+            Assert.True(json.RootElement.TryGetProperty("nodes", out _));
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public void ConfigCommand_OutputJson_DoesNotContainNullFields()
+    {
+        // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json"
+        };
+
+        var context = new CommandContext(
+            new[] { "--config", this._configPath },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Capture stdout
+        using var outputCapture = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(outputCapture);
+
+        try
+        {
+            // Act
+            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+
+            var output = outputCapture.ToString();
+
+            // Verify no null fields are serialized
+            Assert.DoesNotContain("\"connectionString\": null", output);
+            Assert.DoesNotContain("\"embeddings\": null", output);
+            Assert.DoesNotContain("\"fileStorage\": null", output);
+            Assert.DoesNotContain("\"repoStorage\": null", output);
+            Assert.DoesNotContain("\"llmCache\": null", output);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
+    }
+
+    [Fact]
+    public void ConfigCommand_OutputJson_ContainsCorrectDiscriminators()
+    {
+        // Arrange
+        var config = ConfigParser.LoadFromFile(this._configPath);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
+
+        var settings = new ConfigCommandSettings
+        {
+            ConfigPath = this._configPath,
+            Format = "json"
+        };
+
+        var context = new CommandContext(
+            new[] { "--config", this._configPath },
+            new EmptyRemainingArguments(),
+            "config",
+            null);
+
+        // Capture stdout
+        using var outputCapture = new StringWriter();
+        var originalOutput = Console.Out;
+        Console.SetOut(outputCapture);
+
+        try
+        {
+            // Act
+            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+
+            // Assert
+            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+
+            var output = outputCapture.ToString();
+            var outputJson = System.Text.Json.JsonDocument.Parse(output);
+
+            // Verify content index uses "sqlite" (not a generic name)
+            var contentIndex = outputJson.RootElement.GetProperty("nodes").GetProperty("personal").GetProperty("contentIndex");
+            Assert.Equal("sqlite", contentIndex.GetProperty("type").GetString());
+
+            // Verify search index uses "sqliteFTS" (not generic "fts")
+            var searchIndex = outputJson.RootElement.GetProperty("nodes").GetProperty("personal").GetProperty("searchIndexes")[0];
+            Assert.Equal("sqliteFTS", searchIndex.GetProperty("type").GetString());
+
+            // Verify cache uses "Sqlite"
+            var embeddingsCache = outputJson.RootElement.GetProperty("embeddingsCache");
+            Assert.Equal("Sqlite", embeddingsCache.GetProperty("type").GetString());
         }
         finally
         {

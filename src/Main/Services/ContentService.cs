@@ -30,12 +30,12 @@ public class ContentService
     public string NodeId => this._nodeId;
 
     /// <summary>
-    /// Upserts content and returns the content ID.
+    /// Upserts content and returns the write result.
     /// </summary>
     /// <param name="request">The upsert request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The content ID.</returns>
-    public async Task<string> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default)
+    /// <returns>WriteResult with ID and completion status.</returns>
+    public async Task<WriteResult> UpsertAsync(UpsertRequest request, CancellationToken cancellationToken = default)
     {
         return await this._storage.UpsertAsync(request, cancellationToken).ConfigureAwait(false);
     }
@@ -56,9 +56,10 @@ public class ContentService
     /// </summary>
     /// <param name="id">The content ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    /// <returns>WriteResult with ID and completion status.</returns>
+    public async Task<WriteResult> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        await this._storage.DeleteAsync(id, cancellationToken).ConfigureAwait(false);
+        return await this._storage.DeleteAsync(id, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

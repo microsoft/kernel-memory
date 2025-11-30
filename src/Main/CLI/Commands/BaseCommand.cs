@@ -122,8 +122,16 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
         var cuidGenerator = new CuidGenerator();
         var logger = this.CreateLogger();
 
-        // Create storage service
-        var storage = new ContentStorageService(context, cuidGenerator, logger);
+        // Create search indexes from node configuration
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Warning);
+        });
+        var searchIndexes = Services.SearchIndexFactory.CreateIndexes(node.SearchIndexes, loggerFactory);
+
+        // Create storage service with search indexes
+        var storage = new ContentStorageService(context, cuidGenerator, logger, searchIndexes);
 
         // Create and return content service
         return new ContentService(storage, node.Id);

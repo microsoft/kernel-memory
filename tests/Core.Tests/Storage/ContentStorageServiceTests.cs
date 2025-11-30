@@ -65,13 +65,15 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal("test_id_00001", resultId); // First generated ID
+        Assert.Equal("test_id_00001", result.Id); // First generated ID
+        Assert.True(result.Completed);
+        Assert.False(result.Queued);
 
         // Verify content was created
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal("Test content", content.Content);
         Assert.Equal("text/plain", content.MimeType);
@@ -90,13 +92,14 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal("custom_id_123", resultId);
+        Assert.Equal("custom_id_123", result.Id);
+        Assert.True(result.Completed);
 
         // Verify content was created
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal("Test content", content.Content);
     }
@@ -150,11 +153,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(3, content.Tags.Length);
         Assert.Contains("tag1", content.Tags);
@@ -178,11 +181,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(2, content.Metadata.Count);
         Assert.Equal("value1", content.Metadata["key1"]);
@@ -201,11 +204,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(System.Text.Encoding.UTF8.GetByteCount(testContent), content.ByteSize);
     }
@@ -223,11 +226,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(customDate, content.ContentCreatedAt);
     }
@@ -312,11 +315,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
 
         // Assert - Operation should be queued
         var operation = await this._context.Operations
-            .FirstOrDefaultAsync(o => o.ContentId == resultId).ConfigureAwait(false);
+            .FirstOrDefaultAsync(o => o.ContentId == result.Id).ConfigureAwait(false);
 
         Assert.NotNull(operation);
         Assert.False(operation.Complete);
@@ -466,12 +469,12 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
         var afterCreate = DateTimeOffset.UtcNow.AddSeconds(1);
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.InRange(content.RecordCreatedAt, beforeCreate, afterCreate);
         Assert.InRange(content.RecordUpdatedAt, beforeCreate, afterCreate);
@@ -488,11 +491,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false); // Wait for processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(string.Empty, content.Content);
         Assert.Equal(0, content.ByteSize);
@@ -510,11 +513,11 @@ public sealed class ContentStorageServiceTests : IDisposable
         };
 
         // Act
-        var resultId = await this._service.UpsertAsync(request).ConfigureAwait(false);
+        var result = await this._service.UpsertAsync(request).ConfigureAwait(false);
         await Task.Delay(1000).ConfigureAwait(false); // Wait longer for large content processing
 
         // Assert
-        var content = await this._service.GetByIdAsync(resultId).ConfigureAwait(false);
+        var content = await this._service.GetByIdAsync(result.Id).ConfigureAwait(false);
         Assert.NotNull(content);
         Assert.Equal(largeContent.Length, content.Content.Length);
         Assert.True(content.ByteSize >= 1024 * 1024); // Should be at least 1MB (UTF-8 encoding)
@@ -535,11 +538,11 @@ public sealed class ContentStorageServiceTests : IDisposable
     public async Task ListAsync_ReturnsContentOrderedByCreationTimeDescending()
     {
         // Arrange - Create multiple content items
-        var id1 = await this._service.UpsertAsync(new UpsertRequest { Content = "First", MimeType = "text/plain" }).ConfigureAwait(false);
+        var result1 = await this._service.UpsertAsync(new UpsertRequest { Content = "First", MimeType = "text/plain" }).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false);
-        var id2 = await this._service.UpsertAsync(new UpsertRequest { Content = "Second", MimeType = "text/plain" }).ConfigureAwait(false);
+        var result2 = await this._service.UpsertAsync(new UpsertRequest { Content = "Second", MimeType = "text/plain" }).ConfigureAwait(false);
         await Task.Delay(100).ConfigureAwait(false);
-        var id3 = await this._service.UpsertAsync(new UpsertRequest { Content = "Third", MimeType = "text/plain" }).ConfigureAwait(false);
+        var result3 = await this._service.UpsertAsync(new UpsertRequest { Content = "Third", MimeType = "text/plain" }).ConfigureAwait(false);
         await Task.Delay(1000).ConfigureAwait(false); // Wait for processing
 
         // Act
@@ -548,9 +551,9 @@ public sealed class ContentStorageServiceTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.Equal(3, result.Count);
-        Assert.Equal(id3, result[0].Id); // Most recent first
-        Assert.Equal(id2, result[1].Id);
-        Assert.Equal(id1, result[2].Id);
+        Assert.Equal(result3.Id, result[0].Id); // Most recent first
+        Assert.Equal(result2.Id, result[1].Id);
+        Assert.Equal(result1.Id, result[2].Id);
     }
 
     [Fact]

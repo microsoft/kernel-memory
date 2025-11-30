@@ -188,7 +188,8 @@ public sealed class ReadonlyCommandTests : IDisposable
             Format = "json"
         };
 
-        var command = new ConfigCommand(config);
+        var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
+        var command = new ConfigCommand(config, configPathService);
         var context = CreateTestContext("config");
 
         // Act

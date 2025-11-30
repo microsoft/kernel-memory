@@ -1,5 +1,6 @@
 - Follow @docs/AGENTS.md instructions without exceptions
 - Ignore the "archived" directory
+- During development don't EVER write to my personal ~/.km dir
 - For any task with multiple steps, create a todo list FIRST, then execute.
 - Avoid destructive operations like "get reset", "git clean", etc.
 
