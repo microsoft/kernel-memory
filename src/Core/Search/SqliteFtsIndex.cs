@@ -45,12 +45,16 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
         await this._connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         // Create FTS5 virtual table if it doesn't exist
+        // BREAKING CHANGE: New schema indexes title, description, content separately
+        // This enables field-specific search (e.g., title:kubernetes vs content:kubernetes)
         // Using regular FTS5 table (stores content) to support snippets
         var tokenizer = this._enableStemming ? "porter unicode61" : "unicode61";
         var createTableSql = $"""
             CREATE VIRTUAL TABLE IF NOT EXISTS {TableName} USING fts5(
                 content_id UNINDEXED,
-                text,
+                title,
+                description,
+                content,
                 tokenize='{tokenizer}'
             );
             """;
@@ -68,24 +72,42 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
     /// <inheritdoc />
     public async Task IndexAsync(string contentId, string text, CancellationToken cancellationToken = default)
     {
+        // Legacy method - indexes text as content only (no title/description)
+        await this.IndexAsync(contentId, null, null, text, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Indexes content with separate FTS-indexed fields.
+    /// BREAKING CHANGE: New signature to support title, description, content separately.
+    /// </summary>
+    /// <param name="contentId">Unique content identifier.</param>
+    /// <param name="title">Optional title (FTS-indexed).</param>
+    /// <param name="description">Optional description (FTS-indexed).</param>
+    /// <param name="content">Main content body (FTS-indexed, required).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public async Task IndexAsync(string contentId, string? title, string? description, string content, CancellationToken cancellationToken = default)
+    {
         await this.InitializeAsync(cancellationToken).ConfigureAwait(false);
 
         // Remove existing entry first (upsert semantics)
         await this.RemoveAsync(contentId, cancellationToken).ConfigureAwait(false);
 
-        // Insert new entry
-        var insertSql = $"INSERT INTO {TableName}(content_id, text) VALUES (@contentId, @text)";
+        // Insert new entry with separate fields
+        var insertSql = $"INSERT INTO {TableName}(content_id, title, description, content) VALUES (@contentId, @title, @description, @content)";
 
         var insertCommand = this._connection!.CreateCommand();
         await using (insertCommand.ConfigureAwait(false))
         {
             insertCommand.CommandText = insertSql;
             insertCommand.Parameters.AddWithValue("@contentId", contentId);
-            insertCommand.Parameters.AddWithValue("@text", text);
+            insertCommand.Parameters.AddWithValue("@title", title ?? string.Empty);
+            insertCommand.Parameters.AddWithValue("@description", description ?? string.Empty);
+            insertCommand.Parameters.AddWithValue("@content", content);
             await insertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        this._logger.LogDebug("Indexed content {ContentId} in FTS", contentId);
+        this._logger.LogDebug("Indexed content {ContentId} with title={HasTitle}, description={HasDescription} in FTS",
+            contentId, !string.IsNullOrEmpty(title), !string.IsNullOrEmpty(description));
     }
 
     /// <inheritdoc />
@@ -121,12 +143,12 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
 
         // Search using FTS5 MATCH operator
         // rank is negative (closer to 0 is better), so we negate it for Score
-        // snippet() generates highlighted text excerpts
+        // snippet() generates highlighted text excerpts from the content field (column index 3)
         var searchSql = $"""
             SELECT 
                 content_id,
                 -rank as score,
-                snippet({TableName}, 1, '', '', '...', 32) as snippet
+                snippet({TableName}, 3, '', '', '...', 32) as snippet
             FROM {TableName}
             WHERE {TableName} MATCH @query
             ORDER BY rank

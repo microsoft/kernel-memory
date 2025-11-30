@@ -26,6 +26,15 @@ public sealed class NodeConfig : IValidatable
     public NodeAccessLevels Access { get; set; } = NodeAccessLevels.Full;
 
     /// <summary>
+    /// Weight for relevance scoring when searching across multiple nodes.
+    /// Higher weight = results from this node ranked higher.
+    /// Default: 1.0 (neutral weight).
+    /// Range: 0.0 (exclude) to any positive value.
+    /// </summary>
+    [JsonPropertyName("weight")]
+    public float Weight { get; set; } = 1.0f;
+
+    /// <summary>
     /// Content index (source of truth) - REQUIRED
     /// Stores metadata, cached content, and ingestion state
     /// </summary>
@@ -60,6 +69,11 @@ public sealed class NodeConfig : IValidatable
         if (string.IsNullOrWhiteSpace(this.Id))
         {
             throw new ConfigException(path, "Node ID is required");
+        }
+
+        if (this.Weight < 0.0f)
+        {
+            throw new ConfigException($"{path}.Weight", "Weight must be non-negative (0.0 or higher)");
         }
 
         if (this.ContentIndex == null)
