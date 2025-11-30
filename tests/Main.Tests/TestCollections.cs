@@ -10,6 +10,6 @@ namespace KernelMemory.Main.Tests;
 /// and others write to it directly.
 /// </summary>
 [CollectionDefinition("ConsoleOutputTests", DisableParallelization = true)]
-public class ConsoleOutputTestCollection
+public class ConsoleOutputTestGroup
 {
 }
