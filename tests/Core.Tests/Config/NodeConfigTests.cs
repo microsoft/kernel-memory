@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
-using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Config.Validation;
 using Xunit;
 

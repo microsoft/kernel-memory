@@ -6,55 +6,70 @@ using Microsoft.Extensions.Logging;
 namespace KernelMemory.Main.Services;
 
 /// <summary>
-/// Factory for creating search index instances from configuration.
+/// Factory for creating search indexes from configuration.
 /// </summary>
 public static class SearchIndexFactory
 {
     /// <summary>
-    /// Creates search index instances from node configuration.
+    /// Creates search indexes from configuration as a dictionary keyed by index ID.
     /// </summary>
-    /// <param name="searchIndexConfigs">Search index configurations from node.</param>
-    /// <param name="loggerFactory">Logger factory for creating loggers.</param>
-    /// <returns>Dictionary mapping index ID to ISearchIndex instance.</returns>
+    /// <param name="configs">List of search index configurations.</param>
+    /// <param name="loggerFactory">Logger factory for creating index loggers.</param>
+    /// <returns>Dictionary of index ID to ISearchIndex instance.</returns>
     public static IReadOnlyDictionary<string, ISearchIndex> CreateIndexes(
-        IReadOnlyList<SearchIndexConfig> searchIndexConfigs,
+        List<SearchIndexConfig> configs,
         ILoggerFactory loggerFactory)
     {
         var indexes = new Dictionary<string, ISearchIndex>();
 
-        foreach (var config in searchIndexConfigs)
+        foreach (var config in configs)
         {
-            var index = CreateIndex(config, loggerFactory);
-            if (index != null)
+            if (config is FtsSearchIndexConfig ftsConfig)
             {
+                if (string.IsNullOrWhiteSpace(ftsConfig.Path))
+                {
+                    throw new InvalidOperationException($"FTS index '{config.Id}' has no Path configured");
+                }
+
+                var logger = loggerFactory.CreateLogger<SqliteFtsIndex>();
+                var index = new SqliteFtsIndex(ftsConfig.Path, ftsConfig.EnableStemming, logger);
                 indexes[config.Id] = index;
             }
+            // Add other index types here (vector, hybrid, etc.)
         }
 
         return indexes;
     }
 
     /// <summary>
-    /// Creates a single search index instance from configuration.
+    /// Creates the first FTS index from configuration.
+    /// Returns null if no FTS index is configured.
     /// </summary>
-    /// <param name="config">Search index configuration.</param>
-    /// <param name="loggerFactory">Logger factory.</param>
-    /// <returns>ISearchIndex instance, or null if type not supported.</returns>
-    private static SqliteFtsIndex? CreateIndex(SearchIndexConfig config, ILoggerFactory loggerFactory)
+    /// <param name="configs">List of search index configurations.</param>
+    /// <returns>The first FTS index, or null if none configured.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "LoggerFactory lifetime is managed by the logger infrastructure. Short-lived CLI commands don't require explicit disposal.")]
+    public static IFtsIndex? CreateFtsIndex(List<SearchIndexConfig> configs)
     {
-        return config switch
+        foreach (var config in configs)
         {
-            FtsSearchIndexConfig ftsConfig when !string.IsNullOrWhiteSpace(ftsConfig.Path) =>
-                new SqliteFtsIndex(
-                    ftsConfig.Path,
-                    ftsConfig.EnableStemming,
-                    loggerFactory.CreateLogger<SqliteFtsIndex>()),
+            if (config is FtsSearchIndexConfig ftsConfig)
+            {
+                if (string.IsNullOrWhiteSpace(ftsConfig.Path))
+                {
+                    throw new InvalidOperationException($"FTS index '{config.Id}' has no Path configured");
+                }
 
-            // Vector and Graph indexes not yet implemented
-            // VectorSearchIndexConfig vectorConfig => ...,
-            // GraphSearchIndexConfig graphConfig => ...,
+                var loggerFactory = LoggerFactory.Create(builder =>
+                {
+                    builder.AddConsole();
+                    builder.SetMinimumLevel(LogLevel.Warning);
+                });
+                var logger = loggerFactory.CreateLogger<SqliteFtsIndex>();
+                return new SqliteFtsIndex(ftsConfig.Path, ftsConfig.EnableStemming, logger);
+            }
+        }
 
-            _ => null
-        };
+        return null;
     }
 }
