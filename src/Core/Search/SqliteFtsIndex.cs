@@ -150,16 +150,17 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
         }
 
         // Search using FTS5 MATCH operator
-        // rank is negative (closer to 0 is better), so we negate it for Score
+        // Use bm25() for better scoring (returns negative values, more negative = better match)
+        // We negate and normalize to 0-1 range
         // snippet() generates highlighted text excerpts from the content field (column index 3)
         var searchSql = $"""
-            SELECT 
+            SELECT
                 content_id,
-                -rank as score,
+                bm25({TableName}) as raw_score,
                 snippet({TableName}, 3, '', '', '...', 32) as snippet
             FROM {TableName}
             WHERE {TableName} MATCH @query
-            ORDER BY rank
+            ORDER BY raw_score
             LIMIT @limit
             """;
 
@@ -170,19 +171,36 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             searchCommand.Parameters.AddWithValue("@query", query);
             searchCommand.Parameters.AddWithValue("@limit", limit);
 
-            var results = new List<FtsMatch>();
+            var rawResults = new List<(string ContentId, double RawScore, string Snippet)>();
             var reader = await searchCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    results.Add(new FtsMatch
-                    {
-                        ContentId = reader.GetString(0),
-                        Score = reader.GetDouble(1),
-                        Snippet = reader.GetString(2)
-                    });
+                    var contentId = reader.GetString(0);
+                    var rawScore = reader.GetDouble(1);
+                    var snippet = reader.GetString(2);
+                    rawResults.Add((contentId, rawScore, snippet));
                 }
+            }
+
+            // Normalize BM25 scores to 0-1 range
+            // BM25 returns negative scores where more negative = better match
+            // Convert to positive scores using exponential normalization
+            var results = new List<FtsMatch>();
+            foreach (var (contentId, rawScore, snippet) in rawResults)
+            {
+                // BM25 scores are typically in range [-10, 0]
+                // Use exponential function to map to [0, 1]: score = exp(raw_score / divisor)
+                // This gives: -10 → 0.37, -5 → 0.61, -1 → 0.90, 0 → 1.0
+                var normalizedScore = Math.Exp(rawScore / SearchConstants.Bm25NormalizationDivisor);
+
+                results.Add(new FtsMatch
+                {
+                    ContentId = contentId,
+                    Score = normalizedScore,
+                    Snippet = snippet
+                });
             }
 
             this._logger.LogDebug("FTS search for '{Query}' returned {Count} results", query, results.Count);
@@ -229,9 +247,13 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
                 cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
                 cmd.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (Microsoft.Data.Sqlite.SqliteException ex)
             {
                 this._logger.LogWarning(ex, "Failed to checkpoint WAL during FTS index disposal");
+            }
+            catch (InvalidOperationException ex)
+            {
+                this._logger.LogWarning(ex, "Failed to checkpoint WAL during FTS index disposal - connection in invalid state");
             }
 
             this._connection.Close();

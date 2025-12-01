@@ -27,7 +27,16 @@ public sealed class InfixQueryParser : IQueryParser
             // Simplified parser: use recursive descent parsing
             var tokens = this.Tokenize(query);
             var parser = new InfixParser(tokens);
-            return parser.ParseExpression();
+            var result = parser.ParseExpression();
+
+            // Check for unmatched closing parenthesis (extra tokens after valid expression)
+            var current = parser.CurrentToken();
+            if (current?.Type == TokenType.RightParen)
+            {
+                throw new QuerySyntaxException("Unexpected closing parenthesis");
+            }
+
+            return result;
         }
         catch (QuerySyntaxException)
         {
@@ -394,7 +403,7 @@ public sealed class InfixQueryParser : IQueryParser
             };
         }
 
-        private Token? CurrentToken()
+        public Token? CurrentToken()
         {
             return this._position < this._tokens.Count ? this._tokens[this._position] : null;
         }

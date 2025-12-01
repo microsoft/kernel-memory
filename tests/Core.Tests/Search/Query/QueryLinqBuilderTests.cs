@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-using System.Linq.Expressions;
 using KernelMemory.Core.Search.Query;
 using KernelMemory.Core.Search.Query.Ast;
-using KernelMemory.Core.Storage.Models;
-using Xunit;
+using KernelMemory.Core.Storage.Entities;
 
-namespace Core.Tests.Search.Query;
+namespace KernelMemory.Core.Tests.Search.Query;
 
 /// <summary>
 /// Tests for QueryLinqBuilder verifying AST to LINQ transformation.
@@ -132,7 +130,7 @@ public sealed class QueryLinqBuilderTests
             new ContentRecord { Id = "1", Content = "test", Metadata = new Dictionary<string, string> { ["author"] = "John" } },
             new ContentRecord { Id = "2", Content = "test", Metadata = new Dictionary<string, string> { ["author"] = "Jane" } },
             new ContentRecord { Id = "3", Content = "test", Metadata = new Dictionary<string, string>() }, // No author field
-            new ContentRecord { Id = "4", Content = "test", Metadata = null }
+            new ContentRecord { Id = "4", Content = "test", Metadata = null! }
         };
 
         var results = records.AsQueryable().Where(expr).ToArray();
@@ -159,7 +157,7 @@ public sealed class QueryLinqBuilderTests
             new ContentRecord { Id = "1", Content = "test", Metadata = new Dictionary<string, string> { ["author"] = "John" } },
             new ContentRecord { Id = "2", Content = "test", Metadata = new Dictionary<string, string> { ["author"] = "Jane" } },
             new ContentRecord { Id = "3", Content = "test", Metadata = new Dictionary<string, string>() }, // No author field
-            new ContentRecord { Id = "4", Content = "test", Metadata = null }
+            new ContentRecord { Id = "4", Content = "test", Metadata = null! }
         };
 
         var results = records.AsQueryable().Where(expr).ToArray();
@@ -188,7 +186,7 @@ public sealed class QueryLinqBuilderTests
             new ContentRecord { Id = "1", Content = "test", Tags = new[] { "AI", "research" } },
             new ContentRecord { Id = "2", Content = "test", Tags = new[] { "docker", "kubernetes" } },
             new ContentRecord { Id = "3", Content = "test", Tags = new[] { "ML", "python" } },
-            new ContentRecord { Id = "4", Content = "test", Tags = null }
+            new ContentRecord { Id = "4", Content = "test", Tags = null! }
         };
 
         var results = records.AsQueryable().Where(expr).ToArray();
@@ -315,16 +313,16 @@ public sealed class QueryLinqBuilderTests
         var query = new TextSearchNode
         {
             SearchText = "kubernetes",
-            Field = null // Default field behavior
+            Field = null! // Default field behavior
         };
 
         var expr = this._builder.Build<ContentRecord>(query);
 
         var records = new[]
         {
-            new ContentRecord { Id = "1", Title = "Kubernetes Guide", Content = "test", Description = null },
+            new ContentRecord { Id = "1", Title = "Kubernetes Guide", Content = "test", Description = null! },
             new ContentRecord { Id = "2", Title = "Docker", Content = "test", Description = "About Kubernetes" },
-            new ContentRecord { Id = "3", Title = "Docker", Content = "Working with kubernetes clusters", Description = null },
+            new ContentRecord { Id = "3", Title = "Docker", Content = "Working with kubernetes clusters", Description = null! },
             new ContentRecord { Id = "4", Title = "Docker", Content = "test", Description = "test" }
         };
 
@@ -353,7 +351,7 @@ public sealed class QueryLinqBuilderTests
         {
             new ContentRecord { Id = "1", Content = "test", Metadata = new Dictionary<string, string> { ["category"] = "tech" } },
             new ContentRecord { Id = "2", Content = "test", Metadata = new Dictionary<string, string> { ["author"] = "John" } },
-            new ContentRecord { Id = "3", Content = "test", Metadata = null }
+            new ContentRecord { Id = "3", Content = "test", Metadata = null! }
         };
 
         var results = records.AsQueryable().Where(expr).ToArray();
@@ -378,7 +376,7 @@ public sealed class QueryLinqBuilderTests
         var records = new[]
         {
             new ContentRecord { Id = "1", Title = "test guide", Content = "content" },
-            new ContentRecord { Id = "2", Title = null, Content = "content" },
+            new ContentRecord { Id = "2", Title = null!, Content = "content" },
             new ContentRecord { Id = "3", Title = "another test", Content = "content" }
         };
 

@@ -63,7 +63,7 @@ public static class SearchIndexFactory
                 var loggerFactory = LoggerFactory.Create(builder =>
                 {
                     builder.AddConsole();
-                    builder.SetMinimumLevel(LogLevel.Warning);
+                    builder.SetMinimumLevel(LogLevel.Debug);
                 });
                 var logger = loggerFactory.CreateLogger<SqliteFtsIndex>();
                 return new SqliteFtsIndex(ftsConfig.Path, ftsConfig.EnableStemming, logger);

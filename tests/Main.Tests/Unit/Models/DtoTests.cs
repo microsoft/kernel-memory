@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Main.CLI.Models;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Unit.Models;
 

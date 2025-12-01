@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.CLI.OutputFormatters;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Unit.OutputFormatters;
 

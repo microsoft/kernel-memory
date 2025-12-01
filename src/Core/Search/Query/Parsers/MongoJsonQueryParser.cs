@@ -73,15 +73,15 @@ public sealed class MongoJsonQueryParser : IQueryParser
             var name = property.Name;
             var value = property.Value;
 
-            // Logical operators
-            if (name.StartsWith('$'))
-            {
-                conditions.Add(this.ParseLogicalOperator(name, value));
-            }
-            // Special $text operator (full-text search)
-            else if (name == "$text")
+            // Special $text operator (full-text search) - check before other $ operators
+            if (name == "$text")
             {
                 conditions.Add(this.ParseTextSearch(value));
+            }
+            // Logical operators
+            else if (name.StartsWith('$'))
+            {
+                conditions.Add(this.ParseLogicalOperator(name, value));
             }
             // Field comparison
             else

@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using Xunit;
 
 namespace KernelMemory.Main.Tests;
 

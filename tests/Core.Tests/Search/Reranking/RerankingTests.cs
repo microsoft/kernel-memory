@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Search.Reranking;
-using Xunit;
 
-namespace Core.Tests.Search.Reranking;
+namespace KernelMemory.Core.Tests.Search.Reranking;
 
 /// <summary>
 /// Tests for WeightedDiminishingReranker using explicit examples from requirements doc.

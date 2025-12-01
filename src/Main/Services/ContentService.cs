@@ -41,6 +41,11 @@ public sealed class ContentService : IDisposable
     public IContentStorage Storage => this._storage;
 
     /// <summary>
+    /// Gets the registered search indexes for this service.
+    /// </summary>
+    public IReadOnlyDictionary<string, ISearchIndex> SearchIndexes => this._searchIndexes ?? new Dictionary<string, ISearchIndex>();
+
+    /// <summary>
     /// Upserts content and returns the write result.
     /// </summary>
     /// <param name="request">The upsert request.</param>

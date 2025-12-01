@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Models;
-using Xunit;
 
 namespace KernelMemory.Core.Tests.Search.Models;
 

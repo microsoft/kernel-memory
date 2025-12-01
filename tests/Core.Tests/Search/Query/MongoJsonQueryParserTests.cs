@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Query.Ast;
 using KernelMemory.Core.Search.Query.Parsers;
-using Xunit;
 
-namespace Core.Tests.Search.Query;
+namespace KernelMemory.Core.Tests.Search.Query;
 
 /// <summary>
 /// Tests for MongoJsonQueryParser with comprehensive coverage of MongoDB operators.
@@ -18,9 +17,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"content\": \"kubernetes\"}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("content", compNode.Field.FieldPath);
+        Assert.Equal("content", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("kubernetes", compNode.Value.AsString());
+        Assert.Equal("kubernetes", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -29,9 +28,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"tags\": {\"$eq\": \"production\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("production", compNode.Value.AsString());
+        Assert.Equal("production", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -40,9 +39,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"mimeType\": {\"$ne\": \"image/png\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("mimetype", compNode.Field.FieldPath);
+        Assert.Equal("mimetype", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.NotEqual, compNode.Operator);
-        Assert.Equal("image/png", compNode.Value.AsString());
+        Assert.Equal("image/png", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -51,9 +50,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"createdAt\": {\"$gt\": \"2024-01-01\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.GreaterThan, compNode.Operator);
-        Assert.Equal("2024-01-01", compNode.Value.AsString());
+        Assert.Equal("2024-01-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -62,9 +61,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"createdAt\": {\"$gte\": \"2024-01-01\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.GreaterThanOrEqual, compNode.Operator);
-        Assert.Equal("2024-01-01", compNode.Value.AsString());
+        Assert.Equal("2024-01-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -73,9 +72,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"createdAt\": {\"$lt\": \"2024-02-01\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.LessThan, compNode.Operator);
-        Assert.Equal("2024-02-01", compNode.Value.AsString());
+        Assert.Equal("2024-02-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -84,9 +83,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"createdAt\": {\"$lte\": \"2024-02-01\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.LessThanOrEqual, compNode.Operator);
-        Assert.Equal("2024-02-01", compNode.Value.AsString());
+        Assert.Equal("2024-02-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -95,9 +94,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"tags\": {\"$in\": [\"AI\", \"ML\", \"research\"]}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.In, compNode.Operator);
-        var array = compNode.Value.AsStringArray();
+        var array = compNode.Value!.AsStringArray();
         Assert.Equal(3, array.Length);
         Assert.Contains("AI", array);
         Assert.Contains("ML", array);
@@ -110,9 +109,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"tags\": {\"$nin\": [\"deprecated\", \"archived\"]}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.NotIn, compNode.Operator);
-        var array = compNode.Value.AsStringArray();
+        var array = compNode.Value!.AsStringArray();
         Assert.Equal(2, array.Length);
         Assert.Contains("deprecated", array);
         Assert.Contains("archived", array);
@@ -124,9 +123,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"content\": {\"$regex\": \"kubernetes\"}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("content", compNode.Field.FieldPath);
+        Assert.Equal("content", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Contains, compNode.Operator);
-        Assert.Equal("kubernetes", compNode.Value.AsString());
+        Assert.Equal("kubernetes", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -135,9 +134,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"metadata.category\": {\"$exists\": true}}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("metadata.category", compNode.Field.FieldPath);
+        Assert.Equal("metadata.category", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Exists, compNode.Operator);
-        Assert.True((bool)compNode.Value.Value);
+        Assert.True((bool)compNode.Value!.Value);
     }
 
     [Fact]
@@ -150,7 +149,7 @@ public sealed class MongoJsonQueryParserTests
         Assert.Single(notNode.Children);
 
         var compNode = Assert.IsType<ComparisonNode>(notNode.Children[0]);
-        Assert.Equal("metadata.category", compNode.Field.FieldPath);
+        Assert.Equal("metadata.category", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Exists, compNode.Operator);
     }
 
@@ -200,7 +199,7 @@ public sealed class MongoJsonQueryParserTests
         Assert.Single(logicalNode.Children);
 
         var compNode = Assert.IsType<ComparisonNode>(logicalNode.Children[0]);
-        Assert.Equal("mimetype", compNode.Field.FieldPath);
+        Assert.Equal("mimetype", compNode.Field!.FieldPath);
     }
 
     [Fact]
@@ -216,7 +215,7 @@ public sealed class MongoJsonQueryParserTests
     [Fact]
     public void Parse_ComplexNestedQuery_ReturnsLogicalNode()
     {
-        var query = @"{
+        const string query = @"{
             ""$and"": [
                 {""$or"": [{""tags"": ""AI""}, {""tags"": ""ML""}]},
                 {""$not"": {""mimeType"": ""image/png""}}
@@ -244,9 +243,9 @@ public sealed class MongoJsonQueryParserTests
         var result = this._parser.Parse("{\"metadata.author\": \"John\"}");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("metadata.author", compNode.Field.FieldPath);
+        Assert.Equal("metadata.author", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("John", compNode.Value.AsString());
+        Assert.Equal("John", compNode.Value!.AsString());
     }
 
     [Fact]

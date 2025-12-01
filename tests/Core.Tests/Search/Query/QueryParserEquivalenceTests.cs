@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Query.Ast;
 using KernelMemory.Core.Search.Query.Parsers;
-using Xunit;
 
-namespace Core.Tests.Search.Query;
+namespace KernelMemory.Core.Tests.Search.Query;
 
 /// <summary>
 /// Tests to ensure InfixQueryParser and MongoJsonQueryParser produce equivalent ASTs.
@@ -173,17 +172,17 @@ public sealed class QueryParserEquivalenceTests
 
         if (node1 is ComparisonNode comp1 && node2 is ComparisonNode comp2)
         {
-            Assert.Equal(comp1.Field.FieldPath, comp2.Field.FieldPath);
+            Assert.Equal(comp1.Field!.FieldPath, comp2.Field!.FieldPath);
             Assert.Equal(comp1.Operator, comp2.Operator);
 
             // Compare values (handling arrays specially)
-            if (comp1.Value.Value is string[] arr1 && comp2.Value.Value is string[] arr2)
+            if (comp1.Value!.Value is string[] arr1 && comp2.Value!.Value is string[] arr2)
             {
                 Assert.Equal(arr1, arr2);
             }
             else
             {
-                Assert.Equal(comp1.Value.Value?.ToString(), comp2.Value.Value?.ToString());
+                Assert.Equal(comp1.Value!.Value?.ToString(), comp2.Value!.Value?.ToString());
             }
         }
         else if (node1 is LogicalNode logical1 && node2 is LogicalNode logical2)

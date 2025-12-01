@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Query.Ast;
 using KernelMemory.Core.Search.Query.Parsers;
-using Xunit;
 
-namespace Core.Tests.Search.Query;
+namespace KernelMemory.Core.Tests.Search.Query;
 
 /// <summary>
 /// Tests for InfixQueryParser with comprehensive coverage of all query syntax.
@@ -39,9 +38,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("content:kubernetes");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("content", compNode.Field.FieldPath);
+        Assert.Equal("content", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("kubernetes", compNode.Value.AsString());
+        Assert.Equal("kubernetes", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -50,9 +49,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("tags==production");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("production", compNode.Value.AsString());
+        Assert.Equal("production", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -61,9 +60,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("mimeType!=image/png");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("mimetype", compNode.Field.FieldPath);
+        Assert.Equal("mimetype", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.NotEqual, compNode.Operator);
-        Assert.Equal("image/png", compNode.Value.AsString());
+        Assert.Equal("image/png", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -72,9 +71,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("createdAt>=2024-01-01");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.GreaterThanOrEqual, compNode.Operator);
-        Assert.Equal("2024-01-01", compNode.Value.AsString());
+        Assert.Equal("2024-01-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -83,9 +82,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("createdAt<2024-02-01");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("createdat", compNode.Field.FieldPath);
+        Assert.Equal("createdat", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.LessThan, compNode.Operator);
-        Assert.Equal("2024-02-01", compNode.Value.AsString());
+        Assert.Equal("2024-02-01", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -94,9 +93,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("content:~\"machine learning\"");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("content", compNode.Field.FieldPath);
+        Assert.Equal("content", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Contains, compNode.Operator);
-        Assert.Equal("machine learning", compNode.Value.AsString());
+        Assert.Equal("machine learning", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -105,9 +104,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("tags:[AI,ML,research]");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.In, compNode.Operator);
-        var array = compNode.Value.AsStringArray();
+        var array = compNode.Value!.AsStringArray();
         Assert.Equal(3, array.Length);
         Assert.Contains("AI", array);
         Assert.Contains("ML", array);
@@ -120,9 +119,9 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("metadata.author:John");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("metadata.author", compNode.Field.FieldPath);
+        Assert.Equal("metadata.author", compNode.Field!.FieldPath);
         Assert.Equal(ComparisonOperator.Equal, compNode.Operator);
-        Assert.Equal("John", compNode.Value.AsString());
+        Assert.Equal("John", compNode.Value!.AsString());
     }
 
     [Fact]
@@ -215,7 +214,7 @@ public sealed class InfixQueryParserTests
 
         // Second child: field search
         var compNode = Assert.IsType<ComparisonNode>(logicalNode.Children[1]);
-        Assert.Equal("tags", compNode.Field.FieldPath);
+        Assert.Equal("tags", compNode.Field!.FieldPath);
     }
 
     [Fact]
@@ -339,7 +338,7 @@ public sealed class InfixQueryParserTests
         var result = this._parser.Parse("content:\"test:value with:colons\"");
 
         var compNode = Assert.IsType<ComparisonNode>(result);
-        Assert.Equal("content", compNode.Field.FieldPath);
-        Assert.Equal("test:value with:colons", compNode.Value.AsString());
+        Assert.Equal("content", compNode.Field!.FieldPath);
+        Assert.Equal("test:value with:colons", compNode.Value!.AsString());
     }
 }

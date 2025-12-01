@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Main.CLI.Commands;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Unit.Settings;
 

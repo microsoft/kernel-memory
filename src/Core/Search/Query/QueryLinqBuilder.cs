@@ -100,6 +100,12 @@ public sealed class QueryLinqBuilder : IQueryNodeVisitor<Expression>
             return this.BuildContainsComparison(fieldExpr, value);
         }
 
+        // For FTS-indexed fields (content, title, description), Equal operator uses Contains (FTS semantics)
+        if (op == ComparisonOperator.Equal && this.IsFtsField(field.FieldPath))
+        {
+            return this.BuildContainsComparison(fieldExpr, value);
+        }
+
         // Standard comparison operators
         return this.BuildStandardComparison(fieldExpr, op, value);
     }
@@ -380,5 +386,15 @@ public sealed class QueryLinqBuilder : IQueryNodeVisitor<Expression>
             ComparisonOperator.LessThanOrEqual => Expression.LessThanOrEqual(fieldExpr, valueExpr),
             _ => throw new NotSupportedException($"Operator {op} not supported for standard comparison")
         };
+    }
+
+    /// <summary>
+    /// Check if a field is FTS-indexed (uses full-text search semantics).
+    /// FTS fields: content, title, description.
+    /// </summary>
+    private bool IsFtsField(string fieldPath)
+    {
+        var normalized = fieldPath.ToLowerInvariant();
+        return normalized is "content" or "title" or "description";
     }
 }

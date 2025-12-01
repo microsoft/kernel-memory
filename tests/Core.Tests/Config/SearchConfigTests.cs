@@ -2,7 +2,6 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
 using KernelMemory.Core.Search;
-using Xunit;
 
 namespace KernelMemory.Core.Tests.Config;
 

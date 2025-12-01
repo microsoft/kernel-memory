@@ -447,6 +447,8 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// Creates a SearchService instance with all configured nodes.
     /// </summary>
     /// <returns>A configured SearchService.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "ContentService instances must remain alive for the duration of the search operation. CLI commands are short-lived and process exit handles cleanup.")]
     private SearchService CreateSearchService()
     {
         var nodeServices = new Dictionary<string, NodeSearchService>();
@@ -454,10 +456,12 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
         foreach (var (nodeId, nodeConfig) in this.Config.Nodes)
         {
             // Create ContentService for this node
-            using var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
+            // Don't dispose - NodeSearchService needs access to its Storage and SearchIndexes
+            var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
 
-            // Get FTS index from search indexes
-            var ftsIndex = Services.SearchIndexFactory.CreateFtsIndex(nodeConfig.SearchIndexes);
+            // Get FTS index from the content service's registered indexes
+            // The content service already has FTS indexes registered and keeps them in sync
+            var ftsIndex = contentService.SearchIndexes.Values.OfType<IFtsIndex>().FirstOrDefault();
             if (ftsIndex == null)
             {
                 throw new InvalidOperationException($"Node '{nodeId}' does not have an FTS index configured");

@@ -84,7 +84,7 @@ public sealed class SearchService : ISearchService
         return new SearchResponse
         {
             Query = request.Query,
-            TotalResults = paginated.Length,
+            TotalResults = filtered.Length, // Total results after filtering, before pagination
             Results = paginated,
             Metadata = new SearchMetadata
             {

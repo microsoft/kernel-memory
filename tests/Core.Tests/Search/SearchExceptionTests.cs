@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Search.Exceptions;
-using Xunit;
 
 namespace KernelMemory.Core.Tests.Search;
 

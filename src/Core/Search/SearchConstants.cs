@@ -40,6 +40,12 @@ public static class SearchConstants
     public const float DefaultIndexWeight = 1.0f;
 
     /// <summary>
+    /// BM25 score normalization divisor for exponential mapping.
+    /// Maps BM25 range [-10, 0] to [0.37, 1.0] using exp(score/divisor).
+    /// </summary>
+    public const double Bm25NormalizationDivisor = 10.0;
+
+    /// <summary>
     /// Maximum nesting depth for query parentheses.
     /// Prevents DoS attacks via deeply nested queries.
     /// </summary>
