@@ -36,6 +36,8 @@ public sealed class CliApplicationBuilder
     private static readonly string[] s_searchExample2 = new[] { "search", "content:kubernetes AND tags:production" };
     private static readonly string[] s_searchExample3 = new[] { "search", "kubernetes", "--limit", "10" };
     private static readonly string[] s_searchExample4 = new[] { "search", "{\"content\": \"kubernetes\"}", "--format", "json" };
+    private static readonly string[] s_examplesExample1 = new[] { "examples" };
+    private static readonly string[] s_examplesExample2 = new[] { "examples", "--command", "search" };
 
     /// <summary>
     /// Creates and configures a CommandApp with all CLI commands.
@@ -150,6 +152,12 @@ public sealed class CliApplicationBuilder
                 .WithExample(s_searchExample2)
                 .WithExample(s_searchExample3)
                 .WithExample(s_searchExample4);
+
+            // Examples command
+            config.AddCommand<ExamplesCommand>("examples")
+                .WithDescription("Show usage examples for all commands")
+                .WithExample(s_examplesExample1)
+                .WithExample(s_examplesExample2);
 
             config.ValidateExamples();
         });
