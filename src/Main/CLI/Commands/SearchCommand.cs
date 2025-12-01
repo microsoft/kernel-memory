@@ -49,7 +49,7 @@ public class SearchCommandSettings : GlobalOptions
 
     [CommandOption("--min-relevance")]
     [Description("Minimum relevance score threshold (0.0-1.0, default: 0.3)")]
-    [DefaultValue(0.3)]
+    [DefaultValue(0.3f)]
     public float MinRelevance { get; init; } = 0.3f;
 
     [CommandOption("--max-results-per-node")]
