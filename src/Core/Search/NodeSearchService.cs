@@ -195,8 +195,9 @@ public sealed class NodeSearchService
 
         private string ExtractComparison(ComparisonNode node)
         {
-            // Only extract text search from Contains operator on FTS fields
-            if (node.Operator == ComparisonOperator.Contains &&
+            // Extract text search from Contains OR Equal operator on FTS fields
+            // Equal on FTS fields uses FTS semantics (substring/stemming match), not exact equality
+            if ((node.Operator == ComparisonOperator.Contains || node.Operator == ComparisonOperator.Equal) &&
                 node.Field?.FieldPath != null &&
                 this.IsFtsField(node.Field.FieldPath) &&
                 node.Value != null)
@@ -216,7 +217,7 @@ public sealed class NodeSearchService
                 return $"{node.Field.FieldPath}:{escapedTerm}";
             }
 
-            // Other comparison operators (==, !=, >=, etc.) are handled by LINQ filtering
+            // Other comparison operators (!=, >=, <, etc.) are handled by LINQ filtering
             // Return empty string as these don't contribute to FTS query
             return string.Empty;
         }
