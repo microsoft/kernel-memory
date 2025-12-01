@@ -74,8 +74,25 @@ public class ListCommand : BaseCommand<ListCommandSettings>
             // Get page of items
             var items = await service.ListAsync(settings.Skip, settings.Take, CancellationToken.None).ConfigureAwait(false);
 
+            // Wrap items with node information
+            var itemsWithNode = items.Select(item => new
+            {
+                id = item.Id,
+                node = node.Id,
+                content = item.Content,
+                mimeType = item.MimeType,
+                byteSize = item.ByteSize,
+                contentCreatedAt = item.ContentCreatedAt,
+                recordCreatedAt = item.RecordCreatedAt,
+                recordUpdatedAt = item.RecordUpdatedAt,
+                title = item.Title,
+                description = item.Description,
+                tags = item.Tags,
+                metadata = item.Metadata
+            });
+
             // Format list with pagination info
-            formatter.FormatList(items, totalCount, settings.Skip, settings.Take);
+            formatter.FormatList(itemsWithNode, totalCount, settings.Skip, settings.Take);
 
             return Constants.ExitCodeSuccess;
         }
