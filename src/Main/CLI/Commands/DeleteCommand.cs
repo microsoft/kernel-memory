@@ -54,7 +54,7 @@ public class DeleteCommand : BaseCommand<DeleteCommandSettings>
         try
         {
             var (config, node, formatter) = this.Initialize(settings);
-            var service = this.CreateContentService(node);
+            using var service = this.CreateContentService(node);
 
             // Delete is idempotent - no error if not found
             var result = await service.DeleteAsync(settings.Id, CancellationToken.None).ConfigureAwait(false);

@@ -454,7 +454,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
         foreach (var (nodeId, nodeConfig) in this.Config.Nodes)
         {
             // Create ContentService for this node
-            var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
+            using var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
 
             // Get FTS index from search indexes
             var ftsIndex = Services.SearchIndexFactory.CreateFtsIndex(nodeConfig.SearchIndexes);

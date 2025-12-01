@@ -44,6 +44,14 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
         this._connection = new SqliteConnection(this._connectionString);
         await this._connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
+        // Set synchronous=FULL to ensure writes are immediately persisted to disk
+        // This prevents data loss when connections are disposed quickly (CLI scenario)
+        using (var pragmaCmd = this._connection.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA synchronous=FULL;";
+            await pragmaCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         // Create FTS5 virtual table if it doesn't exist
         // BREAKING CHANGE: New schema indexes title, description, content separately
         // This enables field-specific search (e.g., title:kubernetes vs content:kubernetes)
@@ -201,6 +209,7 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
 
     /// <summary>
     /// Disposes the database connection.
+    /// Ensures all pending writes are flushed to disk before closing.
     /// </summary>
     public void Dispose()
     {
@@ -209,8 +218,27 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             return;
         }
 
-        this._connection?.Dispose();
-        this._connection = null;
+        // Flush any pending writes before closing the connection
+        // SQLite needs explicit close to ensure writes are persisted
+        if (this._connection != null)
+        {
+            try
+            {
+                // Execute a checkpoint to flush WAL to disk (if WAL mode is enabled)
+                using var cmd = this._connection.CreateCommand();
+                cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                this._logger.LogWarning(ex, "Failed to checkpoint WAL during FTS index disposal");
+            }
+
+            this._connection.Close();
+            this._connection.Dispose();
+            this._connection = null;
+        }
+
         this._disposed = true;
     }
 }

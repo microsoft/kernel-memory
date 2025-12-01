@@ -146,18 +146,29 @@ public sealed class NodeSearchService
 
         private string ExtractTextSearch(TextSearchNode node)
         {
-            // Escape FTS5 special characters and quote the term
-            var escapedText = this.EscapeFtsText(node.SearchText);
+            // Check if this is a phrase search (contains spaces)
+            var isPhrase = node.SearchText.Contains(' ', StringComparison.Ordinal);
+
+            if (isPhrase)
+            {
+                // Phrase searches: use quotes and no field prefix
+                // FTS5 doesn't support field:phrase syntax well, so just search all fields
+                var escapedPhrase = node.SearchText.Replace("\"", "\"\"", StringComparison.Ordinal);
+                return $"\"{escapedPhrase}\"";
+            }
+
+            // Single word searches: use field prefix WITHOUT quotes
+            var escapedTerm = this.EscapeFtsSingleTerm(node.SearchText);
 
             // If specific field, prefix with field name (SQLite FTS5 syntax)
             if (node.Field != null && this.IsFtsField(node.Field.FieldPath))
             {
-                return $"{node.Field.FieldPath}:{escapedText}";
+                return $"{node.Field.FieldPath}:{escapedTerm}";
             }
 
             // Default field: search all FTS fields (title, description, content)
             // FTS5 syntax: {title description content}:term
-            return $"{{title description content}}:{escapedText}";
+            return $"{{title description content}}:{escapedTerm}";
         }
 
         private string ExtractLogical(LogicalNode node)
@@ -191,8 +202,18 @@ public sealed class NodeSearchService
                 node.Value != null)
             {
                 var searchText = node.Value.AsString();
-                var escapedText = this.EscapeFtsText(searchText);
-                return $"{node.Field.FieldPath}:{escapedText}";
+                var isPhrase = searchText.Contains(' ', StringComparison.Ordinal);
+
+                if (isPhrase)
+                {
+                    // Phrase search: use quotes without field prefix
+                    var escapedPhrase = searchText.Replace("\"", "\"\"", StringComparison.Ordinal);
+                    return $"\"{escapedPhrase}\"";
+                }
+
+                // Single word: use field prefix without quotes
+                var escapedTerm = this.EscapeFtsSingleTerm(searchText);
+                return $"{node.Field.FieldPath}:{escapedTerm}";
             }
 
             // Other comparison operators (==, !=, >=, etc.) are handled by LINQ filtering
@@ -211,12 +232,16 @@ public sealed class NodeSearchService
             return normalized == "title" || normalized == "description" || normalized == "content";
         }
 
-        private string EscapeFtsText(string text)
+        private string EscapeFtsSingleTerm(string term)
         {
-            // FTS5 special characters that need escaping: " * ( ) 
-            // Wrap in quotes to handle spaces and special characters
-            var escaped = text.Replace("\"", "\"\"", StringComparison.Ordinal); // Escape quotes by doubling
-            return $"\"{escaped}\"";
+            // For single-word searches with field prefix (e.g., content:call)
+            // FTS5 does NOT support quotes after the colon: content:"call" is INVALID
+            // We must use: content:call
+            // 
+            // Escape FTS5 special characters: " * 
+            // For now, keep it simple: just remove quotes and wildcards that could break syntax
+            return term.Replace("\"", string.Empty, StringComparison.Ordinal)
+                      .Replace("*", string.Empty, StringComparison.Ordinal);
         }
     }
 }
