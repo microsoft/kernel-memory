@@ -108,6 +108,7 @@ public class UpsertCommand : BaseCommand<UpsertCommandSettings>
                 formatter.Format(new
                 {
                     id = result.Id,
+                    node = node.Id,
                     completed = result.Completed,
                     queued = result.Queued,
                     error = string.IsNullOrEmpty(result.Error) ? null : result.Error
