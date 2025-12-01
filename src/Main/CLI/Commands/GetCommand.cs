@@ -70,24 +70,8 @@ public class GetCommand : BaseCommand<GetCommandSettings>
             }
 
             // Wrap result with node information
-            var response = new
-            {
-                id = result.Id,
-                node = node.Id,
-                content = result.Content,
-                mimeType = result.MimeType,
-                byteSize = result.ByteSize,
-                contentCreatedAt = result.ContentCreatedAt,
-                recordCreatedAt = result.RecordCreatedAt,
-                recordUpdatedAt = result.RecordUpdatedAt,
-                title = result.Title,
-                description = result.Description,
-                tags = result.Tags,
-                metadata = result.Metadata
-            };
+            var response = Core.Storage.Models.ContentDtoWithNode.FromContentDto(result, node.Id);
 
-            // If --full flag is set, ensure verbose mode for human formatter
-            // For JSON/YAML, all fields are always included
             formatter.Format(response);
 
             return Constants.ExitCodeSuccess;

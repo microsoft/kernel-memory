@@ -41,6 +41,9 @@ public class HumanOutputFormatter : IOutputFormatter
 
         switch (data)
         {
+            case Core.Storage.Models.ContentDtoWithNode contentWithNode:
+                this.FormatContentWithNode(contentWithNode);
+                break;
             case ContentDto content:
                 this.FormatContent(content);
                 break;
@@ -82,7 +85,11 @@ public class HumanOutputFormatter : IOutputFormatter
 
         var itemsList = items.ToList();
 
-        if (typeof(T) == typeof(ContentDto))
+        if (typeof(T) == typeof(Core.Storage.Models.ContentDtoWithNode))
+        {
+            this.FormatContentWithNodeList(itemsList.Cast<Core.Storage.Models.ContentDtoWithNode>(), totalCount, skip, take);
+        }
+        else if (typeof(T) == typeof(ContentDto))
         {
             this.FormatContentList(itemsList.Cast<ContentDto>(), totalCount, skip, take);
         }
@@ -277,5 +284,122 @@ public class HumanOutputFormatter : IOutputFormatter
         {
             AnsiConsole.WriteLine(item?.ToString() ?? string.Empty);
         }
+    }
+
+    private void FormatContentWithNode(Core.Storage.Models.ContentDtoWithNode content)
+    {
+        var isQuiet = this.Verbosity.Equals("quiet", StringComparison.OrdinalIgnoreCase);
+        var isVerbose = this.Verbosity.Equals("verbose", StringComparison.OrdinalIgnoreCase);
+
+        if (isQuiet)
+        {
+            // Quiet mode: just the ID
+            AnsiConsole.WriteLine(content.Id);
+            return;
+        }
+
+        var table = new Table();
+        table.Border(TableBorder.Rounded);
+        table.AddColumn("Property");
+        table.AddColumn("Value");
+
+        table.AddRow("[yellow]Node[/]", Markup.Escape(content.Node));
+        table.AddRow("[yellow]ID[/]", Markup.Escape(content.Id));
+
+        // Truncate content unless verbose
+        var displayContent = content.Content;
+        if (!isVerbose && displayContent.Length > Constants.MaxContentDisplayLength)
+        {
+            displayContent = string.Concat(displayContent.AsSpan(0, Constants.MaxContentDisplayLength), "...");
+        }
+        table.AddRow("[yellow]Content[/]", Markup.Escape(displayContent));
+
+        if (!string.IsNullOrEmpty(content.Title))
+        {
+            table.AddRow("[yellow]Title[/]", Markup.Escape(content.Title));
+        }
+
+        if (!string.IsNullOrEmpty(content.Description))
+        {
+            table.AddRow("[yellow]Description[/]", Markup.Escape(content.Description));
+        }
+
+        if (content.Tags.Length > 0)
+        {
+            table.AddRow("[yellow]Tags[/]", Markup.Escape(string.Join(", ", content.Tags)));
+        }
+
+        if (isVerbose)
+        {
+            table.AddRow("[yellow]MimeType[/]", Markup.Escape(content.MimeType));
+            table.AddRow("[yellow]Size[/]", $"{content.ByteSize} bytes");
+            table.AddRow("[yellow]ContentCreatedAt[/]", content.ContentCreatedAt.ToString("O"));
+            table.AddRow("[yellow]RecordCreatedAt[/]", content.RecordCreatedAt.ToString("O"));
+            table.AddRow("[yellow]RecordUpdatedAt[/]", content.RecordUpdatedAt.ToString("O"));
+
+            if (content.Metadata.Count > 0)
+            {
+                var metadataStr = string.Join(", ", content.Metadata.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+                table.AddRow("[yellow]Metadata[/]", Markup.Escape(metadataStr));
+            }
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    private void FormatContentWithNodeList(IEnumerable<Core.Storage.Models.ContentDtoWithNode> contents, long totalCount, int skip, int take)
+    {
+        var isQuiet = this.Verbosity.Equals("quiet", StringComparison.OrdinalIgnoreCase);
+        var contentsList = contents.ToList();
+
+        // Check if list is empty
+        if (contentsList.Count == 0)
+        {
+            if (this._useColors)
+            {
+                AnsiConsole.MarkupLine("[dim]No content found[/]");
+            }
+            else
+            {
+                AnsiConsole.WriteLine("No content found");
+            }
+            return;
+        }
+
+        if (isQuiet)
+        {
+            // Quiet mode: just IDs
+            foreach (var content in contentsList)
+            {
+                AnsiConsole.WriteLine(content.Id);
+            }
+            return;
+        }
+
+        // Show pagination info
+        AnsiConsole.MarkupLine($"[cyan]Showing {contentsList.Count} of {totalCount} items (skip: {skip})[/]");
+        AnsiConsole.WriteLine();
+
+        // Create table
+        var table = new Table();
+        table.Border(TableBorder.Rounded);
+        table.AddColumn("[yellow]Node[/]");
+        table.AddColumn("[yellow]ID[/]");
+        table.AddColumn("[yellow]Content Preview[/]");
+
+        foreach (var content in contentsList)
+        {
+            var preview = content.Content.Length > 50
+                ? string.Concat(content.Content.AsSpan(0, 50), "...")
+                : content.Content;
+
+            table.AddRow(
+                Markup.Escape(content.Node),
+                Markup.Escape(content.Id),
+                Markup.Escape(preview)
+            );
+        }
+
+        AnsiConsole.Write(table);
     }
 }
