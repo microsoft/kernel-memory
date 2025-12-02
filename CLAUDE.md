@@ -12,6 +12,8 @@
 - [ ] `format.sh` runs successfully without warnings or errors
 - [ ] `coverage.sh` runs successfully without warnings or errors
 - [ ] there are zero skipped tests
+- [ ] `KNOWN-ISSUES.md` is up to date
+- [ ] if a PR exists, the PR title, description and content are up to date
 
 # C# Code Style
 

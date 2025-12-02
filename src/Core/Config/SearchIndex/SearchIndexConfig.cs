@@ -30,6 +30,24 @@ public abstract class SearchIndexConfig : IValidatable
     public SearchIndexTypes Type { get; set; }
 
     /// <summary>
+    /// Weight for relevance scoring when searching across multiple indexes.
+    /// Higher weight = results from this index ranked higher.
+    /// Default: 1.0 (neutral weight).
+    /// Range: 0.0 (exclude) to any positive value.
+    /// </summary>
+    [JsonPropertyName("weight")]
+    public float Weight { get; set; } = 1.0f;
+
+    /// <summary>
+    /// Whether this index is required for search operations.
+    /// If true and index is unavailable, search fails with error.
+    /// If false and index is unavailable, search continues with warning.
+    /// Default: false (optional index - best effort).
+    /// </summary>
+    [JsonPropertyName("required")]
+    public bool Required { get; set; } = false;
+
+    /// <summary>
     /// Optional embeddings configuration for this index
     /// Overrides node-level or global embeddings config
     /// </summary>

@@ -133,8 +133,8 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
         // Create storage service with search indexes
         var storage = new ContentStorageService(context, cuidGenerator, logger, searchIndexes);
 
-        // Create and return content service
-        return new ContentService(storage, node.Id);
+        // Create and return content service, passing search indexes for proper disposal
+        return new ContentService(storage, node.Id, searchIndexes);
     }
 
     /// <summary>

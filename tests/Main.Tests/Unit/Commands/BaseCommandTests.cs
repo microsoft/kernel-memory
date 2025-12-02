@@ -3,7 +3,6 @@ using KernelMemory.Main.CLI;
 using KernelMemory.Main.CLI.Commands;
 using KernelMemory.Main.CLI.OutputFormatters;
 using Moq;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Unit.Commands;
 

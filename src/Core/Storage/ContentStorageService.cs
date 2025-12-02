@@ -656,8 +656,18 @@ public class ContentStorageService : IContentStorage
             return;
         }
 
-        // Update the search index
-        await searchIndex.IndexAsync(operation.ContentId, content.Content, cancellationToken).ConfigureAwait(false);
+        // Update the search index with title, description, and content
+        // Use the 4-parameter signature to properly index all fields
+        if (searchIndex is IFtsIndex ftsIndex)
+        {
+            await ftsIndex.IndexAsync(operation.ContentId, content.Title, content.Description, content.Content, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            // Fallback for non-FTS indexes (vector, graph, etc.) - use legacy 2-parameter signature
+            await searchIndex.IndexAsync(operation.ContentId, content.Content, cancellationToken).ConfigureAwait(false);
+        }
+
         this._logger.LogDebug("Indexed content {ContentId} in search index {IndexId}", operation.ContentId, indexId);
     }
 

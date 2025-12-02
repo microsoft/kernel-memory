@@ -31,6 +31,12 @@ public sealed class AppConfig : IValidatable
     public CacheConfig? LLMCache { get; set; }
 
     /// <summary>
+    /// Global search configuration settings
+    /// </summary>
+    [JsonPropertyName("search")]
+    public SearchConfig? Search { get; set; }
+
+    /// <summary>
     /// Validates the entire configuration tree
     /// </summary>
     /// <param name="path"></param>
@@ -53,6 +59,7 @@ public sealed class AppConfig : IValidatable
 
         this.EmbeddingsCache?.Validate("EmbeddingsCache");
         this.LLMCache?.Validate("LLMCache");
+        this.Search?.Validate("Search");
     }
 
     /// <summary>

@@ -9,6 +9,7 @@
     <ItemGroup>
       <PackageReference Include="cuid.net" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+      <PackageReference Include="Parlot" />
     </ItemGroup>
 
     <ItemGroup>

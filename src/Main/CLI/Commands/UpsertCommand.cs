@@ -76,7 +76,7 @@ public class UpsertCommand : BaseCommand<UpsertCommandSettings>
         try
         {
             var (config, node, formatter) = this.Initialize(settings);
-            var service = this.CreateContentService(node);
+            using var service = this.CreateContentService(node);
 
             // Parse tags if provided
             var tags = string.IsNullOrWhiteSpace(settings.Tags)

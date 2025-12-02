@@ -44,13 +44,25 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
         this._connection = new SqliteConnection(this._connectionString);
         await this._connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
+        // Set synchronous=FULL to ensure writes are immediately persisted to disk
+        // This prevents data loss when connections are disposed quickly (CLI scenario)
+        using (var pragmaCmd = this._connection.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA synchronous=FULL;";
+            await pragmaCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         // Create FTS5 virtual table if it doesn't exist
+        // BREAKING CHANGE: New schema indexes title, description, content separately
+        // This enables field-specific search (e.g., title:kubernetes vs content:kubernetes)
         // Using regular FTS5 table (stores content) to support snippets
         var tokenizer = this._enableStemming ? "porter unicode61" : "unicode61";
         var createTableSql = $"""
             CREATE VIRTUAL TABLE IF NOT EXISTS {TableName} USING fts5(
                 content_id UNINDEXED,
-                text,
+                title,
+                description,
+                content,
                 tokenize='{tokenizer}'
             );
             """;
@@ -68,24 +80,42 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
     /// <inheritdoc />
     public async Task IndexAsync(string contentId, string text, CancellationToken cancellationToken = default)
     {
+        // Legacy method - indexes text as content only (no title/description)
+        await this.IndexAsync(contentId, null, null, text, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Indexes content with separate FTS-indexed fields.
+    /// BREAKING CHANGE: New signature to support title, description, content separately.
+    /// </summary>
+    /// <param name="contentId">Unique content identifier.</param>
+    /// <param name="title">Optional title (FTS-indexed).</param>
+    /// <param name="description">Optional description (FTS-indexed).</param>
+    /// <param name="content">Main content body (FTS-indexed, required).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public async Task IndexAsync(string contentId, string? title, string? description, string content, CancellationToken cancellationToken = default)
+    {
         await this.InitializeAsync(cancellationToken).ConfigureAwait(false);
 
         // Remove existing entry first (upsert semantics)
         await this.RemoveAsync(contentId, cancellationToken).ConfigureAwait(false);
 
-        // Insert new entry
-        var insertSql = $"INSERT INTO {TableName}(content_id, text) VALUES (@contentId, @text)";
+        // Insert new entry with separate fields
+        var insertSql = $"INSERT INTO {TableName}(content_id, title, description, content) VALUES (@contentId, @title, @description, @content)";
 
         var insertCommand = this._connection!.CreateCommand();
         await using (insertCommand.ConfigureAwait(false))
         {
             insertCommand.CommandText = insertSql;
             insertCommand.Parameters.AddWithValue("@contentId", contentId);
-            insertCommand.Parameters.AddWithValue("@text", text);
+            insertCommand.Parameters.AddWithValue("@title", title ?? string.Empty);
+            insertCommand.Parameters.AddWithValue("@description", description ?? string.Empty);
+            insertCommand.Parameters.AddWithValue("@content", content);
             await insertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        this._logger.LogDebug("Indexed content {ContentId} in FTS", contentId);
+        this._logger.LogDebug("Indexed content {ContentId} with title={HasTitle}, description={HasDescription} in FTS",
+            contentId, !string.IsNullOrEmpty(title), !string.IsNullOrEmpty(description));
     }
 
     /// <inheritdoc />
@@ -120,16 +150,17 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
         }
 
         // Search using FTS5 MATCH operator
-        // rank is negative (closer to 0 is better), so we negate it for Score
-        // snippet() generates highlighted text excerpts
+        // Use bm25() for better scoring (returns negative values, more negative = better match)
+        // We negate and normalize to 0-1 range
+        // snippet() generates highlighted text excerpts from the content field (column index 3)
         var searchSql = $"""
-            SELECT 
+            SELECT
                 content_id,
-                -rank as score,
-                snippet({TableName}, 1, '', '', '...', 32) as snippet
+                bm25({TableName}) as raw_score,
+                snippet({TableName}, 3, '', '', '...', 32) as snippet
             FROM {TableName}
             WHERE {TableName} MATCH @query
-            ORDER BY rank
+            ORDER BY raw_score
             LIMIT @limit
             """;
 
@@ -140,19 +171,36 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             searchCommand.Parameters.AddWithValue("@query", query);
             searchCommand.Parameters.AddWithValue("@limit", limit);
 
-            var results = new List<FtsMatch>();
+            var rawResults = new List<(string ContentId, double RawScore, string Snippet)>();
             var reader = await searchCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    results.Add(new FtsMatch
-                    {
-                        ContentId = reader.GetString(0),
-                        Score = reader.GetDouble(1),
-                        Snippet = reader.GetString(2)
-                    });
+                    var contentId = reader.GetString(0);
+                    var rawScore = reader.GetDouble(1);
+                    var snippet = reader.GetString(2);
+                    rawResults.Add((contentId, rawScore, snippet));
                 }
+            }
+
+            // Normalize BM25 scores to 0-1 range
+            // BM25 returns negative scores where more negative = better match
+            // Convert to positive scores using exponential normalization
+            var results = new List<FtsMatch>();
+            foreach (var (contentId, rawScore, snippet) in rawResults)
+            {
+                // BM25 scores are typically in range [-10, 0]
+                // Use exponential function to map to [0, 1]: score = exp(raw_score / divisor)
+                // This gives: -10 → 0.37, -5 → 0.61, -1 → 0.90, 0 → 1.0
+                var normalizedScore = Math.Exp(rawScore / SearchConstants.Bm25NormalizationDivisor);
+
+                results.Add(new FtsMatch
+                {
+                    ContentId = contentId,
+                    Score = normalizedScore,
+                    Snippet = snippet
+                });
             }
 
             this._logger.LogDebug("FTS search for '{Query}' returned {Count} results", query, results.Count);
@@ -179,6 +227,7 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
 
     /// <summary>
     /// Disposes the database connection.
+    /// Ensures all pending writes are flushed to disk before closing.
     /// </summary>
     public void Dispose()
     {
@@ -187,8 +236,31 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             return;
         }
 
-        this._connection?.Dispose();
-        this._connection = null;
+        // Flush any pending writes before closing the connection
+        // SQLite needs explicit close to ensure writes are persisted
+        if (this._connection != null)
+        {
+            try
+            {
+                // Execute a checkpoint to flush WAL to disk (if WAL mode is enabled)
+                using var cmd = this._connection.CreateCommand();
+                cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+                cmd.ExecuteNonQuery();
+            }
+            catch (Microsoft.Data.Sqlite.SqliteException ex)
+            {
+                this._logger.LogWarning(ex, "Failed to checkpoint WAL during FTS index disposal");
+            }
+            catch (InvalidOperationException ex)
+            {
+                this._logger.LogWarning(ex, "Failed to checkpoint WAL during FTS index disposal - connection in invalid state");
+            }
+
+            this._connection.Close();
+            this._connection.Dispose();
+            this._connection = null;
+        }
+
         this._disposed = true;
     }
 }

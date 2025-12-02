@@ -66,7 +66,7 @@ public class ListCommand : BaseCommand<ListCommandSettings>
         try
         {
             var (config, node, formatter) = this.Initialize(settings);
-            var service = this.CreateContentService(node, readonlyMode: true);
+            using var service = this.CreateContentService(node, readonlyMode: true);
 
             // Get total count
             var totalCount = await service.CountAsync(CancellationToken.None).ConfigureAwait(false);

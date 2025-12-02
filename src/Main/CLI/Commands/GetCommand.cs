@@ -59,7 +59,7 @@ public class GetCommand : BaseCommand<GetCommandSettings>
         try
         {
             var (config, node, formatter) = this.Initialize(settings);
-            var service = this.CreateContentService(node, readonlyMode: true);
+            using var service = this.CreateContentService(node, readonlyMode: true);
 
             var result = await service.GetAsync(settings.Id, CancellationToken.None).ConfigureAwait(false);
 

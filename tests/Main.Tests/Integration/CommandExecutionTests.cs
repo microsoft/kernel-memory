@@ -3,7 +3,6 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Commands;
 using Spectre.Console.Cli;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Integration;
 

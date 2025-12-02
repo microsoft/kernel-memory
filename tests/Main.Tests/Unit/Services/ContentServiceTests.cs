@@ -3,7 +3,6 @@ using KernelMemory.Core.Storage;
 using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.Services;
 using Moq;
-using Xunit;
 
 namespace KernelMemory.Main.Tests.Unit.Services;
 
@@ -20,7 +19,7 @@ public sealed class ContentServiceTests
         const string nodeId = "test-node";
 
         // Act
-        var service = new ContentService(mockStorage.Object, nodeId);
+        using var service = new ContentService(mockStorage.Object, nodeId);
 
         // Assert
         Assert.Equal(nodeId, service.NodeId);
@@ -36,7 +35,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.UpsertAsync(It.IsAny<UpsertRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
         var request = new UpsertRequest
         {
             Content = "Test content",
@@ -63,7 +62,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.UpsertAsync(It.IsAny<UpsertRequest>(), cts.Token))
             .ReturnsAsync(expectedResult);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
         var request = new UpsertRequest { Content = "Content" };
 
         // Act
@@ -85,7 +84,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.GetByIdAsync(contentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.GetAsync(contentId, CancellationToken.None).ConfigureAwait(false);
@@ -105,7 +104,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ContentDto?)null);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.GetAsync("non-existent-id", CancellationToken.None).ConfigureAwait(false);
@@ -124,7 +123,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.DeleteAsync(contentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResult);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.DeleteAsync(contentId, CancellationToken.None).ConfigureAwait(false);
@@ -150,7 +149,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.ListAsync(skip, take, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedList);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.ListAsync(skip, take, CancellationToken.None).ConfigureAwait(false);
@@ -170,7 +169,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.ListAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ContentDto>());
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.ListAsync(0, 10, CancellationToken.None).ConfigureAwait(false);
@@ -188,7 +187,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.CountAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedCount);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.CountAsync(CancellationToken.None).ConfigureAwait(false);
@@ -206,7 +205,7 @@ public sealed class ContentServiceTests
         mockStorage.Setup(s => s.CountAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(0L);
 
-        var service = new ContentService(mockStorage.Object, "test-node");
+        using var service = new ContentService(mockStorage.Object, "test-node");
 
         // Act
         var result = await service.CountAsync(CancellationToken.None).ConfigureAwait(false);
