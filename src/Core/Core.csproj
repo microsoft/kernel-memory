@@ -17,4 +17,8 @@
         <InternalsVisibleTo Include="KernelMemory.Core.Tests" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EditorConfigFiles Remove=".editorconfig" />
+    </ItemGroup>
+
 </Project>

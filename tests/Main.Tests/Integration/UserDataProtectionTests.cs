@@ -98,7 +98,7 @@ public sealed class UserDataProtectionTests : IDisposable
         // Act - This WILL write to ~/.km if bug exists
         try
         {
-            await command.ExecuteAsync(context, settingsWithoutConfigPath).ConfigureAwait(false);
+            await command.ExecuteAsync(context, settingsWithoutConfigPath, CancellationToken.None).ConfigureAwait(false);
         }
         catch (InvalidOperationException)
         {
@@ -154,7 +154,7 @@ public sealed class UserDataProtectionTests : IDisposable
             null);
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settingsWithConfigPath).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settingsWithConfigPath, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);

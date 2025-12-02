@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Core.Config;
 using KernelMemory.Core.Search;
+using KernelMemory.Core.Search.Exceptions;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Main.CLI.Exceptions;
+using KernelMemory.Main.CLI.OutputFormatters;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -140,19 +144,18 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// Initializes a new instance of the <see cref="SearchCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public SearchCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    public SearchCommand(AppConfig config) : base(config)
     {
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
         CommandContext context,
-        SearchCommandSettings settings)
+        SearchCommandSettings settings,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
 
             // Create search service
             var searchService = this.CreateSearchService();
@@ -180,15 +183,15 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
             this.ShowFirstRunMessage(settings);
             return Constants.ExitCodeSuccess; // Not a user error
         }
-        catch (Core.Search.Exceptions.SearchException ex)
+        catch (SearchException ex)
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             formatter.FormatError($"Search error: {ex.Message}");
             return Constants.ExitCodeUserError;
         }
         catch (Exception ex)
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
     }
@@ -200,12 +203,12 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// <param name="settings">The command settings.</param>
     /// <param name="formatter">The output formatter.</param>
     /// <returns>Exit code (0 for valid, 1 for invalid).</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance",
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance",
         Justification = "Using interface provides flexibility for testing and future implementations")]
     private async Task<int> ValidateQueryAsync(
         ISearchService searchService,
         SearchCommandSettings settings,
-        CLI.OutputFormatters.IOutputFormatter formatter)
+        IOutputFormatter formatter)
     {
         var result = await searchService.ValidateQueryAsync(settings.Query, CancellationToken.None).ConfigureAwait(false);
 
@@ -357,7 +360,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     private void FormatSearchResults(
         SearchResponse response,
         SearchCommandSettings settings,
-        CLI.OutputFormatters.IOutputFormatter formatter)
+        IOutputFormatter formatter)
     {
         if (settings.Format.Equals("json", StringComparison.OrdinalIgnoreCase))
         {
@@ -447,7 +450,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// Creates a SearchService instance with all configured nodes.
     /// </summary>
     /// <returns>A configured SearchService.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "ContentService instances must remain alive for the duration of the search operation. CLI commands are short-lived and process exit handles cleanup.")]
     private SearchService CreateSearchService()
     {
@@ -486,7 +489,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// <param name="settings">The command settings.</param>
     private void ShowFirstRunMessage(SearchCommandSettings settings)
     {
-        var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+        var formatter = OutputFormatterFactory.Create(settings);
 
         if (!settings.Format.Equals("human", StringComparison.OrdinalIgnoreCase))
         {

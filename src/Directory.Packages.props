@@ -26,10 +26,10 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.2" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.P50kBase" Version="1.0.2" />
     <!-- CLI and UI -->
-    <PackageVersion Include="Spectre.Console" Version="0.49.1" />
-    <PackageVersion Include="Spectre.Console.Cli" Version="0.49.1" />
+    <PackageVersion Include="Spectre.Console" Version="0.54.0" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.53.1" />
     <!-- Serialization -->
-    <PackageVersion Include="YamlDotNet" Version="16.2.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <!-- Testing -->
     <PackageVersion Include="Moq" Version="4.20.72" />
   </ItemGroup>

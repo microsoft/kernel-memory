@@ -74,7 +74,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("put");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -99,7 +99,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("put");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -113,7 +113,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var getCommand = new GetCommand(config);
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
     }
 
@@ -137,7 +137,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("put");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -159,7 +159,7 @@ public sealed class CliIntegrationTests : IDisposable
 
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Act - Get the content
         var getSettings = new GetCommandSettings
@@ -170,7 +170,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var getCommand = new GetCommand(config);
-        var exitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var exitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -190,7 +190,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Some content to create the DB"
         };
         var upsertCommand = new UpsertCommand(config);
-        await upsertCommand.ExecuteAsync(CreateTestContext("put"), upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(CreateTestContext("put"), upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
@@ -204,7 +204,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("get");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - ID not found in existing DB is user error
         Assert.Equal(Constants.ExitCodeUserError, exitCode);
@@ -227,7 +227,7 @@ public sealed class CliIntegrationTests : IDisposable
 
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Act - Get with full flag
         var getSettings = new GetCommandSettings
@@ -239,7 +239,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var getCommand = new GetCommand(config);
-        var exitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var exitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -259,7 +259,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Delete the content to have empty database
         var deleteSettings = new DeleteCommandSettings
@@ -269,7 +269,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "temp-id"
         };
         var deleteCommand = new DeleteCommand(config);
-        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database
         var settings = new ListCommandSettings
@@ -282,7 +282,7 @@ public sealed class CliIntegrationTests : IDisposable
         var listContext = CreateTestContext("list");
 
         // Act
-        var exitCode = await command.ExecuteAsync(listContext, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(listContext, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -306,7 +306,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Delete the content to have empty database
         var deleteSettings = new DeleteCommandSettings
@@ -316,7 +316,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "temp-id-human"
         };
         var deleteCommand = new DeleteCommand(config);
-        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database with human format
         var settings = new ListCommandSettings
@@ -329,7 +329,7 @@ public sealed class CliIntegrationTests : IDisposable
         var listContext = CreateTestContext("list");
 
         // Act
-        var exitCode = await command.ExecuteAsync(listContext, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(listContext, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -351,7 +351,7 @@ public sealed class CliIntegrationTests : IDisposable
 
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Act - List content
         var listSettings = new ListCommandSettings
@@ -361,7 +361,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var listCommand = new ListCommand(config);
-        var exitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
+        var exitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -383,7 +383,7 @@ public sealed class CliIntegrationTests : IDisposable
                 Format = "json",
                 Content = $"Content {i}"
             };
-            await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+            await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Act - List with pagination
@@ -396,7 +396,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var listCommand = new ListCommand(config);
-        var exitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
+        var exitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -418,7 +418,7 @@ public sealed class CliIntegrationTests : IDisposable
 
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Act - Delete the content
         var deleteSettings = new DeleteCommandSettings
@@ -429,7 +429,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var deleteCommand = new DeleteCommand(config);
-        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -443,7 +443,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var getCommand = new GetCommand(config);
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeUserError, getExitCode);
     }
 
@@ -463,7 +463,7 @@ public sealed class CliIntegrationTests : IDisposable
 
         var upsertCommand = new UpsertCommand(config);
         var context = CreateTestContext("put");
-        await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Act - Delete with quiet verbosity
         var deleteSettings = new DeleteCommandSettings
@@ -475,7 +475,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var deleteCommand = new DeleteCommand(config);
-        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -499,7 +499,7 @@ public sealed class CliIntegrationTests : IDisposable
             Tags = "e2e,test"
         };
         var upsertCommand = new UpsertCommand(config);
-        var upsertExitCode = await upsertCommand.ExecuteAsync(context, upsertSettings).ConfigureAwait(false);
+        var upsertExitCode = await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, upsertExitCode);
 
         // 2. Get
@@ -510,7 +510,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = testId
         };
         var getCommand = new GetCommand(config);
-        var getExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
 
         // 3. List
@@ -520,7 +520,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
         var listCommand = new ListCommand(config);
-        var listExitCode = await listCommand.ExecuteAsync(context, listSettings).ConfigureAwait(false);
+        var listExitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, listExitCode);
 
         // 4. Delete
@@ -531,11 +531,11 @@ public sealed class CliIntegrationTests : IDisposable
             Id = testId
         };
         var deleteCommand = new DeleteCommand(config);
-        var deleteExitCode = await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        var deleteExitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, deleteExitCode);
 
         // 5. Verify deleted
-        var verifyExitCode = await getCommand.ExecuteAsync(context, getSettings).ConfigureAwait(false);
+        var verifyExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeUserError, verifyExitCode);
     }
 
@@ -554,7 +554,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("nodes");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -575,7 +575,7 @@ public sealed class CliIntegrationTests : IDisposable
         var context = CreateTestContext("nodes");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.Equal(Constants.ExitCodeSuccess, exitCode);
@@ -712,7 +712,7 @@ public sealed class CliIntegrationTests : IDisposable
     /// </summary>
     private sealed class EmptyRemainingArguments : IRemainingArguments
     {
-        public IReadOnlyList<string> Raw => Array.Empty<string>();
+        public IReadOnlyList<string> Raw => [];
         public ILookup<string, string?> Parsed => Enumerable.Empty<string>().ToLookup(x => x, x => (string?)null);
     }
 }

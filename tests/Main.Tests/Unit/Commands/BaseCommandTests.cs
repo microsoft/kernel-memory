@@ -3,6 +3,7 @@ using KernelMemory.Main.CLI;
 using KernelMemory.Main.CLI.Commands;
 using KernelMemory.Main.CLI.OutputFormatters;
 using Moq;
+using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Unit.Commands;
 
@@ -84,7 +85,7 @@ public sealed class BaseCommandTests
         {
         }
 
-        public override Task<int> ExecuteAsync(Spectre.Console.Cli.CommandContext context, GlobalOptions settings)
+        public override Task<int> ExecuteAsync(CommandContext context, GlobalOptions settings, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
