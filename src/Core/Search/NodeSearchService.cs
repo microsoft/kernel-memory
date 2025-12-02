@@ -127,6 +127,15 @@ public sealed class NodeSearchService
     /// </summary>
     private sealed class FtsQueryExtractor
     {
+        /// <summary>
+        /// SQLite FTS5 reserved words that must be quoted when used as search terms.
+        /// These keywords have special meaning in FTS5 query syntax.
+        /// </summary>
+        private static readonly HashSet<string> s_fts5ReservedWords = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "AND", "OR", "NOT", "NEAR"
+        };
+
         public string Extract(QueryNode node)
         {
             var terms = this.ExtractTerms(node);
@@ -153,22 +162,31 @@ public sealed class NodeSearchService
             {
                 // Phrase searches: use quotes and no field prefix
                 // FTS5 doesn't support field:phrase syntax well, so just search all fields
-                var escapedPhrase = node.SearchText.Replace("\"", "\"\"", StringComparison.Ordinal);
+                var escapedPhrase = this.EscapeFtsPhrase(node.SearchText);
                 return $"\"{escapedPhrase}\"";
             }
 
+            // Check if the term is a reserved word that needs quoting
+            if (this.IsFts5ReservedWord(node.SearchText))
+            {
+                // Reserved words must be quoted to be treated as literal search terms
+                // We cannot use field prefix with quoted terms in FTS5, so search all fields
+                var escapedTerm = this.EscapeFtsPhrase(node.SearchText);
+                return $"\"{escapedTerm}\"";
+            }
+
             // Single word searches: use field prefix WITHOUT quotes
-            var escapedTerm = this.EscapeFtsSingleTerm(node.SearchText);
+            var escaped = this.EscapeFtsSingleTerm(node.SearchText);
 
             // If specific field, prefix with field name (SQLite FTS5 syntax)
             if (node.Field != null && this.IsFtsField(node.Field.FieldPath))
             {
-                return $"{node.Field.FieldPath}:{escapedTerm}";
+                return $"{node.Field.FieldPath}:{escaped}";
             }
 
             // Default field: search all FTS fields (title, description, content)
             // FTS5 syntax: {title description content}:term
-            return $"{{title description content}}:{escapedTerm}";
+            return $"{{title description content}}:{escaped}";
         }
 
         private string ExtractLogical(LogicalNode node)
@@ -208,13 +226,22 @@ public sealed class NodeSearchService
                 if (isPhrase)
                 {
                     // Phrase search: use quotes without field prefix
-                    var escapedPhrase = searchText.Replace("\"", "\"\"", StringComparison.Ordinal);
+                    var escapedPhrase = this.EscapeFtsPhrase(searchText);
                     return $"\"{escapedPhrase}\"";
                 }
 
+                // Check if the term is a reserved word that needs quoting
+                if (this.IsFts5ReservedWord(searchText))
+                {
+                    // Reserved words must be quoted to be treated as literal search terms
+                    // We cannot use field prefix with quoted terms in FTS5
+                    var escapedTerm = this.EscapeFtsPhrase(searchText);
+                    return $"\"{escapedTerm}\"";
+                }
+
                 // Single word: use field prefix without quotes
-                var escapedTerm = this.EscapeFtsSingleTerm(searchText);
-                return $"{node.Field.FieldPath}:{escapedTerm}";
+                var escaped = this.EscapeFtsSingleTerm(searchText);
+                return $"{node.Field.FieldPath}:{escaped}";
             }
 
             // Other comparison operators (!=, >=, <, etc.) are handled by LINQ filtering
@@ -233,13 +260,31 @@ public sealed class NodeSearchService
             return normalized == "title" || normalized == "description" || normalized == "content";
         }
 
+        /// <summary>
+        /// Check if a term is an FTS5 reserved word.
+        /// Reserved words need special escaping to be searched as literals.
+        /// </summary>
+        private bool IsFts5ReservedWord(string term)
+        {
+            return s_fts5ReservedWords.Contains(term);
+        }
+
+        /// <summary>
+        /// Escape a phrase for FTS5 quoted string search.
+        /// Doubles any internal quotes (FTS5 escape syntax).
+        /// </summary>
+        private string EscapeFtsPhrase(string phrase)
+        {
+            return phrase.Replace("\"", "\"\"", StringComparison.Ordinal);
+        }
+
         private string EscapeFtsSingleTerm(string term)
         {
             // For single-word searches with field prefix (e.g., content:call)
             // FTS5 does NOT support quotes after the colon: content:"call" is INVALID
             // We must use: content:call
-            // 
-            // Escape FTS5 special characters: " * 
+            //
+            // Escape FTS5 special characters: " *
             // For now, keep it simple: just remove quotes and wildcards that could break syntax
             return term.Replace("\"", string.Empty, StringComparison.Ordinal)
                       .Replace("*", string.Empty, StringComparison.Ordinal);

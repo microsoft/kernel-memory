@@ -139,6 +139,13 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
         AnsiConsole.MarkupLine("[dim]Find documents with either python or javascript[/]");
         AnsiConsole.WriteLine();
 
+        AnsiConsole.MarkupLine("[bold]Search for literal reserved words[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '\"NOT\"'[/]");
+        AnsiConsole.MarkupLine("[dim]Use quotes to search for literal AND, OR, NOT as words[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '\"Alice AND Bob\"'[/]");
+        AnsiConsole.MarkupLine("[dim]Search for a phrase containing reserved words literally[/]");
+        AnsiConsole.WriteLine();
+
         AnsiConsole.MarkupLine("[bold]Complex queries with parentheses[/]");
         AnsiConsole.MarkupLine("[cyan]km search \"vacation AND (beach OR mountain)\"[/]");
         AnsiConsole.MarkupLine("[dim]Find vacation plans for beach or mountain trips[/]");
