@@ -132,7 +132,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         // Assert
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), generatedVector, null, It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), generatedVector, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -162,7 +162,7 @@ public sealed class CachedEmbeddingGeneratorTests
             x => x.TryGetAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<CancellationToken>()),
             Times.Never);
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -192,7 +192,7 @@ public sealed class CachedEmbeddingGeneratorTests
         // Assert
         Assert.Equal(generatedVector, result);
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -360,7 +360,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         // Assert - Both generated vectors should be stored
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), null, It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
 

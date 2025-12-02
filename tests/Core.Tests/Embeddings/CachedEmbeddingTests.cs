@@ -4,8 +4,8 @@ using KernelMemory.Core.Embeddings.Cache;
 namespace KernelMemory.Core.Tests.Embeddings;
 
 /// <summary>
-/// Tests for CachedEmbedding model to verify proper construction and immutability.
-/// CachedEmbedding stores the embedding vector and optional token count.
+/// Tests for CachedEmbedding model to verify proper construction.
+/// CachedEmbedding stores the embedding vector.
 /// </summary>
 public sealed class CachedEmbeddingTests
 {
@@ -23,42 +23,6 @@ public sealed class CachedEmbeddingTests
 
         // Assert
         Assert.Equal(vector, cached.Vector);
-        Assert.Null(cached.TokenCount);
-    }
-
-    [Fact]
-    public void CachedEmbedding_WithTokenCount_ShouldStoreValue()
-    {
-        // Arrange
-        var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        const int tokenCount = 42;
-
-        // Act
-        var cached = new CachedEmbedding
-        {
-            Vector = vector,
-            TokenCount = tokenCount
-        };
-
-        // Assert
-        Assert.Equal(tokenCount, cached.TokenCount);
-    }
-
-    [Fact]
-    public void CachedEmbedding_WithNullTokenCount_ShouldBeNull()
-    {
-        // Arrange
-        var vector = new float[] { 0.1f, 0.2f, 0.3f };
-
-        // Act
-        var cached = new CachedEmbedding
-        {
-            Vector = vector,
-            TokenCount = null
-        };
-
-        // Assert
-        Assert.Null(cached.TokenCount);
     }
 
     [Fact]

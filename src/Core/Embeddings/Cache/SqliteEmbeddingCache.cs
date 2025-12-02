@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using System.Globalization;
 using KernelMemory.Core.Config.Enums;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
@@ -22,22 +21,21 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             text_length INTEGER NOT NULL,
             text_hash TEXT NOT NULL,
             vector BLOB NOT NULL,
-            token_count INTEGER NULL,
             PRIMARY KEY (provider, model, dimensions, is_normalized, text_hash)
         );
         """;
 
     private const string SelectSql = """
-        SELECT vector, token_count FROM embeddings_cache
+        SELECT vector FROM embeddings_cache
         WHERE provider = @provider AND model = @model AND dimensions = @dimensions
         AND is_normalized = @isNormalized AND text_hash = @textHash
         """;
 
     private const string UpsertSql = """
-        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector, token_count)
-        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector, @tokenCount)
+        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector)
+        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector)
         ON CONFLICT(provider, model, dimensions, is_normalized, text_hash)
-        DO UPDATE SET vector = @vector, token_count = @tokenCount
+        DO UPDATE SET vector = @vector
         """;
 
     private readonly SqliteConnection _connection;
@@ -134,22 +132,19 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 var vectorBlob = (byte[])reader["vector"];
                 var vector = BytesToFloatArray(vectorBlob);
 
-                int? tokenCount = reader["token_count"] == DBNull.Value ? null : Convert.ToInt32(reader["token_count"], CultureInfo.InvariantCulture);
-
                 this._logger.LogTrace("Cache hit for {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
                     key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
 
                 return new CachedEmbedding
                 {
-                    Vector = vector,
-                    TokenCount = tokenCount
+                    Vector = vector
                 };
             }
         }
     }
 
     /// <inheritdoc />
-    public async Task StoreAsync(EmbeddingCacheKey key, float[] vector, int? tokenCount, CancellationToken ct = default)
+    public async Task StoreAsync(EmbeddingCacheKey key, float[] vector, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -173,7 +168,6 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             command.Parameters.AddWithValue("@textLength", key.TextLength);
             command.Parameters.AddWithValue("@textHash", key.TextHash);
             command.Parameters.AddWithValue("@vector", vectorBlob);
-            command.Parameters.AddWithValue("@tokenCount", tokenCount.HasValue ? tokenCount.Value : DBNull.Value);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 

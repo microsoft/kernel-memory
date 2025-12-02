@@ -53,30 +53,12 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector = new float[] { 0.1f, 0.2f, 0.3f, 0.4f };
 
         // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(vector, result.Vector);
-    }
-
-    [Fact]
-    public async Task StoreAsync_WithTokenCount_ShouldPreserveValue()
-    {
-        // Arrange
-        using var cache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object);
-        var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
-        var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        const int tokenCount = 42;
-
-        // Act
-        await cache.StoreAsync(key, vector, tokenCount, CancellationToken.None).ConfigureAwait(false);
-        var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(tokenCount, result.TokenCount);
     }
 
     [Fact]
@@ -92,7 +74,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         }
 
         // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -114,8 +96,8 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector2 = new float[] { 0.9f, 0.8f, 0.7f };
 
         // Act
-        await cache.StoreAsync(key, vector1, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
-        await cache.StoreAsync(key, vector2, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector1, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector2, CancellationToken.None).ConfigureAwait(false);
         var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -134,8 +116,8 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector2 = new float[] { 0.4f, 0.5f, 0.6f };
 
         // Act
-        await cache.StoreAsync(key1, vector1, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
-        await cache.StoreAsync(key2, vector2, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key1, vector1, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key2, vector2, CancellationToken.None).ConfigureAwait(false);
         var result1 = await cache.TryGetAsync(key1, CancellationToken.None).ConfigureAwait(false);
         var result2 = await cache.TryGetAsync(key2, CancellationToken.None).ConfigureAwait(false);
 
@@ -154,7 +136,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         {
             var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
             var vector = new float[] { 0.1f, 0.2f, 0.3f };
-            await writeCache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+            await writeCache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Act - Then read with read-only mode
@@ -176,7 +158,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
 
         // Act - Store should be ignored in read-only mode
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -192,7 +174,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
 
         // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - verify by reading with read-write cache
         using var readCache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object);
@@ -209,7 +191,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         {
             var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
             var vector = new float[] { 0.1f, 0.2f, 0.3f };
-            await writeCache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+            await writeCache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Act - Read with write-only mode should return null
@@ -274,7 +256,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         };
 
         // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -295,7 +277,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
 
         // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+        await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - Read database file and verify text is not present
         var dbContent = await File.ReadAllBytesAsync(this._tempDbPath).ConfigureAwait(false);
@@ -313,7 +295,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         // Store and close
         using (var cache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object))
         {
-            await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
+            await cache.StoreAsync(key, vector, CancellationToken.None).ConfigureAwait(false);
         }
 
         // Act - Reopen and read
@@ -337,7 +319,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(
-            () => cache.StoreAsync(key, vector, tokenCount: null, cts.Token)).ConfigureAwait(false);
+            () => cache.StoreAsync(key, vector, cts.Token)).ConfigureAwait(false);
     }
 
     [Fact]

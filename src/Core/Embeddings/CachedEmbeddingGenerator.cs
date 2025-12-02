@@ -76,7 +76,7 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
         // Store in cache (if mode allows)
         if (this._cache.Mode != CacheModes.ReadOnly)
         {
-            await this._cache.StoreAsync(key, vector, tokenCount: null, ct).ConfigureAwait(false);
+            await this._cache.StoreAsync(key, vector, ct).ConfigureAwait(false);
             this._logger.LogDebug("Stored embedding in cache, dimensions: {Dimensions}", vector.Length);
         }
 
@@ -145,7 +145,7 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
                 if (this._cache.Mode != CacheModes.ReadOnly)
                 {
                     var key = this.BuildCacheKey(text);
-                    await this._cache.StoreAsync(key, generatedVectors[i], tokenCount: null, ct).ConfigureAwait(false);
+                    await this._cache.StoreAsync(key, generatedVectors[i], ct).ConfigureAwait(false);
                 }
             }
 

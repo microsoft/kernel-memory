@@ -30,7 +30,6 @@ public interface IEmbeddingCache
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="vector">The embedding vector to store.</param>
-    /// <param name="tokenCount">Optional token count from the provider.</param>
     /// <param name="ct">Cancellation token.</param>
-    Task StoreAsync(EmbeddingCacheKey key, float[] vector, int? tokenCount, CancellationToken ct = default);
+    Task StoreAsync(EmbeddingCacheKey key, float[] vector, CancellationToken ct = default);
 }
