@@ -48,23 +48,23 @@ public sealed class CliApplicationBuilder
     public CommandApp Build(string[]? args = null)
     {
         // 1. Determine config path from args early (before command execution)
-        var configPath = this.DetermineConfigPath(args ?? Array.Empty<string>());
+        string configPath = this.DetermineConfigPath(args ?? []);
 
         // 2. Load config ONCE (happens before any command runs)
-        var config = ConfigParser.LoadFromFile(configPath);
+        AppConfig config = ConfigParser.LoadFromFile(configPath);
 
         // 3. Create DI container and register AppConfig as singleton
-        var services = new ServiceCollection();
+        ServiceCollection services = new();
         services.AddSingleton(config);
 
         // Also register the config path so commands can access it
         services.AddSingleton(new ConfigPathService(configPath));
 
         // 4. Create type registrar for Spectre.Console.Cli DI integration
-        var registrar = new TypeRegistrar(services);
+        TypeRegistrar registrar = new(services);
 
         // 5. Build CommandApp with DI support
-        var app = new CommandApp(registrar);
+        CommandApp app = new(registrar);
         this.Configure(app);
         return app;
     }

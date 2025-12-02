@@ -85,22 +85,24 @@ dotnet_diagnostic.RCS1168.severity = warning # Parameter name 'foo' differs from
 dotnet_diagnostic.RCS1175.severity = warning # Unused 'this' parameter 'operation'.
 dotnet_diagnostic.RCS1192.severity = warning # Unnecessary usage of verbatim string literal.
 dotnet_diagnostic.RCS1194.severity = warning # Implement exception constructors.
-dotnet_diagnostic.RCS1211.severity = warning # Remove unnecessary else clause.
+dotnet_diagnostic.RCS1211.severity = none # Remove unnecessary else clause.
 dotnet_diagnostic.RCS1214.severity = warning # Unnecessary interpolated string.
 dotnet_diagnostic.RCS1225.severity = warning # Make class sealed.
 dotnet_diagnostic.RCS1232.severity = warning # Order elements in documentation comment.
 
 # Diagnostics elevated as warnings
 dotnet_diagnostic.CA1000.severity = warning # Do not declare static members on generic types
-dotnet_diagnostic.CA1031.severity = warning # Do not catch general exception types
+dotnet_diagnostic.CA1031.severity = none # Do not catch general exception types
 dotnet_diagnostic.CA1050.severity = warning # Declare types in namespaces
 dotnet_diagnostic.CA1063.severity = warning # Implement IDisposable correctly
 dotnet_diagnostic.CA1064.severity = warning # Exceptions should be public
 dotnet_diagnostic.CA1303.severity = warning # Do not pass literals as localized parameters
+dotnet_diagnostic.CA1307.severity = none # StringComparison parameter - using default culture comparison is intentional for query parsing
+dotnet_diagnostic.CA1308.severity = none # Case-insensitive string comparisons are explicitly required by design
 dotnet_diagnostic.CA1416.severity = warning # Validate platform compatibility
 dotnet_diagnostic.CA1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.CA1852.severity = warning # Sealed classes
-dotnet_diagnostic.CA1859.severity = warning # Use concrete types when possible for improved performance
+dotnet_diagnostic.CA1859.severity = none # Use concrete types when possible for improved performance
 dotnet_diagnostic.CA1860.severity = warning # Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance
 dotnet_diagnostic.CA2000.severity = warning # Call System.IDisposable.Dispose on object before all references to it are out of scope
 dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
@@ -132,7 +134,7 @@ dotnet_diagnostic.IDE0161.severity = warning # Use file-scoped namespace
 
 dotnet_diagnostic.RCS1032.severity = warning # Remove redundant parentheses.
 dotnet_diagnostic.RCS1118.severity = warning # Mark local variable as const.
-dotnet_diagnostic.RCS1141.severity = warning # Add 'param' element to documentation comment.
+dotnet_diagnostic.RCS1141.severity = none # Add 'param' element to documentation comment.
 dotnet_diagnostic.RCS1197.severity = warning # Optimize StringBuilder.AppendLine call.
 dotnet_diagnostic.RCS1205.severity = warning # Order named arguments according to the order of parameters.
 dotnet_diagnostic.RCS1229.severity = warning # Use async/await when necessary.

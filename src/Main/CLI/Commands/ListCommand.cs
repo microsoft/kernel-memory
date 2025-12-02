@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Core.Config;
+using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.CLI.Exceptions;
+using KernelMemory.Main.CLI.OutputFormatters;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -53,15 +56,14 @@ public class ListCommand : BaseCommand<ListCommandSettings>
     /// Initializes a new instance of the <see cref="ListCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public ListCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    public ListCommand(AppConfig config) : base(config)
     {
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
         CommandContext context,
-        ListCommandSettings settings)
+        ListCommandSettings settings,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -76,7 +78,7 @@ public class ListCommand : BaseCommand<ListCommandSettings>
 
             // Wrap items with node information
             var itemsWithNode = items.Select(item =>
-                Core.Storage.Models.ContentDtoWithNode.FromContentDto(item, node.Id));
+                ContentDtoWithNode.FromContentDto(item, node.Id));
 
             // Format list with pagination info
             formatter.FormatList(itemsWithNode, totalCount, settings.Skip, settings.Take);
@@ -91,7 +93,7 @@ public class ListCommand : BaseCommand<ListCommandSettings>
         }
         catch (Exception ex)
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
     }
@@ -102,12 +104,12 @@ public class ListCommand : BaseCommand<ListCommandSettings>
     /// <param name="settings">Command settings for output format.</param>
     private void ShowFirstRunMessage(ListCommandSettings settings)
     {
-        var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+        var formatter = OutputFormatterFactory.Create(settings);
 
         // For JSON/YAML, return empty list (valid, parseable output)
         if (!settings.Format.Equals("human", StringComparison.OrdinalIgnoreCase))
         {
-            formatter.FormatList(Array.Empty<Core.Storage.Models.ContentDto>(), 0, 0, settings.Take);
+            formatter.FormatList(Array.Empty<ContentDto>(), 0, 0, settings.Take);
             return;
         }
 

@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-using System.Diagnostics.CodeAnalysis;
+
+using KernelMemory.Core.Config;
+using KernelMemory.Main.CLI.OutputFormatters;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.CLI.Commands;
@@ -20,15 +22,14 @@ public class NodesCommand : BaseCommand<NodesCommandSettings>
     /// Initializes a new instance of the <see cref="NodesCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public NodesCommand(KernelMemory.Core.Config.AppConfig config) : base(config)
+    public NodesCommand(AppConfig config) : base(config)
     {
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types",
-        Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
     public override async Task<int> ExecuteAsync(
         CommandContext context,
-        NodesCommandSettings settings)
+        NodesCommandSettings settings,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -45,7 +46,7 @@ public class NodesCommand : BaseCommand<NodesCommandSettings>
         }
         catch (Exception ex)
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
     }

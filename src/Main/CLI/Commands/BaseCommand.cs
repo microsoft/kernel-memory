@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 using System.Diagnostics.CodeAnalysis;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
@@ -128,7 +129,7 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Warning);
         });
-        var searchIndexes = Services.SearchIndexFactory.CreateIndexes(node.SearchIndexes, loggerFactory);
+        var searchIndexes = SearchIndexFactory.CreateIndexes(node.SearchIndexes, loggerFactory);
 
         // Create storage service with search indexes
         var storage = new ContentStorageService(context, cuidGenerator, logger, searchIndexes);

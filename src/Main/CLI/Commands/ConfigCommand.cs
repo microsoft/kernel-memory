@@ -1,9 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
+
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Infrastructure;
 using KernelMemory.Main.CLI.Models;
+using KernelMemory.Main.CLI.OutputFormatters;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -36,7 +40,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     private readonly ConfigPathService _configPathService;
@@ -47,7 +51,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     /// <param name="config">Application configuration (injected by DI).</param>
     /// <param name="configPathService">Service providing the config file path (injected by DI).</param>
     public ConfigCommand(
-        KernelMemory.Core.Config.AppConfig config,
+        AppConfig config,
         ConfigPathService configPathService) : base(config)
     {
         this._configPathService = configPathService ?? throw new ArgumentNullException(nameof(configPathService));
@@ -55,7 +59,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
-    public override async Task<int> ExecuteAsync(
+    public async Task<int> ExecuteAsync(
         CommandContext context,
         ConfigCommandSettings settings)
     {
@@ -63,7 +67,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
         {
             // ConfigCommand doesn't need node selection - it queries the entire configuration
             // So we skip Initialize() and just use the injected config directly
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             var configPath = this._configPathService.Path;
             var configFileExists = File.Exists(configPath);
 
@@ -128,9 +132,14 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
         }
         catch (Exception ex)
         {
-            var formatter = CLI.OutputFormatters.OutputFormatterFactory.Create(settings);
+            var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
+    }
+
+    public override Task<int> ExecuteAsync(CommandContext context, ConfigCommandSettings settings, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -142,7 +151,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     /// <returns>Exit code.</returns>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Config creation must catch all exceptions to return appropriate exit codes")]
-    private int HandleCreateConfig(string configPath, bool configFileExists, CLI.OutputFormatters.IOutputFormatter formatter)
+    private int HandleCreateConfig(string configPath, bool configFileExists, IOutputFormatter formatter)
     {
         try
         {

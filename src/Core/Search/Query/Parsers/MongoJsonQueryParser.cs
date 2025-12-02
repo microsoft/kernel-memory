@@ -1,4 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
+
+using System.Globalization;
 using System.Text.Json;
 using KernelMemory.Core.Search.Query.Ast;
 
@@ -320,7 +322,7 @@ public sealed class MongoJsonQueryParser : IQueryParser
             }
             else if (item.ValueKind == JsonValueKind.Number)
             {
-                items.Add(item.GetDouble().ToString());
+                items.Add(item.GetDouble().ToString(CultureInfo.CurrentCulture));
             }
             else
             {

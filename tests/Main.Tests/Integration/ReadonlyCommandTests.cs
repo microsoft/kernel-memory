@@ -85,7 +85,7 @@ public sealed class ReadonlyCommandTests : IDisposable
         var context = CreateTestContext("list");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - With friendly first-run UX, missing DB returns success (0) not error
         // The key is that it should NOT create any files/directories
@@ -121,7 +121,7 @@ public sealed class ReadonlyCommandTests : IDisposable
         var context = CreateTestContext("get");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - With friendly first-run UX, missing DB returns success (0) not error
         // The key is that it should NOT create any files/directories
@@ -156,7 +156,7 @@ public sealed class ReadonlyCommandTests : IDisposable
         var context = CreateTestContext("nodes");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - This test SHOULD FAIL initially (reproducing the bug)
         // NodesCommand only reads config, shouldn't touch the database at all

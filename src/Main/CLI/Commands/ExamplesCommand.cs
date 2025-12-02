@@ -22,7 +22,7 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
     }
 
     /// <inheritdoc />
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrEmpty(settings.Command))
         {

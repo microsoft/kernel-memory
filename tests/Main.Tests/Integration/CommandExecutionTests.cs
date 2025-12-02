@@ -67,7 +67,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new UpsertCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 
@@ -85,7 +85,7 @@ public sealed class CommandExecutionTests : IDisposable
         };
         var putCommand = new UpsertCommand(config);
         var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
-        await putCommand.ExecuteAsync(putContext, putSettings).ConfigureAwait(false);
+        await putCommand.ExecuteAsync(putContext, putSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now try to get non-existent ID from existing DB
         var settings = new GetCommandSettings
@@ -96,7 +96,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new GetCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(1, result); // User error - ID not found in existing DB
     }
 
@@ -115,7 +115,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new DeleteCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "delete", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result); // Success (idempotent)
     }
 
@@ -133,7 +133,7 @@ public sealed class CommandExecutionTests : IDisposable
         };
         var putCommand = new UpsertCommand(config);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
-        await putCommand.ExecuteAsync(context, putSettings).ConfigureAwait(false);
+        await putCommand.ExecuteAsync(context, putSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Delete to make it empty
         var deleteSettings = new DeleteCommandSettings
@@ -142,7 +142,7 @@ public sealed class CommandExecutionTests : IDisposable
             Id = "temp-id"
         };
         var deleteCommand = new DeleteCommand(config);
-        await deleteCommand.ExecuteAsync(context, deleteSettings).ConfigureAwait(false);
+        await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database
         var settings = new ListCommandSettings
@@ -151,7 +151,7 @@ public sealed class CommandExecutionTests : IDisposable
         };
         var command = new ListCommand(config);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 
@@ -166,9 +166,9 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath
         };
         var command = new NodesCommand(config);
-        var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "nodes", null);
+        var context = new CommandContext(["--config", this._configPath], new EmptyRemainingArguments(), "nodes", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 
@@ -242,7 +242,7 @@ public sealed class CommandExecutionTests : IDisposable
         };
         var putCommand = new UpsertCommand(config);
         var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
-        await putCommand.ExecuteAsync(putContext, putSettings).ConfigureAwait(false);
+        await putCommand.ExecuteAsync(putContext, putSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Then get with full flag - will fail because we don't know the ID
         // But this still exercises the code path
@@ -255,7 +255,7 @@ public sealed class CommandExecutionTests : IDisposable
         var getCommand = new GetCommand(config);
         var getContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
-        var result = await getCommand.ExecuteAsync(getContext, getSettings).ConfigureAwait(false);
+        var result = await getCommand.ExecuteAsync(getContext, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.True(result >= 0); // Either success or user error
     }
 
