@@ -22,10 +22,4 @@ public sealed class CachedEmbedding
     /// Null if the provider did not return token count.
     /// </summary>
     public int? TokenCount { get; init; }
-
-    /// <summary>
-    /// Timestamp when this embedding was stored in the cache.
-    /// Useful for debugging and diagnostics.
-    /// </summary>
-    public required DateTimeOffset Timestamp { get; init; }
 }

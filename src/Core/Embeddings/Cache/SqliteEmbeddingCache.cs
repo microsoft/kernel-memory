@@ -23,22 +23,21 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             text_hash TEXT NOT NULL,
             vector BLOB NOT NULL,
             token_count INTEGER NULL,
-            created_at TEXT NOT NULL,
             PRIMARY KEY (provider, model, dimensions, is_normalized, text_hash)
         );
         """;
 
     private const string SelectSql = """
-        SELECT vector, token_count, created_at FROM embeddings_cache
+        SELECT vector, token_count FROM embeddings_cache
         WHERE provider = @provider AND model = @model AND dimensions = @dimensions
         AND is_normalized = @isNormalized AND text_hash = @textHash
         """;
 
     private const string UpsertSql = """
-        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector, token_count, created_at)
-        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector, @tokenCount, @createdAt)
+        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector, token_count)
+        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector, @tokenCount)
         ON CONFLICT(provider, model, dimensions, is_normalized, text_hash)
-        DO UPDATE SET vector = @vector, token_count = @tokenCount, created_at = @createdAt
+        DO UPDATE SET vector = @vector, token_count = @tokenCount
         """;
 
     private readonly SqliteConnection _connection;
@@ -136,7 +135,6 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 var vector = BytesToFloatArray(vectorBlob);
 
                 int? tokenCount = reader["token_count"] == DBNull.Value ? null : Convert.ToInt32(reader["token_count"], CultureInfo.InvariantCulture);
-                var createdAt = DateTimeOffset.Parse((string)reader["created_at"], CultureInfo.InvariantCulture);
 
                 this._logger.LogTrace("Cache hit for {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
                     key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
@@ -144,8 +142,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 return new CachedEmbedding
                 {
                     Vector = vector,
-                    TokenCount = tokenCount,
-                    Timestamp = createdAt
+                    TokenCount = tokenCount
                 };
             }
         }
@@ -164,7 +161,6 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
         }
 
         var vectorBlob = FloatArrayToBytes(vector);
-        var createdAt = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
         var command = this._connection.CreateCommand();
         await using (command.ConfigureAwait(false))
@@ -178,7 +174,6 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             command.Parameters.AddWithValue("@textHash", key.TextHash);
             command.Parameters.AddWithValue("@vector", vectorBlob);
             command.Parameters.AddWithValue("@tokenCount", tokenCount.HasValue ? tokenCount.Value : DBNull.Value);
-            command.Parameters.AddWithValue("@createdAt", createdAt);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 

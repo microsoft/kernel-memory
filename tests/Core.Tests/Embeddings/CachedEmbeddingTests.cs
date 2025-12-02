@@ -5,7 +5,7 @@ namespace KernelMemory.Core.Tests.Embeddings;
 
 /// <summary>
 /// Tests for CachedEmbedding model to verify proper construction and immutability.
-/// CachedEmbedding stores the embedding vector, optional token count, and timestamp.
+/// CachedEmbedding stores the embedding vector and optional token count.
 /// </summary>
 public sealed class CachedEmbeddingTests
 {
@@ -14,18 +14,15 @@ public sealed class CachedEmbeddingTests
     {
         // Arrange
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        var timestamp = DateTimeOffset.UtcNow;
 
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector,
-            Timestamp = timestamp
+            Vector = vector
         };
 
         // Assert
         Assert.Equal(vector, cached.Vector);
-        Assert.Equal(timestamp, cached.Timestamp);
         Assert.Null(cached.TokenCount);
     }
 
@@ -34,14 +31,12 @@ public sealed class CachedEmbeddingTests
     {
         // Arrange
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        var timestamp = DateTimeOffset.UtcNow;
         const int tokenCount = 42;
 
         // Act
         var cached = new CachedEmbedding
         {
             Vector = vector,
-            Timestamp = timestamp,
             TokenCount = tokenCount
         };
 
@@ -54,13 +49,11 @@ public sealed class CachedEmbeddingTests
     {
         // Arrange
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        var timestamp = DateTimeOffset.UtcNow;
 
         // Act
         var cached = new CachedEmbedding
         {
             Vector = vector,
-            Timestamp = timestamp,
             TokenCount = null
         };
 
@@ -73,13 +66,11 @@ public sealed class CachedEmbeddingTests
     {
         // Arrange
         var vector = new float[] { 0.123456789f, -0.987654321f, float.MaxValue, float.MinValue };
-        var timestamp = DateTimeOffset.UtcNow;
 
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector,
-            Timestamp = timestamp
+            Vector = vector
         };
 
         // Assert
@@ -99,40 +90,15 @@ public sealed class CachedEmbeddingTests
             vector[i] = (float)i / 1536;
         }
 
-        var timestamp = DateTimeOffset.UtcNow;
-
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector,
-            Timestamp = timestamp
+            Vector = vector
         };
 
         // Assert
         Assert.Equal(1536, cached.Vector.Length);
         Assert.Equal(0.0f, cached.Vector[0]);
         Assert.Equal(1535f / 1536, cached.Vector[1535], precision: 6);
-    }
-
-    [Fact]
-    public void CachedEmbedding_TimestampShouldBeDateTimeOffset()
-    {
-        // Arrange
-        var vector = new float[] { 0.1f };
-        var timestamp = new DateTimeOffset(2025, 12, 1, 10, 30, 0, TimeSpan.FromHours(-5));
-
-        // Act
-        var cached = new CachedEmbedding
-        {
-            Vector = vector,
-            Timestamp = timestamp
-        };
-
-        // Assert
-        Assert.Equal(timestamp.Year, cached.Timestamp.Year);
-        Assert.Equal(timestamp.Month, cached.Timestamp.Month);
-        Assert.Equal(timestamp.Day, cached.Timestamp.Day);
-        Assert.Equal(timestamp.Hour, cached.Timestamp.Hour);
-        Assert.Equal(timestamp.Offset, cached.Timestamp.Offset);
     }
 }

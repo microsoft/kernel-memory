@@ -54,8 +54,7 @@ public sealed class CachedEmbeddingGeneratorTests
         var cachedVector = new float[] { 0.1f, 0.2f, 0.3f };
         var cachedEmbedding = new CachedEmbedding
         {
-            Vector = cachedVector,
-            Timestamp = DateTimeOffset.UtcNow
+            Vector = cachedVector
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -220,7 +219,7 @@ public sealed class CachedEmbeddingGeneratorTests
                     var testKey = EmbeddingCacheKey.Create("OpenAI", "text-embedding-ada-002", 1536, true, kvp.Key);
                     if (testKey.TextHash == key.TextHash)
                     {
-                        return new CachedEmbedding { Vector = kvp.Value, Timestamp = DateTimeOffset.UtcNow };
+                        return new CachedEmbedding { Vector = kvp.Value };
                     }
                 }
 
@@ -299,7 +298,7 @@ public sealed class CachedEmbeddingGeneratorTests
             {
                 if (key.TextHash == cachedKey.TextHash)
                 {
-                    return new CachedEmbedding { Vector = cachedVector, Timestamp = DateTimeOffset.UtcNow };
+                    return new CachedEmbedding { Vector = cachedVector };
                 }
 
                 return null;
@@ -411,12 +410,12 @@ public sealed class CachedEmbeddingGeneratorTests
             {
                 if (key.TextHash == cachedB.TextHash)
                 {
-                    return new CachedEmbedding { Vector = vectorB, Timestamp = DateTimeOffset.UtcNow };
+                    return new CachedEmbedding { Vector = vectorB };
                 }
 
                 if (key.TextHash == cachedD.TextHash)
                 {
-                    return new CachedEmbedding { Vector = vectorD, Timestamp = DateTimeOffset.UtcNow };
+                    return new CachedEmbedding { Vector = vectorD };
                 }
 
                 return null;

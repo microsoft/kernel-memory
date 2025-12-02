@@ -80,26 +80,6 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
     }
 
     [Fact]
-    public async Task StoreAsync_ShouldSetTimestamp()
-    {
-        // Arrange
-        using var cache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object);
-        var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
-        var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        var beforeStore = DateTimeOffset.UtcNow;
-
-        // Act
-        await cache.StoreAsync(key, vector, tokenCount: null, CancellationToken.None).ConfigureAwait(false);
-        var result = await cache.TryGetAsync(key, CancellationToken.None).ConfigureAwait(false);
-        var afterStore = DateTimeOffset.UtcNow;
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.True(result.Timestamp >= beforeStore.AddSeconds(-1)); // Allow 1 second tolerance
-        Assert.True(result.Timestamp <= afterStore.AddSeconds(1));
-    }
-
-    [Fact]
     public async Task StoreAsync_WithLargeVector_ShouldRoundTrip()
     {
         // Arrange - 1536 dimensions (OpenAI ada-002)
