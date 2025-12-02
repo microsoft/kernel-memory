@@ -36,32 +36,7 @@ km search "foo NOT bar"
 
 ---
 
-### 2. Quoted Phrases Don't Escape Operators
-
-**Status:** Known bug, not yet fixed
-
-**Issue:** Cannot search for literal phrases containing reserved words like "AND", "OR", "NOT".
-
-**Example:**
-```bash
-km put "Meeting with Alice AND Bob"
-km search '"Alice AND Bob"'
-# Expected: Find the document
-# Actual: Parser error or incorrect results
-```
-
-**Root Cause:**
-- Quoted strings should treat content literally
-- Current parser/tokenizer doesn't properly handle operator escaping within quotes
-- May be FTS query generation issue
-
-**Workaround:** Rephrase searches to avoid reserved words.
-
-**Fix Required:** Investigate tokenizer and FTS query extraction for quoted phrases.
-
----
-
-### 3. Field Queries with Quoted Values Fail
+### 2. Field Queries with Quoted Values Fail
 
 **Status:** Known bug, not yet fixed
 
@@ -84,17 +59,39 @@ km search 'content:"user:password"'
 
 ---
 
+## Resolved Issues
+
+### Quoted Phrases Don't Escape Operators (Resolved)
+
+**Status:** Fixed
+
+**Issue:** Cannot search for literal phrases containing reserved words like "AND", "OR", "NOT".
+
+**Example:**
+```bash
+km put "Meeting with Alice AND Bob"
+km search '"Alice AND Bob"'
+# Now works correctly and finds the document
+```
+
+**Resolution:**
+- The tokenizer correctly handles quoted strings and preserves them as literal text
+- The FTS query extractor properly quotes phrases containing reserved words
+- E2E tests added in `SearchEndToEndTests.cs` to prevent regression (tests: `KnownIssue2_*`)
+
+---
+
 ## Testing Gaps
 
 These bugs were discovered through comprehensive E2E testing. Previous tests only verified:
-- ✅ AST structure correctness
-- ✅ LINQ expression building
-- ✅ Direct FTS calls
+- AST structure correctness
+- LINQ expression building
+- Direct FTS calls
 
 But did NOT test:
-- ❌ Full pipeline: Parse → Extract FTS → Search → Filter → Rank
-- ❌ Default settings (MinRelevance=0.3)
-- ❌ Actual result verification
+- Full pipeline: Parse -> Extract FTS -> Search -> Filter -> Rank
+- Default settings (MinRelevance=0.3)
+- Actual result verification
 
 **Lesson:** Exit code testing and structure testing are insufficient. Must test actual behavior with real data.
 

@@ -606,4 +606,143 @@ public sealed class SearchEndToEndTests : IDisposable
     }
 
     #endregion
+
+    #region Known Issue 2: Quoted Phrases With Reserved Words
+
+    [Fact]
+    public async Task KnownIssue2_QuotedPhraseWithAND_FindsExactPhrase()
+    {
+        // Known Issue 2: Quoted phrases don't escape operators
+        // This test verifies that searching for "Alice AND Bob" (as a phrase)
+        // finds documents containing that exact phrase, not documents with "Alice" AND "Bob" separately
+
+        // Arrange
+        await this.InsertAsync("doc1", "Meeting with Alice AND Bob").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Alice went to lunch and Bob stayed").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Just Alice here").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "Just Bob here").ConfigureAwait(false);
+
+        // Act: Search for the exact phrase "Alice AND Bob" using quotes
+        var response = await this.SearchAsync("\"Alice AND Bob\"").ConfigureAwait(false);
+
+        // Assert: Should find only doc1 which contains the exact phrase
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_QuotedPhraseWithOR_FindsExactPhrase()
+    {
+        // Known Issue 2: Quoted phrases don't escape operators
+        // This test verifies that "this OR that" searches for the literal phrase
+
+        // Arrange
+        await this.InsertAsync("doc1", "choose this OR that option").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "this is one option or that is another").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "just this").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "just that").ConfigureAwait(false);
+
+        // Act: Search for the exact phrase "this OR that"
+        var response = await this.SearchAsync("\"this OR that\"").ConfigureAwait(false);
+
+        // Assert: Should find only doc1 with the exact phrase
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_QuotedPhraseWithNOT_FindsExactPhrase()
+    {
+        // Known Issue 2: Quoted phrases don't escape operators
+        // This test verifies that "this is NOT important" searches for the literal phrase
+
+        // Arrange
+        await this.InsertAsync("doc1", "this is NOT important notice").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "this is definitely important").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "NOT a problem").ConfigureAwait(false);
+
+        // Act: Search for the exact phrase "this is NOT important"
+        var response = await this.SearchAsync("\"this is NOT important\"").ConfigureAwait(false);
+
+        // Assert: Should find only doc1 with the exact phrase
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_QuotedReservedWordAND_FindsDocumentsContainingAND()
+    {
+        // Known Issue 2: Searching for just the word "AND" should work when quoted
+
+        // Arrange
+        await this.InsertAsync("doc1", "The word AND appears here").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "No reserved words").ConfigureAwait(false);
+
+        // Act: Search for the literal word "AND"
+        var response = await this.SearchAsync("\"AND\"").ConfigureAwait(false);
+
+        // Assert: Should find doc1 containing "AND"
+        Assert.Equal(1, response.TotalResults);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_QuotedReservedWordOR_FindsDocumentsContainingOR()
+    {
+        // Known Issue 2: Searching for just the word "OR" should work when quoted
+
+        // Arrange
+        await this.InsertAsync("doc1", "The word OR appears here").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "No reserved words").ConfigureAwait(false);
+
+        // Act: Search for the literal word "OR"
+        var response = await this.SearchAsync("\"OR\"").ConfigureAwait(false);
+
+        // Assert: Should find doc1 containing "OR"
+        Assert.Equal(1, response.TotalResults);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_QuotedReservedWordNOT_FindsDocumentsContainingNOT()
+    {
+        // Known Issue 2: Searching for just the word "NOT" should work when quoted
+
+        // Arrange
+        await this.InsertAsync("doc1", "The word NOT appears here").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "No reserved words").ConfigureAwait(false);
+
+        // Act: Search for the literal word "NOT"
+        var response = await this.SearchAsync("\"NOT\"").ConfigureAwait(false);
+
+        // Assert: Should find doc1 containing "NOT"
+        Assert.Equal(1, response.TotalResults);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue2_MixedQuotedPhraseAndOperator_WorksCorrectly()
+    {
+        // Known Issue 2: Mixing quoted phrases with actual operators should work
+        // Search: "Alice AND Bob" AND kubernetes
+        // This should find documents containing both the exact phrase "Alice AND Bob" AND the word "kubernetes"
+
+        // Arrange
+        await this.InsertAsync("doc1", "Meeting notes for Alice AND Bob about kubernetes").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Meeting notes for Alice AND Bob about docker").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Meeting notes for Alice about kubernetes").ConfigureAwait(false);
+
+        // Act: Search for exact phrase AND another term
+        var response = await this.SearchAsync("\"Alice AND Bob\" AND kubernetes").ConfigureAwait(false);
+
+        // Assert: Should find only doc1
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc1"], response.Results[0].Id);
+    }
+
+    #endregion
 }
