@@ -2,52 +2,7 @@
 
 ## Search Functionality
 
-### 1. NOT Operator Issues
-
-**Status:** Known bug, not yet fixed
-
-**Issue:** The NOT operator has two problems:
-
-1. **Standalone NOT crashes:** `km search "NOT foo"` throws FTS5 syntax error
-2. **NOT doesn't exclude:** `km search "foo NOT bar"` returns documents containing both instead of excluding "bar"
-
-**Examples:**
-```bash
-# Problem 1: Standalone NOT crashes
-km search "NOT important"
-# Error: SQLite Error 1: 'fts5: syntax error near "NOT"'
-
-# Problem 2: NOT doesn't exclude
-km put "foo and bar together"
-km put "only foo here"
-km search "foo NOT bar"
-# Expected: 1 result (only foo here)
-# Actual: 2 results (both documents)
-```
-
-**Root Cause:**
-- FTS5 requires NOT to have a left operand (e.g., `foo NOT bar`), standalone `NOT term` is invalid
-- Even when valid, FTS query extraction passes `"NOT (bar)"` to SQLite FTS5 which doesn't work as expected
-- No LINQ post-filtering is applied to exclude NOT terms
-- The architecture assumes FTS handles all logic, but NOT needs LINQ filtering
-
-**Workaround:**
-- For literal text containing "NOT", use quotes: `km search '"NOT important"'`
-- Avoid using NOT as a boolean operator
-
-**Fix Required:**
-1. Handle standalone NOT gracefully (either treat as literal or provide clear error)
-2. Split query: extract positive terms for FTS, negative terms for filtering
-3. Apply LINQ filter to FTS results using QueryLinqBuilder
-4. Filter out documents matching NOT terms
-
-**Files Affected:**
-- `src/Core/Search/NodeSearchService.cs:190` - ExtractLogical NOT handling
-- Need to add LINQ filtering after line 89
-
----
-
-### 2. Field Queries with Quoted Values Fail
+### 1. Field Queries with Quoted Values Fail
 
 **Status:** Known bug, not yet fixed
 
@@ -71,6 +26,32 @@ km search 'content:"user:password"'
 ---
 
 ## Resolved Issues
+
+### NOT Operator Issues (Resolved)
+
+**Status:** Fixed
+
+**Issue:** The NOT operator had two problems:
+1. **Standalone NOT crashed:** `km search "NOT foo"` threw FTS5 syntax error
+2. **NOT didn't exclude:** `km search "foo AND NOT bar"` returned documents containing both instead of excluding "bar"
+
+**Resolution:**
+- Implemented `FtsQueryResult` record to separate FTS query string from NOT terms
+- Modified `FtsQueryExtractor` to collect NOT terms separately instead of passing them to FTS5
+- Added LINQ post-filtering in `NodeSearchService.SearchAsync()` to exclude NOT terms
+- Added `GetAllDocumentsAsync()` in `SqliteFtsIndex` to handle standalone NOT queries
+- Case-insensitive filtering checks title, description, and content fields
+- E2E tests added in `SearchEndToEndTests.cs` (tests: `KnownIssue1_*`)
+
+**Important Note:** The infix query parser requires explicit AND between terms. Use:
+- `foo AND NOT bar` (correct) instead of `foo NOT bar` (incorrect - ignores NOT)
+- `(foo OR baz) AND NOT bar` (correct) instead of `(foo OR baz) NOT bar` (incorrect)
+
+**Files Changed:**
+- `src/Core/Search/NodeSearchService.cs` - Added `FtsQueryResult`, `NotTerm` records and LINQ filtering
+- `src/Core/Search/SqliteFtsIndex.cs` - Added `GetAllDocumentsAsync()` for standalone NOT support
+
+---
 
 ### Quoted Phrases Don't Escape Operators (Resolved)
 
