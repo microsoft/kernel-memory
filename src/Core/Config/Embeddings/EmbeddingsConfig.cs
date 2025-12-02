@@ -12,6 +12,7 @@ namespace KernelMemory.Core.Config.Embeddings;
 [JsonDerivedType(typeof(OllamaEmbeddingsConfig), typeDiscriminator: "ollama")]
 [JsonDerivedType(typeof(OpenAIEmbeddingsConfig), typeDiscriminator: "openai")]
 [JsonDerivedType(typeof(AzureOpenAIEmbeddingsConfig), typeDiscriminator: "azureOpenAI")]
+[JsonDerivedType(typeof(HuggingFaceEmbeddingsConfig), typeDiscriminator: "huggingFace")]
 public abstract class EmbeddingsConfig : IValidatable
 {
     /// <summary>
