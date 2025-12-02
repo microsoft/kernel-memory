@@ -745,4 +745,210 @@ public sealed class SearchEndToEndTests : IDisposable
     }
 
     #endregion
+
+    #region Known Issue 1: NOT Operator Fixes
+
+    [Fact]
+    public async Task KnownIssue1_StandaloneNOT_DoesNotCrash()
+    {
+        // Known Issue 1: Standalone NOT crashes with FTS5 syntax error
+        // The query "NOT foo" should not throw an exception
+        // Expected behavior: Return all documents that do NOT contain "foo"
+
+        // Arrange
+        await this.InsertAsync("doc1", "contains foo term").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "does not contain the term").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "another document without it").ConfigureAwait(false);
+
+        // Act: This should NOT throw an exception
+        var response = await this.SearchAsync("NOT foo").ConfigureAwait(false);
+
+        // Assert: Should return documents that do NOT contain "foo"
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains "foo"
+        Assert.Contains(this._insertedIds["doc2"], resultIds); // No "foo"
+        Assert.Contains(this._insertedIds["doc3"], resultIds); // No "foo"
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NotWithPositiveTerm_ExcludesCorrectly()
+    {
+        // Known Issue 1: "foo AND NOT bar" should exclude documents with "bar"
+        // Expected behavior: Return documents with "foo" but NOT "bar"
+        // Note: Explicit AND is required - "foo NOT bar" is parsed as just "foo"
+
+        // Arrange
+        await this.InsertAsync("doc1", "foo and bar together").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "only foo here").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "only bar here").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "neither term here").ConfigureAwait(false);
+
+        // Act: Search for "foo AND NOT bar" (explicit AND required)
+        var response = await this.SearchAsync("foo AND NOT bar").ConfigureAwait(false);
+
+        // Assert: Should return only doc2 (has "foo" but not "bar")
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc2"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_MultipleNOT_ExcludesAllTerms()
+    {
+        // Known Issue 1: Multiple NOT terms should all be excluded
+        // Expected behavior: "foo AND NOT bar AND NOT baz" returns docs with "foo" but without "bar" and without "baz"
+        // Note: Explicit AND is required between all terms
+
+        // Arrange
+        await this.InsertAsync("doc1", "foo bar baz all").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "foo bar only").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "foo baz only").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "foo alone here").ConfigureAwait(false);
+
+        // Act: Search for foo but not bar and not baz (explicit AND required)
+        var response = await this.SearchAsync("foo AND NOT bar AND NOT baz").ConfigureAwait(false);
+
+        // Assert: Should return only doc4 (has "foo" without "bar" or "baz")
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc4"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NOTWithOR_WorksCorrectly()
+    {
+        // Combined NOT with OR: "(foo OR baz) AND NOT bar"
+        // Should return documents with "foo" OR "baz" but NOT "bar"
+        // Note: Explicit AND is required between the OR group and NOT
+
+        // Arrange
+        await this.InsertAsync("doc1", "foo and bar").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "foo alone").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "baz and bar").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "baz alone").ConfigureAwait(false);
+        await this.InsertAsync("doc5", "neither term").ConfigureAwait(false);
+
+        // Act: Search for (foo OR baz) AND NOT bar (explicit AND required)
+        var response = await this.SearchAsync("(foo OR baz) AND NOT bar").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc4 (have foo/baz but not bar)
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc4"], resultIds);
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Has bar
+        Assert.DoesNotContain(this._insertedIds["doc3"], resultIds); // Has bar
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NOTInFieldQuery_ExcludesFromField()
+    {
+        // NOT with field-specific search: "content:foo AND NOT content:bar"
+        // Should search in content field specifically
+        // Note: Explicit AND is required
+
+        // Arrange
+        await this.InsertAsync("doc1", "foo bar in content", "title1").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "foo only in content", "title2").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "different content", "foo bar title").ConfigureAwait(false);
+
+        // Act: Search for foo in content but not bar in content (explicit AND required)
+        var response = await this.SearchAsync("content:foo AND NOT content:bar").ConfigureAwait(false);
+
+        // Assert: Should return only doc2 (has foo in content, no bar in content)
+        Assert.Equal(1, response.TotalResults);
+        Assert.Single(response.Results);
+        Assert.Equal(this._insertedIds["doc2"], response.Results[0].Id);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_MongoNot_ExcludesCorrectly()
+    {
+        // MongoDB $not operator should work correctly
+        // $not: excludes documents matching the condition
+
+        // Arrange
+        await this.InsertAsync("doc1", "kubernetes deployment").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "docker deployment").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "other content").ConfigureAwait(false);
+
+        // Act: MongoDB NOT - find documents NOT containing "kubernetes"
+        var response = await this.SearchAsync("{\"$not\": {\"content\": \"kubernetes\"}}").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc3 (not containing kubernetes)
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains kubernetes
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_MongoNor_ExcludesAllConditions()
+    {
+        // MongoDB $nor operator should exclude all conditions
+
+        // Arrange
+        await this.InsertAsync("doc1", "kubernetes deployment").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "docker deployment").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "helm charts").ConfigureAwait(false);
+        await this.InsertAsync("doc4", "ansible automation").ConfigureAwait(false);
+
+        // Act: MongoDB NOR - find documents NOT containing kubernetes NOR docker
+        var response = await this.SearchAsync("{\"$nor\": [{\"content\": \"kubernetes\"}, {\"content\": \"docker\"}]}").ConfigureAwait(false);
+
+        // Assert: Should return doc3 and doc4 (not containing kubernetes or docker)
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains kubernetes
+        Assert.DoesNotContain(this._insertedIds["doc2"], resultIds); // Contains docker
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+        Assert.Contains(this._insertedIds["doc4"], resultIds);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NOTWithSingleQuotedReservedWord_ExcludesCorrectly()
+    {
+        // Single-quoted reserved words in NOT should be excluded correctly
+        // Bug: NOT 'AND' was searching for literal "'AND'" instead of "AND"
+
+        // Arrange
+        await this.InsertAsync("doc1", "Meeting with Alice AND Bob tomorrow").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Regular meeting notes").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Project status update").ConfigureAwait(false);
+
+        // Act: NOT with single-quoted AND (reserved word) - should exclude docs containing literal AND
+        var response = await this.SearchAsync("NOT 'AND'").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc3 (not containing "AND")
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains "AND"
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NOTWithDoubleQuotedReservedWord_ExcludesCorrectly()
+    {
+        // Double-quoted reserved words in NOT should be excluded correctly
+
+        // Arrange
+        await this.InsertAsync("doc1", "This is NOT important").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Regular document content").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Something else entirely").ConfigureAwait(false);
+
+        // Act: NOT with double-quoted NOT (reserved word) - should exclude docs containing literal NOT
+        var response = await this.SearchAsync("NOT \"NOT\"").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc3 (not containing "NOT")
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains "NOT"
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+    }
+
+    #endregion
 }

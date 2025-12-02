@@ -7,6 +7,25 @@ using KernelMemory.Core.Storage;
 namespace KernelMemory.Core.Search;
 
 /// <summary>
+/// Result of FTS query extraction from the AST.
+/// Contains the FTS query string for SQLite and a list of NOT terms for post-filtering.
+/// SQLite FTS5 has limited NOT support (requires left operand), so NOT terms
+/// are filtered via LINQ after FTS returns initial results.
+/// </summary>
+/// <param name="FtsQuery">The FTS5 query string for positive terms.</param>
+/// <param name="NotTerms">Terms to exclude via LINQ post-filtering. Each term includes optional field info.</param>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays")]
+public sealed record FtsQueryResult(string FtsQuery, NotTerm[] NotTerms);
+
+/// <summary>
+/// Represents a term that should be excluded from search results.
+/// Used for LINQ post-filtering since SQLite FTS5 NOT has limitations.
+/// </summary>
+/// <param name="Term">The term to exclude.</param>
+/// <param name="Field">Optional field to check (title/description/content). If null, checks all fields.</param>
+public sealed record NotTerm(string Term, string? Field);
+
+/// <summary>
 /// Per-node search service.
 /// Executes searches within a single node's indexes.
 /// Handles query parsing, FTS query execution, and result filtering.
@@ -61,12 +80,12 @@ public sealed class NodeSearchService
             // Query the FTS index
             var maxResults = request.MaxResultsPerNode ?? SearchConstants.DefaultMaxResultsPerNode;
 
-            // Convert QueryNode to FTS query string
-            var ftsQuery = this.ExtractFtsQuery(queryNode);
+            // Convert QueryNode to FTS query string and extract NOT terms for post-filtering
+            var queryResult = this.ExtractFtsQuery(queryNode);
 
             // Search the FTS index
             var ftsMatches = await this._ftsIndex.SearchAsync(
-                ftsQuery,
+                queryResult.FtsQuery,
                 maxResults,
                 cts.Token).ConfigureAwait(false);
 
@@ -95,6 +114,13 @@ public sealed class NodeSearchService
                 }
             }
 
+            // Apply NOT term filtering via LINQ (SQLite FTS5 NOT has limitations)
+            // Filter out any documents that contain the NOT terms
+            if (queryResult.NotTerms.Length > 0)
+            {
+                results = this.ApplyNotTermFiltering(results, queryResult.NotTerms);
+            }
+
             stopwatch.Stop();
             return ([.. results], stopwatch.Elapsed);
         }
@@ -117,11 +143,79 @@ public sealed class NodeSearchService
     }
 
     /// <summary>
-    /// Extract FTS query string from query AST.
-    /// Converts the AST to SQLite FTS5 query syntax.
-    /// Only includes text search terms; filtering is done via LINQ on results.
+    /// Apply NOT term filtering to results via LINQ.
+    /// Excludes documents that contain any of the NOT terms.
     /// </summary>
-    private string ExtractFtsQuery(QueryNode queryNode)
+    /// <param name="results">The search results to filter.</param>
+    /// <param name="notTerms">The terms to exclude.</param>
+    /// <returns>Filtered results excluding documents containing NOT terms.</returns>
+    private List<SearchIndexResult> ApplyNotTermFiltering(List<SearchIndexResult> results, NotTerm[] notTerms)
+    {
+        return results
+            .Where(result => !this.ContainsAnyNotTerm(result, notTerms))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Check if a result contains any of the NOT terms.
+    /// </summary>
+    /// <param name="result">The search result to check.</param>
+    /// <param name="notTerms">The NOT terms to check for.</param>
+    /// <returns>True if the result contains any NOT term.</returns>
+    private bool ContainsAnyNotTerm(SearchIndexResult result, NotTerm[] notTerms)
+    {
+        foreach (var notTerm in notTerms)
+        {
+            if (this.ContainsNotTerm(result, notTerm))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if a result contains a specific NOT term.
+    /// </summary>
+    /// <param name="result">The search result to check.</param>
+    /// <param name="notTerm">The NOT term to check for.</param>
+    /// <returns>True if the result contains the NOT term.</returns>
+    private bool ContainsNotTerm(SearchIndexResult result, NotTerm notTerm)
+    {
+        // Case-insensitive contains check
+        var term = notTerm.Term;
+
+        // Check specific field if specified
+        if (notTerm.Field != null)
+        {
+            var fieldValue = notTerm.Field.ToLowerInvariant() switch
+            {
+                "title" => result.Title ?? string.Empty,
+                "description" => result.Description ?? string.Empty,
+                "content" => result.Content ?? string.Empty,
+                _ => string.Empty
+            };
+
+            return fieldValue.Contains(term, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Check all FTS fields (title, description, content)
+        var title = result.Title ?? string.Empty;
+        var description = result.Description ?? string.Empty;
+        var content = result.Content ?? string.Empty;
+
+        return title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+               description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+               content.Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Extract FTS query string and NOT terms from query AST.
+    /// Converts the AST to SQLite FTS5 query syntax for positive terms.
+    /// NOT terms are collected separately for LINQ post-filtering.
+    /// </summary>
+    private FtsQueryResult ExtractFtsQuery(QueryNode queryNode)
     {
         var visitor = new FtsQueryExtractor();
         return visitor.Extract(queryNode);
@@ -131,9 +225,12 @@ public sealed class NodeSearchService
     /// Visitor that extracts FTS query terms from the AST.
     /// Focuses only on TextSearchNode and field-specific text searches.
     /// Logical operators are preserved for FTS query syntax.
+    /// NOT operators are handled specially - their terms are collected for LINQ post-filtering.
     /// </summary>
     private sealed class FtsQueryExtractor
     {
+        private readonly List<NotTerm> _notTerms = [];
+
         /// <summary>
         /// SQLite FTS5 reserved words that must be quoted when used as search terms.
         /// These keywords have special meaning in FTS5 query syntax.
@@ -143,10 +240,15 @@ public sealed class NodeSearchService
             "AND", "OR", "NOT", "NEAR"
         };
 
-        public string Extract(QueryNode node)
+        public FtsQueryResult Extract(QueryNode node)
         {
             var terms = this.ExtractTerms(node);
-            return string.IsNullOrEmpty(terms) ? "*" : terms;
+
+            // If only NOT terms exist (no positive terms), use wildcard to get all documents
+            // then filter with NOT terms
+            var ftsQuery = string.IsNullOrEmpty(terms) ? "*" : terms;
+
+            return new FtsQueryResult(ftsQuery, [.. this._notTerms]);
         }
 
         private string ExtractTerms(QueryNode node)
@@ -198,6 +300,14 @@ public sealed class NodeSearchService
 
         private string ExtractLogical(LogicalNode node)
         {
+            // Handle NOT and NOR specially - collect terms for LINQ post-filtering
+            if (node.Operator == LogicalOperator.Not || node.Operator == LogicalOperator.Nor)
+            {
+                this.CollectNotTerms(node);
+                // Return empty string - NOT terms are not included in FTS query
+                return string.Empty;
+            }
+
             var childTerms = node.Children
                 .Select(this.ExtractTerms)
                 .Where(t => !string.IsNullOrEmpty(t))
@@ -212,10 +322,58 @@ public sealed class NodeSearchService
             {
                 LogicalOperator.And => string.Join(" AND ", childTerms.Select(t => $"({t})")),
                 LogicalOperator.Or => string.Join(" OR ", childTerms.Select(t => $"({t})")),
-                LogicalOperator.Not => childTerms.Length > 0 ? $"NOT ({childTerms[0]})" : string.Empty,
-                LogicalOperator.Nor => string.Join(" AND ", childTerms.Select(t => $"NOT ({t})")),
                 _ => string.Empty
             };
+        }
+
+        /// <summary>
+        /// Collect NOT terms from a NOT or NOR node.
+        /// These terms will be filtered via LINQ after FTS returns results.
+        /// </summary>
+        private void CollectNotTerms(LogicalNode node)
+        {
+            foreach (var child in node.Children)
+            {
+                this.CollectNotTermsFromNode(child);
+            }
+        }
+
+        /// <summary>
+        /// Recursively collect NOT terms from a node.
+        /// </summary>
+        private void CollectNotTermsFromNode(QueryNode node)
+        {
+            switch (node)
+            {
+                case TextSearchNode textNode:
+                    // Extract the term and optional field
+                    this._notTerms.Add(new NotTerm(textNode.SearchText, textNode.Field?.FieldPath));
+                    break;
+
+                case ComparisonNode comparisonNode:
+                    // Handle field:value comparisons for NOT
+                    if ((comparisonNode.Operator == ComparisonOperator.Contains ||
+                         comparisonNode.Operator == ComparisonOperator.Equal) &&
+                        comparisonNode.Field?.FieldPath != null &&
+                        comparisonNode.Value != null)
+                    {
+                        var term = comparisonNode.Value.AsString();
+                        this._notTerms.Add(new NotTerm(term, comparisonNode.Field.FieldPath));
+                    }
+
+                    break;
+
+                case LogicalNode logicalNode:
+                    // Recursively collect from nested logical nodes
+                    // For nested NOT/NOR, we add all children as NOT terms
+                    // For nested AND/OR within NOT, all their children become NOT terms
+                    foreach (var child in logicalNode.Children)
+                    {
+                        this.CollectNotTermsFromNode(child);
+                    }
+
+                    break;
+            }
         }
 
         private string ExtractComparison(ComparisonNode node)

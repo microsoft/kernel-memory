@@ -149,6 +149,14 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             return [];
         }
 
+        // Handle special "*" query to return all documents (for standalone NOT queries)
+        // FTS5 doesn't support "*" alone as a match-all operator
+        // Used when query contains only NOT terms - we get all docs and filter externally
+        if (query == "*")
+        {
+            return await this.GetAllDocumentsAsync(limit, cancellationToken).ConfigureAwait(false);
+        }
+
         // Search using FTS5 MATCH operator
         // Use bm25() for better scoring (returns negative values, more negative = better match)
         // We negate and normalize to 0-1 range
@@ -204,6 +212,55 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
             }
 
             this._logger.LogDebug("FTS search for '{Query}' returned {Count} results", query, results.Count);
+            return results;
+        }
+    }
+
+    /// <summary>
+    /// Returns all documents from the FTS index without filtering.
+    /// Used for standalone NOT queries where we need to get all documents
+    /// and then filter externally using LINQ.
+    /// </summary>
+    /// <param name="limit">Maximum number of documents to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>All documents up to the limit.</returns>
+    private async Task<IReadOnlyList<FtsMatch>> GetAllDocumentsAsync(int limit, CancellationToken cancellationToken)
+    {
+        // Select all documents without FTS MATCH filtering
+        // Since there's no FTS query, we can't use bm25() - assign a default score of 1.0
+        var searchSql = $"""
+            SELECT
+                content_id,
+                substr(content, 1, 200) as snippet
+            FROM {TableName}
+            LIMIT @limit
+            """;
+
+        var searchCommand = this._connection!.CreateCommand();
+        await using (searchCommand.ConfigureAwait(false))
+        {
+            searchCommand.CommandText = searchSql;
+            searchCommand.Parameters.AddWithValue("@limit", limit);
+
+            var results = new List<FtsMatch>();
+            var reader = await searchCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            await using (reader.ConfigureAwait(false))
+            {
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    var contentId = reader.GetString(0);
+                    var snippet = reader.GetString(1);
+
+                    results.Add(new FtsMatch
+                    {
+                        ContentId = contentId,
+                        Score = 1.0, // Default score for match-all
+                        Snippet = snippet
+                    });
+                }
+            }
+
+            this._logger.LogDebug("GetAllDocuments returned {Count} results", results.Count);
             return results;
         }
     }

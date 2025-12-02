@@ -139,6 +139,13 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
         AnsiConsole.MarkupLine("[dim]Find documents with either python or javascript[/]");
         AnsiConsole.WriteLine();
 
+        AnsiConsole.MarkupLine("[bold]Exclude terms with NOT[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"docker AND NOT kubernetes\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find docker docs that don't mention kubernetes[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"NOT deprecated\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find all docs that don't contain \"deprecated\"[/]");
+        AnsiConsole.WriteLine();
+
         AnsiConsole.MarkupLine("[bold]Search for literal reserved words[/]");
         AnsiConsole.MarkupLine("[cyan]km search '\"NOT\"'[/]");
         AnsiConsole.MarkupLine("[dim]Use quotes to search for literal AND, OR, NOT as words[/]");
@@ -160,6 +167,13 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
         AnsiConsole.MarkupLine("[dim]JSON format for complex boolean queries[/]");
         AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"$text\": {\"$search\": \"full text query\"}}'")}[/]");
         AnsiConsole.MarkupLine("[dim]Full-text search across all fields[/]");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold]JSON format - exclude with $not and $nor[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"content\": {\"$not\": \"deprecated\"}}'")}[/]");
+        AnsiConsole.MarkupLine("[dim]Find docs where content doesn't contain \"deprecated\"[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"$nor\": [{\"content\": \"alpha\"}, {\"content\": \"beta\"}]}'")}[/]");
+        AnsiConsole.MarkupLine("[dim]Exclude docs containing \"alpha\" or \"beta\"[/]");
         AnsiConsole.WriteLine();
 
         AnsiConsole.MarkupLine("[bold]JSON format - escaping special characters[/]");
