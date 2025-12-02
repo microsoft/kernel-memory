@@ -455,6 +455,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     private SearchService CreateSearchService()
     {
         var nodeServices = new Dictionary<string, NodeSearchService>();
+        var indexWeights = new Dictionary<string, Dictionary<string, float>>();
 
         foreach (var (nodeId, nodeConfig) in this.Config.Nodes)
         {
@@ -478,9 +479,21 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
             );
 
             nodeServices[nodeId] = nodeSearchService;
+
+            // Extract index weights from configuration
+            if (nodeConfig.SearchIndexes.Count > 0)
+            {
+                var nodeIndexWeights = new Dictionary<string, float>();
+                foreach (var searchIndex in nodeConfig.SearchIndexes)
+                {
+                    // Use the configured weight for each search index
+                    nodeIndexWeights[searchIndex.Id] = searchIndex.Weight;
+                }
+                indexWeights[nodeId] = nodeIndexWeights;
+            }
         }
 
-        return new SearchService(nodeServices);
+        return new SearchService(nodeServices, indexWeights);
     }
 
     /// <summary>
