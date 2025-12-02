@@ -84,22 +84,6 @@ km search 'content:"user:password"'
 
 ---
 
-## Configuration Limitations
-
-### 4. Index Weights Not Configurable
-
-**Status:** Known limitation
-
-**Issue:** Index weights for reranking use hardcoded defaults instead of configuration.
-
-**Location:** `src/Core/Search/SearchService.cs:223`
-
-**Impact:** Cannot tune relevance scoring per index.
-
-**Fix Required:** Load index weights from configuration file.
-
----
-
 ## Testing Gaps
 
 These bugs were discovered through comprehensive E2E testing. Previous tests only verified:

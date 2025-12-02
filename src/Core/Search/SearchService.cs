@@ -14,18 +14,26 @@ namespace KernelMemory.Core.Search;
 public sealed class SearchService : ISearchService
 {
     private readonly Dictionary<string, NodeSearchService> _nodeServices;
+    private readonly Dictionary<string, Dictionary<string, float>>? _indexWeights;
     private readonly ISearchReranker _reranker;
 
     /// <summary>
     /// Initialize a new SearchService.
     /// </summary>
     /// <param name="nodeServices">Per-node search services.</param>
+    /// <param name="indexWeights">
+    /// Per-node, per-index weights for relevance scoring.
+    /// Outer key = node ID, Inner key = index ID, Value = weight multiplier.
+    /// If null or missing entries, defaults to SearchConstants.DefaultIndexWeight (1.0).
+    /// </param>
     /// <param name="reranker">Reranking implementation (default: WeightedDiminishingReranker).</param>
     public SearchService(
         Dictionary<string, NodeSearchService> nodeServices,
+        Dictionary<string, Dictionary<string, float>>? indexWeights = null,
         ISearchReranker? reranker = null)
     {
         this._nodeServices = nodeServices;
+        this._indexWeights = indexWeights;
         this._reranker = reranker ?? new WeightedDiminishingReranker();
     }
 
@@ -201,7 +209,7 @@ public sealed class SearchService : ISearchService
     }
 
     /// <summary>
-    /// Build reranking configuration from request and defaults.
+    /// Build reranking configuration from request, configured index weights, and defaults.
     /// </summary>
     private RerankingConfig BuildRerankingConfig(SearchRequest request, string[] nodeIds)
     {
@@ -219,15 +227,33 @@ public sealed class SearchService : ISearchService
             }
         }
 
-        // Index weights: use defaults for now
-        // TODO: Load from configuration
+        // Index weights: use configured weights, fall back to defaults for missing entries
         var indexWeights = new Dictionary<string, Dictionary<string, float>>();
         foreach (var nodeId in nodeIds)
         {
-            indexWeights[nodeId] = new Dictionary<string, float>
+            // Check if we have configured index weights for this node
+            if (this._indexWeights?.TryGetValue(nodeId, out var configuredNodeIndexWeights) == true
+                && configuredNodeIndexWeights.Count > 0)
             {
-                ["fts-main"] = SearchConstants.DefaultIndexWeight
-            };
+                // Use configured weights, but ensure defaults for missing indexes
+                var nodeIndexWeights = new Dictionary<string, float>(configuredNodeIndexWeights);
+
+                // Ensure default FTS index has a weight (use configured or default)
+                if (!nodeIndexWeights.ContainsKey(SearchConstants.DefaultFtsIndexId))
+                {
+                    nodeIndexWeights[SearchConstants.DefaultFtsIndexId] = SearchConstants.DefaultIndexWeight;
+                }
+
+                indexWeights[nodeId] = nodeIndexWeights;
+            }
+            else
+            {
+                // No configured weights for this node, use default
+                indexWeights[nodeId] = new Dictionary<string, float>
+                {
+                    [SearchConstants.DefaultFtsIndexId] = SearchConstants.DefaultIndexWeight
+                };
+            }
         }
 
         return new RerankingConfig
