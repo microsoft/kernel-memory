@@ -14,6 +14,7 @@ namespace KernelMemory.Core.Search;
 public sealed class NodeSearchService
 {
     private readonly string _nodeId;
+    private readonly string _indexId;
     private readonly IFtsIndex _ftsIndex;
     private readonly IContentStorage _contentStorage;
 
@@ -23,9 +24,15 @@ public sealed class NodeSearchService
     /// <param name="nodeId">The node ID this service operates on.</param>
     /// <param name="ftsIndex">The FTS index for this node.</param>
     /// <param name="contentStorage">The content storage for loading full records.</param>
-    public NodeSearchService(string nodeId, IFtsIndex ftsIndex, IContentStorage contentStorage)
+    /// <param name="indexId">Optional index ID for this FTS index. Defaults to SearchConstants.DefaultFtsIndexId.</param>
+    public NodeSearchService(
+        string nodeId,
+        IFtsIndex ftsIndex,
+        IContentStorage contentStorage,
+        string indexId = SearchConstants.DefaultFtsIndexId)
     {
         this._nodeId = nodeId;
+        this._indexId = indexId;
         this._ftsIndex = ftsIndex;
         this._contentStorage = contentStorage;
     }
@@ -74,7 +81,7 @@ public sealed class NodeSearchService
                     {
                         RecordId = content.Id,
                         NodeId = this._nodeId,
-                        IndexId = "fts-main", // TODO: Get from index config
+                        IndexId = this._indexId,
                         ChunkId = null,
                         BaseRelevance = (float)match.Score,
                         Title = content.Title,

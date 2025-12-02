@@ -118,4 +118,10 @@ public static class SearchConstants
     /// Minimum relevance score.
     /// </summary>
     public const float MinRelevanceScore = 0.0f;
+
+    /// <summary>
+    /// Default FTS index ID used when not specified in configuration.
+    /// This is the identifier assigned to search results from the full-text search index.
+    /// </summary>
+    public const string DefaultFtsIndexId = "fts-main";
 }
