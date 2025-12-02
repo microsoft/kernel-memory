@@ -131,6 +131,36 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
         AnsiConsole.MarkupLine("[cyan]km search \"emergency contacts\" --min-relevance 0.7[/]");
         AnsiConsole.MarkupLine("[dim]Show only highly relevant emergency contact info[/]");
         AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold]Boolean operators - AND, OR[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"docker AND kubernetes\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find documents containing both docker and kubernetes[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"python OR javascript\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find documents with either python or javascript[/]");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold]Complex queries with parentheses[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"vacation AND (beach OR mountain)\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find vacation plans for beach or mountain trips[/]");
+        AnsiConsole.MarkupLine("[cyan]km search \"title:api AND (content:rest OR content:graphql)\"[/]");
+        AnsiConsole.MarkupLine("[dim]Find API docs about REST or GraphQL[/]");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold]MongoDB JSON query format[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"kubernetes\"}'[/]");
+        AnsiConsole.MarkupLine("[dim]Alternative JSON syntax for simple queries[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '{\"$and\": [{\"title\": \"api\"}, {\"content\": \"rest\"}]}'[/]");
+        AnsiConsole.MarkupLine("[dim]JSON format for complex boolean queries[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '{\"$text\": {\"$search\": \"full text query\"}}'[/]");
+        AnsiConsole.MarkupLine("[dim]Full-text search across all fields[/]");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[bold]JSON format - escaping special characters[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"quotes: \\\"hello\\\"\"}'[/]");
+        AnsiConsole.MarkupLine("[dim]Escape quotes in JSON with backslash[/]");
+        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"path\\\\to\\\\file\"}'[/]");
+        AnsiConsole.MarkupLine("[dim]Escape backslashes in JSON (use double backslash)[/]");
+        AnsiConsole.WriteLine();
     }
 
     private void ShowPutExamples()
