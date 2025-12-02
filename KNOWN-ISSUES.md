@@ -86,21 +86,7 @@ km search 'content:"user:password"'
 
 ## Configuration Limitations
 
-### 4. Index ID Hardcoded
-
-**Status:** Known limitation
-
-**Issue:** Index ID is hardcoded as `"fts-main"` instead of being loaded from configuration.
-
-**Location:** `src/Core/Search/NodeSearchService.cs:77`
-
-**Impact:** Cannot configure multiple indexes per node.
-
-**Fix Required:** Load index configuration from node settings.
-
----
-
-### 5. Index Weights Not Configurable
+### 4. Index Weights Not Configurable
 
 **Status:** Known limitation
 
