@@ -16,5 +16,8 @@ public enum EmbeddingsTypes
     OpenAI,
 
     /// <summary>Azure OpenAI Service</summary>
-    AzureOpenAI
+    AzureOpenAI,
+
+    /// <summary>Hugging Face Inference API</summary>
+    HuggingFace
 }
