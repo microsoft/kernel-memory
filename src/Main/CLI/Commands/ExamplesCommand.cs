@@ -147,18 +147,18 @@ public sealed class ExamplesCommand : Command<ExamplesCommand.Settings>
         AnsiConsole.WriteLine();
 
         AnsiConsole.MarkupLine("[bold]MongoDB JSON query format[/]");
-        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"kubernetes\"}'[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"content\": \"kubernetes\"}'")}[/]");
         AnsiConsole.MarkupLine("[dim]Alternative JSON syntax for simple queries[/]");
-        AnsiConsole.MarkupLine("[cyan]km search '{\"$and\": [{\"title\": \"api\"}, {\"content\": \"rest\"}]}'[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"$and\": [{\"title\": \"api\"}, {\"content\": \"rest\"}]}'")}[/]");
         AnsiConsole.MarkupLine("[dim]JSON format for complex boolean queries[/]");
-        AnsiConsole.MarkupLine("[cyan]km search '{\"$text\": {\"$search\": \"full text query\"}}'[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"$text\": {\"$search\": \"full text query\"}}'")}[/]");
         AnsiConsole.MarkupLine("[dim]Full-text search across all fields[/]");
         AnsiConsole.WriteLine();
 
         AnsiConsole.MarkupLine("[bold]JSON format - escaping special characters[/]");
-        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"quotes: \\\"hello\\\"\"}'[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"content\": \"quotes: \\\"hello\\\"\"}'")}[/]");
         AnsiConsole.MarkupLine("[dim]Escape quotes in JSON with backslash[/]");
-        AnsiConsole.MarkupLine("[cyan]km search '{\"content\": \"path\\\\to\\\\file\"}'[/]");
+        AnsiConsole.MarkupLine($"[cyan]{Markup.Escape("km search '{\"content\": \"path\\\\to\\\\file\"}'")}[/]");
         AnsiConsole.MarkupLine("[dim]Escape backslashes in JSON (use double backslash)[/]");
         AnsiConsole.WriteLine();
     }
