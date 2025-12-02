@@ -907,5 +907,48 @@ public sealed class SearchEndToEndTests : IDisposable
         Assert.Contains(this._insertedIds["doc4"], resultIds);
     }
 
+    [Fact]
+    public async Task KnownIssue1_NOTWithSingleQuotedReservedWord_ExcludesCorrectly()
+    {
+        // Single-quoted reserved words in NOT should be excluded correctly
+        // Bug: NOT 'AND' was searching for literal "'AND'" instead of "AND"
+
+        // Arrange
+        await this.InsertAsync("doc1", "Meeting with Alice AND Bob tomorrow").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Regular meeting notes").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Project status update").ConfigureAwait(false);
+
+        // Act: NOT with single-quoted AND (reserved word) - should exclude docs containing literal AND
+        var response = await this.SearchAsync("NOT 'AND'").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc3 (not containing "AND")
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains "AND"
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+    }
+
+    [Fact]
+    public async Task KnownIssue1_NOTWithDoubleQuotedReservedWord_ExcludesCorrectly()
+    {
+        // Double-quoted reserved words in NOT should be excluded correctly
+
+        // Arrange
+        await this.InsertAsync("doc1", "This is NOT important").ConfigureAwait(false);
+        await this.InsertAsync("doc2", "Regular document content").ConfigureAwait(false);
+        await this.InsertAsync("doc3", "Something else entirely").ConfigureAwait(false);
+
+        // Act: NOT with double-quoted NOT (reserved word) - should exclude docs containing literal NOT
+        var response = await this.SearchAsync("NOT \"NOT\"").ConfigureAwait(false);
+
+        // Assert: Should return doc2 and doc3 (not containing "NOT")
+        Assert.Equal(2, response.TotalResults);
+        var resultIds = response.Results.Select(r => r.Id).ToHashSet();
+        Assert.DoesNotContain(this._insertedIds["doc1"], resultIds); // Contains "NOT"
+        Assert.Contains(this._insertedIds["doc2"], resultIds);
+        Assert.Contains(this._insertedIds["doc3"], resultIds);
+    }
+
     #endregion
 }

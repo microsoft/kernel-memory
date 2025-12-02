@@ -161,12 +161,13 @@ public sealed class InfixQueryParser : IQueryParser
                 continue;
             }
 
-            // Quoted string
-            if (query[i] == '"')
+            // Quoted string (double or single quotes)
+            if (query[i] == '"' || query[i] == '\'')
             {
+                var quoteChar = query[i];
                 i++;
                 var start = i;
-                while (i < query.Length && query[i] != '"')
+                while (i < query.Length && query[i] != quoteChar)
                 {
                     i++;
                 }
