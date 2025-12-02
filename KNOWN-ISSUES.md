@@ -84,33 +84,6 @@ km search 'content:"user:password"'
 
 ---
 
-### 4. Reserved Words Cannot Be Searched
-
-**Status:** Known limitation
-
-**Issue:** Cannot search for the literal words "AND", "OR", "NOT" even with quotes.
-
-**Example:**
-```bash
-km put "this is NOT important"
-km search "NOT"
-# Expected: Find the document
-# Actual: Parser error "Unexpected end of query"
-```
-
-**Root Cause:**
-- Tokenizer treats AND/OR/NOT as reserved keywords (case-insensitive)
-- Even quoted, they're tokenized as operators
-- Parser expects operands after NOT
-
-**Workaround:** None. These words cannot be searched.
-
-**Fix Required:**
-- Tokenizer must recognize quotes and treat content literally
-- Major parser refactoring needed
-
----
-
 ## Testing Gaps
 
 These bugs were discovered through comprehensive E2E testing. Previous tests only verified:
@@ -127,16 +100,3 @@ But did NOT test:
 
 ---
 
-## Resolved Issues
-
-### BM25 Score Normalization (FIXED)
-- **Issue:** All searches returned 0 results despite FTS finding matches
-- **Cause:** BM25 scores (~0.000001) filtered by MinRelevance=0.3
-- **Fix:** Exponential normalization maps [-10, 0] → [0.37, 1.0]
-- **Commit:** 4cb283e
-
-### Field-Specific Equal Operator (FIXED)
-- **Issue:** `content:summaries` failed with SQLite error
-- **Cause:** Equal operator didn't extract FTS queries
-- **Fix:** ExtractComparison now handles both Contains and Equal
-- **Commit:** 59bf3f2

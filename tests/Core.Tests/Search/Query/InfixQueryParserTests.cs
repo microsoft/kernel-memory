@@ -341,4 +341,146 @@ public sealed class InfixQueryParserTests
         Assert.Equal("content", compNode.Field!.FieldPath);
         Assert.Equal("test:value with:colons", compNode.Value!.AsString());
     }
+
+    // Issue #4: Reserved Words Cannot Be Searched
+    // These tests verify that reserved words (AND, OR, NOT) can be searched
+    // when they appear within quoted strings.
+
+    [Fact]
+    public void Parse_QuotedReservedWordNOT_ReturnsTextSearchNode()
+    {
+        // Issue #4: Should be able to search for the literal word "NOT"
+        // When quoted, reserved words should be treated as literal text
+        var result = this._parser.Parse("\"NOT\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("NOT", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedReservedWordAND_ReturnsTextSearchNode()
+    {
+        // Issue #4: Should be able to search for the literal word "AND"
+        var result = this._parser.Parse("\"AND\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("AND", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedReservedWordOR_ReturnsTextSearchNode()
+    {
+        // Issue #4: Should be able to search for the literal word "OR"
+        var result = this._parser.Parse("\"OR\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("OR", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedPhraseContainingAND_ReturnsTextSearchNode()
+    {
+        // Issue #4: Quoted phrases containing reserved words should be literal
+        var result = this._parser.Parse("\"Alice AND Bob\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("Alice AND Bob", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedPhraseContainingOR_ReturnsTextSearchNode()
+    {
+        // Issue #4: Quoted phrases containing reserved words should be literal
+        var result = this._parser.Parse("\"this OR that\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("this OR that", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedPhraseContainingNOT_ReturnsTextSearchNode()
+    {
+        // Issue #4: Quoted phrases containing reserved words should be literal
+        var result = this._parser.Parse("\"this is NOT important\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("this is NOT important", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_QuotedReservedWordWithBooleanOperator_ReturnsLogicalNode()
+    {
+        // Issue #4: Should be able to mix quoted reserved words with actual operators
+        var result = this._parser.Parse("\"NOT\" AND kubernetes");
+
+        var logicalNode = Assert.IsType<LogicalNode>(result);
+        Assert.Equal(LogicalOperator.And, logicalNode.Operator);
+        Assert.Equal(2, logicalNode.Children.Length);
+
+        var left = Assert.IsType<TextSearchNode>(logicalNode.Children[0]);
+        Assert.Equal("NOT", left.SearchText);
+
+        var right = Assert.IsType<TextSearchNode>(logicalNode.Children[1]);
+        Assert.Equal("kubernetes", right.SearchText);
+    }
+
+    [Fact]
+    public void Parse_FieldWithQuotedReservedWordValue_ReturnsComparisonNode()
+    {
+        // Issue #4: Field values containing reserved words should be literal
+        var result = this._parser.Parse("content:\"NOT\"");
+
+        var compNode = Assert.IsType<ComparisonNode>(result);
+        Assert.Equal("content", compNode.Field!.FieldPath);
+        Assert.Equal("NOT", compNode.Value!.AsString());
+    }
+
+    [Fact]
+    public void Parse_FieldContainsWithQuotedReservedPhrase_ReturnsComparisonNode()
+    {
+        // Issue #4: Field contains with reserved words in phrase
+        var result = this._parser.Parse("content:~\"Alice AND Bob\"");
+
+        var compNode = Assert.IsType<ComparisonNode>(result);
+        Assert.Equal("content", compNode.Field!.FieldPath);
+        Assert.Equal(ComparisonOperator.Contains, compNode.Operator);
+        Assert.Equal("Alice AND Bob", compNode.Value!.AsString());
+    }
+
+    [Fact]
+    public void Parse_ComplexQueryWithQuotedReservedWords_ReturnsCorrectAST()
+    {
+        // Issue #4: Complex query mixing quoted reserved words with operators
+        var result = this._parser.Parse("\"AND\" OR \"OR\" AND \"NOT\"");
+
+        // Precedence: "AND" OR ("OR" AND "NOT")
+        var orNode = Assert.IsType<LogicalNode>(result);
+        Assert.Equal(LogicalOperator.Or, orNode.Operator);
+
+        var left = Assert.IsType<TextSearchNode>(orNode.Children[0]);
+        Assert.Equal("AND", left.SearchText);
+
+        var andNode = Assert.IsType<LogicalNode>(orNode.Children[1]);
+        Assert.Equal(LogicalOperator.And, andNode.Operator);
+    }
+
+    [Fact]
+    public void Parse_LowercaseQuotedReservedWords_ReturnsTextSearchNode()
+    {
+        // Issue #4: Lowercase reserved words in quotes should also be literal
+        var result = this._parser.Parse("\"and\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("and", textNode.SearchText);
+    }
+
+    [Fact]
+    public void Parse_MixedCaseQuotedReservedWords_ReturnsTextSearchNode()
+    {
+        // Issue #4: Mixed case reserved words in quotes should also be literal
+        var result = this._parser.Parse("\"And Or Not\"");
+
+        var textNode = Assert.IsType<TextSearchNode>(result);
+        Assert.Equal("And Or Not", textNode.SearchText);
+    }
 }
