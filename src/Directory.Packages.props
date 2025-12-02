@@ -32,6 +32,14 @@
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <!-- Testing -->
     <PackageVersion Include="Moq" Version="4.20.72" />
+    <!-- Logging - Serilog -->
+    <PackageVersion Include="Serilog" Version="4.1.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="Serilog.Enrichers.Span" Version="3.1.0" />
+    <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />
   </ItemGroup>
   <!-- Missing Strong Name (CS8002) -->
   <ItemGroup>

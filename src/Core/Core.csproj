@@ -10,6 +10,14 @@
       <PackageReference Include="cuid.net" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
       <PackageReference Include="Parlot" />
+      <!-- Logging - Serilog -->
+      <PackageReference Include="Serilog" />
+      <PackageReference Include="Serilog.Extensions.Logging" />
+      <PackageReference Include="Serilog.Sinks.Console" />
+      <PackageReference Include="Serilog.Sinks.File" />
+      <PackageReference Include="Serilog.Sinks.Async" />
+      <PackageReference Include="Serilog.Enrichers.Span" />
+      <PackageReference Include="Serilog.Formatting.Compact" />
     </ItemGroup>
 
     <ItemGroup>

@@ -23,6 +23,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- Logging - Serilog for tests -->
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.XUnit" />
+    <PackageReference Include="Serilog.Enrichers.Span" />
   </ItemGroup>
 
   <ItemGroup>
