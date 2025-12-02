@@ -249,7 +249,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         var generator = new OpenAIEmbeddingGenerator(
             httpClient, "test-key", "model", 1536, true, null, this._loggerMock.Object);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert - TaskCanceledException inherits from OperationCanceledException

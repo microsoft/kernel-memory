@@ -314,7 +314,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         using var cache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object);
         var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
         var vector = new float[] { 0.1f, 0.2f, 0.3f };
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert
@@ -328,7 +328,7 @@ public sealed class SqliteEmbeddingCacheTests : IDisposable
         // Arrange
         using var cache = new SqliteEmbeddingCache(this._tempDbPath, CacheModes.ReadWrite, this._loggerMock.Object);
         var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, "test text");
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert

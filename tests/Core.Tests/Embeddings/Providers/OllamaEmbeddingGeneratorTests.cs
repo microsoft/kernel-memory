@@ -220,7 +220,7 @@ public sealed class OllamaEmbeddingGeneratorTests
         var generator = new OllamaEmbeddingGenerator(
             httpClient, "http://localhost:11434", "qwen3-embedding", 1024, true, this._loggerMock.Object);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert - TaskCanceledException inherits from OperationCanceledException

@@ -228,7 +228,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
         var generator = new AzureOpenAIEmbeddingGenerator(
             httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert - TaskCanceledException inherits from OperationCanceledException

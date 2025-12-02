@@ -283,7 +283,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         var generator = new HuggingFaceEmbeddingGenerator(
             httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert - TaskCanceledException inherits from OperationCanceledException

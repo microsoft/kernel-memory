@@ -459,7 +459,7 @@ public sealed class CachedEmbeddingGeneratorTests
             this._cacheMock.Object,
             this._loggerMock.Object);
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert
