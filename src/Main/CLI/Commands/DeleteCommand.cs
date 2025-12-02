@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.OutputFormatters;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -43,7 +44,8 @@ public class DeleteCommand : BaseCommand<DeleteCommandSettings>
     /// Initializes a new instance of the <see cref="DeleteCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public DeleteCommand(AppConfig config) : base(config)
+    /// <param name="loggerFactory">Logger factory for creating loggers (injected by DI).</param>
+    public DeleteCommand(AppConfig config, ILoggerFactory loggerFactory) : base(config, loggerFactory)
     {
     }
 

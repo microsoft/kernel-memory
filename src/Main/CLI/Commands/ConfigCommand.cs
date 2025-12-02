@@ -8,6 +8,7 @@ using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Infrastructure;
 using KernelMemory.Main.CLI.Models;
 using KernelMemory.Main.CLI.OutputFormatters;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -49,10 +50,12 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
     /// Initializes a new instance of the <see cref="ConfigCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
+    /// <param name="loggerFactory">Logger factory for creating loggers (injected by DI).</param>
     /// <param name="configPathService">Service providing the config file path (injected by DI).</param>
     public ConfigCommand(
         AppConfig config,
-        ConfigPathService configPathService) : base(config)
+        ILoggerFactory loggerFactory,
+        ConfigPathService configPathService) : base(config, loggerFactory)
     {
         this._configPathService = configPathService ?? throw new ArgumentNullException(nameof(configPathService));
     }

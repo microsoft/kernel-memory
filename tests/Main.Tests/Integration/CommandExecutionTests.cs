@@ -2,6 +2,7 @@
 
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Commands;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Integration;
@@ -64,7 +65,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Content = "Test content"
         };
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
 
         var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
@@ -83,7 +84,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Content = "Test content to create DB"
         };
-        var putCommand = new UpsertCommand(config);
+        var putCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
         await putCommand.ExecuteAsync(putContext, putSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -93,7 +94,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Id = "nonexistent-id-12345"
         };
-        var command = new GetCommand(config);
+        var command = new GetCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
         var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
@@ -112,7 +113,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Id = "nonexistent-id-12345"
         };
-        var command = new DeleteCommand(config);
+        var command = new DeleteCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "delete", null);
 
         var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
@@ -131,7 +132,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Content = "Temp content to create database"
         };
-        var putCommand = new UpsertCommand(config);
+        var putCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
         await putCommand.ExecuteAsync(context, putSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -141,7 +142,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Id = "temp-id"
         };
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database
@@ -149,7 +150,7 @@ public sealed class CommandExecutionTests : IDisposable
         {
             ConfigPath = this._configPath
         };
-        var command = new ListCommand(config);
+        var command = new ListCommand(config, NullLoggerFactory.Instance);
 
         var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
@@ -165,7 +166,7 @@ public sealed class CommandExecutionTests : IDisposable
         {
             ConfigPath = this._configPath
         };
-        var command = new NodesCommand(config);
+        var command = new NodesCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(["--config", this._configPath], new EmptyRemainingArguments(), "nodes", null);
 
         var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
@@ -183,7 +184,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath
         };
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -202,7 +203,7 @@ public sealed class CommandExecutionTests : IDisposable
             ShowNodes = true
         };
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -221,7 +222,7 @@ public sealed class CommandExecutionTests : IDisposable
             ShowCache = true
         };
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
         var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
@@ -240,7 +241,7 @@ public sealed class CommandExecutionTests : IDisposable
             ConfigPath = this._configPath,
             Content = "Test content for full flag"
         };
-        var putCommand = new UpsertCommand(config);
+        var putCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var putContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "put", null);
         await putCommand.ExecuteAsync(putContext, putSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -252,7 +253,7 @@ public sealed class CommandExecutionTests : IDisposable
             Id = "some-id",
             ShowFull = true
         };
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var getContext = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "get", null);
 
         var result = await getCommand.ExecuteAsync(getContext, getSettings, CancellationToken.None).ConfigureAwait(false);

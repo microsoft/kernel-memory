@@ -162,14 +162,15 @@ public sealed class EnvironmentDetectorTests : IDisposable
     [Fact]
     public void IsProduction_WhenDevelopment_ShouldReturnFalse()
     {
-        // Arrange - clear both env vars to ensure isolation
+        // Arrange - set DOTNET_ENVIRONMENT to Development (takes precedence over ASPNETCORE_ENVIRONMENT)
+        // Set both to Development to ensure no Production leaks from other tests
         Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Development");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, string.Empty);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
 
-        // Assert
+        // Assert - Development environment should not be Production
         Assert.False(result);
     }
 

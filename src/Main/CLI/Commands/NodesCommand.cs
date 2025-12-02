@@ -2,6 +2,7 @@
 
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.OutputFormatters;
+using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.CLI.Commands;
@@ -22,7 +23,8 @@ public class NodesCommand : BaseCommand<NodesCommandSettings>
     /// Initializes a new instance of the <see cref="NodesCommand"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    public NodesCommand(AppConfig config) : base(config)
+    /// <param name="loggerFactory">Logger factory for creating loggers (injected by DI).</param>
+    public NodesCommand(AppConfig config, ILoggerFactory loggerFactory) : base(config, loggerFactory)
     {
     }
 
