@@ -3,6 +3,7 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Main.CLI.Commands;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Integration;
@@ -82,7 +83,7 @@ public sealed class ConfigCommandTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -135,7 +136,7 @@ public sealed class ConfigCommandTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -193,7 +194,7 @@ public sealed class ConfigCommandTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),
@@ -235,7 +236,7 @@ public sealed class ConfigCommandTests : IDisposable
 
         var config = ConfigParser.LoadFromFile(this._configPath);
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(newConfigPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
 
         var settings = new ConfigCommandSettings
         {
@@ -271,7 +272,7 @@ public sealed class ConfigCommandTests : IDisposable
 
         var config = ConfigParser.LoadFromFile(this._configPath);
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
 
         var settings = new ConfigCommandSettings
         {
@@ -322,7 +323,7 @@ public sealed class ConfigCommandTests : IDisposable
 
         var config = AppConfig.CreateDefault();
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(missingConfigPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
 
         var settings = new ConfigCommandSettings
         {
@@ -369,7 +370,7 @@ public sealed class ConfigCommandTests : IDisposable
         // Arrange
         var config = ConfigParser.LoadFromFile(this._configPath);
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
 
         var settings = new ConfigCommandSettings
         {
@@ -417,7 +418,7 @@ public sealed class ConfigCommandTests : IDisposable
         // Arrange
         var config = ConfigParser.LoadFromFile(this._configPath);
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
 
         var settings = new ConfigCommandSettings
         {

@@ -15,27 +15,35 @@ namespace KernelMemory.Main.CLI.Commands;
 
 /// <summary>
 /// Base class for all CLI commands providing shared initialization logic.
-/// Config is injected via constructor (loaded once in CliApplicationBuilder).
+/// Config and LoggerFactory are injected via constructor (loaded once in CliApplicationBuilder).
 /// </summary>
 /// <typeparam name="TSettings">The command settings type, must inherit from GlobalOptions.</typeparam>
 public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
     where TSettings : GlobalOptions
 {
     private readonly AppConfig _config;
+    private readonly ILoggerFactory _loggerFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseCommand{TSettings}"/> class.
     /// </summary>
     /// <param name="config">Application configuration (injected by DI).</param>
-    protected BaseCommand(AppConfig config)
+    /// <param name="loggerFactory">Logger factory for creating loggers (injected by DI).</param>
+    protected BaseCommand(AppConfig config, ILoggerFactory loggerFactory)
     {
         this._config = config ?? throw new ArgumentNullException(nameof(config));
+        this._loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     /// <summary>
     /// Gets the injected application configuration.
     /// </summary>
     protected AppConfig Config => this._config;
+
+    /// <summary>
+    /// Gets the injected logger factory.
+    /// </summary>
+    protected ILoggerFactory LoggerFactory => this._loggerFactory;
 
     /// <summary>
     /// Initializes command dependencies: node and formatter.
@@ -121,38 +129,16 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
 
         // Create dependencies
         var cuidGenerator = new CuidGenerator();
-        var logger = this.CreateLogger();
+        var logger = this._loggerFactory.CreateLogger<ContentStorageService>();
 
-        // Create search indexes from node configuration
-        var loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Warning);
-        });
-        var searchIndexes = SearchIndexFactory.CreateIndexes(node.SearchIndexes, loggerFactory);
+        // Create search indexes from node configuration using injected logger factory
+        var searchIndexes = SearchIndexFactory.CreateIndexes(node.SearchIndexes, this._loggerFactory);
 
         // Create storage service with search indexes
         var storage = new ContentStorageService(context, cuidGenerator, logger, searchIndexes);
 
         // Create and return content service, passing search indexes for proper disposal
         return new ContentService(storage, node.Id, searchIndexes);
-    }
-
-    /// <summary>
-    /// Creates a simple console logger for ContentStorageService.
-    /// </summary>
-    /// <returns>A logger instance.</returns>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "LoggerFactory lifetime is managed by the logger infrastructure. CLI commands are short-lived and disposing would terminate logging prematurely.")]
-    private ILogger<ContentStorageService> CreateLogger()
-    {
-        var loggerFactory = LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Warning);
-        });
-
-        return loggerFactory.CreateLogger<ContentStorageService>();
     }
 
     /// <summary>

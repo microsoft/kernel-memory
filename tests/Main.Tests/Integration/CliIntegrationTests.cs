@@ -3,6 +3,7 @@ using System.Text.Json;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
 using KernelMemory.Main.CLI.Commands;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Integration;
@@ -70,7 +71,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Test content"
         };
 
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
 
         // Act
@@ -95,7 +96,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
 
         // Act
@@ -112,7 +113,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
     }
@@ -133,7 +134,7 @@ public sealed class CliIntegrationTests : IDisposable
             MimeType = "text/markdown"
         };
 
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
 
         // Act
@@ -157,7 +158,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -169,7 +170,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var exitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -189,7 +190,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Content = "Some content to create the DB"
         };
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         await upsertCommand.ExecuteAsync(CreateTestContext("put"), upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now try to get non-existent ID from existing DB
@@ -200,7 +201,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = "non-existent-id-12345"
         };
 
-        var command = new GetCommand(config);
+        var command = new GetCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("get");
 
         // Act
@@ -225,7 +226,7 @@ public sealed class CliIntegrationTests : IDisposable
             Title = "Full Title"
         };
 
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -238,7 +239,7 @@ public sealed class CliIntegrationTests : IDisposable
             ShowFull = true
         };
 
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var exitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -257,7 +258,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Temporary content to create database",
             Id = "temp-id"
         };
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -268,7 +269,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = "temp-id"
         };
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database
@@ -278,7 +279,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
 
-        var command = new ListCommand(config);
+        var command = new ListCommand(config, NullLoggerFactory.Instance);
         var listContext = CreateTestContext("list");
 
         // Act
@@ -304,7 +305,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "Temporary content to create database",
             Id = "temp-id-human"
         };
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -315,7 +316,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = "temp-id-human"
         };
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Now test list on empty database with human format
@@ -325,7 +326,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "human"  // Test human format, not just JSON
         };
 
-        var command = new ListCommand(config);
+        var command = new ListCommand(config, NullLoggerFactory.Instance);
         var listContext = CreateTestContext("list");
 
         // Act
@@ -349,7 +350,7 @@ public sealed class CliIntegrationTests : IDisposable
             Content = "List test content"
         };
 
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -360,7 +361,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
 
-        var listCommand = new ListCommand(config);
+        var listCommand = new ListCommand(config, NullLoggerFactory.Instance);
         var exitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -372,7 +373,7 @@ public sealed class CliIntegrationTests : IDisposable
     {
         // Arrange - Insert multiple items
         var config = ConfigParser.LoadFromFile(this._configPath);
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
 
         for (int i = 0; i < 5; i++)
@@ -395,7 +396,7 @@ public sealed class CliIntegrationTests : IDisposable
             Take = 2
         };
 
-        var listCommand = new ListCommand(config);
+        var listCommand = new ListCommand(config, NullLoggerFactory.Instance);
         var exitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -416,7 +417,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -428,7 +429,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -442,7 +443,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeUserError, getExitCode);
     }
@@ -461,7 +462,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("put");
         await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
 
@@ -474,7 +475,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = customId
         };
 
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         var exitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
@@ -498,7 +499,7 @@ public sealed class CliIntegrationTests : IDisposable
             Id = testId,
             Tags = "e2e,test"
         };
-        var upsertCommand = new UpsertCommand(config);
+        var upsertCommand = new UpsertCommand(config, NullLoggerFactory.Instance);
         var upsertExitCode = await upsertCommand.ExecuteAsync(context, upsertSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, upsertExitCode);
 
@@ -509,7 +510,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = testId
         };
-        var getCommand = new GetCommand(config);
+        var getCommand = new GetCommand(config, NullLoggerFactory.Instance);
         var getExitCode = await getCommand.ExecuteAsync(context, getSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, getExitCode);
 
@@ -519,7 +520,7 @@ public sealed class CliIntegrationTests : IDisposable
             ConfigPath = this._configPath,
             Format = "json"
         };
-        var listCommand = new ListCommand(config);
+        var listCommand = new ListCommand(config, NullLoggerFactory.Instance);
         var listExitCode = await listCommand.ExecuteAsync(context, listSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, listExitCode);
 
@@ -530,7 +531,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json",
             Id = testId
         };
-        var deleteCommand = new DeleteCommand(config);
+        var deleteCommand = new DeleteCommand(config, NullLoggerFactory.Instance);
         var deleteExitCode = await deleteCommand.ExecuteAsync(context, deleteSettings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(Constants.ExitCodeSuccess, deleteExitCode);
 
@@ -550,7 +551,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "json"
         };
 
-        var command = new NodesCommand(config);
+        var command = new NodesCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("nodes");
 
         // Act
@@ -571,7 +572,7 @@ public sealed class CliIntegrationTests : IDisposable
             Format = "yaml"
         };
 
-        var command = new NodesCommand(config);
+        var command = new NodesCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("nodes");
 
         // Act
@@ -593,7 +594,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -616,7 +617,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -639,7 +640,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = CreateTestContext("config");
 
         // Act
@@ -692,7 +693,7 @@ public sealed class CliIntegrationTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = CreateTestContext("config");
 
         // Act

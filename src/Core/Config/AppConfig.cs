@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.Validation;
+using KernelMemory.Core.Logging;
 
 namespace KernelMemory.Core.Config;
 
@@ -35,6 +36,13 @@ public sealed class AppConfig : IValidatable
     /// </summary>
     [JsonPropertyName("search")]
     public SearchConfig? Search { get; set; }
+
+    /// <summary>
+    /// Logging configuration settings
+    /// Controls log level, file output, and format
+    /// </summary>
+    [JsonPropertyName("logging")]
+    public LoggingConfig? Logging { get; set; }
 
     /// <summary>
     /// Validates the entire configuration tree

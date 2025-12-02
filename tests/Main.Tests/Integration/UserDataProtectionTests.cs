@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Commands;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Integration;
@@ -86,7 +87,7 @@ public sealed class UserDataProtectionTests : IDisposable
             Content = "CRITICAL BUG: This should NOT go to user data!"
         };
 
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
 
         // This context has --config flag, but BaseCommand reads from settings.ConfigPath!
         var context = new CommandContext(
@@ -146,7 +147,7 @@ public sealed class UserDataProtectionTests : IDisposable
             Content = "Test content in temp directory"
         };
 
-        var command = new UpsertCommand(config);
+        var command = new UpsertCommand(config, NullLoggerFactory.Instance);
         var context = new CommandContext(
             new[] { "--config", this._configPath },
             new EmptyRemainingArguments(),

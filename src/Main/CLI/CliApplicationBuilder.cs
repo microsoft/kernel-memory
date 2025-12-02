@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using KernelMemory.Core.Config;
+using KernelMemory.Core.Logging;
 using KernelMemory.Main.CLI.Commands;
 using KernelMemory.Main.CLI.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.CLI;
@@ -45,25 +48,42 @@ public sealed class CliApplicationBuilder
     /// </summary>
     /// <param name="args">Command line arguments (used to extract --config flag).</param>
     /// <returns>A configured CommandApp ready to execute commands.</returns>
+    /// <remarks>
+    /// The ILoggerFactory is intentionally not disposed here. CLI commands are short-lived
+    /// and process exit will flush Serilog sinks. Explicit disposal would require changes
+    /// to the Spectre.Console.Cli framework integration. The short-lived nature of CLI
+    /// commands makes this acceptable - logs are flushed when the process terminates.
+    /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "ILoggerFactory lifetime is managed by DI container and must remain alive for duration of CLI execution. Process exit flushes Serilog sinks.")]
     public CommandApp Build(string[]? args = null)
     {
+        var actualArgs = args ?? [];
+
         // 1. Determine config path from args early (before command execution)
-        string configPath = this.DetermineConfigPath(args ?? []);
+        string configPath = this.DetermineConfigPath(actualArgs);
 
         // 2. Load config ONCE (happens before any command runs)
         AppConfig config = ConfigParser.LoadFromFile(configPath);
 
-        // 3. Create DI container and register AppConfig as singleton
+        // 3. Parse logging options from args and config
+        var loggingConfig = this.BuildLoggingConfig(actualArgs, config);
+
+        // 4. Create logger factory using Serilog
+        ILoggerFactory loggerFactory = SerilogFactory.CreateLoggerFactory(loggingConfig);
+
+        // 5. Create DI container and register services
         ServiceCollection services = new();
         services.AddSingleton(config);
+        services.AddSingleton(loggerFactory);
 
         // Also register the config path so commands can access it
         services.AddSingleton(new ConfigPathService(configPath));
 
-        // 4. Create type registrar for Spectre.Console.Cli DI integration
+        // 6. Create type registrar for Spectre.Console.Cli DI integration
         TypeRegistrar registrar = new(services);
 
-        // 5. Build CommandApp with DI support
+        // 7. Build CommandApp with DI support
         CommandApp app = new(registrar);
         this.Configure(app);
         return app;
@@ -91,6 +111,68 @@ public sealed class CliApplicationBuilder
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             Constants.DefaultConfigDirName,
             Constants.DefaultConfigFileName);
+    }
+
+    /// <summary>
+    /// Builds logging configuration from CLI args and app config.
+    /// CLI args take precedence over config file settings.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <param name="config">Application configuration.</param>
+    /// <returns>Logging configuration for SerilogFactory.</returns>
+    private LoggingConfig BuildLoggingConfig(string[] args, AppConfig config)
+    {
+        // Start with config file settings or defaults
+        var loggingConfig = config.Logging ?? new LoggingConfig();
+
+        // Parse --verbosity / -v from args (takes precedence)
+        var verbosity = this.ParseArgValue(args, "--verbosity", "-v");
+        if (verbosity != null)
+        {
+            loggingConfig.Level = verbosity.ToLowerInvariant() switch
+            {
+                "silent" => LogEventLevel.Fatal,
+                "quiet" => LogEventLevel.Warning,
+                "verbose" => LogEventLevel.Debug,
+                _ => LogEventLevel.Information // "normal" and default
+            };
+        }
+
+        // Parse --log-file from args (takes precedence)
+        var logFile = this.ParseArgValue(args, "--log-file", null);
+        if (logFile != null)
+        {
+            loggingConfig.FilePath = logFile;
+        }
+
+        return loggingConfig;
+    }
+
+    /// <summary>
+    /// Parses a value for a command line argument.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <param name="longName">Long form of argument (e.g., "--verbosity").</param>
+    /// <param name="shortName">Short form of argument (e.g., "-v"), or null if none.</param>
+    /// <returns>The argument value, or null if not found or if no value follows the argument.</returns>
+    private string? ParseArgValue(string[] args, string longName, string? shortName)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == longName || (shortName != null && args[i] == shortName))
+            {
+                // Check if there's a value following this argument
+                if (i + 1 < args.Length)
+                {
+                    return args[i + 1];
+                }
+
+                // Argument found but no value provided
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

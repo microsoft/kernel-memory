@@ -2,6 +2,7 @@
 using KernelMemory.Main.CLI;
 using KernelMemory.Main.CLI.Commands;
 using KernelMemory.Main.CLI.OutputFormatters;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Spectre.Console.Cli;
 
@@ -81,7 +82,7 @@ public sealed class BaseCommandTests
     /// </summary>
     private sealed class TestCommand : BaseCommand<GlobalOptions>
     {
-        public TestCommand() : base(CreateTestConfig())
+        public TestCommand() : base(CreateTestConfig(), NullLoggerFactory.Instance)
         {
         }
 

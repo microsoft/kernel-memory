@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
+using Serilog.Events;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -24,9 +25,13 @@ public class GlobalOptions : CommandSettings
     public string Format { get; init; } = "human";
 
     [CommandOption("-v|--verbosity")]
-    [Description("Verbosity: silent, quiet, normal, verbose")]
+    [Description("Log verbosity: silent, quiet, normal, verbose")]
     [DefaultValue("normal")]
     public string Verbosity { get; init; } = "normal";
+
+    [CommandOption("--log-file")]
+    [Description("Path to log file (enables file logging)")]
+    public string? LogFile { get; init; }
 
     [CommandOption("--no-color")]
     [Description("Disable colored output")]
@@ -50,5 +55,21 @@ public class GlobalOptions : CommandSettings
         }
 
         return ValidationResult.Success();
+    }
+
+    /// <summary>
+    /// Maps the verbosity string to a Serilog LogEventLevel.
+    /// silent = Fatal only, quiet = Warning+, normal = Information+, verbose = Debug+
+    /// </summary>
+    /// <returns>The corresponding Serilog LogEventLevel.</returns>
+    public LogEventLevel GetLogLevel()
+    {
+        return this.Verbosity.ToLowerInvariant() switch
+        {
+            "silent" => LogEventLevel.Fatal,
+            "quiet" => LogEventLevel.Warning,
+            "verbose" => LogEventLevel.Debug,
+            _ => LogEventLevel.Information // "normal" and default
+        };
     }
 }

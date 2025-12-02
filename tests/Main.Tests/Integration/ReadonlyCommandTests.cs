@@ -3,6 +3,7 @@ using System.Text.Json;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
 using KernelMemory.Main.CLI.Commands;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spectre.Console.Cli;
 
 namespace KernelMemory.Main.Tests.Integration;
@@ -81,7 +82,7 @@ public sealed class ReadonlyCommandTests : IDisposable
             Format = "json"
         };
 
-        var command = new ListCommand(config);
+        var command = new ListCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("list");
 
         // Act
@@ -117,7 +118,7 @@ public sealed class ReadonlyCommandTests : IDisposable
             Id = "test-id"
         };
 
-        var command = new GetCommand(config);
+        var command = new GetCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("get");
 
         // Act
@@ -152,7 +153,7 @@ public sealed class ReadonlyCommandTests : IDisposable
             Format = "json"
         };
 
-        var command = new NodesCommand(config);
+        var command = new NodesCommand(config, NullLoggerFactory.Instance);
         var context = CreateTestContext("nodes");
 
         // Act
@@ -188,7 +189,7 @@ public sealed class ReadonlyCommandTests : IDisposable
         };
 
         var configPathService = new KernelMemory.Main.CLI.Infrastructure.ConfigPathService(this._configPath);
-        var command = new ConfigCommand(config, configPathService);
+        var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = CreateTestContext("config");
 
         // Act
