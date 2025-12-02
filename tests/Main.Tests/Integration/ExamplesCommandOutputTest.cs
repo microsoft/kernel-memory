@@ -5,6 +5,7 @@ namespace KernelMemory.Main.Tests.Integration;
 /// <summary>
 /// Test that executes 'km examples' and verifies output contains expected sections.
 /// Uses bash execution to provide proper TTY for Spectre.Console.
+/// This test uses an isolated temp directory to avoid accessing ~/.km.
 /// </summary>
 public sealed class ExamplesCommandOutputTest
 {
@@ -18,15 +19,21 @@ public sealed class ExamplesCommandOutputTest
         var kmDll = Path.Combine(solutionRoot, "src/Main/bin/Debug/net10.0/KernelMemory.Main.dll");
         var outputFile = Path.Combine(Path.GetTempPath(), $"km-examples-test-{Guid.NewGuid():N}.txt");
 
+        // Create isolated temp directory for config to avoid accessing ~/.km
+        var tempDir = Path.Combine(Path.GetTempPath(), $"km-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tempDir);
+        var tempConfigPath = Path.Combine(tempDir, "config.json");
+
         Assert.True(File.Exists(kmDll), $"KernelMemory.Main.dll not found at {kmDll}");
 
         try
         {
-            // Act: Execute km examples via bash and capture output
+            // Act: Execute km examples via bash with isolated config path
+            // Note: --config must come AFTER the command name (Spectre.Console.Cli requirement)
             var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "bash",
-                Arguments = $"-c \"dotnet \\\"{kmDll}\\\" examples > \\\"{outputFile}\\\" 2>&1\"",
+                Arguments = $"-c \"dotnet \\\"{kmDll}\\\" examples --config \\\"{tempConfigPath}\\\" > \\\"{outputFile}\\\" 2>&1\"",
                 UseShellExecute = false
             });
 
@@ -79,9 +86,16 @@ public sealed class ExamplesCommandOutputTest
         }
         finally
         {
+            // Clean up output file
             if (File.Exists(outputFile))
             {
                 File.Delete(outputFile);
+            }
+
+            // Clean up temp directory
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, recursive: true);
             }
         }
     }
