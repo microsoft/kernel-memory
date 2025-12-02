@@ -215,11 +215,10 @@ public sealed class ExamplesCommandE2ETests : IDisposable
 
     #endregion
 
-    // NOTE: Escaping special characters tests disabled - Known limitations:
-    // 1. Quoted phrases like '"Alice AND Bob"' don't work - parser/FTS issues
-    // 2. Field queries with quoted values like 'content:"user:password"' fail with SQLite error
-    // 3. Literal reserved words like '"NOT"' cause parser errors
-    // These are known bugs that need investigation and fixes before examples can be shown to users
+    // NOTE: Some escaping special characters tests disabled - Known limitations:
+    // - Field queries with quoted values like 'content:"user:password"' fail with SQLite error
+    // FIXED: Quoted phrases like '"Alice AND Bob"' now work (see SearchEndToEndTests.KnownIssue2_*)
+    // FIXED: Literal reserved words like '"NOT"' now work correctly
 
     #region MongoDB JSON Format
 
