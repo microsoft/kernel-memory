@@ -48,8 +48,14 @@ public sealed class CliApplicationBuilder
     /// </summary>
     /// <param name="args">Command line arguments (used to extract --config flag).</param>
     /// <returns>A configured CommandApp ready to execute commands.</returns>
+    /// <remarks>
+    /// The ILoggerFactory is intentionally not disposed here. CLI commands are short-lived
+    /// and process exit will flush Serilog sinks. Explicit disposal would require changes
+    /// to the Spectre.Console.Cli framework integration. The short-lived nature of CLI
+    /// commands makes this acceptable - logs are flushed when the process terminates.
+    /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "ILoggerFactory lifetime is managed by DI container and must remain alive for duration of CLI execution")]
+        Justification = "ILoggerFactory lifetime is managed by DI container and must remain alive for duration of CLI execution. Process exit flushes Serilog sinks.")]
     public CommandApp Build(string[]? args = null)
     {
         var actualArgs = args ?? [];
@@ -148,14 +154,21 @@ public sealed class CliApplicationBuilder
     /// <param name="args">Command line arguments.</param>
     /// <param name="longName">Long form of argument (e.g., "--verbosity").</param>
     /// <param name="shortName">Short form of argument (e.g., "-v"), or null if none.</param>
-    /// <returns>The argument value, or null if not found.</returns>
+    /// <returns>The argument value, or null if not found or if no value follows the argument.</returns>
     private string? ParseArgValue(string[] args, string longName, string? shortName)
     {
-        for (int i = 0; i < args.Length - 1; i++)
+        for (int i = 0; i < args.Length; i++)
         {
             if (args[i] == longName || (shortName != null && args[i] == shortName))
             {
-                return args[i + 1];
+                // Check if there's a value following this argument
+                if (i + 1 < args.Length)
+                {
+                    return args[i + 1];
+                }
+
+                // Argument found but no value provided
+                return null;
             }
         }
 

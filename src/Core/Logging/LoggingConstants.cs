@@ -77,4 +77,16 @@ public static class LoggingConstants
     /// </summary>
     public const string ConsoleOutputTemplate =
         "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}";
+
+    /// <summary>
+    /// Empty trace ID value (32 zeros) used when no Activity is present.
+    /// Indicates no distributed tracing context is available.
+    /// </summary>
+    public const string EmptyTraceId = "00000000000000000000000000000000";
+
+    /// <summary>
+    /// Empty span ID value (16 zeros) used when no Activity is present.
+    /// Indicates no distributed tracing context is available.
+    /// </summary>
+    public const string EmptySpanId = "0000000000000000";
 }
