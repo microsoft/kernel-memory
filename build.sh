@@ -11,19 +11,19 @@ echo "======================================="
 echo ""
 
 # Clean previous build artifacts
-echo "Cleaning previous build artifacts..."
+echo "🔨 Cleaning previous build artifacts..."
 dotnet clean --nologo --verbosity quiet
-echo "✓ Clean complete"
+echo "✅ Clean complete"
 echo ""
 
 # Restore dependencies
-echo "Restoring dependencies..."
+echo "🔨 Restoring dependencies..."
 dotnet restore --nologo
-echo "✓ Restore complete"
+echo "✅ Restore complete"
 echo ""
 
 # Build solution with strict settings
-echo "Building solution..."
+echo "🔨 Building solution..."
 echo ""
 
 # Build with:
@@ -43,14 +43,14 @@ echo ""
 
 if [ $BUILD_RESULT -eq 0 ]; then
   echo "======================================="
-  echo "  ✅ Build Successful"
+  echo "✅ Build Successful"
   echo "======================================="
   echo ""
   echo "All projects built successfully with zero warnings."
   exit 0
 else
   echo "======================================="
-  echo "  ❌ Build Failed"
+  echo "❌ Build Failed"
   echo "======================================="
   echo ""
   echo "Build failed with errors or warnings."
