@@ -189,11 +189,14 @@ public sealed class EmbeddingCacheKeyTests
     }
 
     [Fact]
-    public void Create_WithNullText_ShouldThrowArgumentNullException()
+    public void Create_WithNullText_ShouldNormalizeToEmptyString()
     {
-        // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, null!));
+        // Arrange & Act
+        var key = EmbeddingCacheKey.Create("OpenAI", "model", 1536, true, null);
+
+        // Assert - null should be normalized to empty string
+        Assert.Equal(0, key.TextLength);
+        Assert.NotEmpty(key.TextHash); // Hash of empty string
     }
 
     [Fact]

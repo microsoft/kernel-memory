@@ -53,19 +53,21 @@ public sealed class EmbeddingCacheKey
     /// <param name="isNormalized">Whether vectors are normalized.</param>
     /// <param name="text">The text to hash.</param>
     /// <returns>A new EmbeddingCacheKey instance.</returns>
-    /// <exception cref="ArgumentNullException">When provider, model, or text is null.</exception>
+    /// <exception cref="ArgumentNullException">When provider or model is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">When vectorDimensions is less than 1.</exception>
     public static EmbeddingCacheKey Create(
         string provider,
         string model,
         int vectorDimensions,
         bool isNormalized,
-        string text)
+        string? text)
     {
         ArgumentNullException.ThrowIfNull(provider, nameof(provider));
         ArgumentNullException.ThrowIfNull(model, nameof(model));
-        ArgumentNullException.ThrowIfNull(text, nameof(text));
         ArgumentOutOfRangeException.ThrowIfLessThan(vectorDimensions, 1, nameof(vectorDimensions));
+
+        // Normalize null to empty string for consistent hashing
+        text ??= string.Empty;
 
         return new EmbeddingCacheKey
         {

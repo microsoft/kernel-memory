@@ -18,30 +18,27 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             provider TEXT NOT NULL,
             model TEXT NOT NULL,
             dimensions INTEGER NOT NULL,
-            normalized INTEGER NOT NULL,
+            is_normalized INTEGER NOT NULL,
             text_length INTEGER NOT NULL,
             text_hash TEXT NOT NULL,
             vector BLOB NOT NULL,
             token_count INTEGER NULL,
-            timestamp TEXT NOT NULL,
-            PRIMARY KEY (provider, model, dimensions, normalized, text_hash)
+            created_at TEXT NOT NULL,
+            PRIMARY KEY (provider, model, dimensions, is_normalized, text_hash)
         );
-        CREATE INDEX IF NOT EXISTS idx_timestamp ON embeddings_cache(timestamp);
-        CREATE INDEX IF NOT EXISTS idx_provider ON embeddings_cache(provider);
-        CREATE INDEX IF NOT EXISTS idx_model ON embeddings_cache(provider, model);
         """;
 
     private const string SelectSql = """
-        SELECT vector, token_count, timestamp FROM embeddings_cache
+        SELECT vector, token_count, created_at FROM embeddings_cache
         WHERE provider = @provider AND model = @model AND dimensions = @dimensions
-        AND normalized = @normalized AND text_hash = @textHash
+        AND is_normalized = @isNormalized AND text_hash = @textHash
         """;
 
     private const string UpsertSql = """
-        INSERT INTO embeddings_cache (provider, model, dimensions, normalized, text_length, text_hash, vector, token_count, timestamp)
-        VALUES (@provider, @model, @dimensions, @normalized, @textLength, @textHash, @vector, @tokenCount, @timestamp)
-        ON CONFLICT(provider, model, dimensions, normalized, text_hash)
-        DO UPDATE SET vector = @vector, token_count = @tokenCount, timestamp = @timestamp
+        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector, token_count, created_at)
+        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector, @tokenCount, @createdAt)
+        ON CONFLICT(provider, model, dimensions, is_normalized, text_hash)
+        DO UPDATE SET vector = @vector, token_count = @tokenCount, created_at = @createdAt
         """;
 
     private readonly SqliteConnection _connection;
@@ -122,7 +119,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             command.Parameters.AddWithValue("@provider", key.Provider);
             command.Parameters.AddWithValue("@model", key.Model);
             command.Parameters.AddWithValue("@dimensions", key.VectorDimensions);
-            command.Parameters.AddWithValue("@normalized", key.IsNormalized ? 1 : 0);
+            command.Parameters.AddWithValue("@isNormalized", key.IsNormalized ? 1 : 0);
             command.Parameters.AddWithValue("@textHash", key.TextHash);
 
             var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -139,7 +136,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 var vector = BytesToFloatArray(vectorBlob);
 
                 int? tokenCount = reader["token_count"] == DBNull.Value ? null : Convert.ToInt32(reader["token_count"], CultureInfo.InvariantCulture);
-                var timestamp = DateTimeOffset.Parse((string)reader["timestamp"], CultureInfo.InvariantCulture);
+                var createdAt = DateTimeOffset.Parse((string)reader["created_at"], CultureInfo.InvariantCulture);
 
                 this._logger.LogTrace("Cache hit for {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
                     key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
@@ -148,7 +145,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 {
                     Vector = vector,
                     TokenCount = tokenCount,
-                    Timestamp = timestamp
+                    Timestamp = createdAt
                 };
             }
         }
@@ -167,7 +164,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
         }
 
         var vectorBlob = FloatArrayToBytes(vector);
-        var timestamp = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
+        var createdAt = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
         var command = this._connection.CreateCommand();
         await using (command.ConfigureAwait(false))
@@ -176,12 +173,12 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             command.Parameters.AddWithValue("@provider", key.Provider);
             command.Parameters.AddWithValue("@model", key.Model);
             command.Parameters.AddWithValue("@dimensions", key.VectorDimensions);
-            command.Parameters.AddWithValue("@normalized", key.IsNormalized ? 1 : 0);
+            command.Parameters.AddWithValue("@isNormalized", key.IsNormalized ? 1 : 0);
             command.Parameters.AddWithValue("@textLength", key.TextLength);
             command.Parameters.AddWithValue("@textHash", key.TextHash);
             command.Parameters.AddWithValue("@vector", vectorBlob);
             command.Parameters.AddWithValue("@tokenCount", tokenCount.HasValue ? tokenCount.Value : DBNull.Value);
-            command.Parameters.AddWithValue("@timestamp", timestamp);
+            command.Parameters.AddWithValue("@createdAt", createdAt);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 

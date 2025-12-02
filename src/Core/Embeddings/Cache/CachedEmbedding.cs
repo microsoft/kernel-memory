@@ -25,6 +25,7 @@ public sealed class CachedEmbedding
 
     /// <summary>
     /// Timestamp when this embedding was stored in the cache.
+    /// Useful for debugging and diagnostics.
     /// </summary>
     public required DateTimeOffset Timestamp { get; init; }
 }
