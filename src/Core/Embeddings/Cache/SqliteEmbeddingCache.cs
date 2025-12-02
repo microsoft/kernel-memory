@@ -15,18 +15,33 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
 {
     private const string CreateTableSql = """
         CREATE TABLE IF NOT EXISTS embeddings_cache (
-            key TEXT PRIMARY KEY,
+            provider TEXT NOT NULL,
+            model TEXT NOT NULL,
+            dimensions INTEGER NOT NULL,
+            normalized INTEGER NOT NULL,
+            text_length INTEGER NOT NULL,
+            text_hash TEXT NOT NULL,
             vector BLOB NOT NULL,
             token_count INTEGER NULL,
-            timestamp TEXT NOT NULL
+            timestamp TEXT NOT NULL,
+            PRIMARY KEY (provider, model, dimensions, normalized, text_hash)
         );
         CREATE INDEX IF NOT EXISTS idx_timestamp ON embeddings_cache(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_provider ON embeddings_cache(provider);
+        CREATE INDEX IF NOT EXISTS idx_model ON embeddings_cache(provider, model);
         """;
 
-    private const string SelectSql = "SELECT vector, token_count, timestamp FROM embeddings_cache WHERE key = @key";
+    private const string SelectSql = """
+        SELECT vector, token_count, timestamp FROM embeddings_cache
+        WHERE provider = @provider AND model = @model AND dimensions = @dimensions
+        AND normalized = @normalized AND text_hash = @textHash
+        """;
+
     private const string UpsertSql = """
-        INSERT INTO embeddings_cache (key, vector, token_count, timestamp) VALUES (@key, @vector, @tokenCount, @timestamp)
-        ON CONFLICT(key) DO UPDATE SET vector = @vector, token_count = @tokenCount, timestamp = @timestamp
+        INSERT INTO embeddings_cache (provider, model, dimensions, normalized, text_length, text_hash, vector, token_count, timestamp)
+        VALUES (@provider, @model, @dimensions, @normalized, @textLength, @textHash, @vector, @tokenCount, @timestamp)
+        ON CONFLICT(provider, model, dimensions, normalized, text_hash)
+        DO UPDATE SET vector = @vector, token_count = @tokenCount, timestamp = @timestamp
         """;
 
     private readonly SqliteConnection _connection;
@@ -100,20 +115,23 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             return null;
         }
 
-        var compositeKey = key.ToCompositeKey();
-
         var command = this._connection.CreateCommand();
         await using (command.ConfigureAwait(false))
         {
             command.CommandText = SelectSql;
-            command.Parameters.AddWithValue("@key", compositeKey);
+            command.Parameters.AddWithValue("@provider", key.Provider);
+            command.Parameters.AddWithValue("@model", key.Model);
+            command.Parameters.AddWithValue("@dimensions", key.VectorDimensions);
+            command.Parameters.AddWithValue("@normalized", key.IsNormalized ? 1 : 0);
+            command.Parameters.AddWithValue("@textHash", key.TextHash);
 
             var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
             await using (reader.ConfigureAwait(false))
             {
                 if (!await reader.ReadAsync(ct).ConfigureAwait(false))
                 {
-                    this._logger.LogTrace("Cache miss for key: {KeyPrefix}...", compositeKey[..Math.Min(50, compositeKey.Length)]);
+                    this._logger.LogTrace("Cache miss for {Provider}/{Model} hash: {HashPrefix}...",
+                        key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)]);
                     return null;
                 }
 
@@ -123,8 +141,8 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
                 int? tokenCount = reader["token_count"] == DBNull.Value ? null : Convert.ToInt32(reader["token_count"], CultureInfo.InvariantCulture);
                 var timestamp = DateTimeOffset.Parse((string)reader["timestamp"], CultureInfo.InvariantCulture);
 
-                this._logger.LogTrace("Cache hit for key: {KeyPrefix}..., vector dimensions: {Dimensions}",
-                    compositeKey[..Math.Min(50, compositeKey.Length)], vector.Length);
+                this._logger.LogTrace("Cache hit for {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
+                    key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
 
                 return new CachedEmbedding
                 {
@@ -148,7 +166,6 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             return;
         }
 
-        var compositeKey = key.ToCompositeKey();
         var vectorBlob = FloatArrayToBytes(vector);
         var timestamp = DateTimeOffset.UtcNow.ToString("o", CultureInfo.InvariantCulture);
 
@@ -156,15 +173,20 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
         await using (command.ConfigureAwait(false))
         {
             command.CommandText = UpsertSql;
-            command.Parameters.AddWithValue("@key", compositeKey);
+            command.Parameters.AddWithValue("@provider", key.Provider);
+            command.Parameters.AddWithValue("@model", key.Model);
+            command.Parameters.AddWithValue("@dimensions", key.VectorDimensions);
+            command.Parameters.AddWithValue("@normalized", key.IsNormalized ? 1 : 0);
+            command.Parameters.AddWithValue("@textLength", key.TextLength);
+            command.Parameters.AddWithValue("@textHash", key.TextHash);
             command.Parameters.AddWithValue("@vector", vectorBlob);
             command.Parameters.AddWithValue("@tokenCount", tokenCount.HasValue ? tokenCount.Value : DBNull.Value);
             command.Parameters.AddWithValue("@timestamp", timestamp);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 
-            this._logger.LogTrace("Stored embedding in cache: {KeyPrefix}..., vector dimensions: {Dimensions}",
-                compositeKey[..Math.Min(50, compositeKey.Length)], vector.Length);
+            this._logger.LogTrace("Stored embedding in cache: {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
+                key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
         }
     }
 
