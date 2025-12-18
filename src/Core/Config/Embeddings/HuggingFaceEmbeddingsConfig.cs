@@ -44,9 +44,16 @@ public sealed class HuggingFaceEmbeddingsConfig : EmbeddingsConfig
             throw new ConfigException($"{path}.Model", "HuggingFace model name is required");
         }
 
-        if (string.IsNullOrWhiteSpace(this.ApiKey))
+        // ApiKey can be provided via config or HF_TOKEN environment variable
+        if (string.IsNullOrWhiteSpace(this.ApiKey) &&
+            string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HF_TOKEN")))
         {
-            throw new ConfigException($"{path}.ApiKey", "HuggingFace API key is required");
+            throw new ConfigException($"{path}.ApiKey", "HuggingFace API key is required (set ApiKey or HF_TOKEN)");
+        }
+
+        if (this.BatchSize < 1)
+        {
+            throw new ConfigException($"{path}.BatchSize", "BatchSize must be >= 1");
         }
 
         if (string.IsNullOrWhiteSpace(this.BaseUrl))

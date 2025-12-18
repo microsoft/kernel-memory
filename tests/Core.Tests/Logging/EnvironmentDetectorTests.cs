@@ -6,6 +6,7 @@ namespace KernelMemory.Core.Tests.Logging;
 /// Tests for EnvironmentDetector - validates environment detection logic.
 /// Environment detection is critical for security (sensitive data scrubbing).
 /// </summary>
+[Collection("EnvironmentVariables")]
 public sealed class EnvironmentDetectorTests : IDisposable
 {
     private readonly string? _originalDotNetEnv;

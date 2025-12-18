@@ -135,6 +135,38 @@ public sealed class EmbeddingGeneratorFactoryTests : IDisposable
     }
 
     [Fact]
+    public void CreateGenerator_CreatesHuggingFaceGenerator_FromHfTokenEnvVar()
+    {
+        // Arrange
+        var originalToken = Environment.GetEnvironmentVariable("HF_TOKEN");
+        Environment.SetEnvironmentVariable("HF_TOKEN", "hf_test_token_from_env");
+
+        try
+        {
+            var config = new HuggingFaceEmbeddingsConfig
+            {
+                Model = "sentence-transformers/all-MiniLM-L6-v2",
+                ApiKey = null
+            };
+
+            // Act
+            var generator = EmbeddingGeneratorFactory.CreateGenerator(
+                config,
+                this._httpClient,
+                cache: null,
+                this._mockLoggerFactory.Object);
+
+            // Assert
+            Assert.NotNull(generator);
+            Assert.Equal(EmbeddingsTypes.HuggingFace, generator.ProviderType);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("HF_TOKEN", originalToken);
+        }
+    }
+
+    [Fact]
     public void CreateGenerator_WrapsWithCacheWhenProvided()
     {
         // Arrange

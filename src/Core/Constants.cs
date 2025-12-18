@@ -211,6 +211,27 @@ public static class Constants
     }
 
     /// <summary>
+    /// Constants for HTTP retry/backoff used by external providers (embeddings, etc.).
+    /// </summary>
+    public static class HttpRetryDefaults
+    {
+        /// <summary>
+        /// Maximum attempts including the first try.
+        /// </summary>
+        public const int MaxAttempts = 5;
+
+        /// <summary>
+        /// Base delay for exponential backoff.
+        /// </summary>
+        public const int BaseDelayMs = 200;
+
+        /// <summary>
+        /// Maximum delay between attempts.
+        /// </summary>
+        public const int MaxDelayMs = 5000;
+    }
+
+    /// <summary>
     /// Constants for the logging system including file rotation, log levels,
     /// and output formatting.
     /// </summary>

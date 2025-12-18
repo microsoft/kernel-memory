@@ -22,6 +22,14 @@ public abstract class EmbeddingsConfig : IValidatable
     public abstract EmbeddingsTypes Type { get; }
 
     /// <summary>
+    /// Maximum number of texts to send per embeddings API request.
+    /// Providers that support batch requests should chunk input using this size.
+    /// Default: 10.
+    /// </summary>
+    [JsonPropertyName("batchSize")]
+    public int BatchSize { get; set; } = Constants.EmbeddingDefaults.DefaultBatchSize;
+
+    /// <summary>
     /// Validates the embeddings configuration
     /// </summary>
     /// <param name="path"></param>

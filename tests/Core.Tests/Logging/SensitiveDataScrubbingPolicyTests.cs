@@ -10,6 +10,7 @@ namespace KernelMemory.Core.Tests.Logging;
 /// In Production environment, all string parameters must be scrubbed to prevent data leakage.
 /// In Development/Staging, full logging is allowed for debugging.
 /// </summary>
+[Collection("EnvironmentVariables")]
 public sealed class SensitiveDataScrubbingPolicyTests : IDisposable
 {
     private readonly string? _originalDotNetEnv;

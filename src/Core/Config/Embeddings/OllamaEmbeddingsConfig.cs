@@ -39,6 +39,11 @@ public sealed class OllamaEmbeddingsConfig : EmbeddingsConfig
             throw new ConfigException($"{path}.BaseUrl", "Ollama base URL is required");
         }
 
+        if (this.BatchSize < 1)
+        {
+            throw new ConfigException($"{path}.BatchSize", "BatchSize must be >= 1");
+        }
+
         if (!Uri.TryCreate(this.BaseUrl, UriKind.Absolute, out _))
         {
             throw new ConfigException($"{path}.BaseUrl",

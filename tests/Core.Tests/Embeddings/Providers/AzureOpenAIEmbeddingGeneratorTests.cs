@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Net;
 using System.Text.Json;
+using Azure.Core;
 using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Embeddings.Providers;
 using Microsoft.Extensions.Logging;
@@ -38,7 +39,10 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
             apiKey: "test-key",
             vectorDimensions: 1536,
             isNormalized: true,
-            this._loggerMock.Object);
+            this._loggerMock.Object,
+            batchSize: 10,
+            useManagedIdentity: false,
+            delayAsync: (_, _) => Task.CompletedTask);
 
         // Assert
         Assert.Equal(EmbeddingsTypes.AzureOpenAI, generator.ProviderType);
@@ -70,7 +74,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "my-embedding", "ada-002", "test-key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "my-embedding", "ada-002", "test-key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
@@ -101,7 +105,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "my-api-key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "my-api-key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act
         await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -144,7 +148,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act
         var results = await generator.GenerateAsync(texts, CancellationToken.None).ConfigureAwait(false);
@@ -177,7 +181,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act
         await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -205,7 +209,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "bad-key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "bad-key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -226,7 +230,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new AzureOpenAIEmbeddingGenerator(
-            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object);
+            httpClient, "https://myservice.openai.azure.com", "deployment", "model", "key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false, delayAsync: (_, _) => Task.CompletedTask);
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -242,7 +246,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new AzureOpenAIEmbeddingGenerator(httpClient, null!, "deployment", "model", "key", 1536, true, this._loggerMock.Object));
+            new AzureOpenAIEmbeddingGenerator(httpClient, null!, "deployment", "model", "key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false));
     }
 
     [Fact]
@@ -251,16 +255,81 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new AzureOpenAIEmbeddingGenerator(httpClient, "https://endpoint", null!, "model", "key", 1536, true, this._loggerMock.Object));
+            new AzureOpenAIEmbeddingGenerator(httpClient, "https://endpoint", null!, "model", "key", 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false));
     }
 
     [Fact]
-    public void Constructor_WithNullApiKey_ShouldThrow()
+    public void Constructor_WithNullApiKey_WithoutManagedIdentity_ShouldThrow()
     {
         // Assert
         var httpClient = new HttpClient();
-        Assert.Throws<ArgumentNullException>(() =>
-            new AzureOpenAIEmbeddingGenerator(httpClient, "https://endpoint", "deployment", "model", null!, 1536, true, this._loggerMock.Object));
+        Assert.Throws<ArgumentException>(() =>
+            new AzureOpenAIEmbeddingGenerator(httpClient, "https://endpoint", "deployment", "model", apiKey: null, 1536, true, this._loggerMock.Object, batchSize: 10, useManagedIdentity: false));
+    }
+
+    [Fact]
+    public async Task GenerateAsync_WithManagedIdentity_ShouldSendBearerToken()
+    {
+        // Arrange
+        HttpRequestMessage? capturedRequest = null;
+        var response = CreateAzureResponse(new[] { new[] { 0.1f } });
+
+        this._httpHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(JsonSerializer.Serialize(response))
+            });
+
+        var httpClient = new HttpClient(this._httpHandlerMock.Object);
+        var generator = new AzureOpenAIEmbeddingGenerator(
+            httpClient,
+            endpoint: "https://myservice.openai.azure.com",
+            deployment: "deployment",
+            model: "model",
+            apiKey: null,
+            vectorDimensions: 1536,
+            isNormalized: true,
+            this._loggerMock.Object,
+            batchSize: 10,
+            useManagedIdentity: true,
+            credential: new TestTokenCredential("test-token"),
+            delayAsync: (_, _) => Task.CompletedTask);
+
+        // Act
+        await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        Assert.NotNull(capturedRequest);
+        Assert.False(capturedRequest!.Headers.Contains("api-key"));
+        Assert.Equal("Bearer", capturedRequest.Headers.Authorization?.Scheme);
+        Assert.Equal("test-token", capturedRequest.Headers.Authorization?.Parameter);
+    }
+
+    private sealed class TestTokenCredential : TokenCredential
+    {
+        private readonly string _token;
+
+        public TestTokenCredential(string token)
+        {
+            this._token = token;
+        }
+
+        public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            return new AccessToken(this._token, DateTimeOffset.UtcNow.AddMinutes(5));
+        }
+
+        public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(this.GetToken(requestContext, cancellationToken));
+        }
     }
 
     private static AzureEmbeddingResponse CreateAzureResponse(float[][] embeddings)

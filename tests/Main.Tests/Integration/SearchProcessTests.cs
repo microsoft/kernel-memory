@@ -86,9 +86,11 @@ public sealed class SearchProcessTests : IDisposable
         return output.Trim();
     }
 
-    [OllamaFact]
+    [Fact]
     public async Task Process_PutThenSearch_FindsContent()
     {
+        this.WriteFtsOnlyConfig();
+
         // Act: Insert content
         var putOutput = await this.ExecuteKmAsync($"put \"ciao mondo\" --config {this._configPath}").ConfigureAwait(false);
         var putResult = JsonSerializer.Deserialize<JsonElement>(putOutput);
@@ -106,6 +108,40 @@ public sealed class SearchProcessTests : IDisposable
         Assert.Single(results);
         Assert.Equal(insertedId, results[0].GetProperty("id").GetString());
         Assert.Contains("ciao", results[0].GetProperty("content").GetString()!, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void WriteFtsOnlyConfig()
+    {
+        var personalNodeDir = Path.Combine(this._tempDir, "nodes", "personal");
+        Directory.CreateDirectory(personalNodeDir);
+
+        var contentDbPath = Path.Combine(personalNodeDir, "content.db");
+        var ftsDbPath = Path.Combine(personalNodeDir, "fts.db");
+
+        var json = $$"""
+                   {
+                     "nodes": {
+                       "personal": {
+                         "id": "personal",
+                         "contentIndex": {
+                           "type": "sqlite",
+                           "path": {{JsonSerializer.Serialize(contentDbPath)}}
+                         },
+                         "searchIndexes": [
+                           {
+                             "type": "sqliteFTS",
+                             "id": "sqlite-fts",
+                             "path": {{JsonSerializer.Serialize(ftsDbPath)}},
+                             "enableStemming": true,
+                             "required": true
+                           }
+                         ]
+                       }
+                     }
+                   }
+                   """;
+
+        File.WriteAllText(this._configPath, json);
     }
 
     [Fact]
@@ -208,16 +244,5 @@ public sealed class SearchProcessTests : IDisposable
 
         Assert.Contains(id1, ids);
         Assert.Contains(id2, ids);
-    }
-
-    private sealed class OllamaFactAttribute : FactAttribute
-    {
-        public OllamaFactAttribute()
-        {
-            if (string.Equals(Environment.GetEnvironmentVariable("OLLAMA_AVAILABLE"), "false", StringComparison.OrdinalIgnoreCase))
-            {
-                this.Skip = "Skipping because OLLAMA_AVAILABLE=false (vector embeddings unavailable).";
-            }
-        }
     }
 }

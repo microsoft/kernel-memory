@@ -37,7 +37,8 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
             vectorDimensions: 384,
             isNormalized: true,
             baseUrl: null,
-            this._loggerMock.Object);
+            this._loggerMock.Object,
+            batchSize: 10);
 
         // Assert
         Assert.Equal(EmbeddingsTypes.HuggingFace, generator.ProviderType);
@@ -69,7 +70,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "sentence-transformers/all-MiniLM-L6-v2", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_token", "sentence-transformers/all-MiniLM-L6-v2", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
@@ -100,7 +101,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_my_secret_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_my_secret_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -137,7 +138,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         await generator.GenerateAsync("hello world", CancellationToken.None).ConfigureAwait(false);
@@ -175,7 +176,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var results = await generator.GenerateAsync(texts, CancellationToken.None).ConfigureAwait(false);
@@ -208,7 +209,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "model", 384, true, "https://custom.hf-endpoint.com", this._loggerMock.Object);
+            httpClient, "hf_token", "model", 384, true, "https://custom.hf-endpoint.com", this._loggerMock.Object, batchSize: 10);
 
         // Act
         var result = await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -235,7 +236,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "bad_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "bad_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -252,7 +253,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(() => new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.ServiceUnavailable,
                 Content = new StringContent("{\"error\":\"Model is currently loading\"}")
@@ -260,7 +261,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -281,7 +282,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new HuggingFaceEmbeddingGenerator(
-            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object);
+            httpClient, "hf_token", "model", 384, true, null, this._loggerMock.Object, batchSize: 10);
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -297,7 +298,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new HuggingFaceEmbeddingGenerator(httpClient, null!, "model", 384, true, null, this._loggerMock.Object));
+            new HuggingFaceEmbeddingGenerator(httpClient, null!, "model", 384, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     [Fact]
@@ -306,7 +307,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentException>(() =>
-            new HuggingFaceEmbeddingGenerator(httpClient, "", "model", 384, true, null, this._loggerMock.Object));
+            new HuggingFaceEmbeddingGenerator(httpClient, "", "model", 384, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     [Fact]
@@ -315,7 +316,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new HuggingFaceEmbeddingGenerator(httpClient, "key", null!, 384, true, null, this._loggerMock.Object));
+            new HuggingFaceEmbeddingGenerator(httpClient, "key", null!, 384, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     // Internal request class for testing
