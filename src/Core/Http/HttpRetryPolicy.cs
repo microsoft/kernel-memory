@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Net;
+using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
 namespace KernelMemory.Core.Http;
@@ -19,13 +20,15 @@ public static class HttpRetryPolicy
         Func<HttpRequestMessage> requestFactory,
         ILogger logger,
         CancellationToken ct,
-        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
+        TimeSpan? perAttemptTimeout = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
         ArgumentNullException.ThrowIfNull(requestFactory, nameof(requestFactory));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         delayAsync ??= Task.Delay;
+        perAttemptTimeout ??= TimeSpan.FromSeconds(Constants.HttpRetryDefaults.DefaultPerAttemptTimeoutSeconds);
 
         Exception? lastException = null;
 
@@ -37,7 +40,10 @@ public static class HttpRetryPolicy
 
             try
             {
-                var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var attemptCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                attemptCts.CancelAfter(perAttemptTimeout.Value);
+
+                var response = await httpClient.SendAsync(request, attemptCts.Token).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -81,7 +87,7 @@ public static class HttpRetryPolicy
             catch (HttpRequestException ex)
             {
                 lastException = ex;
-                if (attempt == Constants.HttpRetryDefaults.MaxAttempts)
+                if (!IsRetryableException(ex) || attempt == Constants.HttpRetryDefaults.MaxAttempts)
                 {
                     throw;
                 }
@@ -99,6 +105,20 @@ public static class HttpRetryPolicy
         }
 
         throw lastException ?? new HttpRequestException("HTTP call failed after retries");
+    }
+
+    private static bool IsRetryableException(HttpRequestException ex)
+    {
+        // Fail fast on common "service not running" / "unreachable" conditions.
+        // Retrying these (especially with default HttpClient timeouts) can make test runs appear hung.
+        if (ex.InnerException is SocketException socketEx)
+        {
+            return socketEx.SocketErrorCode != SocketError.ConnectionRefused &&
+                   socketEx.SocketErrorCode != SocketError.HostNotFound &&
+                   socketEx.SocketErrorCode != SocketError.NetworkUnreachable;
+        }
+
+        return true;
     }
 
     private static bool IsRetryableStatusCode(HttpStatusCode statusCode)

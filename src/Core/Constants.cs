@@ -221,6 +221,18 @@ public static class Constants
         public const int MaxAttempts = 5;
 
         /// <summary>
+        /// Default timeout per attempt (seconds).
+        /// Applied by <see cref="KernelMemory.Core.Http.HttpRetryPolicy"/> to avoid hanging calls.
+        /// </summary>
+        public const int DefaultPerAttemptTimeoutSeconds = 60;
+
+        /// <summary>
+        /// Per-attempt timeout for local Ollama calls (seconds).
+        /// Keep this low so local development and tests fail fast when Ollama is not running.
+        /// </summary>
+        public const int OllamaPerAttemptTimeoutSeconds = 5;
+
+        /// <summary>
         /// Base delay for exponential backoff.
         /// </summary>
         public const int BaseDelayMs = 200;

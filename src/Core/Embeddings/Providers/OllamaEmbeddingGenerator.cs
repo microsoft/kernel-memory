@@ -92,7 +92,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
             },
             this._logger,
             ct,
-            delayAsync: this._delayAsync).ConfigureAwait(false);
+            delayAsync: this._delayAsync,
+            perAttemptTimeout: TimeSpan.FromSeconds(Constants.HttpRetryDefaults.OllamaPerAttemptTimeoutSeconds)).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
 
