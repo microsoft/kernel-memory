@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using Xunit.Sdk;
 
 namespace KernelMemory.Main.Tests.Integration;
 
@@ -89,6 +90,11 @@ public sealed class SearchProcessTests : IDisposable
     [Fact]
     public async Task Process_PutThenSearch_FindsContent()
     {
+        if (string.Equals(Environment.GetEnvironmentVariable("OLLAMA_AVAILABLE"), "false", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new SkipException("Skipping because OLLAMA_AVAILABLE=false (vector embeddings unavailable).");
+        }
+
         // Act: Insert content
         var putOutput = await this.ExecuteKmAsync($"put \"ciao mondo\" --config {this._configPath}").ConfigureAwait(false);
         var putResult = JsonSerializer.Deserialize<JsonElement>(putOutput);
