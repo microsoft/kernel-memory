@@ -25,11 +25,12 @@ public interface IEmbeddingCache
     Task<CachedEmbedding?> TryGetAsync(EmbeddingCacheKey key, CancellationToken ct = default);
 
     /// <summary>
-    /// Store an embedding in the cache.
+    /// Store an embedding in the cache with optional token count.
     /// Does nothing if mode is ReadOnly.
     /// </summary>
     /// <param name="key">The cache key.</param>
     /// <param name="vector">The embedding vector to store.</param>
+    /// <param name="tokenCount">Optional token count if provider reports it.</param>
     /// <param name="ct">Cancellation token.</param>
-    Task StoreAsync(EmbeddingCacheKey key, float[] vector, CancellationToken ct = default);
+    Task StoreAsync(EmbeddingCacheKey key, float[] vector, int? tokenCount, CancellationToken ct = default);
 }

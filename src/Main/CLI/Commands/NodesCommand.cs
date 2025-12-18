@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.OutputFormatters;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,7 @@ public class NodesCommand : BaseCommand<NodesCommandSettings>
             // Format as list
             formatter.FormatList(nodeIds, totalCount, 0, totalCount);
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (Exception ex)
         {

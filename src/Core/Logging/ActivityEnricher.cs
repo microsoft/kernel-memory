@@ -37,14 +37,14 @@ public sealed class ActivityEnricher : ILogEventEnricher
 
         // Add TraceId for correlating logs across the entire operation
         var traceId = activity.TraceId.ToString();
-        if (!string.IsNullOrEmpty(traceId) && traceId != LoggingConstants.EmptyTraceId)
+        if (!string.IsNullOrEmpty(traceId) && traceId != Constants.LoggingDefaults.EmptyTraceId)
         {
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty(TraceIdPropertyName, traceId));
         }
 
         // Add SpanId for correlating logs within a specific span
         var spanId = activity.SpanId.ToString();
-        if (!string.IsNullOrEmpty(spanId) && spanId != LoggingConstants.EmptySpanId)
+        if (!string.IsNullOrEmpty(spanId) && spanId != Constants.LoggingDefaults.EmptySpanId)
         {
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty(SpanIdPropertyName, spanId));
         }

@@ -63,7 +63,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
     }
 
     /// <inheritdoc />
-    public async Task<float[]> GenerateAsync(string text, CancellationToken ct = default)
+    public async Task<EmbeddingResult> GenerateAsync(string text, CancellationToken ct = default)
     {
         var endpoint = $"{this._baseUrl}/api/embeddings";
 
@@ -87,15 +87,16 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
 
         this._logger.LogTrace("Ollama returned embedding with {Dimensions} dimensions", result.Embedding.Length);
 
-        return result.Embedding;
+        // Ollama API does not return token count
+        return EmbeddingResult.FromVector(result.Embedding);
     }
 
     /// <inheritdoc />
-    public async Task<float[][]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
+    public async Task<EmbeddingResult[]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
     {
         // Ollama doesn't support batch embedding natively, so process one at a time
         var textList = texts.ToList();
-        var results = new float[textList.Count][];
+        var results = new EmbeddingResult[textList.Count];
 
         this._logger.LogDebug("Generating {Count} embeddings via Ollama (sequential)", textList.Count);
 

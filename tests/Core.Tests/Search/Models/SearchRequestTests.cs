@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 
 namespace KernelMemory.Core.Tests.Search.Models;
@@ -21,9 +20,9 @@ public sealed class SearchRequestTests
         Assert.Empty(request.ExcludeNodes);
         Assert.Empty(request.SearchIndexes);
         Assert.Empty(request.ExcludeIndexes);
-        Assert.Equal(SearchConstants.DefaultLimit, request.Limit);
+        Assert.Equal(Constants.SearchDefaults.DefaultLimit, request.Limit);
         Assert.Equal(0, request.Offset);
-        Assert.Equal(SearchConstants.DefaultMinRelevance, request.MinRelevance);
+        Assert.Equal(Constants.SearchDefaults.DefaultMinRelevance, request.MinRelevance);
         Assert.Null(request.MaxResultsPerNode);
         Assert.Null(request.NodeWeights);
         Assert.False(request.SnippetOnly);

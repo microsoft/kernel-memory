@@ -1,6 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using KernelMemory.Core.Embeddings;
-
 namespace KernelMemory.Core.Tests.Embeddings;
 
 /// <summary>
@@ -20,7 +18,7 @@ public sealed class EmbeddingConstantsTests
     public void KnownModelDimensions_ShouldContainExpectedValues(string modelName, int expectedDimensions)
     {
         // Act
-        var exists = EmbeddingConstants.KnownModelDimensions.TryGetValue(modelName, out var dimensions);
+        var exists = Constants.EmbeddingDefaults.KnownModelDimensions.TryGetValue(modelName, out var dimensions);
 
         // Assert
         Assert.True(exists, $"Model '{modelName}' should be in KnownModelDimensions");
@@ -31,14 +29,14 @@ public sealed class EmbeddingConstantsTests
     public void KnownModelDimensions_ShouldNotBeEmpty()
     {
         // Assert
-        Assert.NotEmpty(EmbeddingConstants.KnownModelDimensions);
+        Assert.NotEmpty(Constants.EmbeddingDefaults.KnownModelDimensions);
     }
 
     [Fact]
     public void KnownModelDimensions_AllValuesShouldBePositive()
     {
         // Assert
-        foreach (var kvp in EmbeddingConstants.KnownModelDimensions)
+        foreach (var kvp in Constants.EmbeddingDefaults.KnownModelDimensions)
         {
             Assert.True(kvp.Value > 0, $"Model '{kvp.Key}' has invalid dimensions: {kvp.Value}");
         }
@@ -48,7 +46,7 @@ public sealed class EmbeddingConstantsTests
     public void TryGetDimensions_WithKnownModel_ShouldReturnTrue()
     {
         // Act
-        var result = EmbeddingConstants.TryGetDimensions("text-embedding-ada-002", out var dimensions);
+        var result = Constants.EmbeddingDefaults.TryGetDimensions("text-embedding-ada-002", out var dimensions);
 
         // Assert
         Assert.True(result);
@@ -59,7 +57,7 @@ public sealed class EmbeddingConstantsTests
     public void TryGetDimensions_WithUnknownModel_ShouldReturnFalse()
     {
         // Act
-        var result = EmbeddingConstants.TryGetDimensions("unknown-model", out var dimensions);
+        var result = Constants.EmbeddingDefaults.TryGetDimensions("unknown-model", out var dimensions);
 
         // Assert
         Assert.False(result);
@@ -70,34 +68,34 @@ public sealed class EmbeddingConstantsTests
     public void DefaultBatchSize_ShouldBe10()
     {
         // Assert
-        Assert.Equal(10, EmbeddingConstants.DefaultBatchSize);
+        Assert.Equal(10, Constants.EmbeddingDefaults.DefaultBatchSize);
     }
 
     [Fact]
     public void DefaultOllamaModel_ShouldBeQwen3Embedding()
     {
         // Assert
-        Assert.Equal("qwen3-embedding", EmbeddingConstants.DefaultOllamaModel);
+        Assert.Equal("qwen3-embedding:0.6b", Constants.EmbeddingDefaults.DefaultOllamaModel);
     }
 
     [Fact]
     public void DefaultOllamaBaseUrl_ShouldBeLocalhost()
     {
         // Assert
-        Assert.Equal("http://localhost:11434", EmbeddingConstants.DefaultOllamaBaseUrl);
+        Assert.Equal("http://localhost:11434", Constants.EmbeddingDefaults.DefaultOllamaBaseUrl);
     }
 
     [Fact]
     public void DefaultHuggingFaceModel_ShouldBeAllMiniLM()
     {
         // Assert
-        Assert.Equal("sentence-transformers/all-MiniLM-L6-v2", EmbeddingConstants.DefaultHuggingFaceModel);
+        Assert.Equal("sentence-transformers/all-MiniLM-L6-v2", Constants.EmbeddingDefaults.DefaultHuggingFaceModel);
     }
 
     [Fact]
     public void DefaultHuggingFaceBaseUrl_ShouldBeInferenceApi()
     {
         // Assert
-        Assert.Equal("https://api-inference.huggingface.co", EmbeddingConstants.DefaultHuggingFaceBaseUrl);
+        Assert.Equal("https://api-inference.huggingface.co", Constants.EmbeddingDefaults.DefaultHuggingFaceBaseUrl);
     }
 }

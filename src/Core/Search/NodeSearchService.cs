@@ -43,12 +43,12 @@ public sealed class NodeSearchService
     /// <param name="nodeId">The node ID this service operates on.</param>
     /// <param name="ftsIndex">The FTS index for this node.</param>
     /// <param name="contentStorage">The content storage for loading full records.</param>
-    /// <param name="indexId">Optional index ID for this FTS index. Defaults to SearchConstants.DefaultFtsIndexId.</param>
+    /// <param name="indexId">Optional index ID for this FTS index. Defaults to Constants.SearchDefaults.DefaultFtsIndexId.</param>
     public NodeSearchService(
         string nodeId,
         IFtsIndex ftsIndex,
         IContentStorage contentStorage,
-        string indexId = SearchConstants.DefaultFtsIndexId)
+        string indexId = Constants.SearchDefaults.DefaultFtsIndexId)
     {
         this._nodeId = nodeId;
         this._indexId = indexId;
@@ -73,12 +73,12 @@ public sealed class NodeSearchService
         try
         {
             // Apply timeout
-            var timeout = request.TimeoutSeconds ?? SearchConstants.DefaultSearchTimeoutSeconds;
+            var timeout = request.TimeoutSeconds ?? Constants.SearchDefaults.DefaultSearchTimeoutSeconds;
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(timeout));
 
             // Query the FTS index
-            var maxResults = request.MaxResultsPerNode ?? SearchConstants.DefaultMaxResultsPerNode;
+            var maxResults = request.MaxResultsPerNode ?? Constants.SearchDefaults.DefaultMaxResultsPerNode;
 
             // Convert QueryNode to FTS query string and extract NOT terms for post-filtering
             var queryResult = this.ExtractFtsQuery(queryNode);

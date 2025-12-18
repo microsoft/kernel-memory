@@ -75,7 +75,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result);
+        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result.Vector);
     }
 
     [Fact]
@@ -182,9 +182,9 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
 
         // Assert
         Assert.Equal(3, results.Length);
-        Assert.Equal(new[] { 0.1f }, results[0]);
-        Assert.Equal(new[] { 0.2f }, results[1]);
-        Assert.Equal(new[] { 0.3f }, results[2]);
+        Assert.Equal(new[] { 0.1f }, results[0].Vector);
+        Assert.Equal(new[] { 0.2f }, results[1].Vector);
+        Assert.Equal(new[] { 0.3f }, results[2].Vector);
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public sealed class HuggingFaceEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f }, result);
+        Assert.Equal(new[] { 0.1f }, result.Vector);
     }
 
     [Fact]

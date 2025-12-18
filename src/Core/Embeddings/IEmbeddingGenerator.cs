@@ -39,10 +39,10 @@ public interface IEmbeddingGenerator
     /// </summary>
     /// <param name="text">The text to generate embedding for.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>The embedding vector as a float array.</returns>
+    /// <returns>The embedding result with vector and optional token count.</returns>
     /// <exception cref="HttpRequestException">When the API call fails.</exception>
     /// <exception cref="OperationCanceledException">When the operation is cancelled.</exception>
-    Task<float[]> GenerateAsync(string text, CancellationToken ct = default);
+    Task<EmbeddingResult> GenerateAsync(string text, CancellationToken ct = default);
 
     /// <summary>
     /// Generate embeddings for multiple texts (batch).
@@ -50,8 +50,8 @@ public interface IEmbeddingGenerator
     /// </summary>
     /// <param name="texts">The texts to generate embeddings for.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>Array of embedding vectors, in the same order as the input texts.</returns>
+    /// <returns>Array of embedding results with vectors and optional token counts, in the same order as the input texts.</returns>
     /// <exception cref="HttpRequestException">When the API call fails.</exception>
     /// <exception cref="OperationCanceledException">When the operation is cancelled.</exception>
-    Task<float[][]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default);
+    Task<EmbeddingResult[]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default);
 }

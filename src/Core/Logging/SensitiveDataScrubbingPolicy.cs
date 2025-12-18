@@ -45,7 +45,7 @@ public sealed class SensitiveDataScrubbingPolicy : IDestructuringPolicy
         // - File contents, queries
         if (value is string)
         {
-            result = new ScalarValue(LoggingConstants.RedactedPlaceholder);
+            result = new ScalarValue(Constants.LoggingDefaults.RedactedPlaceholder);
             return true;
         }
 

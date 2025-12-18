@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +42,7 @@ public sealed class SearchServiceIndexWeightsTests : IDisposable
         this._ftsIndex = new SqliteFtsIndex(ftsDbPath, enableStemming: true, mockFtsLogger.Object);
 
         var searchIndexes = new Dictionary<string, ISearchIndex> { ["fts"] = this._ftsIndex };
-        this._storage = new ContentStorageService(this._context, cuidGenerator, mockStorageLogger.Object, searchIndexes);
+        this._storage = new ContentStorageService(this._context, cuidGenerator, mockStorageLogger.Object, (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexes);
     }
 
     public void Dispose()
@@ -79,7 +78,7 @@ public sealed class SearchServiceIndexWeightsTests : IDisposable
         {
             ["test-node"] = new Dictionary<string, float>
             {
-                [SearchConstants.DefaultFtsIndexId] = 0.5f  // Custom weight
+                [Constants.SearchDefaults.DefaultFtsIndexId] = 0.5f  // Custom weight
             }
         };
 
@@ -161,7 +160,7 @@ public sealed class SearchServiceIndexWeightsTests : IDisposable
         {
             ["test-node"] = new Dictionary<string, float>
             {
-                [SearchConstants.DefaultFtsIndexId] = 0.7f,  // FTS index weight
+                [Constants.SearchDefaults.DefaultFtsIndexId] = 0.7f,  // FTS index weight
                 ["vector-main"] = 0.3f  // Vector index weight (not used here, but configured)
             }
         };

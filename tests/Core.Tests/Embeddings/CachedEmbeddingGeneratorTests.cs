@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config.Enums;
-using KernelMemory.Core.Embeddings;
 using KernelMemory.Core.Embeddings.Cache;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -54,7 +53,8 @@ public sealed class CachedEmbeddingGeneratorTests
         var cachedVector = new float[] { 0.1f, 0.2f, 0.3f };
         var cachedEmbedding = new CachedEmbedding
         {
-            Vector = cachedVector
+            Vector = cachedVector,
+            Timestamp = DateTimeOffset.UtcNow
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -71,7 +71,7 @@ public sealed class CachedEmbeddingGeneratorTests
         var result = await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(cachedVector, result);
+        Assert.Equal(cachedVector, result.Vector);
         this._innerGeneratorMock.Verify(
             x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
@@ -82,6 +82,7 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var generatedVector = new float[] { 0.4f, 0.5f, 0.6f };
+        var generatedResult = EmbeddingResult.FromVector(generatedVector);
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
         this._cacheMock
@@ -90,7 +91,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVector);
+            .ReturnsAsync(generatedResult);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -101,7 +102,7 @@ public sealed class CachedEmbeddingGeneratorTests
         var result = await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(generatedVector, result);
+        Assert.Equal(generatedVector, result.Vector);
         this._innerGeneratorMock.Verify(
             x => x.GenerateAsync("test text", It.IsAny<CancellationToken>()),
             Times.Once);
@@ -112,6 +113,7 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var generatedVector = new float[] { 0.4f, 0.5f, 0.6f };
+        var generatedResult = EmbeddingResult.FromVector(generatedVector);
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
         this._cacheMock
@@ -120,7 +122,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVector);
+            .ReturnsAsync(generatedResult);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -132,7 +134,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         // Assert
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), generatedVector, It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), generatedVector, It.IsAny<int?>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -141,12 +143,13 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var generatedVector = new float[] { 0.4f, 0.5f, 0.6f };
+        var generatedResult = EmbeddingResult.FromVector(generatedVector);
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.WriteOnly);
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVector);
+            .ReturnsAsync(generatedResult);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -157,12 +160,12 @@ public sealed class CachedEmbeddingGeneratorTests
         var result = await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(generatedVector, result);
+        Assert.Equal(generatedVector, result.Vector);
         this._cacheMock.Verify(
             x => x.TryGetAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<CancellationToken>()),
             Times.Never);
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -171,6 +174,7 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var generatedVector = new float[] { 0.4f, 0.5f, 0.6f };
+        var generatedResult = EmbeddingResult.FromVector(generatedVector);
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadOnly);
         this._cacheMock
@@ -179,7 +183,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVector);
+            .ReturnsAsync(generatedResult);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -190,9 +194,9 @@ public sealed class CachedEmbeddingGeneratorTests
         var result = await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(generatedVector, result);
+        Assert.Equal(generatedVector, result.Vector);
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -203,9 +207,9 @@ public sealed class CachedEmbeddingGeneratorTests
         var texts = new[] { "text1", "text2", "text3" };
         var cachedVectors = new Dictionary<string, float[]>
         {
-            ["text1"] = new[] { 0.1f, 0.2f },
-            ["text2"] = new[] { 0.3f, 0.4f },
-            ["text3"] = new[] { 0.5f, 0.6f }
+            ["text1"] = [0.1f, 0.2f],
+            ["text2"] = [0.3f, 0.4f],
+            ["text3"] = [0.5f, 0.6f]
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -219,7 +223,7 @@ public sealed class CachedEmbeddingGeneratorTests
                     var testKey = EmbeddingCacheKey.Create("OpenAI", "text-embedding-ada-002", 1536, true, kvp.Key);
                     if (testKey.TextHash == key.TextHash)
                     {
-                        return new CachedEmbedding { Vector = kvp.Value };
+                        return new CachedEmbedding { Vector = kvp.Value, Timestamp = DateTimeOffset.UtcNow };
                     }
                 }
 
@@ -246,11 +250,11 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var texts = new[] { "text1", "text2", "text3" };
-        var generatedVectors = new[]
+        var generatedResults = new EmbeddingResult[]
         {
-            new[] { 0.1f, 0.2f },
-            new[] { 0.3f, 0.4f },
-            new[] { 0.5f, 0.6f }
+            EmbeddingResult.FromVector([0.1f, 0.2f]),
+            EmbeddingResult.FromVector([0.3f, 0.4f]),
+            EmbeddingResult.FromVector([0.5f, 0.6f])
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -260,7 +264,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVectors);
+            .ReturnsAsync(generatedResults);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -283,10 +287,10 @@ public sealed class CachedEmbeddingGeneratorTests
         // Arrange
         var texts = new[] { "cached", "not-cached-1", "not-cached-2" };
         var cachedVector = new[] { 0.1f, 0.2f };
-        var generatedVectors = new[]
+        var generatedResults = new EmbeddingResult[]
         {
-            new[] { 0.3f, 0.4f },
-            new[] { 0.5f, 0.6f }
+            EmbeddingResult.FromVector([0.3f, 0.4f]),
+            EmbeddingResult.FromVector([0.5f, 0.6f])
         };
 
         var cachedKey = EmbeddingCacheKey.Create("OpenAI", "text-embedding-ada-002", 1536, true, "cached");
@@ -298,7 +302,7 @@ public sealed class CachedEmbeddingGeneratorTests
             {
                 if (key.TextHash == cachedKey.TextHash)
                 {
-                    return new CachedEmbedding { Vector = cachedVector };
+                    return new CachedEmbedding { Vector = cachedVector, Timestamp = DateTimeOffset.UtcNow };
                 }
 
                 return null;
@@ -306,7 +310,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVectors);
+            .ReturnsAsync(generatedResults);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -319,10 +323,10 @@ public sealed class CachedEmbeddingGeneratorTests
         // Assert
         Assert.Equal(3, results.Length);
         // First result should be cached
-        Assert.Equal(cachedVector, results[0]);
+        Assert.Equal(cachedVector, results[0].Vector);
         // Other results should be generated
-        Assert.Equal(generatedVectors[0], results[1]);
-        Assert.Equal(generatedVectors[1], results[2]);
+        Assert.Equal(new[] { 0.3f, 0.4f }, results[1].Vector);
+        Assert.Equal(new[] { 0.5f, 0.6f }, results[2].Vector);
 
         // Verify only non-cached texts were sent to generator
         this._innerGeneratorMock.Verify(
@@ -335,10 +339,10 @@ public sealed class CachedEmbeddingGeneratorTests
     {
         // Arrange
         var texts = new[] { "text1", "text2" };
-        var generatedVectors = new[]
+        var generatedResults = new EmbeddingResult[]
         {
-            new[] { 0.1f, 0.2f },
-            new[] { 0.3f, 0.4f }
+            EmbeddingResult.FromVector([0.1f, 0.2f]),
+            EmbeddingResult.FromVector([0.3f, 0.4f])
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -348,7 +352,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVectors);
+            .ReturnsAsync(generatedResults);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -360,7 +364,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         // Assert - Both generated vectors should be stored
         this._cacheMock.Verify(
-            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<float[]>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
 
@@ -397,10 +401,10 @@ public sealed class CachedEmbeddingGeneratorTests
         var vectorB = new[] { 2.0f };
         var vectorD = new[] { 4.0f };
 
-        var generatedVectors = new[]
+        var generatedResults = new EmbeddingResult[]
         {
-            new[] { 1.0f }, // for "a"
-            new[] { 3.0f }  // for "c"
+            EmbeddingResult.FromVector([1.0f]), // for "a"
+            EmbeddingResult.FromVector([3.0f])  // for "c"
         };
 
         this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
@@ -410,12 +414,12 @@ public sealed class CachedEmbeddingGeneratorTests
             {
                 if (key.TextHash == cachedB.TextHash)
                 {
-                    return new CachedEmbedding { Vector = vectorB };
+                    return new CachedEmbedding { Vector = vectorB, Timestamp = DateTimeOffset.UtcNow };
                 }
 
                 if (key.TextHash == cachedD.TextHash)
                 {
-                    return new CachedEmbedding { Vector = vectorD };
+                    return new CachedEmbedding { Vector = vectorD, Timestamp = DateTimeOffset.UtcNow };
                 }
 
                 return null;
@@ -423,7 +427,7 @@ public sealed class CachedEmbeddingGeneratorTests
 
         this._innerGeneratorMock
             .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(generatedVectors);
+            .ReturnsAsync(generatedResults);
 
         var cachedGenerator = new CachedEmbeddingGenerator(
             this._innerGeneratorMock.Object,
@@ -435,10 +439,10 @@ public sealed class CachedEmbeddingGeneratorTests
 
         // Assert - Order must be preserved: a, b, c, d
         Assert.Equal(4, results.Length);
-        Assert.Equal(new[] { 1.0f }, results[0]); // a - generated
-        Assert.Equal(new[] { 2.0f }, results[1]); // b - cached
-        Assert.Equal(new[] { 3.0f }, results[2]); // c - generated
-        Assert.Equal(new[] { 4.0f }, results[3]); // d - cached
+        Assert.Equal(new[] { 1.0f }, results[0].Vector); // a - generated
+        Assert.Equal(new[] { 2.0f }, results[1].Vector); // b - cached
+        Assert.Equal(new[] { 3.0f }, results[2].Vector); // c - generated
+        Assert.Equal(new[] { 4.0f }, results[3].Vector); // d - cached
     }
 
     [Fact]
@@ -489,5 +493,67 @@ public sealed class CachedEmbeddingGeneratorTests
         // Arrange & Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             new CachedEmbeddingGenerator(this._innerGeneratorMock.Object, this._cacheMock.Object, null!));
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Single_WithTokenCount_ShouldStoreTokenCountInCache()
+    {
+        // Arrange
+        var generatedVector = new float[] { 0.4f, 0.5f, 0.6f };
+        const int tokenCount = 10;
+        var generatedResult = EmbeddingResult.FromVectorWithTokens(generatedVector, tokenCount);
+
+        this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
+        this._cacheMock
+            .Setup(x => x.TryGetAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CachedEmbedding?)null);
+
+        this._innerGeneratorMock
+            .Setup(x => x.GenerateAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(generatedResult);
+
+        var cachedGenerator = new CachedEmbeddingGenerator(
+            this._innerGeneratorMock.Object,
+            this._cacheMock.Object,
+            this._loggerMock.Object);
+
+        // Act
+        await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert - Token count should be passed to cache
+        this._cacheMock.Verify(
+            x => x.StoreAsync(It.IsAny<EmbeddingCacheKey>(), generatedVector, tokenCount, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Single_WithCacheHitAndTokenCount_ShouldReturnTokenCount()
+    {
+        // Arrange
+        var cachedVector = new float[] { 0.1f, 0.2f, 0.3f };
+        const int tokenCount = 15;
+        var cachedEmbedding = new CachedEmbedding
+        {
+            Vector = cachedVector,
+            TokenCount = tokenCount,
+            Timestamp = DateTimeOffset.UtcNow
+        };
+
+        this._cacheMock.Setup(x => x.Mode).Returns(CacheModes.ReadWrite);
+        this._cacheMock
+            .Setup(x => x.TryGetAsync(It.IsAny<EmbeddingCacheKey>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cachedEmbedding);
+
+        var cachedGenerator = new CachedEmbeddingGenerator(
+            this._innerGeneratorMock.Object,
+            this._cacheMock.Object,
+            this._loggerMock.Object);
+
+        // Act
+        var result = await cachedGenerator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        Assert.Equal(cachedVector, result.Vector);
+        Assert.Equal(tokenCount, result.TokenCount);
     }
 }

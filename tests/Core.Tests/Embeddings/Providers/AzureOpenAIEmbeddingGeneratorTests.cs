@@ -76,7 +76,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result);
+        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result.Vector);
     }
 
     [Fact]

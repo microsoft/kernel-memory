@@ -21,21 +21,24 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             text_length INTEGER NOT NULL,
             text_hash TEXT NOT NULL,
             vector BLOB NOT NULL,
+            token_count INTEGER NULL,
+            timestamp TEXT NOT NULL,
             PRIMARY KEY (provider, model, dimensions, is_normalized, text_hash)
         );
+        CREATE INDEX IF NOT EXISTS idx_timestamp ON embeddings_cache(timestamp);
         """;
 
     private const string SelectSql = """
-        SELECT vector FROM embeddings_cache
+        SELECT vector, token_count, timestamp FROM embeddings_cache
         WHERE provider = @provider AND model = @model AND dimensions = @dimensions
         AND is_normalized = @isNormalized AND text_hash = @textHash
         """;
 
     private const string UpsertSql = """
-        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector)
-        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector)
+        INSERT INTO embeddings_cache (provider, model, dimensions, is_normalized, text_length, text_hash, vector, token_count, timestamp)
+        VALUES (@provider, @model, @dimensions, @isNormalized, @textLength, @textHash, @vector, @tokenCount, @timestamp)
         ON CONFLICT(provider, model, dimensions, is_normalized, text_hash)
-        DO UPDATE SET vector = @vector
+        DO UPDATE SET vector = @vector, token_count = @tokenCount, timestamp = @timestamp
         """;
 
     private readonly SqliteConnection _connection;
@@ -86,7 +89,9 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
 
         // Set busy timeout to handle concurrent access
         using var busyCommand = this._connection.CreateCommand();
-        busyCommand.CommandText = "PRAGMA busy_timeout=5000;";
+#pragma warning disable CA2100 // SQL string uses only constants - no user input
+        busyCommand.CommandText = "PRAGMA busy_timeout=" + Constants.Database.SqliteBusyTimeoutMs + ";";
+#pragma warning restore CA2100
         busyCommand.ExecuteNonQuery();
 
         // Create table if not exists
@@ -131,20 +136,24 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
 
                 var vectorBlob = (byte[])reader["vector"];
                 var vector = BytesToFloatArray(vectorBlob);
+                var tokenCount = reader["token_count"] == DBNull.Value ? (int?)null : (int?)(long)reader["token_count"];
+                var timestamp = DateTimeOffset.Parse((string)reader["timestamp"], System.Globalization.CultureInfo.InvariantCulture);
 
                 this._logger.LogTrace("Cache hit for {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
                     key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
 
                 return new CachedEmbedding
                 {
-                    Vector = vector
+                    Vector = vector,
+                    TokenCount = tokenCount,
+                    Timestamp = timestamp
                 };
             }
         }
     }
 
     /// <inheritdoc />
-    public async Task StoreAsync(EmbeddingCacheKey key, float[] vector, CancellationToken ct = default)
+    public async Task StoreAsync(EmbeddingCacheKey key, float[] vector, int? tokenCount, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -156,6 +165,7 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
         }
 
         var vectorBlob = FloatArrayToBytes(vector);
+        var timestamp = DateTimeOffset.UtcNow.ToString("O"); // ISO 8601 format
 
         var command = this._connection.CreateCommand();
         await using (command.ConfigureAwait(false))
@@ -168,11 +178,13 @@ public sealed class SqliteEmbeddingCache : IEmbeddingCache, IDisposable
             command.Parameters.AddWithValue("@textLength", key.TextLength);
             command.Parameters.AddWithValue("@textHash", key.TextHash);
             command.Parameters.AddWithValue("@vector", vectorBlob);
+            command.Parameters.AddWithValue("@tokenCount", tokenCount.HasValue ? (object)tokenCount.Value : DBNull.Value);
+            command.Parameters.AddWithValue("@timestamp", timestamp);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 
-            this._logger.LogTrace("Stored embedding in cache: {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}",
-                key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length);
+            this._logger.LogTrace("Stored embedding in cache: {Provider}/{Model} hash: {HashPrefix}..., dimensions: {Dimensions}, tokens: {TokenCount}",
+                key.Provider, key.Model, key.TextHash[..Math.Min(16, key.TextHash.Length)], vector.Length, tokenCount);
         }
     }
 

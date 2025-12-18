@@ -54,7 +54,7 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
     }
 
     /// <inheritdoc />
-    public async Task<float[]> GenerateAsync(string text, CancellationToken ct = default)
+    public async Task<EmbeddingResult> GenerateAsync(string text, CancellationToken ct = default)
     {
         var key = this.BuildCacheKey(text);
 
@@ -65,35 +65,39 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
             if (cached != null)
             {
                 this._logger.LogDebug("Cache hit for single embedding, dimensions: {Dimensions}", cached.Vector.Length);
-                return cached.Vector;
+                // Return cached result with token count if available
+                return cached.TokenCount.HasValue
+                    ? EmbeddingResult.FromVectorWithTokens(cached.Vector, cached.TokenCount.Value)
+                    : EmbeddingResult.FromVector(cached.Vector);
             }
         }
 
         // Generate embedding
         this._logger.LogDebug("Cache miss for single embedding, calling {Provider}", this.ProviderType);
-        var vector = await this._inner.GenerateAsync(text, ct).ConfigureAwait(false);
+        var result = await this._inner.GenerateAsync(text, ct).ConfigureAwait(false);
 
         // Store in cache (if mode allows)
         if (this._cache.Mode != CacheModes.ReadOnly)
         {
-            await this._cache.StoreAsync(key, vector, ct).ConfigureAwait(false);
-            this._logger.LogDebug("Stored embedding in cache, dimensions: {Dimensions}", vector.Length);
+            await this._cache.StoreAsync(key, result.Vector, result.TokenCount, ct).ConfigureAwait(false);
+            this._logger.LogDebug("Stored embedding in cache, dimensions: {Dimensions}, tokenCount: {TokenCount}",
+                result.Vector.Length, result.TokenCount);
         }
 
-        return vector;
+        return result;
     }
 
     /// <inheritdoc />
-    public async Task<float[][]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
+    public async Task<EmbeddingResult[]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
     {
         var textList = texts.ToList();
         if (textList.Count == 0)
         {
-            return Array.Empty<float[]>();
+            return [];
         }
 
         // Initialize result array with nulls
-        var results = new float[textList.Count][];
+        var results = new EmbeddingResult?[textList.Count];
 
         // Track which texts need to be generated
         var toGenerate = new List<(int Index, string Text)>();
@@ -108,7 +112,10 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
 
                 if (cached != null)
                 {
-                    results[i] = cached.Vector;
+                    // Return cached result with token count if available
+                    results[i] = cached.TokenCount.HasValue
+                        ? EmbeddingResult.FromVectorWithTokens(cached.Vector, cached.TokenCount.Value)
+                        : EmbeddingResult.FromVector(cached.Vector);
                 }
                 else
                 {
@@ -133,26 +140,27 @@ public sealed class CachedEmbeddingGenerator : IEmbeddingGenerator
         if (toGenerate.Count > 0)
         {
             var textsToGenerate = toGenerate.Select(x => x.Text);
-            var generatedVectors = await this._inner.GenerateAsync(textsToGenerate, ct).ConfigureAwait(false);
+            var generatedResults = await this._inner.GenerateAsync(textsToGenerate, ct).ConfigureAwait(false);
 
-            // Map generated vectors back to results and store in cache
+            // Map generated results back to results array and store in cache
             for (int i = 0; i < toGenerate.Count; i++)
             {
                 var (originalIndex, text) = toGenerate[i];
-                results[originalIndex] = generatedVectors[i];
+                results[originalIndex] = generatedResults[i];
 
                 // Store in cache (if mode allows)
                 if (this._cache.Mode != CacheModes.ReadOnly)
                 {
                     var key = this.BuildCacheKey(text);
-                    await this._cache.StoreAsync(key, generatedVectors[i], ct).ConfigureAwait(false);
+                    await this._cache.StoreAsync(key, generatedResults[i].Vector, generatedResults[i].TokenCount, ct).ConfigureAwait(false);
                 }
             }
 
             this._logger.LogDebug("Generated and cached {Count} embeddings", toGenerate.Count);
         }
 
-        return results;
+        // Convert nullable array to non-nullable (all slots should be filled now)
+        return results.Select(r => r!).ToArray();
     }
 
     /// <summary>

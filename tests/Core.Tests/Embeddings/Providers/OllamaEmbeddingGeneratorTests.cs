@@ -73,7 +73,7 @@ public sealed class OllamaEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result);
+        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result.Vector);
     }
 
     [Fact]
@@ -149,9 +149,9 @@ public sealed class OllamaEmbeddingGeneratorTests
 
         // Assert
         Assert.Equal(3, results.Length);
-        Assert.Equal(new[] { 0.1f }, results[0]);
-        Assert.Equal(new[] { 0.2f }, results[1]);
-        Assert.Equal(new[] { 0.3f }, results[2]);
+        Assert.Equal(new[] { 0.1f }, results[0].Vector);
+        Assert.Equal(new[] { 0.2f }, results[1].Vector);
+        Assert.Equal(new[] { 0.3f }, results[2].Vector);
     }
 
     [Fact]
@@ -252,6 +252,36 @@ public sealed class OllamaEmbeddingGeneratorTests
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
             new OllamaEmbeddingGenerator(httpClient, "http://localhost", null!, 1024, true, this._loggerMock.Object));
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Single_ShouldReturnNullTokenCount()
+    {
+        // Arrange - Ollama API does not return token count
+        var response = new OllamaEmbeddingResponse { Embedding = new[] { 0.1f, 0.2f, 0.3f } };
+        var responseJson = JsonSerializer.Serialize(response);
+
+        this._httpHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson)
+            });
+
+        var httpClient = new HttpClient(this._httpHandlerMock.Object);
+        var generator = new OllamaEmbeddingGenerator(
+            httpClient, "http://localhost:11434", "qwen3-embedding", 1024, true, this._loggerMock.Object);
+
+        // Act
+        var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert - Ollama does NOT provide token count, so it should be null
+        Assert.Null(result.TokenCount);
     }
 
     // Internal request/response classes for testing

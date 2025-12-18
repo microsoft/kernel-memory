@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Exceptions;
@@ -141,6 +142,8 @@ public class SearchCommandSettings : GlobalOptions
 /// </summary>
 public class SearchCommand : BaseCommand<SearchCommandSettings>
 {
+    private readonly ILogger<SearchCommand> _logger;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchCommand"/> class.
     /// </summary>
@@ -148,6 +151,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
     /// <param name="loggerFactory">Logger factory for creating loggers (injected by DI).</param>
     public SearchCommand(AppConfig config, ILoggerFactory loggerFactory) : base(config, loggerFactory)
     {
+        this._logger = loggerFactory.CreateLogger<SearchCommand>();
     }
 
     public override async Task<int> ExecuteAsync(
@@ -177,19 +181,19 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
             // Format and display results
             this.FormatSearchResults(response, settings, formatter);
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (DatabaseNotFoundException)
         {
             // First-run scenario: no database exists yet
             this.ShowFirstRunMessage(settings);
-            return Constants.ExitCodeSuccess; // Not a user error
+            return Constants.App.ExitCodeSuccess; // Not a user error
         }
         catch (SearchException ex)
         {
             var formatter = OutputFormatterFactory.Create(settings);
             formatter.FormatError($"Search error: {ex.Message}");
-            return Constants.ExitCodeUserError;
+            return Constants.App.ExitCodeUserError;
         }
         catch (Exception ex)
         {
@@ -251,7 +255,7 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
             }
         }
 
-        return result.IsValid ? Constants.ExitCodeSuccess : Constants.ExitCodeUserError;
+        return result.IsValid ? Constants.App.ExitCodeSuccess : Constants.App.ExitCodeUserError;
     }
 
     /// <summary>
@@ -450,49 +454,80 @@ public class SearchCommand : BaseCommand<SearchCommandSettings>
 
     /// <summary>
     /// Creates a SearchService instance with all configured nodes.
+    /// Skips nodes with missing databases gracefully (logs warning, continues with working nodes).
     /// </summary>
     /// <returns>A configured SearchService.</returns>
+    /// <exception cref="DatabaseNotFoundException">Thrown when ALL nodes have missing databases.</exception>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "ContentService instances must remain alive for the duration of the search operation. CLI commands are short-lived and process exit handles cleanup.")]
     private SearchService CreateSearchService()
     {
         var nodeServices = new Dictionary<string, NodeSearchService>();
         var indexWeights = new Dictionary<string, Dictionary<string, float>>();
+        var skippedNodes = new List<string>();
 
         foreach (var (nodeId, nodeConfig) in this.Config.Nodes)
         {
-            // Create ContentService for this node
-            // Don't dispose - NodeSearchService needs access to its Storage and SearchIndexes
-            var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
-
-            // Get FTS index from the content service's registered indexes
-            // The content service already has FTS indexes registered and keeps them in sync
-            var ftsIndex = contentService.SearchIndexes.Values.OfType<IFtsIndex>().FirstOrDefault();
-            if (ftsIndex == null)
+            try
             {
-                throw new InvalidOperationException($"Node '{nodeId}' does not have an FTS index configured");
-            }
+                // Create ContentService for this node
+                // Don't dispose - NodeSearchService needs access to its Storage and SearchIndexes
+                var contentService = this.CreateContentService(nodeConfig, readonlyMode: true);
 
-            // Create NodeSearchService
-            var nodeSearchService = new NodeSearchService(
-                nodeId,
-                ftsIndex,
-                contentService.Storage
-            );
-
-            nodeServices[nodeId] = nodeSearchService;
-
-            // Extract index weights from configuration
-            if (nodeConfig.SearchIndexes.Count > 0)
-            {
-                var nodeIndexWeights = new Dictionary<string, float>();
-                foreach (var searchIndex in nodeConfig.SearchIndexes)
+                // Get FTS index from the content service's registered indexes
+                // The content service already has FTS indexes registered and keeps them in sync
+                var ftsIndex = contentService.SearchIndexes.Values.OfType<IFtsIndex>().FirstOrDefault();
+                if (ftsIndex == null)
                 {
-                    // Use the configured weight for each search index
-                    nodeIndexWeights[searchIndex.Id] = searchIndex.Weight;
+                    this._logger.LogWarning("Skipping node '{NodeId}': No FTS index configured", nodeId);
+                    skippedNodes.Add(nodeId);
+                    continue;
                 }
-                indexWeights[nodeId] = nodeIndexWeights;
+
+                // Create NodeSearchService
+                var nodeSearchService = new NodeSearchService(
+                    nodeId,
+                    ftsIndex,
+                    contentService.Storage
+                );
+
+                nodeServices[nodeId] = nodeSearchService;
+
+                // Extract index weights from configuration
+                if (nodeConfig.SearchIndexes.Count > 0)
+                {
+                    var nodeIndexWeights = new Dictionary<string, float>();
+                    foreach (var searchIndex in nodeConfig.SearchIndexes)
+                    {
+                        // Use the configured weight for each search index
+                        nodeIndexWeights[searchIndex.Id] = searchIndex.Weight;
+                    }
+                    indexWeights[nodeId] = nodeIndexWeights;
+                }
             }
+            catch (DatabaseNotFoundException ex)
+            {
+                // Node's database doesn't exist - skip this node and continue with others
+                this._logger.LogWarning("Skipping node '{NodeId}': {Message}", nodeId, ex.Message);
+                skippedNodes.Add(nodeId);
+            }
+        }
+
+        // If ALL nodes failed, throw to trigger first-run message
+        if (nodeServices.Count == 0)
+        {
+            throw new DatabaseNotFoundException(
+                $"No nodes available for search. All {skippedNodes.Count} node(s) have missing databases: {string.Join(", ", skippedNodes)}");
+        }
+
+        // Log summary if some nodes were skipped
+        if (skippedNodes.Count > 0)
+        {
+            this._logger.LogInformation(
+                "Search using {ActiveCount} of {TotalCount} nodes. Skipped: {SkippedNodes}",
+                nodeServices.Count,
+                this.Config.Nodes.Count,
+                string.Join(", ", skippedNodes));
         }
 
         return new SearchService(nodeServices, indexWeights);

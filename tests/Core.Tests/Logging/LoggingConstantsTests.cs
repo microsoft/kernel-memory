@@ -19,7 +19,7 @@ public sealed class LoggingConstantsTests
         const long expectedBytes = 100 * 1024 * 1024;
 
         // Assert
-        Assert.Equal(expectedBytes, Core.Logging.LoggingConstants.DefaultFileSizeLimitBytes);
+        Assert.Equal(expectedBytes, Constants.LoggingDefaults.DefaultFileSizeLimitBytes);
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public sealed class LoggingConstantsTests
     public void DefaultRetainedFileCountLimit_ShouldBe30()
     {
         // Assert
-        Assert.Equal(30, Core.Logging.LoggingConstants.DefaultRetainedFileCountLimit);
+        Assert.Equal(30, Constants.LoggingDefaults.DefaultRetainedFileCountLimit);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public sealed class LoggingConstantsTests
     public void DefaultFileLogLevel_ShouldBeInformation()
     {
         // Assert
-        Assert.Equal(Serilog.Events.LogEventLevel.Information, Core.Logging.LoggingConstants.DefaultFileLogLevel);
+        Assert.Equal(Serilog.Events.LogEventLevel.Information, Constants.LoggingDefaults.DefaultFileLogLevel);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class LoggingConstantsTests
     public void DefaultConsoleLogLevel_ShouldBeWarning()
     {
         // Assert
-        Assert.Equal(Serilog.Events.LogEventLevel.Warning, Core.Logging.LoggingConstants.DefaultConsoleLogLevel);
+        Assert.Equal(Serilog.Events.LogEventLevel.Warning, Constants.LoggingDefaults.DefaultConsoleLogLevel);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public sealed class LoggingConstantsTests
     public void DotNetEnvironmentVariable_ShouldBeDefined()
     {
         // Assert
-        Assert.Equal("DOTNET_ENVIRONMENT", Core.Logging.LoggingConstants.DotNetEnvironmentVariable);
+        Assert.Equal("DOTNET_ENVIRONMENT", Constants.LoggingDefaults.DotNetEnvironmentVariable);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public sealed class LoggingConstantsTests
     public void AspNetCoreEnvironmentVariable_ShouldBeDefined()
     {
         // Assert
-        Assert.Equal("ASPNETCORE_ENVIRONMENT", Core.Logging.LoggingConstants.AspNetCoreEnvironmentVariable);
+        Assert.Equal("ASPNETCORE_ENVIRONMENT", Constants.LoggingDefaults.AspNetCoreEnvironmentVariable);
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public sealed class LoggingConstantsTests
     public void DefaultEnvironment_ShouldBeDevelopment()
     {
         // Assert
-        Assert.Equal("Development", Core.Logging.LoggingConstants.DefaultEnvironment);
+        Assert.Equal("Development", Constants.LoggingDefaults.DefaultEnvironment);
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public sealed class LoggingConstantsTests
     public void ProductionEnvironment_ShouldBeDefined()
     {
         // Assert
-        Assert.Equal("Production", Core.Logging.LoggingConstants.ProductionEnvironment);
+        Assert.Equal("Production", Constants.LoggingDefaults.ProductionEnvironment);
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public sealed class LoggingConstantsTests
     public void RedactedPlaceholder_ShouldBeDefined()
     {
         // Assert
-        Assert.Equal("[REDACTED]", Core.Logging.LoggingConstants.RedactedPlaceholder);
+        Assert.Equal("[REDACTED]", Constants.LoggingDefaults.RedactedPlaceholder);
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public sealed class LoggingConstantsTests
     public void HumanReadableOutputTemplate_ShouldContainTimestampAndLevel()
     {
         // Arrange & Act
-        const string template = Core.Logging.LoggingConstants.HumanReadableOutputTemplate;
+        const string template = Constants.LoggingDefaults.HumanReadableOutputTemplate;
 
         // Assert - template should contain key elements
         Assert.Contains("{Timestamp", template);

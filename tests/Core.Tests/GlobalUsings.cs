@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+global using KernelMemory.Core.Embeddings;
+global using KernelMemory.Core.Logging;
+global using KernelMemory.Core.Search;
 global using Xunit;
-
 using System.Diagnostics.CodeAnalysis;
 
 // Test files create disposable objects that are managed by the test framework lifecycle

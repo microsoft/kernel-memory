@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Validation;
-using KernelMemory.Core.Search;
 
 namespace KernelMemory.Core.Tests.Config;
 
@@ -17,12 +16,12 @@ public sealed class SearchConfigTests
         var config = new SearchConfig();
 
         // Assert - verify defaults match SearchConstants
-        Assert.Equal(SearchConstants.DefaultMinRelevance, config.DefaultMinRelevance);
-        Assert.Equal(SearchConstants.DefaultLimit, config.DefaultLimit);
-        Assert.Equal(SearchConstants.DefaultSearchTimeoutSeconds, config.SearchTimeoutSeconds);
-        Assert.Equal(SearchConstants.DefaultMaxResultsPerNode, config.MaxResultsPerNode);
+        Assert.Equal(Constants.SearchDefaults.DefaultMinRelevance, config.DefaultMinRelevance);
+        Assert.Equal(Constants.SearchDefaults.DefaultLimit, config.DefaultLimit);
+        Assert.Equal(Constants.SearchDefaults.DefaultSearchTimeoutSeconds, config.SearchTimeoutSeconds);
+        Assert.Equal(Constants.SearchDefaults.DefaultMaxResultsPerNode, config.MaxResultsPerNode);
         Assert.Single(config.DefaultNodes);
-        Assert.Equal(SearchConstants.AllNodesWildcard, config.DefaultNodes[0]);
+        Assert.Equal(Constants.SearchDefaults.AllNodesWildcard, config.DefaultNodes[0]);
         Assert.Empty(config.ExcludeNodes);
     }
 
@@ -118,7 +117,7 @@ public sealed class SearchConfigTests
         // Arrange - wildcard with exclusions is valid
         var config = new SearchConfig
         {
-            DefaultNodes = [SearchConstants.AllNodesWildcard],
+            DefaultNodes = [Constants.SearchDefaults.AllNodesWildcard],
             ExcludeNodes = ["archive", "temp"]
         };
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.CLI.Exceptions;
@@ -70,7 +71,7 @@ public class GetCommand : BaseCommand<GetCommandSettings>
             if (result == null)
             {
                 formatter.FormatError($"Content with ID '{settings.Id}' not found");
-                return Constants.ExitCodeUserError;
+                return Constants.App.ExitCodeUserError;
             }
 
             // Wrap result with node information
@@ -78,13 +79,13 @@ public class GetCommand : BaseCommand<GetCommandSettings>
 
             formatter.Format(response);
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (DatabaseNotFoundException)
         {
             // First-run scenario: no database exists yet (expected state)
             this.ShowFirstRunMessage(settings);
-            return Constants.ExitCodeSuccess; // Not a user error
+            return Constants.App.ExitCodeSuccess; // Not a user error
         }
         catch (Exception ex)
         {

@@ -37,8 +37,8 @@ public static class SerilogFactory
 
         // Configure console output (stderr) for warnings and errors
         loggerConfig = loggerConfig.WriteTo.Console(
-            restrictedToMinimumLevel: LoggingConstants.DefaultConsoleLogLevel,
-            outputTemplate: LoggingConstants.ConsoleOutputTemplate,
+            restrictedToMinimumLevel: Constants.LoggingDefaults.DefaultConsoleLogLevel,
+            outputTemplate: Constants.LoggingDefaults.ConsoleOutputTemplate,
             formatProvider: CultureInfo.InvariantCulture,
             standardErrorFromLevel: LogEventLevel.Verbose);
 
@@ -81,21 +81,19 @@ public static class SerilogFactory
                 loggerConfig = loggerConfig.WriteTo.Async(a => a.File(
                     new CompactJsonFormatter(),
                     filePath,
-                    fileSizeLimitBytes: LoggingConstants.DefaultFileSizeLimitBytes,
-                    rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: Constants.LoggingDefaults.DefaultFileSizeLimitBytes,
                     rollOnFileSizeLimit: true,
-                    retainedFileCountLimit: LoggingConstants.DefaultRetainedFileCountLimit));
+                    retainedFileCountLimit: Constants.LoggingDefaults.DefaultRetainedFileCountLimit));
             }
             else
             {
                 loggerConfig = loggerConfig.WriteTo.Async(a => a.File(
                     filePath,
-                    outputTemplate: LoggingConstants.HumanReadableOutputTemplate,
+                    outputTemplate: Constants.LoggingDefaults.HumanReadableOutputTemplate,
                     formatProvider: CultureInfo.InvariantCulture,
-                    fileSizeLimitBytes: LoggingConstants.DefaultFileSizeLimitBytes,
-                    rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: Constants.LoggingDefaults.DefaultFileSizeLimitBytes,
                     rollOnFileSizeLimit: true,
-                    retainedFileCountLimit: LoggingConstants.DefaultRetainedFileCountLimit));
+                    retainedFileCountLimit: Constants.LoggingDefaults.DefaultRetainedFileCountLimit));
             }
         }
         else
@@ -106,21 +104,19 @@ public static class SerilogFactory
                 loggerConfig = loggerConfig.WriteTo.File(
                     new CompactJsonFormatter(),
                     filePath,
-                    fileSizeLimitBytes: LoggingConstants.DefaultFileSizeLimitBytes,
-                    rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: Constants.LoggingDefaults.DefaultFileSizeLimitBytes,
                     rollOnFileSizeLimit: true,
-                    retainedFileCountLimit: LoggingConstants.DefaultRetainedFileCountLimit);
+                    retainedFileCountLimit: Constants.LoggingDefaults.DefaultRetainedFileCountLimit);
             }
             else
             {
                 loggerConfig = loggerConfig.WriteTo.File(
                     filePath,
-                    outputTemplate: LoggingConstants.HumanReadableOutputTemplate,
+                    outputTemplate: Constants.LoggingDefaults.HumanReadableOutputTemplate,
                     formatProvider: CultureInfo.InvariantCulture,
-                    fileSizeLimitBytes: LoggingConstants.DefaultFileSizeLimitBytes,
-                    rollingInterval: RollingInterval.Day,
+                    fileSizeLimitBytes: Constants.LoggingDefaults.DefaultFileSizeLimitBytes,
                     rollOnFileSizeLimit: true,
-                    retainedFileCountLimit: LoggingConstants.DefaultRetainedFileCountLimit);
+                    retainedFileCountLimit: Constants.LoggingDefaults.DefaultRetainedFileCountLimit);
             }
         }
 

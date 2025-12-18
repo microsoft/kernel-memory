@@ -32,10 +32,20 @@ public sealed class VectorSearchIndexConfig : SearchIndexConfig
     public int Dimensions { get; set; } = 768;
 
     /// <summary>
-    /// Distance/similarity metric for vector comparison
+    /// Distance/similarity metric for vector comparison.
+    /// Note: Implementation normalizes vectors at write time and uses dot product,
+    /// which is equivalent to cosine similarity for normalized vectors.
     /// </summary>
     [JsonPropertyName("metric")]
     public VectorMetrics Metric { get; set; } = VectorMetrics.Cosine;
+
+    /// <summary>
+    /// Whether to attempt loading the sqlite-vec extension for accelerated vector operations.
+    /// Default: false (uses pure BLOB storage with C# distance calculations).
+    /// If true and extension is not available, gracefully falls back to BLOB storage with a warning.
+    /// </summary>
+    [JsonPropertyName("useSqliteVec")]
+    public bool UseSqliteVec { get; set; } = false;
 
     /// <inheritdoc />
     public override void Validate(string path)

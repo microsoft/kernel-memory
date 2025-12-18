@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Search.Query.Ast;
 using KernelMemory.Core.Storage;
@@ -137,7 +136,7 @@ public sealed class NodeSearchServiceIndexIdTests : IDisposable
 
         // Assert
         Assert.NotEmpty(results);
-        Assert.All(results, r => Assert.Equal(SearchConstants.DefaultFtsIndexId, r.IndexId));
+        Assert.All(results, r => Assert.Equal(Constants.SearchDefaults.DefaultFtsIndexId, r.IndexId));
     }
 
     /// <summary>
@@ -193,14 +192,14 @@ public sealed class NodeSearchServiceIndexIdTests : IDisposable
     }
 
     /// <summary>
-    /// Tests that SearchConstants.DefaultFtsIndexId constant has the expected value.
+    /// Tests that Constants.SearchDefaults.DefaultFtsIndexId constant has the expected value.
     /// Validates the constant is properly defined.
     /// </summary>
     [Fact]
     public void DefaultFtsIndexId_HasExpectedValue()
     {
         // Assert
-        Assert.Equal("fts-main", SearchConstants.DefaultFtsIndexId);
+        Assert.Equal("fts-main", Constants.SearchDefaults.DefaultFtsIndexId);
     }
 
     /// <summary>
@@ -226,7 +225,7 @@ public sealed class NodeSearchServiceIndexIdTests : IDisposable
 
         var cuidGenerator = new CuidGenerator();
         var searchIndexes = new Dictionary<string, ISearchIndex> { ["fts"] = ftsIndex };
-        var storage = new ContentStorageService(context, cuidGenerator, this._mockStorageLogger.Object, searchIndexes);
+        var storage = new ContentStorageService(context, cuidGenerator, this._mockStorageLogger.Object, (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexes);
 
         return (ftsIndex, storage);
     }

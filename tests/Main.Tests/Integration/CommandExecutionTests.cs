@@ -187,7 +187,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 
@@ -206,7 +206,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 
@@ -225,7 +225,7 @@ public sealed class CommandExecutionTests : IDisposable
         var command = new ConfigCommand(config, NullLoggerFactory.Instance, configPathService);
         var context = new CommandContext(new[] { "--config", this._configPath }, new EmptyRemainingArguments(), "config", null);
 
-        var result = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var result = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
         Assert.Equal(0, result);
     }
 

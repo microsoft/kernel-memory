@@ -73,22 +73,22 @@ public sealed class AzureOpenAIEmbeddingGenerator : IEmbeddingGenerator
     }
 
     /// <inheritdoc />
-    public async Task<float[]> GenerateAsync(string text, CancellationToken ct = default)
+    public async Task<EmbeddingResult> GenerateAsync(string text, CancellationToken ct = default)
     {
         var results = await this.GenerateAsync(new[] { text }, ct).ConfigureAwait(false);
         return results[0];
     }
 
     /// <inheritdoc />
-    public async Task<float[][]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
+    public async Task<EmbeddingResult[]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
     {
         var textArray = texts.ToArray();
         if (textArray.Length == 0)
         {
-            return Array.Empty<float[]>();
+            return [];
         }
 
-        var url = $"{this._endpoint}/openai/deployments/{this._deployment}/embeddings?api-version={EmbeddingConstants.AzureOpenAIApiVersion}";
+        var url = $"{this._endpoint}/openai/deployments/{this._deployment}/embeddings?api-version={Constants.EmbeddingDefaults.AzureOpenAIApiVersion}";
 
         var request = new AzureEmbeddingRequest
         {
@@ -114,12 +114,31 @@ public sealed class AzureOpenAIEmbeddingGenerator : IEmbeddingGenerator
 
         // Sort by index to ensure correct ordering
         var sortedData = result.Data.OrderBy(d => d.Index).ToArray();
-        var embeddings = sortedData.Select(d => d.Embedding).ToArray();
+
+        // Get total token count from API response
+        var totalTokens = result.Usage?.TotalTokens;
 
         this._logger.LogTrace("Azure OpenAI returned {Count} embeddings, usage: {TotalTokens} tokens",
-            embeddings.Length, result.Usage?.TotalTokens);
+            sortedData.Length, totalTokens);
 
-        return embeddings;
+        // Calculate per-embedding token count if total tokens available
+        // For batch requests, we distribute tokens evenly across embeddings (approximation)
+        int? perEmbeddingTokens = null;
+        if (totalTokens.HasValue && sortedData.Length > 0)
+        {
+            perEmbeddingTokens = totalTokens.Value / sortedData.Length;
+        }
+
+        // Create EmbeddingResult for each embedding with token count
+        var results = new EmbeddingResult[sortedData.Length];
+        for (int i = 0; i < sortedData.Length; i++)
+        {
+            results[i] = perEmbeddingTokens.HasValue
+                ? EmbeddingResult.FromVectorWithTokens(sortedData[i].Embedding, perEmbeddingTokens.Value)
+                : EmbeddingResult.FromVector(sortedData[i].Embedding);
+        }
+
+        return results;
     }
 
     /// <summary>

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using Microsoft.Extensions.Logging;
 using Moq;
 

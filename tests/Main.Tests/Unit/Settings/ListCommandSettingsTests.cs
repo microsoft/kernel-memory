@@ -138,6 +138,6 @@ public sealed class ListCommandSettingsTests
 
         // Assert
         Assert.Equal(0, settings.Skip);
-        Assert.Equal(Constants.DefaultPageSize, settings.Take);
+        Assert.Equal(Constants.App.DefaultPageSize, settings.Take);
     }
 }

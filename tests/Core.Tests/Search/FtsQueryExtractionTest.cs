@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Search.Query.Parsers;
 using KernelMemory.Core.Storage;

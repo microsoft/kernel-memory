@@ -58,7 +58,7 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator
 
         this._httpClient = httpClient;
         this._apiKey = apiKey;
-        this._baseUrl = (baseUrl ?? EmbeddingConstants.DefaultHuggingFaceBaseUrl).TrimEnd('/');
+        this._baseUrl = (baseUrl ?? Constants.EmbeddingDefaults.DefaultHuggingFaceBaseUrl).TrimEnd('/');
         this.ModelName = model;
         this.VectorDimensions = vectorDimensions;
         this.IsNormalized = isNormalized;
@@ -69,19 +69,19 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator
     }
 
     /// <inheritdoc />
-    public async Task<float[]> GenerateAsync(string text, CancellationToken ct = default)
+    public async Task<EmbeddingResult> GenerateAsync(string text, CancellationToken ct = default)
     {
         var results = await this.GenerateAsync(new[] { text }, ct).ConfigureAwait(false);
         return results[0];
     }
 
     /// <inheritdoc />
-    public async Task<float[][]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
+    public async Task<EmbeddingResult[]> GenerateAsync(IEnumerable<string> texts, CancellationToken ct = default)
     {
         var textArray = texts.ToArray();
         if (textArray.Length == 0)
         {
-            return Array.Empty<float[]>();
+            return [];
         }
 
         var endpoint = $"{this._baseUrl}/models/{this.ModelName}";
@@ -112,7 +112,14 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator
         this._logger.LogTrace("HuggingFace returned {Count} embeddings with {Dimensions} dimensions each",
             embeddings.Length, embeddings[0].Length);
 
-        return embeddings;
+        // HuggingFace API does not return token count
+        var results = new EmbeddingResult[embeddings.Length];
+        for (int i = 0; i < embeddings.Length; i++)
+        {
+            results[i] = EmbeddingResult.FromVector(embeddings[i]);
+        }
+
+        return results;
     }
 
     /// <summary>

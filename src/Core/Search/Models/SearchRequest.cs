@@ -53,7 +53,7 @@ public sealed class SearchRequest
     /// Maximum number of results to return.
     /// Default: 20 (from config or SearchConstants).
     /// </summary>
-    public int Limit { get; set; } = SearchConstants.DefaultLimit;
+    public int Limit { get; set; } = Constants.SearchDefaults.DefaultLimit;
 
     /// <summary>
     /// Pagination offset (skip first N results).
@@ -66,7 +66,7 @@ public sealed class SearchRequest
     /// Results below this score are filtered out.
     /// Default: 0.3 (from config or SearchConstants).
     /// </summary>
-    public float MinRelevance { get; set; } = SearchConstants.DefaultMinRelevance;
+    public float MinRelevance { get; set; } = Constants.SearchDefaults.DefaultMinRelevance;
 
     /// <summary>
     /// Memory safety limit per node.

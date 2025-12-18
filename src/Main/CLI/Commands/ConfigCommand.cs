@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.Infrastructure;
 using KernelMemory.Main.CLI.Models;
@@ -62,9 +63,10 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "Top-level command handler must catch all exceptions to return appropriate exit codes and error messages")]
-    public async Task<int> ExecuteAsync(
+    public override async Task<int> ExecuteAsync(
         CommandContext context,
-        ConfigCommandSettings settings)
+        ConfigCommandSettings settings,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -131,18 +133,13 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 
             formatter.Format(output);
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (Exception ex)
         {
             var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
-    }
-
-    public override Task<int> ExecuteAsync(CommandContext context, ConfigCommandSettings settings, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -162,7 +159,7 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
             if (configFileExists)
             {
                 formatter.FormatError($"Configuration file already exists: {configPath}");
-                return Constants.ExitCodeUserError;
+                return Constants.App.ExitCodeUserError;
             }
 
             // Ensure directory exists
@@ -180,12 +177,12 @@ public class ConfigCommand : BaseCommand<ConfigCommandSettings>
 
             formatter.Format(new { Message = $"Configuration file created: {configPath}" });
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (Exception ex)
         {
             formatter.FormatError($"Failed to create configuration file: {ex.Message}");
-            return Constants.ExitCodeSystemError;
+            return Constants.App.ExitCodeSystemError;
         }
     }
 }

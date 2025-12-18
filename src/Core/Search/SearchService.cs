@@ -24,7 +24,7 @@ public sealed class SearchService : ISearchService
     /// <param name="indexWeights">
     /// Per-node, per-index weights for relevance scoring.
     /// Outer key = node ID, Inner key = index ID, Value = weight multiplier.
-    /// If null or missing entries, defaults to SearchConstants.DefaultIndexWeight (1.0).
+    /// If null or missing entries, defaults to Constants.SearchDefaults.DefaultIndexWeight (1.0).
     /// </param>
     /// <param name="reranker">Reranking implementation (default: WeightedDiminishingReranker).</param>
     public SearchService(
@@ -223,7 +223,7 @@ public sealed class SearchService : ISearchService
             }
             else
             {
-                nodeWeights[nodeId] = SearchConstants.DefaultNodeWeight;
+                nodeWeights[nodeId] = Constants.SearchDefaults.DefaultNodeWeight;
             }
         }
 
@@ -239,9 +239,9 @@ public sealed class SearchService : ISearchService
                 var nodeIndexWeights = new Dictionary<string, float>(configuredNodeIndexWeights);
 
                 // Ensure default FTS index has a weight (use configured or default)
-                if (!nodeIndexWeights.ContainsKey(SearchConstants.DefaultFtsIndexId))
+                if (!nodeIndexWeights.ContainsKey(Constants.SearchDefaults.DefaultFtsIndexId))
                 {
-                    nodeIndexWeights[SearchConstants.DefaultFtsIndexId] = SearchConstants.DefaultIndexWeight;
+                    nodeIndexWeights[Constants.SearchDefaults.DefaultFtsIndexId] = Constants.SearchDefaults.DefaultIndexWeight;
                 }
 
                 indexWeights[nodeId] = nodeIndexWeights;
@@ -251,7 +251,7 @@ public sealed class SearchService : ISearchService
                 // No configured weights for this node, use default
                 indexWeights[nodeId] = new Dictionary<string, float>
                 {
-                    [SearchConstants.DefaultFtsIndexId] = SearchConstants.DefaultIndexWeight
+                    [Constants.SearchDefaults.DefaultFtsIndexId] = Constants.SearchDefaults.DefaultIndexWeight
                 };
             }
         }
@@ -260,7 +260,7 @@ public sealed class SearchService : ISearchService
         {
             NodeWeights = nodeWeights,
             IndexWeights = indexWeights,
-            DiminishingMultipliers = SearchConstants.DefaultDiminishingMultipliers
+            DiminishingMultipliers = Constants.SearchDefaults.DefaultDiminishingMultipliers
         };
     }
 }
