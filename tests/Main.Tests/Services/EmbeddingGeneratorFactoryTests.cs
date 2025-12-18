@@ -149,6 +149,8 @@ public sealed class EmbeddingGeneratorFactoryTests : IDisposable
                 ApiKey = null
             };
 
+            config.Validate("Embeddings");
+
             // Act
             var generator = EmbeddingGeneratorFactory.CreateGenerator(
                 config,

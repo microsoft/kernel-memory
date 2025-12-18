@@ -44,9 +44,18 @@ public sealed class HuggingFaceEmbeddingsConfig : EmbeddingsConfig
             throw new ConfigException($"{path}.Model", "HuggingFace model name is required");
         }
 
-        // ApiKey can be provided via config or HF_TOKEN environment variable
-        if (string.IsNullOrWhiteSpace(this.ApiKey) &&
-            string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("HF_TOKEN")))
+        // ApiKey can be provided via config or HF_TOKEN environment variable.
+        // Resolve env var into config so downstream code can rely on configuration only.
+        if (string.IsNullOrWhiteSpace(this.ApiKey))
+        {
+            var token = Environment.GetEnvironmentVariable("HF_TOKEN");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                this.ApiKey = token;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(this.ApiKey))
         {
             throw new ConfigException($"{path}.ApiKey", "HuggingFace API key is required (set ApiKey or HF_TOKEN)");
         }

@@ -145,9 +145,11 @@ public static class EmbeddingGeneratorFactory
         // Get known dimensions for the model
         var dimensions = Constants.EmbeddingDefaults.KnownModelDimensions.GetValueOrDefault(config.Model, defaultValue: 384);
 
+        var apiKey = config.ApiKey ?? throw new InvalidOperationException("HuggingFace API key is required");
+
         return new HuggingFaceEmbeddingGenerator(
             httpClient,
-            string.IsNullOrWhiteSpace(config.ApiKey) ? (Environment.GetEnvironmentVariable("HF_TOKEN") ?? string.Empty) : config.ApiKey,
+            apiKey,
             config.Model,
             dimensions,
             isNormalized: true, // Sentence-transformers models typically return normalized vectors
