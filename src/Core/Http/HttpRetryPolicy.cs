@@ -104,6 +104,12 @@ public static class HttpRetryPolicy
             }
         }
 
+        // Defensive fallback: in normal flow, this is unreachable because:
+        // - Successful responses return immediately.
+        // - Non-retryable HTTP status codes return immediately (no exception).
+        // - Retryable HTTP status codes exhaust attempts and return the final response.
+        // - Exceptions either throw (non-retryable / last attempt) or are captured in lastException.
+        // Keeping this protects against unexpected future changes to the control flow.
         throw lastException ?? new HttpRequestException("HTTP call failed after retries");
     }
 
