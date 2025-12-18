@@ -45,6 +45,11 @@ public sealed class OpenAIEmbeddingsConfig : EmbeddingsConfig
             throw new ConfigException($"{path}.ApiKey", "OpenAI API key is required");
         }
 
+        if (this.BatchSize < 1)
+        {
+            throw new ConfigException($"{path}.BatchSize", "BatchSize must be >= 1");
+        }
+
         if (!string.IsNullOrWhiteSpace(this.BaseUrl) &&
             !Uri.TryCreate(this.BaseUrl, UriKind.Absolute, out _))
         {

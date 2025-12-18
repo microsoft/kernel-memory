@@ -36,7 +36,8 @@ public sealed class OpenAIEmbeddingGeneratorTests
             vectorDimensions: 1536,
             isNormalized: true,
             baseUrl: null,
-            this._loggerMock.Object);
+            this._loggerMock.Object,
+            batchSize: 10);
 
         // Assert
         Assert.Equal(EmbeddingsTypes.OpenAI, generator.ProviderType);
@@ -68,7 +69,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
@@ -99,7 +100,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "sk-test-api-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+            httpClient, "sk-test-api-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -142,7 +143,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var results = await generator.GenerateAsync(texts, CancellationToken.None).ConfigureAwait(false);
@@ -151,6 +152,53 @@ public sealed class OpenAIEmbeddingGeneratorTests
         Assert.Equal(3, results.Length);
         var requestBody = JsonSerializer.Deserialize<OpenAIEmbeddingRequest>(capturedContent!);
         Assert.Equal(3, requestBody!.Input.Length);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Batch_WithSmallBatchSize_ShouldChunkRequests()
+    {
+        // Arrange
+        var texts = new[] { "text1", "text2", "text3" };
+
+        var callIndex = 0;
+        var seenBatchSizes = new List<int>();
+
+        this._httpHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (req, ct) =>
+            {
+                var body = await req.Content!.ReadAsStringAsync(ct).ConfigureAwait(false);
+                var requestBody = JsonSerializer.Deserialize<OpenAIEmbeddingRequest>(body)!;
+                seenBatchSizes.Add(requestBody.Input.Length);
+
+                callIndex++;
+                var embeddings = callIndex == 1
+                    ? new[] { new[] { 0.1f }, new[] { 0.2f } }
+                    : new[] { new[] { 0.3f } };
+
+                var response = CreateOpenAIResponseWithTokenCount(embeddings, totalTokens: 3);
+
+                return new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(JsonSerializer.Serialize(response))
+                };
+            });
+
+        var httpClient = new HttpClient(this._httpHandlerMock.Object);
+        var generator = new OpenAIEmbeddingGenerator(
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 2);
+
+        // Act
+        var results = await generator.GenerateAsync(texts, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        Assert.Equal(3, results.Length);
+        Assert.Equal(new[] { 2, 1 }, seenBatchSizes);
     }
 
     [Fact]
@@ -174,7 +222,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "model", 1536, true, "https://custom.api.com", this._loggerMock.Object);
+            httpClient, "test-key", "model", 1536, true, "https://custom.api.com", this._loggerMock.Object, batchSize: 10);
 
         // Act
         var result = await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
@@ -193,7 +241,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(() => new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.TooManyRequests,
                 Content = new StringContent("Rate limit exceeded")
@@ -201,7 +249,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "model", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "model", 1536, true, null, this._loggerMock.Object, batchSize: 10, delayAsync: (_, _) => Task.CompletedTask);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -226,7 +274,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "bad-key", "model", 1536, true, null, this._loggerMock.Object);
+            httpClient, "bad-key", "model", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -247,7 +295,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "model", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "model", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -263,7 +311,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new OpenAIEmbeddingGenerator(httpClient, null!, "model", 1536, true, null, this._loggerMock.Object));
+            new OpenAIEmbeddingGenerator(httpClient, null!, "model", 1536, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     [Fact]
@@ -272,7 +320,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentException>(() =>
-            new OpenAIEmbeddingGenerator(httpClient, "", "model", 1536, true, null, this._loggerMock.Object));
+            new OpenAIEmbeddingGenerator(httpClient, "", "model", 1536, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     [Fact]
@@ -281,7 +329,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         // Assert
         var httpClient = new HttpClient();
         Assert.Throws<ArgumentNullException>(() =>
-            new OpenAIEmbeddingGenerator(httpClient, "key", null!, 1536, true, null, this._loggerMock.Object));
+            new OpenAIEmbeddingGenerator(httpClient, "key", null!, 1536, true, null, this._loggerMock.Object, batchSize: 10));
     }
 
     [Fact]
@@ -305,7 +353,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
@@ -341,7 +389,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
 
         var httpClient = new HttpClient(this._httpHandlerMock.Object);
         var generator = new OpenAIEmbeddingGenerator(
-            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object, batchSize: 10);
 
         // Act
         var results = await generator.GenerateAsync(new[] { "text1", "text2", "text3" }, CancellationToken.None).ConfigureAwait(false);

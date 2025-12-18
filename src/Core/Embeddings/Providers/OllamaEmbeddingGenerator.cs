@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.Enums;
+using KernelMemory.Core.Http;
 using Microsoft.Extensions.Logging;
 
 namespace KernelMemory.Core.Embeddings.Providers;
@@ -16,6 +17,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
     private readonly ILogger<OllamaEmbeddingGenerator> _logger;
+    private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
     /// <inheritdoc />
     public EmbeddingsTypes ProviderType => EmbeddingsTypes.Ollama;
@@ -38,13 +40,15 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
     /// <param name="vectorDimensions">Vector dimensions produced by the model.</param>
     /// <param name="isNormalized">Whether vectors are normalized.</param>
     /// <param name="logger">Logger instance.</param>
+    /// <param name="delayAsync">Optional delay function for retries (used for fast unit tests).</param>
     public OllamaEmbeddingGenerator(
         HttpClient httpClient,
         string baseUrl,
         string model,
         int vectorDimensions,
         bool isNormalized,
-        ILogger<OllamaEmbeddingGenerator> logger)
+        ILogger<OllamaEmbeddingGenerator> logger,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
         ArgumentNullException.ThrowIfNull(baseUrl, nameof(baseUrl));
@@ -57,6 +61,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
         this.VectorDimensions = vectorDimensions;
         this.IsNormalized = isNormalized;
         this._logger = logger;
+        this._delayAsync = delayAsync ?? Task.Delay;
 
         this._logger.LogDebug("OllamaEmbeddingGenerator initialized: {BaseUrl}, model: {Model}, dimensions: {Dimensions}",
             this._baseUrl, this.ModelName, this.VectorDimensions);
@@ -75,7 +80,21 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator
 
         this._logger.LogTrace("Calling Ollama embeddings API: {Endpoint}", endpoint);
 
-        var response = await this._httpClient.PostAsJsonAsync(endpoint, request, ct).ConfigureAwait(false);
+        using var response = await HttpRetryPolicy.SendAsync(
+            this._httpClient,
+            requestFactory: () =>
+            {
+                var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                {
+                    Content = JsonContent.Create(request)
+                };
+                return httpRequest;
+            },
+            this._logger,
+            ct,
+            delayAsync: this._delayAsync,
+            perAttemptTimeout: TimeSpan.FromSeconds(Constants.HttpRetryDefaults.OllamaPerAttemptTimeoutSeconds)).ConfigureAwait(false);
+
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<OllamaEmbeddingResponse>(ct).ConfigureAwait(false);

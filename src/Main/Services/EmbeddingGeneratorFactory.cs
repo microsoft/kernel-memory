@@ -101,7 +101,8 @@ public static class EmbeddingGeneratorFactory
             dimensions,
             isNormalized: true, // OpenAI embeddings are typically normalized
             config.BaseUrl,
-            logger);
+            logger,
+            batchSize: config.BatchSize);
     }
 
     /// <summary>
@@ -123,10 +124,12 @@ public static class EmbeddingGeneratorFactory
             config.Endpoint,
             config.Deployment,
             config.Model,
-            config.ApiKey ?? string.Empty,
+            config.ApiKey,
             dimensions,
             isNormalized: true, // Azure OpenAI embeddings are typically normalized
-            logger);
+            logger,
+            batchSize: config.BatchSize,
+            useManagedIdentity: config.UseManagedIdentity);
     }
 
     /// <summary>
@@ -142,13 +145,16 @@ public static class EmbeddingGeneratorFactory
         // Get known dimensions for the model
         var dimensions = Constants.EmbeddingDefaults.KnownModelDimensions.GetValueOrDefault(config.Model, defaultValue: 384);
 
+        var apiKey = config.ApiKey ?? throw new InvalidOperationException("HuggingFace API key is required");
+
         return new HuggingFaceEmbeddingGenerator(
             httpClient,
-            config.ApiKey ?? string.Empty,
+            apiKey,
             config.Model,
             dimensions,
             isNormalized: true, // Sentence-transformers models typically return normalized vectors
             config.BaseUrl,
-            logger);
+            logger,
+            batchSize: config.BatchSize);
     }
 }

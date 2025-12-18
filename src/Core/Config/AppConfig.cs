@@ -10,7 +10,9 @@ namespace KernelMemory.Core.Config;
 /// Root configuration for Kernel Memory application
 /// Loaded from ~/.km/config.json or custom path
 /// </summary>
+#pragma warning disable CA1724 // Conflicts with Microsoft.Identity.Client.AppConfig when Azure.Identity is referenced.
 public sealed class AppConfig : IValidatable
+#pragma warning restore CA1724
 {
     /// <summary>
     /// Named memory nodes (e.g., "personal", "work")

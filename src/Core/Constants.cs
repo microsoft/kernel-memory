@@ -211,6 +211,39 @@ public static class Constants
     }
 
     /// <summary>
+    /// Constants for HTTP retry/backoff used by external providers (embeddings, etc.).
+    /// </summary>
+    public static class HttpRetryDefaults
+    {
+        /// <summary>
+        /// Maximum attempts including the first try.
+        /// </summary>
+        public const int MaxAttempts = 5;
+
+        /// <summary>
+        /// Default timeout per attempt (seconds).
+        /// Applied by <see cref="KernelMemory.Core.Http.HttpRetryPolicy"/> to avoid hanging calls.
+        /// </summary>
+        public const int DefaultPerAttemptTimeoutSeconds = 60;
+
+        /// <summary>
+        /// Per-attempt timeout for local Ollama calls (seconds).
+        /// Keep this low so local development and tests fail fast when Ollama is not running.
+        /// </summary>
+        public const int OllamaPerAttemptTimeoutSeconds = 5;
+
+        /// <summary>
+        /// Base delay for exponential backoff.
+        /// </summary>
+        public const int BaseDelayMs = 200;
+
+        /// <summary>
+        /// Maximum delay between attempts.
+        /// </summary>
+        public const int MaxDelayMs = 5000;
+    }
+
+    /// <summary>
     /// Constants for the logging system including file rotation, log levels,
     /// and output formatting.
     /// </summary>

@@ -81,5 +81,10 @@ public sealed class AzureOpenAIEmbeddingsConfig : EmbeddingsConfig
             throw new ConfigException(path,
                 "Azure OpenAI: specify either ApiKey or UseManagedIdentity, not both");
         }
+
+        if (this.BatchSize < 1)
+        {
+            throw new ConfigException($"{path}.BatchSize", "BatchSize must be >= 1");
+        }
     }
 }
