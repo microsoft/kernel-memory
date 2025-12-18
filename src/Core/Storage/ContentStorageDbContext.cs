@@ -41,7 +41,7 @@ public class ContentStorageDbContext : DbContext
 
             entity.Property(e => e.MimeType)
                 .IsRequired()
-                .HasMaxLength(255);
+                .HasMaxLength(Constants.Database.MaxMimeTypeLength);
 
             entity.Property(e => e.ByteSize)
                 .IsRequired();

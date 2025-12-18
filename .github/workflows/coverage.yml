@@ -25,6 +25,7 @@ jobs:
         chmod +x ./coverage.sh
         ./coverage.sh 80
       env:
+        OLLAMA_AVAILABLE: "false"
         MIN_COVERAGE: 80
     
     - name: Upload coverage report

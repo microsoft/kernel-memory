@@ -25,7 +25,7 @@ public sealed class BaseCommandTests
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
 
         // Assert
-        Assert.Equal(Constants.ExitCodeUserError, exitCode);
+        Assert.Equal(Constants.App.ExitCodeUserError, exitCode);
         mockFormatter.Verify(f => f.FormatError("Invalid operation"), Times.Once);
     }
 
@@ -41,7 +41,7 @@ public sealed class BaseCommandTests
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
 
         // Assert
-        Assert.Equal(Constants.ExitCodeUserError, exitCode);
+        Assert.Equal(Constants.App.ExitCodeUserError, exitCode);
         mockFormatter.Verify(f => f.FormatError("Invalid argument"), Times.Once);
     }
 
@@ -57,7 +57,7 @@ public sealed class BaseCommandTests
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
 
         // Assert
-        Assert.Equal(Constants.ExitCodeSystemError, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSystemError, exitCode);
         mockFormatter.Verify(f => f.FormatError("System failure"), Times.Once);
     }
 
@@ -73,7 +73,7 @@ public sealed class BaseCommandTests
         var exitCode = command.TestHandleError(exception, mockFormatter.Object);
 
         // Assert
-        Assert.Equal(Constants.ExitCodeSystemError, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSystemError, exitCode);
         mockFormatter.Verify(f => f.FormatError("File access error"), Times.Once);
     }
 

@@ -74,7 +74,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result);
+        Assert.Equal(new[] { 0.1f, 0.2f, 0.3f }, result.Vector);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         var result = await generator.GenerateAsync("test", CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(new[] { 0.1f }, result);
+        Assert.Equal(new[] { 0.1f }, result.Vector);
     }
 
     [Fact]
@@ -284,12 +284,86 @@ public sealed class OpenAIEmbeddingGeneratorTests
             new OpenAIEmbeddingGenerator(httpClient, "key", null!, 1536, true, null, this._loggerMock.Object));
     }
 
+    [Fact]
+    public async Task GenerateAsync_Single_ShouldReturnTokenCountFromApiResponse()
+    {
+        // Arrange
+        var response = CreateOpenAIResponseWithTokenCount(new[] { new[] { 0.1f, 0.2f, 0.3f } }, totalTokens: 42);
+        var responseJson = JsonSerializer.Serialize(response);
+
+        this._httpHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson)
+            });
+
+        var httpClient = new HttpClient(this._httpHandlerMock.Object);
+        var generator = new OpenAIEmbeddingGenerator(
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+
+        // Act
+        var result = await generator.GenerateAsync("test text", CancellationToken.None).ConfigureAwait(false);
+
+        // Assert - Token count should be extracted from API response
+        Assert.NotNull(result.TokenCount);
+        Assert.Equal(42, result.TokenCount.Value);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Batch_ShouldDistributeTokenCountEvenly()
+    {
+        // Arrange - Response with 30 total tokens for 3 embeddings = 10 tokens each
+        var response = CreateOpenAIResponseWithTokenCount(new[]
+        {
+            new[] { 0.1f },
+            new[] { 0.2f },
+            new[] { 0.3f }
+        }, totalTokens: 30);
+        var responseJson = JsonSerializer.Serialize(response);
+
+        this._httpHandlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseJson)
+            });
+
+        var httpClient = new HttpClient(this._httpHandlerMock.Object);
+        var generator = new OpenAIEmbeddingGenerator(
+            httpClient, "test-key", "text-embedding-ada-002", 1536, true, null, this._loggerMock.Object);
+
+        // Act
+        var results = await generator.GenerateAsync(new[] { "text1", "text2", "text3" }, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert - Each result should have evenly distributed token count (30/3 = 10)
+        Assert.Equal(3, results.Length);
+        Assert.Equal(10, results[0].TokenCount);
+        Assert.Equal(10, results[1].TokenCount);
+        Assert.Equal(10, results[2].TokenCount);
+    }
+
     private static OpenAIEmbeddingResponse CreateOpenAIResponse(float[][] embeddings)
+    {
+        return CreateOpenAIResponseWithTokenCount(embeddings, totalTokens: 10);
+    }
+
+    private static OpenAIEmbeddingResponse CreateOpenAIResponseWithTokenCount(float[][] embeddings, int totalTokens)
     {
         return new OpenAIEmbeddingResponse
         {
             Data = embeddings.Select((e, i) => new EmbeddingData { Index = i, Embedding = e }).ToArray(),
-            Usage = new UsageInfo { PromptTokens = 10, TotalTokens = 10 }
+            Usage = new UsageInfo { PromptTokens = totalTokens, TotalTokens = totalTokens }
         };
     }
 

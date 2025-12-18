@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.Validation;
-using KernelMemory.Core.Search;
 
 namespace KernelMemory.Core.Config;
 
@@ -17,14 +16,14 @@ public sealed class SearchConfig : IValidatable
     /// Default: 0.3 (moderate threshold).
     /// </summary>
     [JsonPropertyName("defaultMinRelevance")]
-    public float DefaultMinRelevance { get; set; } = SearchConstants.DefaultMinRelevance;
+    public float DefaultMinRelevance { get; set; } = Constants.SearchDefaults.DefaultMinRelevance;
 
     /// <summary>
     /// Default maximum number of results to return per search.
     /// Default: 20 results.
     /// </summary>
     [JsonPropertyName("defaultLimit")]
-    public int DefaultLimit { get; set; } = SearchConstants.DefaultLimit;
+    public int DefaultLimit { get; set; } = Constants.SearchDefaults.DefaultLimit;
 
     /// <summary>
     /// Search timeout in seconds per node.
@@ -32,7 +31,7 @@ public sealed class SearchConfig : IValidatable
     /// Default: 30 seconds.
     /// </summary>
     [JsonPropertyName("searchTimeoutSeconds")]
-    public int SearchTimeoutSeconds { get; set; } = SearchConstants.DefaultSearchTimeoutSeconds;
+    public int SearchTimeoutSeconds { get; set; } = Constants.SearchDefaults.DefaultSearchTimeoutSeconds;
 
     /// <summary>
     /// Default maximum results to retrieve from each node (memory safety).
@@ -41,7 +40,7 @@ public sealed class SearchConfig : IValidatable
     /// Default: 1000 results per node.
     /// </summary>
     [JsonPropertyName("maxResultsPerNode")]
-    public int MaxResultsPerNode { get; set; } = SearchConstants.DefaultMaxResultsPerNode;
+    public int MaxResultsPerNode { get; set; } = Constants.SearchDefaults.DefaultMaxResultsPerNode;
 
     /// <summary>
     /// Default nodes to search when no explicit --nodes flag is provided.
@@ -50,7 +49,7 @@ public sealed class SearchConfig : IValidatable
     /// </summary>
     [JsonPropertyName("defaultNodes")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays")]
-    public string[] DefaultNodes { get; set; } = [SearchConstants.AllNodesWildcard];
+    public string[] DefaultNodes { get; set; } = [Constants.SearchDefaults.AllNodesWildcard];
 
     /// <summary>
     /// Nodes to exclude from search by default.
@@ -67,7 +66,7 @@ public sealed class SearchConfig : IValidatable
     /// Default: 10 levels.
     /// </summary>
     [JsonPropertyName("maxQueryDepth")]
-    public int MaxQueryDepth { get; set; } = SearchConstants.MaxQueryDepth;
+    public int MaxQueryDepth { get; set; } = Constants.SearchDefaults.MaxQueryDepth;
 
     /// <summary>
     /// Maximum number of boolean operators (AND/OR/NOT) in a single query.
@@ -75,7 +74,7 @@ public sealed class SearchConfig : IValidatable
     /// Default: 50 operators.
     /// </summary>
     [JsonPropertyName("maxBooleanOperators")]
-    public int MaxBooleanOperators { get; set; } = SearchConstants.MaxBooleanOperators;
+    public int MaxBooleanOperators { get; set; } = Constants.SearchDefaults.MaxBooleanOperators;
 
     /// <summary>
     /// Maximum length of a field value in query (characters).
@@ -83,7 +82,7 @@ public sealed class SearchConfig : IValidatable
     /// Default: 1000 characters.
     /// </summary>
     [JsonPropertyName("maxFieldValueLength")]
-    public int MaxFieldValueLength { get; set; } = SearchConstants.MaxFieldValueLength;
+    public int MaxFieldValueLength { get; set; } = Constants.SearchDefaults.MaxFieldValueLength;
 
     /// <summary>
     /// Maximum time allowed for query parsing (milliseconds).
@@ -91,42 +90,42 @@ public sealed class SearchConfig : IValidatable
     /// Default: 1000ms (1 second).
     /// </summary>
     [JsonPropertyName("queryParseTimeoutMs")]
-    public int QueryParseTimeoutMs { get; set; } = SearchConstants.QueryParseTimeoutMs;
+    public int QueryParseTimeoutMs { get; set; } = Constants.SearchDefaults.QueryParseTimeoutMs;
 
     /// <summary>
     /// Default snippet length in characters when --snippet flag is used.
     /// Default: 200 characters.
     /// </summary>
     [JsonPropertyName("snippetLength")]
-    public int SnippetLength { get; set; } = SearchConstants.DefaultSnippetLength;
+    public int SnippetLength { get; set; } = Constants.SearchDefaults.DefaultSnippetLength;
 
     /// <summary>
     /// Default maximum number of snippets per result when --snippet flag is used.
     /// Default: 1 snippet.
     /// </summary>
     [JsonPropertyName("maxSnippetsPerResult")]
-    public int MaxSnippetsPerResult { get; set; } = SearchConstants.DefaultMaxSnippetsPerResult;
+    public int MaxSnippetsPerResult { get; set; } = Constants.SearchDefaults.DefaultMaxSnippetsPerResult;
 
     /// <summary>
     /// Separator string between multiple snippets.
     /// Default: "..." (ellipsis).
     /// </summary>
     [JsonPropertyName("snippetSeparator")]
-    public string SnippetSeparator { get; set; } = SearchConstants.DefaultSnippetSeparator;
+    public string SnippetSeparator { get; set; } = Constants.SearchDefaults.DefaultSnippetSeparator;
 
     /// <summary>
     /// Prefix marker for highlighting matched terms.
     /// Default: "&lt;mark&gt;" (HTML-style).
     /// </summary>
     [JsonPropertyName("highlightPrefix")]
-    public string HighlightPrefix { get; set; } = SearchConstants.DefaultHighlightPrefix;
+    public string HighlightPrefix { get; set; } = Constants.SearchDefaults.DefaultHighlightPrefix;
 
     /// <summary>
     /// Suffix marker for highlighting matched terms.
     /// Default: "&lt;/mark&gt;" (HTML-style).
     /// </summary>
     [JsonPropertyName("highlightSuffix")]
-    public string HighlightSuffix { get; set; } = SearchConstants.DefaultHighlightSuffix;
+    public string HighlightSuffix { get; set; } = Constants.SearchDefaults.DefaultHighlightSuffix;
 
     /// <summary>
     /// Validates the search configuration.
@@ -135,10 +134,10 @@ public sealed class SearchConfig : IValidatable
     public void Validate(string path)
     {
         // Validate min relevance score
-        if (this.DefaultMinRelevance < SearchConstants.MinRelevanceScore || this.DefaultMinRelevance > SearchConstants.MaxRelevanceScore)
+        if (this.DefaultMinRelevance < Constants.SearchDefaults.MinRelevanceScore || this.DefaultMinRelevance > Constants.SearchDefaults.MaxRelevanceScore)
         {
             throw new ConfigException($"{path}.DefaultMinRelevance",
-                $"Must be between {SearchConstants.MinRelevanceScore} and {SearchConstants.MaxRelevanceScore}");
+                $"Must be between {Constants.SearchDefaults.MinRelevanceScore} and {Constants.SearchDefaults.MaxRelevanceScore}");
         }
 
         // Validate default limit
@@ -167,7 +166,7 @@ public sealed class SearchConfig : IValidatable
         }
 
         // Validate no contradictory node configuration
-        if (this.DefaultNodes.Length == 1 && this.DefaultNodes[0] == SearchConstants.AllNodesWildcard)
+        if (this.DefaultNodes.Length == 1 && this.DefaultNodes[0] == Constants.SearchDefaults.AllNodesWildcard)
         {
             // Using wildcard - excludeNodes is OK
         }

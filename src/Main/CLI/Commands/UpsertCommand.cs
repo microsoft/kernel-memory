@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.CLI.OutputFormatters;
@@ -118,7 +119,7 @@ public class UpsertCommand : BaseCommand<UpsertCommandSettings>
                 });
             }
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (Exception ex)
         {

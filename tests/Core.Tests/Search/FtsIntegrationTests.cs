@@ -1,5 +1,4 @@
 // Copyright (c) Microsoft. All rights reserved.
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Storage;
 using KernelMemory.Core.Storage.Models;
 using Microsoft.Data.Sqlite;
@@ -61,7 +60,7 @@ public sealed class FtsIntegrationTests : IDisposable
             this._context,
             this._mockCuidGenerator.Object,
             this._mockStorageLogger.Object,
-            searchIndexById);
+            (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexById);
     }
 
     public void Dispose()

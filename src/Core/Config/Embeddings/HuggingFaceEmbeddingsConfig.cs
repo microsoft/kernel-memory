@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Config.Validation;
-using KernelMemory.Core.Embeddings;
 
 namespace KernelMemory.Core.Config.Embeddings;
 
@@ -20,7 +19,7 @@ public sealed class HuggingFaceEmbeddingsConfig : EmbeddingsConfig
     /// HuggingFace model name (e.g., "sentence-transformers/all-MiniLM-L6-v2", "BAAI/bge-base-en-v1.5").
     /// </summary>
     [JsonPropertyName("model")]
-    public string Model { get; set; } = EmbeddingConstants.DefaultHuggingFaceModel;
+    public string Model { get; set; } = Constants.EmbeddingDefaults.DefaultHuggingFaceModel;
 
     /// <summary>
     /// HuggingFace API key (token).
@@ -35,7 +34,7 @@ public sealed class HuggingFaceEmbeddingsConfig : EmbeddingsConfig
     /// Can be changed for custom inference endpoints.
     /// </summary>
     [JsonPropertyName("baseUrl")]
-    public string BaseUrl { get; set; } = EmbeddingConstants.DefaultHuggingFaceBaseUrl;
+    public string BaseUrl { get; set; } = Constants.EmbeddingDefaults.DefaultHuggingFaceBaseUrl;
 
     /// <inheritdoc />
     public override void Validate(string path)

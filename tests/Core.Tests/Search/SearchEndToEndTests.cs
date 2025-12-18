@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +43,7 @@ public sealed class SearchEndToEndTests : IDisposable
         this._ftsIndex = new SqliteFtsIndex(ftsDbPath, enableStemming: true, mockFtsLogger.Object);
         var searchIndexes = new Dictionary<string, ISearchIndex> { ["fts"] = this._ftsIndex };
 
-        this._storage = new ContentStorageService(this._context, cuidGenerator, mockStorageLogger.Object, searchIndexes);
+        this._storage = new ContentStorageService(this._context, cuidGenerator, mockStorageLogger.Object, (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexes);
         var nodeService = new NodeSearchService("test-node", this._ftsIndex, this._storage);
         this._searchService = new SearchService(new Dictionary<string, NodeSearchService> { ["test-node"] = nodeService });
 

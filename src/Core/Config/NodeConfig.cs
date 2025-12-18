@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json.Serialization;
 using KernelMemory.Core.Config.ContentIndex;
+using KernelMemory.Core.Config.Embeddings;
 using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Config.SearchIndex;
 using KernelMemory.Core.Config.Storage;
@@ -106,7 +107,8 @@ public sealed class NodeConfig : IValidatable
     }
 
     /// <summary>
-    /// Creates a default "personal" node configuration
+    /// Creates a default "personal" node configuration with FTS and vector search.
+    /// Uses Ollama with qwen3-embedding model (1024 dimensions) for local, offline-capable vector search.
     /// </summary>
     /// <param name="nodeDir"></param>
     internal static NodeConfig CreateDefaultPersonalNode(string nodeDir)
@@ -128,7 +130,21 @@ public sealed class NodeConfig : IValidatable
                     Id = "sqlite-fts",
                     Type = SearchIndexTypes.SqliteFTS,
                     Path = Path.Combine(nodeDir, "fts.db"),
-                    EnableStemming = true
+                    EnableStemming = true,
+                    Required = true
+                },
+                new VectorSearchIndexConfig
+                {
+                    Id = "sqlite-vector",
+                    Type = SearchIndexTypes.SqliteVector,
+                    Path = Path.Combine(nodeDir, "vector.db"),
+                    Dimensions = 1024,
+                    UseSqliteVec = false,
+                    Embeddings = new OllamaEmbeddingsConfig
+                    {
+                        Model = Constants.EmbeddingDefaults.DefaultOllamaModel,
+                        BaseUrl = Constants.EmbeddingDefaults.DefaultOllamaBaseUrl
+                    }
                 }
             }
         };

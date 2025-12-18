@@ -58,10 +58,10 @@ public sealed class WeightedDiminishingReranker : ISearchReranker
         // Get node weight (default to 1.0 if not configured)
         var nodeWeight = config.NodeWeights.TryGetValue(result.NodeId, out var nw)
             ? nw
-            : SearchConstants.DefaultNodeWeight;
+            : Constants.SearchDefaults.DefaultNodeWeight;
 
         // Get index weight (default to 1.0 if not configured)
-        var indexWeight = SearchConstants.DefaultIndexWeight;
+        var indexWeight = Constants.SearchDefaults.DefaultIndexWeight;
         if (config.IndexWeights.TryGetValue(result.NodeId, out var nodeIndexes))
         {
             if (nodeIndexes.TryGetValue(result.IndexId, out var iw))
@@ -103,9 +103,9 @@ public sealed class WeightedDiminishingReranker : ISearchReranker
         }
 
         // Cap at 1.0 (max relevance)
-        if (finalScore > SearchConstants.MaxRelevanceScore)
+        if (finalScore > Constants.SearchDefaults.MaxRelevanceScore)
         {
-            finalScore = SearchConstants.MaxRelevanceScore;
+            finalScore = Constants.SearchDefaults.MaxRelevanceScore;
         }
 
         // Use the highest-scored appearance for the record data

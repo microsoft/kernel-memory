@@ -98,10 +98,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             var output = outputCapture.ToString();
 
@@ -151,10 +151,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             var output = outputCapture.ToString();
             var outputJson = System.Text.Json.JsonDocument.Parse(output);
@@ -209,10 +209,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             var output = outputCapture.ToString();
 
@@ -252,10 +252,10 @@ public sealed class ConfigCommandTests : IDisposable
             null);
 
         // Act
-        var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+        var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
         // Assert
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
         Assert.True(File.Exists(newConfigPath), "Config file should be created");
 
         // Verify the file content is valid JSON
@@ -298,10 +298,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeUserError, exitCode);
+            Assert.Equal(Constants.App.ExitCodeUserError, exitCode);
 
             // Error message goes to Console.Error
             var errorOutput = errorCapture.ToString();
@@ -346,11 +346,11 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
             // The key behavior: command succeeds even without config file
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             // Should still output valid JSON config
             var output = outputCapture.ToString();
@@ -392,10 +392,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             var output = outputCapture.ToString();
 
@@ -440,10 +440,10 @@ public sealed class ConfigCommandTests : IDisposable
         try
         {
             // Act
-            var exitCode = command.ExecuteAsync(context, settings).GetAwaiter().GetResult();
+            var exitCode = command.ExecuteAsync(context, settings, CancellationToken.None).GetAwaiter().GetResult();
 
             // Assert
-            Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+            Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
             var output = outputCapture.ToString();
             var outputJson = System.Text.Json.JsonDocument.Parse(output);

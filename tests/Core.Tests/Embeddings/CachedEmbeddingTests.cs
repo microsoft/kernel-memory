@@ -18,7 +18,8 @@ public sealed class CachedEmbeddingTests
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector
+            Vector = vector,
+            Timestamp = DateTimeOffset.UtcNow
         };
 
         // Assert
@@ -34,7 +35,8 @@ public sealed class CachedEmbeddingTests
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector
+            Vector = vector,
+            Timestamp = DateTimeOffset.UtcNow
         };
 
         // Assert
@@ -57,7 +59,8 @@ public sealed class CachedEmbeddingTests
         // Act
         var cached = new CachedEmbedding
         {
-            Vector = vector
+            Vector = vector,
+            Timestamp = DateTimeOffset.UtcNow
         };
 
         // Assert

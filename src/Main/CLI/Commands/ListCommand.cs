@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Storage.Models;
 using KernelMemory.Main.CLI.Exceptions;
@@ -24,7 +25,7 @@ public class ListCommandSettings : GlobalOptions
     [CommandOption("--take")]
     [Description("Number of items to take (default: 20)")]
     [DefaultValue(20)]
-    public int Take { get; init; } = Constants.DefaultPageSize;
+    public int Take { get; init; } = Constants.App.DefaultPageSize;
 
     public override ValidationResult Validate()
     {
@@ -67,9 +68,10 @@ public class ListCommand : BaseCommand<ListCommandSettings>
         ListCommandSettings settings,
         CancellationToken cancellationToken)
     {
+        var (config, node, formatter) = this.Initialize(settings);
+
         try
         {
-            var (config, node, formatter) = this.Initialize(settings);
             using var service = this.CreateContentService(node, readonlyMode: true);
 
             // Get total count
@@ -85,17 +87,16 @@ public class ListCommand : BaseCommand<ListCommandSettings>
             // Format list with pagination info
             formatter.FormatList(itemsWithNode, totalCount, settings.Skip, settings.Take);
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (DatabaseNotFoundException)
         {
             // First-run scenario: no database exists yet (expected state)
-            this.ShowFirstRunMessage(settings);
-            return Constants.ExitCodeSuccess; // Not a user error
+            this.ShowFirstRunMessage(settings, node.Id);
+            return Constants.App.ExitCodeSuccess; // Not a user error
         }
         catch (Exception ex)
         {
-            var formatter = OutputFormatterFactory.Create(settings);
             return this.HandleError(ex, formatter);
         }
     }
@@ -104,7 +105,8 @@ public class ListCommand : BaseCommand<ListCommandSettings>
     /// Shows a friendly first-run message when no database exists yet.
     /// </summary>
     /// <param name="settings">Command settings for output format.</param>
-    private void ShowFirstRunMessage(ListCommandSettings settings)
+    /// <param name="nodeId">The node ID being listed.</param>
+    private void ShowFirstRunMessage(ListCommandSettings settings, string nodeId)
     {
         var formatter = OutputFormatterFactory.Create(settings);
 
@@ -116,16 +118,20 @@ public class ListCommand : BaseCommand<ListCommandSettings>
         }
 
         // Human format: friendly welcome message
+        // Include --node parameter if not using the first (default) node
+        var isDefaultNode = nodeId == this.Config.Nodes.Keys.First();
+        var nodeParam = isDefaultNode ? "" : $" --node {nodeId}";
+
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold green]Welcome to Kernel Memory! 🚀[/]");
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]No content found yet. This is your first run.[/]");
+        AnsiConsole.MarkupLine($"[dim]No content found in node '{nodeId}' yet.[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]To get started:[/]");
-        AnsiConsole.MarkupLine("  [cyan]km put \"Your content here\"[/]");
+        AnsiConsole.MarkupLine($"  [cyan]km put \"Your content here\"{nodeParam}[/]");
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("[bold]Example:[/]");
-        AnsiConsole.MarkupLine("  [cyan]km put \"Hello, world!\" --id greeting[/]");
+        AnsiConsole.MarkupLine($"  [cyan]km put \"Hello, world!\" --id greeting{nodeParam}[/]");
         AnsiConsole.WriteLine();
     }
 }

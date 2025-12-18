@@ -2,6 +2,7 @@
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.ContentIndex;
+using KernelMemory.Core.Config.Embeddings;
 using KernelMemory.Core.Config.Enums;
 using KernelMemory.Core.Config.SearchIndex;
 using KernelMemory.Core.Config.Validation;
@@ -23,8 +24,10 @@ public sealed class AppConfigTests
         Assert.NotNull(config);
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
-        // Cache configs intentionally null - only created when features are implemented
-        Assert.Null(config.EmbeddingsCache);
+        // Embeddings cache now included in default (Feature 00007+00008 complete)
+        Assert.NotNull(config.EmbeddingsCache);
+        Assert.NotNull(config.EmbeddingsCache.Path);
+        // LLM cache still not included (feature not yet implemented)
         Assert.Null(config.LLMCache);
 
         // Verify personal node structure
@@ -35,16 +38,27 @@ public sealed class AppConfigTests
         Assert.IsType<SqliteContentIndexConfig>(personalNode.ContentIndex);
         Assert.Null(personalNode.FileStorage);
         Assert.Null(personalNode.RepoStorage);
-        Assert.Single(personalNode.SearchIndexes);
+        Assert.Equal(2, personalNode.SearchIndexes.Count); // FTS + Vector
 
-        // Verify search indexes (only FTS for now - vectors not yet implemented)
-        Assert.IsType<FtsSearchIndexConfig>(personalNode.SearchIndexes[0]);
-
-        var ftsIndex = (FtsSearchIndexConfig)personalNode.SearchIndexes[0];
+        // Verify FTS index
+        var ftsIndex = personalNode.SearchIndexes.First(i => i is FtsSearchIndexConfig) as FtsSearchIndexConfig;
+        Assert.NotNull(ftsIndex);
         Assert.Equal(SearchIndexTypes.SqliteFTS, ftsIndex.Type);
         Assert.True(ftsIndex.EnableStemming);
+        Assert.True(ftsIndex.Required);
         Assert.NotNull(ftsIndex.Path);
         Assert.Contains("fts.db", ftsIndex.Path);
+
+        // Verify Vector index
+        var vectorIndex = personalNode.SearchIndexes.First(i => i is VectorSearchIndexConfig) as VectorSearchIndexConfig;
+        Assert.NotNull(vectorIndex);
+        Assert.Equal(SearchIndexTypes.SqliteVector, vectorIndex.Type);
+        Assert.False(vectorIndex.Required); // Optional - Ollama may not be running
+        Assert.Equal(1024, vectorIndex.Dimensions);
+        Assert.NotNull(vectorIndex.Path);
+        Assert.Contains("vector.db", vectorIndex.Path);
+        Assert.NotNull(vectorIndex.Embeddings);
+        Assert.IsType<OllamaEmbeddingsConfig>(vectorIndex.Embeddings);
     }
 
     [Fact]

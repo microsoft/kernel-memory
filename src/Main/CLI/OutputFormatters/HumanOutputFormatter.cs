@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using KernelMemory.Core;
 using KernelMemory.Core.Storage.Models;
 using Spectre.Console;
 
@@ -126,9 +127,9 @@ public class HumanOutputFormatter : IOutputFormatter
 
         // Truncate content unless verbose
         var displayContent = content.Content;
-        if (!isVerbose && displayContent.Length > Constants.MaxContentDisplayLength)
+        if (!isVerbose && displayContent.Length > Constants.App.MaxContentDisplayLength)
         {
-            displayContent = string.Concat(displayContent.AsSpan(0, Constants.MaxContentDisplayLength), "...");
+            displayContent = string.Concat(displayContent.AsSpan(0, Constants.App.MaxContentDisplayLength), "...");
         }
         table.AddRow("[yellow]Content[/]", Markup.Escape(displayContent));
 
@@ -308,9 +309,9 @@ public class HumanOutputFormatter : IOutputFormatter
 
         // Truncate content unless verbose
         var displayContent = content.Content;
-        if (!isVerbose && displayContent.Length > Constants.MaxContentDisplayLength)
+        if (!isVerbose && displayContent.Length > Constants.App.MaxContentDisplayLength)
         {
-            displayContent = string.Concat(displayContent.AsSpan(0, Constants.MaxContentDisplayLength), "...");
+            displayContent = string.Concat(displayContent.AsSpan(0, Constants.App.MaxContentDisplayLength), "...");
         }
         table.AddRow("[yellow]Content[/]", Markup.Escape(displayContent));
 

@@ -29,5 +29,5 @@ public sealed class RerankingConfig
     /// Fourth appearance: multiplier = 0.125 (12.5% boost)
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays")]
-    public float[] DiminishingMultipliers { get; init; } = SearchConstants.DefaultDiminishingMultipliers;
+    public float[] DiminishingMultipliers { get; init; } = Constants.SearchDefaults.DefaultDiminishingMultipliers;
 }

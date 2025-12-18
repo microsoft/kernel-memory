@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Config.ContentIndex;
+using KernelMemory.Core.Config.Enums;
+using KernelMemory.Core.Embeddings.Cache;
 using KernelMemory.Core.Storage;
 using KernelMemory.Main.CLI.Exceptions;
 using KernelMemory.Main.CLI.OutputFormatters;
@@ -130,9 +133,34 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
         // Create dependencies
         var cuidGenerator = new CuidGenerator();
         var logger = this._loggerFactory.CreateLogger<ContentStorageService>();
+        var httpClient = new HttpClient();
 
-        // Create search indexes from node configuration using injected logger factory
-        var searchIndexes = SearchIndexFactory.CreateIndexes(node.SearchIndexes, this._loggerFactory);
+        // Create embedding cache if configured
+        IEmbeddingCache? embeddingCache = null;
+        if (this._config.EmbeddingsCache != null)
+        {
+            var cachePath = this._config.EmbeddingsCache.Path
+                ?? throw new InvalidOperationException("Embeddings cache path is required");
+            var cacheLogger = this._loggerFactory.CreateLogger<SqliteEmbeddingCache>();
+
+            // Determine cache mode from allowRead/allowWrite flags
+            var cacheMode = (this._config.EmbeddingsCache.AllowRead, this._config.EmbeddingsCache.AllowWrite) switch
+            {
+                (true, true) => CacheModes.ReadWrite,
+                (true, false) => CacheModes.ReadOnly,
+                (false, true) => CacheModes.WriteOnly,
+                (false, false) => throw new InvalidOperationException("Embeddings cache must allow at least read or write")
+            };
+
+            embeddingCache = new SqliteEmbeddingCache(cachePath, cacheMode, cacheLogger);
+        }
+
+        // Create all search indexes from node configuration
+        var searchIndexes = SearchIndexFactory.CreateIndexes(
+            node.SearchIndexes,
+            httpClient,
+            embeddingCache,
+            this._loggerFactory);
 
         // Create storage service with search indexes
         var storage = new ContentStorageService(context, cuidGenerator, logger, searchIndexes);
@@ -154,10 +182,10 @@ public abstract class BaseCommand<TSettings> : AsyncCommand<TSettings>
         // User errors: InvalidOperationException, ArgumentException
         if (ex is InvalidOperationException or ArgumentException)
         {
-            return Constants.ExitCodeUserError;
+            return Constants.App.ExitCodeUserError;
         }
 
         // System errors: everything else
-        return Constants.ExitCodeSystemError;
+        return Constants.App.ExitCodeSystemError;
     }
 }

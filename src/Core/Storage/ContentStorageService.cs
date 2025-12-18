@@ -72,18 +72,29 @@ public class ContentStorageService : IContentStorage
 
         // Phase 1: Queue the operation (MUST succeed - throws if fails)
         var operationId = await this.QueueUpsertOperationAsync(contentId, request, cancellationToken).ConfigureAwait(false);
-        this._logger.LogDebug("Phase 1 complete: Operation {OperationId} queued for content {ContentId}", operationId, contentId);
+        this._logger.LogInformation("Upsert queued successfully - ContentId: {ContentId}, OperationId: {OperationId}, MimeType: {MimeType}, Size: {ByteSize} bytes",
+            contentId, operationId, request.MimeType, request.Content.Length);
 
         // Phase 2: Try to cancel superseded operations (best effort)
         try
         {
-            await this.TryCancelSupersededUpsertOperationsAsync(contentId, operationId, cancellationToken).ConfigureAwait(false);
-            this._logger.LogDebug("Phase 2 complete: Cancelled superseded operations for content {ContentId}", contentId);
+            var cancelledCount = await this.TryCancelSupersededUpsertOperationsAsync(contentId, operationId, cancellationToken).ConfigureAwait(false);
+            if (cancelledCount > 0)
+            {
+                this._logger.LogInformation("Superseded {CancelledCount} older operation(s) for ContentId: {ContentId}, keeping latest OperationId: {OperationId}",
+                    cancelledCount, contentId, operationId);
+            }
+            else
+            {
+                this._logger.LogDebug("No superseded operations to cancel for ContentId: {ContentId}, OperationId: {OperationId}",
+                    contentId, operationId);
+            }
         }
         catch (Exception ex)
         {
             // Best effort - log but don't fail
-            this._logger.LogWarning(ex, "Phase 2 failed to cancel superseded operations for content {ContentId} - continuing anyway", contentId);
+            this._logger.LogWarning(ex, "Failed to cancel superseded operations for ContentId: {ContentId}, OperationId: {OperationId} - continuing anyway",
+                contentId, operationId);
         }
 
         // Processing: Try to process the new operation synchronously
@@ -114,18 +125,29 @@ public class ContentStorageService : IContentStorage
 
         // Phase 1: Queue the operation (MUST succeed - throws if fails)
         var operationId = await this.QueueDeleteOperationAsync(id, cancellationToken).ConfigureAwait(false);
-        this._logger.LogDebug("Phase 1 complete: Operation {OperationId} queued for content {ContentId}", operationId, id);
+        this._logger.LogInformation("Delete queued successfully - ContentId: {ContentId}, OperationId: {OperationId}",
+            id, operationId);
 
         // Phase 2: Try to cancel ALL previous operations (best effort)
         try
         {
-            await this.TryCancelAllOperationsAsync(id, operationId, cancellationToken).ConfigureAwait(false);
-            this._logger.LogDebug("Phase 2 complete: Cancelled all previous operations for content {ContentId}", id);
+            var cancelledCount = await this.TryCancelAllOperationsAsync(id, operationId, cancellationToken).ConfigureAwait(false);
+            if (cancelledCount > 0)
+            {
+                this._logger.LogInformation("Cancelled {CancelledCount} previous operation(s) for ContentId: {ContentId}, proceeding with delete OperationId: {OperationId}",
+                    cancelledCount, id, operationId);
+            }
+            else
+            {
+                this._logger.LogDebug("No previous operations to cancel for ContentId: {ContentId}, OperationId: {OperationId}",
+                    id, operationId);
+            }
         }
         catch (Exception ex)
         {
             // Best effort - log but don't fail
-            this._logger.LogWarning(ex, "Phase 2 failed to cancel previous operations for content {ContentId} - continuing anyway", id);
+            this._logger.LogWarning(ex, "Failed to cancel previous operations for ContentId: {ContentId}, OperationId: {OperationId} - continuing anyway",
+                id, operationId);
         }
 
         // Processing: Try to process the new operation synchronously
@@ -305,7 +327,7 @@ public class ContentStorageService : IContentStorage
     /// <param name="contentId"></param>
     /// <param name="newOperationId"></param>
     /// <param name="cancellationToken"></param>
-    private async Task TryCancelSupersededUpsertOperationsAsync(string contentId, string newOperationId, CancellationToken cancellationToken)
+    private async Task<int> TryCancelSupersededUpsertOperationsAsync(string contentId, string newOperationId, CancellationToken cancellationToken)
     {
         // Find incomplete operations with same ContentId and older Timestamp
         // Exclude Delete operations (they must complete)
@@ -332,6 +354,8 @@ public class ContentStorageService : IContentStorage
         {
             await this._context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        return superseded.Count;
     }
 
     /// <summary>
@@ -341,7 +365,7 @@ public class ContentStorageService : IContentStorage
     /// <param name="contentId"></param>
     /// <param name="newOperationId"></param>
     /// <param name="cancellationToken"></param>
-    private async Task TryCancelAllOperationsAsync(string contentId, string newOperationId, CancellationToken cancellationToken)
+    private async Task<int> TryCancelAllOperationsAsync(string contentId, string newOperationId, CancellationToken cancellationToken)
     {
         // Find incomplete operations with same ContentId and older Timestamp
         var timestamp = await this._context.Operations
@@ -366,6 +390,8 @@ public class ContentStorageService : IContentStorage
         {
             await this._context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        return superseded.Count;
     }
 
     // ========== Processing: Execute Operations ==========

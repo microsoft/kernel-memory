@@ -23,7 +23,7 @@ public sealed class ConfigParserTests
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
         // Cache configs intentionally null in default config
-        Assert.Null(config.EmbeddingsCache);
+        Assert.NotNull(config.EmbeddingsCache); // Now included in default config
     }
 
     [Fact]

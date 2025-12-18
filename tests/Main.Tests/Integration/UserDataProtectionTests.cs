@@ -158,7 +158,7 @@ public sealed class UserDataProtectionTests : IDisposable
         var exitCode = await command.ExecuteAsync(context, settingsWithConfigPath, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
 
         // Verify test used temp directory, not ~/.km
         var testDbPath = Path.Combine(this._tempDir, "nodes", "test", "content.db");

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Core.Logging;
 using KernelMemory.Main.CLI.Commands;
@@ -41,6 +42,8 @@ public sealed class CliApplicationBuilder
     private static readonly string[] s_searchExample4 = new[] { "search", "{\"content\": \"kubernetes\"}", "--format", "json" };
     private static readonly string[] s_examplesExample1 = new[] { "examples" };
     private static readonly string[] s_examplesExample2 = new[] { "examples", "--command", "search" };
+    private static readonly string[] s_doctorExample1 = new[] { "doctor" };
+    private static readonly string[] s_doctorExample2 = new[] { "doctor", "-f", "json" };
 
     /// <summary>
     /// Creates and configures a CommandApp with all CLI commands.
@@ -71,6 +74,18 @@ public sealed class CliApplicationBuilder
 
         // 4. Create logger factory using Serilog
         ILoggerFactory loggerFactory = SerilogFactory.CreateLoggerFactory(loggingConfig);
+        var bootstrapLogger = loggerFactory.CreateLogger<CliApplicationBuilder>();
+        var commandName = actualArgs.Length > 0 ? actualArgs[0] : "<none>";
+        bootstrapLogger.LogInformation(
+            "km CLI starting. Command={CommandName}, ConfigPath={ConfigPath}, LogFile={LogFile}",
+            commandName,
+            configPath,
+            loggingConfig.FilePath ?? "(not set)");
+
+        if (actualArgs.Length > 1)
+        {
+            bootstrapLogger.LogDebug("km CLI args: {Args}", string.Join(" ", actualArgs));
+        }
 
         // 5. Create DI container and register services
         ServiceCollection services = new();
@@ -109,8 +124,8 @@ public sealed class CliApplicationBuilder
         // Default: ~/.km/config.json
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            Constants.DefaultConfigDirName,
-            Constants.DefaultConfigFileName);
+            Constants.ConfigDefaults.DefaultConfigDirName,
+            Constants.ConfigDefaults.DefaultConfigFileName);
     }
 
     /// <summary>
@@ -240,6 +255,12 @@ public sealed class CliApplicationBuilder
                 .WithDescription("Show usage examples for all commands")
                 .WithExample(s_examplesExample1)
                 .WithExample(s_examplesExample2);
+
+            // Doctor command
+            config.AddCommand<DoctorCommand>("doctor")
+                .WithDescription("Validate configuration and check system health")
+                .WithExample(s_doctorExample1)
+                .WithExample(s_doctorExample2);
 
             config.ValidateExamples();
         });

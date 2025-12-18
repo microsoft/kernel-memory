@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Logging;
-
 namespace KernelMemory.Core.Tests.Logging;
 
 /// <summary>
@@ -19,8 +17,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public EnvironmentDetectorTests()
     {
         // Capture original values to restore after tests
-        this._originalDotNetEnv = Environment.GetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable);
-        this._originalAspNetEnv = Environment.GetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable);
+        this._originalDotNetEnv = Environment.GetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable);
+        this._originalAspNetEnv = Environment.GetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable);
     }
 
     /// <summary>
@@ -31,20 +29,20 @@ public sealed class EnvironmentDetectorTests : IDisposable
         // Restore original environment variables
         if (this._originalDotNetEnv != null)
         {
-            Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, this._originalDotNetEnv);
+            Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, this._originalDotNetEnv);
         }
         else
         {
-            Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, null);
+            Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, null);
         }
 
         if (this._originalAspNetEnv != null)
         {
-            Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, this._originalAspNetEnv);
+            Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, this._originalAspNetEnv);
         }
         else
         {
-            Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+            Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
         }
 
         GC.SuppressFinalize(this);
@@ -58,8 +56,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void GetEnvironment_WhenDotNetEnvSet_ShouldReturnDotNetEnv()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Production");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, "Staging");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Production");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, "Staging");
 
         // Act
         var result = EnvironmentDetector.GetEnvironment();
@@ -76,8 +74,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void GetEnvironment_WhenOnlyAspNetEnvSet_ShouldReturnAspNetEnv()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, null);
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, "Staging");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, "Staging");
 
         // Act
         var result = EnvironmentDetector.GetEnvironment();
@@ -94,8 +92,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void GetEnvironment_WhenNothingSet_ShouldReturnDevelopment()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, null);
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.GetEnvironment();
@@ -111,8 +109,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsProduction_WhenProductionSet_ShouldReturnTrue()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Production");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Production");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -129,8 +127,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsProduction_WhenProductionLowercase_ShouldReturnTrue()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "production");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "production");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -146,8 +144,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsProduction_WhenProductionUppercase_ShouldReturnTrue()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "PRODUCTION");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "PRODUCTION");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -164,8 +162,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     {
         // Arrange - set DOTNET_ENVIRONMENT to Development (takes precedence over ASPNETCORE_ENVIRONMENT)
         // Set both to Development to ensure no Production leaks from other tests
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Development");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, string.Empty);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Development");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, string.Empty);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -181,8 +179,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsProduction_WhenStaging_ShouldReturnFalse()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Staging");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Staging");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -199,8 +197,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsProduction_WhenNotSet_ShouldReturnFalse()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, null);
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsProduction();
@@ -216,8 +214,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsDevelopment_WhenDevelopmentSet_ShouldReturnTrue()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Development");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Development");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsDevelopment();
@@ -233,8 +231,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsDevelopment_WhenNotSet_ShouldReturnTrue()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, null);
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsDevelopment();
@@ -250,8 +248,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void IsDevelopment_WhenProduction_ShouldReturnFalse()
     {
         // Arrange - clear both env vars to ensure isolation
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "Production");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, null);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "Production");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, null);
 
         // Act
         var result = EnvironmentDetector.IsDevelopment();
@@ -267,8 +265,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void GetEnvironment_WhenDotNetEnvIsEmpty_ShouldFallbackToAspNet()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, string.Empty);
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, "Staging");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, string.Empty);
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, "Staging");
 
         // Act
         var result = EnvironmentDetector.GetEnvironment();
@@ -284,8 +282,8 @@ public sealed class EnvironmentDetectorTests : IDisposable
     public void GetEnvironment_WhenDotNetEnvIsWhitespace_ShouldFallbackToAspNet()
     {
         // Arrange
-        Environment.SetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable, "   ");
-        Environment.SetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable, "Staging");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable, "   ");
+        Environment.SetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable, "Staging");
 
         // Act
         var result = EnvironmentDetector.GetEnvironment();

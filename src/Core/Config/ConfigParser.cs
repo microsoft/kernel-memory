@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using KernelMemory.Core.Config.Cache;
 using KernelMemory.Core.Config.ContentIndex;
@@ -28,7 +29,8 @@ public static class ConfigParser
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        Converters = { new JsonStringEnumConverter() }
     };
 
     /// <summary>
@@ -46,13 +48,14 @@ public static class ConfigParser
 
     /// <summary>
     /// Loads configuration from a file, or creates default config if file doesn't exist.
-    /// The config file is always ensured to exist on disk after loading.
+    /// Optionally ensures the config file exists on disk after loading (for write operations).
     /// Performs tilde expansion on paths (~/ → home directory)
     /// </summary>
     /// <param name="filePath">Path to configuration file</param>
+    /// <param name="ensureFileExists">If true, writes config to disk if missing (default: true for backward compatibility)</param>
     /// <returns>Validated AppConfig instance</returns>
     /// <exception cref="ConfigException">Thrown when file exists but parsing or validation fails</exception>
-    public static AppConfig LoadFromFile(string filePath)
+    public static AppConfig LoadFromFile(string filePath, bool ensureFileExists = true)
     {
         AppConfig config;
 
@@ -65,8 +68,11 @@ public static class ConfigParser
             // Create default config relative to config file location
             config = AppConfig.CreateDefault(baseDir);
 
-            // Write the config file
-            WriteConfigFile(filePath, config);
+            // Write the config file only if requested
+            if (ensureFileExists)
+            {
+                WriteConfigFile(filePath, config);
+            }
 
             return config;
         }
@@ -82,8 +88,11 @@ public static class ConfigParser
             // Expand tilde paths
             ExpandTildePaths(config);
 
-            // Always ensure the config file exists (recreate if deleted between load and save)
-            WriteConfigFileIfMissing(filePath, config);
+            // Optionally ensure the config file exists (recreate if deleted between load and save)
+            if (ensureFileExists)
+            {
+                WriteConfigFileIfMissing(filePath, config);
+            }
 
             return config;
         }

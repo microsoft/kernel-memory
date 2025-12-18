@@ -66,6 +66,6 @@ public sealed class ModeRouterTests
     {
         var router = new ModeRouter();
         var exitCode = router.HandleUnimplementedMode("Test", "Test description");
-        Assert.Equal(Constants.ExitCodeSystemError, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSystemError, exitCode);
     }
 }

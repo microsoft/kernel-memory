@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using KernelMemory.Core;
+
 namespace KernelMemory.Main.CLI;
 
 /// <summary>
@@ -40,6 +42,6 @@ public sealed class ModeRouter
     {
         Console.Error.WriteLine($"Error: {mode} mode not yet implemented");
         Console.Error.WriteLine(description);
-        return Constants.ExitCodeSystemError;
+        return Constants.App.ExitCodeSystemError;
     }
 }

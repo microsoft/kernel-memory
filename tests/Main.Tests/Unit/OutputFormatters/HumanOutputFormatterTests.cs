@@ -133,7 +133,7 @@ public sealed class HumanOutputFormatterTests
     {
         // Arrange
         var formatter = new HumanOutputFormatter("normal", useColors: false);
-        var longContent = new string('x', Constants.MaxContentDisplayLength + 100);
+        var longContent = new string('x', Constants.App.MaxContentDisplayLength + 100);
         var content = new ContentDto
         {
             Id = "long-content-id",
@@ -151,7 +151,7 @@ public sealed class HumanOutputFormatterTests
     {
         // Arrange
         var formatter = new HumanOutputFormatter("verbose", useColors: false);
-        var longContent = new string('y', Constants.MaxContentDisplayLength + 100);
+        var longContent = new string('y', Constants.App.MaxContentDisplayLength + 100);
         var content = new ContentDto
         {
             Id = "long-verbose-id",

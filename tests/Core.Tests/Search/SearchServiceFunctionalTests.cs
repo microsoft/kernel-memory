@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using KernelMemory.Core.Search;
 using KernelMemory.Core.Search.Models;
 using KernelMemory.Core.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +45,7 @@ public sealed class SearchServiceFunctionalTests : IDisposable
         var fts1DbPath = Path.Combine(this._tempDir, "node1_fts.db");
         this._fts1 = new SqliteFtsIndex(fts1DbPath, enableStemming: true, mockFtsLogger1.Object);
         var searchIndexes1 = new Dictionary<string, ISearchIndex> { ["fts"] = this._fts1 };
-        this._storage1 = new ContentStorageService(this._context1, cuidGenerator, mockStorageLogger1.Object, searchIndexes1);
+        this._storage1 = new ContentStorageService(this._context1, cuidGenerator, mockStorageLogger1.Object, (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexes1);
         var node1Service = new NodeSearchService("node1", this._fts1, this._storage1);
 
         // Node 2
@@ -60,7 +59,7 @@ public sealed class SearchServiceFunctionalTests : IDisposable
         var fts2DbPath = Path.Combine(this._tempDir, "node2_fts.db");
         this._fts2 = new SqliteFtsIndex(fts2DbPath, enableStemming: true, mockFtsLogger2.Object);
         var searchIndexes2 = new Dictionary<string, ISearchIndex> { ["fts"] = this._fts2 };
-        this._storage2 = new ContentStorageService(this._context2, cuidGenerator, mockStorageLogger2.Object, searchIndexes2);
+        this._storage2 = new ContentStorageService(this._context2, cuidGenerator, mockStorageLogger2.Object, (IReadOnlyDictionary<string, Core.Search.ISearchIndex>)searchIndexes2);
         var node2Service = new NodeSearchService("node2", this._fts2, this._storage2);
 
         var nodeServices = new Dictionary<string, NodeSearchService>

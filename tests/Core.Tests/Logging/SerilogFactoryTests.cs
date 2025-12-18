@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using KernelMemory.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 

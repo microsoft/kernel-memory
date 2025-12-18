@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using KernelMemory.Core;
 using KernelMemory.Core.Config;
 using KernelMemory.Main.CLI.OutputFormatters;
 using Microsoft.Extensions.Logging;
@@ -78,7 +79,7 @@ public class DeleteCommand : BaseCommand<DeleteCommandSettings>
                 });
             }
 
-            return Constants.ExitCodeSuccess;
+            return Constants.App.ExitCodeSuccess;
         }
         catch (Exception ex)
         {

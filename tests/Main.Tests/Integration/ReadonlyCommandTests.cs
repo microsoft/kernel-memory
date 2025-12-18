@@ -90,7 +90,7 @@ public sealed class ReadonlyCommandTests : IDisposable
 
         // Assert - With friendly first-run UX, missing DB returns success (0) not error
         // The key is that it should NOT create any files/directories
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode); // First-run is not an error
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode); // First-run is not an error
         Assert.False(Directory.Exists(dbDir),
             $"BUG: ListCommand (readonly) should NOT create directory: {dbDir}");
         Assert.False(File.Exists(this._dbPath),
@@ -126,7 +126,7 @@ public sealed class ReadonlyCommandTests : IDisposable
 
         // Assert - With friendly first-run UX, missing DB returns success (0) not error
         // The key is that it should NOT create any files/directories
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode); // First-run is not an error
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode); // First-run is not an error
         Assert.False(Directory.Exists(dbDir),
             $"BUG: GetCommand (readonly) should NOT create directory: {dbDir}");
         Assert.False(File.Exists(this._dbPath),
@@ -161,7 +161,7 @@ public sealed class ReadonlyCommandTests : IDisposable
 
         // Assert - This test SHOULD FAIL initially (reproducing the bug)
         // NodesCommand only reads config, shouldn't touch the database at all
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
         Assert.False(Directory.Exists(dbDir),
             $"BUG: NodesCommand (readonly) should NOT create directory: {dbDir}");
         Assert.False(File.Exists(this._dbPath),
@@ -193,11 +193,11 @@ public sealed class ReadonlyCommandTests : IDisposable
         var context = CreateTestContext("config");
 
         // Act
-        var exitCode = await command.ExecuteAsync(context, settings).ConfigureAwait(false);
+        var exitCode = await command.ExecuteAsync(context, settings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert - This test SHOULD FAIL initially (reproducing the bug)
         // ConfigCommand only reads config, shouldn't touch the database at all
-        Assert.Equal(Constants.ExitCodeSuccess, exitCode);
+        Assert.Equal(Constants.App.ExitCodeSuccess, exitCode);
         Assert.False(Directory.Exists(dbDir),
             $"BUG: ConfigCommand (readonly) should NOT create directory: {dbDir}");
         Assert.False(File.Exists(this._dbPath),

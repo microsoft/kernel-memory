@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
-using KernelMemory.Core.Logging;
 using Serilog.Events;
 
 namespace KernelMemory.Core.Tests.Logging;

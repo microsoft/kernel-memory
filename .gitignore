@@ -6,6 +6,7 @@ archived/
 node_modules/
 obj/
 bin/
+__pycache__/
 _dev/
 .dev/
 .vs/

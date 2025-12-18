@@ -17,21 +17,21 @@ public static class EnvironmentDetector
     public static string GetEnvironment()
     {
         // Check DOTNET_ENVIRONMENT first (takes precedence)
-        var dotNetEnv = Environment.GetEnvironmentVariable(LoggingConstants.DotNetEnvironmentVariable);
+        var dotNetEnv = Environment.GetEnvironmentVariable(Constants.LoggingDefaults.DotNetEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(dotNetEnv))
         {
             return dotNetEnv;
         }
 
         // Fall back to ASPNETCORE_ENVIRONMENT
-        var aspNetEnv = Environment.GetEnvironmentVariable(LoggingConstants.AspNetCoreEnvironmentVariable);
+        var aspNetEnv = Environment.GetEnvironmentVariable(Constants.LoggingDefaults.AspNetCoreEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(aspNetEnv))
         {
             return aspNetEnv;
         }
 
         // Default to Development for safety (full logging)
-        return LoggingConstants.DefaultEnvironment;
+        return Constants.LoggingDefaults.DefaultEnvironment;
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public static class EnvironmentDetector
     {
         return string.Equals(
             GetEnvironment(),
-            LoggingConstants.ProductionEnvironment,
+            Constants.LoggingDefaults.ProductionEnvironment,
             StringComparison.OrdinalIgnoreCase);
     }
 
@@ -56,7 +56,7 @@ public static class EnvironmentDetector
     {
         return string.Equals(
             GetEnvironment(),
-            LoggingConstants.DefaultEnvironment,
+            Constants.LoggingDefaults.DefaultEnvironment,
             StringComparison.OrdinalIgnoreCase);
     }
 }

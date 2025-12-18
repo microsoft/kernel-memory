@@ -201,7 +201,7 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
                 // BM25 scores are typically in range [-10, 0]
                 // Use exponential function to map to [0, 1]: score = exp(raw_score / divisor)
                 // This gives: -10 → 0.37, -5 → 0.61, -1 → 0.90, 0 → 1.0
-                var normalizedScore = Math.Exp(rawScore / SearchConstants.Bm25NormalizationDivisor);
+                var normalizedScore = Math.Exp(rawScore / Constants.SearchDefaults.Bm25NormalizationDivisor);
 
                 results.Add(new FtsMatch
                 {
@@ -228,18 +228,14 @@ public sealed class SqliteFtsIndex : IFtsIndex, IDisposable
     {
         // Select all documents without FTS MATCH filtering
         // Since there's no FTS query, we can't use bm25() - assign a default score of 1.0
-        var searchSql = $"""
-            SELECT
-                content_id,
-                substr(content, 1, 200) as snippet
-            FROM {TableName}
-            LIMIT @limit
-            """;
+        var searchSql = "SELECT content_id, substr(content, 1, " + Constants.Database.DefaultSqlSnippetLength + ") as snippet FROM " + TableName + " LIMIT @limit";
 
         var searchCommand = this._connection!.CreateCommand();
         await using (searchCommand.ConfigureAwait(false))
         {
+#pragma warning disable CA2100 // SQL string uses only constants and table name - no user input
             searchCommand.CommandText = searchSql;
+#pragma warning restore CA2100
             searchCommand.Parameters.AddWithValue("@limit", limit);
 
             var results = new List<FtsMatch>();

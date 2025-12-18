@@ -98,7 +98,7 @@ public sealed class ConfigParserAutoCreateTests : IDisposable
         Assert.Single(config.Nodes);
         Assert.True(config.Nodes.ContainsKey("personal"));
         // Cache configs intentionally null - only created when features are implemented
-        Assert.Null(config.EmbeddingsCache);
+        Assert.NotNull(config.EmbeddingsCache); // Now included in default config
         Assert.Null(config.LLMCache);
     }
 
