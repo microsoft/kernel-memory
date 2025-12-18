@@ -2,7 +2,6 @@
 
 using System.Diagnostics;
 using System.Text.Json;
-using Xunit.Sdk;
 
 namespace KernelMemory.Main.Tests.Integration;
 
@@ -87,14 +86,9 @@ public sealed class SearchProcessTests : IDisposable
         return output.Trim();
     }
 
-    [Fact]
+    [OllamaFact]
     public async Task Process_PutThenSearch_FindsContent()
     {
-        if (string.Equals(Environment.GetEnvironmentVariable("OLLAMA_AVAILABLE"), "false", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SkipException("Skipping because OLLAMA_AVAILABLE=false (vector embeddings unavailable).");
-        }
-
         // Act: Insert content
         var putOutput = await this.ExecuteKmAsync($"put \"ciao mondo\" --config {this._configPath}").ConfigureAwait(false);
         var putResult = JsonSerializer.Deserialize<JsonElement>(putOutput);
@@ -214,5 +208,16 @@ public sealed class SearchProcessTests : IDisposable
 
         Assert.Contains(id1, ids);
         Assert.Contains(id2, ids);
+    }
+
+    private sealed class OllamaFactAttribute : FactAttribute
+    {
+        public OllamaFactAttribute()
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable("OLLAMA_AVAILABLE"), "false", StringComparison.OrdinalIgnoreCase))
+            {
+                this.Skip = "Skipping because OLLAMA_AVAILABLE=false (vector embeddings unavailable).";
+            }
+        }
     }
 }
