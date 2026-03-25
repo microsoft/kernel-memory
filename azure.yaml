@@ -3,3 +3,6 @@
 name: kernel-memory
 metadata:
   template: kernel-memory@0.0.1-beta
+infrastructure:
+  provider: bicep
+  path: archived/km-v1/infra
