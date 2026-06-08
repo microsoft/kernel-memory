@@ -18,9 +18,9 @@ var memory = new KernelMemoryBuilder()
         new AzureOpenAITextEmbeddingGenerationService(embeddingDeployment, endpoint, apiKey), config)
     .Build<MemoryServerless>();
 
-await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/COMMUNITY.md", documentId: "doc001");
+await memory.ImportWebPageAsync("https://raw.githubusercontent.com/microsoft/kernel-memory/main/README.md", documentId: "doc001");
 
-var question = "How can I join Kernel Memory's Discord?";
+var question = "What is Kernel Memory?";
 Console.WriteLine($"\n\nQuestion: {question}");
 
 var answer = await memory.AskAsync(question);

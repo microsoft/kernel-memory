@@ -1,10 +1,11 @@
+> [!CAUTION]
+> This is an archived research project. The code serves as a learning resource, not production software. Use it with caution, and at your own risk. No support is provided.
+
 Kernel Memory
 =============
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
 
-> [!CAUTION]
-> This is an archived research project. The code serves as a learning resource, not production software. Use it with caution, and at your own risk. No support is provided and we are not accepting contributions.
 
 This repository presents best practices and a reference implementation for Memory in specific AI
 and LLMs application scenarios. Please note that **the code provided serves as a demonstration**
@@ -418,9 +419,9 @@ Kernel Memory provides several features out of the scope of Semantic Kernel, tha
 developed manually, such as storing files, extracting text from documents, providing a framework to
 secure users' data, content moderation etc.
 
-Kernel Memory is also leveraged to explore new AI patterns, which sometimes are backported to
-Semantic Kernel and Microsoft libraries, for instance vector stores flexible schemas, advanced
-filtering, authentications.
+Kernel Memory has also been leveraged to explore new AI patterns, which were backported to
+Semantic Kernel and Microsoft libraries, for instance vector stores, flexible schemas, advanced
+filtering, and authentications.
 
 Here's comparison table:
 
@@ -530,8 +531,7 @@ after starting the service locally, see http://127.0.0.1:9001/swagger/index.html
 
 A .NET Web Client and a Semantic Kernel plugin are available, see the nugets packages above.
 
-For Python, TypeScript, Java and other languages we recommend leveraging the Web Service. We also welcome
-PR contributions to support more languages.
+For Python, TypeScript, Java and other languages we recommend leveraging the Web Service.
 
 
 

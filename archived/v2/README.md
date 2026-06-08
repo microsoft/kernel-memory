@@ -1,36 +1,22 @@
+> [!CAUTION]
+> This is an archived research project. The code serves as a learning resource, not production software. Use it with caution, and at your own risk. No support is provided.
+
 Kernel Memory (^2)
 ==================
 
 [![License: MIT](https://img.shields.io/github/license/microsoft/kernel-memory)](https://github.com/microsoft/kernel-memory/blob/main/LICENSE)
 
-> [!CAUTION]
-> This is an active research project. It is evolving rapidly and may change without notice. Use at your own risk. See [Disclaimer](#disclaimer).
-
-KM² is a full rewrite of the initial research prototype, informed by lessons learned from the first iteration and by adjacent work in this space.
-
-The previous codebase remains in the repo for reference only.
-
-Both versions exist purely as research projects used to explore new ideas and gather feedback from the community.
-
-# What’s next
-
-An important aspect of KM² is how we are building the next memory prototype. In parallel, our team is developing [Amplifier](https://github.com/microsoft/amplifier), a platform for metacognitive AI engineering. We use Amplifier to build Amplifier itself — and in a similar way, we are using AI and Amplifier concepts to build the next generation of Kernel Memory.
-
-KM² will focus on the following areas, which will be documented in more detail when ready:
-- quality of content generated
-- privacy
-- collaboration
+KM² was an investigation into a full rewrite of the initial research prototype, informed by lessons learned from the first iteration and by adjacent work in this space.
 
 ## Disclaimer
 
 > [!IMPORTANT]
-> **This is experimental software. _Expect things to break_.**
+> **This is experimental investigation, now archived**
 
-- Contributions are not accepted at this stage
+- Contributions are not accepted
 - No stability or compatibility guarantees
-- Pin specific commits if you need consistency
 - Intended as a learning resource, not production-ready software
-- **No support provided** - see [SUPPORT.md](SUPPORT.md)
+- **No support provided**
 
 Contributors
 ============

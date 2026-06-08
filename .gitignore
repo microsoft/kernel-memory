@@ -504,3 +504,4 @@ swa-cli.config.json
 *.orig
 .azure
 .bg-shell
+.gsd
