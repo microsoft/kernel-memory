@@ -1,0 +1,73 @@
+archived/
+.amplifier/
+.claude/
+.idea
+.DS_Store
+node_modules/
+obj/
+bin/
+__pycache__/
+_dev/
+.dev/
+.vs/
+*.devis.*
+*.devis
+*.user
+*.orig
+
+
+# Local settings which might contain credentials
+.env
+config.development.yaml
+*.development.config
+*.development.json
+*.development.json*
+appsettings.*.json
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# DotCover is a Code Coverage Tool
+*.dotCover
+
+# Coverlet is a free, cross platform Code Coverage Tool
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# Playwright
+playwright-report/
+
+# Click-Once directory
+publish/
+
+# Misc
+*.tmp
+*.log
+*.bck
+*.tgz
+*.tar
+*.zip
+*.cer
+*.crt
+*.key
+*.pem
+certs/
+.bg-shell
